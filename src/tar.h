@@ -288,6 +288,8 @@ struct tar_stat_info
   off_t archive_file_size;  /* Size of file as stored in the archive.
 			       Equals stat.st_size for non-sparse files */
 
+  bool   is_sparse;         /* Is the file sparse */ 
+  
   size_t sparse_map_avail;  /* Index to the first unused element in
 			       sparse_map array. Zero if the file is
 			       not sparse */
