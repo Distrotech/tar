@@ -265,7 +265,6 @@ child_open ()
 {
   int pipe[2];
   int err = 0;
-  int nar;
 
   int kidpipe[2];
   int kidchildpid;
@@ -1362,7 +1361,7 @@ anno (stream, prefix, savedp)
 #endif
 
 /* Called to initialize the global volume number. */
-int
+void
 init_volume_number ()
 {
   FILE *vf;
@@ -1379,7 +1378,7 @@ init_volume_number ()
 }
 
 /* Called to write out the closing global volume number. */
-int
+void
 closeout_volume_number ()
 {
   FILE *vf;
