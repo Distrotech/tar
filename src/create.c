@@ -1165,7 +1165,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    }
 	  strcpy (namebuf + len, entry->d_name);
 	  if (!excluded_name (namebuf))
-	    dump_file (namebuf, our_device, 0);
+	    dump_file (namebuf, 0, our_device);
 	}
 
       closedir (directory);
