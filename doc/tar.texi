@@ -6036,6 +6036,9 @@ or @samp{p.m.}), @var{hour} is restricted to run from 1 to 12, and
 indicates the first half of the day, @samp{pm} indicates the second
 half of the day.  In this notation, 12 is the predecessor of 1:
 midnight is @samp{12am} while noon is @samp{12pm}.
+(This is the zero-oriented interpretation of @samp{12am} and @samp{12pm},
+as opposed to the old tradition derived from Latin
+which uses @samp{12m} for noon and @samp{12pm} for midnight.)
 
 @cindex timezone correction
 @cindex minutes, timezone correction by
