@@ -1,6 +1,11 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.15 - Paul Eggert, 1999-12-03.
+
+* If a file's ctime changes when being archived, report an error.
+  Previously tar looked at mtime, which missed some errors.
+
 version 1.13.14 - Paul Eggert, 1999-11-07.
 
 * New translations ja, pt_BR.
