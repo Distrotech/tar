@@ -191,6 +191,26 @@ xheader_set_option (char *string)
     }
 }
 
+static void
+to_decimal (uintmax_t value, char *where, size_t size)
+{
+  size_t i = 0, j;
+
+  where[i++] = 0;
+  do
+    {
+      where[i++] = '0' + value % 10;
+      value /= 10;
+    }
+  while (i < size && value);
+  for (j = 0, i--; j < i; j++, i--)
+    {
+      char c = where[j];
+      where[j] = where[i];
+      where[i] = c;
+    }
+}
+
 /*
     string Includes:          Replaced By:
      %d                       The directory name of the file,
@@ -241,16 +261,14 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	  break;
 	      
 	case 'p':
-	  snprintf (pidbuf, sizeof pidbuf, "%lu",
-		    (unsigned long) getpid ());
+	  to_decimal (getpid (), pidbuf, sizeof pidbuf);
 	  len += strlen (pidbuf) - 1;
 	  break;
 	  
 	case 'n':
 	  if (allow_n)
 	    {
-	      snprintf (nbuf, sizeof nbuf, "%lu",
-			(unsigned long) global_header_count + 1);
+	      to_decimal (global_header_count + 1, pidbuf, sizeof pidbuf);
 	      len += strlen (nbuf) - 1;
 	    }
 	  break;
