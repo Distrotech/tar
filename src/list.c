@@ -502,6 +502,9 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   stat_info->devmajor = MAJOR_FROM_HEADER (header->header.devmajor);
   stat_info->devminor = MINOR_FROM_HEADER (header->header.devminor);
   
+  stat_info->stat.st_atime = start_time;
+  stat_info->stat.st_ctime = start_time;
+
   if (format == OLDGNU_FORMAT && incremental_option)
     {
       stat_info->stat.st_atime = TIME_FROM_HEADER (header->oldgnu_header.atime);
