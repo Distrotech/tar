@@ -678,7 +678,7 @@ add_file_id (const char *filename)
   file_id_list = p;
 }
       
-static int
+static void
 update_argv (const char *filename, struct argp_state *state)
 {
   FILE *fp;
