@@ -118,6 +118,8 @@ read_and (void (*do_something) (void))
 			   quotearg_colon (current_stat_info.file_name)));
 		  /* Fall through.  */
 		default:
+		  decode_header (current_header,
+				 &current_stat_info, &current_format, 0);
 		  skip_member ();
 		  continue;
 		}
@@ -1263,16 +1265,17 @@ skip_file (off_t size)
     }
 }
 
-/* Skip the current member in the archive.  */
+/* Skip the current member in the archive.
+   NOTE: Current header must be decoded before calling this function. */
 void
 skip_member (void)
 {
   char save_typeflag = current_header->header.typeflag;
   set_next_block_after (current_header);
-
+  
   assign_string (&save_name, current_stat_info.file_name);
 
-  if (sparse_member_p (&current_stat_info))
+  if (current_stat_info.is_sparse)
     sparse_skip_file (&current_stat_info);
   else if (save_typeflag != DIRTYPE)
     skip_file (current_stat_info.stat.st_size);
