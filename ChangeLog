@@ -1,3 +1,9 @@
+2003-09-24  Paul Eggert  <eggert@twinsun.com>
+
+	* src/rmt.c (main): Don't translate Copyright string; international
+	law says the word "Copyright" should be in English.
+	* src/tar.c (decode_options): Likewise.
+
 2003-09-22  Paul Eggert  <eggert@twinsun.com>
 
 	* doc/tar.texi (extracting untrusted archives): New section.

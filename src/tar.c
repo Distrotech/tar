@@ -1219,8 +1219,8 @@ decode_options (int argc, char **argv)
 
   if (show_version)
     {
-      printf ("tar (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
-      printf (_("Copyright (C) %d Free Software Foundation, Inc.\n"), 2003);
+      printf ("tar (%s) %s\n%s\n", PACKAGE_NAME, PACKAGE_VERSION,
+	      "Copyright (C) 2003 Free Software Foundation, Inc.");
       puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
