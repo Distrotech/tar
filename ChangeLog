@@ -1,3 +1,10 @@
+2004-03-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (read_and): Stop processing the archive after
+	encountering a single zero record. Many old archives contain
+	arbitrary garbage after it.
+	The warning is issued anyway.
+
 2004-03-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/rtapelib.c (rmt_lseek__,rmt_ioctl__): Bugfix. The
