@@ -53,6 +53,7 @@ EXTRA_DIST = \
  quote.m4\
  quotearg.m4\
  realloc.m4\
+ restrict.m4\
  rmdir.m4\
  safe-read.m4\
  safe-write.m4\
@@ -69,6 +70,7 @@ EXTRA_DIST = \
  strtoul.m4\
  strtoull.m4\
  strtoumax.m4\
+ time_r.m4\
  tm_gmtoff.m4\
  uintmax_t.m4\
  ulonglong.m4\
