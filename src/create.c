@@ -1082,7 +1082,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
       /* See if we are about to recurse into a directory, and avoid doing
 	 so if the user wants that we do not descend into directories.  */
 
-      if (no_recurse_option)
+      if (! recursion_option)
 	goto finish_dir;
 
       /* See if we are crossing from one file system to another, and
