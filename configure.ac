@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-AC_INIT([GNU tar], [1.14.90], [bug-tar@gnu.org])
+AC_INIT([GNU tar], [1.14.91], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h:config.hin])
@@ -220,15 +220,6 @@ AC_MSG_RESULT($DEFAULT_BLOCKING)
 
 PU_RMT
 
-# Gettext.
-AM_GNU_GETTEXT([external], [need-ngettext])
-AM_GNU_GETTEXT_VERSION(0.12.1)
-
-# Initialize the test suite.
-AC_CONFIG_TESTDIR(tests)
-AC_CONFIG_FILES([tests/Makefile tests/atlocal]) # FIXME: tests/preset?
-AM_MISSING_PROG([AUTOM4TE], [autom4te])
-
 # Iconv
 AM_ICONV
 AC_CHECK_HEADERS(iconv.h)
@@ -240,6 +231,15 @@ AC_CHECK_TYPE(iconv_t,:,
 # include <iconv.h>
 #endif
 ])
+
+# Gettext.
+AM_GNU_GETTEXT([external], [need-ngettext])
+AM_GNU_GETTEXT_VERSION(0.12.1)
+
+# Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile tests/atlocal]) # FIXME: tests/preset?
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
 
 AC_SUBST(BACKUP_LIBEXEC_SCRIPTS)
 AC_SUBST(BACKUP_SBIN_SCRIPTS)
