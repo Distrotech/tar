@@ -903,6 +903,8 @@ print_header (off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
+  char *temp_name;
+  
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
   char *user, *group;
@@ -922,13 +924,22 @@ print_header (off_t block_ordinal)
 	       STRINGIFY_BIGINT (block_ordinal, buf));
     }
 
+  if (current_trailing_slash)
+    {
+      temp_name = xmalloc (strlen (current_file_name) + 2);
+      strcpy (temp_name, current_file_name);
+      strcat (temp_name, "/");
+    }
+  else
+    {
+      temp_name = xmalloc (strlen (current_file_name) + 1);
+      strcpy (temp_name, current_file_name);
+    }
+  
   if (verbose_option <= 1)
     {
       /* Just the fax, mam.  */
-      fprintf (stdlis, "%s", quotearg (current_file_name));
-      if (current_trailing_slash)
-	fprintf (stdlis, "/");
-      fprintf (stdlis, "\n");
+      fprintf (stdlis, "%s\n", quotearg (temp_name));
     }
   else
     {
@@ -959,7 +970,7 @@ print_header (off_t block_ordinal)
 	case REGTYPE:
 	case AREGTYPE:
 	  modes[0] = '-';
-	  if (current_file_name[strlen (current_file_name) - 1] == '/')
+	  if (temp_name[strlen (temp_name) - 1] == '/')
 	    modes[0] = 'd';
 	  break;
 	case LNKTYPE:
@@ -1073,7 +1084,7 @@ print_header (off_t block_ordinal)
       fprintf (stdlis, "%s %s/%s %*s%s %s",
 	       modes, user, group, ugswidth - pad, "", size, time_stamp);
 
-      fprintf (stdlis, " %s", quotearg (current_file_name));
+      fprintf (stdlis, " %s", quotearg (temp_name));
 
       switch (current_header->header.typeflag)
 	{
@@ -1132,6 +1143,7 @@ print_header (off_t block_ordinal)
 	  break;
 	}
     }
+  free (temp_name);
   fflush (stdlis);
 }
 
