@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-AC_INIT([GNU tar], [1.15], [bug-tar@gnu.org])
+AC_INIT([GNU tar], [1.15.1], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h:config.hin])
@@ -39,7 +39,7 @@ AC_CHECK_HEADERS(fcntl.h linux/fd.h memory.h net/errno.h \
   sys/param.h sys/device.h sys/gentape.h \
   sys/inet.h sys/io/trioctl.h \
   sys/mtio.h sys/time.h sys/tprintf.h sys/tape.h \
-  unistd.h)
+  unistd.h locale.h)
 
 AC_CHECK_HEADERS([sys/buf.h], [], [],
 [#if HAVE_SYS_PARAM_H
