@@ -344,16 +344,15 @@ name_next (int change_dirs)
     {
       /* Get a name, either from file or from saved arguments.  */
 
-      if (name_file)
+      if (name_index == names)
 	{
-	  if (!read_name_from_file ())
+	  if (! name_file)
+	    break;
+	  if (! read_name_from_file ())
 	    break;
 	}
       else
 	{
-	  if (name_index == names)
-	    break;
-
 	  source = name_array[name_index++];
 	  if (strlen (source) > name_buffer_length)
 	    {
