@@ -1,5 +1,5 @@
 /* A tar (tape archiver) program.
-   Copyright (C) 1988, 92, 93, 94, 95, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92,93,94,95,96,97, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, starting 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -537,11 +537,13 @@ decode_options (int argc, char *const *argv)
 	  *out++ = xstrdup (buffer);
 	  cursor = strchr (OPTION_STRING, *letter);
 	  if (cursor && cursor[1] == ':')
-	    if (in < argv + argc)
-	      *out++ = *in++;
-	    else
-	      USAGE_ERROR ((0, 0, _("Old option `%c' requires an argument."),
-			    *letter));
+	    {
+	      if (in < argv + argc)
+		*out++ = *in++;
+	      else
+		USAGE_ERROR ((0, 0, _("Old option `%c' requires an argument."),
+			      *letter));
+	    }
 	}
 
       /* Copy all remaining options.  */
@@ -850,7 +852,8 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case GROUP_OPTION:
-	if (!gname_to_gid (optarg, &group_option))
+	if (! (strlen (optarg) < GNAME_FIELD_SIZE
+	       && gname_to_gid (optarg, &group_option)))
 	  {
 	    uintmax_t g;
 	    if (!check_decimal (optarg, &g) || g != (gid_t) g)
@@ -879,7 +882,8 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case OWNER_OPTION:
-	if (!uname_to_uid (optarg, &owner_option))
+	if (! (strlen (optarg) < UNAME_FIELD_SIZE
+	       && uname_to_uid (optarg, &owner_option)))
 	  {
 	    uintmax_t u;
 	    if (!check_decimal (optarg, &u) || u != (uid_t) u)
