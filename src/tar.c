@@ -612,68 +612,68 @@ describe()
 {
 	puts("choose one of the following:");
 	fputs("\
--A, +catenate,\n\
-    +concatenate	append tar files to an archive\n\
--c, +create		create a new archive\n\
--d, +diff,\n\
-    +compare		find differences between archive and file system\n\
-+delete			delete from the archive (not for use on mag tapes!)\n\
--r, +append		append files to the end of an archive\n\
--t, +list		list the contents of an archive\n\
--u, +update		only append files that are newer than copy in archive\n\
--x, +extract,\n\
-    +get		extract files from an archive\n",stdout);
+-A, --catenate,\n\
+    --concatenate	append tar files to an archive\n\
+-c, --create		create a new archive\n\
+-d, --diff,\n\
+    --compare		find differences between archive and file system\n\
+--delete			delete from the archive (not for use on mag tapes!)\n\
+-r, --append		append files to the end of an archive\n\
+-t, --list		list the contents of an archive\n\
+-u, --update		only append files that are newer than copy in archive\n\
+-x, --extract,\n\
+    --get		extract files from an archive\n",stdout);
 
 	fprintf(stdout, "\
 Other options:\n\
--b, +block-size N	block size of Nx512 bytes (default N=%d)\n", DEFBLOCKING);
+-b, --block-size N	block size of Nx512 bytes (default N=%d)\n", DEFBLOCKING);
 	fputs ("\
--B, +read-full-blocks	reblock as we read (for reading 4.2BSD pipes)\n\
--C, +directory DIR	change to directory DIR\n\
+-B, --read-full-blocks	reblock as we read (for reading 4.2BSD pipes)\n\
+-C, --directory DIR	change to directory DIR\n\
 ", stdout); /* KLUDGE */ fprintf(stdout, "\
--f, +file [HOSTNAME:]F	use archive file or device F (default %s)\n",
+-f, --file [HOSTNAME:]F	use archive file or device F (default %s)\n",
 				 DEF_AR_FILE); fputs("\
--F, +info-script F	run script at end of each tape (implies -M)\n\
--G, +incremental	create/list/extract old GNU-format incremental backup\n\
--g, +listed-incremental F create/list/extract new GNU-format incremental backup\n\
--h, +dereference	don't dump symlinks; dump the files they point to\n\
--i, +ignore-zeros	ignore blocks of zeros in archive (normally mean EOF)\n\
--k, +keep-old-files	keep existing files; don't overwrite them from archive\n\
--K, +starting-file FILE	begin at FILE in the archive\n\
--l, +one-file-system	stay in local file system when creating an archive\n\
--L, +tape-length LENGTH change tapes after writing LENGTH\n\
+-F, --info-script F	run script at end of each tape (implies -M)\n\
+-G, --incremental	create/list/extract old GNU-format incremental backup\n\
+-g, --listed-incremental F create/list/extract new GNU-format incremental backup\n\
+-h, --dereference	don't dump symlinks; dump the files they point to\n\
+-i, --ignore-zeros	ignore blocks of zeros in archive (normally mean EOF)\n\
+-k, --keep-old-files	keep existing files; don't overwrite them from archive\n\
+-K, --starting-file FILE	begin at FILE in the archive\n\
+-l, --one-file-system	stay in local file system when creating an archive\n\
+-L, --tape-length LENGTH change tapes after writing LENGTH\n\
 ", stdout); /* KLUDGE */ fputs("\
--m, +modification-time	don't extract file modified time\n\
--M, +multi-volume	create/list/extract multi-volume archive\n\
--N, +after-date DATE,\n\
-    +newer DATE		only store files newer than DATE\n\
--o, +old-archive,\n\
-    +portability	write a V7 format archive, rather than ANSI format\n\
--O, +to-stdout		extract files to standard output\n\
--p, +same-permissions,\n\
-    +preserve-permissions extract all protection information\n\
--P, +absolute-paths	don't strip leading `/'s from file names\n\
-+preserve		like -p -s\n\
+-m, --modification-time	don't extract file modified time\n\
+-M, --multi-volume	create/list/extract multi-volume archive\n\
+-N, --after-date DATE,\n\
+    --newer DATE		only store files newer than DATE\n\
+-o, --old-archive,\n\
+    --portability	write a V7 format archive, rather than ANSI format\n\
+-O, --to-stdout		extract files to standard output\n\
+-p, --same-permissions,\n\
+    --preserve-permissions extract all protection information\n\
+-P, --absolute-paths	don't strip leading `/'s from file names\n\
+--preserve		like -p -s\n\
 ", stdout); /* KLUDGE */ fputs("\
--R, +record-number	show record number within archive with each message\n\
--s, +same-order,\n\
-    +preserve-order	list of names to extract is sorted to match archive\n\
-+same-order		create extracted files with the same ownership \n\
--S, +sparse		handle sparse files efficiently\n\
--T, +files-from F	get names to extract or create from file F\n\
-+null			-T reads null-terminated names, disable -C\n\
-+totals			print total bytes written with +create\n\
--v, +verbose		verbosely list files processed\n\
--V, +label NAME		create archive with volume name NAME\n\
-+version		print tar program version number\n\
--w, +interactive,\n\
-    +confirmation	ask for confirmation for every action\n\
+-R, --record-number	show record number within archive with each message\n\
+-s, --same-order,\n\
+    --preserve-order	list of names to extract is sorted to match archive\n\
+--same-order		create extracted files with the same ownership \n\
+-S, --sparse		handle sparse files efficiently\n\
+-T, --files-from F	get names to extract or create from file F\n\
+--null			-T reads null-terminated names, disable -C\n\
+--totals			print total bytes written with --create\n\
+-v, --verbose		verbosely list files processed\n\
+-V, --label NAME		create archive with volume name NAME\n\
+--version		print tar program version number\n\
+-w, --interactive,\n\
+    --confirmation	ask for confirmation for every action\n\
 ", stdout); /* KLUDGE */ fputs("\
--W, +verify		attempt to verify the archive after writing it\n\
-+exclude FILE		exclude file FILE\n\
--X, +exclude-from FILE	exclude files listed in FILE\n\
--z, -Z, +compress,\n\
-    +uncompress      	filter the archive through compress\n\
+-W, --verify		attempt to verify the archive after writing it\n\
+--exclude FILE		exclude file FILE\n\
+-X, --exclude-from FILE	exclude files listed in FILE\n\
+-z, -Z, --compress,\n\
+    --uncompress      	filter the archive through compress\n\
 -[0-7][lmh]		specify drive and density\n\
 ", stdout);
 }
