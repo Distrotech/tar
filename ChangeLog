@@ -2,6 +2,7 @@
 
 	* directory: Updated for 1.15.1
 	* doc/Makefile.am: Use gendocs.sh to generate web documentation
+	* doc/gendocs_template: Template file for gendocs.sh
 	* doc/tar.texi: Updated docs for --[no-]same-permissions
 	* src/tar.c: Reworded docstrings for --[no-]same-permissions
 
