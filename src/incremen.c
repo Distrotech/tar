@@ -22,9 +22,6 @@
 #include <hash.h>
 #include <quotearg.h>
 #include "common.h"
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-#include <obstack.h>
 
 /* Incremental dump specialities.  */
 
