@@ -131,6 +131,11 @@
 @set xref-blocking-factor @xref{Blocking Factor}
 @set pxref-blocking-factor @pxref{Blocking Factor}
 
+@set op-bzip2 @kbd{--bzip2} (@kbd{-y})
+@set ref-bzip2 @ref{gzip}
+@set xref-bzip2 @xref{gzip}
+@set pxref-bzip2 @pxref{gzip}
+
 @set op-checkpoint @kbd{--checkpoint}
 @set ref-checkpoint @ref{verbose}
 @set xref-checkpoint @xref{verbose}
@@ -459,7 +464,7 @@ END-INFO-DIR-ENTRY
 This file documents GNU @code{tar}, a utility used to store, backup, and
 transport files.
 
-Copyright (C) 1992, 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+Copyright 1992, 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
 
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
@@ -2513,6 +2518,12 @@ with the block number in the archive file.  @FIXME-xref{}.
 Sets the blocking factor @code{tar} uses to @var{blocking} x 512 bytes per
 record.  @FIXME-xref{}.
 
+@item --bzip2
+@itemx -y
+
+This option tells @code{tar} to read or write archives through @code{bzip2}.
+@FIXME-xref{}.
+
 @item --checkpoint
 
 This option directs @code{tar} to print periodic checkpoint messages as it
@@ -3068,6 +3079,10 @@ them with the equivalent long option.
 @item -x
 
 @samp{--extract}
+
+@item -y
+
+@samp{--bzip2}
 
 @item -z
 
@@ -5337,9 +5352,16 @@ The @value{op-exclude} option will prevent any file or member which
 matches the shell wildcards (@var{pattern}) from being operated on
 (@var{pattern} can be a single file name or a more complex expression).
 For example, if you want to create an archive with all the contents of
-@file{/tmp} except the file @file{/tmp/foo}, you can use the command
-@samp{tar --create --file=arch.tar --exclude=foo}.  A path name is
-excluded if any of its file name components matches @var{pattern}.
+the working directory except for files whose names end in @file{.o}, you
+can use the command @samp{tar -cf arch.tar --exclude='*.o' .}.
+
+A @var{pattern} containing @samp{/} excludes a file if an initial prefix
+of the file name matches @var{pattern}; a @var{pattern} without @samp{/}
+excludes a file if it matches any of its file name components.  For
+example, the pattern @samp{b*/RCS} excludes @file{blob/RCS} and
+@file{blob/RCS/f} but not @file{a/blob/RCS} or @file{blob/sub/RCS},
+whereas the pattern @samp{RCS} excludes all these file names.
+
 You may give multiple @samp{--exclude} options.
 
 @table @kbd
@@ -5405,14 +5427,14 @@ illegal.  This might not correspond to what you want.
 For example, write:
 
 @example
-$ @kbd{tar -c -f @var{archive.tar} -X '*/tmp/*' @var{directory}}
+$ @kbd{tar -c -f @var{archive.tar} --exclude '*.o' @var{directory}}
 @end example
 
 @noindent
 rather than:
 
 @example
-$ @kbd{tar -c -f @var{archive.tar} -X */tmp/* @var{directory}}
+$ @kbd{tar -c -f @var{archive.tar} --exclude *.o @var{directory}}
 @end example
 
 @item
@@ -6748,6 +6770,10 @@ loose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @table @kbd
+@item -y
+@itemx --bzip2
+Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
+
 @item -Z
 @itemx --compress
 @itemx --uncompress
@@ -6779,6 +6805,9 @@ more information on these operations.
 If there is no compress utility available, @code{tar} will report an error.
 @strong{Please note} that the @code{compress} program may be covered by
 a patent, and therefore we recommend you stop using it.
+
+@value{op-bzip2} acts like @value{op-compress}, except that it uses
+the @code{bzip2} utility.
 
 @table @kbd
 @item --compress
