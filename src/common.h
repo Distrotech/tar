@@ -333,6 +333,8 @@ GLOBAL ino_t ar_ino;
 
 GLOBAL bool seekable_archive;
 
+GLOBAL dev_t root_device;
+
 
 /* Declarations for each module.  */
 
@@ -443,7 +445,7 @@ void delete_archive_members (void);
 char *get_directory_contents (char *, dev_t);
 void read_directory_file (void);
 void write_directory_file (void);
-void gnu_restore (char const *);
+void purge_directory (char const *);
 
 /* Module list.c.  */
 
