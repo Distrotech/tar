@@ -19,7 +19,8 @@
 ## 02111-1307, USA.
 
 bin_PROGRAMS = tar
-libexec_PROGRAMS = @RMT@
+rmtdir=$(DEFAULT_RMT_DIR)
+rmt_PROGRAMS = @RMT@
 EXTRA_PROGRAMS = rmt
 
 noinst_HEADERS = arith.h common.h rmt.h system.h tar.h
@@ -50,7 +51,7 @@ DISTCLEANFILES = localedir.h
 localedir.h : Makefile
 	echo '#define LOCALEDIR "$(localedir)"' >$@
 	echo "#ifndef DEFAULT_RMT_COMMAND" >> $@
-	echo "# define DEFAULT_RMT_COMMAND \"$(libexecdir)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
+	echo "# define DEFAULT_RMT_COMMAND \"$(rmtdir)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
 	echo "#endif" >> $@
 
 rmt.o tar.o : localedir.h
