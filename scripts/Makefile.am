@@ -15,9 +15,12 @@
 ## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ## 02111-1307, USA.
 
-libexec_SCRIPTS=backup.sh dump-remind
+BACKUP_LIBEXEC_SCRIPTS_LIST=backup.sh dump-remind
+BACKUP_SBIN_SCRIPTS_LIST=backup restore
+libexec_SCRIPTS=@BACKUP_LIBEXEC_SCRIPTS@
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT=backup.sh dump-remind
-sbin_SCRIPTS=backup restore
+sbin_SCRIPTS=@BACKUP_SBIN_SCRIPTS@
+EXTRA_SCRIPTS=
 EXTRA_DIST=\
  backup.sh.in\
  backup.in\
