@@ -28,11 +28,17 @@ TESTS = version.sh \
   extrac01.sh extrac02.sh extrac03.sh extrac04.sh \
   gzip.sh incremen.sh ignfail.sh listed01.sh \
   multiv01.sh old.sh options.sh volume.sh \
-  recurse.sh
+  recurse.sh \
+  star/gtarfail.sh \
+  star/gtarfail2.sh \
+  star/ustar-big-2g.sh \
+  star/ustar-big-8g.sh \
+  star/pax-big-10g.sh \
+  star/qucktest.sh
 
 genfile_SOURCES = genfile.c
 mksparse_SOURCES = mksparse.c
-EXTRA_DIST = after before preset.in $(TESTS)
+EXTRA_DIST = after before preset.in $(TESTS) star/README
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
