@@ -1117,7 +1117,7 @@ again:
       /* Regular expressions (shell globbing, actually). */
       if (nlp->regexp)
 	{
-	  if (fnmatch (nlp->name, p, FNM_TARPATH) == 0)
+	  if (fnmatch (nlp->name, p, FNM_LEADING_DIR) == 0)
 	    {
 	      nlp->found = 1;	/* Remember it matched */
 	      if (f_startfile)
@@ -1236,7 +1236,7 @@ again:
       /* Regular expressions */
       if (nlp->regexp)
 	{
-	  if (fnmatch (nlp->name, p, FNM_TARPATH) == 0)
+	  if (fnmatch (nlp->name, p, FNM_LEADING_DIR) == 0)
 	    return nlp;		/* We got a match */
 	  continue;
 	}
@@ -1464,7 +1464,7 @@ check_exclude (name)
 
   for (n = 0; n < size_re_exclude; n++)
     {
-      if (fnmatch (re_exclude[n], name, FNM_TARPATH) == 0)
+      if (fnmatch (re_exclude[n], name, FNM_LEADING_DIR) == 0)
 	return 1;
     }
   for (n = 0; n < size_exclude; n++)
