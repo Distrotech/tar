@@ -1286,8 +1286,7 @@ see the file named COPYING for details."));
       if (subcommand_option != DELETE_SUBCOMMAND
 	  && subcommand_option != DIFF_SUBCOMMAND
 	  && subcommand_option != EXTRACT_SUBCOMMAND
-	  && subcommand_option != LIST_SUBCOMMAND
-	  && subcommand_option != UPDATE_SUBCOMMAND)
+	  && subcommand_option != LIST_SUBCOMMAND)
 	    USAGE_ERROR ((0, 0,
 			  _("--first-copy cannot be used in the requested operation mode")));
     }
