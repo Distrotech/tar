@@ -38,7 +38,7 @@ tar --create \
 
 tar tf archive.1
 
-dd if=/dev/zero of=directory/file2 bs=1024 count=20 2>/dev/null
+genfile --length 10240 --pattern zeros > directory/file2
 
 echo "separator"
 
