@@ -25,7 +25,7 @@ lib/human.c
 lib/quotearg.c
 lib/xmalloc.c
 lib/rtapelib.c
-
+lib/argp-help.c
 rmt/rmt.c
 
 # Package source files
