@@ -48,13 +48,6 @@ extern int errno;
 # include <iconv.h>
 #endif
 
-#if ENABLE_NLS
-# include <libintl.h>
-# define _(Text) gettext (Text)
-#else
-# define _(Text) Text
-#endif
-
 #include "unicodeio.h"
 
 /* When we pass a Unicode character to iconv(), we must pass it in a
