@@ -164,7 +164,7 @@ struct option long_options[] =
   {"portability", 0, 0, 'o'},
   {"compress", 0, 0, 'Z'},
   {"uncompress", 0, 0, 'Z'},
-  {"compress-block", 0, &f_compress_block, 1},
+  {"block-compress", 0, &f_compress_block, 1},
   {"gzip", 0, 0, 'z'},
   {"ungzip", 0, 0, 'z'},
   {"use-compress-program", 1, 0, 18},
@@ -659,7 +659,7 @@ options (argc, argv)
   if (f_compress_block && !f_compressprog)
     {
       msg ("You must use a compression option (--gzip, --compress\n\
-or --use-compress-program) with --f_compress_block.\n");
+or --use-compress-program) with --block-compress.\n");
       exit (EX_ARGSBAD);
     }
 }
@@ -755,6 +755,7 @@ Other options:\n\
     --ungzip		filter the archive through gzip\n\
 --use-compress-program PROG\n\
 			filter the archive through PROG (which must accept -d)\n\
+--block-compress	block the output of compression program for tapes\n\
 -[0-7][lmh]		specify drive and density\n\
 ", stdout);
 }
