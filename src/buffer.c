@@ -66,7 +66,7 @@ union block *current_block;	/* current block of archive */
 enum access_mode access_mode;	/* how do we handle the archive */
 static struct stat archive_stat; /* stat block for archive file */
 
-static long record_start_block; /* block ordinal at record_start */
+static off_t record_start_block; /* block ordinal at record_start */
 
 /* Where we write list messages (not errors, not interactions) to.  Stdout
    unless we're writing a pipe, in which case stderr.  */
@@ -74,7 +74,7 @@ FILE *stdlis;
 
 static void backspace_output PARAMS ((void));
 static int new_volume PARAMS ((enum access_mode));
-static void write_error PARAMS ((int));
+static void write_error PARAMS ((ssize_t));
 static void read_error PARAMS ((void));
 
 #if !MSDOS
@@ -84,7 +84,7 @@ ino_t ar_ino;
 #endif
 
 /* PID of child program, if compress_option or remote archive access.  */
-static int child_pid = 0;
+static pid_t child_pid;
 
 /* Error recovery stuff  */
 static int read_error_count;
@@ -116,9 +116,9 @@ static int global_volno = 1;	/* volume number to print in external
    volume.  (From Pierce Cantrell, 1991-08-13.)  */
 
 char *save_name;		/* name of the file we are currently writing */
-long save_totsize;		/* total size of file we are writing, only
+off_t save_totsize;		/* total size of file we are writing, only
 				   valid if save_name is non NULL */
-long save_sizeleft;		/* where we are in the file we are writing,
+off_t save_sizeleft;		/* where we are in the file we are writing,
 				   only valid if save_name is nonzero */
 
 int write_archive_to_stdout = 0;
@@ -126,8 +126,8 @@ int write_archive_to_stdout = 0;
 /* Used by flush_read and flush_write to store the real info about saved
    names.  */
 static char *real_s_name = NULL;
-static long real_s_totsize;
-static long real_s_sizeleft;
+static off_t real_s_totsize;
+static off_t real_s_sizeleft;
 
 /* Functions.  */
 
@@ -166,7 +166,7 @@ print_total_written (void)
 | Compute and return the block ordinal at current_block.  |
 `--------------------------------------------------------*/
 
-long
+off_t
 current_block_ordinal (void)
 {
   return record_start_block + (current_block - record_start);
@@ -238,10 +238,10 @@ set_next_block_after (union block *block)
 | always) the result previous find_next_block call.			  |
 `------------------------------------------------------------------------*/
 
-int
+size_t
 available_space_after (union block *pointer)
 {
-  return (int) (record_end->buffer - pointer->buffer);
+  return record_end->buffer - pointer->buffer;
 }
 
 /*------------------------------------------------------------------.
@@ -328,7 +328,7 @@ child_open_for_compress (void)
 {
   int parent_pipe[2];
   int child_pipe[2];
-  int grandchild_pid;
+  pid_t grandchild_pid;
 
   if (pipe (parent_pipe) < 0)
     FATAL_ERROR ((0, errno, _("Cannot open pipe")));
@@ -427,9 +427,9 @@ child_open_for_compress (void)
 
   while (1)
     {
-      int status = 0;
+      ssize_t status = 0;
       char *cursor;
-      int length;
+      size_t length;
 
       /* Assemble a record.  */
 
@@ -437,11 +437,11 @@ child_open_for_compress (void)
 	   length < record_size;
 	   length += status, cursor += status)
 	{
-	  int size = record_size - length;
+	  size_t size = record_size - length;
 
 	  if (size < BLOCKSIZE)
 	    size = BLOCKSIZE;
-	  status = read (STDIN, cursor, (size_t) size);
+	  status = read (STDIN, cursor, size);
 	  if (status <= 0)
 	    break;
 	}
@@ -459,10 +459,8 @@ child_open_for_compress (void)
 
 	  if (length > 0)
 	    {
-	      memset (record_start->buffer + length, 0,
-		      (size_t) record_size - length);
-	      status = rmtwrite (archive, record_start->buffer,
-				 (unsigned int) record_size);
+	      memset (record_start->buffer + length, 0, record_size - length);
+	      status = rmtwrite (archive, record_start->buffer, record_size);
 	      if (status != record_size)
 		write_error (status);
 	    }
@@ -471,8 +469,7 @@ child_open_for_compress (void)
 	  break;
 	}
 
-      status = rmtwrite (archive, record_start->buffer,
-			 (unsigned int) record_size);
+      status = rmtwrite (archive, record_start->buffer, record_size);
       if (status != record_size)
  	write_error (status);
     }
@@ -492,7 +489,7 @@ child_open_for_uncompress (void)
 {
   int parent_pipe[2];
   int child_pipe[2];
-  int grandchild_pid;
+  pid_t grandchild_pid;
 
   if (pipe (parent_pipe) < 0)
     FATAL_ERROR ((0, errno, _("Cannot open pipe")));
@@ -585,15 +582,14 @@ child_open_for_uncompress (void)
   while (1)
     {
       char *cursor;
-      int maximum;
-      int count;
-      int status;
+      size_t maximum;
+      size_t count;
+      ssize_t status;
 
       read_error_count = 0;
 
     error_loop:
-      status = rmtread (archive, record_start->buffer,
-			(unsigned int) (record_size));
+      status = rmtread (archive, record_start->buffer, record_size);
       if (status < 0)
 	{
 	  read_error ();
@@ -606,7 +602,7 @@ child_open_for_uncompress (void)
       while (maximum)
 	{
 	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
-	  status = write (STDOUT, cursor, (size_t) count);
+	  status = write (STDOUT, cursor, count);
 	  if (status < 0)
 	    FATAL_ERROR ((0, errno, _("\
 Cannot write to compression program")));
@@ -614,8 +610,8 @@ Cannot write to compression program")));
 	  if (status != count)
 	    {
 	      ERROR ((0, 0, _("\
-Write to compression program short %d bytes"),
-		      count - status));
+Write to compression program short %lu bytes"),
+		      (unsigned long) (count - status)));
 	      count = status;
 	    }
 
@@ -695,12 +691,12 @@ open_archive (enum access_mode access)
   if (multi_volume_option)
     {
       record_start
-	= (union block *) valloc ((unsigned) (record_size + (2 * BLOCKSIZE)));
+	= (union block *) valloc (record_size + (2 * BLOCKSIZE));
       if (record_start)
 	record_start += 2;
     }
   else
-    record_start = (union block *) valloc ((unsigned) record_size);
+    record_start = (union block *) valloc (record_size);
   if (!record_start)
     FATAL_ERROR ((0, 0, _("Could not allocate memory for blocking factor %d"),
 		  blocking_factor));
@@ -856,7 +852,7 @@ open_archive (enum access_mode access)
 	  assign_string (&current_file_name, record_start->header.name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
-	  to_oct (time (0), 1 + 12, record_start->header.mtime);
+	  TIME_TO_OCT (time (0), record_start->header.mtime);
 	  finish_header (record_start);
 #if 0
 	  current_block++;
@@ -874,7 +870,7 @@ void
 flush_write (void)
 {
   int copy_back;
-  int status;
+  ssize_t status;
 
   if (checkpoint_option && !(++checkpoint % 10))
     WARN ((0, 0, _("Write checkpoint %d"), checkpoint));
@@ -888,8 +884,7 @@ flush_write (void)
   else if (dev_null_output)
     status = record_size;
   else
-    status = rmtwrite (archive, record_start->buffer,
-		       (unsigned int) record_size);
+    status = rmtwrite (archive, record_start->buffer, record_size);
   if (status != record_size && !multi_volume_option)
     write_error (status);
   else if (totals_option)
@@ -957,7 +952,7 @@ flush_write (void)
     {
       memset ((void *) record_start, 0, BLOCKSIZE);
       sprintf (record_start->header.name, "%s Volume %d", volume_label_option, volno);
-      to_oct (time (0), 1 + 12, record_start->header.mtime);
+      TIME_TO_OCT (time (0), record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
       finish_header (record_start);
     }
@@ -977,10 +972,9 @@ flush_write (void)
 
       strcpy (record_start->header.name, real_s_name);
       record_start->header.typeflag = GNUTYPE_MULTIVOL;
-      to_oct ((long) real_s_sizeleft, 1 + 12,
-	      record_start->header.size);
-      to_oct ((long) real_s_totsize - real_s_sizeleft,
-	      1 + 12, record_start->oldgnu_header.offset);
+      OFF_TO_OCT (real_s_sizeleft, record_start->header.size);
+      OFF_TO_OCT (real_s_totsize - real_s_sizeleft, 
+		  record_start->oldgnu_header.offset);
       tmp = verbose_option;
       verbose_option = 0;
       finish_header (record_start);
@@ -990,8 +984,7 @@ flush_write (void)
 	record_start--;
     }
 
-  status = rmtwrite (archive, record_start->buffer,
-		     (unsigned int) record_size);
+  status = rmtwrite (archive, record_start->buffer, record_size);
   if (status != record_size)
     write_error (status);
   else if (totals_option)
@@ -1036,7 +1029,7 @@ flush_write (void)
 `---------------------------------------------------------------------*/
 
 static void
-write_error (int status)
+write_error (ssize_t status)
 {
   int saved_errno = errno;
 
@@ -1049,8 +1042,9 @@ write_error (int status)
     FATAL_ERROR ((0, saved_errno, _("Cannot write to %s"),
 		  *archive_name_cursor));
   else
-    FATAL_ERROR ((0, 0, _("Only wrote %u of %u bytes to %s"),
-		  status, record_size, *archive_name_cursor));
+    FATAL_ERROR ((0, 0, _("Only wrote %lu of %lu bytes to %s"),
+		  (unsigned long) status, (unsigned long) record_size,
+		  *archive_name_cursor));
 }
 
 /*-------------------------------------------------------------------.
@@ -1081,8 +1075,8 @@ read_error (void)
 void
 flush_read (void)
 {
-  int status;			/* result from system call */
-  int left;			/* bytes left */
+  ssize_t status;		/* result from system call */
+  size_t left;			/* bytes left */
   char *more;			/* pointer to next byte to read */
 
   if (checkpoint_option && !(++checkpoint % 10))
@@ -1095,7 +1089,7 @@ flush_read (void)
 
   if (write_archive_to_stdout && record_start_block != 0)
     {
-      status = rmtwrite (1, record_start->buffer, (unsigned int) record_size);
+      status = rmtwrite (1, record_start->buffer, record_size);
       if (status != record_size)
 	write_error (status);
     }
@@ -1123,7 +1117,7 @@ flush_read (void)
       }
 
 error_loop:
-  status = rmtread (archive, record_start->buffer, (unsigned int) record_size);
+  status = rmtread (archive, record_start->buffer, record_size);
   if (status == record_size)
     return;
 
@@ -1151,8 +1145,7 @@ error_loop:
 	}
 
     vol_error:
-      status = rmtread (archive, record_start->buffer,
-			(unsigned int) record_size);
+      status = rmtread (archive, record_start->buffer, record_size);
       if (status < 0)
 	{
 	  read_error ();
@@ -1185,6 +1178,7 @@ error_loop:
 
       if (real_s_name[0])
 	{
+	  uintmax_t s1, s2;
 	  if (cursor->header.typeflag != GNUTYPE_MULTIVOL
 	      || strcmp (cursor->header.name, real_s_name))
 	    {
@@ -1194,20 +1188,25 @@ error_loop:
 	      global_volno--;
 	      goto try_volume;
 	    }
-	  if (real_s_totsize
-	      != (from_oct (1 + 12, cursor->header.size)
-		  + from_oct (1 + 12, cursor->oldgnu_header.offset)))
+	  s1 = UINTMAX_FROM_OCT (cursor->header.size);
+	  s2 = UINTMAX_FROM_OCT (cursor->oldgnu_header.offset);
+	  if (real_s_totsize != s1 + s2 || s1 + s2 < s2)
 	    {
-	      WARN ((0, 0, _("%s is the wrong size (%ld != %ld + %ld)"),
-			 cursor->header.name, save_totsize,
-			 from_oct (1 + 12, cursor->header.size),
-			 from_oct (1 + 12, cursor->oldgnu_header.offset)));
+	      char totsizebuf[UINTMAX_STRSIZE_BOUND];
+	      char s1buf[UINTMAX_STRSIZE_BOUND];
+	      char s2buf[UINTMAX_STRSIZE_BOUND];
+	      
+	      WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
+		     cursor->header.name,
+		     STRINGIFY_BIGINT (save_totsize, totsizebuf),
+		     STRINGIFY_BIGINT (s1, s1buf),
+		     STRINGIFY_BIGINT (s2, s2buf)));
 	      volno--;
 	      global_volno--;
 	      goto try_volume;
 	    }
 	  if (real_s_totsize - real_s_sizeleft
-	      != from_oct (1 + 12, cursor->oldgnu_header.offset))
+	      != OFF_FROM_OCT (cursor->oldgnu_header.offset))
 	    {
 	      WARN ((0, 0, _("This volume is out of sequence")));
 	      volno--;
@@ -1230,17 +1229,17 @@ short_read:
   left = record_size - status;
 
 again:
-  if ((unsigned) left % BLOCKSIZE == 0)
+  if (left % BLOCKSIZE == 0)
     {
       /* FIXME: for size=0, multi-volume support.  On the first record, warn
 	 about the problem.  */
 
       if (!read_full_records_option && verbose_option
 	  && record_start_block == 0 && status > 0)
-	WARN ((0, 0, _("Record size = %d blocks"), status / BLOCKSIZE));
+	WARN ((0, 0, _("Record size = %lu blocks"),
+	       (unsigned long) (status / BLOCKSIZE)));
 
-      record_end
-	= record_start + ((unsigned) (record_size - left)) / BLOCKSIZE;
+      record_end = record_start + (record_size - left) / BLOCKSIZE;
 
       return;
     }
@@ -1251,7 +1250,7 @@ again:
       if (left > 0)
 	{
 	error2loop:
-	  status = rmtread (archive, more, (unsigned int) left);
+	  status = rmtread (archive, more, left);
 	  if (status < 0)
 	    {
 	      read_error ();
@@ -1266,8 +1265,8 @@ again:
 	}
     }
   else
-    FATAL_ERROR ((0, 0, _("Only read %d bytes from archive %s"),
-		  status, *archive_name_cursor));
+    FATAL_ERROR ((0, 0, _("Only read %lu bytes from archive %s"),
+		  (unsigned long) status, *archive_name_cursor));
 }
 
 /*-----------------------------------------------.
@@ -1377,8 +1376,7 @@ close_archive (void)
      work to do, we might have to revise this area in such time.  */
 
   if (access_mode == ACCESS_READ && S_ISFIFO (archive_stat.st_mode))
-    while (rmtread (archive, record_start->buffer, (unsigned int) record_size)
-	   > 0)
+    while (rmtread (archive, record_start->buffer, record_size) > 0)
       continue;
 #endif
 
@@ -1390,7 +1388,7 @@ close_archive (void)
 #if MSDOS
       rmtwrite (archive, "", 0);
 #else
-      ftruncate (archive, (size_t) pos);
+      ftruncate (archive, pos);
 #endif
     }
   if (verify_option)
@@ -1409,7 +1407,7 @@ close_archive (void)
   if (child_pid)
     {
       WAIT_T wait_status;
-      int child;
+      pid_t child;
 
       /* Loop waiting for the right child to die, or for no more kids.  */
 
