@@ -297,6 +297,7 @@ read_header()
 	char *bp, *data;
 	int size, written;
 	static char *next_long_name, *next_long_link;
+	char *name;
 
       recurse:
 	
@@ -376,12 +377,22 @@ read_header()
 	  }
 	else
 	  {
-	    current_file_name = (next_long_name
-				 ? next_long_name
-				 : header->header.arch_name);
-	    current_link_name = (next_long_link
-				 ? next_long_link
-				 : header->header.arch_linkname);
+	    name = (next_long_name
+		    ? next_long_name
+		    : head->header.arch_name);
+	    if (current_file_name)
+	      free (current_file_name);
+	    current_file_name = malloc (strlen (name) + 1);
+	    strcpy (current_file_name, name);
+
+	    name = (next_long_link
+		    ? next_long_link
+		    : head->header.arch_linkname);
+	    if (current_link_name)
+	      free (current_link_name);
+	    current_link_name = malloc (strlen (name) + 1);
+	    strcpy (current_link_name, name);
+	    
 	    next_long_link = next_long_name = 0;
 	    return 1;
 	  }
