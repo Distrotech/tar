@@ -1,3 +1,38 @@
+2005-01-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Rewritten handling of -T (--files-from) option. Now it
+	inserts the file names immediately into argv array which allows
+	for:
+	1) any valid tar options (including another -T) to be used in the file
+	2) any number of -T options to be given in command line
+	
+	* configure.ac: Raised version number to 1.15.2
+	* src/common.h: Include obstack.h
+	(files_from_option): Removed
+	(unquote_option): New variable
+	(stat_fatal): New function
+	(name_close): Removed function.
+	* src/incremen.c: Remove inclusion of obstack.h
+	* src/xheader.c: Likewise.
+	* src/misc.c (stat_fatal): New function
+	* src/names.c (name_file): Removed variable. 
+	(read_name_from_file): Removed function. All callers changed.
+	(name_close): Removed function. All callers changed.
+	* src/tar.c: New options --unquote (--no-unquote) and
+	--add-file
+	(add_file_id,read_name_from_file,update_argv): New functions
+	(parse_opt): Rewritten handling of -T option. Handle hidden
+	--HANG option for debugging purposes.
+	(decode_options): Init unquote_option to true. Init argv_stk.
+	Remove unneded references to files_from_option
+
+	* doc/tar.texi: Document new options.
+	Moved rendition macros and option value definitions into
+	separate files
+	* doc/rendition.texi: New file
+	* doc/value.texi: New file
+	* doc/Makefile.am: Updated
+	
 2005-01-13  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* tests/testsuite.at (RE_CHECK): Use "join - file", not
