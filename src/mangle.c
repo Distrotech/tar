@@ -17,6 +17,7 @@
 
 #include "system.h"
 #include "common.h"
+#include <quotearg.h>
 
 struct mangled
   {
@@ -42,7 +43,7 @@ extract_mangle (void)
   char *cursor = buffer;
 
   if (size != (size_t) size || size == (size_t) -1)
-    FATAL_ERROR ((0, 0, _("Memory exhausted")));
+    xalloc_die ();
 
   buffer[size] = '\0';
 
@@ -89,7 +90,8 @@ extract_mangle (void)
 	    next_cursor[-2] = '\0';
 	  unquote_string (name_end + 4);
 	  if (rename (name, name_end + 4))
-	    ERROR ((0, errno, _("Cannot rename %s to %s"), name, name_end + 4));
+	    ERROR ((0, errno, _("%s: Cannot rename to %s"),
+		    quotearg_colon (name), quote_n (1, name_end + 4)));
 	  else if (verbose_option)
 	    WARN ((0, 0, _("Renamed %s to %s"), name, name_end + 4));
 	}
@@ -108,8 +110,8 @@ extract_mangle (void)
 	  unquote_string (name_end + 4);
 	  if (symlink (name, name_end + 4)
 	      && (unlink (name_end + 4) || symlink (name, name_end + 4)))
-	    ERROR ((0, errno, _("Cannot symlink %s to %s"),
-		    name, name_end + 4));
+	    ERROR ((0, errno, _("%s: Cannot symlink %s %s"),
+		    quotearg_colon (name), quote_n (1, name_end + 4)));
 	  else if (verbose_option)
 	    WARN ((0, 0, _("Symlinked %s to %s"), name, name_end + 4));
 	}
