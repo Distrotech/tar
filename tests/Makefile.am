@@ -40,6 +40,7 @@ TESTS = \
  ignfail.sh\
  link01.sh\
  listed01.sh\
+ listed02.sh\
  longv7.sh\
  multiv01.sh\
  multiv02.sh\
