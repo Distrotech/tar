@@ -1,3 +1,26 @@
+2004-02-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Added UTF-8 support. Finished global extended header
+	support.
+	
+	* NEWS: Minor fix
+	* configure.ac: Detect libiconv
+	* src/utf8.c: New file. Conversions to and from utf-8.
+	* src/Makefile.am: Added utf8.c
+	* src/create.c (write_header_name) In pax format, use
+	"path" keyword if the file name is not ASCII
+	(start_header): Likewise for uname and gname.
+	* src/list.c: Decode encountered global headers.
+	* src/xheader.c: Use keywords from the global
+	headers.
+	Correctly handle UTF-8 conversions.
+	(xheader_list_destroy): New function.
+	(xheader_set_single_keyword,xheader_set_keyword_equal): Added
+	missing gettext markers
+	(decode_record): Rewritten using caller-provided handler and
+	data closure.
+	* tests/listed01.sh: Give credit to Andreas Schuldei.	
+
 2004-02-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c (dump_file0): The conditional at line
@@ -48,7 +71,7 @@
 	affect the functionality.
 
 	* THANKS: Updated
-	* configure.ac: Raised patchlevel to 92a
+	* configure.ac: Raised patchlevel to 93
 	* src/incremen.c: Minor stylistic fixes.
 	* tests/listed01.sh: New test. Check listed incremental
 	backups on individual files.
