@@ -20,7 +20,7 @@
 ## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 ## 02111-1307, USA.
 
-check_PROGRAMS = genfile mksparse
+check_PROGRAMS = genfile
 BUILT_SOURCES = preset
 
 TESTS = \
@@ -61,7 +61,6 @@ TESTS = \
  star/qucktest.sh 
 
 genfile_SOURCES = genfile.c
-mksparse_SOURCES = mksparse.c
 EXTRA_DIST = after before preset.in $(TESTS) star/README
 
 localedir = $(datadir)/locale
@@ -72,4 +71,4 @@ LDADD = ../lib/libtar.a $(LIBINTL)
 mostlyclean:
 	rm -rf tmp-*
 
-$(TESTS): genfile mksparse
+$(TESTS): genfile
