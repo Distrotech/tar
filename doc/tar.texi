@@ -71,10 +71,9 @@ developing GNU and promoting software freedom.''
 @insertcopying
 @end titlepage
 
+@ifnottex
 @node Top
 @top @acronym{GNU} tar: an archiver tool
-
-@ifnottex
 
 @insertcopying
 
