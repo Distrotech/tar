@@ -27,7 +27,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/types.h>		/* Needed for typedefs in tar.h */
 #include "getopt.h"
 #include "regex.h"
-#include "fnmatch.h"
 
 /*
  * The following causes "tar.h" to produce definitions of all the
@@ -37,6 +36,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "tar.h"
 
 #include "port.h"
+#include "fnmatch.h"
 
 /*
  * We should use a conversion routine that does reasonable error
