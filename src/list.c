@@ -63,8 +63,7 @@ read_and (void (*do_something) ())
 	     Ensure incoming names are null terminated.  */
 
 	  /* FIXME: This is a quick kludge before 1.12 goes out.  */
-	  current_stat.st_mtime
-	    = from_oct (1 + 12, current_header->header.mtime);
+	  current_stat.st_mtime = TIME_FROM_OCT (current_header->header.mtime);
 
 	  if (!name_match (current_file_name)
 	      || current_stat.st_mtime < newer_mtime_option
@@ -111,7 +110,7 @@ read_and (void (*do_something) ())
 	      /* Skip to the next header on the archive.  */
 
 	      if (save_typeflag != DIRTYPE)
-		skip_file ((long) current_stat.st_size);
+		skip_file (current_stat.st_size);
 	      continue;
 	    }
 
@@ -120,8 +119,11 @@ read_and (void (*do_something) ())
 
 	case HEADER_ZERO_BLOCK:
 	  if (block_number_option)
-	    fprintf (stdlis, _("block %10ld: ** Block of NULs **\n"),
-		     current_block_ordinal ());
+	    {
+	      char buf[UINTMAX_STRSIZE_BOUND];
+	      fprintf (stdlis, _("block %s: ** Block of NULs **\n"),
+		       STRINGIFY_BIGINT (current_block_ordinal (), buf));
+	    }
 
 	  set_next_block_after (current_header);
 	  status = prev_status;
@@ -131,8 +133,11 @@ read_and (void (*do_something) ())
 
 	case HEADER_END_OF_FILE:
 	  if (block_number_option)
-	    fprintf (stdlis, _("block %10ld: ** End of File **\n"),
-		     current_block_ordinal ());
+	    {
+	      char buf[UINTMAX_STRSIZE_BOUND];
+	      fprintf (stdlis, _("block %s: ** End of File **\n"),
+		       STRINGIFY_BIGINT (current_block_ordinal (), buf));
+	    }
 	  break;
 
 	case HEADER_FAILURE:
@@ -185,7 +190,8 @@ list_archive (void)
 
   if (incremental_option && current_header->header.typeflag == GNUTYPE_DUMPDIR)
     {
-      size_t size, written, check;
+      off_t size;
+      size_t written, check;
       union block *data_block;
 
       set_next_block_after (current_header);
@@ -213,9 +219,10 @@ list_archive (void)
 				(data_block->buffer + written - 1));
 	  if (check != written)
 	    {
-	      ERROR ((0, errno, _("Only wrote %ld of %ld bytes to file %s"),
-		      check, written, current_file_name));
-	      skip_file ((long) (size - written));
+	      ERROR ((0, errno, _("Only wrote %lu of %lu bytes to file %s"),
+		      (unsigned long) check,
+		      (unsigned long) written, current_file_name));
+	      skip_file (size - written);
 	      break;
 	    }
 	}
@@ -264,7 +271,7 @@ list_archive (void)
 
   /* Skip to the next header on the archive.  */
 
-  skip_file ((long) current_stat.st_size);
+  skip_file (current_stat.st_size);
 
   if (multi_volume_option)
     assign_string (&save_name, NULL);
@@ -297,7 +304,7 @@ list_archive (void)
 enum read_header
 read_header (void)
 {
-  int i;
+  size_t i;
   long unsigned_sum;		/* the POSIX one :-) */
   long signed_sum;		/* the Sun one :-( */
   long recorded_sum;
@@ -306,7 +313,7 @@ read_header (void)
   char **longp;
   char *bp;
   union block *data_block;
-  int size, written;
+  size_t size, written;
   static char *next_long_name, *next_long_link;
 
   while (1)
@@ -316,13 +323,12 @@ read_header (void)
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      recorded_sum
-	= from_oct (sizeof header->header.chksum, header->header.chksum);
+      recorded_sum = UINTMAX_FROM_OCT (header->header.chksum);
 
       unsigned_sum = 0;
       signed_sum = 0;
       p = header->buffer;
-      for (i = sizeof (*header); --i >= 0;)
+      for (i = sizeof (*header); i-- != 0;)
 	{
 	  /* We can't use unsigned char here because of old compilers,
 	     e.g. V7.  */
@@ -333,7 +339,7 @@ read_header (void)
 
       /* Adjust checksum to count the "chksum" field as blanks.  */
 
-      for (i = sizeof (header->header.chksum); --i >= 0;)
+      for (i = sizeof (header->header.chksum); i-- != 0;)
 	{
 	  unsigned_sum -= 0xFF & header->header.chksum[i];
 	  signed_sum -= header->header.chksum[i];
@@ -357,7 +363,7 @@ read_header (void)
       if (header->header.typeflag == LNKTYPE)
 	current_stat.st_size = 0;	/* links 0 size on tape */
       else
-	current_stat.st_size = from_oct (1 + 12, header->header.size);
+	current_stat.st_size = OFF_FROM_OCT (header->header.size);
 
       header->header.name[NAME_FIELD_SIZE - 1] = '\0';
       if (header->header.typeflag == GNUTYPE_LONGNAME
@@ -370,9 +376,12 @@ read_header (void)
 	  set_next_block_after (header);
 	  if (*longp)
 	    free (*longp);
-	  bp = *longp = (char *) xmalloc ((size_t) current_stat.st_size);
+	  size = current_stat.st_size;
+	  if (size != current_stat.st_size)
+	    FATAL_ERROR ((0, 0, _("Memory exhausted")));
+	  bp = *longp = (char *) xmalloc (size);
 
-	  for (size = current_stat.st_size; size > 0; size -= written)
+	  for (; size > 0; size -= written)
 	    {
 	      data_block = find_next_block ();
 	      if (data_block == NULL)
@@ -384,7 +393,7 @@ read_header (void)
 	      if (written > size)
 		written = size;
 
-	      memcpy (bp, data_block->buffer, (size_t) written);
+	      memcpy (bp, data_block->buffer, written);
 	      bp += written;
 	      set_next_block_after ((union block *)
 				    (data_block->buffer + written - 1));
@@ -437,20 +446,20 @@ decode_header (union block *header, struct stat *stat_info,
     format = V7_FORMAT;
   *format_pointer = format;
 
-  stat_info->st_mode = from_oct (8, header->header.mode);
+  stat_info->st_mode = MODE_FROM_OCT (header->header.mode);
   stat_info->st_mode &= 07777;
-  stat_info->st_mtime = from_oct (1 + 12, header->header.mtime);
+  stat_info->st_mtime = TIME_FROM_OCT (header->header.mtime);
 
   if (format == OLDGNU_FORMAT && incremental_option)
     {
-      stat_info->st_atime = from_oct (1 + 12, header->oldgnu_header.atime);
-      stat_info->st_ctime = from_oct (1 + 12, header->oldgnu_header.ctime);
+      stat_info->st_atime = TIME_FROM_OCT (header->oldgnu_header.atime);
+      stat_info->st_ctime = TIME_FROM_OCT (header->oldgnu_header.ctime);
     }
 
   if (format == V7_FORMAT)
     {
-      stat_info->st_uid = from_oct (8, header->header.uid);
-      stat_info->st_gid = from_oct (8, header->header.gid);
+      stat_info->st_uid = UID_FROM_OCT (header->header.uid);
+      stat_info->st_gid = GID_FROM_OCT (header->header.gid);
       stat_info->st_rdev = 0;
     }
   else
@@ -462,26 +471,28 @@ decode_header (union block *header, struct stat *stat_info,
 	  if (numeric_owner_option
 	      || !*header->header.uname
 	      || !uname_to_uid (header->header.uname, &stat_info->st_uid))
-	    stat_info->st_uid = from_oct (8, header->header.uid);
+	    stat_info->st_uid = UID_FROM_OCT (header->header.uid);
 
 	  if (numeric_owner_option
 	      || !*header->header.gname
 	      || !gname_to_gid (header->header.gname, &stat_info->st_gid))
-	    stat_info->st_gid = from_oct (8, header->header.gid);
+	    stat_info->st_gid = GID_FROM_OCT (header->header.gid);
 	}
       switch (header->header.typeflag)
 	{
 #ifdef S_IFBLK
 	case BLKTYPE:
-	  stat_info->st_rdev = makedev (from_oct (8, header->header.devmajor),
-					from_oct (8, header->header.devminor));
+	  stat_info->st_rdev
+	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
+		       MINOR_FROM_OCT (header->header.devminor));
 	  break;
 #endif
 
 #ifdef S_IFCHR
 	case CHRTYPE:
-	  stat_info->st_rdev = makedev (from_oct (8, header->header.devmajor),
-					from_oct (8, header->header.devminor));
+	  stat_info->st_rdev
+	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
+		       MINOR_FROM_OCT (header->header.devminor));
 	  break;
 #endif
 
@@ -496,30 +507,113 @@ decode_header (union block *header, struct stat *stat_info,
 | (all blank, or nonoctal).						  |
 `------------------------------------------------------------------------*/
 
-long
-from_oct (int digs, char *where)
+static uintmax_t
+from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 {
-  long value;
+  uintmax_t value;
+  const char *where = where0;
+  size_t digs = digs0;
 
-  while (ISSPACE (*where))
-    {				/* skip spaces */
+  for (;;)
+    {
+      if (digs == 0)
+	{
+	  ERROR ((0, 0, _("Blanks in header where octal %s value expected"),
+		  type));
+	  return -1;
+	}
+      if (!ISSPACE (*where))
+	break;
       where++;
-      if (--digs <= 0)
-	return -1;		/* all blank field */
+      digs--;
     }
+
   value = 0;
-  while (digs > 0 && ISODIGIT (*where))
+  while (digs != 0 && ISODIGIT (*where))
     {
       /* Scan til nonoctal.  */
 
+      if (value << 3 >> 3 != value)
+	goto out_of_range;
       value = (value << 3) | (*where++ - '0');
       --digs;
     }
 
-  if (digs > 0 && *where && !ISSPACE (*where))
-    return -1;			/* ended on non-space/nul */
+  if (digs != 0 && *where && !ISSPACE (*where))
+    {
+      ERROR ((0, 0, _("Header contains `%.*s' where octal %s value expected"),
+	      (int) digs0, where0, type));
+      return -1;
+    }
 
-  return value;
+  if (value <= maxval)
+    return value;
+
+ out_of_range:
+  ERROR ((0, 0, _("Octal value `%.*s' is out of range for %s"),
+	  (int) digs0, where0, type));
+  return -1;
+}
+gid_t
+gid_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "gid_t", GID_MAX);
+}
+major_t
+major_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "major_t", MAJOR_MAX);
+}
+minor_t
+minor_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "minor_t", MINOR_MAX);
+}
+mode_t
+mode_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "mode_t", MODE_MAX);
+}
+off_t
+off_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "off_t", OFF_MAX);
+}
+size_t
+size_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "size_t", SIZE_MAX);
+}
+time_t
+time_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "time_t", TIME_MAX);
+}
+uid_t
+uid_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "uid_t", UID_MAX);
+}
+uintmax_t
+uintmax_from_oct (const char *p, size_t s)
+{
+  return from_oct (p, s, "uintmax_t", UINTMAX_MAX);
+}
+
+
+
+/*----------------------------------------------------------------------.
+| Format O as a null-terminated decimal string into BUF _backwards_;	|
+| return pointer to start of result.					|
+`----------------------------------------------------------------------*/
+char *
+stringify_uintmax_t_backwards (uintmax_t o, char *buf)
+{
+  *--buf = '\0';
+  do
+    *--buf = '0' + (int) (o % 10);
+  while ((o /= 10) != 0);
+  return buf;
 }
 
 #if !USE_OLD_CTIME
@@ -551,9 +645,9 @@ isotime (const time_t *time)
 `-------------------------------------------------------------------------*/
 
 static void
-decode_mode (unsigned mode, char *string)
+decode_mode (mode_t mode, char *string)
 {
-  unsigned mask;
+  mode_t mask;
   const char *rwx = "rwxrwxrwx";
 
   for (mask = 0400; mask != 0; mask >>= 1)
@@ -608,13 +702,19 @@ print_header (void)
   char *timestamp;
   char uform[11], gform[11];	/* these hold formatted ints */
   char *user, *group;
-  char size[24];		/* holds a formatted long or maj, min */
+  char size[2 * UINTMAX_STRSIZE_BOUND];
+  				/* holds formatted size or major,minor */
+  char uintbuf[UINTMAX_STRSIZE_BOUND];
   time_t longie;		/* to make ctime() call portable */
   int pad;
   char *name;
 
   if (block_number_option)
-    fprintf (stdlis, _("block %10ld: "), current_block_ordinal ());
+    {
+      char buf[UINTMAX_STRSIZE_BOUND];
+      fprintf (stdlis, _("block %s: "),
+	       STRINGIFY_BIGINT (current_block_ordinal (), buf));
+    }
 
   if (verbose_option <= 1)
     {
@@ -685,7 +785,7 @@ print_header (void)
 	  break;
 	}
 
-      decode_mode ((unsigned) current_stat.st_mode, modes + 1);
+      decode_mode (current_stat.st_mode, modes + 1);
 
       /* Timestamp.  */
 
@@ -704,18 +804,15 @@ print_header (void)
       if (*current_header->header.uname && current_format != V7_FORMAT)
 	user = current_header->header.uname;
       else
-	{
-	  user = uform;
-	  sprintf (uform, "%ld", from_oct (8, current_header->header.uid));
-	}
+	user = STRINGIFY_BIGINT (UINTMAX_FROM_OCT (current_header->header.uid),
+				 uform);
 
       if (*current_header->header.gname && current_format != V7_FORMAT)
 	group = current_header->header.gname;
       else
-	{
-	  group = gform;
-	  sprintf (gform, "%ld", from_oct (8, current_header->header.gid));
-	}
+	group = STRINGIFY_BIGINT (UINTMAX_FROM_OCT
+				  (current_header->header.gid),
+				  gform);
 
       /* Format the file size or major/minor device numbers.  */
 
@@ -724,16 +821,20 @@ print_header (void)
 #if defined(S_IFBLK) || defined(S_IFCHR)
 	case CHRTYPE:
 	case BLKTYPE:
-	  sprintf (size, "%d,%d",
-		   major (current_stat.st_rdev), minor (current_stat.st_rdev));
+	  sprintf (size, "%lu,%lu",
+		   (unsigned long) major (current_stat.st_rdev),
+		   (unsigned long) minor (current_stat.st_rdev));
 	  break;
 #endif
 	case GNUTYPE_SPARSE:
-	  sprintf (size, "%ld",
-		   from_oct (1 + 12, current_header->oldgnu_header.realsize));
+	  strcpy (size,
+		  STRINGIFY_BIGINT
+		  (UINTMAX_FROM_OCT (current_header->oldgnu_header.realsize),
+		   uintbuf));
 	  break;
 	default:
-	  sprintf (size, "%ld", (long) current_stat.st_size);
+	  strcpy (size, STRINGIFY_BIGINT (current_stat.st_size, uintbuf));
+	  break;
 	}
 
       /* Figure out padding and print the whole line.  */
@@ -806,8 +907,11 @@ print_header (void)
 	  break;
 
 	case GNUTYPE_MULTIVOL:
-	  fprintf (stdlis, _("--Continued at byte %ld--\n"),
-		   from_oct (1 + 12, current_header->oldgnu_header.offset));
+	  strcpy (size,
+		  STRINGIFY_BIGINT
+		  (UINTMAX_FROM_OCT (current_header->oldgnu_header.offset),
+		   uintbuf));
+	  fprintf (stdlis, _("--Continued at byte %s--\n"), size);
 	  break;
 
 	case GNUTYPE_NAMES:
@@ -823,7 +927,7 @@ print_header (void)
 `--------------------------------------------------------------*/
 
 void
-print_for_mkdir (char *pathname, int length, int mode)
+print_for_mkdir (char *pathname, int length, mode_t mode)
 {
   char modes[11];
   char *name;
@@ -833,10 +937,14 @@ print_for_mkdir (char *pathname, int length, int mode)
       /* File type and modes.  */
 
       modes[0] = 'd';
-      decode_mode ((unsigned) mode, modes + 1);
+      decode_mode (mode, modes + 1);
 
       if (block_number_option)
-	fprintf (stdlis, _("block %10ld: "), current_block_ordinal ());
+	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  fprintf (stdlis, _("block %s: "),
+		   STRINGIFY_BIGINT (current_block_ordinal (), buf));
+	}
       name = quote_copy_string (pathname);
       if (name)
 	{
@@ -855,7 +963,7 @@ print_for_mkdir (char *pathname, int length, int mode)
 `--------------------------------------------------------*/
 
 void
-skip_file (long size)
+skip_file (off_t size)
 {
   union block *x;
 
