@@ -13,6 +13,7 @@ malloc.m4 \
 mktime.m4 \
 progtest.m4 \
 realloc.m4 \
+signedchar.m4 \
 uintmax_t.m4 \
 ulonglong.m4 \
 utimbuf.m4 \
