@@ -30,7 +30,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 extern int errno;
 #endif
 
-#ifndef NO_MTIO
+#ifdef HAVE_SYS_MTIO_H
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #endif
