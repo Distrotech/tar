@@ -419,6 +419,24 @@ make_directories (char *file_name)
   return did_something;		/* tell them to retry if we made one */
 }
 
+static bool
+file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
+{
+  struct stat st;
+	    
+  if (stat (file_name, &st))
+    {
+      stat_warn (file_name);
+      return true; /* Be on the safe side */
+    }
+  if (!S_ISDIR (st.st_mode)
+      && st.st_mtime >= current_stat_info.stat.st_mtime)
+    {
+      return true;
+    }
+  return false;
+}  
+
 /* Prepare to extract a file.
    Return zero if extraction should not proceed.  */
 
@@ -428,12 +446,27 @@ prepare_to_extract (char const *file_name, bool directory)
   if (to_stdout_option)
     return 0;
 
-  if (old_files_option == UNLINK_FIRST_OLD_FILES
-      && !remove_any_file (file_name, recursive_unlink_option)
-      && errno && errno != ENOENT)
+  switch (old_files_option)
     {
-      unlink_error (file_name);
-      return 0;
+    case UNLINK_FIRST_OLD_FILES:
+      if (!remove_any_file (file_name, recursive_unlink_option)
+	  && errno && errno != ENOENT)
+	{
+	  unlink_error (file_name);
+	  return 0;
+	}
+      break;
+
+    case KEEP_NEWER_FILES:
+      if (file_newer_p (file_name, &current_stat_info))
+	{
+	  WARN ((0, 0, _("Current `%s' is newer"), file_name)); 
+	  return 0;
+	}
+      break;
+
+    default:
+      break;
     }
 
   return 1;
@@ -446,6 +479,8 @@ prepare_to_extract (char const *file_name, bool directory)
 static int
 maybe_recoverable (char *file_name, int *interdir_made)
 {
+  int e = errno;
+  
   if (*interdir_made)
     return 0;
 
@@ -456,9 +491,17 @@ maybe_recoverable (char *file_name, int *interdir_made)
 
       switch (old_files_option)
 	{
-	default:
+	case KEEP_OLD_FILES:
 	  return 0;
 
+	case KEEP_NEWER_FILES:
+	  if (file_newer_p (file_name, &current_stat_info))
+	    {
+	      errno = e;
+	      return 0;
+	    }
+	  /* FALL THROUGH */
+	    
 	case DEFAULT_OLD_FILES:
 	case NO_OVERWRITE_DIR_OLD_FILES:
 	case OVERWRITE_OLD_FILES:
