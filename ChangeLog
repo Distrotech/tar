@@ -1,3 +1,15 @@
+2003-09-22  Paul Eggert  <eggert@twinsun.com>
+
+	* doc/tar.texi (extracting untrusted archives): New section.
+
+	* src/common.h (stripped_path_len): Renamed from cut_path_elements.
+	Return size_t, not pointer, so that we don't have to worry about
+	violating the C standard by converting char const * to char *.
+	All callers changed.
+	* src/names.c (stripped_path_len): Likewise.  Strip file system
+	prefix, too.  Count adjacent slashes as if they were one slash;
+	that is the POSIX standard.
+
 2003-09-17  Paul Eggert  <eggert@twinsun.com>
 
 	* README-alpha: Document maintainer tool assumptions a bit.  GNU

@@ -1043,21 +1043,29 @@ safer_name_suffix (char const *file_name, bool link_target)
   return (char *) p;
 }
 
-char const *
-cut_path_elements (char const *file_name, size_t num)
+/* Return the size of the prefix of FILE_NAME that is removed after
+   stripping NUM leading path name components.  NUM must be
+   positive.  */
+
+size_t
+stripped_prefix_len (char const *file_name, size_t num)
 {
-  char const *p = file_name;
-  if (ISSLASH (*p))
+  char const *p = file_name + FILESYSTEM_PREFIX_LEN (file_name);
+  while (ISSLASH (*p))
     p++;
-  for (; *p; p++)
+  while (*p)
     {
-      if (ISSLASH (*p))
+      bool slash = ISSLASH (*p);
+      p++;
+      if (slash)
 	{
 	  if (--num == 0)
-	    return p + 1;
+	    return p - file_name;
+	  while (ISSLASH (*p))
+	    p++;
 	}
     }
-  return NULL;
+  return -1;
 }
 
 /* Return nonzero if NAME contains ".." as a path name component.  */

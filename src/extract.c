@@ -719,12 +719,13 @@ extract_archive (void)
   file_name = safer_name_suffix (current_stat_info.file_name, 0);
   if (strip_path_elements)
     {
-      file_name = cut_path_elements (file_name, strip_path_elements);
-      if (!file_name)
+      size_t prefix_len = stripped_prefix_len (file_name, strip_path_elements);
+      if (prefix_len == (size_t) -1)
 	{
 	  skip_member ();
 	  return;
 	}
+      file_name += prefix_len;
     }
   
   apply_nonancestor_delayed_set_stat (file_name, 0);
