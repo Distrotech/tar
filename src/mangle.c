@@ -1,5 +1,5 @@
 /* mangle.c -- encode long filenames
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -49,6 +49,8 @@ struct mangled {
 /* Should use a hash table, etc. .  */
 struct mangled *first_mangle;
 int mangled_num = 0;
+
+#if 0 /* Deleted because there is now a better way to do all this */
 
 char *
 find_mangled (name)
@@ -175,6 +177,8 @@ write_mangled()
 	bzero(header->charptr+size,bufsize-size);
 	userec(header+(size-1)/RECORDSIZE);
 }
+
+#endif
 
 void
 extract_mangle(head)
