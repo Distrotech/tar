@@ -20,7 +20,7 @@
 
 # Could not extract symlinks over an existing file.
 
-AT_SETUP([extracting symlings over an existing file])
+AT_SETUP([extracting symlinks over an existing file])
 AT_KEYWORDS([extract02])
 
 # FIXME: Skip if symlinks are not supported on the system
