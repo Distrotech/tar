@@ -268,18 +268,7 @@ GLOBAL bool dev_null_output;
   GLOBAL time_t start_time;
 #endif
 
-/* Name of file read from the archive header */
-GLOBAL char *orig_file_name;
-
-/* Name of file for the current archive entry after being normalized.  */
-GLOBAL char *current_file_name;
-
-/* Nonzero if the current archive entry had a trailing slash before it
-   was normalized.  */
-GLOBAL int current_trailing_slash;
-
-/* Name of link for the current archive entry.  */
-GLOBAL char *current_link_name;
+GLOBAL struct tar_stat_info current_stat_info;
 
 /* List of tape drive names, number of such tape drives, allocated number,
    and current cursor in list.  */
@@ -420,14 +409,20 @@ enum read_header
   HEADER_FAILURE		/* ill-formed header, or bad checksum */
 };
 
+struct xheader
+{
+  int nblocks;
+  union block *blocks;
+};
+
+GLOBAL struct xheader extended_header;
 extern union block *current_header;
-extern struct stat current_stat;
 extern enum archive_format current_format;
 extern size_t recent_long_name_blocks;
 extern size_t recent_long_link_blocks;
 
-void decode_header (union block *, struct stat *,
-			    enum archive_format *, int);
+void decode_header (union block *, struct tar_stat_info *,
+		    enum archive_format *, int);
 #define STRINGIFY_BIGINT(i, b) \
   stringify_uintmax_t_backwards ((uintmax_t) (i), (b) + UINTMAX_STRSIZE_BOUND)
 char *stringify_uintmax_t_backwards (uintmax_t, char *);
