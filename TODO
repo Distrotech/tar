@@ -30,25 +30,9 @@ so that the GNU extensions (--sparse, --incremental, --label and
   It would be useful to be able to use '--remove-files' with '--diff',
   to remove all files that compare successfully, when verifying a backup.
 
-* Add an option to cut away the first N output path elements:
+* Add tests for testing the added functonality.
 
-  From: Marc Haber <mh+debian-bugs@zugschlus.de>
-  Date: Tue, 26 Aug 2003 08:55:31 +0200
-
-  some archives have members like
-  foo/bar
-  foo/baz
-  foo/bam
-  
-  When I now want to extract the three members bar, baz and bam to the
-  directory fom instead foo, I need to extract to foo and then to move
-  the files over manually.
-
-  patch(1) solves that problem by offering an option taking the number
-  of path elements to cut away before using the path name. With an
-  option like that, the above problem could be solved with
-
-  tar --extract --cut-path-elements 1 --directory fom
+* Revise the --sparse option functionality.
 
   
 * Copyright notice

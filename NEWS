@@ -13,6 +13,8 @@ version 1.13.26
 * The default output format can be selected at configuration time
 by presetting the environment variable DEFAULT_ARCHIVE_FORMAT.
 Allowed values are GNU, V7, OLDGNU and POSIX.
+* New option --strip-path allows to cut off a given number of
+path elements from the name of the file being extracted.
 
 * Bug fixes.
 
