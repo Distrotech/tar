@@ -91,18 +91,21 @@ extr_init (void)
 static void
 set_mode (char *file_name, struct stat *stat_info)
 {
-  /* We ought to force permission when -k is not selected, because if the
+  /* Do nothing unless we are restoring the original permissions.
+
+     We must force permission when -k and -U are not selected, because if the
      file already existed, open or creat would save the permission bits from
      the previously created file, ignoring the ones we specified.
 
-     But with -k selected, we know *we* created this file, so the mode
+     But with -k or -U selected, we know *we* created this file, so the mode
      bits were set by our open.  If the file has abnormal mode bits, we must
      chmod since writing or chown has probably reset them.  If the file is
      normal, we merely skip the chmod.  This works because we did umask (0)
      when -p, so umask will have left the specified mode alone.  */
 
-  if (!keep_old_files_option
-      || (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX)))
+  if ((we_are_root || same_permissions_option)
+      && ((!keep_old_files_option && !unlink_first_option)
+	  || (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX))))
     if (chmod (file_name, ~current_umask & stat_info->st_mode) < 0)
       ERROR ((0, errno, _("%s: Cannot change mode to %04lo"),
 	      file_name,
@@ -282,6 +285,25 @@ make_directories (char *file_name)
 }
 
 /*--------------------------------------------------------------------.
+| Unlink the destination, if we are supposed to do so.		      |
+| Return zero if extraction should not proceed.			      |
+`--------------------------------------------------------------------*/
+
+static int
+unlink_destination (char const *file_name)
+{
+  if (unlink_first_option
+      && !remove_any_file (file_name, recursive_unlink_option)
+      && errno != ENOENT)
+    {
+      ERROR ((0, errno, _("Cannot remove %s"), file_name));
+      return 0;
+    }
+
+  return 1;
+}
+
+/*--------------------------------------------------------------------.
 | Attempt repairing what went wrong with the extraction.  Delete an   |
 | already existing file or create missing intermediate directories.   |
 | Return nonzero if we somewhat increased our chances at a successful |
@@ -294,10 +316,10 @@ maybe_recoverable (char *file_name)
   switch (errno)
     {
     case EEXIST:
-      /* Attempt deleting an existing file.  However, with -k, just stay
+      /* Attempt deleting an existing file.  However, with -k or -U, just stay
 	 quiet.  */
 
-      if (keep_old_files_option)
+      if (keep_old_files_option || unlink_first_option)
 	return 0;
 
       return remove_any_file (file_name, 0);
@@ -541,7 +563,7 @@ Removing leading `/' from absolute path names in the archive")));
       /* FIXME: deal with protection issues.  */
 
     again_file:
-      openflag = (keep_old_files_option ?
+      openflag = (keep_old_files_option || unlink_first_option ?
 		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_EXCL :
 		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_TRUNC)
 	| ((typeflag == GNUTYPE_SPARSE) ? 0 : O_APPEND);
@@ -561,8 +583,15 @@ Removing leading `/' from absolute path names in the archive")));
 	  goto extract_file;
 	}
 
-      if (unlink_first_option)
-	remove_any_file (CURRENT_FILE_NAME, recursive_unlink_option);
+      if (!unlink_destination (CURRENT_FILE_NAME))
+	{
+	  if (current_header->oldgnu_header.isextended)
+	    skip_extended_headers ();
+	  skip_file (current_stat.st_size);
+	  if (backup_option)
+	    undo_last_backup ();
+	  break;
+	}
 
 #if O_CTG
       /* Contiguous files (on the Masscomp) have to specify the size in
@@ -696,9 +725,9 @@ Removing leading `/' from absolute path names in the archive")));
       if (to_stdout_option)
 	break;
 
-#ifdef S_ISLNK
-      if (unlink_first_option)
-	remove_any_file (CURRENT_FILE_NAME, recursive_unlink_option);
+#ifdef HAVE_SYMLINK
+      if (!unlink_destination (CURRENT_FILE_NAME))
+	break;
 
       while (status = symlink (current_link_name, CURRENT_FILE_NAME),
 	     status != 0)
@@ -723,7 +752,7 @@ Removing leading `/' from absolute path names in the archive")));
 	}
       break;
 
-#else /* not S_ISLNK */
+#else
       {
 	static int warned_once = 0;
 
@@ -736,14 +765,14 @@ Attempting extraction of symbolic links as hard links")));
       }
       /* Fall through.  */
 
-#endif /* not S_ISLNK */
+#endif
 
     case LNKTYPE:
       if (to_stdout_option)
 	break;
 
-      if (unlink_first_option)
-	remove_any_file (CURRENT_FILE_NAME, recursive_unlink_option);
+      if (!unlink_destination (CURRENT_FILE_NAME))
+	break;
 
     again_link:
       {
@@ -789,8 +818,8 @@ Attempting extraction of symbolic links as hard links")));
       if (to_stdout_option)
 	break;
 
-      if (unlink_first_option)
-	remove_any_file (CURRENT_FILE_NAME, recursive_unlink_option);
+      if (!unlink_destination (CURRENT_FILE_NAME))
+	break;
 
       status = mknod (CURRENT_FILE_NAME, current_stat.st_mode,
 		      current_stat.st_rdev);
@@ -808,13 +837,13 @@ Attempting extraction of symbolic links as hard links")));
       break;
 #endif
 
-#ifdef S_ISFIFO
+#if HAVE_MKFIFO || defined mkfifo
     case FIFOTYPE:
       if (to_stdout_option)
 	break;
 
-      if (unlink_first_option)
-	remove_any_file (CURRENT_FILE_NAME, recursive_unlink_option);
+      if (!unlink_destination (CURRENT_FILE_NAME))
+	break;
 
       while (status = mkfifo (CURRENT_FILE_NAME, current_stat.st_mode),
 	     status != 0)
