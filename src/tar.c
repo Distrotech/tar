@@ -1400,3 +1400,14 @@ main (int argc, char **argv)
     exit_status = TAREXIT_FAILURE;
   exit (exit_status);
 }
+
+void
+destroy_stat (struct tar_stat_info *st)
+{
+  free (st->orig_file_name);
+  free (st->file_name);
+  free (st->link_name);
+  free (st->uname);
+  free (st->gname);
+  memset (st, 0, sizeof (*st));
+}
