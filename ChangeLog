@@ -1,13 +1,16 @@
 2004-11-27  Paul Eggert  <eggert@cs.ucla.edu>
 
+	Adjust to recent gnulib changes.
 	* doc/getdate.texi: Remove, since bootstrap gets it from gnulib now.
 	* .cvsignore: Add rmt, rmt/*, rmt/*/*.
 	* lib/.cvsignore: Add allocsa.c, allocsa.h, allocsa.valgrind,
 	charset.alias, config.charset, getcwd.c, getcwd.h, localcharset.c,
 	localcharset.h, ref-add.sed, ref-add.sin, ref-del.sed,
-	ref-del.sin, setenv.c, setenv.h, unsetenv.c.
+	ref-del.sin, setenv.c, setenv.h, unsetenv.c.  Remove pathmax.h,
+	xstrdup.c.
 	* m4/.cvsignore: Add allocsa.m4, eealloc.m4, getcwd-path-max.m4,
-	localcharset.m4, realloc.m4, setenv.m4.
+	localcharset.m4, realloc.m4, setenv.m4.  Remove malloc.m4,
+	pathmax.m4, realloc.m4.
 
 2004-11-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
