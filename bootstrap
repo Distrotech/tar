@@ -146,6 +146,7 @@ safe-read
 save-cwd
 savedir
 stdbool
+stpcpy
 strtol
 strtoul
 unlocked-io

@@ -68,6 +68,9 @@ libtar_a_SOURCES += exit.h
 BUILT_SOURCES += $(FNMATCH_H)
 EXTRA_DIST += fnmatch_.h fnmatch_loop.c
 
+# stpcpy
+EXTRA_DIST += stpcpy.c stpcpy.h
+
 # We need the following in order to create an <fnmatch.h> when the system
 # doesn't have one that supports the required API.
 all-local $(lib_OBJECTS): $(FNMATCH_H)
