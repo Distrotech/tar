@@ -67,12 +67,13 @@ update_po() {
     *)     POFILE=${1}.po;;
     esac	
     echo "$0: getting translation for $1..."
-    wget -C off $TP_URL/$POFILE
+    wget -r -C off $TP_URL/$POFILE
   else
     echo "$0: getting translations into po..."
     (cd po &&
      rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
       wget -nv -nd -r -l 1 -A .po -C off $TP_URL &&
+      rm -f index.html index.html.[0-9]*
       ls *.po | sed 's/\.po$//' >LINGUAS
     ) || exit
   fi
@@ -217,11 +218,13 @@ xstrtoumax
 previous_gnulib_modules=
 while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
   previous_gnulib_modules=$gnulib_modules
+  # In gnulib `alloca-opt' duplicates `alloca', so make sure not
+  # to use it.
   gnulib_modules=`
     (echo "$gnulib_modules"
      for gnulib_module in $gnulib_modules; do
        $GNULIB_SRCDIR/gnulib-tool --extract-dependencies $gnulib_module
-     done) | sort -u
+     done) | sed 's/alloca-opt/alloca/' | sort -u
   `
 done
 
