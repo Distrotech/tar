@@ -447,6 +447,7 @@ decode_header (header, st, stdp, wantug)
   long from_oct ();
 
   st->st_mode = from_oct (8, header->header.mode);
+  st->st_mode &= 07777;
   st->st_mtime = from_oct (1 + 12, header->header.mtime);
   if (f_gnudump)
     {
