@@ -1,5 +1,20 @@
 2004-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/buffer.c (seek_archive): New function
+	* src/common.h (seek_archive): New function
+	(seekable_archive): New global.
+	* src/list.c (skip_file): Use seek_archive() if
+	possible.
+	* src/tar.c (struct fmttab): Accept 'pax' as alias
+	for 'posix'
+	(options): New option -n (--seek).
+	* src/update.c: Determine type of the archive before
+	appending to it.
+	
+	* TODO: Updated.
+
+2004-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	* bootstrap: New option --update-po
 	* src/tar.c: New option -H (short alias to --format)
 	* doc/tar.texi: Document -H option
