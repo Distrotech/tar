@@ -52,6 +52,7 @@ o Longnames support is redone differently--long name info directly
   longer have to wait for the extract to hit the end of the tape for
   long names to work.
 
+
 ==================
 
 User-visible changes since 1.09:
