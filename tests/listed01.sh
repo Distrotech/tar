@@ -1,6 +1,7 @@
 #! /bin/sh
 
 # Check if listed-incremental backups work for individual files.
+# Script proposed by Andreas Schuldei <andreas@schuldei.org>
 
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
