@@ -403,7 +403,7 @@ child_open ()
 	    }
 	  else			/* This can't happen if (ar_reading==2)
 				archive = rmtopen(ar_files[0], O_RDWR|O_CREAT|O_BINARY, 0666);
-	  	  			else */ if (ar_reading)
+	  			else */ if (ar_reading)
 	    archive = rmtopen (ar_files[0], O_RDONLY | O_BINARY, 0666);
 	  else
 	    archive = rmtcreat (ar_files[0], 0666);
@@ -1260,24 +1260,23 @@ close_archive ()
   if (childpid)
     {
       /*
-		 * Loop waiting for the right child to die, or for
-		 * no more kids.
-		 */
+       * Loop waiting for the right child to die, or for
+       * no more kids.
+       */
       while (((child = wait (&status)) != childpid) && child != -1)
 	;
 
       if (child != -1)
 	{
-	  {
-	    if (WIFSIGNALED (status))
-	      {
-		/* SIGPIPE is OK, everything else is a problem. */
-		if (WTERMSIG (status) != SIGPIPE)
-		  msg ("child died with signal %d%s", WTERMSIG (status),
-		       WIFCOREDUMPED (status) ? " (core dumped)" : "");
-	      }
-	    else
-	      {
+	  if (WIFSIGNALED (status))
+	    {
+	      /* SIGPIPE is OK, everything else is a problem. */
+	      if (WTERMSIG (status) != SIGPIPE)
+		msg ("child died with signal %d%s", WTERMSIG (status),
+		     WIFCOREDUMPED (status) ? " (core dumped)" : "");
+	    }
+	  else
+	    {
 		/* Child voluntarily terminated  -- but why? */
 		if (WEXITSTATUS (status) == MAGIC_STAT)
 		  {
@@ -1296,9 +1295,9 @@ close_archive ()
 		       WEXITSTATUS (status));
 	      }
 	  }
-	}
-#endif /* __MSDOS__ */
     }
+#endif /* __MSDOS__ */
+}
 
 
 #ifdef DONTDEF
