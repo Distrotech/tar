@@ -1,3 +1,16 @@
+2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Raised version number to 1.15
+	* NEWS: Likewise
+	* directory: Updated
+	* bootstrap (update_po): Give -r to wget. Always remove index.html
+	Ignore alloca-opt module (it duplicates alloca)
+	
+	* tests/Makefile.am: Distribute star/quicktest.sh
+	* tests/star/README: Document quicktest.sh
+	* tests/star/qucktest.sh: Removed.
+	* tests/star/quicktest.sh: New file. 
+	
 2004-12-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
