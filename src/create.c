@@ -122,22 +122,22 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 {
   int base256_allowed = (archive_format == GNU_FORMAT
 			 || archive_format == OLDGNU_FORMAT);
-  uintmax_t v = negative ? -value : value;
 
   /* Generate the POSIX octal representation if the number fits.  */
-  if (! negative && v <= MAX_VAL_WITH_DIGITS (size - 1, LG_8))
+  if (! negative && value <= MAX_VAL_WITH_DIGITS (size - 1, LG_8))
     {
       where[size - 1] = '\0';
-      to_octal (v, where, size - 1);
+      to_octal (value, where, size - 1);
     }
 
   /* Otherwise, generate the base-256 representation if we are
      generating an old or new GNU format and if the number fits.  */
-  else if (v - negative <= MAX_VAL_WITH_DIGITS (size - 1, LG_256)
+  else if (((negative ? -1 - value : value)
+	    <= MAX_VAL_WITH_DIGITS (size - 1, LG_256))
 	   && base256_allowed)
     {
       where[0] = negative ? -1 : 1 << (LG_256 - 1);
-      to_base256 (negative, v, where + 1, size - 1);
+      to_base256 (negative, value, where + 1, size - 1);
     }
 
   /* Otherwise, if the number is negative, and if it would not cause
@@ -169,10 +169,10 @@ to_chars (int negative, uintmax_t value, size_t valsize,
       char valbuf[UINTMAX_STRSIZE_BOUND + 1];
       char maxbuf[UINTMAX_STRSIZE_BOUND];
       char minbuf[UINTMAX_STRSIZE_BOUND + 1];
-      char subbuf[UINTMAX_STRSIZE_BOUND + 1];
-      char *value_string = STRINGIFY_BIGINT (v, valbuf + 1);
-      char *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
       char const *minval_string;
+      char const *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
+      char const *value_string;
+
       if (base256_allowed)
 	{
 	  uintmax_t m = maxval + 1 ? maxval + 1 : maxval / 2 + 1;
@@ -182,13 +182,22 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 	}
       else
 	minval_string = "0";
+
       if (negative)
-	*--value_string = '-';
+	{
+	  char *p = STRINGIFY_BIGINT (- value, valbuf + 1);
+	  *--p = '-';
+	  value_string = p;
+	}
+      else
+	value_string = STRINGIFY_BIGINT (value, valbuf);
+
       if (substitute)
 	{
 	  int negsub;
 	  uintmax_t sub = substitute (&negsub) & maxval;
-	  uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? -sub : sub;
+	  uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
+	  char subbuf[UINTMAX_STRSIZE_BOUND + 1];
 	  char *sub_string = STRINGIFY_BIGINT (s, subbuf + 1);
 	  if (negsub)
 	    *--sub_string = '-';
