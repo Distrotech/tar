@@ -66,17 +66,26 @@ sys_spawn_shell ()
   spawnl (P_WAIT, getenv ("COMSPEC"), "-", 0);
 }
 
-void
-sys_compare_uid_gid (struct stat *a, struct stat *b)
+/* stat() in djgpp's C library gives a constant number of 42 as the
+   uid and gid of a file.  So, comparing an FTP'ed archive just after
+   unpack would fail on MSDOS.  */
+
+bool
+sys_compare_uid (struct stat *a, struct stat *b)
 {
-  /* stat() in djgpp's C library gives a constant number of 42 as the
-     uid and gid of a file.  So, comparing an FTP'ed archive just after
-     unpack would fail on MSDOS.  */
+  return true;
+}
+
+bool
+sys_compare_gid (struct stat *a, struct stat *b)
+{
+  return true;
 }
 
 void
 sys_compare_links (struct stat *link_data, struct stat *stat_data)
 {
+  return true;
 }
 
 int
@@ -230,24 +239,23 @@ sys_spawn_shell ()
     }
 }
 
-void
-sys_compare_uid_gid (struct stat *a, struct stat *b)
+bool
+sys_compare_uid (struct stat *a, struct stat *b)
 {
-  if (a->st_uid != b->st_uid)
-    report_difference (_("Uid differs"));
-  if (a->st_gid != b->st_gid)
-    report_difference (_("Gid differs"));
+  return a->st_uid == b->st_uid;
 }
 
-void
+bool
+sys_compare_gid (struct stat *a, struct stat *b)
+{
+  return a->st_gid == b->st_gid;
+}
+
+bool
 sys_compare_links (struct stat *link_data, struct stat *stat_data)
 {
-  if (stat_data->st_dev != link_data->st_dev
-      || stat_data->st_ino != link_data->st_ino)
-    {
-      report_difference (_("Not linked to %s"),
-			 quote (current_stat_info.link_name));
-    }
+  return stat_data->st_dev == link_data->st_dev
+         && stat_data->st_ino == link_data->st_ino;
 }
 
 int
