@@ -186,7 +186,6 @@ enum
   DELETE_OPTION,
   EXCLUDE_OPTION,
   FORCE_LOCAL_OPTION,
-  FORMAT_OPTION,
   GROUP_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_FAILED_READ_OPTION,
@@ -247,6 +246,21 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
   nil, existing   numbered if numbered backups exist, simple otherwise\n\
   never, simple   always make simple backups\n");
 
+
+/* NOTE:
+
+   Available option letters are DEIJQY and aenqy. Consider the following
+   assignments:
+
+   [For Solaris tar compatibility]
+   e  exit immediately with a nonzero exit status if unexpected errors occur
+   E  use extended headers (--format=posix)
+   [q  alias for --occurrence=1 =/= this would better be used for quiet?]
+   n  the archive is quickly seekable, so don't worry about random seeks
+   [I  same as T =/= will harm star compatibility]
+   
+   y  per-file gzip compression
+   Y  per-block gzip compression */
 
 static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
@@ -385,7 +399,7 @@ static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Archive format selection:"), 60 },
   
-  {"format", FORMAT_OPTION, N_("FORMAT"), 0,
+  {"format", 'H', N_("FORMAT"), 0,
    N_("create archive of the given format."), 61 },
 
   {"", 0, NULL, OPTION_DOC, N_("FORMAT is one of the following:"), 62},
@@ -548,7 +562,8 @@ set_subcommand_option (enum subcommand subcommand)
 static void
 set_use_compress_program_option (const char *string)
 {
-  if (use_compress_program_option && strcmp (use_compress_program_option, string) != 0)
+  if (use_compress_program_option
+      && strcmp (use_compress_program_option, string) != 0)
     USAGE_ERROR ((0, 0, _("Conflicting compression options")));
 
   use_compress_program_option = string;
@@ -897,7 +912,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       force_local_option = true;
       break;
       
-    case FORMAT_OPTION:
+    case 'H':
       set_archive_format (arg);
       break;
       
@@ -1253,18 +1268,6 @@ find_argp_option (struct argp_option *options, int letter)
       return options;
   return NULL;
 }
-
-/* FIXME:
-
-   Available option letters are DEHIJQY and aenqy.  Some are reserved:
-
-   e  exit immediately with a nonzero exit status if unexpected errors occur
-   E  use extended headers (draft POSIX headers, that is)
-   I  same as T (for compatibility with Solaris tar)
-   n  the archive is quickly seekable, so don't worry about random seeks
-   q  stop after extracting the first occurrence of the named file
-   y  per-file gzip compression
-   Y  per-block gzip compression */
 
 static void
 decode_options (int argc, char **argv)
