@@ -1,6 +1,12 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.14 - Paul Eggert, 1999-11-07.
+
+* New translations ja, pt_BR.
+* New options --help and --version for rmt.
+* Ignore Solaris door files when creating an archive.
+
 version 1.13.13 - Paul Eggert, 1999-10-11.
 
 * Invalid headers in tar files now elicit errors, not just warnings.
