@@ -766,8 +766,8 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 	  if (count < 0)
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
-	      ERROR ((0, errno, _("\
-Read error at byte %s, reading %lu bytes, in file %s"),
+	      ERROR ((0, errno,
+		      _("Read error at byte %s, reading %lu bytes, in file %s"),
 		      STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
 		      (unsigned long) bufsize, name));
 	      return 1;
@@ -1281,8 +1281,8 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	    if (count < 0)
 	      {
 		char buf[UINTMAX_STRSIZE_BOUND];
-		ERROR ((0, errno, _("\
-Read error at byte %s, reading %lu bytes, in file %s"),
+		ERROR ((0, errno,
+			_("Read error at byte %s, reading %lu bytes, in file %s"),
 			STRINGIFY_BIGINT (current_stat.st_size - sizeleft,
 					  buf),
 			(unsigned long) bufsize, p));
