@@ -270,7 +270,7 @@ static struct argp_option options[] = {
    N_("list the contents of an archive"), 10 },
   {"extract", 'x', 0, 0,
    N_("extract files from an archive"), 10 },
-  {"get", 0, 0, OPTION_ALIAS, NULL},
+  {"get", 0, 0, OPTION_ALIAS, NULL, 0 },
   {"create", 'c', 0, 0,
    N_("create a new archive"), 10 },
   {"diff", 'd', 0, 0,
@@ -527,7 +527,7 @@ static struct argp_option options[] = {
   /* FIXME -V (--label) conflicts with the default short option for
      --version */
   
-  {0, 0, 0, 0}
+  {0, 0, 0, 0, 0, 0}
 };
 
 struct tar_args {
@@ -754,7 +754,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       if (NEWER_OPTION_INITIALIZED (newer_mtime_option))
 	USAGE_ERROR ((0, 0, _("More than one threshold date")));
       
-      if (FILESYSTEM_PREFIX_LEN (arg) != 0
+      if (FILE_SYSTEM_PREFIX_LEN (arg) != 0
 	  || ISSLASH (*arg)
 	  || *arg == '.')
 	{
@@ -1278,7 +1278,6 @@ find_argp_option (struct argp_option *options, int letter)
 static void
 decode_options (int argc, char **argv)
 {
-  int optchar;			/* option letter */
   int index;
   struct tar_args args;
   
