@@ -1,5 +1,10 @@
 2004-04-04  Paul Eggert  <eggert@twinsun.com>
 
+	Merge getdate documentation changes from coreutils.
+
+	* doc/getdate.texi: Update from coreutils CVS.
+	* doc/tar.texi: Fix getdate menu to match getdate.texi's.
+
 	Merge recent gnulib changes, and remove some lint.
 
 	Improve support for nanosecond-resolution time stamps.

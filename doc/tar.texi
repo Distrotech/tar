@@ -503,7 +503,7 @@ This manual is for @acronym{GNU} @command{tar} (version
 from archives.
 
 Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-2003 Free Software Foundation, Inc.
+2003, 2004 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -757,7 +757,8 @@ Date input formats
 * Day of week items::              Monday and others.
 * Relative items in date strings:: next tuesday, 2 years ago.
 * Pure numbers in date strings::   19931219, 1440.
-* Authors of getdate::             Bellovin, Eggert, Salz, Berets, et al.
+* Seconds since the Epoch::        @@1078100502.
+* Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
 
 Controlling the Archive Format
 
