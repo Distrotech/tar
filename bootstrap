@@ -41,6 +41,8 @@ for option; do
   esac
 done
 
+echo "$0: Bootstrapping CVS tar..."
+
 build_cvs_prefix() {
   CVS_PREFIX=:${1}:
   if [ "${2}" != - ]; then
@@ -48,35 +50,32 @@ build_cvs_prefix() {
   fi
 }
 
-case "${CVS_AUTH--}" in
--)       : ${CVS_RSH:?}
-         CVS_PREFIX="";;
-pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs};;
-gserver|server)
-         build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
-ext)     : ${CVS_RSH:?}
-         build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
-*)       echo "$0: Unknown CVS access method" >&2
-         exit 1;;
-esac
-
-echo "$0: Bootstrapping CVS tar..."
-
-
 # Get gnulib files.
-
-echo "$0: getting gnulib files..."
 
 case ${GNULIB_SRCDIR--} in
 -)
   if [ ! -d gnulib ]; then
+    echo "$0: getting gnulib files..."
+
     trap exit 1 2 13 15
     trap 'rm -fr gnulib; exit 1' 0
     
+    case "${CVS_AUTH--}" in
+    -)       : ${CVS_RSH:?}
+             CVS_PREFIX="";;
+    pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs};;
+    gserver|server)
+             build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+    ext)     : ${CVS_RSH:?}
+             build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+    *)       echo "$0: Unknown CVS access method" >&2
+             exit 1;;
+    esac
     if [ "${CVS_AUTH--}" = "pserver" ]; then
       cvs -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib login || exit
     fi
-    cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib co gnulib  || exit
+    cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib co gnulib || exit
+
     trap 0
   fi
   GNULIB_SRCDIR=gnulib

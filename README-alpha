@@ -4,12 +4,13 @@ This is a *pre-release* version, and not ready for production use yet.
 Please send comments and problem reports to <bug-tar@gnu.org>.
 
 If you have taken the sources from CVS you will need the following packages
-to build the package:
+to build GNU tar:
 
 autoconf 2.57
 automake 1.7.5
 bison 1.875
 gettext 0.12.1
+sed 3.0
 wget 1.7
 
 Before building the package, run bootstrap. You will need a POSIX
