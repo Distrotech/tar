@@ -27,7 +27,7 @@ TESTS = version.sh \
   append.sh delete01.sh delete02.sh delete03.sh delete04.sh \
   extrac01.sh extrac02.sh extrac03.sh extrac04.sh \
   gzip.sh incremen.sh ignfail.sh listed01.sh \
-  multiv01.sh old.sh options.sh volume.sh \
+  longv7.sh multiv01.sh old.sh options.sh volume.sh \
   recurse.sh \
   star/gtarfail.sh \
   star/gtarfail2.sh \
