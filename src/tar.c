@@ -209,6 +209,7 @@ enum
   RECORD_SIZE_OPTION,
   RECURSIVE_UNLINK_OPTION,
   REMOVE_FILES_OPTION,
+  RMT_COMMAND_OPTION,
   RSH_COMMAND_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
@@ -309,6 +310,7 @@ static struct option long_options[] =
   /* FIXME: --partial-blocks might be a synonym for --read-full-records?  */
   {"record-size", required_argument, 0, RECORD_SIZE_OPTION},
   {"remove-files", no_argument, 0, REMOVE_FILES_OPTION},
+  {"rmt-command", required_argument, 0, RMT_COMMAND_OPTION},
   {"rsh-command", required_argument, 0, RSH_COMMAND_OPTION},
   {"same-order", no_argument, 0, 's'},
   {"same-owner", no_argument, &same_owner_option, 1},
@@ -426,6 +428,7 @@ Handling of file attributes:\n\
 Device selection and switching:\n\
   -f, --file=ARCHIVE             use archive file or device ARCHIVE\n\
       --force-local              archive file is local even if has a colon\n\
+      --rmt-command=COMMAND      use given rmt COMMAND instead of /etc/rmt\n\
       --rsh-command=COMMAND      use remote COMMAND instead of rsh\n\
   -[0-7][lmh]                    specify drive and density\n\
   -M, --multi-volume             create/list/extract multi-volume archive\n\
@@ -1132,6 +1135,10 @@ decode_options (int argc, char **argv)
 	remove_files_option = true;
 	break;
 
+      case RMT_COMMAND_OPTION:
+	rmt_command_option = optarg;
+	break;
+	
       case RSH_COMMAND_OPTION:
 	rsh_command_option = optarg;
 	break;
@@ -1414,6 +1421,9 @@ see the file named COPYING for details."));
 
   if (utc_option)
     verbose_option = 2;
+
+  if (!rmt_command_option)
+    rmt_command_option = DEFAULT_RMT_COMMAND;
   
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */
