@@ -310,6 +310,7 @@ badfile:
 				}
 				if (link_name - lp->name >= NAMSIZ)
 				  write_long (link_name, LF_LONGLINK);
+				current_link_name = link_name;
 
 				hstat.st_size = 0;
 				header = start_header(p, &hstat);
@@ -610,10 +611,8 @@ badfile:
 		buf[size] = '\0';
 		if (size >= NAMSIZ)
 		  write_long (buf, LF_LONGLINK);
+		current_link_name = buf;
 
-		buf[NAMSIZ - 1] = '\0';
-		if (size >= NAMSIZ)
-		  size = NAMSIZ - 1;
 		hstat.st_size = 0;		/* Force 0 size on symlink */
 		header = start_header(p, &hstat);
 		if (header == NULL) 
@@ -621,7 +620,8 @@ badfile:
 		    critical_error = 1;
 		    goto badfile;
 		  }
-		strcpy (header->header.arch_linkname, buf);
+		strncpy (header->header.arch_linkname, buf, NAMSIZ);
+		header->header.arch_linkname[NAMSIZ - 1] = '\0';
 		header->header.linkflag = LF_SYMLINK;
 		finish_header(header);		/* Nothing more to do to it */
 		if (f_remove_files)
@@ -1199,6 +1199,7 @@ start_header(name, st)
 				msg("Removing leading / from absolute path names in the archive.");
 		}
 	}
+	current_file_name = name;
 	strncpy(header->header.arch_name, name, NAMSIZ);
 	header->header.arch_name[NAMSIZ-1] = '\0';
 
@@ -1344,11 +1345,13 @@ write_long (p, type)
   int size = strlen (p) + 1;
   int bufsize;
   union record *header;
+  struct stat foo;
   
-  /* Link name won't fit, so we write
-     an LF_LONGLINK record. */
-  hstat.st_size = size;
-  header = start_header ("././@LongLink", &hstat);
+
+  bzero (&foo, sizeof foo);
+  foo.st_size = size;
+
+  header = start_header ("././@LongLink", &foo);
   header->header.linkflag = type;
   finish_header (header);
 
