@@ -140,6 +140,9 @@ $(OBJS): tar.h pathmax.h port.h testpad.h
 regex.o buffer.o tar.o: regex.h
 tar.o fnmatch.o: fnmatch.h
 
+getdate.c: getdate.y
+	yacc getdate.y
+	mv y.tab.c getdate.c
 # getdate.y has 8 shift/reduce conflicts.
 
 testpad.h: testpad
