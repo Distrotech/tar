@@ -1,0 +1,79 @@
+<!-- X-URL: %BASE_URL% -->
+<!-- Date: %DATE% -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+<HEAD>
+ <TITLE>%PACKAGE_NAME% Reference Manual - Table of Contents - GNU Project - Free Software Foundation (FSF)</TITLE>
+ <LINK REV="made" HREF="mailto:gray@gnu.org">
+ <BASE HREF="%BASE_URL%">
+ <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=US-ASCII">
+ <META NAME="keywords" CONTENT="tar rmt">
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#1F00FF" ALINK="#FF0000" VLINK="#9900DD">
+<H1>%PACKAGE_NAME% Reference Manual - Table of Contents</H1>
+<ADDRESS>Free Software Foundation</ADDRESS>
+<ADDRESS>last updated %UPDATED%</ADDRESS>
+<P>
+<A HREF="/graphics/gnu-head-sm.jpg"><IMG SRC="/graphics/gnu-head-sm.jpg"
+   ALT=" [image of the Head of a GNU] "
+   WIDTH="129" HEIGHT="122">&#32;(jpeg 7k)</A>
+<A HREF="/graphics/gnu-head.jpg">(jpeg 21k)</A>
+<A HREF="/philosophy/gif.html">no gifs due to patent problems</A>
+<P>
+<P>
+<P><HR><P>
+<P>
+This manual is available in the following formats:
+<P>
+<UL>
+  <LI>formatted in <A HREF="html_mono/%PACKAGE%.html">HTML
+      (%HTML_SIZE%K characters)</A> entirely on one web page.</LI>
+  <LI> formatted in <a href="html_chapter/%PACKAGE%_toc.html">HTML</a>
+       with one web page per chapter.</LI>
+  <LI> formatted in <a href="html_node/%PACKAGE%_toc.html">HTML</a>
+       with one web page per node.</LI>
+  <LI>formatted as an
+      <A HREF="other/%PACKAGE%.info.tar.gz">Info document (%INFO_TAR_GZ_SIZE%K characters
+      gzipped tar file)</A>.</LI>
+  <LI>formatted as
+      <A HREF="other/%PACKAGE%.text">ASCII text (%TEXT_SIZE%K characters)</A>.</LI>
+  <LI>formatted as
+      <A HREF="other/%PACKAGE%.dvi.gz">a TeX dvi file (%DVI_GZ_SIZE%K characters
+      gzipped)</A>.</LI>
+  <LI>formatted as
+      <A href="other/%PACKAGE%.ps.gz">a PostScript file (%PS_GZ_SIZE%K characters
+      gzipped)</A>.</LI>
+  <LI>formatted as
+      <A href="other/%PACKAGE%.pdf.gz">a PDF file (%PDF_GZ_SIZE%K characters
+      gzipped)</A>.</LI>
+  <LI>the original
+      <A HREF="other/%PACKAGE%.texi.tar.gz">Texinfo source (%TEXI_TAR_GZ_SIZE%K characters
+      gzipped tar file)</A></LI>
+</UL>
+<P>
+
+<HR>
+
+Return to <A HREF="/home.html">GNU's home page</A>.
+<P>
+Send FSF &amp; GNU inquiries &amp; questions to
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+Other <A HREF="/home.html#ContactInfo">ways to contact</A> the FSF.
+<P>
+Comments on these web pages to
+<A HREF="mailto:webmasters@www.gnu.org"><EM>webmasters@www.gnu.org</EM></A>,
+send other questions to
+<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
+<P>
+Copyright (C) 1997, 1998 Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111,  USA
+<P>
+Verbatim copying and distribution of this entire article is
+permitted in any medium, provided this notice is preserved.<HR>
+</BODY>
+</HTML>
+<!--
+ Local Variables:
+ mode: html
+ end:
+-->
