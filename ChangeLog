@@ -1,3 +1,12 @@
+2003-10-02  Sergey Poznyakoff
+
+	* src/common.h (names_done): New function.
+	* src/names.c: Likewise.
+	* src/list.c (read_and): Use all_names_found() as `while'
+	condition.
+	* src/tar.c: New option --first-copy
+	* NEWS: Updated
+	
 2003-09-24  Paul Eggert  <eggert@twinsun.com>
 
 	* src/rmt.c (main): Don't translate Copyright string; international
