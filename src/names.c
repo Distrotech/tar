@@ -1,5 +1,5 @@
 /* Various processing of names.
-   Copyright (C) 1988, 92, 94, 96, 97, 98, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92, 94, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -15,29 +15,25 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* Enable GNU extensions in fnmatch.h.  */
-#ifndef _GNU_SOURCE
-# define _GNU_SOURCE 1
-#endif
-
 #include "system.h"
 
-#include <pwd.h>
-#include <grp.h>
 #include <fnmatch.h>
+#include <grp.h>
+#include <hash.h>
+#include <pwd.h>
 #include <quotearg.h>
 
 #include "common.h"
 
 /* User and group names.  */
 
-extern struct group *getgrnam ();
-extern struct passwd *getpwnam ();
-#if !HAVE_GETPWUID
-extern struct passwd *getpwuid ();
+struct group *getgrnam ();
+struct passwd *getpwnam ();
+#if ! HAVE_DECL_GETPWUID
+struct passwd *getpwuid ();
 #endif
-#if !HAVE_GETGRGID
-extern struct group *getgrgid ();
+#if ! HAVE_DECL_GETGRGID
+struct group *getgrgid ();
 #endif
 
 /* Make sure you link with the proper libraries if you are running the
@@ -60,10 +56,7 @@ static char cached_no_such_gname[GNAME_FIELD_SIZE];
 static uid_t cached_no_such_uid;
 static gid_t cached_no_such_gid;
 
-/*------------------------------------------.
-| Given UID, find the corresponding UNAME.  |
-`------------------------------------------*/
-
+/* Given UID, find the corresponding UNAME.  */
 void
 uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
 {
@@ -93,10 +86,7 @@ uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
   strncpy (uname, cached_uname, UNAME_FIELD_SIZE);
 }
 
-/*------------------------------------------.
-| Given GID, find the corresponding GNAME.  |
-`------------------------------------------*/
-
+/* Given GID, find the corresponding GNAME.  */
 void
 gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
 {
@@ -110,7 +100,6 @@ gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
 
   if (!cached_gname[0] || gid != cached_gid)
     {
-      setgrent ();		/* FIXME: why?! */
       group = getgrgid (gid);
       if (group)
 	{
@@ -127,10 +116,7 @@ gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
   strncpy (gname, cached_gname, GNAME_FIELD_SIZE);
 }
 
-/*-------------------------------------------------------------------------.
-| Given UNAME, set the corresponding UID and return 1, or else, return 0.  |
-`-------------------------------------------------------------------------*/
-
+/* Given UNAME, set the corresponding UID and return 1, or else, return 0.  */
 int
 uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
 {
@@ -160,10 +146,7 @@ uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
   return 1;
 }
 
-/*-------------------------------------------------------------------------.
-| Given GNAME, set the corresponding GID and return 1, or else, return 0.  |
-`-------------------------------------------------------------------------*/
-
+/* Given GNAME, set the corresponding GID and return 1, or else, return 0.  */
 int
 gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *gidp)
 {
@@ -195,15 +178,14 @@ gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *gidp)
 
 /* Names from the command call.  */
 
+static struct name *namelist;	/* first name in list, if any */
+static struct name **nametail = &namelist;	/* end of name list */
 static const char **name_array;	/* store an array of names */
 static int allocated_names;	/* how big is the array? */
 static int names;		/* how many entries does it have? */
 static int name_index;		/* how many of the entries have we scanned? */
 
-/*------------------------.
-| Initialize structures.  |
-`------------------------*/
-
+/* Initialize structures.  */
 void
 init_names (void)
 {
@@ -212,10 +194,7 @@ init_names (void)
   names = 0;
 }
 
-/*--------------------------------------------------------------.
-| Add NAME at end of name_array, reallocating it as necessary.  |
-`--------------------------------------------------------------*/
-
+/* Add NAME at end of name_array, reallocating it as necessary.  */
 void
 name_add (const char *name)
 {
@@ -234,10 +213,6 @@ static FILE *name_file;		/* file to read names from */
 static char *name_buffer;	/* buffer to hold the current file name */
 static size_t name_buffer_length; /* allocated length of name_buffer */
 
-/*---.
-| ?  |
-`---*/
-
 /* FIXME: I should better check more closely.  It seems at first glance that
    is_pattern is only used when reading a file, and ignored for all
    command line arguments.  */
@@ -248,11 +223,8 @@ is_pattern (const char *string)
   return strchr (string, '*') || strchr (string, '[') || strchr (string, '?');
 }
 
-/*-----------------------------------------------------------------------.
-| Set up to gather file names for tar.  They can either come from a file |
-| or were saved from decoding arguments.				 |
-`-----------------------------------------------------------------------*/
-
+/* Set up to gather file names for tar.  They can either come from a
+   file or were saved from decoding arguments.  */
 void
 name_init (int argc, char *const *argv)
 {
@@ -271,10 +243,6 @@ name_init (int argc, char *const *argv)
     }
 }
 
-/*---.
-| ?  |
-`---*/
-
 void
 name_term (void)
 {
@@ -282,12 +250,9 @@ name_term (void)
   free (name_array);
 }
 
-/*---------------------------------------------------------------------.
-| Read the next filename from name_file and null-terminate it.  Put it |
-| into name_buffer, reallocating and adjusting name_buffer_length if   |
-| necessary.  Return 0 at end of file, 1 otherwise.		       |
-`---------------------------------------------------------------------*/
-
+/* Read the next filename from name_file and null-terminate it.  Put
+   it into name_buffer, reallocating and adjusting name_buffer_length
+   if necessary.  Return 0 at end of file, 1 otherwise.  */
 static int
 read_name_from_file (void)
 {
@@ -322,15 +287,13 @@ read_name_from_file (void)
   return 1;
 }
 
-/*------------------------------------------------------------------------.
-| Get the next name from ARGV or the file of names.  Result is in static  |
-| storage and can't be relied upon across two calls.			  |
-| 									  |
-| If CHANGE_DIRS is true, treat a filename of the form "-C" as meaning	  |
-| that the next filename is the name of a directory to change to.  If	  |
-| `filename_terminator' is NUL, CHANGE_DIRS is effectively always false.  |
-`------------------------------------------------------------------------*/
+/* Get the next name from ARGV or the file of names.  Result is in
+   static storage and can't be relied upon across two calls.
 
+   If CHANGE_DIRS is true, treat a filename of the form "-C" as
+   meaning that the next filename is the name of a directory to change
+   to.  If filename_terminator is NUL, CHANGE_DIRS is effectively
+   always false.  */
 char *
 name_next (int change_dirs)
 {
@@ -393,10 +356,7 @@ name_next (int change_dirs)
   return 0;
 }
 
-/*------------------------------.
-| Close the name file, if any.  |
-`------------------------------*/
-
+/* Close the name file, if any.  */
 void
 name_close (void)
 {
@@ -405,17 +365,15 @@ name_close (void)
       close_error (name_buffer);
 }
 
-/*-------------------------------------------------------------------------.
-| Gather names in a list for scanning.  Could hash them later if we really |
-| care.									   |
-| 									   |
-| If the names are already sorted to match the archive, we just read them  |
-| one by one.  name_gather reads the first one, and it is called by	   |
-| name_match as appropriate to read the next ones.  At EOF, the last name  |
-| read is just left in the buffer.  This option lets users of small	   |
-| machines extract an arbitrary number of files by doing "tar t" and	   |
-| editing down the list of files.					   |
-`-------------------------------------------------------------------------*/
+/* Gather names in a list for scanning.  Could hash them later if we
+   really care.
+
+   If the names are already sorted to match the archive, we just read
+   them one by one.  name_gather reads the first one, and it is called
+   by name_match as appropriate to read the next ones.  At EOF, the
+   last name read is just left in the buffer.  This option lets users
+   of small machines extract an arbitrary number of files by doing
+   "tar t" and editing down the list of files.  */
 
 void
 name_gather (void)
@@ -455,14 +413,12 @@ name_gather (void)
 	      buffer = xrealloc (buffer, allocated_length);
 	    }
 	  buffer->change_dir = change_dir;
-	  strncpy (buffer->name, name, buffer->length);
-	  buffer->name[buffer->length] = 0;
+	  memcpy (buffer->name, name, buffer->length + 1);
 	  buffer->next = 0;
 	  buffer->found = 0;
 
-	  /* FIXME: Poorly named globals, indeed...  */
 	  namelist = buffer;
-	  namelast = namelist;
+	  nametail = &namelist->next;
 	}
     }
   else
@@ -492,11 +448,8 @@ name_gather (void)
     }
 }
 
-/*-----------------------------.
-| Add a name to the namelist.  |
-`-----------------------------*/
-
-void
+/*  Add a name to the namelist.  */
+struct name *
 addname (char const *string, int change_dir)
 {
   struct name *name;
@@ -529,18 +482,13 @@ addname (char const *string, int change_dir)
 	name->firstch = 0;
     }
 
-  if (namelast)
-    namelast->next = name;
-  namelast = name;
-  if (!namelist)
-    namelist = name;
+  *nametail = name;
+  nametail = &name->next;
+  return name;
 }
 
-/*------------------------------------------------------------------------.
-| Return true if and only if name PATH (from an archive) matches any name |
-| from the namelist.							  |
-`------------------------------------------------------------------------*/
-
+/* Return true if and only if name PATH (from an archive) matches any
+   name from the namelist.  */
 int
 name_match (const char *path)
 {
@@ -557,6 +505,7 @@ name_match (const char *path)
 	{
 	  chdir_do (cursor->change_dir);
 	  namelist = 0;
+	  nametail = &namelist;
 	  return ! files_from_option;
 	}
 
@@ -579,6 +528,7 @@ name_match (const char *path)
 		{
 		  free (namelist);
 		  namelist = 0;
+		  nametail = &namelist;
 		}
 	      chdir_do (cursor->change_dir);
   
@@ -603,10 +553,7 @@ name_match (const char *path)
     }
 }
 
-/*------------------------------------------------------------------.
-| Print the names of things in the namelist that were not matched.  |
-`------------------------------------------------------------------*/
-
+/* Print the names of things in the namelist that were not matched.  */
 void
 names_notfound (void)
 {
@@ -630,7 +577,7 @@ names_notfound (void)
 #endif
     }
   namelist = 0;
-  namelast = 0;
+  nametail = &namelist;
 
   if (same_order_option)
     {
@@ -729,29 +676,22 @@ compare_names (struct name const *n1, struct name const *n2)
   return found_diff ? found_diff : strcmp (n1->name, n2->name);
 }
 
-/* Add all the dirs in PATH, which is a directory, to the namelist.
+/* Add all the dirs under NAME, which names a directory, to the namelist.
+   DIRSIZE is the size of the directory, or -1 if not known.
    If any of the files is a directory, recurse on the subdirectory.
-   CHANGE_DIR is the number of the directory that PATH is relative to.
    DEVICE is the device not to leave, if the -l option is specified.  */
 
 static void
-add_hierarchy_to_namelist (char *path, int change_dir, dev_t device)
+add_hierarchy_to_namelist (struct name *name, off_t dirsize, dev_t device)
 {
-  char *buffer = get_directory_contents (path, device);
+  char *path = name->name;
+  char *buffer = get_directory_contents (path, dirsize, device);
 
-  {
-    struct name *name;
-
-    for (name = namelist; name; name = name->next)
-      if (strcmp (name->name, path) == 0)
-	break;
-    if (name)
-      name->dir_contents = buffer ? buffer : "\0\0\0\0";
-  }
-
-  if (buffer)
+  if (! buffer)
+    name->dir_contents = "\0\0\0\0";
+  else
     {
-      size_t name_length = strlen (path);
+      size_t name_length = name->length;
       size_t allocated_length = (name_length >= NAME_FIELD_SIZE
 				 ? name_length + NAME_FIELD_SIZE
 				 : NAME_FIELD_SIZE);
@@ -759,7 +699,9 @@ add_hierarchy_to_namelist (char *path, int change_dir, dev_t device)
 				/* FIXME: + 2 above?  */
       char *string;
       size_t string_length;
+      int change_dir = name->change_dir;
 
+      name->dir_contents = buffer;
       strcpy (name_buffer, path);
       if (name_buffer[name_length - 1] != '/')
 	{
@@ -779,9 +721,8 @@ add_hierarchy_to_namelist (char *path, int change_dir, dev_t device)
 		  name_buffer = xrealloc (name_buffer, allocated_length + 1);
 		}
 	      strcpy (name_buffer + name_length, string + 1);
-	      addname (name_buffer, change_dir);
-	      if (*string == 'D')
-		add_hierarchy_to_namelist (name_buffer, change_dir, device);
+	      add_hierarchy_to_namelist (addname (name_buffer, change_dir),
+					 -1, device);
 	    }
 	}
 
@@ -828,8 +769,7 @@ collect_and_sort_names (void)
       if (S_ISDIR (statbuf.st_mode))
 	{
 	  name->found = 1;
-	  add_hierarchy_to_namelist (name->name, name->change_dir,
-				     statbuf.st_dev);
+	  add_hierarchy_to_namelist (name, statbuf.st_size, statbuf.st_dev);
 	}
     }
 
@@ -842,13 +782,10 @@ collect_and_sort_names (void)
     name->found = 0;
 }
 
-/*-------------------------------------------------------------------------.
-| This is like name_match, except that it returns a pointer to the name it |
-| matched, and doesn't set FOUND in structure.  The caller will have to do |
-| that if it wants to.  Oh, and if the namelist is empty, it returns null, |
-| unlike name_match, which returns TRUE.                                   |
-`-------------------------------------------------------------------------*/
-
+/* This is like name_match, except that it returns a pointer to the
+   name it matched, and doesn't set FOUND in structure.  The caller
+   will have to do that if it wants to.  Oh, and if the namelist is
+   empty, it returns null, unlike name_match, which returns TRUE.  */
 struct name *
 name_scan (const char *path)
 {
@@ -893,12 +830,9 @@ name_scan (const char *path)
     }
 }
 
-/*-----------------------------------------------------------------------.
-| This returns a name from the namelist which doesn't have ->found set.	 |
-| It sets ->found before returning, so successive calls will find and	 |
-| return all the non-found names in the namelist			 |
-`-----------------------------------------------------------------------*/
-
+/* This returns a name from the namelist which doesn't have ->found
+   set.  It sets ->found before returning, so successive calls will
+   find and return all the non-found names in the namelist.  */
 struct name *gnu_list_name;
 
 char *
@@ -917,10 +851,6 @@ name_from_list (void)
   return 0;
 }
 
-/*---.
-| ?  |
-`---*/
-
 void
 blank_name_list (void)
 {
@@ -931,16 +861,18 @@ blank_name_list (void)
     name->found = 0;
 }
 
-/*---.
-| ?  |
-`---*/
-
+/* Yield a newly allocated file name consisting of PATH concatenated to
+   NAME, with an intervening slash if PATH does not already end in one.  */
 char *
 new_name (const char *path, const char *name)
 {
-  char *buffer = xmalloc (strlen (path) + strlen (name) + 2);
-
-  sprintf (buffer, "%s/%s", path, name);
+  size_t pathlen = strlen (path);
+  size_t namesize = strlen (name) + 1;
+  int slash = pathlen && path[pathlen - 1] != '/';
+  char *buffer = xmalloc (pathlen + slash + namesize);
+  memcpy (buffer, path, pathlen);
+  buffer[pathlen] = '/';
+  memcpy (buffer + pathlen + slash, name, namesize);
   return buffer;
 }
 
@@ -967,32 +899,36 @@ excluded_name (char const *name)
 }
 
 /* Names to avoid dumping.  */
+static Hash_table *avoided_name_table;
 
-struct avoided_name
+/* Calculate the hash of an avoided name.  */
+static unsigned
+hash_avoided_name (void const *name, unsigned n_buckets)
 {
-  struct avoided_name const *next;
-  char name[1];
-};
+  return hash_string (name, n_buckets);
+}
 
-static struct avoided_name *avoided_names;
+/* Compare two avoided names for equality.  */
+static bool
+compare_avoided_names (void const *name1, void const *name2)
+{
+  return strcmp (name1, name2) == 0;
+}
 
 /* Remember to not archive NAME.  */
 void
 add_avoided_name (char const *name)
 {
-  struct avoided_name *p = xmalloc (sizeof *p + strlen (name));
-  p->next = avoided_names;
-  avoided_names = p;
-  strcpy (p->name, name);
+  if (! ((avoided_name_table
+	  || (avoided_name_table = hash_initialize (0, 0, hash_avoided_name,
+						    compare_avoided_names, 0)))
+	 && hash_insert (avoided_name_table, xstrdup (name))))
+    xalloc_die ();
 }
 
 /* Should NAME be avoided when archiving?  */
 int
 is_avoided_name (char const *name)
 {
-  struct avoided_name const *p;
-  for (p = avoided_names; p; p = p->next)
-    if (strcmp (p->name, name) == 0)
-      return 1;
-  return 0;
+  return avoided_name_table && hash_lookup (avoided_name_table, name);
 }
