@@ -1,7 +1,7 @@
 README for GNU tar
 
-	Copyright 1990, 1991, 1992, 1994, 1997, 1998, 1999, 2000, 2001
-	Free Software Foundation, Inc.
+	Copyright (C) 1990, 1991, 1992, 1994, 1997, 1998, 1999, 2000,
+	2001, 2003 Free Software Foundation, Inc.
 
 	This file is part of GNU tar.
 
@@ -60,14 +60,13 @@ in the environment before configuring (the behavior of `-[0-7]' or
 
 For comprehensive modifications to GNU tar, you might need tools beyond
 those used in simple installations.  Fully install GNU m4 1.4 first,
-and only then, Autoconf 2.13 or later.  Install Perl, then Automake
-1.4 or later.  You might need Bison 1.28 or later, and GNU tar itself.
-All are available on GNU archive sites, like in
-ftp://ftp.gnu.org/pub/gnu/.
+and only then, Autoconf 2.57 or later.  Install Perl, then Automake
+1.7.5 or later.  Also, install gettext 0.12.1 or later.  You might
+need Bison 1.875 or later, and GNU tar itself.  All are available on
+GNU archive sites, like in ftp://ftp.gnu.org/pub/gnu/.
 
-Send bug reports to `bug-tar@gnu.org'.  (Beware, old-timers: it is
-`@gnu', not `@prep'; and not `bug-gnu-utils' anymore.)  A bug report is
-an adequate description of the problem: your input, what you expected,
+Send bug reports to <bug-tar@gnu.org>.  A bug report should contain
+an adequate description of the problem, your input, what you expected,
 what you got, and why this is wrong.  Diffs are welcome, but they only
 describe a solution, from which the problem might be uneasy to infer.
 If needed, submit actual data files with your report.  Small data files
