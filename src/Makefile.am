@@ -37,6 +37,7 @@ tar_SOURCES = \
  misc.c\
  names.c\
  rtapelib.c\
+ sparse.c\
  system.c\
  tar.c\
  update.c
