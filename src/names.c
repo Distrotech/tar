@@ -56,6 +56,8 @@ static char *cached_no_such_gname;
 static uid_t cached_no_such_uid;
 static gid_t cached_no_such_gid;
 
+static void register_individual_file (char const *name);
+
 /* Given UID, find the corresponding UNAME.  */
 void
 uid_to_uname (uid_t uid, char **uname)
@@ -358,6 +360,8 @@ name_next (int change_dirs)
       else
 	{
 	  unquote_string (name_buffer);
+	  if (incremental_option)
+	    register_individual_file (name_buffer);
 	  return name_buffer;
 	}
     }
@@ -1000,6 +1004,28 @@ bool
 is_avoided_name (char const *name)
 {
   return hash_string_lookup (avoided_name_table, name);
+}
+
+
+static Hash_table *individual_file_table;
+
+static void
+register_individual_file (char const *name)
+{
+  struct stat st;
+
+  if (deref_stat (dereference_option, name, &st) != 0)
+    return; /* Will be complained about later */
+  if (S_ISDIR (st.st_mode))
+    return;
+
+  hash_string_insert (&individual_file_table, name);
+}
+
+bool
+is_individual_file (char const *name)
+{
+  return hash_string_lookup (individual_file_table, name);
 }
 
 
