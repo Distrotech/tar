@@ -1,7 +1,7 @@
 /* Various processing of names.
 
-   Copyright 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001 Free
-   Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001,
+   2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -531,7 +531,8 @@ namelist_match (char const *path, size_t length)
       if (p->regexp
 	  ? fnmatch (p->name, path, recursion_option) == 0
 	  : (p->length <= length
-	     && (path[p->length] == '\0' || ISSLASH (path[p->length]))
+	     && (path[p->length] == '\0'
+		 || (ISSLASH (path[p->length]) && recursion_option))
 	     && memcmp (path, p->name, p->length) == 0))
 	return p;
     }
@@ -572,7 +573,7 @@ name_match (const char *path)
 	      nametail = &namelist;
 	    }
 	  chdir_do (cursor->change_dir);
-  
+
 	  /* We got a match.  */
 	  return 1;
 	}
@@ -896,46 +897,167 @@ new_name (const char *path, const char *name)
   return buffer;
 }
 
-/* Return nonzero if file NAME is excluded.  Exclude a name if its
-   prefix matches a pattern that contains slashes, or if one of its
-   components matches a pattern that contains no slashes.  */
+/* Return nonzero if file NAME is excluded.  */
 bool
 excluded_name (char const *name)
 {
   return excluded_filename (excluded, name + FILESYSTEM_PREFIX_LEN (name));
 }
 
-/* Names to avoid dumping.  */
-static Hash_table *avoided_name_table;
+/* Hash tables of strings.  */
 
-/* Calculate the hash of an avoided name.  */
+/* Calculate the hash of a string.  */
 static unsigned
-hash_avoided_name (void const *name, unsigned n_buckets)
+hash_string_hasher (void const *name, unsigned n_buckets)
 {
   return hash_string (name, n_buckets);
 }
 
-/* Compare two avoided names for equality.  */
+/* Compare two strings for equality.  */
 static bool
-compare_avoided_names (void const *name1, void const *name2)
+hash_string_compare (void const *name1, void const *name2)
 {
   return strcmp (name1, name2) == 0;
 }
+
+/* Return zero if TABLE contains a copy of STRING; otherwise, insert a
+   copy of STRING to TABLE and return 1.  */
+static bool
+hash_string_insert (Hash_table **table, char const *string)
+{
+  Hash_table *t = *table;
+  char *s = xstrdup (string);
+  char *e;
+
+  if (! ((t
+	  || (*table = t = hash_initialize (0, 0, hash_string_hasher,
+					    hash_string_compare, 0)))
+	 && (e = hash_insert (t, s))))
+    xalloc_die ();
+
+  if (e == s)
+    return 1;
+  else
+    {
+      free (s);
+      return 0;
+    }
+}
+
+/* Return 1 if TABLE contains STRING.  */
+static bool
+hash_string_lookup (Hash_table const *table, char const *string)
+{
+  return table && hash_lookup (table, string);
+}
+
+/* Names to avoid dumping.  */
+static Hash_table *avoided_name_table;
 
 /* Remember to not archive NAME.  */
 void
 add_avoided_name (char const *name)
 {
-  if (! ((avoided_name_table
-	  || (avoided_name_table = hash_initialize (0, 0, hash_avoided_name,
-						    compare_avoided_names, 0)))
-	 && hash_insert (avoided_name_table, xstrdup (name))))
-    xalloc_die ();
+  hash_string_insert (&avoided_name_table, name);
 }
 
 /* Should NAME be avoided when archiving?  */
-int
+bool
 is_avoided_name (char const *name)
 {
-  return avoided_name_table && hash_lookup (avoided_name_table, name);
+  return hash_string_lookup (avoided_name_table, name);
+}
+
+/* Return a safer suffix of FILE_NAME, or "." if it has no safer
+   suffix.  Check for fully specified file names and other atrocities.
+   Warn the user if we do not return NAME.  If LINK_TARGET is 1,
+   FILE_NAME is the target of a hard link, not a member name.  */
+
+char *
+safer_name_suffix (char const *file_name, bool link_target)
+{
+  char const *p;
+
+  if (absolute_names_option)
+    p = file_name;
+  else
+    {
+      /* Skip file system prefixes, leading pathnames that contain
+	 "..", and leading slashes.  */
+
+      size_t prefix_len = FILESYSTEM_PREFIX_LEN (file_name);
+
+      for (p = file_name + prefix_len; *p; )
+	{
+	  if (p[0] == '.' && p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
+	    prefix_len = p + 2 - file_name;
+
+	  do
+	    {
+	      char c = *p++;
+	      if (ISSLASH (c))
+		break;
+	    }
+	  while (*p);
+	}
+
+      for (p = file_name + prefix_len; ISSLASH (*p); p++)
+	continue;
+      prefix_len = p - file_name;
+
+      if (prefix_len)
+	{
+	  static Hash_table *prefix_table[2];
+	  char *prefix = alloca (prefix_len + 1);
+	  memcpy (prefix, file_name, prefix_len);
+	  prefix[prefix_len] = '\0';
+
+	  if (hash_string_insert (&prefix_table[link_target], prefix))
+	    {
+	      static char const *const diagnostic[] =
+	      {
+		N_("Removing leading `%s' from member names"),
+		N_("Removing leading `%s' from hard link targets")
+	      };
+	      WARN ((0, 0, _(diagnostic[link_target]), prefix));
+	    }
+	}
+    }
+
+  if (! *p)
+    {
+      if (p == file_name)
+	{
+	  static char const *const diagnostic[] =
+	  {
+	    N_("Substituting `.' for empty member name"),
+	    N_("Substituting `.' for empty hard link target")
+	  };
+	  WARN ((0, 0, _(diagnostic[link_target])));
+	}
+
+      p = ".";
+    }
+
+  return (char *) p;
+}
+
+/* Return nonzero if NAME contains ".." as a path name component.  */
+bool
+contains_dot_dot (char const *name)
+{
+  char const *p = name + FILESYSTEM_PREFIX_LEN (name);
+
+  for (;; p++)
+    {
+      if (p[0] == '.' && p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
+	return 1;
+
+      do
+	{
+	  if (! *p++)
+	    return 0;
+	}
+      while (! ISSLASH (*p));
+    }
 }
