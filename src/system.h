@@ -510,12 +510,13 @@ time_t time ();
 #if MSDOS
 # include <process.h>
 # define SET_BINARY_MODE(arc) setmode(arc, O_BINARY)
-# define ERRNO_IS_EACCESS errno == EACCESS
+# define ERRNO_IS_EACCES errno == EACCES
+# define mkdir(file, mode) (mkdir) (file)
 #else
 # include <pwd.h>
 # include <grp.h>
 # define SET_BINARY_MODE(arc)
-# define ERRNO_IS_EACCESS 0
+# define ERRNO_IS_EACCES 0
 #endif
 
 #if XENIX
