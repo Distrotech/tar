@@ -45,6 +45,8 @@ memset.c
 mktime.c
 modechange.c
 modechange.h
+obstack.h
+obstack.c
 pathmax.h
 quote.c
 quote.h
