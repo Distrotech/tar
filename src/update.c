@@ -1,5 +1,5 @@
 /* Update a tar archive.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -171,7 +171,7 @@ update_archive()
 		if(cmd_mode==CMD_CAT)
 			append_file(p);
 		else
-			dump_file(p,-1);
+			dump_file(p,-1, 1);
 	}
 
 	write_eot();
