@@ -590,6 +590,90 @@ argument for @samp{-f}, and @samp{-v} does not have a corresponding
 argument.  The modern syntax---@samp{tar -c -v -b 20 -f
 /dev/rmt0}---is clearer.
 
+@chapter Basic @code{tar} Operations
+
+This chapter describes the basic operations supported by the @code{tar}
+program.  A given invocation of @code{tar} will do exactly one of these
+operations.
+
+@section Creating a New Archive
+
+The @samp{--create} (@code{-c}) option causes @code{tar} to create a new
+archive.  The files to be archived are then named on the command line.
+Each file will be added to the archive with a member name exactly the
+same as the name given on the command line.  (When you give an absolute
+file name @code{tar} actually modifies it slightly, @ref{Absolute
+Paths}.)  If you list no files to be archived, then an empty archive is
+created. 
+
+If there are two many files to conveniently list on the command line,
+you can list the names in a file, and @code{tar} will read that file.
+@xref{Reading Names from a File}.
+
+If you name a directory, then @code{tar} will archive not only the
+directory, but all its contents, recursively.  For example, if you name
+@file{/}, then @code{tar} will archive the entire filesystem.
+
+Do not use the option to add files to an existing archive; it will
+delete the archive and write a new one.  Use @samp{--append} instead.
+(@xref{Adding to an Existing Archive}.)
+
+There are various ways of causing @code{tar} to skip over some files,
+and not archive them.  @xref{Specifying Names to @code{tar}}.
+
+@section Adding to an Existing Archive
+
+The @samp{--append} (@code{-r}) option will case @code{tar} to add new
+files to an existing archive.  It interprets file names and member names
+in exactly the same manner as @samp{--create}.  Nothing happens if you
+don't list any names.
+
+This option never deletes members.  If a new member is added under the
+same name as an existing member, then both will be in the archive, with
+the new member after the old one.  For information on how this affects
+reading the archive, @ref{Multiple Members with the Same Name}.
+
+This operation cannot be performed on some tape drives, unfortunately,
+due to deficiencies in the formats thoes tape drives use.
+
+@section Combining Archives
+
+The @samp{--catenate} (or @code{--concatenate}, or @code{-A}) causes
+@code{tar} to add the contents of several archives to an existing
+archive.  
+
+Name the archives to be catenated on the command line.  (Nothing happens
+if you don't list any.)  The members, and their member names, will be
+copied verbatim from those archives.  If this causes multiple members to
+have the same name, it does not delete either; all the members with the
+same name coexist.  For information on how this affects reading the
+archive, @ref{Multiple Members with the Same Name}.
+
+You must use this option to concatenate archives.  If you just combine
+them with @code{cat}, the result will not be a valid @code{tar} format
+archive.
+
+This operation cannot be performed on some tape drives, unfortunately,
+due to deficiencies in the formats thoes tape drives use.
+
+@section Removing Archive Members
+
+You can use the @samp{--delete} option to remove members from an
+archive.  Name the members on the command line to be deleted.  This
+option will rewrite the archive; because of this, it does not work on
+tape drives.  If you list no members to be deleted, nothing happens.
+
+@section Listing Archive Members
+
+The @samp{--list} (@samp{-t}) option will list the names of members of
+the archive.  Name the members to be listed on the command line (to
+modify the way these names are interpreted, @pxref{Specifying Names to
+@code{tar}}).  If you name no members, then @samp{--list} will list the
+names of all the members of the archive.
+
+To see more th
+
+
 @chapter Specifying Names to @code{tar}
 
 When specifying the names of files or members to @code{tar}, it by
@@ -645,8 +729,85 @@ If you only want @code{tar} make the date comparison on the basis of the
 actual contents of the file's modification, then use the
 @samp{--newer-mtime=@var{date}} option.
 
-You should not depend on this option for making incremental dumps.  To
-learn how to use @code{tar} to make backups, @ref{Making Backups}.
+You should never use this option for making incremental dumps.  To learn
+how to use @code{tar} to make backups, @ref{Making Backups}.
+
+@section Crossing Filesystem Boundaries
+
+The @samp{--one-file-system} option causes @code{tar} to modify its
+normal behavior in archiving the contents of directories.  If a file in
+a directory is not on the same filesystem as the directory itself
+(because it is a mounted filesystem in its own right), then @code{tar}
+will not archive that file, or (if it is a directory itself) anything
+beneath it.  
+
+This does not necessarily limit @code{tar} to only archiving the
+contents of a single filesystem, because all files named on the command
+line (or through the @samp{--files-from} option) will always be
+archived.  
+
+@chapter Changing the Names of Members when Archiing
+
+@section Changing Directory
+
+The @samp{--directory=@var{directory}} (@samp{-C @var{directory}})
+option causes @code{tar} to change its current working directory to
+@var{directory}.  Unlike most options, this one is processed at the
+point it occurs within the list of files to be processed.  Consider the
+following command:
+@example
+tar --create --file=foo.tar -C /etc passwd hosts -C /lib libc.a
+@end example
+
+This command will place the files @file{/etc/passwd}, @file{/etc/hosts},
+and @file{/lib/libc.a} into the archive.  However, the names of the
+archive members will be exactly what they were on the command line:
+@file{passwd}, @file{hosts}, and @file{libc.a}.  The @samp{--directory}
+option is frequently used to make the archive independent of the
+original name of the directory holding the files.
+
+Note that @samp{--directory} options are interpreted consecutively.  If
+@samp{--directory} option specifies a relative pathname, it is
+interpreted relative to the then current directory, which might not be
+the same as the original current working directory of @code{tar}, due to
+a previous @samp{--directory} option.
+
+When using @samp{--files-from} (@pxref{Reading Names from a File}), you
+can put @samp{-C} options in the file list.  Unfortunately, you cannot
+put @samp{--directory} options in the file list.  (This interpretation
+can be disabled by using the @samp{--null} option.)
+
+@section Absolute Path Names
+
+When @code{tar} extracts archive members from an archive, it strips any
+leading slashes (@code{/}) from the member name.  This causes absolute
+member names in the archive to be treated as relative file names.  This
+allows you to have such members extracted wherever you want, instead of
+being restricted to extracting the member in the exact directory named
+in the archive.  For example, if the archive member has the name
+@file{/etc/passwd}, @code{tar} will extract it as if the name were
+really @file{etc/passwd}.
+
+Other @code{tar} programs do not do this.  As a result, if you create an
+archive whose member names start with a slash, they will be difficult
+for other people with an inferior @code{tar} program to use.  Therefore,
+GNU @code{tar} also strips leading slashes from member names when
+putting members into the archive.  For example, if you ask @code{tar} to
+add the file @file{/bin/ls} to an archive, it will do so, but the member
+name will be @file{bin/ls}.
+
+If you use the @samp{--absolute-paths} option, @code{tar} will do
+neither of these transformations.
+
+@section Symbolic Links
+
+Normally, when @code{tar} archives a symbolic link, it writes a record
+to the archive naming the target of the link.  In that way, the
+@code{tar} archive is a faithful record of the filesystem contents.
+However, if you want @code{tar} to actually dump the contents of the
+target of the symbolic link, then use the @samp{--dereference} option.
+
+
 
 XXXX MIB XXXX
 
