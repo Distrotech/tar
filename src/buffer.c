@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright 1988, 92, 93, 94, 96, 97, 99, 2000 Free Software Foundation, Inc.
+   Copyright 1988,92,93,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -19,10 +19,6 @@
 #include "system.h"
 
 #include <signal.h>
-#include <time.h>
-#ifndef time
-time_t time ();
-#endif
 
 #if MSDOS
 # include <process.h>
@@ -584,17 +580,8 @@ child_open_for_uncompress (void)
       while (maximum)
 	{
 	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
-	  status = full_write (STDOUT_FILENO, cursor, count);
-	  if (status < 0)
+	  if (full_write (STDOUT_FILENO, cursor, count) != count)
 	    write_error (use_compress_program_option);
-
-	  if (status != count)
-	    {
-	      ERROR ((0, 0, _("Write to compression program short %lu bytes"),
-		      (unsigned long) (count - status)));
-	      count = status;
-	    }
-
 	  cursor += count;
 	  maximum -= count;
 	}
@@ -896,7 +883,7 @@ flush_write (void)
 	    }
 
 	  cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
-	  while (*cursor == '/')
+	  while (ISSLASH (*cursor))
 	    cursor++;
 
 	  assign_string (&real_s_name, cursor);
@@ -993,7 +980,7 @@ flush_write (void)
 	{
 	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
 
-	  while (*cursor == '/')
+	  while (ISSLASH (*cursor))
 	    cursor++;
 
 	  assign_string (&real_s_name, cursor);
@@ -1070,7 +1057,7 @@ flush_read (void)
 	{
 	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
 
-	  while (*cursor == '/')
+	  while (ISSLASH (*cursor))
 	    cursor++;
 
 	  assign_string (&real_s_name, cursor);
