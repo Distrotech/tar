@@ -50,6 +50,7 @@ struct link
   {
     dev_t dev;
     ino_t ino;
+    size_t nlink;
     char name[1];
   };
 
@@ -847,6 +848,11 @@ compare_links (void const *entry1, void const *entry2)
   return ((link1->dev ^ link2->dev) | (link1->ino ^ link2->ino)) == 0;
 }
 
+/* Table of all non-directories that we've written so far.  Any time
+   we see another, we check the table and avoid dumping the data
+   again if we've done it once already.  */
+static Hash_table *link_table;
+
 /* Dump a single file, recursing on directories.  P is the file name
    to dump.  TOP_LEVEL tells whether this is a top-level call; zero
    means no, positive means yes, and negative means the top level
@@ -868,11 +874,6 @@ dump_file (char *p, int top_level, dev_t parent_device)
   time_t original_ctime;
   struct utimbuf restore_times;
   off_t block_ordinal = -1;
-
-  /* Table of all non-directories that we've written so far.  Any time
-     we see another, we check the table and avoid dumping the data
-     again if we've done it once already.  */
-  static Hash_table *link_table;
 
   /* FIXME: `header' might be used uninitialized in this
      function.  Reported by Bruno Haible.  */
@@ -1115,6 +1116,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      /* We found a link.  */
 	      char const *link_name = safer_name_suffix (dup->name, 1);
 
+	      dup->nlink--;
+	      
 	      block_ordinal = current_block_ordinal ();
 	      if (NAME_FIELD_SIZE <= strlen (link_name))
 		write_long (link_name, GNUTYPE_LONGLINK);
@@ -1521,6 +1524,7 @@ file_was_dumped:
 				 + strlen (p) + 1);
       lp->ino = current_stat.st_ino;
       lp->dev = current_stat.st_dev;
+      lp->nlink = current_stat.st_nlink;
       strcpy (lp->name, p);
 
       if (! ((link_table
@@ -1531,6 +1535,27 @@ file_was_dumped:
 
       if (dup != lp)
 	abort ();
+      lp->nlink--;
     }
 
+}
+
+/* For each dumped file, check if all its links were dumped. Emit
+   warnings if it is not so. */
+void
+check_links ()
+{
+  struct link *lp;
+
+  if (!link_table)
+    return;
+
+  for (lp = hash_get_first (link_table); lp;
+       lp = hash_get_next (link_table, lp))
+    {
+      if (lp->nlink)
+	{
+	  WARN ((0, 0, _("Missing links to '%s'.\n"), lp->name));
+	}
+    }
 }
