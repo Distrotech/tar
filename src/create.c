@@ -167,7 +167,7 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 			  ? MAX_VAL_WITH_DIGITS (size - 1, LG_256)
 			  : MAX_VAL_WITH_DIGITS (size - 1, LG_8));
       char valbuf[UINTMAX_STRSIZE_BOUND + 1];
-      char maxbuf[UINTMAX_STRSIZE_BOUND]
+      char maxbuf[UINTMAX_STRSIZE_BOUND];
       char minbuf[UINTMAX_STRSIZE_BOUND + 1];
       char subbuf[UINTMAX_STRSIZE_BOUND + 1];
       char *value_string = STRINGIFY_BIGINT (v, valbuf + 1);
@@ -176,8 +176,9 @@ to_chars (int negative, uintmax_t value, size_t valsize,
       if (base256_allowed)
 	{
 	  uintmax_t m = maxval + 1 ? maxval + 1 : maxval / 2 + 1;
-	  minval_string = STRINGIFY_BIGINT (m, minbuf + 1);
-	  *--minval_string = '-';
+	  char *p = STRINGIFY_BIGINT (m, minbuf + 1);
+	  *--p = '-';
+	  minval_string = p;
 	}
       else
 	minval_string = "0";
@@ -872,7 +873,7 @@ create_archive (void)
       const char *q;
       char *bufp;
 
-      name_expand (1);
+      collect_and_sort_names ();
 
       while (p = name_from_list (), p)
 	if (!excluded_name (p))
