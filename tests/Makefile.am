@@ -51,6 +51,7 @@ TESTSUITE_AT = \
  delete02.at\
  delete03.at\
  delete04.at\
+ delete05.at\
  extrac01.at\
  extrac02.at\
  extrac03.at\
