@@ -1,5 +1,19 @@
 2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/delete.c: Fixed deletion from the POSIX archives.
+	* src/list.c (read_header): Minor change.
+	* src/tar.c (main): Do not check for volume_label_option
+	if subcommand_option is not CREATE_SUBCOMMAND.
+	* src/xheader.c (xheader_decode): Store the header as
+	well (for eventual delete).
+
+	* tests/incremen.sh: Explicitly request GNU format. This will
+	disappear when GNU extended header keywords are working.
+	* tests/multiv01.sh: Likewise
+	* tests/volume.sh: Likewise
+	
+2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* src/create.c: Support for "linkpath" extended keyword.
 	* src/xheader.c (decode_record): Reversed the return
 	condition.
