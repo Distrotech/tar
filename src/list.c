@@ -35,7 +35,6 @@ union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
 
-static char const *tartime PARAMS ((time_t));
 static uintmax_t from_header PARAMS ((const char *, size_t, const char *,
 				      uintmax_t, uintmax_t));
 
@@ -160,12 +159,12 @@ read_and (void (*do_something) ())
 	  switch (prev_status)
 	    {
 	    case HEADER_STILL_UNREAD:
-	      WARN ((0, 0, _("This does not look like a tar archive")));
+	      ERROR ((0, 0, _("This does not look like a tar archive")));
 	      /* Fall through.  */
 
 	    case HEADER_ZERO_BLOCK:
 	    case HEADER_SUCCESS:
-	      WARN ((0, 0, _("Skipping to next header")));
+	      ERROR ((0, 0, _("Skipping to next header")));
 	      break;
 
 	    case HEADER_END_OF_FILE:
@@ -816,7 +815,7 @@ stringify_uintmax_t_backwards (uintmax_t o, char *buf)
 /* Return a printable representation of T.  The result points to
    static storage that can be reused in the next call to this
    function, to ctime, or to asctime.  */
-static char const *
+char const *
 tartime (time_t t)
 {
   static char buffer[max (UINTMAX_STRSIZE_BOUND + 1,
