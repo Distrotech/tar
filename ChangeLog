@@ -1,3 +1,8 @@
+2004-02-26  Paul Eggert  <eggert@twinsun.com>
+
+	* doc/tar.texi (dircategory Individual utilities): Append period,
+	as suggested by Karl Berry.
+
 2004-02-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (decode_header): Call xheader_decode before

@@ -527,7 +527,7 @@ developing GNU and promoting software freedom.''
 
 @dircategory Individual utilities
 @direntry
-* tar: (tar)tar invocation.                     Invoking @GNUTAR{}
+* tar: (tar)tar invocation.                     Invoking @GNUTAR{}.
 @end direntry
 
 @shorttitlepage @acronym{GNU} @command{tar}
