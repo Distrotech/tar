@@ -171,150 +171,10 @@ read_and_process (off_t size, int (*processor) (size_t, char *))
     }
 }
 
-/* JK Diff'ing a sparse file with its counterpart on the tar file is a
-   bit of a different story than a normal file.  First, we must know what
-   areas of the file to skip through, i.e., we need to construct a
-   sparsearray, which will hold all the information we need.  We must
-   compare small amounts of data at a time as we find it.  */
-
-/* FIXME: This does not look very solid to me, at first glance.  Zero areas
-   are not checked, spurious sparse entries seemingly goes undetected, and
-   I'm not sure overall identical sparsity is verified.  */
-
 static void
 diff_sparse_files (void)
 {
-  off_t remaining_size = current_stat_info.stat.st_size;
-  char *buffer = xmalloc (BLOCKSIZE * sizeof (char));
-  size_t buffer_size = BLOCKSIZE;
-  union block *data_block = 0;
-  int counter = 0;
-  int different = 0;
-
-  if (! fill_in_sparse_array ())
-    fatal_exit ();
-
-  while (remaining_size > 0)
-    {
-      ssize_t status;
-      size_t chunk_size;
-      off_t offset;
-
-#if 0
-      off_t amount_read = 0;
-#endif
-
-      data_block = find_next_block ();
-      if (!data_block)
-	FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-      chunk_size = sparsearray[counter].numbytes;
-      if (!chunk_size)
-	break;
-
-      offset = sparsearray[counter].offset;
-      if (lseek (diff_handle, offset, SEEK_SET) < 0)
-	{
-	  seek_error_details (current_stat_info.file_name, offset);
-	  report_difference (NULL);
-	}
-
-      /* Take care to not run out of room in our buffer.  */
-
-      while (buffer_size < chunk_size)
-	{
-	  if (buffer_size * 2 < buffer_size)
-	    xalloc_die ();
-	  buffer_size *= 2;
-	  buffer = xrealloc (buffer, buffer_size * sizeof (char));
-	}
-
-      while (chunk_size > BLOCKSIZE)
-	{
-	  if (status = safe_read (diff_handle, buffer, BLOCKSIZE),
-	      status != BLOCKSIZE)
-	    {
-	      if (status < 0)
-		{
-		  read_error (current_stat_info.file_name);
-		  report_difference (NULL);
-		}
-	      else
-		{
-		  report_difference (ngettext ("Could only read %lu of %lu byte",
-				     "Could only read %lu of %lu bytes",
-				     chunk_size),
-				     (unsigned long) status,
-				     (unsigned long) chunk_size);
-		}
-	      break;
-	    }
-
-	  if (memcmp (buffer, data_block->buffer, BLOCKSIZE))
-	    {
-	      different = 1;
-	      break;
-	    }
-
-	  chunk_size -= status;
-	  remaining_size -= status;
-	  set_next_block_after (data_block);
-	  data_block = find_next_block ();
-	  if (!data_block)
-	    FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-	}
-      if (status = safe_read (diff_handle, buffer, chunk_size),
-	  status != chunk_size)
-	{
-	  if (status < 0)
-	    {
-	      read_error (current_stat_info.file_name);
-	      report_difference (NULL);
-	    }
-	  else
-	    {
-	      report_difference (ngettext ("Could only read %lu of %lu byte",
-				 "Could only read %lu of %lu bytes",
-				 chunk_size),
-				 (unsigned long) status,
-				 (unsigned long) chunk_size);
-	    }
-	  break;
-	}
-
-      if (memcmp (buffer, data_block->buffer, chunk_size))
-	{
-	  different = 1;
-	  break;
-	}
-#if 0
-      amount_read += chunk_size;
-      if (amount_read >= BLOCKSIZE)
-	{
-	  amount_read = 0;
-	  set_next_block_after (data_block);
-	  data_block = find_next_block ();
-	  if (!data_block)
-	    FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-	}
-#endif
-      set_next_block_after (data_block);
-      counter++;
-      remaining_size -= chunk_size;
-    }
-
-#if 0
-  /* If the number of bytes read isn't the number of bytes supposedly in
-     the file, they're different.  */
-
-  if (amount_read != current_stat_info.stat.st_size)
-    different = 1;
-#endif
-
-  set_next_block_after (data_block);
-  free (sparsearray);
-
-  if (different)
-    report_difference (_("Contents differ"));
+  /*FIXME!!*/abort();
 }
 
 /* Call either stat or lstat over STAT_DATA, depending on
@@ -355,7 +215,7 @@ diff_archive (void)
     {
       if (now_verifying)
 	fprintf (stdlis, _("Verify "));
-      print_header (-1);
+      print_header (&current_stat_info, -1);
     }
 
   switch (current_header->header.typeflag)
