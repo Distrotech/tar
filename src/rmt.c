@@ -335,7 +335,7 @@ see the file named COPYING for details."));
     }
 
 top:
-  errno = 0;			/* FIXME: errno should be read-only */
+  errno = 0;
   status = 0;
   if (safe_read (STDIN_FILENO, &command, 1) != 1)
     return EXIT_SUCCESS;

@@ -52,7 +52,6 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 
 #define rmtstat(Path, Buffer) \
   (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : stat (Path, Buffer))
-				/* FIXME: errno should be read-only */
 
 #define rmtcreat(Path, Mode, Command) \
    (_remdev (Path) \
@@ -61,7 +60,6 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 
 #define rmtlstat(Path, Buffer) \
   (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : lstat (Path, Buffer))
-				/* FIXME: errno should be read-only */
 
 #define rmtread(Fd, Buffer, Length) \
   (_isrmt (Fd) ? rmt_read__ (Fd - __REM_BIAS, Buffer, Length) \
@@ -84,15 +82,12 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 
 #define rmtdup(Fd) \
   (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : dup (Fd))
-				/* FIXME: errno should be read-only */
 
 #define rmtfstat(Fd, Buffer) \
   (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fstat (Fd, Buffer))
-				/* FIXME: errno should be read-only */
 
 #define rmtfcntl(Fd, Command, Argument) \
   (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fcntl (Fd, Command, Argument))
-				/* FIXME: errno should be read-only */
 
 #define rmtisatty(Fd) \
   (_isrmt (Fd) ? 0 : isatty (Fd))

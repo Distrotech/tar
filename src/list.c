@@ -223,7 +223,7 @@ list_archive (void)
 	  written = available_space_after (data_block);
 	  if (written > size)
 	    written = size;
-	  errno = 0;		/* FIXME: errno should be read-only */
+	  errno = 0;
 	  check = fwrite (data_block->buffer, sizeof (char), written, stdlis);
 	  set_next_block_after ((union block *)
 				(data_block->buffer + written - 1));

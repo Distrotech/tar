@@ -104,7 +104,7 @@ _rmt_shutdown (int handle, int errno_value)
   close (WRITE_SIDE (handle));
   READ_SIDE (handle) = -1;
   WRITE_SIDE (handle) = -1;
-  errno = errno_value;		/* FIXME: errno should be read-only */
+  errno = errno_value;
 }
 
 /*-------------------------------------------------------------------------.
@@ -173,7 +173,7 @@ get_status_string (int handle, char *command_buffer)
 
   if (*cursor == 'E' || *cursor == 'F')
     {
-      errno = atoi (cursor + 1); /* FIXME: errno should be read-only */
+      errno = atoi (cursor + 1);
 
       /* Skip the error message line.  */
 
@@ -379,7 +379,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 
   if (remote_pipe_number == MAXUNIT)
     {
-      errno = EMFILE;		/* FIXME: errno should be read-only */
+      errno = EMFILE;
       return -1;
     }
 
@@ -670,7 +670,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
   switch (operation)
     {
     default:
-      errno = EOPNOTSUPP;	/* FIXME: errno should be read-only */
+      errno = EOPNOTSUPP;
       return -1;
 
 #ifdef MTIOCTOP

@@ -243,7 +243,7 @@ make_directories (char *file_name)
       break;
     }
 
-  errno = saved_errno;		/* FIXME: errno should be read-only */
+  errno = saved_errno;
   return did_something;		/* tell them to retry if we made one */
 }
 
@@ -648,7 +648,7 @@ extract_archive (void)
 
 	    if (written > size)
 	      written = size;
-	    errno = 0;		/* FIXME: errno should be read-only */
+	    errno = 0;
 	    sstatus = full_write (fd, data_block->buffer, written);
 
 	    set_next_block_after ((union block *)
@@ -886,7 +886,7 @@ extract_archive (void)
 	      if (stat (CURRENT_FILE_NAME, &st1) == 0 && S_ISDIR (st1.st_mode))
 		goto check_perms;
 
-	      errno = saved_errno; /* FIXME: errno should be read-only */
+	      errno = saved_errno;
 	    }
 
 	  if (maybe_recoverable (CURRENT_FILE_NAME))

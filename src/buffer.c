@@ -912,7 +912,7 @@ flush_write (void)
 
   if (tape_length_option && tape_length_option <= bytes_written)
     {
-      errno = ENOSPC;		/* FIXME: errno should be read-only */
+      errno = ENOSPC;
       status = 0;
     }
   else if (dev_null_output)
