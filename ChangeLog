@@ -1,5 +1,16 @@
 2005-02-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* po/POTFILES.in: Added tests/genfile.c
+	* src/buffer.c (short_read): Use ngettext()
+	(new_volume): use quote().
+	* src/create.c: Use quote()
+	* src/extract.c: Likewise
+	* src/xheader.c: Likewise
+	* src/misc.c: Add comments to translators
+
+	* tests/same-order01.at: sort ls output
+	* tests/sparse01.at (RE_CHECK): Added missing space
+	
 	* tests/sparse02.at: Test extracting sparse files over a pipe.
 	* tests/Makefile.am: Added sparse02.at
 	* tests/testsuite.at: Likewise
