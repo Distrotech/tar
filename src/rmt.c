@@ -175,6 +175,83 @@ prepare_record_buffer (size_t size)
 #endif
 }
 
+/* Decode OFLAG_STRING, which represents the 2nd argument to `open'.
+   OFLAG_STRING should contain an integer, followed by an optional
+   symbolic representation of an open flag using only '|' to separate
+   its components (e.g. "O_WRONLY|O_CREAT|O_TRUNC").  Prefer the
+   symbolic representation if available, falling back on the numeric
+   representation otherwise.
+
+   This function should be the inverse of encode_oflag.  The numeric
+   representation is not portable from one host to another, but it is
+   for backward compatibility with old-fashioned clients that do not
+   emit symbolic open flags.  */
+
+static int
+decode_oflag (char const *oflag_string)
+{
+  char *oflag_num_end;
+  int numeric_oflag = strtol (oflag_string, &oflag_num_end, 10);
+  int symbolic_oflag = 0;
+  
+  oflag_string = oflag_num_end;
+  while (ISSPACE ((unsigned char) *oflag_string))
+    oflag_string++;
+    
+  do
+    {
+      struct name_value_pair { char const *name; int value; };
+      static struct name_value_pair const table[] =
+      {
+	{"APPEND", O_APPEND},
+	{"CREAT", O_CREAT},
+#ifdef O_DSYNC
+	{"DSYNC", O_DSYNC},
+#endif
+	{"EXCL", O_EXCL},
+#ifdef O_LARGEFILE
+	{"LARGEFILE", O_LARGEFILE}, /* LFS extension for opening large files */
+#endif
+#ifdef O_NOCTTY
+	{"NOCTTY", O_NOCTTY},
+#endif
+#ifdef O_NONBLOCK
+	{"NONBLOCK", O_NONBLOCK},
+#endif
+	{"RDONLY", O_RDONLY},
+	{"RDWR", O_RDWR},
+#ifdef O_RSYNC
+	{"RSYNC", O_RSYNC},
+#endif
+#ifdef O_SYNC
+	{"SYNC", O_SYNC},
+#endif
+	{"TRUNC", O_TRUNC},
+	{"WRONLY", O_WRONLY}
+      };
+      struct name_value_pair const *t;
+      size_t s;
+
+      if (*oflag_string++ != 'O' || *oflag_string++ != '_')
+	return numeric_oflag;
+
+      for (t = table;
+	   (strncmp (oflag_string, t->name, s = strlen (t->name)) != 0
+	    || (oflag_string[s]
+		&& strchr ("ABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789",
+			   oflag_string[s])));
+	   t++)
+	if (t == table + sizeof table / sizeof *table - 1)
+	  return numeric_oflag;
+
+      symbolic_oflag |= t->value;
+      oflag_string += s;
+    }
+  while (*oflag_string++ == '|');
+
+  return symbolic_oflag;
+}
+
 /*---.
 | ?  |
 `---*/
@@ -221,16 +298,16 @@ top:
     case 'O':
       {
 	char device_string[STRING_SIZE];
-	char mode_string[STRING_SIZE];
+	char oflag_string[STRING_SIZE];
 
 	get_string (device_string);
-	get_string (mode_string);
-	DEBUG2 ("rmtd: O %s %s\n", device_string, mode_string);
+	get_string (oflag_string);
+	DEBUG2 ("rmtd: O %s %s\n", device_string, oflag_string);
 
 	if (tape >= 0)
 	  close (tape);
 
-	tape = open (device_string, atoi (mode_string), 0666);
+	tape = open (device_string, decode_oflag (oflag_string), MODE_RW);
 	if (tape < 0)
 	  goto ioerror;
 	goto respond;
