@@ -1,3 +1,45 @@
+2004-04-04  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* tests/sparse01.sh: New file
+	* tests/multiv02.sh: New file
+	* tests/Makefile.am: Add sparse01.sh
+	
+	* src/common.h: Added missing prototypes
+	* src/compare.c (diff_archive): Use is_sparse member
+	instead of GNUTYPE_SPARSE.
+	* src/create.c: Removed unused variables
+	* src/extract.c (extract_archive): Use sparse_member_p instead
+	of GNUTYPE_SPARSE.
+	Removed unused variables
+	* src/list.c (decode_header): Use sparse_fixup_header to correct
+	the st_size value.
+	(print_header): Do not rely on GNUTYPE_SPARSE type.
+	Use st->stat.st_size to print real file size.
+	(skip_member): Assign stat_info.file_name to save_name. This fixes
+	bug reported by Mads Martin Joergensen <mmj@suse.de>
+	Use sparse_skip_file() to skip sparse members.
+	* src/rtapelib.c: include "common.h"
+	* src/sparse.c (struct tar_sparse_optab.sparse_member_p)
+	(struct tar_sparse_optab.fixup_header): New member
+	(tar_sparse_member_p): New function.
+	(tar_sparse_init): Return true if decode_header is not provided
+	(tar_sparse_fixup_header)
+	(sparse_member_p,sparse_fixup_header)
+	(sparse_skip_file)
+	(oldgnu_sparse_member_p,oldgnu_fixup_header,star_sparse_member_p)
+	(star_fixup_header, pax_sparse_member_p): New function
+	(pax_decode_header): Remove
+	* src/system.h: Include <sys/time.h> and <utime.h> when available
+	* src/tar.c (usage): Prototype moved to common.h
+	* src/tar.h (struct tar_stat_info.is_sparse): New member
+	* src/utf8.c (utf8_convert): Changed prototype
+	(get_input_charset): Removed unused variable
+	* src/xheader.c: include <fnmatch.h>
+	(size_decoder): Assign to both st->archive_file_size and
+	st->stat.st_size.
+	(st->stat.st_size): Assign to st->stat.st_size
+	(sparse_numbytes_decoder): Removed unused variable
+	
 2004-03-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c (write_long_name): Do not allow more than
