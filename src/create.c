@@ -1,5 +1,8 @@
 /* Create a tar archive.
-   Copyright 1985,92,93,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
+   2003 Free Software Foundation, Inc.
+
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -113,7 +116,7 @@ to_base256 (int negative, uintmax_t value, char *where, size_t size)
 
 static void
 to_chars (int negative, uintmax_t value, size_t valsize,
-	  uintmax_t (*substitute) PARAMS ((int *)),
+	  uintmax_t (*substitute) (int *),
 	  char *where, size_t size, const char *type)
 {
   int base256_allowed = (archive_format == GNU_FORMAT
@@ -355,7 +358,7 @@ write_eot (void)
 
 /* FIXME: Cross recursion between start_header and write_long!  */
 
-static union block *start_header PARAMS ((const char *, struct stat *));
+static union block *start_header (const char *, struct stat *);
 
 static void
 write_long (const char *p, char type)
@@ -370,7 +373,7 @@ write_long (const char *p, char type)
 
   header = start_header ("././@LongLink", &foo);
   header->header.typeflag = type;
-  finish_header (header);
+  finish_header (header, -1);
 
   header = find_next_block ();
 
@@ -390,46 +393,6 @@ write_long (const char *p, char type)
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
 
-/* Return a suffix of the file NAME that is a relative file name.
-   Warn about `..' in file names.  But return NAME if the user wants
-   absolute file names.  */
-static char const *
-relativize (char const *name)
-{
-  if (! absolute_names_option)
-    {
-      {
-	static int warned_once;
-	if (! warned_once && contains_dot_dot (name))
-	  {
-	    warned_once = 1;
-	    WARN ((0, 0, _("Member names contain `..'")));
-	  }
-      }
-
-      {
-	size_t prefix_len = FILESYSTEM_PREFIX_LEN (name);
-
-	while (ISSLASH (name[prefix_len]))
-	  prefix_len++;
-
-	if (prefix_len)
-	  {
-	    static int warned_once;
-	    if (!warned_once)
-	      {
-		warned_once = 1;
-		WARN ((0, 0, _("Removing leading `%.*s' from member names"),
-		       (int) prefix_len, name));
-	      }
-	    name += prefix_len;
-	  }
-      }
-    }
-
-  return name;
-}
-
 /* Header handling.  */
 
 /* Make a header block for the file whose stat info is st,
@@ -440,7 +403,7 @@ start_header (const char *name, struct stat *st)
 {
   union block *header;
 
-  name = relativize (name);
+  name = safer_name_suffix (name, 0);
 
   if (sizeof header->header.name <= strlen (name))
     write_long (name, GNUTYPE_LONGNAME);
@@ -494,6 +457,8 @@ start_header (const char *name, struct stat *st)
   GID_TO_CHARS (st->st_gid, header->header.gid);
   OFF_TO_CHARS (st->st_size, header->header.size);
   TIME_TO_CHARS (st->st_mtime, header->header.mtime);
+  MAJOR_TO_CHARS (0, header->header.devmajor);
+  MINOR_TO_CHARS (0, header->header.devminor);
 
   if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
@@ -538,9 +503,11 @@ start_header (const char *name, struct stat *st)
 }
 
 /* Finish off a filled-in header block and write it out.  We also
-   print the file name and/or full info if verbose is on.  */
+   print the file name and/or full info if verbose is on.  If BLOCK_ORDINAL
+   is not negative, is the block ordinal of the first record for this
+   file, which may be a preceding long name or long link record.  */
 void
-finish_header (union block *header)
+finish_header (union block *header, off_t block_ordinal)
 {
   size_t i;
   int sum;
@@ -575,7 +542,7 @@ finish_header (union block *header)
       current_header = header;
       /* current_stat is already set up.  */
       current_format = archive_format;
-      print_header ();
+      print_header (block_ordinal);
     }
 
   set_next_block_after (header);
@@ -597,14 +564,12 @@ zero_block_p (char *buffer)
   return 1;
 }
 
-static void
+void
 init_sparsearray (void)
 {
-  sp_array_size = 10;
-
-  /* Make room for our scratch space -- initially is 10 elts long.  */
-
-  sparsearray = xmalloc (sp_array_size * sizeof (struct sp_array));
+  if (! sp_array_size)
+    sp_array_size = SPARSES_IN_OLDGNU_HEADER;
+  sparsearray = xmalloc (sp_array_size * sizeof *sparsearray);
 }
 
 static off_t
@@ -884,8 +849,8 @@ compare_links (void const *entry1, void const *entry2)
 
 /* Dump a single file, recursing on directories.  P is the file name
    to dump.  TOP_LEVEL tells whether this is a top-level call; zero
-   means no, positive means yes, and negative means an incremental
-   dump.  PARENT_DEVICE is the device of P's
+   means no, positive means yes, and negative means the top level
+   of an incremental dump.  PARENT_DEVICE is the device of P's
    parent directory; it is examined only if TOP_LEVEL is zero.
 
    Set global CURRENT_STAT to stat output for this file.  */
@@ -902,6 +867,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
   char save_typeflag;
   time_t original_ctime;
   struct utimbuf restore_times;
+  off_t block_ordinal = -1;
+
+  /* Table of all non-directories that we've written so far.  Any time
+     we see another, we check the table and avoid dumping the data
+     again if we've done it once already.  */
+  static Hash_table *link_table;
 
   /* FIXME: `header' might be used uninitialized in this
      function.  Reported by Bruno Haible.  */
@@ -1006,6 +977,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	     reasons either, so until these are reported (anew?), just allow
 	     directory blocks to be written even with old archives.  */
 
+	  block_ordinal = current_block_ordinal ();
 	  current_stat.st_size = 0;	/* force 0 size on dir */
 
 	  /* FIXME: If people could really read standard archives, this
@@ -1027,7 +999,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  /* If we're gnudumping, we aren't done yet so don't close it.  */
 
 	  if (!incremental_option)
-	    finish_header (header);	/* done with directory header */
+	    finish_header (header, block_ordinal);
 	}
 
       if (incremental_option && gnu_list_name->dir_contents)
@@ -1041,17 +1013,16 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 	  buffer = gnu_list_name->dir_contents; /* FOO */
 	  totsize = 0;
-	  for (p_buffer = buffer; p_buffer && *p_buffer;)
-	    {
-	      size_t tmp;
-
-	      tmp = strlen (p_buffer) + 1;
-	      totsize += tmp;
-	      p_buffer += tmp;
-	    }
+	  if (buffer)
+	    for (p_buffer = buffer; *p_buffer; )
+	      {
+		size_t size = strlen (p_buffer) + 1;
+		totsize += size;
+		p_buffer += size;
+	      }
 	  totsize++;
 	  OFF_TO_CHARS (totsize, header->header.size);
-	  finish_header (header);
+	  finish_header (header, block_ordinal);
 	  p_buffer = buffer;
 	  sizeleft = totsize;
 	  while (sizeleft > 0)
@@ -1108,7 +1079,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	   (entrylen = strlen (entry)) != 0;
 	   entry += entrylen + 1)
 	{
-	  if (buflen <= len + entrylen)
+	  if (buflen < len + entrylen)
 	    {
 	      buflen = len + entrylen;
 	      namebuf = xrealloc (namebuf, buflen + 1);
@@ -1130,35 +1101,21 @@ dump_file (char *p, int top_level, dev_t parent_device)
     return;
   else
     {
-      /* Check for multiple links.
+      /* Check for multiple links.  */
 
-	 We maintain a table of all such files that we've written so
-	 far.  Any time we see another, we check the table and avoid
-	 dumping the data again if we've done it once already.  */
-
-      if (1 < current_stat.st_nlink)
+      if (1 < current_stat.st_nlink && link_table)
 	{
-	  static Hash_table *link_table;
-	  struct link *lp = xmalloc (offsetof (struct link, name)
-				     + strlen (p) + 1);
+	  struct link lp;
 	  struct link *dup;
-	  lp->ino = current_stat.st_ino;
-	  lp->dev = current_stat.st_dev;
-	  strcpy (lp->name, p);
+	  lp.ino = current_stat.st_ino;
+	  lp.dev = current_stat.st_dev;
 
-	  if (! ((link_table
-		  || (link_table = hash_initialize (0, 0, hash_link,
-						    compare_links, 0)))
-		 && (dup = hash_insert (link_table, lp))))
-	    xalloc_die ();
-
-	  if (dup != lp)
+	  if ((dup = hash_lookup (link_table, &lp)))
 	    {
 	      /* We found a link.  */
-	      char const *link_name = relativize (dup->name);
+	      char const *link_name = safer_name_suffix (dup->name, 1);
 
-	      free (lp);
-
+	      block_ordinal = current_block_ordinal ();
 	      if (NAME_FIELD_SIZE <= strlen (link_name))
 		write_long (link_name, GNUTYPE_LONGLINK);
 	      assign_string (&current_link_name, link_name);
@@ -1171,14 +1128,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      header->header.linkname[NAME_FIELD_SIZE - 1] = 0;
 
 	      header->header.typeflag = LNKTYPE;
-	      finish_header (header);
+	      finish_header (header, block_ordinal);
 
 	      /* FIXME: Maybe remove from table after all links found?  */
 
 	      if (remove_files_option && unlink (p) != 0)
 		unlink_error (p);
 
-	      /* We dumped it.  */
+	      /* We dumped it, and we don't need to put it in the
+                 table again.  */
 	      return;
 	    }
 	}
@@ -1203,7 +1161,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    {
 	      /* Check the size of the file against the number of blocks
 		 allocated for it, counting both data and indirect blocks.
-		 If there is a smaller number of blocks that would be
+		 If there is a smaller number of blocks than would be
 		 necessary to accommodate a file of this size, this is safe
 		 to say that we have a sparse file: at least one of those
 		 blocks in the file is just a useless hole.  For sparse
@@ -1238,6 +1196,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		{
 		  int counter;
 
+		  block_ordinal = current_block_ordinal ();
 		  header = start_header (p, &current_stat);
 		  header->header.typeflag = GNUTYPE_SPARSE;
 		  header_moved = 1;
@@ -1307,7 +1266,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  /* If the file is sparse, we've already taken care of this.  */
 
 	  if (!header_moved)
-	    header = start_header (p, &current_stat);
+	    {
+	      block_ordinal = current_block_ordinal ();
+	      header = start_header (p, &current_stat);
+	    }
 
 	  /* Mark contiguous files, if we support them.  */
 
@@ -1316,7 +1278,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 	  isextended = header->oldgnu_header.isextended;
 	  save_typeflag = header->header.typeflag;
-	  finish_header (header);
+	  finish_header (header, block_ordinal);
 	  if (isextended)
 	    {
 	      int sparses_emitted = SPARSES_IN_OLDGNU_HEADER;
@@ -1384,7 +1346,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		      (p, current_stat.st_size - sizeleft, bufsize);
 		    goto padit;
 		  }
-		sizeleft -= bufsize;
+		sizeleft -= count;
 
 		/* This is nonportable (the type of set_next_block_after's arg).  */
 
@@ -1422,8 +1384,6 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		{
 		  char const *qp = quotearg_colon (p);
 		  WARN ((0, 0, _("%s: file changed as we read it"), qp));
-		  if (! ignore_failed_read_option)
-		    exit_status = TAREXIT_FAILURE;
 		}
 	      if (close (f) != 0)
 		{
@@ -1440,7 +1400,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      if (unlink (p) == -1)
 		unlink_error (p);
 	    }
-	  return;
+	  goto file_was_dumped;
 
 	  /* File shrunk or gave error, pad out tape to match the size we
 	     specified in the header.  */
@@ -1462,7 +1422,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      if (atime_preserve_option)
 		utime (p, &restore_times);
 	    }
-	  return;
+	  goto file_was_dumped;
 	}
 #ifdef HAVE_READLINK
       else if (S_ISLNK (current_stat.st_mode))
@@ -1487,18 +1447,21 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    write_long (buffer, GNUTYPE_LONGLINK);
 	  assign_string (&current_link_name, buffer);
 
+	  block_ordinal = current_block_ordinal ();
 	  current_stat.st_size = 0;	/* force 0 size on symlink */
 	  header = start_header (p, &current_stat);
 	  strncpy (header->header.linkname, buffer, NAME_FIELD_SIZE);
 	  header->header.linkname[NAME_FIELD_SIZE - 1] = '\0';
 	  header->header.typeflag = SYMTYPE;
-	  finish_header (header);	/* nothing more to do to it */
+	  finish_header (header, block_ordinal);
+	  /* nothing more to do to it */
+
 	  if (remove_files_option)
 	    {
 	      if (unlink (p) == -1)
 		unlink_error (p);
 	    }
-	  return;
+	  goto file_was_dumped;
 	}
 #endif
       else if (S_ISCHR (current_stat.st_mode))
@@ -1524,6 +1487,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
   if (archive_format == V7_FORMAT)
     goto unknown;
 
+  block_ordinal = current_block_ordinal ();
   current_stat.st_size = 0;	/* force 0 size */
   header = start_header (p, &current_stat);
   header->header.typeflag = type;
@@ -1534,17 +1498,39 @@ dump_file (char *p, int top_level, dev_t parent_device)
       MINOR_TO_CHARS (minor (current_stat.st_rdev), header->header.devminor);
     }
 
-  finish_header (header);
+  finish_header (header, block_ordinal);
   if (remove_files_option)
     {
       if (unlink (p) == -1)
 	unlink_error (p);
     }
-  return;
+  goto file_was_dumped;
 
 unknown:
   WARN ((0, 0, _("%s: Unknown file type; file ignored"),
 	 quotearg_colon (p)));
   if (! ignore_failed_read_option)
     exit_status = TAREXIT_FAILURE;
+  return;
+
+file_was_dumped:
+  if (1 < current_stat.st_nlink)
+    {
+      struct link *dup;
+      struct link *lp = xmalloc (offsetof (struct link, name)
+				 + strlen (p) + 1);
+      lp->ino = current_stat.st_ino;
+      lp->dev = current_stat.st_dev;
+      strcpy (lp->name, p);
+
+      if (! ((link_table
+	      || (link_table = hash_initialize (0, 0, hash_link,
+						compare_links, 0)))
+	     && (dup = hash_insert (link_table, lp))))
+	xalloc_die ();
+
+      if (dup != lp)
+	abort ();
+    }
+
 }
