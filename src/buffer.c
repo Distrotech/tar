@@ -177,8 +177,7 @@ static struct zip_magic magic[] = {
 #define compress_option(t) magic[t].option
 #define compress_program(t) magic[t].program
 
-/* Check if the file FD is a compressed archive. FD is guaranteed to
-   represent a local file */
+/* Check if the file ARCHIVE is a compressed archive. */
 enum compress_type 
 check_compressed_archive ()
 {
@@ -200,7 +199,7 @@ check_compressed_archive ()
   read_full_records = sfr;
   reading_from_pipe = srp;
 
-  if (tar_checksum (record_start) == HEADER_SUCCESS)
+  if (tar_checksum (record_start, true) == HEADER_SUCCESS)
     /* Probably a valid header */
     return ct_none;
 
@@ -222,20 +221,19 @@ open_compressed_archive ()
 {
   enum compress_type type;
 
-  int fd = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-		    MODE_RW, rsh_command_option);
-  if (fd == -1 || _isrmt (fd))
-    return fd;
+  archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
+		     MODE_RW, rsh_command_option);
+  if (archive == -1)
+    return archive;
 
-  archive = fd;
   type = check_compressed_archive ();
   
   if (type == ct_none)
-    return fd;
+    return archive;
 
   /* FD is not needed any more */
-  rmtclose (fd);
-
+  rmtclose (archive);
+  
   /* Open compressed archive */
   use_compress_program_option = compress_program (type);
   child_pid = sys_child_open_for_uncompress ();
