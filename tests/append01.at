@@ -24,7 +24,8 @@
 # Reported by Adye, TJ (Tim), <T.J.Adye@rl.ac.uk> 
 # References:
 #  <7231C15EAC2F164CA6DC326D97493C8B36C25D@exchange35.fed.cclrc.ac.uk>
-# 
+#  http://lists.gnu.org/archive/html/bug-tar/2005-02/msg00032.html
+ 
 AT_SETUP([append01])
 AT_KEYWORDS([appending files with long names])
 
