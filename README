@@ -42,9 +42,6 @@ See file `THANKS' for a list of contributors.
 Besides those configure options documented in files `INSTALL' and
 `ABOUT-NLS', a few extra options may be accepted after `./configure':
 
-* `--with-included-malloc' or `--without-included-malloc' may override
-the automatic choice made by `configure' about using included GNU malloc.
-
 * `--with-dmalloc' is a debugging option for looking at memory management
 problems, it prerequires Gray Watson's package, which is available as
 `ftp://ftp.letters.com/src/dmalloc/dmalloc.tar.gz'.
@@ -57,12 +54,10 @@ in the environment before configuring (the behavior of `-[0-7]' or
 
 For comprehensive modifications to GNU tar, you might need tools beyond
 those used in simple installations.  Fully install GNU m4 1.4 first,
-and only then, Autoconf 2.12 with officious patches held in `AC-PATCHES'.
-Install Perl, then Automake 1.1n with officious patches in `AM-PATCHES'.
-You might need Bison 1.25 with officious patches in `BI-PATCHES' (but yacc
-and byacc may be OK for you), and GNU tar itself.  All are available on
-GNU archive sites, like in ftp://prep.ai.mit.edu/pub/gnu/, but Automake
-is still ftp://ftp.cygnus.com/pub/tromey/automake-1.1n.tar.gz.
+and only then, Autoconf 2.13 or later.  Install Perl, then Automake
+1.4 or later.  You might need Bison 1.26 or later, and GNU tar itself.
+All are available on GNU archive sites, like in
+ftp://ftp.gnu.org/pub/gnu/.
 
 Send bug reports to `tar-bugs@gnu.ai.mit.edu'.  (Beware, old-timers: it is
 `@gnu', not `@prep'; and not `bug-gnu-utils' anymore.)  A bug report is
