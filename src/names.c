@@ -270,7 +270,9 @@ read_name_from_file (void)
     {
       if (counter == name_buffer_length)
 	{
-	  name_buffer_length += NAME_FIELD_SIZE;
+	  if (name_buffer_length * 2 < name_buffer_length)
+	    xalloc_die ();
+	  name_buffer_length *= 2;
 	  name_buffer = xrealloc (name_buffer, name_buffer_length + 2);
 	}
       name_buffer[counter++] = character;
@@ -281,7 +283,9 @@ read_name_from_file (void)
 
   if (counter == name_buffer_length)
     {
-      name_buffer_length += NAME_FIELD_SIZE;
+      if (name_buffer_length * 2 < name_buffer_length)
+	xalloc_die ();
+      name_buffer_length *= 2;
       name_buffer = xrealloc (name_buffer, name_buffer_length + 2);
     }
   name_buffer[counter] = '\0';
@@ -319,11 +323,20 @@ name_next (int change_dirs)
 	}
       else
 	{
+	  size_t source_len;
 	  source = name_array[name_index++];
-	  if (strlen (source) > name_buffer_length)
+	  source_len = strlen (source);
+	  if (name_buffer_length < source_len)
 	    {
+	      do
+		{
+		  name_buffer_length *= 2;
+		  if (! name_buffer_length)
+		    xalloc_die ();
+		}
+	      while (name_buffer_length < source_len);
+
 	      free (name_buffer);
-	      name_buffer_length = strlen (source);
 	      name_buffer = xmalloc (name_buffer_length + 2);
 	    }
 	  strcpy (name_buffer, source);
@@ -382,7 +395,7 @@ name_gather (void)
 {
   /* Buffer able to hold a single name.  */
   static struct name *buffer;
-  static size_t allocated_length;
+  static size_t allocated_size;
 
   char const *name;
 
@@ -390,12 +403,12 @@ name_gather (void)
     {
       static int change_dir;
 
-      if (allocated_length == 0)
+      if (allocated_size == 0)
 	{
-	  allocated_length = sizeof (struct name) + NAME_FIELD_SIZE;
-	  buffer = xmalloc (allocated_length);
+	  allocated_size = offsetof (struct name, name) + NAME_FIELD_SIZE + 1;
+	  buffer = xmalloc (allocated_size);
 	  /* FIXME: This memset is overkill, and ugly...  */
-	  memset (buffer, 0, allocated_length);
+	  memset (buffer, 0, allocated_size);
 	}
 
       while ((name = name_next (0)) && strcmp (name, "-C") == 0)
@@ -408,14 +421,23 @@ name_gather (void)
 
       if (name)
 	{
+	  size_t needed_size;
 	  buffer->length = strlen (name);
-	  if (sizeof (struct name) + buffer->length >= allocated_length)
+	  needed_size = offsetof (struct name, name) + buffer->length + 1;
+	  if (allocated_size < needed_size)
 	    {
-	      allocated_length = sizeof (struct name) + buffer->length;
-	      buffer = xrealloc (buffer, allocated_length);
+	      do
+		{
+		  allocated_size *= 2;
+		  if (! allocated_size)
+		    xalloc_die ();
+		}
+	      while (allocated_size < needed_size);
+
+	      buffer = xrealloc (buffer, allocated_size);
 	    }
 	  buffer->change_dir = change_dir;
-	  memcpy (buffer->name, name, buffer->length + 1);
+	  strcpy (buffer->name, name);
 	  buffer->next = 0;
 	  buffer->found = 0;
 
@@ -454,23 +476,26 @@ name_gather (void)
 struct name *
 addname (char const *string, int change_dir)
 {
-  struct name *name;
-  size_t length;
-
-  length = string ? strlen (string) : 0;
-  name = xmalloc (sizeof (struct name) + length);
-  memset (name, 0, sizeof (struct name) + length);
-  name->next = 0;
+  size_t length = string ? strlen (string) : 0;
+  struct name *name = xmalloc (offsetof (struct name, name) + length + 1);
 
   if (string)
     {
       name->fake = 0;
-      name->length = length;
-      memcpy (name->name, string, length + 1);
+      strcpy (name->name, string);
     }
   else
-    name->fake = 1;
+    {
+      name->fake = 1;
 
+      /* FIXME: This initialization (and the byte of memory that it
+	 initializes) is probably not needed, but we are currently in
+	 bug-fix mode so we'll leave it in for now.  */
+      name->name[0] = 0;
+    }
+
+  name->next = 0;
+  name->length = length;
   name->found = 0;
   name->regexp = 0;		/* assume not a regular expression */
   name->firstch = 1;		/* assume first char is literal */
@@ -717,10 +742,16 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 	  string_length = strlen (string);
 	  if (*string == 'D')
 	    {
-	      if (name_length + string_length >= allocated_length)
+	      if (allocated_length <= name_length + string_length)
 		{
-		  while (name_length + string_length >= allocated_length)
-		    allocated_length += NAME_FIELD_SIZE;
+		  do
+		    {
+		      allocated_length *= 2;
+		      if (! allocated_length)
+			xalloc_die ();
+		    }
+		  while (allocated_length <= name_length + string_length);
+
 		  name_buffer = xrealloc (name_buffer, allocated_length + 1);
 		}
 	      strcpy (name_buffer + name_length, string + 1);
