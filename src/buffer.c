@@ -1433,7 +1433,10 @@ tryagain:
     {
       /* We have to prompt from now on. */
       if (f_run_script_at_end)
-	system (info_script);
+	{
+	  closeout_volume_number ();
+	  system (info_script);
+	}
       else
 	for (;;)
 	  {
