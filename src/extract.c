@@ -981,8 +981,6 @@ typedef int (*tar_extractor_t) (char *file_name, int typeflag);
 
 
 
-#define EXTRACT_OVER_PIPE (to_stdout_option || to_command_option)
-
 /* Prepare to extract a file. Find extractor function.
    Return zero if extraction should not proceed.  */
 
@@ -1149,7 +1147,7 @@ extract_archive (void)
 
   /* Take a safety backup of a previously existing file.  */
 
-  if (backup_option && ! EXTRACT_OVER_PIPE)
+  if (backup_option)
     if (!maybe_backup_file (file_name, 0))
       {
 	int e = errno;
