@@ -519,7 +519,16 @@ write_long_name (struct tar_stat_info *st)
       xheader_store ("path", st, NULL);
       break;
 
-    case V7_FORMAT:		      
+    case V7_FORMAT:
+      if (strlen (st->file_name) > NAME_FIELD_SIZE-1)
+	{
+	  WARN ((0, 0, _("%s: file name is too long (max %d); not dumped"),
+		 quotearg_colon (st->file_name),
+		 NAME_FIELD_SIZE - 1));
+	  return NULL;
+	}
+      break;
+      
     case USTAR_FORMAT:
     case STAR_FORMAT:
       return write_ustar_long_name (st->file_name);
