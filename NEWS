@@ -1,12 +1,21 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.7 - Paul Eggert, 1999-08-14.
+
+* --listed-incremental and --newer are now incompatible options.
+
+* When creating an archive, leading `./' is no longer stripped,
+  to match traditional tar's behavior (and simplify the documentation).
+
+* --diff without --absolute-names no longer falls back on absolute names.
+
 
 version 1.13.6 - Paul Eggert, 1999-08-11.
 
 * An --exclude pattern containing / now excludes a file only if it matches an
   initial prefix of the file name; a pattern without / continues to
-  exclude a file if it maches any file name compoment.
+  exclude a file if it matches any file name compoment.
 
 * The protocol for talking to rmt has been extended slightly.
   Open flags are now communicated in symbolic format as well as numeric.
