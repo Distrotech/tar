@@ -1050,10 +1050,10 @@ The following issues need mentioning:
 @table @asis
 @item Use of short option @option{-o}.
 Earlier versions of @GNUTAR{} understood @option{-o} command line
-option as a synonim for @option{--old-archive}.
+option as a synonym for @option{--old-archive}.
 
 @GNUTAR{} starting from version 1.13.90 understands this option as
-a synonim for @option{--no-same-owner}. This is compatible with
+a synonym for @option{--no-same-owner}. This is compatible with
 UNIX98 @command{tar} implementations.
 
 However, to facilitate transition, @option{-o} option retains its
@@ -1061,13 +1061,13 @@ old semantics when it is used with one of archive-creation commands.
 Users are encouraged to use @value{op-format-oldgnu} instead.
 
 Future versions of @GNUTAR{} will understand @option{-o} only as a
-synonim for @option{--no-same-owner}. 
+synonym for @option{--no-same-owner}. 
 
 @item Use of short option @option{-l}
 Earlier versions of @GNUTAR{} understood @option{-l} option as a
-synonim for @samp{--one-file-system}. Such usage is deprecated.
-For compatiblity with other implementations future versions of
-@GNUTAR{} will understand this option as a synonim for
+synonym for @samp{--one-file-system}. Such usage is deprecated.
+For compatibility with other implementations future versions of
+@GNUTAR{} will understand this option as a synonym for
 @option{--check-links}.
 
 @item Use of options @option{--portability} and @option{--old-archive}
@@ -1116,7 +1116,7 @@ For version 1.12, Daniel Hagerty contributed a great deal of technical
 consulting.  In particular, he is the primary author of @ref{Backups}.
 
 In July, 2003 @GNUTAR{} was put on CVS at @url{savannah.gnu.org}, and
-an active development and maintainance work has started
+an active development and maintenance work has started
 again. Currently @GNUTAR{} is being maintained by Paul Eggert, Sergey
 Poznyakoff and Jeff Bailey.
 
@@ -2299,7 +2299,7 @@ optionally take an argument}
 @node Mnemonic Options
 @subsection Mnemonic Option Style
 
-@FIXME{have to decide whether or ot to replace other occurrences of
+@FIXME{have to decide whether or not to replace other occurrences of
 "mnemonic" with "long", or *ugh* vice versa.}
 
 Each option has at least one long (or mnemonic) name starting with two
@@ -2945,11 +2945,11 @@ and group IDs when creating a @command{tar} file, rather than names.
 @FIXME-xref{}
 
 @item -o
-When extracting files, this option is a synonim for
+When extracting files, this option is a synonym for
 @option{--no-same-owner}, i.e. it prevents @command{tar} from
 restoring ownership of files being extracted.
 
-When creating an archive, @option{-o} is a synonim for
+When creating an archive, @option{-o} is a synonym for
 @option{--old-archive}. This behavior is for compatibility
 with previous versions of @GNUTAR{}, and will be
 removed in the future releases.
@@ -2975,7 +2975,7 @@ will extract the first occurrence of @file{filename} from @file{archive.tar}
 and will terminate without scanning to the end of the archive.
 
 @item --old-archive
-Synonim for @option{--format=v7}.
+Synonym for @option{--format=v7}.
 
 @item --one-file-system
 @itemx -l
@@ -2984,10 +2984,10 @@ directories that are on different file systems from the current
 directory.
 
 Earlier versions of @GNUTAR{} understood @option{-l} as a
-synonim for @option{--one-file-system}. Although such usage is still
+synonym for @option{--one-file-system}. Although such usage is still
 allowed in the present version, it is @emph{strongly discouraged}.
 The future versions of @GNUTAR{} will use @option{-l} as
-a synonim for @option{--check-links}.
+a synonym for @option{--check-links}.
 
 @xref{Current status}, for more information.
 
@@ -3018,7 +3018,7 @@ This option does not affect extraction from archives.
 
 @item --portability
 @itemx --old-archive
-Synonim for @option{--format=v7}.
+Synonym for @option{--format=v7}.
 
 @item --posix
 Same as @option{--format=posix}.
@@ -3645,7 +3645,7 @@ common errors are:
 @item
 Mistakingly using @code{create} instead of @code{extract}, when the
 intent was to extract the full contents of an archive.  This error
-is likely: keys @kbd{c} and @kbd{x} are right next ot each other on
+is likely: keys @kbd{c} and @kbd{x} are right next to each other on
 the QWERTY keyboard.  Instead of being unpacked, the archive then
 gets wholly destroyed.  When users speak about @dfn{exploding} an
 archive, they usually mean something else :-).
@@ -4774,9 +4774,9 @@ files to store names of other files which you can then call as
 arguments to @command{tar} (this can help you save time if you expect to
 archive the same list of files a number of times), and so forth.
 @FIXME{in case it's not obvious, i'm making this up in some sense
-based on my imited memory of what the next chapter *really* does.  i
+based on my limited memory of what the next chapter *really* does.  i
 just wanted to flesh out this final section a little bit so i'd
-remember to sitck it in here. :-)}
+remember to stick it in here. :-)}
 
 If there are too many files to conveniently list on the command line,
 you can list the names in a file, and @command{tar} will read that file.
@@ -6397,7 +6397,7 @@ compatibility with previous versions of @GNUTAR{}
 and is discouraged.
 
 Notice, that currently @acronym{GNU} extensions are not
-alowed with this format. Following is the list of options that
+allowed with this format. Following is the list of options that
 cannot be used with @value{op-format-posix}:
 
 @itemize @bullet
@@ -6700,7 +6700,7 @@ the file for consecutive stretches of zeros.  It then records in the
 archive for the file where the consecutive stretches of zeros are, and
 only archives the ``real contents'' of the file.  On extraction (using
 @value{op-sparse} is not needed on extraction) any such files have
-hols created wherever the continuous stretches of zeros were found.
+holes created wherever the continuous stretches of zeros were found.
 Thus, if you use @value{op-sparse}, @command{tar} archives won't take
 more space than the original.
 
@@ -7822,7 +7822,7 @@ updating the archive.
 
 Apparently, Exabyte drives have a physical block size of 8K bytes.
 If we choose our blocksize as a multiple of 8k bytes, then the problem
-seems to dissapper.  Id est, we are using block size of 112 right
+seems to disappear.  Id est, we are using block size of 112 right
 now, and we haven't had the problem since we switched@dots{}
 
 With @GNUTAR{} the blocking factor is limited only
