@@ -33,7 +33,7 @@ extern int errno;
 #include <time.h>
 time_t time();
 
-#ifndef NO_MTIO
+#ifdef HAVE_SYS_MTIO_H
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #endif
@@ -258,6 +258,7 @@ child_open()
 {
 	int pipe[2];
 	int err = 0;
+	int nar;
 
 	int kidpipe[2];
 	int kidchildpid;
@@ -301,24 +302,24 @@ child_open()
 	   2: the file is to be accessed by rmt (compress doesn't know how)
 	   3: the file is not a plain file */
 #ifdef NO_REMOTE
-	if(!(ar_file[0]=='-' && ar_file[1]=='\0') && isfile(ar_file))
+	if(!(ar_files[0][0]=='-' && ar_files[0][1]=='\0') && isfile(ar_files[0]))
 #else
-	if(!(ar_file[0]=='-' && ar_file[1]=='\0') && !_remdev(ar_file) && isfile(ar_file))
+	if(!(ar_files[0][0]=='-' && ar_file[0][1]=='\0') && !_remdev(ar_files[0]) && isfile(ar_files[0]))
 #endif
 	{
 		/* We don't need a child tar.  Open the archive */
 		if(ar_reading) {
-			archive=open(ar_file, O_RDONLY|O_BINARY, 0666);
+			archive=open(ar_files[0], O_RDONLY|O_BINARY, 0666);
 			if(archive<0) {
-				msg_perror("can't open archive %s",ar_file);
+				msg_perror("can't open archive %s",ar_files[0]);
 				exit(EX_BADARCH);
 			}
 			dupto(archive,STDIN,"archive to stdin");
 			/* close(archive); */
 		} else {
-			archive=creat(ar_file,0666);
+			archive=creat(ar_files[0],0666);
 			if(archive<0) {
-				msg_perror("can't open archive %s",ar_file);
+				msg_perror("can't open archive %s",ar_files[0]);
 				exit(EX_BADARCH);
 			}
 			dupto(archive,STDOUT,"archive to stdout");
@@ -367,14 +368,14 @@ child_open()
 				else
 					archive = STDOUT;
 			} else /* This can't happen if (ar_reading==2)
-				archive = rmtopen(ar_file, O_RDWR|O_CREAT|O_BINARY, 0666);
+				archive = rmtopen(ar_files[0], O_RDWR|O_CREAT|O_BINARY, 0666);
 			else */if(ar_reading)
-				archive = rmtopen(ar_file, O_RDONLY|O_BINARY, 0666);
+				archive = rmtopen(ar_files[0], O_RDONLY|O_BINARY, 0666);
 			else
-				archive = rmtcreat(ar_file, 0666);
+				archive = rmtcreat(ar_files[0], 0666);
 
 			if (archive < 0) {
-				msg_perror("can't open archive %s",ar_file);
+				msg_perror("can't open archive %s",ar_files[0]);
 				exit(EX_BADARCH);
 			}
 
@@ -492,7 +493,7 @@ open_archive(reading)
 		exit(EX_ARGSBAD);
 	}
 
-	if(ar_file==0) {
+	if(n_ar_files==0) {
 		msg("No archive name given, what should I do?");
 		exit(EX_BADARCH);
 	}
@@ -519,11 +520,15 @@ open_archive(reading)
 			msg("cannot update or verify compressed archives");
 			exit(EX_ARGSBAD);
 		}
+		if (f_multivol) {
+			msg ("cannot use multi-volume compressed archives");
+			exit (EX_ARGSBAD);
+		}
 		child_open();
-		if(!reading && ar_file[0]=='-' && ar_file[1]=='\0')
+		if(!reading && ar_files[0][0]=='-' && ar_files[0][1]=='\0')
 			msg_file = stderr;
 		/* child_open(rem_host, rem_file); */
-	} else if (ar_file[0] == '-' && ar_file[1] == '\0') {
+	} else if (ar_files[0][0] == '-' && ar_files[0][1] == '\0') {
 		f_reblock++;	/* Could be a pipe, be safe */
 		if(f_verify) {
 			msg("can't verify stdin/stdout archive");
@@ -540,14 +545,14 @@ open_archive(reading)
 			msg_file = stderr;
 		}
 	} else if (reading==2 || f_verify) {
-		archive = rmtopen(ar_file, O_RDWR|O_CREAT|O_BINARY, 0666);
+		archive = rmtopen(ar_files[0], O_RDWR|O_CREAT|O_BINARY, 0666);
 	} else if(reading) {
-		archive = rmtopen(ar_file, O_RDONLY|O_BINARY, 0666);
+		archive = rmtopen(ar_files[0], O_RDONLY|O_BINARY, 0666);
 	} else {
-		archive = rmtcreat(ar_file, 0666);
+		archive = rmtcreat(ar_files[0], 0666);
 	}
 	if (archive < 0) {
-		msg_perror("can't open %s",ar_file);
+		msg_perror("can't open %s",ar_files[0]);
 		exit(EX_BADARCH);
 	}
 #ifndef __MSDOS__
@@ -779,10 +784,10 @@ writeerror(err)
 int err;
 {
 	if (err < 0) {
-		msg_perror("can't write to %s",ar_file);
+		msg_perror("can't write to %s",ar_files[cur_ar_file]);
 		exit(EX_BADARCH);
 	} else {
-		msg("only wrote %u of %u bytes to %s",err,blocksize,ar_file);
+		msg("only wrote %u of %u bytes to %s",err,blocksize,ar_files[cur_ar_file]);
 		exit(EX_BADARCH);
 	}
 }
@@ -799,7 +804,7 @@ readerror()
 
 	read_error_flag++;		/* Tell callers */
 
-	msg_perror("read error on %s",ar_file);
+	msg_perror("read error on %s",ar_files[cur_ar_file]);
 
 	if (baserec == 0) {
 		/* First block of tape.  Probably stupidity error */
@@ -997,7 +1002,7 @@ error2loop:
 				goto error2loop;	/* Try again */
 			}
 			if (err == 0) {
-				msg("archive %s EOF not on block boundary",ar_file);
+				msg("archive %s EOF not on block boundary",ar_files[cur_ar_file]);
 				exit(EX_BADARCH);
 			}
 			left -= err;
@@ -1005,7 +1010,7 @@ error2loop:
 			goto again;
 		}
 	} else {
-		msg("only read %d bytes from archive %s",err,ar_file);
+		msg("only read %d bytes from archive %s",err,ar_files[cur_ar_file]);
 		exit(EX_BADARCH);
 	}
 }
@@ -1030,7 +1035,7 @@ flush_archive()
 
 			if(file_to_switch_to>=0) {
 				if((c=rmtclose(archive))<0)
-					msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
+					msg_perror("Warning: can't close %s(%d,%d)",ar_files[cur_ar_file],archive,c);
 
 				archive=file_to_switch_to;
 			} else
@@ -1107,7 +1112,7 @@ close_archive()
 		verify_volume();
 
 	if((c=rmtclose(archive))<0)
-		msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
+		msg_perror("Warning: can't close %s(%d,%d)",ar_files[cur_ar_file],archive,c);
 
 #ifndef	__MSDOS__
 	if (childpid) {
@@ -1249,6 +1254,7 @@ int	type;
 	extern int now_verifying;
 	extern char TTY_NAME[];
 	char *getenv();
+	static int looped = 0;
 
 	if(!read_file && !f_run_script_at_end)
 		read_file = (archive==0) ? fopen(TTY_NAME, "r") : stdin;
@@ -1258,99 +1264,109 @@ int	type;
 	if(f_verify)
 		verify_volume();
 	if((c=rmtclose(archive))<0)
-		msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
+		msg_perror("Warning: can't close %s(%d,%d)",ar_files[cur_ar_file],archive,c);
 
 	global_volno++;
 	volno++;
+	cur_ar_file++;
+	if (cur_ar_file == n_ar_files)
+	  {
+	    cur_ar_file = 0;
+	    looped = 1;
+	  }
+	
  tryagain:
-	if (f_run_script_at_end)
-		system(info_script);
-	else for(;;) {
-		fprintf(msg_file,"\007Prepare volume #%d and hit return: ",global_volno);
-		fflush(msg_file);
-		if(fgets(inbuf,sizeof(inbuf),read_file)==0) {
- 			fprintf(msg_file,"EOF?  What does that mean?");
-			if(cmd_mode!=CMD_EXTRACT && cmd_mode!=CMD_LIST && cmd_mode!=CMD_DIFF)
-				msg("Warning:  Archive is INCOMPLETE!");
-			exit(EX_BADARCH);
-		}
-		if(inbuf[0]=='\n' || inbuf[0]=='y' || inbuf[0]=='Y')
-			break;
+	if (looped)
+	  {
+	    /* We have to prompt from now on. */
+	    if (f_run_script_at_end)
+		    system(info_script);
+	    else for(;;) {
+		    fprintf(msg_file,"\007Prepare volume #%d for %s and hit return: ",global_volno, ar_files[cur_ar_file]);
+		    fflush(msg_file);
+		    if(fgets(inbuf,sizeof(inbuf),read_file)==0) {
+			    fprintf(msg_file,"EOF?  What does that mean?");
+			    if(cmd_mode!=CMD_EXTRACT && cmd_mode!=CMD_LIST && cmd_mode!=CMD_DIFF)
+				    msg("Warning:  Archive is INCOMPLETE!");
+			    exit(EX_BADARCH);
+		    }
+		    if(inbuf[0]=='\n' || inbuf[0]=='y' || inbuf[0]=='Y')
+			    break;
 
-		switch(inbuf[0]) {
-		case '?':
-		{
-			fprintf(msg_file,"\
+		    switch(inbuf[0]) {
+		    case '?':
+		    {
+			    fprintf(msg_file,"\
  n [name]   Give a new filename for the next (and subsequent) volume(s)\n\
  q          Abort tar\n\
  !          Spawn a subshell\n\
  ?          Print this list\n");
-		}
-			break;
+		    }
+			    break;
 
-		case 'q':	/* Quit */
-			fprintf(msg_file,"No new volume; exiting.\n");
-			if(cmd_mode!=CMD_EXTRACT && cmd_mode!=CMD_LIST && cmd_mode!=CMD_DIFF)
-				msg("Warning:  Archive is INCOMPLETE!");
-			exit(EX_BADARCH);
+		    case 'q':	/* Quit */
+			    fprintf(msg_file,"No new volume; exiting.\n");
+			    if(cmd_mode!=CMD_EXTRACT && cmd_mode!=CMD_LIST && cmd_mode!=CMD_DIFF)
+				    msg("Warning:  Archive is INCOMPLETE!");
+			    exit(EX_BADARCH);
 
-		case 'n':	/* Get new file name */
-		{
-			char *q,*r;
-			static char *old_name;
+		    case 'n':	/* Get new file name */
+		    {
+			    char *q,*r;
+			    static char *old_name;
 
-			for(q= &inbuf[1];*q==' ' || *q=='\t';q++)
-				;
-			for(r=q;*r;r++)
-				if(*r=='\n')
-					*r='\0';
-			if(old_name)
-				free(old_name);
-			old_name=p=(char *)malloc((unsigned)(strlen(q)+2));
-			if(p==0) {
-				msg("Can't allocate memory for name");
-				exit(EX_SYSTEM);
-			}
-			(void) strcpy(p,q);
-			ar_file=p;
-		}
-			break;
+			    for(q= &inbuf[1];*q==' ' || *q=='\t';q++)
+				    ;
+			    for(r=q;*r;r++)
+				    if(*r=='\n')
+					    *r='\0';
+			    old_name=p=(char *)malloc((unsigned)(strlen(q)+2));
+			    if(p==0) {
+				    msg("Can't allocate memory for name");
+				    exit(EX_SYSTEM);
+			    }
+			    (void) strcpy(p,q);
+			    ar_files[cur_ar_file]=p;
+		    }
+			    break;
 
-		case '!':
-#ifdef __MSDOS__
-			spawnl(P_WAIT,getenv("COMSPEC"),"-",0);
-#else
-				/* JF this needs work! */
-			switch(fork()) {
-			case -1:
-				msg_perror("can't fork!");
-				break;
-			case 0:
-				p=getenv("SHELL");
-				if(p==0) p="/bin/sh";
-				execlp(p,"-sh","-i",0);
-				msg_perror("can't exec a shell %s",p);
-				_exit(55);
-			default:
-				wait(0);
-				break;
-			}
-#endif
-			break;
-		}
+		    case '!':
+    #ifdef __MSDOS__
+			    spawnl(P_WAIT,getenv("COMSPEC"),"-",0);
+    #else
+				    /* JF this needs work! */
+			    switch(fork()) {
+			    case -1:
+				    msg_perror("can't fork!");
+				    break;
+			    case 0:
+				    p=getenv("SHELL");
+				    if(p==0) p="/bin/sh";
+				    execlp(p,"-sh","-i",0);
+				    msg_perror("can't exec a shell %s",p);
+				    _exit(55);
+			    default:
+				    wait(0);
+				    break;
+			    }
+    #endif
+			    break;
+		  }
+		  }
 	}
+	
 
 	if(type==2 || f_verify)
-		archive=rmtopen(ar_file,O_RDWR|O_CREAT,0666);
+		archive=rmtopen(ar_files[cur_ar_file],O_RDWR|O_CREAT,0666);
 	else if(type==1)
-		archive=rmtopen(ar_file,O_RDONLY,0666);
+		archive=rmtopen(ar_files[cur_ar_file],O_RDONLY,0666);
 	else if(type==0)
-		archive=rmtcreat(ar_file,0666);
+		archive=rmtcreat(ar_file[cur_ar_file],0666);
 	else
 		archive= -1;
 
 	if(archive<0) {
-		msg_perror("can't open %s",ar_file);
+		msg_perror("can't open %s",ar_files[cur_ar_file]);
 		goto tryagain;
 	}
 #ifdef __MSDOS__
