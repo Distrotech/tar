@@ -1322,16 +1322,19 @@ dump_file0 (struct tar_stat_info *st, char *p,
 #endif
 
   /* See if we want only new files, and check if this one is too old to
-     put in the archive.  */
+     put in the archive.
 
-  if (!S_ISDIR (st->stat.st_mode)
+     This check is omitted if incremental_option is set *and* the
+     requested file is not explicitely listed in the command line. */
+
+  if (!(incremental_option && !is_individual_file (p))
+      && !S_ISDIR (st->stat.st_mode)
       && OLDER_STAT_TIME (st->stat, m)
       && (!after_date_option || OLDER_STAT_TIME (st->stat, c)))
     {
-      if (0 < top_level) /* equivalent to !incremental_option */
+      if (!incremental_option)
 	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
 	       quotearg_colon (p)));
-      /* FIXME: recheck this return.  */
       return;
     }
 
