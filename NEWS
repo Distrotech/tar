@@ -5,7 +5,7 @@ See the end for copying conditions.
 
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.14.90 - Sergey Poznyakoff, 2004-09-02
+version 1.14.91 - Sergey Poznyakoff, <DATE>
 
 * When restoring incremental dumps, --one-file-system option
 prevents directory hierarchies residing on different devices
@@ -27,6 +27,12 @@ or some patterns. This is to prevent accidental restores.
 
 * `tar --verify' prints a warning if during archive creation some of
 the file names had their prefixes stripped off.
+
+* New option --exclude-caches instructs tar to exclude cache directories
+automatically on archive creation. Cache directories are those
+containing a standardized tag file, as specified at:
+
+	http://www.brynosaurus.com/cachedir/spec.html	
 
 * New configure option --with-rmt allows to specify full path name to
 the `rmt' utility. This supercedes DEFAULT_RMT_COMMAND variable
