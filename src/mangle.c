@@ -33,10 +33,6 @@ struct mangled
     char normal[1];
   };
 
-/* Should use a hash table, etc. .  */
-static struct mangled *first_mangle;
-static int mangled_num;
-
 /*---------------------------------------------------------------------.
 | Extract a GNUTYPE_NAMES record contents.  It seems that such are not |
 | produced anymore by GNU tar, but we leave the reading code around    |
