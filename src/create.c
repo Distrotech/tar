@@ -330,6 +330,14 @@ uintmax_to_chars (uintmax_t v, char *p, size_t s)
 {
   to_chars (0, v, sizeof v, 0, p, s, "uintmax_t");
 }
+
+void
+string_to_chars (char *str, char *p, size_t s)
+{
+  strncpy (p, str, s);
+  p[s-1] = 0;
+}
+
 
 /* Writing routines.  */
 
@@ -393,6 +401,62 @@ write_long (const char *p, char type)
   memset (header->buffer + size, 0, bufsize - size);
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
+
+/* NOTE: Cross recursion between start_header and write_extended  */
+
+static union block *
+write_extended (union block *old_header, char type)
+{
+  union block *header, hp;
+  struct tar_stat_info foo;
+  size_t size;
+  size_t bufsize;
+  char *p;
+
+  if (extended_header.buffer || extended_header.stk == NULL)
+    return old_header; /* Prevent recursion */
+  
+  xheader_finish (&extended_header);
+  size = extended_header.size;
+  memset (&foo, 0, sizeof foo);
+  foo.stat.st_mode = S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH;
+  time (&foo.stat.st_ctime);
+  foo.stat.st_atime = foo.stat.st_ctime;
+  foo.stat.st_mtime = foo.stat.st_ctime;
+  foo.stat.st_size = size;
+
+  memcpy (hp.buffer, old_header, sizeof (hp));
+  
+  header = start_header ("././@PaxHeader", &foo);
+  header->header.typeflag = type;
+
+  finish_header (header, -1);
+
+  p = extended_header.buffer;
+
+  do
+    {
+      size_t len;
+      
+      header = find_next_block ();
+      len = BLOCKSIZE;
+      if (len > size)
+	len = size;
+      memcpy (header->buffer, p, len);
+      if (len < BLOCKSIZE)
+	memset (header->buffer + len, 0, BLOCKSIZE - len);
+      p += len;
+      size -= len;
+      set_next_block_after (header);
+    }
+  while (size > 0);
+
+  xheader_destroy (&extended_header);
+  header = find_next_block ();
+  memcpy (header, &hp.buffer, sizeof (hp.buffer));
+  return header;
+}
+
 
 /* Header handling.  */
 
@@ -408,6 +472,7 @@ start_header (const char *name, struct tar_stat_info *st)
 
   if (sizeof header->header.name <= strlen (name))
     write_long (name, GNUTYPE_LONGNAME);
+
   header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
 
@@ -415,7 +480,7 @@ start_header (const char *name, struct tar_stat_info *st)
 
   strncpy (header->header.name, name, NAME_FIELD_SIZE);
   header->header.name[NAME_FIELD_SIZE - 1] = '\0';
-
+  
   /* Override some stat fields, if requested to do so.  */
 
   if (owner_option != (uid_t) -1)
@@ -454,14 +519,52 @@ start_header (const char *name, struct tar_stat_info *st)
   else
     MODE_TO_CHARS (st->stat.st_mode, header->header.mode);
 
-  UID_TO_CHARS (st->stat.st_uid, header->header.uid);
-  GID_TO_CHARS (st->stat.st_gid, header->header.gid);
-  OFF_TO_CHARS (st->stat.st_size, header->header.size);
-  TIME_TO_CHARS (st->stat.st_mtime, header->header.mtime);
-  MAJOR_TO_CHARS (0, header->header.devmajor);
-  MINOR_TO_CHARS (0, header->header.devminor);
+  if (st->stat.st_uid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
+    xheader_store ("uid", st);
+  else
+    UID_TO_CHARS (st->stat.st_uid, header->header.uid);
+  
+  if (st->stat.st_gid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
+    xheader_store ("gid", st);
+  else
+    GID_TO_CHARS (st->stat.st_gid, header->header.gid);
 
-  if (incremental_option)
+  if (st->stat.st_size > MAXOCTAL11 && archive_format == POSIX_FORMAT)
+    xheader_store ("size", st);
+  else
+    OFF_TO_CHARS (st->stat.st_size, header->header.size);
+
+  TIME_TO_CHARS (st->stat.st_mtime, header->header.mtime);
+
+  /* FIXME */
+  if (S_ISCHR (st->stat.st_mode)
+      || S_ISBLK (st->stat.st_mode))
+    {
+      st->devmajor = major (st->stat.st_rdev);
+      st->devminor = minor (st->stat.st_rdev);
+
+      if (st->devmajor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
+	xheader_store ("devmajor", st);
+      else
+	MAJOR_TO_CHARS (st->devmajor, header->header.devmajor);
+
+      if (st->devminor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
+	xheader_store ("devminor", st);
+      else
+	MAJOR_TO_CHARS (st->devminor, header->header.devminor);
+    }
+  else
+    {
+      MAJOR_TO_CHARS (0, header->header.devmajor);
+      MINOR_TO_CHARS (0, header->header.devminor);
+    }
+  
+  if (archive_format == POSIX_FORMAT)
+    {
+      xheader_store ("atime", st);
+      xheader_store ("ctime", st);
+    }
+  else if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
       {
 	TIME_TO_CHARS (st->stat.st_atime, header->oldgnu_header.atime);
@@ -496,8 +599,20 @@ start_header (const char *name, struct tar_stat_info *st)
     }
   else
     {
-      uid_to_uname (st->stat.st_uid, header->header.uname);
-      gid_to_gname (st->stat.st_gid, header->header.gname);
+      uid_to_uname (st->stat.st_uid, &st->uname);
+      gid_to_gname (st->stat.st_gid, &st->gname);
+      
+      if (archive_format == POSIX_FORMAT
+	  && strlen (st->uname) > UNAME_FIELD_SIZE)
+	xheader_store ("uname", st);
+      else
+	UNAME_TO_CHARS (st->uname, header->header.uname);
+
+      if (archive_format == POSIX_FORMAT
+	  && strlen (st->gname) > GNAME_FIELD_SIZE)
+	xheader_store ("gname", st);
+      else
+	GNAME_TO_CHARS (st->gname, header->header.gname);
     }
 
   return header;
@@ -514,6 +629,8 @@ finish_header (union block *header, off_t block_ordinal)
   int sum;
   char *p;
 
+  header = write_extended (header, XHDTYPE);
+  
   memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
 
   sum = 0;
