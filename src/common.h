@@ -309,17 +309,6 @@ struct name
     char name[1];
   };
 
-/* Information about a sparse file.  */
-struct sp_array
-  {
-    off_t offset;
-    size_t numbytes;
-  };
-GLOBAL struct sp_array *sparsearray;
-
-/* Number of elements in sparsearray.  */
-GLOBAL int sp_array_size;
-
 /* Obnoxious test to see if dimwit is trying to dump the archive.  */
 GLOBAL dev_t ar_dev;
 GLOBAL ino_t ar_ino;
@@ -366,10 +355,20 @@ void archive_read_error (void);
 
 /* Module create.c.  */
 
+enum dump_status
+  {
+    dump_status_ok,
+    dump_status_short,
+    dump_status_fail,
+    dump_status_not_implemented
+  };
+
+bool file_dumpable_p (struct tar_stat_info *stat);
 void create_archive (void);
+void pad_archive (off_t size_left);
 void dump_file (char *, int, dev_t);
-void finish_header (union block *, off_t);
-void init_sparsearray (void);
+union block *start_header (struct tar_stat_info *st);
+void finish_header (struct tar_stat_info *, union block *, off_t);
 void write_eot (void);
 void check_links (void);
 
@@ -408,7 +407,6 @@ void verify_volume (void);
 
 extern bool we_are_root;
 void extr_init (void);
-bool fill_in_sparse_array (void);
 void extract_archive (void);
 void extract_finish (void);
 void fatal_exit (void) __attribute__ ((noreturn));
@@ -478,7 +476,7 @@ uintmax_t uintmax_from_header (const char *, size_t);
 
 void list_archive (void);
 void print_for_mkdir (char *, int, mode_t);
-void print_header (off_t);
+void print_header (struct tar_stat_info *, off_t);
 void read_and (void (*) (void));
 enum read_header read_header (bool);
 void skip_file (off_t);
@@ -518,6 +516,7 @@ void chmod_error_details (char const *, mode_t);
 void chown_error_details (char const *, uid_t, gid_t);
 void close_error (char const *);
 void close_warn (char const *);
+void close_diag (char const *name);
 void exec_fatal (char const *) __attribute__ ((noreturn));
 void link_error (char const *, char const *);
 void mkdir_error (char const *);
@@ -526,21 +525,27 @@ void mknod_error (char const *);
 void open_error (char const *);
 void open_fatal (char const *) __attribute__ ((noreturn));
 void open_warn (char const *);
+void open_diag (char const *name);
 void read_error (char const *);
 void read_error_details (char const *, off_t, size_t);
 void read_fatal (char const *) __attribute__ ((noreturn));
 void read_fatal_details (char const *, off_t, size_t);
 void read_warn_details (char const *, off_t, size_t);
+void read_diag_details (char const *name, off_t offset, size_t size);
 void readlink_error (char const *);
 void readlink_warn (char const *);
+void readlink_diag (char const *name);
 void savedir_error (char const *);
 void savedir_warn (char const *);
+void savedir_diag (char const *name);
 void seek_error (char const *);
 void seek_error_details (char const *, off_t);
 void seek_warn (char const *);
 void seek_warn_details (char const *, off_t);
+void seek_diag_details (char const *, off_t);
 void stat_error (char const *);
 void stat_warn (char const *);
+void stat_diag (char const *name);
 void symlink_error (char const *, char const *);
 void truncate_error (char const *);
 void truncate_warn (char const *);
@@ -600,7 +605,9 @@ bool contains_dot_dot (char const *);
 
 int confirm (const char *, const char *);
 void request_stdin (const char *);
-void destroy_stat (struct tar_stat_info *);
+
+void tar_stat_init (struct tar_stat_info *st);
+void tar_stat_destroy (struct tar_stat_info *st);
 
 /* Module update.c.  */
 
@@ -635,3 +642,8 @@ bool sys_get_archive_stat (void);
 
 /* Module compare.c */
 void report_difference (const char *message, ...);
+
+/* Module sparse.c */
+bool sparse_file_p (struct tar_stat_info *stat);
+enum dump_status sparse_dump_file (int fd, struct tar_stat_info *stat);
+enum dump_status sparse_extract_file (int fd, struct tar_stat_info *stat, off_t *size);
