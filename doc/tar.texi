@@ -7369,7 +7369,7 @@ from the archive, or you should either use the @value{op-absolute-names}
 option, or use the command @samp{tar -C / @dots{}}.
 
 @cindex Ultrix 3.1 and write failure
-Some versions of Unix (Ultrix 3.1 is know to have this problem),
+Some versions of Unix (Ultrix 3.1 is known to have this problem),
 can claim that a short write near the end of a tape succeeded,
 when it actually failed.  This will result in the -M option not
 working correctly.  The best workaround at the moment is to use a
