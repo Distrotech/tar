@@ -11,4 +11,8 @@ out="\
 -rw-r--r-- jes/glone          0 2002-06-15 14:53:32 file
 "
 
+err_regex="\
+tar: Record size = .*
+"
+
 . $srcdir/after

@@ -11,8 +11,8 @@ out="\
 -rw-r--r-- jes/glone           0 2002-06-15 14:53:32 file
 "
 
-err="\
-tar: Read 3072 bytes from $STAR_TESTSCRIPTS/pax-big-10g.tar.bz2
+err_regex="\
+tar: Record size = .*
 "
 
 . $srcdir/after

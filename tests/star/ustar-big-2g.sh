@@ -11,9 +11,8 @@ out="\
 -rw-r--r-- jes/glone          0 2002-06-15 14:53:32 file
 "
 
-# Fixme: why?
-err="\
-tar: Read 4096 bytes from $STAR_TESTSCRIPTS/ustar-big-2g.tar.bz2
+err_regex="\
+tar: Record size = .*
 "
 
 . $srcdir/after
