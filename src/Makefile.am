@@ -40,7 +40,8 @@ tar_SOURCES = \
  sparse.c\
  system.c\
  tar.c\
- update.c
+ update.c\
+ utf8.c
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib 
