@@ -150,6 +150,7 @@ full-write
 getdate
 getline
 getopt
+getpagesize
 gettext
 gettime
 hash
