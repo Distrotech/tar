@@ -205,10 +205,7 @@ check_compressed_archive ()
 
   for (p = magic + 1; p < magic + NMAGIC; p++)
     if (memcmp (record_start->buffer, p->magic, p->length) == 0)
-      {
-	hit_eof = false; /* It might have been set by find_next_block */
-	return p->type;
-      }
+      return p->type;
   
   return ct_none;
 }
@@ -233,7 +230,10 @@ open_compressed_archive ()
 
   /* FD is not needed any more */
   rmtclose (archive);
-  
+
+  hit_eof = false; /* It might have been set by find_next_block in
+		      check_compressed_archive */
+
   /* Open compressed archive */
   use_compress_program_option = compress_program (type);
   child_pid = sys_child_open_for_uncompress ();
