@@ -1,5 +1,13 @@
 2004-04-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* bootstrap: Use gnulib-tool to generate lib/Makefile.am
+	and parts of configure.ac
+	* configure.ac: Invoke tar_GNULIB to configure gnulib stuff.
+	* lib/Makefile.am: Removed
+	* lib/Makefile.tmpl: New file.
+	* lib/.cvsignore: Updated
+	* m4/.cvsignore: Updated
+	
 	* src/create.c: Produce an error, not warning, if the
 	filename is too long.
 
