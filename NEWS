@@ -5,7 +5,7 @@ See the end for copying conditions.
 
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.14.1 - Sergey Poznyakoff, <DATE>
+version 1.14.90 - Sergey Poznyakoff, 2004-09-02
 
 * When restoring incremental dumps, --one-file-system option
 prevents directory hierarchies residing on different devices
@@ -19,17 +19,28 @@ back up. This change fixes the bug.
 * Renamed --strip-path to --strip-components for consistency with
 the GNU convention.
 
-* Skipping archive members is sped up.
+* Skipping archive members is sped up if the archive media supports
+seeks.
 
-* restore script starts restoring only if it is given --all (-a) option,
+* Restore script starts restoring only if it is given --all (-a) option,
 or some patterns. This is to prevent accidental restores.
 
 * `tar --verify' prints a warning if during archive creation some of
 the file names had their prefixes stripped off.
 
+* New configure option --with-rmt allows to specify full path name to
+the `rmt' utility. This supercedes DEFAULT_RMT_COMMAND variable
+introduced in version 1.14
+
+* New configure variable DEFAULT_RMT_DIR allows to specify the directory
+where to install `rmt' utility. This is necessary since modifying
+--libexecdir as was suggested for version 1.14 produced a side effect: it
+also modified installation prefix for backup scripts (if
+--enable-backup-scripts was given).
+
 * Bugfixes:
 ** Fixed flow in recognizing files to be included in incremental dumps.
-** Correctly recognize sparse archive members when used with -T option
+** Correctly recognize sparse archive members when used with -T option.
 ** GNU multivolume headers cannot store filenames longer than 100 characters.
 Do not allow multivolume archives to begin with such filenames.
 ** If a member with link count > 2 was stored in the archive twice,
@@ -37,7 +48,7 @@ previous versions of tar were not able to extract it, since they
 were trying to link the file to itself, which always failed and
 lead to removing the already extracted copy. Preserve the first
 extracted copy in such cases.
-** restore script was passing improper argument to tar --listed option.
+** Restore script was passing improper argument to tar --listed option.
 ** Fixed verification of the created archives. 
 ** Fixed unquoting of the file names containing backslash escapes (previous
 versions failed to recognize \a and \v).
