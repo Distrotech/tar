@@ -60,28 +60,6 @@ struct utimbuf
 
 #endif
 
-#if defined(_POSIX_VERSION) || defined(DIRENT)
-#include <dirent.h>
-#ifdef direct
-#undef direct
-#endif /* direct */
-#define direct dirent
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* _POSIX_VERSION or DIRENT */
-#if !defined(_POSIX_VERSION) && !defined(DIRENT) && defined(BSD42)
-#include <sys/dir.h>
-#define DP_NAMELEN(x)	(x)->d_namlen
-#endif /* not _POSIX_VERSION and BSD42 */
-#ifdef __MSDOS__
-#include "msd_dir.h"
-#define DP_NAMELEN(x)	(x)->d_namlen
-#define direct dirent
-#endif
-#if defined(USG) && !defined(_POSIX_VERSION) && !defined(DIRENT)
-#include <ndir.h>
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* USG and not _POSIX_VERSION and not DIRENT */
-
 extern struct stat hstat;	/* Stat struct corresponding */
 
 #ifndef __MSDOS__
@@ -686,7 +664,7 @@ dump_file (p, curdev, toplevel)
   else if (S_ISDIR (hstat.st_mode))
     {
       register DIR *dirp;
-      register struct direct *d;
+      register struct dirent *d;
       char *namebuf;
       int buflen;
       register int len;
@@ -831,9 +809,9 @@ dump_file (p, curdev, toplevel)
 	  if (is_dot_or_dotdot (d->d_name))
 	    continue;
 
-	  if (DP_NAMELEN (d) + len >= buflen)
+	  if (NLENGTH (d) + len >= buflen)
 	    {
-	      buflen = len + DP_NAMELEN (d);
+	      buflen = len + NLENGTH (d);
 	      namebuf = ck_realloc (namebuf, buflen + 1);
 	      /* namebuf[len]='\0';
 				msg("file name %s%s too long",
