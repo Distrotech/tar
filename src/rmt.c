@@ -227,34 +227,7 @@ top:
 	if (tape >= 0)
 	  close (tape);
 
-#if defined (i386) && defined (AIX)
-
-	/* This is alleged to fix a byte ordering problem.  I'm quite
-	   suspicious if it's right. -- mib.  */
-
-	{
-	  mode_t old_mode = atol (mode_string);
-	  mode_t new_mode = 0;
-
-	  if ((old_mode & 3) == 0)
-	    new_mode |= O_RDONLY;
-	  if (old_mode & 1)
-	    new_mode |= O_WRONLY;
-	  if (old_mode & 2)
-	    new_mode |= O_RDWR;
-	  if (old_mode & 0x0008)
-	    new_mode |= O_APPEND;
-	  if (old_mode & 0x0200)
-	    new_mode |= O_CREAT;
-	  if (old_mode & 0x0400)
-	    new_mode |= O_TRUNC;
-	  if (old_mode & 0x0800)
-	    new_mode |= O_EXCL;
-	  tape = open (device_string, new_mode, 0666);
-	}
-#else
 	tape = open (device_string, atoi (mode_string), 0666);
-#endif
 	if (tape < 0)
 	  goto ioerror;
 	goto respond;
