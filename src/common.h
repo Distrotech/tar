@@ -622,6 +622,8 @@ void xheader_store (char const *, struct tar_stat_info const *, void *);
 void xheader_read (union block *, size_t);
 void xheader_finish (struct xheader *);
 void xheader_destroy (struct xheader *);
+char *xheader_xhdr_name (struct tar_stat_info *st);
+char *xheader_ghdr_name (struct tar_stat_info *st);
 
 /* Module system.c */
 
