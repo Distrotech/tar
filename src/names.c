@@ -608,9 +608,11 @@ bool
 all_names_found (struct tar_stat_info *p)
 {
   struct name const *cursor;
-  size_t len = strlen (p->file_name);
-  if (occurrence_option == 0 || p->had_trailing_slash)
+  size_t len;
+
+  if (!p->file_name || occurrence_option == 0 || p->had_trailing_slash)
     return false;
+  len = strlen (p->file_name);
   for (cursor = namelist; cursor; cursor = cursor->next)
     {
       if (cursor->regexp
