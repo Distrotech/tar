@@ -6274,11 +6274,12 @@ contiguous files as such.  Let's discuss a few more problems, in turn.
 @node Portable Names, dereference, Portability, Portability
 @subsection Portable Names
 
-Use @emph{straight} file and directory names, made up of printable
-ASCII characters, avoiding colons, slashes, backslashes, spaces, and
-other @emph{dangerous} characters.  Avoid deep directory nesting.
-Accounting for oldish System V machines, limit your file and directory
-names to 14 characters or less.
+Use portable file and member names.  A name is portable if it contains
+only ASCII letters and digits, @samp{/}, @samp{.}, @samp{_}, and
+@samp{-}; it cannot be empty, start with @samp{-} or @samp{//}, or
+contain @samp{/-}.  Avoid deep directory nesting.  For portability to
+old Unix hosts, limit your file name components to 14 characters or
+less.
 
 If you intend to have your @code{tar} archives to be read under MSDOS,
 you should not rely on case distinction for file names, and you might
