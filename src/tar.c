@@ -37,6 +37,7 @@ time_t time ();
 #define GLOBAL
 #include "common.h"
 
+#include "quotearg.h"
 #include "xstrtol.h"
 
 time_t get_date ();
@@ -51,7 +52,7 @@ time_t get_date ();
 # define DEFAULT_BLOCKING 20
 #endif
 
-static void usage PARAMS ((int));
+static void usage PARAMS ((int)) __attribute__ ((noreturn));
 
 /* Miscellaneous.  */
 
@@ -85,18 +86,19 @@ confirm (const char *message_action, const char *message_name)
   if (!confirm_file)
     {
       if (archive == 0 || stdin_used_by)
-	confirm_file = fopen (TTY_NAME, "r");
+	{
+	  confirm_file = fopen (TTY_NAME, "r");
+	  if (! confirm_file)
+	    open_fatal (TTY_NAME);
+	}
       else
 	{
 	  request_stdin ("-w");
 	  confirm_file = stdin;
 	}
-
-      if (!confirm_file)
-	FATAL_ERROR ((0, 0, _("Cannot read confirmation from user")));
     }
 
-  fprintf (stdlis, "%s %s?", message_action, message_name);
+  fprintf (stdlis, "%s %s?", message_action, quote (message_name));
   fflush (stdlis);
 
   {
@@ -136,6 +138,7 @@ enum
   NEWER_MTIME_OPTION,
   NO_RECURSE_OPTION,
   NULL_OPTION,
+  OVERWRITE_OPTION,
   OWNER_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
@@ -223,6 +226,7 @@ struct option long_options[] =
   {"numeric-owner", no_argument, &numeric_owner_option, 1},
   {"old-archive", no_argument, 0, 'o'},
   {"one-file-system", no_argument, 0, 'l'},
+  {"overwrite", no_argument, 0, OVERWRITE_OPTION},
   {"owner", required_argument, 0, OWNER_OPTION},
   {"portability", no_argument, 0, 'o'},
   {"posix", no_argument, 0, POSIX_OPTION},
@@ -308,7 +312,8 @@ Main operation mode:\n\
 Operation modifiers:\n\
   -W, --verify               attempt to verify the archive after writing it\n\
       --remove-files         remove files after adding them to the archive\n\
-  -k, --keep-old-files       don't overwrite existing files when extracting\n\
+  -k, --keep-old-files       don't replace existing files when extracting\n\
+      --overwrite            overwrite existing files when extracting\n\
   -U, --unlink-first         remove each file prior to extracting over it\n\
       --recursive-unlink     empty hierarchies prior to extracting directory\n\
   -S, --sparse               handle sparse files efficiently\n\
@@ -675,9 +680,8 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'k':
-	/* Don't overwrite existing files.  */
-
-	keep_old_files_option = 1;
+	/* Don't replace existing files.  */
+	old_files_option = KEEP_OLD_FILES;
 	break;
 
       case 'K':
@@ -728,8 +732,8 @@ decode_options (int argc, char *const *argv)
 
 	newer_mtime_option = get_date (optarg, 0);
 	if (newer_mtime_option == (time_t) -1)
-	  WARN ((0, 0, _("Substituting %s for unknown date format `%s'"),
-		 tartime (newer_mtime_option), optarg));
+	  WARN ((0, 0, _("Substituting %s for unknown date format %s"),
+		 tartime (newer_mtime_option), quote (optarg)));
 
 	break;
 #endif /* not MSDOS */
@@ -800,7 +804,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'U':
-	unlink_first_option = 1;
+	old_files_option = UNLINK_FIRST_OLD_FILES;
 	break;
 
       case 'v':
@@ -825,7 +829,10 @@ decode_options (int argc, char *const *argv)
 
       case 'X':
 	if (add_exclude_file (add_filtered_exclude, 0, optarg, '\n') != 0)
-	  FATAL_ERROR ((0, errno, "%s", optarg));
+	  {
+	    int e = errno;
+	    FATAL_ERROR ((0, e, "%s", quotearg_colon (optarg)));
+	  }
 	break;
 
       case 'z':
@@ -883,6 +890,10 @@ decode_options (int argc, char *const *argv)
 
       case NULL_OPTION:
 	filename_terminator = '\0';
+	break;
+
+      case OVERWRITE_OPTION:
+	old_files_option = OVERWRITE_OLD_FILES;
 	break;
 
       case OWNER_OPTION:
@@ -1095,7 +1106,7 @@ see the file named COPYING for details."),
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
-    unlink_first_option = 1;
+    old_files_option = UNLINK_FIRST_OLD_FILES;
 
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */
@@ -1163,6 +1174,7 @@ main (int argc, char *const *argv)
 
   exit_status = TAREXIT_SUCCESS;
   filename_terminator = '\n';
+  set_quoting_style (0, escape_quoting_style);
 
   /* Pre-allocate a few structures.  */
 
