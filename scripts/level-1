@@ -43,7 +43,7 @@ fi
 here=`pwd`
 LOGFILE=log-`date | awk '{print $2 "-" $3 "-" $6}'`-level-1
 HOST=`hostname | sed 's/\..*//'`
-TAR_PART1="/usr/local/bin/tar -c --multi-volume --one-file-system --block=$BLOCKING --sparse --volno-file=$VOLNO_FILE" --atime-preserve
+TAR_PART1="/usr/local/bin/tar -c --multi-volume --one-file-system --block=$BLOCKING --sparse --volno-file=$VOLNO_FILE --atime-preserve"
 
 # Make sure the log file did not already exist.  Create it.
 
