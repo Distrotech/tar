@@ -1,6 +1,6 @@
-/* POSIX extended and STAR headers.
+/* POSIX extended headers for tar.
 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -28,7 +28,274 @@
 #define obstack_chunk_free free
 #include <obstack.h>
 
+bool xheader_protected_pattern_p (const char *pattern);
+bool xheader_protected_keyword_p (const char *keyword);
+
+/* Number of the global headers written so far. Not used yet */
+static size_t global_header_count;
+
+
+/* Keyword options */
+
+struct keyword_list
+{
+  struct keyword_list *next;
+  char *pattern;
+  char *value;
+};
+
+
+/* List of keyword patterns set by delete= option */
+static struct keyword_list *keyword_pattern_list;
+/* List of keyword/value pairs set by `keyword=value' option */
+static struct keyword_list *keyword_global_override_list;
+/* List of keyword/value pairs set by `keyword:=value' option */
+static struct keyword_list *keyword_override_list;
+/* Template for the name field of an 'x' type header */
+static char *exthdr_name;
+/* Template for the name field of a 'g' type header */
+static char *globexthdr_name;
+
+bool
+xheader_keyword_deleted_p (const char *kw)
+{
+  struct keyword_list *kp;
+
+  for (kp = keyword_pattern_list; kp; kp = kp->next)
+    if (fnmatch (kp->pattern, kw, 0) == 0)
+      return true;
+  return false;
+}
+
+bool
+xheader_keyword_override_p (const char *keyword)
+{
+  struct keyword_list *kp;
+
+  for (kp = keyword_override_list; kp; kp = kp->next)
+    if (strcmp (kp->pattern, keyword) == 0)
+      return true;
+  return false;
+}
+
+void
+xheader_list_append (struct keyword_list **root, char *kw, char *value)
+{
+  struct keyword_list *kp = xmalloc (sizeof *kp);
+  kp->pattern = xstrdup (kw);
+  kp->value = value ? xstrdup (value) : NULL;
+  kp->next = *root;
+  *root = kp;
+}
+
+void
+xheader_set_single_keyword (char *kw)
+{
+  USAGE_ERROR ((0, 0, "Keyword %s is unknown or not yet imlemented", kw));
+}
+
+void
+xheader_set_keyword_equal (char *kw, char *eq)
+{
+  bool global = true;
+  char *p = eq;
+
+  if (eq[-1] == ':')
+    {
+      p--;
+      global = false;
+    }
+
+  while (p > kw && isspace (*p))
+    p--;
+
+  *p = 0;
+
+  for (p = eq + 1; *p && isspace (*p); p++)
+    ;
+  
+  if (strcmp (kw, "delete") == 0)
+    {
+      if (xheader_protected_pattern_p (p))
+	USAGE_ERROR ((0, 0, "Pattern %s cannot be used", p));
+      xheader_list_append (&keyword_pattern_list, p, NULL);
+    }
+  else if (strcmp (kw, "exthdr.name") == 0)
+    assign_string (&exthdr_name, p);
+  else if (strcmp (kw, "globexthdr.name") == 0)
+    assign_string (&globexthdr_name, p);
+  else
+    {
+      if (xheader_protected_keyword_p (kw))
+	USAGE_ERROR ((0, 0, "Keyword %s cannot be overridden", kw));
+      if (global)
+	xheader_list_append (&keyword_global_override_list, kw, p);
+      else
+	xheader_list_append (&keyword_override_list, kw, p);
+    }
+}
+
+void
+xheader_set_option (char *string)
+{
+  char *token;
+  for (token = strtok (string, ","); token; token = strtok (NULL, ","))
+    {
+      char *p = strchr (token, '=');
+      if (!p)
+	xheader_set_single_keyword (token);
+      else
+	xheader_set_keyword_equal (token, p);
+    }
+}
+
+/*
+    string Includes:          Replaced By:
+     %d                       The directory name of the file,
+                              equivalent to the result of the
+                              dirname utility on the translated
+                              pathname.
+     %f                       The filename of the file, equivalent
+                              to the result of the basename
+                              utility on the translated pathname.
+     %p                       The process ID of the pax process.
+     %%                       A '%' character. */
+
+static char *
+xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
+{
+  char *buf;
+  size_t len = strlen (fmt);
+  char *q;
+  const char *p;
+  char *dirname = NULL;
+  char *basename = NULL;
+  char pidbuf[64];
+  char nbuf[64];
+  
+  for (p = exthdr_name; *p && (p = strchr (p, '%')); )
+    {
+      switch (p[1])
+	{
+	case '%':
+	  len--;
+	  break;
+
+	case 'd':
+	  dirname = safer_name_suffix (dir_name (st->orig_file_name), false);
+	  len += strlen (dirname) - 1;
+	  break;
+	      
+	case 'f':
+	  basename = base_name (st->orig_file_name);
+	  len += strlen (basename) - 1;
+	  break;
+	      
+	case 'p':
+	  snprintf (pidbuf, sizeof pidbuf, "%lu",
+		    (unsigned long) getpid ());
+	  len += strlen (pidbuf) - 1;
+	  break;
+	  
+	case 'n':
+	  if (allow_n)
+	    {
+	      snprintf (nbuf, sizeof nbuf, "%lu",
+			(unsigned long) global_header_count + 1);
+	      len += strlen (nbuf) - 1;
+	    }
+	  break;
+	}
+      p++;
+    }
+  
+  buf = xmalloc (len + 1);
+  for (q = buf, p = fmt; *p; )
+    {
+      if (*p == '%')
+	{
+	  switch (p[1])
+	    {
+	    case '%':
+	      *q++ = *p++;
+	      p++;
+	      break;
+	      
+	    case 'd':
+	      q = stpcpy (q, dirname);
+	      p += 2;
+	      break;
+	      
+	    case 'f':
+	      q = stpcpy (q, basename);
+	      p += 2;
+	      break;
+	      
+	    case 'p':
+	      q = stpcpy (q, pidbuf);
+	      p += 2;
+	      break;
+
+	    case 'n':
+	      if (allow_n)
+		{
+		  q = stpcpy (q, nbuf);
+		  p += 2;
+		}
+	      /* else fall through */
+	      
+	    default:
+	      *q++ = *p++;
+	      if (*p)
+		*q++ = *p++;
+	    }
+	}
+      else
+	*q++ = *p++;
+    }
+
+  /* Do not allow it to end in a slash */
+  while (q > buf && ISSLASH (q[-1]))
+    q--;
+  *q = 0;
+  return buf;
+}
+
+char *
+xheader_xhdr_name (struct tar_stat_info *st)
+{
+  /* FIXME: POSIX requires the default name to be '%d/PaxHeaders.%p/%f' */
+  if (!exthdr_name)
+    return xstrdup ("././@PaxHeader");
+  return xheader_format_name (st, exthdr_name, false);
+}
+
+#define GLOBAL_HEADER_TEMPLATE "/GlobalHead.%p.%n"
+
+char *
+xheader_ghdr_name (struct tar_stat_info *st)
+{
+  if (!globexthdr_name)
+    {
+      size_t len;
+      const char *tmp = getenv ("TMPDIR");
+      if (!tmp)
+	tmp = "/tmp";
+      len = strlen (tmp) + sizeof (GLOBAL_HEADER_TEMPLATE); /* Includes nul */
+      globexthdr_name = xmalloc (len);
+      strcpy(globexthdr_name, tmp);
+      strcat(globexthdr_name, GLOBAL_HEADER_TEMPLATE);
+    }
+
+  return xheader_format_name (st, globexthdr_name, true);
+}
+
+
 /* General Interface */
+
+/* Used by xheader_finish() */
+static void code_string (char const *string, char const *keyword,
+			 struct xheader *xhdr);
 
 struct xhdr_tab
 {
@@ -36,6 +303,7 @@ struct xhdr_tab
   void (*coder) (struct tar_stat_info const *, char const *,
 		 struct xheader *, void *data);
   void (*decoder) (struct tar_stat_info *, char const *);
+  bool protect;
 };
 
 /* This declaration must be extern, because ISO C99 section 6.9.2
@@ -57,6 +325,28 @@ locate_handler (char const *keyword)
   return NULL;
 }
 
+bool
+xheader_protected_pattern_p (const char *pattern)
+{
+  struct xhdr_tab const *p;
+
+  for (p = xhdr_tab; p->keyword; p++)
+    if (p->protect && fnmatch (pattern, p->keyword, 0) == 0)
+      return true;
+  return false;
+}
+
+bool
+xheader_protected_keyword_p (const char *keyword)
+{
+  struct xhdr_tab const *p;
+
+  for (p = xhdr_tab; p->keyword; p++)
+    if (p->protect && strcmp (p->keyword, keyword) == 0)
+      return true;
+  return false;
+}
+
 /* Decodes a single extended header record. Advances P to the next
    record.
    Returns true on success, false otherwise. */
@@ -75,7 +365,8 @@ decode_record (char **p, struct tar_stat_info *st)
   len = strtoul (*p, p, 10);
   if (**p != ' ')
     {
-      ERROR ((0, 0, _("Malformed extended header: missing whitespace after the length")));
+      ERROR ((0, 0,
+       _("Malformed extended header: missing whitespace after the length")));
       return false;
     }
 
@@ -92,6 +383,10 @@ decode_record (char **p, struct tar_stat_info *st)
 
   eqp = *p;
   **p = 0;
+
+  if (xheader_keyword_deleted_p (keyword)
+      || xheader_keyword_override_p (keyword))
+    return true;
   t = locate_handler (keyword);
   if (t)
     {
@@ -110,26 +405,45 @@ decode_record (char **p, struct tar_stat_info *st)
   return true;
 }
 
+static void
+run_override_list (struct keyword_list *kp, struct tar_stat_info *st)
+{
+  for (; kp; kp = kp->next)
+    {
+      struct xhdr_tab const *t = locate_handler (kp->pattern);
+      if (t)
+	t->decoder (st, kp->value);
+    }
+}
+
 void
 xheader_decode (struct tar_stat_info *st)
 {
   char *p = extended_header.buffer + BLOCKSIZE;
   char *endp = &extended_header.buffer[extended_header.size-1];
 
+  run_override_list (keyword_global_override_list, st);
+  
   while (p < endp)
     if (!decode_record (&p, st))
       break;
+
+  run_override_list (keyword_override_list, st);
 }
 
 void
 xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
 {
   struct xhdr_tab const *t;
-
+  char *value;
+  
   if (extended_header.buffer)
     return;
   t = locate_handler (keyword);
   if (!t)
+    return;
+  if (xheader_keyword_deleted_p (keyword)
+      || xheader_keyword_override_p (keyword))
     return;
   if (!extended_header.stk)
     {
@@ -221,6 +535,11 @@ xheader_print (struct xheader *xhdr, char const *keyword, char const *value)
 void
 xheader_finish (struct xheader *xhdr)
 {
+  struct keyword_list *kp;
+
+  for (kp = keyword_override_list; kp; kp = kp->next)
+    code_string (kp->value, kp->pattern, xhdr);
+
   obstack_1grow (xhdr->stk, 0);
   xhdr->buffer = obstack_finish (xhdr->stk);
   xhdr->size = strlen (xhdr->buffer);
@@ -526,10 +845,13 @@ struct xhdr_tab const xhdr_tab[] = {
   { "uname",	uname_coder,	uname_decoder	},
 
   /* Sparse file handling */
-  { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder },
-  { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder },
-  { "GNU.sparse.offset",     sparse_offset_coder, sparse_offset_decoder },
-  { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder },
+  { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder, true },
+  { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder,
+    true },
+  { "GNU.sparse.offset",     sparse_offset_coder, sparse_offset_decoder,
+    true },
+  { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder,
+    true },
 
 #if 0 /* GNU private keywords (not yet implemented) */
 
