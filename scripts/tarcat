@@ -1,0 +1,11 @@
+#! /bin/sh
+# Usage: tarcat volume1 volume2 ...
+# concatenates a GNU tar multi-volume archive into a single tar archive.
+# Author: Bruno Haible <bruno@clisp.org>
+
+cat "$1"
+shift
+for f
+do
+  dd skip=1 if="$f" 
+done
