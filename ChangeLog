@@ -1,3 +1,13 @@
+2005-02-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* THANKS: Added Tim Adye. Fixed UTF.
+	* src/list.c (read_header): Removed assignment to
+	oldgnu_header.isextended. It was breaking append mode.
+
+	* tests/append01.at: New test.
+	* tests/Makefile.am: Added append01.at
+	* tests/testsuite.at: Likewise
+
 2005-02-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* gnulib.modules: New file. List of required gnulib
