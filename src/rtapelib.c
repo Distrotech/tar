@@ -88,6 +88,8 @@ static int from_remote[MAXUNIT][2] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
 /* The pipes for sending data to remote tape drives.  */
 static int to_remote[MAXUNIT][2] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
 
+#define RMT_COMMAND (rmt_command_option ? rmt_command_option : "/etc/rmt")
+
 /* Temporary variable used by macros in rmt.h.  */
 char *rmt_path__;
 
@@ -289,7 +291,7 @@ _rmt_rexec (char *host, char *user)
   if (rexecserv = getservbyname ("exec", "tcp"), !rexecserv)
     error (EXIT_ON_EXEC_ERROR, 0, _("exec/tcp: Service not available"));
 
-  result = rexec (&host, rexecserv->s_port, user, 0, "/etc/rmt", 0);
+  result = rexec (&host, rexecserv->s_port, user, 0, RMT_COMMAND, 0);
   if (fclose (stdin) == EOF)
     error (0, errno, _("stdin"));
   fdopen (saved_stdin, "r");
@@ -493,10 +495,10 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 
 	if (remote_user)
 	  execl (remote_shell, remote_shell_basename, remote_host,
-		 "-l", remote_user, "/etc/rmt", (char *) 0);
+		 "-l", remote_user, RMT_COMMAND, (char *) 0);
 	else
 	  execl (remote_shell, remote_shell_basename, remote_host,
-		 "/etc/rmt", (char *) 0);
+		 RMT_COMMAND, (char *) 0);
 
 	/* Bad problems if we get here.  */
 
