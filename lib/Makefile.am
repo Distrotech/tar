@@ -61,6 +61,9 @@ libtar_a_SOURCES += exclude.h exclude.c
 # exitfail
 libtar_a_SOURCES += exitfail.h exitfail.c
 
+# exit
+libtar_a_SOURCES += exit.h
+
 # fnmatch
 BUILT_SOURCES += $(FNMATCH_H)
 EXTRA_DIST += fnmatch_.h fnmatch_loop.c
