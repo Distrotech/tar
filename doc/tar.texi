@@ -824,7 +824,8 @@ used with @samp{--list} causes @code{tar} to print a longer listing
 
 To see the progress of @code{tar} through the archive, the
 @samp{--record-number} option prints a message for each record read or
-writted.  (@xref{Archive Structure}.)  
+writted.  (@xref{Archive Structure}.)  This option can be very helpful
+when trying to figure out where in the archive an error occurs.
 
 The @samp{--totals} option (which is only meaningful when used with
 @samp{--create}) causes @code{tar} to print the total amount written to
@@ -835,6 +836,9 @@ The @samp{--checkpoint} option prints an occasional message as
 don't need the more detailed (and voluminous) output of
 @samp{--record-number}, but do want visual confirmation that @code{tar}
 is actually making forward progress.
+
+The @samp{--version} option will generate a message with the version of
+GNU @code{tar} you are using.
 
 @chapter Input and Output
 
@@ -874,6 +878,23 @@ cause @code{tar} to write extracted archive members to standard output.
 If you extract multiple members, they appear on standard output
 concatenated, in the order they are found in the archive.
 
+@section Dealing with Compressed Archives
+
+You can have archives be compressed by using the @samp{--gzip} (or
+@samp{-z}) option.  This will arrange for @code{tar} to use the
+@code{gzip} program to be used to compress or uncompress the archive
+wren writing or reading it.
+
+To use the older, obsolete, @code{compress} program, use the
+@samp{--compress} (or @samp{-Z}) option.  The GNU Project recommends you
+not use @code{compress}, because there is a patent covering the
+algorithm it uses.  Merely by running @code{compress} you could be sued
+for patent infringment.
+
+When using either @samp{--gzip} or @samp{--compress}, @code{tar} does
+not do blocking (@pxref{Blocking}) correctly.  Use @samp{--gzip-block}
+or @samp{--compress-block} instead when using real tape drives.
+
 @chapter Being More Careful
 
 When using @code{tar} with many options, particularly ones with
@@ -881,9 +902,10 @@ complicated or difficult-to-predict behavior, it is possible to make
 serious mistakes.  As a result, @code{tar} provides several options that
 make observing @code{tar} easier.
 
-The @samp{--verbose} option (@pxref{Making @code{tar} More Verbose})
-causes @code{tar} to print the name of each file or archive member as it
-is processed.
+The @samp{--verbose} option causes @code{tar} to print the name of each
+file or archive member as it is processed.  This and the other options
+which make tar print status information can be useful in monitoring
+@code{tar}.  @xref{Making @code{tar} More Verbose}. 
 
 If you use @samp{--interactive} (or {@samp--confirm}), then @code{tar}
 will ask you for confirmation before each operation.  For example, when
@@ -949,6 +971,14 @@ to use in practice.  GNU @code{tar}, however, will support arbitrarily
 large block sizes, limited only by the amount of virtual memory or the
 physical characteristics of the tape device.
 
+If you are writing a compressed archive to tape with @samp{--compress}
+or @samp{--gzip} (@pxref{Input and Output}), @code{tar} will not block
+the archive correctly.  This doesn't matter if you are writing the
+archive to a normal file or through a pipe, but if you are writing it to
+a tape drive, then this causes problems.  Use @samp{--compress-block} or
+@samp{--gzip-block} instead, to cause @code{tar} to arrange to have
+blocking work correctly.
+
 @section Using Multiple Tapes
 
 Often you might want to write a large archive, one larger than will fit
@@ -1005,8 +1035,9 @@ changed; if you give the @samp{--volno-file=@var{file-name}} option,
 then @var{file-name} should contain a decimal number.  That number will
 be used as the volume number of the first volume written.  When
 @code{tar} is finished, it will rewrite the file with the now--current
-volume number.   (This does not change the volume number written on a
-tape label; it @emph{only} affects the number used in the prompt.)
+volume number.  (This does not change the volume number written on a
+tape label (@pxref{Special Options for Archiving}; it @emph{only}
+affects the number used in the prompt.)
 
 If you want @code{tar} to cycle through a series of tape drives, then
 you can use the @samp{n} response to the tape-change prompt.  This is
@@ -1015,7 +1046,59 @@ Therefore, if you give @code{tar} multiple @samp{--file} options, then
 the specified files will be used, in sequence, as the successive volumes
 of the archive.  Only when the first one in the sequence needs to be
 used again will @code{tar} prompt for a tape change (or run the info
-script).
+script).  
+
+@section Tape Files
+
+When @code{tar} writes an archive to tape, it creates a single tape
+file.  If multiple archives are written to the same tape, one after the
+other, they each get written as separate tape files.  When extracting,
+it is necessary to position the tape at the right place before running
+@code{tar}.  To do this, use the @code{mt} command.  For more
+information on the @code{mt} command and on the organization of tapes
+into a sequence of tape files, see XXX.
+
+@chapter Special Options for Archiving
+
+To give the archive a name which will be recorded in it, use the
+@samp{--label=@var{volume-label}} (or @samp{-V}) option.  This will
+write a special record identifying @var{volume-label} as the name of the
+archive to the front of the archive which will be displayed when the
+archive is listed with @samp{--list}.  If you are creating a
+multi-volume archive with @samp{--multi-volume} (@pxref{Using Multiple
+Tapes}), then the volume label will have @same{ Volume @var{nnn}}
+appended to the name you give, where @var{nnn} is the number of the
+volume of the archive.  (If you use the @samp{--label} option when
+reading an archive, it checks to make sure the label on the tape matches
+the one you give.  @xref{Special Options for Archiving}.)
+
+Files in the filesystem occasionally have ``holes.''  A hole in a file
+is a section of the file's contents which was never written.  The
+contents of a hole read as all zeros.  On many operating systems, actual@c 
+disk storage is not allocated for holes, but they are counted in the
+length of the file.  If you archive such a file, @code{tar} could create
+an archive longer than the original.  To have @code{tar} attempt to
+recognize the holes in a file, use @samp{--sparse}.  When you use the 
+@samp{--sparse} option, then, for any file using less disk space than
+would be expected from its length, @code{tar} searches the file for
+consecutive stretches of zeros.  It then records in the archive for the
+file where the consecutive stretches of zeros are, and only archives the
+``real contents'' of the file.  On extraction (using @samp{--sparse} is
+not needed on extraction) any such files have hols created wherever the
+continuous stretches of zeros were found.  Thus, if you use
+@samp{--sparse}, @code{tar} archives won't take more space than the
+original.
+
+When @code{tar} reads files, this causes them to have the access times
+updated.  To have @code{tar} attempt to set the access times back to
+what they were before they were read, use the @samp{--atime-preserve}
+option.  This doesn't work for files that you don't own, unless you're
+root, and it doesn't interact with incremental dumps nicely
+(@pxref{Making Backups}), but it is good enough for some purposes.
+
+@chapter Special Options for Reading Archives
+
+
 
 
 
