@@ -1,3 +1,10 @@
+2003-09-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* README-alpha: Updated
+	* bootstrap: Updated
+	* po/POTFILES.in: Added src/xheader.c
+	* src/common.h (cut_path_elements): Added proto.
+
 2003-09-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/buffer.c: Use ngettext where appropriate.
