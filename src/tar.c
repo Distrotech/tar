@@ -28,7 +28,7 @@
 /* The following causes "common.h" to produce definitions of all the global
    variables, rather than just "extern" declarations of them.  GNU tar does
    depend on the system loader to preset all GLOBAL variables to neutral (or
-   zero) values, explicit initialisation is usually not done.  */
+   zero) values; explicit initialization is usually not done.  */
 #define GLOBAL
 #include "common.h"
 
@@ -55,7 +55,7 @@ static void usage PARAMS ((int));
 `----------------------------------------------*/
 
 /* Name of option using stdin.  */
-static const char *stdin_used_by = NULL;
+static const char *stdin_used_by;
 
 void
 request_stdin (const char *option)
@@ -74,7 +74,7 @@ request_stdin (const char *option)
 int
 confirm (const char *message_action, const char *message_name)
 {
-  static FILE *confirm_file = NULL;
+  static FILE *confirm_file;
 
   if (!confirm_file)
     {
@@ -147,103 +147,103 @@ enum
 };
 
 /* If nonzero, display usage information and exit.  */
-static int show_help = 0;
+static int show_help;
 
 /* If nonzero, print the version on standard output and exit.  */
-static int show_version = 0;
+static int show_version;
 
 struct option long_options[] =
 {
-  {"absolute-names", no_argument, NULL, 'P'},
-  {"absolute-paths", no_argument, NULL, OBSOLETE_ABSOLUTE_NAMES},
-  {"after-date", required_argument, NULL, 'N'},
-  {"append", no_argument, NULL, 'r'},
+  {"absolute-names", no_argument, 0, 'P'},
+  {"absolute-paths", no_argument, 0, OBSOLETE_ABSOLUTE_NAMES},
+  {"after-date", required_argument, 0, 'N'},
+  {"append", no_argument, 0, 'r'},
   {"atime-preserve", no_argument, &atime_preserve_option, 1},
-  {"backup", optional_argument, NULL, BACKUP_OPTION},
-  {"block-compress", no_argument, NULL, OBSOLETE_BLOCK_COMPRESS},
-  {"block-number", no_argument, NULL, 'R'},
-  {"block-size", required_argument, NULL, OBSOLETE_BLOCKING_FACTOR},
-  {"blocking-factor", required_argument, NULL, 'b'},
-  {"bzip2", no_argument, NULL, 'y'},
-  {"catenate", no_argument, NULL, 'A'},
+  {"backup", optional_argument, 0, BACKUP_OPTION},
+  {"block-compress", no_argument, 0, OBSOLETE_BLOCK_COMPRESS},
+  {"block-number", no_argument, 0, 'R'},
+  {"block-size", required_argument, 0, OBSOLETE_BLOCKING_FACTOR},
+  {"blocking-factor", required_argument, 0, 'b'},
+  {"bzip2", no_argument, 0, 'I'},
+  {"catenate", no_argument, 0, 'A'},
   {"checkpoint", no_argument, &checkpoint_option, 1},
-  {"compare", no_argument, NULL, 'd'},
-  {"compress", no_argument, NULL, 'Z'},
-  {"concatenate", no_argument, NULL, 'A'},
-  {"confirmation", no_argument, NULL, 'w'},
+  {"compare", no_argument, 0, 'd'},
+  {"compress", no_argument, 0, 'Z'},
+  {"concatenate", no_argument, 0, 'A'},
+  {"confirmation", no_argument, 0, 'w'},
   /* FIXME: --selective as a synonym for --confirmation?  */
-  {"create", no_argument, NULL, 'c'},
-  {"delete", no_argument, NULL, DELETE_OPTION},
-  {"dereference", no_argument, NULL, 'h'},
-  {"diff", no_argument, NULL, 'd'},
-  {"directory", required_argument, NULL, 'C'},
-  {"exclude", required_argument, NULL, EXCLUDE_OPTION},
-  {"exclude-from", required_argument, NULL, 'X'},
-  {"extract", no_argument, NULL, 'x'},
-  {"file", required_argument, NULL, 'f'},
-  {"files-from", required_argument, NULL, 'T'},
+  {"create", no_argument, 0, 'c'},
+  {"delete", no_argument, 0, DELETE_OPTION},
+  {"dereference", no_argument, 0, 'h'},
+  {"diff", no_argument, 0, 'd'},
+  {"directory", required_argument, 0, 'C'},
+  {"exclude", required_argument, 0, EXCLUDE_OPTION},
+  {"exclude-from", required_argument, 0, 'X'},
+  {"extract", no_argument, 0, 'x'},
+  {"file", required_argument, 0, 'f'},
+  {"files-from", required_argument, 0, 'T'},
   {"force-local", no_argument, &force_local_option, 1},
-  {"get", no_argument, NULL, 'x'},
-  {"group", required_argument, NULL, GROUP_OPTION},
-  {"gunzip", no_argument, NULL, 'z'},
-  {"gzip", no_argument, NULL, 'z'},
+  {"get", no_argument, 0, 'x'},
+  {"group", required_argument, 0, GROUP_OPTION},
+  {"gunzip", no_argument, 0, 'z'},
+  {"gzip", no_argument, 0, 'z'},
   {"help", no_argument, &show_help, 1},
   {"ignore-failed-read", no_argument, &ignore_failed_read_option, 1},
-  {"ignore-zeros", no_argument, NULL, 'i'},
+  {"ignore-zeros", no_argument, 0, 'i'},
   /* FIXME: --ignore-end as a new name for --ignore-zeros?  */
-  {"incremental", no_argument, NULL, 'G'},
-  {"info-script", required_argument, NULL, 'F'},
-  {"interactive", no_argument, NULL, 'w'},
-  {"keep-old-files", no_argument, NULL, 'k'},
-  {"label", required_argument, NULL, 'V'},
-  {"list", no_argument, NULL, 't'},
-  {"listed-incremental", required_argument, NULL, 'g'},
-  {"mode", required_argument, NULL, MODE_OPTION},
-  {"modification-time", no_argument, NULL, OBSOLETE_TOUCH},
-  {"multi-volume", no_argument, NULL, 'M'},
-  {"new-volume-script", required_argument, NULL, 'F'},
-  {"newer", required_argument, NULL, 'N'},
-  {"newer-mtime", required_argument, NULL, NEWER_MTIME_OPTION},
-  {"null", no_argument, NULL, NULL_OPTION},
-  {"no-recursion", no_argument, NULL, NO_RECURSE_OPTION},
+  {"incremental", no_argument, 0, 'G'},
+  {"info-script", required_argument, 0, 'F'},
+  {"interactive", no_argument, 0, 'w'},
+  {"keep-old-files", no_argument, 0, 'k'},
+  {"label", required_argument, 0, 'V'},
+  {"list", no_argument, 0, 't'},
+  {"listed-incremental", required_argument, 0, 'g'},
+  {"mode", required_argument, 0, MODE_OPTION},
+  {"modification-time", no_argument, 0, OBSOLETE_TOUCH},
+  {"multi-volume", no_argument, 0, 'M'},
+  {"new-volume-script", required_argument, 0, 'F'},
+  {"newer", required_argument, 0, 'N'},
+  {"newer-mtime", required_argument, 0, NEWER_MTIME_OPTION},
+  {"null", no_argument, 0, NULL_OPTION},
+  {"no-recursion", no_argument, 0, NO_RECURSE_OPTION},
   {"numeric-owner", no_argument, &numeric_owner_option, 1},
-  {"old-archive", no_argument, NULL, 'o'},
-  {"one-file-system", no_argument, NULL, 'l'},
-  {"owner", required_argument, NULL, OWNER_OPTION},
-  {"portability", no_argument, NULL, 'o'},
-  {"posix", no_argument, NULL, POSIX_OPTION},
-  {"preserve", no_argument, NULL, PRESERVE_OPTION},
-  {"preserve-order", no_argument, NULL, 's'},
-  {"preserve-permissions", no_argument, NULL, 'p'},
+  {"old-archive", no_argument, 0, 'o'},
+  {"one-file-system", no_argument, 0, 'l'},
+  {"owner", required_argument, 0, OWNER_OPTION},
+  {"portability", no_argument, 0, 'o'},
+  {"posix", no_argument, 0, POSIX_OPTION},
+  {"preserve", no_argument, 0, PRESERVE_OPTION},
+  {"preserve-order", no_argument, 0, 's'},
+  {"preserve-permissions", no_argument, 0, 'p'},
   {"recursive-unlink", no_argument, &recursive_unlink_option, 1},
-  {"read-full-blocks", no_argument, NULL, OBSOLETE_READ_FULL_RECORDS},
-  {"read-full-records", no_argument, NULL, 'B'},
+  {"read-full-blocks", no_argument, 0, OBSOLETE_READ_FULL_RECORDS},
+  {"read-full-records", no_argument, 0, 'B'},
   /* FIXME: --partial-blocks might be a synonym for --read-full-records?  */
-  {"record-number", no_argument, NULL, OBSOLETE_BLOCK_NUMBER},
-  {"record-size", required_argument, NULL, RECORD_SIZE_OPTION},
+  {"record-number", no_argument, 0, OBSOLETE_BLOCK_NUMBER},
+  {"record-size", required_argument, 0, RECORD_SIZE_OPTION},
   {"remove-files", no_argument, &remove_files_option, 1},
-  {"rsh-command", required_argument, NULL, RSH_COMMAND_OPTION},
-  {"same-order", no_argument, NULL, 's'},
+  {"rsh-command", required_argument, 0, RSH_COMMAND_OPTION},
+  {"same-order", no_argument, 0, 's'},
   {"same-owner", no_argument, &same_owner_option, 1},
-  {"same-permissions", no_argument, NULL, 'p'},
+  {"same-permissions", no_argument, 0, 'p'},
   {"show-omitted-dirs", no_argument, &show_omitted_dirs_option, 1},
-  {"sparse", no_argument, NULL, 'S'},
-  {"starting-file", required_argument, NULL, 'K'},
-  {"suffix", required_argument, NULL, SUFFIX_OPTION},
-  {"tape-length", required_argument, NULL, 'L'},
-  {"to-stdout", no_argument, NULL, 'O'},
+  {"sparse", no_argument, 0, 'S'},
+  {"starting-file", required_argument, 0, 'K'},
+  {"suffix", required_argument, 0, SUFFIX_OPTION},
+  {"tape-length", required_argument, 0, 'L'},
+  {"to-stdout", no_argument, 0, 'O'},
   {"totals", no_argument, &totals_option, 1},
-  {"touch", no_argument, NULL, 'm'},
-  {"uncompress", no_argument, NULL, 'Z'},
-  {"ungzip", no_argument, NULL, 'z'},
-  {"unlink-first", no_argument, NULL, 'U'},
-  {"update", no_argument, NULL, 'u'},
-  {"use-compress-program", required_argument, NULL, USE_COMPRESS_PROGRAM_OPTION},
-  {"verbose", no_argument, NULL, 'v'},
-  {"verify", no_argument, NULL, 'W'},
+  {"touch", no_argument, 0, 'm'},
+  {"uncompress", no_argument, 0, 'Z'},
+  {"ungzip", no_argument, 0, 'z'},
+  {"unlink-first", no_argument, 0, 'U'},
+  {"update", no_argument, 0, 'u'},
+  {"use-compress-program", required_argument, 0, USE_COMPRESS_PROGRAM_OPTION},
+  {"verbose", no_argument, 0, 'v'},
+  {"verify", no_argument, 0, 'W'},
   {"version", no_argument, &show_version, 1},
-  {"version-control", required_argument, NULL, OBSOLETE_VERSION_CONTROL},
-  {"volno-file", required_argument, NULL, VOLNO_FILE_OPTION},
+  {"version-control", required_argument, 0, OBSOLETE_VERSION_CONTROL},
+  {"volno-file", required_argument, 0, VOLNO_FILE_OPTION},
 
   {0, 0, 0, 0}
 };
@@ -340,8 +340,8 @@ Archive format selection:\n\
   -V, --label=NAME                   create archive with volume name NAME\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
-      --posix                        write a POSIX conformant archive\n\
-  -y, --bzip2                        filter the archive through bzip2\n\
+      --posix                        write a POSIX format archive\n\
+  -I, --bzip2                        filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
@@ -369,7 +369,7 @@ Local file selection:\n\
 #endif
       fputs (_("\
       --backup[=CONTROL]       backup before removal, choose version control\n\
-      --suffix=SUFFIX          backup before removel, override usual suffix\n"),
+      --suffix=SUFFIX          backup before removal, override usual suffix\n"),
 	     stdout);
       fputs (_("\
 \n\
@@ -412,13 +412,13 @@ Report bugs to <bug-tar@gnu.org>.\n"),
 | Parse the options for tar.  |
 `----------------------------*/
 
-/* Available option letters are DEHIJQY and aejnqy.  Some are reserved:
+/* Available option letters are DEHJQY and aejnqy.  Some are reserved:
 
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxyz"
+  "-01234567ABC:F:GIK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -458,7 +458,7 @@ decode_options (int argc, char *const *argv)
   int optchar;			/* option letter */
   int input_files;		/* number of input files */
   const char *backup_suffix_string;
-  const char *version_control_string = NULL;
+  const char *version_control_string = 0;
 
   /* Set some default option values.  */
 
@@ -496,7 +496,7 @@ decode_options (int argc, char *const *argv)
       /* Allocate a new argument array, and copy program name in it.  */
 
       new_argc = argc - 1 + strlen (argv[1]);
-      new_argv = (char **) xmalloc (new_argc * sizeof (char *));
+      new_argv = xmalloc (new_argc * sizeof (char *));
       in = argv;
       out = new_argv;
       *out++ = *in++;
@@ -534,8 +534,8 @@ decode_options (int argc, char *const *argv)
 
   input_files = 0;
 
-  while (optchar = getopt_long (argc, argv, OPTION_STRING, long_options, NULL),
-	 optchar != EOF)
+  while (optchar = getopt_long (argc, argv, OPTION_STRING, long_options, 0),
+	 optchar != -1)
     switch (optchar)
       {
       case '?':
@@ -546,7 +546,7 @@ decode_options (int argc, char *const *argv)
 
       case 1:
 	/* File name or non-parsed option, because of RETURN_IN_ORDER
-	   ordering triggerred by the leading dash in OPTION_STRING.  */
+	   ordering triggered by the leading dash in OPTION_STRING.  */
 
 	name_add (optarg);
 	input_files++;
@@ -567,10 +567,10 @@ decode_options (int argc, char *const *argv)
       case 'b':
 	{
 	  uintmax_t u;
-	  if (! (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONGINT_OK
+	  if (! (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
 		 && u == (blocking_factor = u)
 		 && 0 < blocking_factor
-		 && u == (record_size = u * (size_t) BLOCKSIZE) / BLOCKSIZE))
+		 && u == (record_size = u * BLOCKSIZE) / BLOCKSIZE))
 	    USAGE_ERROR ((0, 0, _("Invalid blocking factor")));
 	}
 	break;
@@ -608,7 +608,7 @@ decode_options (int argc, char *const *argv)
 	if (archive_names == allocated_archive_names)
 	  {
 	    allocated_archive_names *= 2;
-	    archive_name_array = (const char **)
+	    archive_name_array =
 	      xrealloc (archive_name_array,
 			sizeof (const char *) * allocated_archive_names);
 	  }
@@ -650,6 +650,10 @@ decode_options (int argc, char *const *argv)
 	ignore_zeros_option = 1;
 	break;
 
+      case 'I':
+	set_use_compress_program_option ("bzip2");
+	break;
+
       case 'k':
 	/* Don't overwrite existing files.  */
 
@@ -658,7 +662,7 @@ decode_options (int argc, char *const *argv)
 
       case 'K':
 	starting_file_option = 1;
-	addname (optarg, NULL);
+	addname (optarg, 0);
 	break;
 
       case 'l':
@@ -671,7 +675,7 @@ decode_options (int argc, char *const *argv)
       case 'L':
 	{
 	  uintmax_t u;
-	  if (xstrtoumax (optarg, (char **) 0, 10, &u, "") != LONG_MAX)
+	  if (xstrtoumax (optarg, 0, 10, &u, "") != LONGINT_OK)
 	    USAGE_ERROR ((0, 0, _("Invalid tape length")));
 	  tape_length_option = 1024 * (tarlong) u;
 	  multi_volume_option = 1;
@@ -702,7 +706,7 @@ decode_options (int argc, char *const *argv)
   	if (newer_mtime_option != TYPE_MINIMUM (time_t))
 	  USAGE_ERROR ((0, 0, _("More than one threshold date")));
 
-	newer_mtime_option = get_date (optarg, (voidstar) 0);
+	newer_mtime_option = get_date (optarg, 0);
 	if (newer_mtime_option == (time_t) -1)
 	  USAGE_ERROR ((0, 0, _("Invalid date format `%s'"), optarg));
 
@@ -799,12 +803,8 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'X':
-	if (add_exclude_file (add_filtered_exclude, NULL, optarg, '\n') != 0)
+	if (add_exclude_file (add_filtered_exclude, 0, optarg, '\n') != 0)
 	  FATAL_ERROR ((0, errno, "%s", optarg));
-	break;
-
-      case 'y':
-	set_use_compress_program_option ("bzip2");
 	break;
 
       case 'z':
@@ -830,7 +830,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case EXCLUDE_OPTION:
-	add_filtered_exclude (NULL, optarg);
+	add_filtered_exclude (0, optarg);
 	break;
 
       case GROUP_OPTION:
@@ -838,7 +838,7 @@ decode_options (int argc, char *const *argv)
 	       && gname_to_gid (optarg, &group_option)))
 	  {
 	    uintmax_t g;
-	    if (xstrtoumax (optarg, (char **) 0, 10, &g, "") == LONGINT_OK
+	    if (xstrtoumax (optarg, 0, 10, &g, "") == LONGINT_OK
 		&& g == (gid_t) g)
 	      group_option = g;
 	    else
@@ -869,7 +869,7 @@ decode_options (int argc, char *const *argv)
 	       && uname_to_uid (optarg, &owner_option)))
 	  {
 	    uintmax_t u;
-	    if (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONGINT_OK
+	    if (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
 		&& u == (uid_t) u)
 	      owner_option = u;
 	    else
@@ -899,7 +899,7 @@ decode_options (int argc, char *const *argv)
       case RECORD_SIZE_OPTION:
 	{
 	  uintmax_t u;
-	  if (! (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONG_MAX
+	  if (! (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
 		 && u == (size_t) u))
 	    USAGE_ERROR ((0, 0, _("Invalid record size")));
 	  record_size = u;
@@ -943,7 +943,7 @@ decode_options (int argc, char *const *argv)
 	  static char buf[sizeof DEVICE_PREFIX + 10];
 	  char *cursor;
 
-	  density = getopt_long (argc, argv, "lmh", NULL, NULL);
+	  density = getopt_long (argc, argv, "lmh", 0, 0);
 	  strcpy (buf, DEVICE_PREFIX);
 	  cursor = buf + strlen (buf);
 
@@ -987,7 +987,7 @@ decode_options (int argc, char *const *argv)
 	  if (archive_names == allocated_archive_names)
 	    {
 	      allocated_archive_names *= 2;
-	      archive_name_array = (const char **)
+	      archive_name_array =
 		xrealloc (archive_name_array,
 			  sizeof (const char *) * allocated_archive_names);
 	    }
@@ -1005,6 +1005,13 @@ decode_options (int argc, char *const *argv)
 
 #endif /* not DEVICE_PREFIX */
       }
+
+  /* Handle operands after any "--" argument.  */
+  for (; optind < argc; optind++)
+    {
+      name_add (argv[optind]);
+      input_files++;
+    }
 
   /* Process trivial options.  */
 
@@ -1043,7 +1050,7 @@ Written by John Gilmore and Jay Fenlason.\n"),
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
     archive_format = POSIX_FORMAT;
 
-  if ((volume_label_option != NULL
+  if ((volume_label_option
        || incremental_option || multi_volume_option || sparse_option)
       && archive_format != OLDGNU_FORMAT && archive_format != GNU_FORMAT)
     USAGE_ERROR ((0, 0,
@@ -1056,7 +1063,7 @@ Written by John Gilmore and Jay Fenlason.\n"),
 
       archive_names = 1;
       archive_name_array[0] = getenv ("TAPE");
-      if (archive_name_array[0] == NULL)
+      if (! archive_name_array[0])
 	archive_name_array[0] = DEFAULT_ARCHIVE;
     }
 
@@ -1141,7 +1148,7 @@ main (int argc, char *const *argv)
   /* Pre-allocate a few structures.  */
 
   allocated_archive_names = 10;
-  archive_name_array = (const char **)
+  archive_name_array =
     xmalloc (sizeof (const char *) * allocated_archive_names);
   archive_names = 0;
 
@@ -1209,6 +1216,8 @@ main (int argc, char *const *argv)
   free (archive_name_array);
   name_term ();
 
+  if (stdlis == stdout && (ferror (stdout) || fclose (stdout) != 0))
+    FATAL_ERROR ((0, 0, _("Error in writing to standard output")));
   if (exit_status == TAREXIT_FAILURE)
     error (0, 0, _("Error exit delayed from previous errors"));
   exit (exit_status);
