@@ -449,7 +449,7 @@ __rmt_read (fildes, buf, nbyte)
 
   for (i = 0; i < rc; i += nbyte, buf += nbyte)
     {
-      nbyte = read (READ (fildes), buf, rc);
+      nbyte = read (READ (fildes), buf, rc - i);
       if (nbyte <= 0)
 	{
 	  _rmt_shutdown (fildes);

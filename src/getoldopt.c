@@ -32,57 +32,65 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "port.h"		/* For index() redefinition if USG. */
 
 int
-getoldopt(argc, argv, optstring, long_options, opt_index)
-	int	argc;
-	char	**argv;
-	char	*optstring;
-	struct option *long_options;
-	int 	*opt_index;
+getoldopt (argc, argv, optstring, long_options, opt_index)
+     int argc;
+     char **argv;
+     char *optstring;
+     struct option *long_options;
+     int *opt_index;
 {
-	extern char	*optarg;	/* Points to next arg */
-	extern int	optind;		/* Global argv index */
-	static char	*key;		/* Points to next keyletter */
-	static char	use_getopt;	/* !=0 if argv[1][0] was '-' */
-	char		c;
-	char		*place;
+  extern char *optarg;		/* Points to next arg */
+  extern int optind;		/* Global argv index */
+  static char *key;		/* Points to next keyletter */
+  static char use_getopt;	/* !=0 if argv[1][0] was '-' */
+  char c;
+  char *place;
 
-	optarg = NULL;
-	
-	if (key == NULL) {		/* First time */
-		if (argc < 2) return EOF;
-		key = argv[1];
-		if ((*key == '-') || (*key == '+'))
-			use_getopt++;
-		else
-			optind = 2;
+  optarg = NULL;
+
+  if (key == NULL)
+    {				/* First time */
+      if (argc < 2)
+	return EOF;
+      key = argv[1];
+      if ((*key == '-') || (*key == '+'))
+	use_getopt++;
+      else
+	optind = 2;
+    }
+
+  if (use_getopt)
+    return getopt_long (argc, argv, optstring,
+			long_options, opt_index);
+
+  c = *key++;
+  if (c == '\0')
+    {
+      key--;
+      return EOF;
+    }
+  place = index (optstring, c);
+
+  if (place == NULL || c == ':')
+    {
+      msg ("unknown option %c", c);
+      return ('?');
+    }
+
+  place++;
+  if (*place == ':')
+    {
+      if (optind < argc)
+	{
+	  optarg = argv[optind];
+	  optind++;
 	}
-
-	if (use_getopt)
-		return getopt_long(argc, argv, optstring, 
-				   long_options, opt_index);
-
-	c = *key++;
-	if (c == '\0') {
-		key--;
-		return EOF;
+      else
+	{
+	  msg ("%c argument missing", c);
+	  return ('?');
 	}
-	place = index(optstring, c);
+    }
 
-	if (place == NULL || c == ':') {
-		msg("unknown option %c", c);
-		return('?');
-	}
-
-	place++;
-	if (*place == ':') {
-		if (optind < argc) {
-			optarg = argv[optind];
-			optind++;
-		} else {
-			msg("%c argument missing", c);
-			return('?');
-		}
-	}
-
-	return(c);
+  return (c);
 }
