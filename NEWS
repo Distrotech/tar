@@ -1,12 +1,19 @@
 GNU tar NEWS - User visible changes.
 Copyright © 1994, 1995, 1996, 1997 Free Software Foundation, Inc.
 
-version 1.12.lfs.1 - Paul Eggert, 1998-02.
+version 1.12.lfs.2 - Paul Eggert, 1998-02.
 
 This version is an unofficial port of GNU `tar' 1.12 to Large File
 Summit (LFS) environments like Solaris 2.6 that rely on integer system
 types longer than `long'.  Please send bug reports specific to this
 unofficial version of GNU `tar' to <eggert@twinsun.com>.
+
+This is not intended to be a forked release for GNU tar; it's
+just an interim experimental release, mostly intended for
+Large File Summit hosts like Solaris 2.6.  The patches of this
+release have all been submitted via the usual channels and
+they should no longer be needed once the next official release
+of GNU tar is out.
 
 Version 1.12 - François Pinard, 1997-04.
 
