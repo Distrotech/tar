@@ -50,6 +50,7 @@ lib-prefix.m4
 localcharset.m4
 longdouble.m4
 longlong.m4
+malloc.m4
 mbrtowc.m4
 mbstate_t.m4
 mempcpy.m4
@@ -59,6 +60,7 @@ modechange.m4
 nls.m4
 obstack.m4
 onceonly.m4
+paxutils.m4
 po.m4
 printf-posix.m4
 progtest.m4
@@ -67,6 +69,8 @@ quotearg.m4
 restrict.m4
 rmdir.m4
 rmt.m4
+realloc.m4
+rtapelib.m4
 safe-read.m4
 safe-write.m4
 save-cwd.m4
@@ -91,6 +95,7 @@ strtoul.m4
 strtoull.m4
 strtoumax.m4
 sysexits.m4
+system.m4
 time_r.m4
 timespec.m4
 tm_gmtoff.m4
@@ -108,3 +113,4 @@ xgetcwd.m4
 xsize.m4
 xstrtol.m4
 xstrtoumax.m4
+pathmax.m4
