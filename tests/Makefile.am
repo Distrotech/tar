@@ -43,6 +43,8 @@ TESTS = \
  multiv02.sh\
  old.sh\
  options.sh\
+ same-order01.sh\
+ same-order02.sh\
  volume.sh\
  recurse.sh\
  sparse01.sh\
