@@ -22,7 +22,6 @@ out="\
 directory/
 directory/file2
 directory/subdirectory/
-directory/subdirectory/file1
 "
 
 . $srcdir/after
