@@ -26,19 +26,12 @@
 #include <sys/types.h>
 #include <stdio.h>
 
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
-
 #if HAVE_STRING_H
 # include <string.h>
 #else
 # include <strings.h>
 #endif
 
-#ifndef CHAR_BIT
-# define CHAR_BIT 8
-#endif
 #if HAVE_STDLIB_H
 # include <stdlib.h>
 #endif
