@@ -352,7 +352,7 @@ read_header (bool raw_extended_headers)
 	  set_next_block_after (header);
 	  if (*longp)
 	    free (*longp);
-	  *longp = xmalloc (size);
+	  *longp = xmalloc (size + 1);
 	  **longp = *header;
 	  bp = (*longp)->buffer + BLOCKSIZE;
 
