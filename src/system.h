@@ -393,6 +393,9 @@ extern int errno;
 #  if HAVE_SYS_DEVICE_H
 #   include <sys/device.h>
 #  endif
+#  if HAVE_SYS_PARAM_H
+#   include <sys/param.h>
+#  endif
 #  if HAVE_SYS_BUF_H
 #   include <sys/buf.h>
 #  endif

@@ -36,10 +36,15 @@ AC_C_INLINE
 
 AC_CHECK_HEADERS(fcntl.h linux/fd.h memory.h net/errno.h \
   sgtty.h string.h \
-  sys/buf.h sys/device.h sys/gentape.h \
+  sys/param.h sys/device.h sys/gentape.h \
   sys/inet.h sys/io/trioctl.h \
   sys/mtio.h sys/time.h sys/tprintf.h sys/tape.h \
   unistd.h)
+
+AC_CHECK_HEADERS([sys/buf.h], [], [],
+[#if HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif])
 
 AC_HEADER_SYS_WAIT
 AM_STDBOOL_H
