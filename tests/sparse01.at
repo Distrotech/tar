@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-AT_SETUP([sparse01])
+AT_SETUP([Sparse files])
 AT_KEYWORDS([sparse01])
 
 AT_TAR_CHECK([
@@ -29,16 +29,23 @@ tar -c -f archive --sparse begin sparsefile end || exit 1
 echo separator
 
 tar tfv archive
+echo separator
+mkdir directory
+tar Cxf directory archive
+genfile --stat=name,size sparsefile
+cmp sparsefile directory/sparsefile
 ],
 [0],
 [stdout],
-[],[],[],[gnu, oldgnu])
+[],[],[],[posix, gnu, oldgnu])
 
 RE_CHECK([stdout],
 [separator
 -rw-r--r-- [^ ][^ ]*  *1000 [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9] begin
 -rw-r--r-- [^ ][^ ]*  *10344448[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9] sparsefile
 -rw-r--r-- [^ ][^ ]*  *1000 [0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9] end
+separator
+sparsefile 10344448
 ])
 
 AT_CLEANUP
