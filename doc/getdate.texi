@@ -44,7 +44,7 @@ time.  On @sc{posix} systems, the clock starts at 1970-01-01 00:00:00
 @sc{posix} Epoch and times far in the future.  Traditional Unix systems
 have 32-bit signed @code{time_t} and can represent times from 1901-12-13
 20:45:52 through 2038-01-19 03:14:07 @sc{utc}.  Systems with 64-bit
-signed @code{time_t} can represent all the times in the expected
+signed @code{time_t} can represent all the times in the known
 lifetime of the universe.
 
 @menu
@@ -55,7 +55,7 @@ lifetime of the universe.
 * Day of week items::              Monday and others.
 * Relative items in date strings:: next tuesday, 2 years ago.
 * Pure numbers in date strings::   19931219, 1440.
-* Authors of getdate::             Bellovin, Eggert, Berets, Salz, et al.
+* Authors of getdate::             Bellovin, Salz, Berets, et al.
 @end menu
 
 
@@ -347,7 +347,7 @@ the resulting date and time are adjusted accordingly.
 @cindex pure numbers in date strings
 
 The precise interpretation of a pure decimal number depends
-the context in the date string.
+on the context in the date string.
 
 If the decimal number is of the form @var{yyyy}@var{mm}@var{dd} and no
 other calendar date item (@pxref{Calendar date items}) appears before it
@@ -371,19 +371,18 @@ year.
 @cindex authors of @code{getdate}
 
 @cindex Bellovin, Steven M.
+@cindex Salz, Rich
 @cindex Berets, Jim
-@cindex Eggert, Paul
 @cindex MacKenzie, David
 @cindex Meyering, Jim
-@cindex Salz, Rich
+@cindex Eggert, Paul
 @code{getdate} was originally implemented by Steven M. Bellovin
 (@email{smb@@research.att.com}) while at the University of North Carolina
 at Chapel Hill.  The code was later tweaked by a couple of people on
 Usenet, then completely overhauled by Rich $alz (@email{rsalz@@bbn.com})
 and Jim Berets (@email{jberets@@bbn.com}) in August, 1990.  Various
 revisions for the @sc{gnu} system were made by David MacKenzie, Jim Meyering,
-and others.  The code was rewritten again in 1999 by Paul Eggert,
-to improve its support for daylight saving time.
+Paul Eggert and others.
 
 @cindex Pinard, F.
 @cindex Berry, K.
