@@ -24,7 +24,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  */
 
 #ifdef _AIX
-#pragma alloca
+ #pragma alloca
 #endif
 #include <sys/types.h>
 #include <stdio.h>
