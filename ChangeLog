@@ -1,3 +1,29 @@
+2004-12-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Raise version number to 1.15.1
+	Check for locale.h
+	* NEWS: Entry for 1.15.1
+	* src/buffer.c: Bugfix. Changes introduced 2004-11-26
+	broke extraction from stdin.
+	* src/tar.c (main): Protect invocation of setlocale by
+	ifdef.
+
+	* tests/comprec.at: New test
+	* tests/pipe.at: New test
+	* tests/Makefile.am (comprec.at,pipe.at): New tests
+	* tests/testsuite.at: Likewise
+	* tests/gzip.at: Use AT_GZIP_PREREQ
+	* tests/star/pax-big-10g.at: Likewise 
+	* tests/star/ustar-big-2g.at: Likewise
+	* tests/star/ustar-big-8g.at: Likewise
+	
+	* tests/extrac04.at: Discard stderr from sort, on some
+	systems it spits out lots of irrelevant info.
+	* tests/listed02.at: Likewise
+	
+	* doc/index.html.in: Rewritten in xhtml to follow recent
+	GNU site standards.
+	
 2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Released version 1.15. Sources up to this point are
