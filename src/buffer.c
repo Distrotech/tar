@@ -623,8 +623,15 @@ short_read (ssize_t status)
 	  archive_read_error ();
 
       if (status == 0)
-	break;
-
+	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  
+	  WARN((0, 0, _("Read %s bytes from %s"),
+		STRINGIFY_BIGINT (record_size - left, buf),
+		*archive_name_cursor));
+	  break;
+	}
+  
       if (! read_full_records_option)
 	{
 	  unsigned long rest = record_size - left;
