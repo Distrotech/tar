@@ -18,11 +18,6 @@
 
 #include "system.h"
 
-#include <time.h>
-#ifndef time
-time_t time ();
-#endif
-
 #if HAVE_UTIME_H
 # include <utime.h>
 #else
@@ -35,19 +30,9 @@ struct utimbuf
 
 #include "common.h"
 
-static time_t now;		/* current time */
 static int we_are_root;		/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-
-#if 0
-/* "Scratch" space to store the information about a sparse file before
-   writing the info into the header or extended header.  */
-struct sp_array *sparsearray;
-
-/* Number of elts storable in the sparsearray.  */
-int   sp_array_size = 10;
-#endif
 
 struct delayed_set_stat
   {
@@ -65,15 +50,16 @@ static struct delayed_set_stat *delayed_set_stat_head;
 void
 extr_init (void)
 {
-  now = time (0);
   we_are_root = geteuid () == 0;
+  same_permissions_option += we_are_root;
+  same_owner_option += we_are_root;
 
   /* Option -p clears the kernel umask, so it does not affect proper
      restoration of file permissions.  New intermediate directories will
      comply with umask at start of program.  */
 
   newdir_umask = umask (0);
-  if (same_permissions_option)
+  if (0 < same_permissions_option)
     current_umask = 0;
   else
     {
@@ -105,7 +91,7 @@ set_mode (char *file_name, struct stat *stat_info)
      normal, we merely skip the chmod.  This works because we did umask (0)
      when -p, so umask will have left the specified mode alone.  */
 
-  if ((we_are_root || same_permissions_option)
+  if (0 < same_permissions_option
       && ((!keep_old_files_option && !unlink_first_option)
 	  || (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX))))
     if (chmod (file_name, ~current_umask & stat_info->st_mode) < 0)
@@ -146,7 +132,7 @@ set_stat (char *file_name, struct stat *stat_info, int symlink_flag)
 	  if (incremental_option)
 	    utimbuf.actime = stat_info->st_atime;
 	  else
-	    utimbuf.actime = now;
+	    utimbuf.actime = start_time;
 
 	  utimbuf.modtime = stat_info->st_mtime;
 
@@ -167,7 +153,7 @@ set_stat (char *file_name, struct stat *stat_info, int symlink_flag)
      extract as the original owner.  Or else, if we are running as a user,
      leave the owner and group as they are, so we extract as that user.  */
 
-  if (we_are_root || same_owner_option)
+  if (0 < same_owner_option)
     {
 #if HAVE_LCHOWN
 
@@ -493,10 +479,9 @@ extract_archive (void)
 
       for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
 	{
-	  sparsearray[counter].offset =
-	    OFF_FROM_CHARS (current_header->oldgnu_header.sp[counter].offset);
-	  sparsearray[counter].numbytes =
-	    SIZE_FROM_CHARS (current_header->oldgnu_header.sp[counter].numbytes);
+	  struct sparse const *s = &current_header->oldgnu_header.sp[counter];
+	  sparsearray[counter].offset = OFF_FROM_HEADER (s->offset);
+	  sparsearray[counter].numbytes = SIZE_FROM_HEADER (s->numbytes);
 	  if (!sparsearray[counter].numbytes)
 	    break;
 	}
@@ -519,6 +504,7 @@ extract_archive (void)
 		}
 	      for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
 		{
+		  struct sparse const *s = &exhdr->sparse_header.sp[counter];
 		  if (counter + ind > sp_array_size - 1)
 		    {
 		      /* Realloc the scratch area since we've run out of
@@ -529,12 +515,12 @@ extract_archive (void)
 			xrealloc (sparsearray,
 				  sp_array_size * sizeof (struct sp_array));
 		    }
-		  if (exhdr->sparse_header.sp[counter].numbytes[0] == 0)
+		  if (s->numbytes[0] == 0)
 		    break;
 		  sparsearray[counter + ind].offset =
-		    OFF_FROM_CHARS (exhdr->sparse_header.sp[counter].offset);
+		    OFF_FROM_HEADER (s->offset);
 		  sparsearray[counter + ind].numbytes =
-		    SIZE_FROM_CHARS (exhdr->sparse_header.sp[counter].numbytes);
+		    SIZE_FROM_HEADER (s->numbytes);
 		}
 	      if (!exhdr->sparse_header.isextended)
 		break;
