@@ -216,6 +216,7 @@ sparse_scan_file (struct tar_sparse_file *file)
 
 static struct tar_sparse_optab oldgnu_optab;
 static struct tar_sparse_optab star_optab;
+static struct tar_sparse_optab pax_optab;
 
 static bool
 sparse_select_optab (struct tar_sparse_file *file)
@@ -232,8 +233,8 @@ sparse_select_optab (struct tar_sparse_file *file)
       break;
 
     case POSIX_FORMAT:
-      /* FIXME: Add method */
-      return false;
+      file->optab = &pax_optab;
+      break;
 
     case STAR_FORMAT:
       file->optab = &star_optab;
@@ -713,3 +714,59 @@ static struct tar_sparse_optab star_optab = {
   NULL, /* No dump region function */ 
   sparse_extract_region,
 };
+
+
+/* GNU PAX sparse file format. The sparse file map is stored in
+   x header:
+
+   GNU.sparse.size      Real size of the stored file
+   GNU.sparse.numblocks Number of blocks in the sparse map
+   repeat numblocks time
+     GNU.sparse.offset    Offset of the next data block
+     GNU.sparse.numbytes  Size of the next data block
+   end repeat
+*/
+
+static bool
+pax_dump_header (struct tar_sparse_file *file)
+{
+  off_t block_ordinal = current_block_ordinal ();
+  union block *blk;
+  size_t i;
+
+  /* Store the real file size */
+  xheader_store ("GNU.sparse.size", file->stat_info, NULL);
+  xheader_store ("GNU.sparse.numblocks", file->stat_info, NULL);
+  for (i = 0; i < file->stat_info->sparse_map_avail; i++)
+    {
+      xheader_store ("GNU.sparse.offset", file->stat_info, &i);
+      xheader_store ("GNU.sparse.numbytes", file->stat_info, &i);
+    }
+  
+  blk = start_header (file->stat_info);
+  /* Store the effective (shrunken) file size */
+  OFF_TO_CHARS (file->stat_info->archive_file_size, blk->header.size);
+  finish_header (file->stat_info, blk, block_ordinal);
+  return true;
+}
+
+static bool
+pax_decode_header (struct tar_sparse_file *file)
+{
+  /* Restore actual size */
+  size_t s = file->stat_info->archive_file_size;
+  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
+  file->stat_info->stat.st_size = s;
+  return true;
+}
+
+static struct tar_sparse_optab pax_optab = {
+  NULL,  /* No init function */
+  NULL,  /* No done function */
+  pax_dump_header,
+  pax_decode_header,
+  NULL,  /* No scan_block function */
+  sparse_dump_region,
+  sparse_extract_region,
+};
+
