@@ -1,293 +1,241 @@
-/* Declarations for tar archives.
-   Copyright (C) 1988, 1992, 1993 Free Software Foundation
+/* Format of tar archives.
+   Copyright (C) 1988, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
 
-This file is part of GNU Tar.
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any later
+   version.
 
-GNU Tar is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+   This program is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+   Public License for more details.
 
-GNU Tar is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc.,
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-You should have received a copy of the GNU General Public License
-along with GNU Tar; see the file COPYING.  If not, write to
-the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+/* GNU tar Archive Format description.  */
 
-#include "testpad.h"
+/* If OLDGNU_COMPATIBILITY is not zero, tar produces archives which, by
+   default, are readable by older versions of GNU tar.  This can be
+   overriden by using --posix; in this case, POSIXLY_CORRECT in environment
+   may be set for enforcing stricter conformance.  If OLDGNU_COMPATIBILITY
+   is zero or undefined, tar will eventually produces archives which, by
+   default, POSIX compatible; then either using --posix or defining
+   POSIXLY_CORRECT enforces stricter conformance.
 
-/* major() and minor() macros (among other things) defined here for hpux */
-#ifdef hpux
-#include <sys/mknod.h>
-#endif
+   This #define will disappear in a few years.  FP, June 1995.  */
+#define OLDGNU_COMPATIBILITY 1
 
-/*
- * Kludge for handling systems that can't cope with multiple
- * external definitions of a variable.  In ONE routine (tar.c),
- * we #define TAR_EXTERN to null; here, we set it to "extern" if
- * it is not already set.
- */
-#ifndef TAR_EXTERN
-#define TAR_EXTERN extern
-#endif
+/*---------------------------------------------.
+| `tar' Header Block, from POSIX 1003.1-1990.  |
+`---------------------------------------------*/
 
-/*
- * Header block on tape.
- *
- * I'm going to use traditional DP naming conventions here.
- * A "block" is a big chunk of stuff that we do I/O on.
- * A "record" is a piece of info that we care about.
- * Typically many "record"s fit into a "block".
- */
-#define	RECORDSIZE	512
-#define	NAMSIZ		100
-#define	TUNMLEN		32
-#define	TGNMLEN		32
-#define SPARSE_EXT_HDR  21
-#define SPARSE_IN_HDR	4
+/* POSIX header.  */
+
+struct posix_header
+{				/* byte offset */
+  char name[100];		/*   0 */
+  char mode[8];			/* 100 */
+  char uid[8];			/* 108 */
+  char gid[8];			/* 116 */
+  char size[12];		/* 124 */
+  char mtime[12];		/* 136 */
+  char chksum[8];		/* 148 */
+  char typeflag;		/* 156 */
+  char linkname[100];		/* 157 */
+  char magic[6];		/* 257 */
+  char version[2];		/* 263 */
+  char uname[32];		/* 265 */
+  char gname[32];		/* 297 */
+  char devmajor[8];		/* 329 */
+  char devminor[8];		/* 337 */
+  char prefix[155];		/* 345 */
+				/* 500 */
+};
+
+#define TMAGIC   "ustar"	/* ustar and a null */
+#define TMAGLEN  6
+#define TVERSION "00"		/* 00 and no null */
+#define TVERSLEN 2
+
+/* Values used in typeflag field.  */
+#define REGTYPE	 '0'		/* regular file */
+#define AREGTYPE '\0'		/* regular file */
+#define LNKTYPE  '1'		/* link */
+#define SYMTYPE  '2'		/* reserved */
+#define CHRTYPE  '3'		/* character special */
+#define BLKTYPE  '4'		/* block special */
+#define DIRTYPE  '5'		/* directory */
+#define FIFOTYPE '6'		/* FIFO special */
+#define CONTTYPE '7'		/* reserved */
+
+/* Bits used in the mode field, values in octal.  */
+#define TSUID    04000		/* set UID on execution */
+#define TSGID    02000		/* set GID on execution */
+#define TSVTX    01000		/* reserved */
+				/* file permissions */
+#define TUREAD   00400		/* read by owner */
+#define TUWRITE  00200		/* write by owner */
+#define TUEXEC   00100		/* execute/search by owner */
+#define TGREAD   00040		/* read by group */
+#define TGWRITE  00020		/* write by group */
+#define TGEXEC   00010		/* execute/search by group */
+#define TOREAD   00004		/* read by other */
+#define TOWRITE  00002		/* write by other */
+#define TOEXEC   00001		/* execute/search by other */
+
+/*-------------------------------------.
+| `tar' Header Block, GNU extensions.  |
+`-------------------------------------*/
+
+/* In GNU tar, SYMTYPE is for to symbolic links, and CONTTYPE is for
+   contiguous files, so maybe disobeying the `reserved' comment in POSIX
+   header description.  I suspect these were meant to be used this way, and
+   should not have really been `reserved' in the published standards.  */
+
+/* *BEWARE* *BEWARE* *BEWARE* that the following information is still
+   boiling, and may change.  Even if the OLDGNU format description should be
+   accurate, the so-called GNU format is not yet fully decided.  It is
+   surely meant to use only extensions allowed by POSIX, but the sketch
+   below repeats some ugliness from the OLDGNU format, which should rather
+   go away.  Sparse files should be saved in such a way that they do *not*
+   require two passes at archive creation time.  Huge files get some POSIX
+   fields to overflow, alternate solutions have to be sought for this.  */
+
+/* Descriptor for a single file hole.  */
 
 struct sparse
-  {
-    char offset[12];
-    char numbytes[12];
-  };
+{				/* byte offset */
+  char offset[12];		/*   0 */
+  char numbytes[12];		/*  12 */
+				/*  24 */
+};
 
-struct sp_array
-  {
-    int offset;
-    int numbytes;
-  };
+/* Sparse files are not supported in POSIX ustar format.  For sparse files
+   with a POSIX header, a GNU extra header is provided which holds overall
+   sparse information and a few sparse descriptors.  When an old GNU header
+   replaces both the POSIX header and the GNU extra header, it holds some
+   sparse descriptors too.  Whether POSIX or not, if more sparse descriptors
+   are still needed, they are put into as many successive sparse headers as
+   necessary.  The following constants tell how many sparse descriptors fit
+   in each kind of header able to hold them.  */
 
-union record
-  {
-    char charptr[RECORDSIZE];
-    struct header
-      {
-	char arch_name[NAMSIZ];
-	char mode[8];
-	char uid[8];
-	char gid[8];
-	char size[12];
-	char mtime[12];
-	char chksum[8];
-	char linkflag;
-	char arch_linkname[NAMSIZ];
-	char magic[8];
-	char uname[TUNMLEN];
-	char gname[TGNMLEN];
-	char devmajor[8];
-	char devminor[8];
-	/* these following fields were added by JF for gnu */
-	/* and are NOT standard */
-	char atime[12];
-	char ctime[12];
-	char offset[12];
-	char longnames[4];
-#ifdef NEEDPAD
-	char pad;
-#endif
-	struct sparse sp[SPARSE_IN_HDR];
-	char isextended;
-	char realsize[12];	/* true size of the sparse file */
-	/* char	ending_blanks[12];*//* number of nulls at the
-	   end of the file, if any */
-      }
-    header;
-    struct extended_header
-      {
-	struct sparse sp[21];
-	char isextended;
-      }
-    ext_hdr;
-  };
+#define SPARSES_IN_EXTRA_HEADER  16
+#define SPARSES_IN_OLDGNU_HEADER 4
+#define SPARSES_IN_SPARSE_HEADER 21
 
-/* The checksum field is filled with this while the checksum is computed. */
-#define	CHKBLANKS	"        "	/* 8 blanks, no null */
+/* The GNU extra header contains some information GNU tar needs, but not
+   foreseen in POSIX header format.  It is only used after a POSIX header
+   (and never with old GNU headers), and immediately follows this POSIX
+   header, when typeflag is a letter rather than a digit, so signaling a GNU
+   extension.  */
 
-/* The magic field is filled with this if uname and gname are valid. */
-#define	TMAGIC		"ustar  "	/* 7 chars and a null */
+struct extra_header
+{				/* byte offset */
+  char atime[12];		/*   0 */
+  char ctime[12];		/*  12 */
+  char offset[12];		/*  24 */
+  char realsize[12];		/*  36 */
+  char longnames[4];		/*  48 */
+  char unused_pad1[68];		/*  52 */
+  struct sparse sp[SPARSES_IN_EXTRA_HEADER];
+				/* 120 */
+  char isextended;		/* 504 */
+				/* 505 */
+};
 
-/* The linkflag defines the type of file */
-#define	LF_OLDNORMAL	'\0'	/* Normal disk file, Unix compat */
-#define	LF_NORMAL	'0'	/* Normal disk file */
-#define	LF_LINK		'1'	/* Link to previously dumped file */
-#define	LF_SYMLINK	'2'	/* Symbolic link */
-#define	LF_CHR		'3'	/* Character special file */
-#define	LF_BLK		'4'	/* Block special file */
-#define	LF_DIR		'5'	/* Directory */
-#define	LF_FIFO		'6'	/* FIFO special file */
-#define	LF_CONTIG	'7'	/* Contiguous file */
-/* Further link types may be defined later. */
+/* Extension header for sparse files, used immediately after the GNU extra
+   header, and used only if all sparse information cannot fit into that
+   extra header.  There might even be many such extension headers, one after
+   the other, until all sparse information has been recorded.  */
 
-/* Note that the standards committee allows only capital A through
-   capital Z for user-defined expansion.  This means that defining something
-   as, say '8' is a *bad* idea. */
-#define LF_DUMPDIR	'D'	/* This is a dir entry that contains
-					   the names of files that were in
-					   the dir at the time the dump
-					   was made */
-#define LF_LONGLINK	'K'	/* Identifies the NEXT file on the tape
-					   as having a long linkname */
-#define LF_LONGNAME	'L'	/* Identifies the NEXT file on the tape
-					   as having a long name. */
-#define LF_MULTIVOL	'M'	/* This is the continuation
-					   of a file that began on another
-					   volume */
-#define LF_NAMES	'N'	/* For storing filenames that didn't
-					   fit in 100 characters */
-#define LF_SPARSE	'S'	/* This is for sparse files */
-#define LF_VOLHDR	'V'	/* This file is a tape/volume header */
-/* Ignore it on extraction */
+struct sparse_header
+{				/* byte offset */
+  struct sparse sp[SPARSES_IN_SPARSE_HEADER];
+				/*   0 */
+  char isextended;		/* 504 */
+				/* 505 */
+};
 
-/*
- * Exit codes from the "tar" program
- */
-#define	EX_SUCCESS	0	/* success! */
-#define	EX_ARGSBAD	1	/* invalid args */
-#define	EX_BADFILE	2	/* invalid filename */
-#define	EX_BADARCH	3	/* bad archive */
-#define	EX_SYSTEM	4	/* system gave unexpected error */
-#define EX_BADVOL	5	/* Special error code means
-				   Tape volume doesn't match the one
-				   specified on the command line */
+/* The old GNU format header conflicts with POSIX format in such a way that
+   POSIX archives may fool old GNU tar's, and POSIX tar's might well be
+   fooled by old GNU tar archives.  An old GNU format header uses the space
+   used by the prefix field in a POSIX header, and cumulates information
+   normally found in a GNU extra header.  With an old GNU tar header, we
+   never see any POSIX header nor GNU extra header.  Supplementary sparse
+   headers are allowed, however.  */
 
-/*
- * Global variables
- */
-TAR_EXTERN union record *ar_block;	/* Start of block of archive */
-TAR_EXTERN union record *ar_record;	/* Current record of archive */
-TAR_EXTERN union record *ar_last;	/* Last+1 record of archive block */
-TAR_EXTERN char ar_reading;	/* 0 writing, !0 reading archive */
-TAR_EXTERN int blocking;	/* Size of each block, in records */
-TAR_EXTERN int blocksize;	/* Size of each block, in bytes */
-TAR_EXTERN char *info_script;	/* Script to run at end of each tape change */
-TAR_EXTERN char *name_file;	/* File containing names to work on */
-TAR_EXTERN char filename_terminator;	/* \n or \0. */
-TAR_EXTERN char *tar;		/* Name of this program */
-TAR_EXTERN struct sp_array *sparsearray;	/* Pointer to the start of the scratch space */
-TAR_EXTERN int sp_array_size;	/* Initial size of the sparsearray */
-TAR_EXTERN int tot_written;	/* Total written to output */
-TAR_EXTERN struct re_pattern_buffer
- *label_pattern;		/* compiled regex for extract label */
-TAR_EXTERN char **ar_files;	/* list of tape drive names */
-TAR_EXTERN int n_ar_files;	/* number of tape drive names */
-TAR_EXTERN int cur_ar_file;	/* tape drive currently being used */
-TAR_EXTERN int ar_files_len;	/* malloced size of ar_files */
-TAR_EXTERN char *current_file_name, *current_link_name;
+struct oldgnu_header
+{				/* byte offset */
+  char unused_pad1[345];	/*   0 */
+  char atime[12];		/* 345 */
+  char ctime[12];		/* 357 */
+  char offset[12];		/* 369 */
+  char longnames[4];		/* 381 */
+  char unused_pad2;		/* 385 */
+  struct sparse sp[SPARSES_IN_OLDGNU_HEADER];
+				/* 386 */
+  char isextended;		/* 482 */
+  char realsize[12];		/* 483 */
+				/* 495 */
+};
 
-/*
- * Flags from the command line
- */
-TAR_EXTERN int cmd_mode;
-#define CMD_NONE	0
-#define CMD_CAT		1	/* -A */
-#define CMD_CREATE	2	/* -c */
-#define CMD_DIFF	3	/* -d */
-#define CMD_APPEND	4	/* -r */
-#define CMD_LIST	5	/* -t */
-#define CMD_UPDATE	6	/* -u */
-#define CMD_EXTRACT	7	/* -x */
-#define CMD_DELETE	8	/* -D */
-#define CMD_VERSION	9	/* --version */
+/* OLDGNU_MAGIC uses both magic and version fields, which are contiguous.
+   Found in an archive, it indicates an old GNU header format, which will be
+   hopefully become obsolescent.  With OLDGNU_MAGIC, uname and gname are
+   valid, though the header is not truly POSIX conforming.  */
+#define OLDGNU_MAGIC "ustar  "	/* 7 chars and a null */
 
+/* The standards committee allows only capital A through capital Z for
+   user-defined expansion.  */
 
-TAR_EXTERN int f_reblock;	/* -B */
-#if 0
-TAR_EXTERN char f_dironly;	/* -D */
-#endif
-TAR_EXTERN int f_run_script_at_end;	/* -F */
-TAR_EXTERN int f_gnudump;	/* -G */
-TAR_EXTERN int f_follow_links;	/* -h */
-TAR_EXTERN int f_ignorez;	/* -i */
-TAR_EXTERN int f_keep;		/* -k */
-TAR_EXTERN int f_startfile;	/* -K */
-TAR_EXTERN int f_local_filesys;	/* -l */
-TAR_EXTERN int tape_length;	/* -L */
-TAR_EXTERN int f_modified;	/* -m */
-TAR_EXTERN int f_multivol;	/* -M */
-TAR_EXTERN int f_new_files;	/* -N */
-TAR_EXTERN int f_oldarch;	/* -o */
-TAR_EXTERN int f_exstdout;	/* -O */
-TAR_EXTERN int f_use_protection;/* -p */
-TAR_EXTERN int f_absolute_paths;/* -P */
-TAR_EXTERN int f_sayblock;	/* -R */
-TAR_EXTERN int f_sorted_names;	/* -s */
-TAR_EXTERN int f_sparse_files;	/* -S  ... JK */
-TAR_EXTERN int f_namefile;	/* -T */
-TAR_EXTERN int f_verbose;	/* -v */
-TAR_EXTERN char *f_volhdr;	/* -V */
-TAR_EXTERN int f_confirm;	/* -w */
-TAR_EXTERN int f_verify;	/* -W */
-TAR_EXTERN int f_exclude;	/* -X */
-TAR_EXTERN char *f_compressprog;	/* -z and -Z */
-TAR_EXTERN int f_do_chown;	/* --do-chown */
-TAR_EXTERN int f_totals;	/* --totals */
-TAR_EXTERN int f_remove_files;	/* --remove-files */
-TAR_EXTERN int f_ignore_failed_read;	/* --ignore-failed-read */
-TAR_EXTERN int f_checkpoint;	/* --checkpoint */
-TAR_EXTERN int f_show_omitted_dirs;	/* --show-omitted-dirs */
-TAR_EXTERN char *f_volno_file;	/* --volno-file */
-TAR_EXTERN int f_force_local;	/* --force-local */
-TAR_EXTERN int f_atime_preserve;/* --atime-preserve */
-TAR_EXTERN int f_compress_block; /* --compress-block */
+/* This is a dir entry that contains the names of files that were in the
+   dir at the time the dump was made.  */
+#define GNUTYPE_DUMPDIR	'D'
 
-/*
- * We default to Unix Standard format rather than 4.2BSD tar format.
- * The code can actually produce all three:
- *	f_standard	ANSI standard
- *	f_oldarch	V7
- *	neither		4.2BSD
- * but we don't bother, since 4.2BSD can read ANSI standard format anyway.
- * The only advantage to the "neither" option is that we can cmp our
- * output to the output of 4.2BSD tar, for debugging.
- */
-#define		f_standard		(!f_oldarch)
+/* Identifies the *next* file on the tape as having a long linkname.  */
+#define GNUTYPE_LONGLINK 'K'
 
-/*
- * Structure for keeping track of filenames and lists thereof.
- */
-struct name
-  {
-    struct name *next;
-    short length;		/* cached strlen(name) */
-    char found;			/* A matching file has been found */
-    char firstch;		/* First char is literally matched */
-    char regexp;		/* This name is a regexp, not literal */
-    char *change_dir;		/* JF set with the -C option */
-    char *dir_contents;		/* JF for f_gnudump */
-    char fake;			/* dummy entry */
-    char name[1];
-  };
+/* Identifies the *next* file on the tape as having a long name.  */
+#define GNUTYPE_LONGNAME 'L'
 
-TAR_EXTERN struct name *namelist;	/* Points to first name in list */
-TAR_EXTERN struct name *namelast;	/* Points to last name in list */
+/* This is the continuation of a file that began on another volume.  */
+#define GNUTYPE_MULTIVOL 'M'
 
-TAR_EXTERN int archive;		/* File descriptor for archive file */
-TAR_EXTERN int errors;		/* # of files in error */
+/* For storing filenames that do not fit into the main header.  */
+#define GNUTYPE_NAMES 'N'
 
-TAR_EXTERN char *gnu_dumpfile;
+/* This is for sparse files.  */
+#define GNUTYPE_SPARSE 'S'
 
-/*
- * Error recovery stuff
- */
-TAR_EXTERN char read_error_flag;
+/* This file is a tape/volume header.  Ignore it on extraction.  */
+#define GNUTYPE_VOLHDR 'V'
 
+/*--------------------------------------.
+| tar Header Block, overall structure.  |
+`--------------------------------------*/
 
-/*
- * Declarations of functions available to the world.
- */
-union record *findrec ();
-void userec ();
-union record *endofrecs ();
-void anno ();
+/* tar files are made in basic blocks of this size.  */
+#define BLOCKSIZE 512
 
-#if defined (HAVE_VPRINTF) && __STDC__
-void msg (char *,...);
-void msg_perror (char *,...);
-#else
-void msg ();
-void msg_perror ();
-#endif
+enum archive_format
+{
+  DEFAULT_FORMAT,		/* format to be decided later */
+  V7_FORMAT,			/* old V7 tar format */
+  OLDGNU_FORMAT,		/* GNU format as per before tar 1.12 */
+  POSIX_FORMAT,			/* restricted, pure POSIX format */
+  GNU_FORMAT			/* POSIX format with GNU extensions */
+};
+
+union block
+{
+  char buffer[BLOCKSIZE];
+  struct posix_header header;
+  struct extra_header extra_header;
+  struct oldgnu_header oldgnu_header;
+  struct sparse_header sparse_header;
+};
+
+/* End of Format description.  */
