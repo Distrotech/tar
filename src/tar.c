@@ -158,6 +158,17 @@ archive_format_string (enum archive_format fmt)
   return "unknown?";
 }
 
+#define FORMAT_MASK(n) (1<<(n))
+
+static void
+assert_format(unsigned fmt_mask)
+{
+  if ((FORMAT_MASK(archive_format) & fmt_mask) == 0)
+    USAGE_ERROR ((0, 0,
+		  _("GNU features wanted on incompatible archive format")));
+}
+
+
 
 /* Options.  */
 
@@ -176,6 +187,7 @@ enum
   CHECKPOINT_OPTION,
   DELETE_OPTION,
   EXCLUDE_OPTION,
+  FIRST_COPY_OPTION,
   FORCE_LOCAL_OPTION,
   FORMAT_OPTION,
   GROUP_OPTION,
@@ -215,6 +227,10 @@ static int show_help;
 /* If nonzero, print the version on standard output and exit.  */
 static int show_version;
 
+/* If nonzero, stop processing when all the files from the namelist
+   where handled */
+static int first_copy_option;
+
 static struct option long_options[] =
 {
   {"absolute-names", no_argument, 0, 'P'},
@@ -244,6 +260,7 @@ static struct option long_options[] =
   {"extract", no_argument, 0, 'x'},
   {"file", required_argument, 0, 'f'},
   {"files-from", required_argument, 0, 'T'},
+  {"first-copy", no_argument, &first_copy_option, 1},
   {"force-local", no_argument, 0, FORCE_LOCAL_OPTION},
   {"format", required_argument, 0, FORMAT_OPTION},
   {"get", no_argument, 0, 'x'},
@@ -374,7 +391,9 @@ Operation modifiers:\n\
   -G, --incremental          handle old GNU-format incremental backup\n\
   -g, --listed-incremental=FILE\n\
                              handle new GNU-format incremental backup\n\
-      --ignore-failed-read   do not exit with nonzero on unreadable files\n"),
+      --ignore-failed-read   do not exit with nonzero on unreadable files\n\
+      --first-copy           process only the first copy of each file in the\
+	                     archive\n"),
 	     stdout);
       fputs (_("\
 \n\
@@ -1248,6 +1267,31 @@ see the file named COPYING for details."));
     USAGE_ERROR ((0, 0,
 		  _("GNU features wanted on incompatible archive format")));
 
+  if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
+		   | FORMAT_MASK (GNU_FORMAT));
+
+  if (incremental_option
+      || multi_volume_option
+      || sparse_option
+      || subcommand_option == CAT_SUBCOMMAND)
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
+		   | FORMAT_MASK (GNU_FORMAT));
+  
+  if (first_copy_option)
+    {
+      if (!input_files && !files_from_option)
+	USAGE_ERROR ((0, 0,
+		      _("--first-copy is meaningless without file list")));
+      if (subcommand_option != DELETE_SUBCOMMAND
+	  && subcommand_option != DIFF_SUBCOMMAND
+	  && subcommand_option != EXTRACT_SUBCOMMAND
+	  && subcommand_option != LIST_SUBCOMMAND
+	  && subcommand_option != UPDATE_SUBCOMMAND)
+	    USAGE_ERROR ((0, 0,
+			  _("--first-copy cannot be used in the requested operation mode")));
+    }
+  
   if (archive_names == 0)
     {
       /* If no archive file name given, try TAPE from the environment, or
@@ -1347,6 +1391,13 @@ see the file named COPYING for details."));
 	       textual_date_option, treated_as));
     }
 }
+
+bool
+all_names_found ()
+{
+  return first_copy_option && names_done ();
+}
+
 
 /* Tar proper.  */
 
