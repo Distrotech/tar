@@ -44,17 +44,20 @@ int mangled_num = 0;
 void
 extract_mangle (void)
 {
-  int size = current_stat.st_size;
+  off_t size = current_stat.st_size;
   char *buffer = xmalloc ((size_t) (size + 1));
   char *copy = buffer;
   char *cursor = buffer;
+
+  if (size != (size_t) size || size == (size_t) -1)
+    FATAL_ERROR ((0, 0, _("Memory exhausted")));
 
   buffer[size] = '\0';
 
   while (size > 0)
     {
       union block *block = find_next_block ();
-      int available;
+      size_t available;
 
       if (!block)
 	{
@@ -64,7 +67,7 @@ extract_mangle (void)
       available = available_space_after (block);
       if (available > size)
 	available = size;
-      memcpy (copy, block->buffer, (size_t) available);
+      memcpy (copy, block->buffer, available);
       copy += available;
       size -= available;
       set_next_block_after ((union block *) (block->buffer + available - 1));
