@@ -138,6 +138,7 @@ mt -f $TAPE_FILE offl
 echo Sending the dump log to $ADMINISTRATOR
 cat $LOGFILE | sed -f logfile.sed > $LOGFILE.tmp
 /usr/ucb/mail -s "Results of backup on `date`" $ADMINISTRATOR < $LOGFILE.tmp
+rm -f $LOGFILE.tmp
 
 # This is undesirable -- rms.
 #rsh albert /usr/local/adm/motd-backup-done &
