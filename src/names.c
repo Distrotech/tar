@@ -1026,7 +1026,9 @@ safer_name_suffix (char const *file_name, bool link_target)
 	{
 	  if (p[0] == '.' && p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
 	    prefix_len = p + 2 - file_name;
-
+	  else if (p[0] == '.' && ISSLASH (p[1]))
+	    prefix_len = p + 1 - file_name;
+	  
 	  do
 	    {
 	      char c = *p++;
