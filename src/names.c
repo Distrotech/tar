@@ -1024,10 +1024,13 @@ safer_name_suffix (char const *file_name, bool link_target)
 
       for (p = file_name + prefix_len; *p; )
 	{
-	  if (p[0] == '.' && p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
-	    prefix_len = p + 2 - file_name;
-	  else if (p[0] == '.' && ISSLASH (p[1]))
-	    prefix_len = p + 1 - file_name;
+	  if (p[0] == '.')
+	    {
+	      if (p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
+		prefix_len = p + 2 - file_name;
+	      else if (ISSLASH (p[1]))
+		prefix_len = p + 1 - file_name;
+	    }
 	  
 	  do
 	    {
@@ -1073,7 +1076,7 @@ safer_name_suffix (char const *file_name, bool link_target)
 	  WARN ((0, 0, _(diagnostic[link_target])));
 	}
 
-      p = ".";
+      p = ISSLASH (file_name[strlen(file_name)-1]) ? "./" : ".";
     }
 
   return (char *) p;
