@@ -981,9 +981,11 @@ dump_dir0 (char *directory,
 	  return;
 	}
     }
-  else if (!recursion_option)
+
+  if (!recursion_option)
     return;
-  else if (one_file_system_option
+
+  if (one_file_system_option
 	   && !top_level
 	   && parent_device != stat->stat.st_dev)
     {
