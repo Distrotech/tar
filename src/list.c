@@ -507,7 +507,7 @@ decode_header (union block *header, struct stat *stat_info,
 	}
       switch (header->header.typeflag)
 	{
-#ifdef S_IFBLK
+#ifdef S_ISBLK
 	case BLKTYPE:
 	  stat_info->st_rdev
 	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
@@ -515,7 +515,7 @@ decode_header (union block *header, struct stat *stat_info,
 	  break;
 #endif
 
-#ifdef S_IFCHR
+#ifdef S_ISCHR
 	case CHRTYPE:
 	  stat_info->st_rdev
 	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
@@ -872,7 +872,7 @@ print_header (void)
 
       switch (current_header->header.typeflag)
 	{
-#if defined(S_IFBLK) || defined(S_IFCHR)
+#if defined S_ISBLK || defined S_ISCHR
 	case CHRTYPE:
 	case BLKTYPE:
 	  sprintf (size, "%lu,%lu",
