@@ -55,143 +55,233 @@ struct link
 
 struct link *linklist = NULL;	/* points to first link in list */
 
+/* Base 64 digits; see Internet RFC 2045 Table 1.  */
+char const base_64_digits[64] =
+{
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+};
+#define base_8_digits (base_64_digits + 26 * 2)
 
-/*------------------------------------------------------------------------.
-| Convert VALUE (with substitute SUBSTITUTE if VALUE is out of range)	  |
-| into a size-SIZE field at WHERE, including a				  |
-| trailing space.  For example, 3 for SIZE means two digits and a space.  |
-|                                                                         |
-| We assume the trailing NUL is already there and don't fill it in.  This |
-| fact is used by start_header and finish_header, so don't change it!     |
-`------------------------------------------------------------------------*/
+/* The maximum uintmax_t value that can be represented with DIGITS digits,
+   assuming that each digit is BITS_PER_DIGIT wide.  */
+#define MAX_VAL_WITH_DIGITS(digits, bits_per_digit) \
+   ((digits) * (bits_per_digit) < sizeof (uintmax_t) * CHAR_BIT \
+    ? ((uintmax_t) 1 << ((digits) * (bits_per_digit))) - 1 \
+    : (uintmax_t) -1)
 
-/* Output VALUE in octal, using SUBSTITUTE if value won't fit.
+/* Convert VALUE to a representation suitable for tar headers,
+   using base 1 << BITS_PER_DIGIT.
+   Use the digits in DIGIT_CHAR[0] ... DIGIT_CHAR[base - 1].
    Output to buffer WHERE with size SIZE.
-   TYPE is the kind of value being output (useful for diagnostics).
-   Prefer SIZE - 1 octal digits (with leading '0's), followed by '\0';
-   but if SIZE octal digits would fit, omit the '\0'.  */
+   The result is undefined if SIZE is 0 or if VALUE is too large to fit.  */
 
 static void
-to_oct (uintmax_t value, uintmax_t substitute, char *where, size_t size, const char *type)
+to_base (uintmax_t value, int bits_per_digit, char const *digit_char,
+	 char *where, size_t size)
 {
   uintmax_t v = value;
   size_t i = size;
-
-# define MAX_OCTAL_VAL_WITH_DIGITS(digits) \
-    ((digits) * 3 < sizeof (uintmax_t) * CHAR_BIT \
-     ? ((uintmax_t) 1 << ((digits) * 3)) - 1 \
-     : (uintmax_t) -1)
-
-  /* Output a trailing NUL unless the value is too large.  */
-  if (value <= MAX_OCTAL_VAL_WITH_DIGITS (size - 1))
-    where[--i] = '\0';
-
-  /* Produce the digits -- at least one.  */
+  unsigned digit_mask = (1 << bits_per_digit) - 1;
 
   do
     {
-      where[--i] = '0' + (int) (v & 7);	/* one octal digit */
-      v >>= 3;
+      where[--i] = digit_char[v & digit_mask];
+      v >>= bits_per_digit;
     }
-  while (i != 0 && v != 0);
+  while (i);
+}
 
-  /* Leading zeros, if necessary.  */
-  while (i != 0)
-    where[--i] = '0';
+/* NEGATIVE is nonzero if VALUE was negative before being cast to
+   uintmax_t; its original bitpattern can be deduced from VALSIZE, its
+   original size before casting.  Convert VALUE to external form,
+   using SUBSTITUTE (...)  if VALUE won't fit.  Output to buffer WHERE
+   with size SIZE.  TYPE is the kind of value being output (useful for
+   diagnostics).  Prefer the POSIX format of SIZE - 1 octal digits
+   (with leading zero digits), followed by '\0'.  If this won't work,
+   and if GNU format is allowed, use '+' or '-' followed by SIZE - 1
+   base-64 digits.  If neither format works, use SUBSTITUTE (...)
+   instead.  Pass to SUBSTITUTE the address of an 0-or-1 flag
+   recording whether the substitute value is negative.  */
 
-  if (v != 0)
+static void
+to_chars (int negative, uintmax_t value, size_t valsize,
+	  uintmax_t (*substitute) PARAMS ((int *)),
+	  char *where, size_t size, const char *type)
+{
+  uintmax_t v = negative ? -value : value;
+
+  if (! negative && v <= MAX_VAL_WITH_DIGITS (size - 1, LG_8))
     {
-      uintmax_t maxval = MAX_OCTAL_VAL_WITH_DIGITS (size);
-      char buf1[UINTMAX_STRSIZE_BOUND];
-      char buf2[UINTMAX_STRSIZE_BOUND];
-      char buf3[UINTMAX_STRSIZE_BOUND];
-      char *value_string = STRINGIFY_BIGINT (value, buf1);
-      char *maxval_string = STRINGIFY_BIGINT (maxval, buf2);
+      where[size - 1] = '\0';
+      to_base (v, LG_8, base_8_digits, where, size - 1);
+    }
+  else if (v <= MAX_VAL_WITH_DIGITS (size - 1, LG_64)
+	   && archive_format == GNU_FORMAT)
+    {
+      where[0] = negative ? '-' : '+';
+      to_base (v, LG_64, base_64_digits, where + 1, size - 1);
+    }
+  else if (negative
+	   && archive_format != GNU_FORMAT
+	   && valsize * CHAR_BIT <= (size - 1) * LG_8)
+    {
+      where[size - 1] = '\0';
+      to_base (value & MAX_VAL_WITH_DIGITS (valsize * CHAR_BIT, 1),
+	       LG_8, base_8_digits, where, size - 1);
+    }
+  else
+    {
+      uintmax_t maxval = (archive_format == GNU_FORMAT
+			  ? MAX_VAL_WITH_DIGITS (size - 1, LG_64)
+			  : MAX_VAL_WITH_DIGITS (size - 1, LG_8));
+      char buf1[UINTMAX_STRSIZE_BOUND + 1];
+      char buf2[UINTMAX_STRSIZE_BOUND + 1];
+      char buf3[UINTMAX_STRSIZE_BOUND + 1];
+      char *value_string = STRINGIFY_BIGINT (v, buf1 + 1);
+      char *maxval_string = STRINGIFY_BIGINT (maxval, buf2 + 1);
+      char const *minval_string =
+	(archive_format == GNU_FORMAT
+	 ? "0"
+	 : (maxval_string[-1] = '-', maxval_string - 1));
+      if (negative)
+	*--value_string = '-';
       if (substitute)
 	{
-	  substitute &= maxval;
-	  WARN ((0, 0, _("%s value %s too large (max=%s); substituting %s"),
-		 type, value_string, maxval_string,
-		 STRINGIFY_BIGINT (substitute, buf3)));
-	  to_oct (substitute, (uintmax_t) 0, where, size, type);
+	  int negsub;
+	  uintmax_t sub = substitute (&negsub) & maxval;
+	  uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? -sub : sub;
+	  char *sub_string = STRINGIFY_BIGINT (s, buf3 + 1);
+	  if (negsub)
+	    *--sub_string = '-';
+	  WARN ((0, 0, _("%s value %s out of range %s..%s; substituting %s"),
+		 type, value_string, minval_string, maxval_string,
+		 sub_string));
+	  to_chars (negsub, s, valsize, NULL, where, size, type);
 	}
       else
-	ERROR ((0, 0, _("%s value %s too large (max=%s)"),
-		type, value_string, maxval_string));
+	ERROR ((0, 0, _("%s value %s out of range %s..%s"),
+		type, value_string, minval_string, maxval_string));
     }
 }
-#ifndef GID_NOBODY
-#define GID_NOBODY 0
+
+static uintmax_t
+gid_substitute (int *negative)
+{
+  gid_t r;
+#ifdef GID_NOBODY
+  r = GID_NOBODY;
+#else
+  static gid_t gid_nobody;
+  if (!gid_nobody && !gname_to_gid ("nobody", &gid_nobody))
+    gid_nobody = -2;
+  r = gid_nobody;
 #endif
-void
-gid_to_oct (gid_t v, char *p, size_t s)
-{
-  to_oct ((uintmax_t) v, (uintmax_t) GID_NOBODY, p, s, "gid_t");
+  *negative = r < 0;
+  return r;
 }
+
 void
-major_to_oct (major_t v, char *p, size_t s)
+gid_to_chars (gid_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "major_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, gid_substitute, p, s, "gid_t");
 }
+
 void
-minor_to_oct (minor_t v, char *p, size_t s)
+major_to_chars (major_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "minor_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "major_t");
 }
+
 void
-mode_to_oct (mode_t v, char *p, size_t s)
+minor_to_chars (minor_t v, char *p, size_t s)
+{
+  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "minor_t");
+}
+
+void
+mode_to_chars (mode_t v, char *p, size_t s)
 {
   /* In the common case where the internal and external mode bits are the same,
      propagate all unknown bits to the external mode.
      This matches historical practice.
      Otherwise, just copy the bits we know about.  */
-  uintmax_t u =
-    ((S_ISUID == TSUID && S_ISGID == TSGID && S_ISVTX == TSVTX
+  int negative;
+  uintmax_t u;
+  if (S_ISUID == TSUID && S_ISGID == TSGID && S_ISVTX == TSVTX
       && S_IRUSR == TUREAD && S_IWUSR == TUWRITE && S_IXUSR == TUEXEC
       && S_IRGRP == TGREAD && S_IWGRP == TGWRITE && S_IXGRP == TGEXEC
       && S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC)
-     ? v
-     : ((v & S_ISUID ? TSUID : 0)
-	| (v & S_ISGID ? TSGID : 0)
-	| (v & S_ISVTX ? TSVTX : 0)
-	| (v & S_IRUSR ? TUREAD : 0)
-	| (v & S_IWUSR ? TUWRITE : 0)
-	| (v & S_IXUSR ? TUEXEC : 0)
-	| (v & S_IRGRP ? TGREAD : 0)
-	| (v & S_IWGRP ? TGWRITE : 0)
-	| (v & S_IXGRP ? TGEXEC : 0)
-	| (v & S_IROTH ? TOREAD : 0)
-	| (v & S_IWOTH ? TOWRITE : 0)
-	| (v & S_IXOTH ? TOEXEC : 0)));
-  to_oct (u, (uintmax_t) 0, p, s, "mode_t");
+    {
+      negative = v < 0;
+      u = v;
+    }
+  else
+    {
+      negative = 0;
+      u = ((v & S_ISUID ? TSUID : 0)
+	   | (v & S_ISGID ? TSGID : 0)
+	   | (v & S_ISVTX ? TSVTX : 0)
+	   | (v & S_IRUSR ? TUREAD : 0)
+	   | (v & S_IWUSR ? TUWRITE : 0)
+	   | (v & S_IXUSR ? TUEXEC : 0)
+	   | (v & S_IRGRP ? TGREAD : 0)
+	   | (v & S_IWGRP ? TGWRITE : 0)
+	   | (v & S_IXGRP ? TGEXEC : 0)
+	   | (v & S_IROTH ? TOREAD : 0)
+	   | (v & S_IWOTH ? TOWRITE : 0)
+	   | (v & S_IXOTH ? TOEXEC : 0));
+    }
+  to_chars (negative, u, sizeof v, NULL, p, s, "mode_t");
 }
+
 void
-off_to_oct (off_t v, char *p, size_t s)
+off_to_chars (off_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "off_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "off_t");
 }
+
 void
-size_to_oct (size_t v, char *p, size_t s)
+size_to_chars (size_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "size_t");
+  to_chars (0, (uintmax_t) v, sizeof v, NULL, p, s, "size_t");
 }
+
 void
-time_to_oct (time_t v, char *p, size_t s)
+time_to_chars (time_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "time_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "time_t");
 }
-#ifndef UID_NOBODY
-#define UID_NOBODY 0
+
+static uintmax_t
+uid_substitute (int *negative)
+{
+  uid_t r;
+#ifdef UID_NOBODY
+  r = UID_NOBODY;
+#else
+  static uid_t uid_nobody;
+  if (!uid_nobody && !uname_to_uid ("nobody", &uid_nobody))
+    uid_nobody = -2;
+  r = uid_nobody;
 #endif
-void
-uid_to_oct (uid_t v, char *p, size_t s)
-{
-  to_oct ((uintmax_t) v, (uintmax_t) UID_NOBODY, p, s, "uid_t");
+  *negative = r < 0;
+  return r;
 }
+
 void
-uintmax_to_oct (uintmax_t v, char *p, size_t s)
+uid_to_chars (uid_t v, char *p, size_t s)
 {
-  to_oct (v, (uintmax_t) 0, p, s, "uintmax_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, uid_substitute, p, s, "uid_t");
+}
+
+void
+uintmax_to_chars (uintmax_t v, char *p, size_t s)
+{
+  to_chars (0, v, sizeof v, NULL, p, s, "uintmax_t");
 }
 
 /* Writing routines.  */
@@ -283,18 +373,17 @@ start_header (const char *name, struct stat *st)
   if (!absolute_names_option)
     {
       static int warned_once = 0;
+      size_t prefix_len = FILESYSTEM_PREFIX_LEN (name);
 
-#if MSDOS
-      if (name[1] == ':')
+      if (prefix_len)
 	{
-	  name += 2;
+	  name += prefix_len;
 	  if (!warned_once)
 	    {
 	      warned_once = 1;
-	      WARN ((0, 0, _("Removing drive spec from names in the archive")));
+	      WARN ((0, 0, _("Removing filesystem prefix from names in the archive")));
 	    }
 	}
-#endif
 
       while (*name == '/')
 	{
@@ -354,27 +443,26 @@ Removing leading `/' from absolute path names in the archive")));
      acceptor for Paul's test.  */
 
   if (archive_format == V7_FORMAT)
-    MODE_TO_OCT (st->st_mode & MODE_ALL, header->header.mode);
+    MODE_TO_CHARS (st->st_mode & MODE_ALL, header->header.mode);
   else
-    MODE_TO_OCT (st->st_mode, header->header.mode);
+    MODE_TO_CHARS (st->st_mode, header->header.mode);
 
-  UID_TO_OCT (st->st_uid, header->header.uid);
-  GID_TO_OCT (st->st_gid, header->header.gid);
-  OFF_TO_OCT (st->st_size, header->header.size);
-  TIME_TO_OCT (st->st_mtime, header->header.mtime);
+  UID_TO_CHARS (st->st_uid, header->header.uid);
+  GID_TO_CHARS (st->st_gid, header->header.gid);
+  OFF_TO_CHARS (st->st_size, header->header.size);
+  TIME_TO_CHARS (st->st_mtime, header->header.mtime);
 
   if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
       {
-	TIME_TO_OCT (st->st_atime, header->oldgnu_header.atime);
-	TIME_TO_OCT (st->st_ctime, header->oldgnu_header.ctime);
+	TIME_TO_CHARS (st->st_atime, header->oldgnu_header.atime);
+	TIME_TO_CHARS (st->st_ctime, header->oldgnu_header.ctime);
       }
 
   header->header.typeflag = archive_format == V7_FORMAT ? AREGTYPE : REGTYPE;
 
   switch (archive_format)
     {
-    case DEFAULT_FORMAT:
     case V7_FORMAT:
       break;
 
@@ -388,6 +476,9 @@ Removing leading `/' from absolute path names in the archive")));
       strncpy (header->header.magic, TMAGIC, TMAGLEN);
       strncpy (header->header.version, TVERSION, TVERSLEN);
       break;
+
+    default:
+      abort ();
     }
 
   if (archive_format == V7_FORMAT || numeric_owner_option)
@@ -425,15 +516,15 @@ finish_header (union block *header)
 
   /* Fill in the checksum field.  It's formatted differently from the
      other fields: it has [6] digits, a null, then a space -- rather than
-     digits, then a null.  We use to_oct.
+     digits, then a null.  We use to_chars.
      The final space is already there, from
-     checksumming, and to_oct doesn't modify it.
+     checksumming, and to_chars doesn't modify it.
 
      This is a fast way to do:
 
      sprintf(header->header.chksum, "%6o", sum);  */
 
-  uintmax_to_oct ((uintmax_t) sum, header->header.chksum, 7);
+  uintmax_to_chars ((uintmax_t) sum, header->header.chksum, 7);
 
   set_next_block_after (header);
 
@@ -755,7 +846,7 @@ create_archive (void)
       collect_and_sort_names ();
 
       while (p = name_from_list (), p)
-	if (!excluded_pathname (excluded, p))
+	if (!excluded_name (p))
 	  dump_file (p, (dev_t) -1, 1);
 
       blank_name_list ();
@@ -781,7 +872,7 @@ create_archive (void)
   else
     {
       while (p = name_next (1), p)
-	if (!excluded_pathname (excluded, p))
+	if (!excluded_name (p))
 	  dump_file (p, (dev_t) -1, 1);
     }
 
@@ -1040,8 +1131,8 @@ Removing leading `/' from absolute links")));
 		 <file>.  It might be kind of disconcerting if the
 		 shrunken file size was the one that showed up.  */
 
-	      OFF_TO_OCT (current_stat.st_size,
-			  header->oldgnu_header.realsize);
+	      OFF_TO_CHARS (current_stat.st_size,
+			    header->oldgnu_header.realsize);
 
 	      /* This will be the new "size" of the file, i.e., the size
 		 of the file minus the blocks of holes that we're
@@ -1049,17 +1140,17 @@ Removing leading `/' from absolute links")));
 
 	      find_new_file_size (&filesize, upperbound);
 	      current_stat.st_size = filesize;
-	      OFF_TO_OCT (filesize, header->header.size);
+	      OFF_TO_CHARS (filesize, header->header.size);
 
 	      for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
 		{
 		  if (!sparsearray[counter].numbytes)
 		    break;
 
-		  OFF_TO_OCT (sparsearray[counter].offset,
-			      header->oldgnu_header.sp[counter].offset);
-		  SIZE_TO_OCT (sparsearray[counter].numbytes,
-			       header->oldgnu_header.sp[counter].numbytes);
+		  OFF_TO_CHARS (sparsearray[counter].offset,
+				header->oldgnu_header.sp[counter].offset);
+		  SIZE_TO_CHARS (sparsearray[counter].numbytes,
+				 header->oldgnu_header.sp[counter].numbytes);
 		}
 
 	    }
@@ -1136,10 +1227,10 @@ Removing leading `/' from absolute links")));
 	      if (counter + index_offset > upperbound)
 		break;
 
-	      SIZE_TO_OCT (sparsearray[counter + index_offset].numbytes,
-			   exhdr->sparse_header.sp[counter].numbytes);
-	      OFF_TO_OCT (sparsearray[counter + index_offset].offset,
-			  exhdr->sparse_header.sp[counter].offset);
+	      SIZE_TO_CHARS (sparsearray[counter + index_offset].numbytes,
+			     exhdr->sparse_header.sp[counter].numbytes);
+	      OFF_TO_CHARS (sparsearray[counter + index_offset].offset,
+			    exhdr->sparse_header.sp[counter].offset);
 	    }
 	  set_next_block_after (exhdr);
 #if 0
@@ -1397,7 +1488,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 	      p_buffer += tmp;
 	    }
 	  totsize++;
-	  OFF_TO_OCT (totsize, header->header.size);
+	  OFF_TO_CHARS (totsize, header->header.size);
 	  finish_header (header);
 	  p_buffer = buffer;
 	  sizeleft = totsize;
@@ -1470,8 +1561,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 	{
 	  /* Skip `.', `..', and excluded file names.  */
 
-	  if (is_dot_or_dotdot (entry->d_name)
-	      || excluded_filename (excluded, entry->d_name))
+	  if (is_dot_or_dotdot (entry->d_name))
 	    continue;
 
 	  if ((int) NAMLEN (entry) + len >= buflen)
@@ -1486,7 +1576,8 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 #endif
 	    }
 	  strcpy (namebuf + len, entry->d_name);
-	  dump_file (namebuf, our_device, 0);
+	  if (!excluded_name (namebuf))
+	    dump_file (namebuf, our_device, 0);
 	}
 
       closedir (directory);
@@ -1521,8 +1612,8 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 
   if (type != FIFOTYPE)
     {
-      MAJOR_TO_OCT (major (current_stat.st_rdev), header->header.devmajor);
-      MINOR_TO_OCT (minor (current_stat.st_rdev), header->header.devminor);
+      MAJOR_TO_CHARS (major (current_stat.st_rdev), header->header.devmajor);
+      MINOR_TO_CHARS (minor (current_stat.st_rdev), header->header.devminor);
     }
 
   finish_header (header);
