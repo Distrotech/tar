@@ -278,6 +278,11 @@ struct tar_stat_info
   char          *gname;     /* group name of owner */
   struct stat   stat;       /* regular filesystem stat */
 
+  /* Nanosecond parts of file timestamps (if available) */
+  unsigned long atime_nsec;
+  unsigned long mtime_nsec;
+  unsigned long ctime_nsec;
+  
   off_t archive_file_size;  /* Size of file as stored in the archive.
 			       Equals stat.st_size for non-sparse files */
 
