@@ -87,7 +87,7 @@ binprefix =
 bindir = $(exec_prefix)/bin
 
 # Where to put the rmt executable.
-libdir = /etc
+libdir = $(exec_prefix)/lib
 
 # The directory to install the info files in.
 infodir = $(prefix)/info
