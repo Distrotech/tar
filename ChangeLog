@@ -1,3 +1,16 @@
+2005-04-02  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/xheader.c (decode_record): Don't dump core when given
+	a corrupted extended header.  Problem reported by Jim Meyering.
+	Also, check for other ways that the header might be invalid,
+	e.g., missing newline at end.  Do not allow keys with nulls.
+	Allow blanks before and after length, as POSIX requires.
+	Do not allow leading "-" in length.  Check for length overflow.
+	(xheader_decode, xheader_decode_global): Let decode_record
+	check for exhaustion of record.
+	(xheader_read): Null-terminate the extended record;
+	decode_record relies on this.
+
 2005-03-21  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap (TP_URL): Change from
