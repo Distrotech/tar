@@ -91,8 +91,6 @@ extern struct name *gnu_list_name;
 extern void print_header();
 
 union record *start_header();
-void add_mangle();
-void add_symlink_mangle();
 void blank_name_list();
 int check_exclude();
 PTR ck_malloc();
@@ -115,7 +113,6 @@ void to_oct();
 void dump_file();
 void write_dir_file();
 void write_eot();
-void write_mangled();
 int zero_record();
 
 /* This code moved from tar.h since create.c is the only file that cares
@@ -182,7 +179,6 @@ create_archive()
 		while (p = name_next(1));
 	}
 
-	write_mangled();
 	write_eot();
 	close_archive();
 	if(f_gnudump)
