@@ -26,6 +26,7 @@ hash.m4
 human.m4
 iconv.m4
 intdiv0.m4
+intmax.m4
 intmax_t.m4
 inttypes-pri.m4
 inttypes.m4
@@ -36,6 +37,7 @@ lcmessage.m4
 lib-ld.m4
 lib-link.m4
 lib-prefix.m4
+longdouble.m4
 longlong.m4
 malloc.m4
 mbrtowc.m4
@@ -48,6 +50,7 @@ obstack.m4
 onceonly.m4
 pathmax.m4
 po.m4
+printf-posix.m4
 progtest.m4
 quote.m4
 quotearg.m4
@@ -58,6 +61,8 @@ safe-read.m4
 safe-write.m4
 save-cwd.m4
 savedir.m4
+signed.m4
+size_max.m4
 ssize_t.m4
 stdbool.m4
 stdint_h.m4
@@ -78,7 +83,10 @@ utimbuf.m4
 utime.m4
 utimes-null.m4
 utimes.m4
+wchar_t.m4
+wint_t.m4
 xalloc.m4
 xgetcwd.m4
+xsize.m4
 xstrtol.m4
 xstrtoumax.m4

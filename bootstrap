@@ -145,14 +145,6 @@ for gnulib_file in $gnulib_files; do
   dest=$gnulib_file
 
   case $gnulib_file in
-  m4/codeset.m4) continue;;
-  m4/glibc21.m4) continue;;
-  m4/intdiv0.m4) continue;;
-  m4/inttypes_h.m4) continue;;
-  m4/inttypes.m4) continue;;
-  m4/inttypes-pri.m4) continue;;
-  m4/isc-posix.m4) continue;;
-  m4/lcmessage.m4) continue;;
   m4/onceonly_2_57.m4) dest=m4/onceonly.m4;;
   esac
 
@@ -168,7 +160,7 @@ echo "$0: getting translations into po..."
 (cd po &&
  rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
  wget -nv -nd -r -l 1 -A .po -C off \
-   http://www.iro.umontreal.ca/contrib/po/maint/tar/ &&
+   http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/ &&
  ls *.po | sed 's/\.po$//' >LINGUAS
 ) || exit
 
@@ -176,7 +168,7 @@ echo "$0: getting translations into po..."
 # Reconfigure, getting other files.
 
 echo "$0: autoreconf --verbose --install --force ..."
-autoreconf --verbose --install --force
+autoreconf --verbose --install --force || exit
 
 
 echo "$0: done.  Now you can run './configure'."

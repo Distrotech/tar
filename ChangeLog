@@ -1,3 +1,29 @@
+2003-12-26  Paul Eggert  <eggert@twinsun.com>
+
+	Synchronize with Gettext 0.13.1, Automake 1.8, Autoconf 2.59,
+	and translation website.
+	
+	* bootstrap: Don't bother skipping codeset.m4, glibc21.m4,
+	intdiv0.m4, inttypes_h.m4, inttypes.m4, inttypes-pri.m4,
+	isc-posix.m4, and lcmessage.m4 from gnulib.  This list of files is
+	a bit obsolete anyway, now that gettext 0.13.1 is out.  Also, the
+	files are replaced by autoreconf.  Also, there seems to be a bug
+	in gettext/autoconf/automake if we try to omit these files after
+	autoreconf has replaced them, even though the gettext manual says
+	they're optional.  So give up and just include them for now, even
+	though they make 'configure' longer and slower.
+
+	Change translation URL from
+	<http://www.iro.umontreal.ca/contrib/po/maint/tar/> to
+	<http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/> to
+	accommodate translator website revamp.
+
+	Fail if autoreconf fails.
+
+	* m4/.cvsignore: Add intmax.m4, longdouble.m4, printf-posix.m4,
+	signed.m4, size_max.m4, wchar_t.m4, wint_t.m4, xsize.m4, to
+	ignore files now supplied by gettext 0.13.1.
+
 2003-12-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Synchronized with the backup repository on Mirddin
