@@ -3,6 +3,7 @@
 	Implemented --occurrence option.
 	
 	* NEWS: Updated.
+	* src/tar.c: New option --occurrence.
 	* src/common.h (occurrence_option): New global
 	(struct name): Changed `found' member to `uintmax_t
 	found_count'.
