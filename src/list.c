@@ -1202,7 +1202,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 
 /* Print a similar line when we make a directory automatically.  */
 void
-print_for_mkdir (char *pathname, int length, mode_t mode)
+print_for_mkdir (char *dirname, int length, mode_t mode)
 {
   char modes[11];
 
@@ -1221,7 +1221,7 @@ print_for_mkdir (char *pathname, int length, mode_t mode)
 	}
 
       fprintf (stdlis, "%s %*s %.*s\n", modes, ugswidth + DATEWIDTH,
-	       _("Creating directory:"), length, quotearg (pathname));
+	       _("Creating directory:"), length, quotearg (dirname));
     }
 }
 

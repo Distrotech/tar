@@ -515,10 +515,10 @@ addname (char const *string, int change_dir)
   return name;
 }
 
-/* Find a match for PATH (whose string length is LENGTH) in the name
+/* Find a match for FILE_NAME (whose string length is LENGTH) in the name
    list.  */
 static struct name *
-namelist_match (char const *path, size_t length)
+namelist_match (char const *file_name, size_t length)
 {
   struct name *p;
 
@@ -526,27 +526,27 @@ namelist_match (char const *path, size_t length)
     {
       /* If first chars don't match, quick skip.  */
 
-      if (p->firstch && p->name[0] != path[0])
+      if (p->firstch && p->name[0] != file_name[0])
 	continue;
 
       if (p->regexp
-	  ? fnmatch (p->name, path, recursion_option) == 0
+	  ? fnmatch (p->name, file_name, recursion_option) == 0
 	  : (p->length <= length
-	     && (path[p->length] == '\0'
-		 || (ISSLASH (path[p->length]) && recursion_option))
-	     && memcmp (path, p->name, p->length) == 0))
+	     && (file_name[p->length] == '\0'
+		 || (ISSLASH (file_name[p->length]) && recursion_option))
+	     && memcmp (file_name, p->name, p->length) == 0))
 	return p;
     }
 
   return 0;
 }
 
-/* Return true if and only if name PATH (from an archive) matches any
+/* Return true if and only if name FILE_NAME (from an archive) matches any
    name from the namelist.  */
 int
-name_match (const char *path)
+name_match (const char *file_name)
 {
-  size_t length = strlen (path);
+  size_t length = strlen (file_name);
 
   while (1)
     {
@@ -563,10 +563,10 @@ name_match (const char *path)
 	  return ! files_from_option;
 	}
 
-      cursor = namelist_match (path, length);
+      cursor = namelist_match (file_name, length);
       if (cursor)
 	{
-	  if (!(ISSLASH (path[cursor->length]) && recursion_option)
+	  if (!(ISSLASH (file_name[cursor->length]) && recursion_option)
 	      || cursor->found_count == 0)
 	    cursor->found_count++; /* remember it matched */
 	  if (starting_file_option)
@@ -750,8 +750,8 @@ compare_names (struct name const *n1, struct name const *n2)
 static void
 add_hierarchy_to_namelist (struct name *name, dev_t device)
 {
-  char *path = name->name;
-  char *buffer = get_directory_contents (path, device);
+  char *file_name = name->name;
+  char *buffer = get_directory_contents (file_name, device);
 
   if (! buffer)
     name->dir_contents = "\0\0\0\0";
@@ -768,7 +768,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
       int change_dir = name->change_dir;
 
       name->dir_contents = buffer;
-      strcpy (namebuf, path);
+      strcpy (namebuf, file_name);
       if (! ISSLASH (namebuf[name_length - 1]))
 	{
 	  namebuf[name_length++] = '/';
@@ -859,13 +859,13 @@ collect_and_sort_names (void)
    will have to do that if it wants to.  Oh, and if the namelist is
    empty, it returns null, unlike name_match, which returns TRUE.  */
 struct name *
-name_scan (const char *path)
+name_scan (const char *file_name)
 {
-  size_t length = strlen (path);
+  size_t length = strlen (file_name);
 
   while (1)
     {
-      struct name *cursor = namelist_match (path, length);
+      struct name *cursor = namelist_match (file_name, length);
       if (cursor)
 	return cursor;
 
@@ -916,18 +916,18 @@ blank_name_list (void)
     name->found_count = 0;
 }
 
-/* Yield a newly allocated file name consisting of PATH concatenated to
-   NAME, with an intervening slash if PATH does not already end in one.  */
+/* Yield a newly allocated file name consisting of FILE_NAME concatenated to
+   NAME, with an intervening slash if FILE_NAME does not already end in one.  */
 char *
-new_name (const char *path, const char *name)
+new_name (const char *file_name, const char *name)
 {
-  size_t pathlen = strlen (path);
+  size_t file_name_len = strlen (file_name);
   size_t namesize = strlen (name) + 1;
-  int slash = pathlen && ! ISSLASH (path[pathlen - 1]);
-  char *buffer = xmalloc (pathlen + slash + namesize);
-  memcpy (buffer, path, pathlen);
-  buffer[pathlen] = '/';
-  memcpy (buffer + pathlen + slash, name, namesize);
+  int slash = file_name_len && ! ISSLASH (file_name[file_name_len - 1]);
+  char *buffer = xmalloc (file_name_len + slash + namesize);
+  memcpy (buffer, file_name, file_name_len);
+  buffer[file_name_len] = '/';
+  memcpy (buffer + file_name_len + slash, name, namesize);
   return buffer;
 }
 
@@ -1016,7 +1016,7 @@ safer_name_suffix (char const *file_name, bool link_target)
     p = file_name;
   else
     {
-      /* Skip file system prefixes, leading pathnames that contain
+      /* Skip file system prefixes, leading file name components that contain
 	 "..", and leading slashes.  */
 
       size_t prefix_len = FILESYSTEM_PREFIX_LEN (file_name);
@@ -1077,7 +1077,7 @@ safer_name_suffix (char const *file_name, bool link_target)
 }
 
 /* Return the size of the prefix of FILE_NAME that is removed after
-   stripping NUM leading path name components.  NUM must be
+   stripping NUM leading file name components.  NUM must be
    positive.  */
 
 size_t
@@ -1101,7 +1101,7 @@ stripped_prefix_len (char const *file_name, size_t num)
   return -1;
 }
 
-/* Return nonzero if NAME contains ".." as a path name component.  */
+/* Return nonzero if NAME contains ".." as a file name component.  */
 bool
 contains_dot_dot (char const *name)
 {

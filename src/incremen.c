@@ -39,7 +39,7 @@ struct directory
     enum children children;
     bool nfs;
     bool found;
-    char name[1];		/* path name of directory */
+    char name[1];		/* file name of directory */
   };
 
 static Hash_table *directory_table;
@@ -95,7 +95,7 @@ note_directory (char const *name, dev_t dev, ino_t ino, bool nfs, bool found)
   return directory;
 }
 
-/* Return a directory entry for a given path NAME, or zero if none found.  */
+/* Return a directory entry for a given file NAME, or zero if none found.  */
 static struct directory *
 find_directory (char *name)
 {
@@ -117,11 +117,11 @@ compare_dirents (const void *first, const void *second)
 		 (*(char *const *) second) + 1);
 }
 
-/* Recursively scan the given PATH.  */
+/* Recursively scan the given directory. */
 static void
-scan_path (struct obstack *stk, char *path, dev_t device)
+scan_directory (struct obstack *stk, char *dir_name, dev_t device)
 {
-  char *dirp = savedir (path);	/* for scanning directory */
+  char *dirp = savedir (dir_name);	/* for scanning directory */
   char const *entry;	/* directory entry being scanned */
   size_t entrylen;	/* length of directory entry */
   char *name_buffer;		/* directory, `/', and directory member */
@@ -132,18 +132,18 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 
   if (! dirp)
     {
-      savedir_error (path);
+      savedir_error (dir_name);
     }
   errno = 0;
 
-  name_buffer_size = strlen (path) + NAME_FIELD_SIZE;
+  name_buffer_size = strlen (dir_name) + NAME_FIELD_SIZE;
   name_buffer = xmalloc (name_buffer_size + 2);
-  strcpy (name_buffer, path);
-  if (! ISSLASH (path[strlen (path) - 1]))
+  strcpy (name_buffer, dir_name);
+  if (! ISSLASH (dir_name[strlen (dir_name) - 1]))
     strcat (name_buffer, "/");
   name_length = strlen (name_buffer);
 
-  directory = find_directory (path);
+  directory = find_directory (dir_name);
   children = directory ? directory->children : CHANGED_CHILDREN;
 
   if (dirp && children != NO_CHILDREN)
@@ -298,13 +298,13 @@ sort_obstack (struct obstack *stk)
 }
 
 char *
-get_directory_contents (char *path, dev_t device)
+get_directory_contents (char *dir_name, dev_t device)
 {
   struct obstack stk;
   char *buffer;
 
   obstack_init (&stk);
-  scan_path (&stk, path, device);
+  scan_directory (&stk, dir_name, device);
   buffer = sort_obstack (&stk);
   obstack_free (&stk, NULL);
   return buffer;

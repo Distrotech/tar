@@ -42,22 +42,22 @@ bool time_to_start_writing;
    first part of the record.  */
 char *output_start;
 
-/* Catenate file PATH to the archive without creating a header for it.
+/* Catenate file FILE_NAME to the archive without creating a header for it.
    It had better be a tar file or the archive is screwed.  */
 static void
-append_file (char *path)
+append_file (char *file_name)
 {
-  int handle = open (path, O_RDONLY | O_BINARY);
+  int handle = open (file_name, O_RDONLY | O_BINARY);
   struct stat stat_data;
 
   if (handle < 0)
     {
-      open_error (path);
+      open_error (file_name);
       return;
     }
 
   if (fstat (handle, &stat_data) != 0)
-    stat_error (path);
+    stat_error (file_name);
   else
     {
       off_t bytes_left = stat_data.st_size;
@@ -79,14 +79,14 @@ append_file (char *path)
 
 	  status = safe_read (handle, start->buffer, buffer_size);
 	  if (status == SAFE_READ_ERROR)
-	    read_fatal_details (path, stat_data.st_size - bytes_left,
+	    read_fatal_details (file_name, stat_data.st_size - bytes_left,
 				buffer_size);
 	  if (status == 0)
 	    FATAL_ERROR ((0, 0,
 			  ngettext ("%s: File shrank by %s byte",
 				    "%s: File shrank by %s bytes",
 				    bytes_left),
-			  quotearg_colon (path),
+			  quotearg_colon (file_name),
 			  STRINGIFY_BIGINT (bytes_left, buf)));
 
 	  bytes_left -= status;
@@ -96,7 +96,7 @@ append_file (char *path)
     }
 
   if (close (handle) != 0)
-    close_error (path);
+    close_error (file_name);
 }
 
 /* Implement the 'r' (add files to end of archive), and 'u' (add files
@@ -183,18 +183,18 @@ update_archive (void)
   output_start = current_block->buffer;
 
   {
-    char *path;
+    char *file_name;
 
-    while ((path = name_from_list ()) != NULL)
+    while ((file_name = name_from_list ()) != NULL)
       {
-	if (excluded_name (path))
+	if (excluded_name (file_name))
 	  continue;
-	if (interactive_option && !confirm ("add", path))
+	if (interactive_option && !confirm ("add", file_name))
 	  continue;
 	if (subcommand_option == CAT_SUBCOMMAND)
-	  append_file (path);
+	  append_file (file_name);
 	else
-	  dump_file (path, 1, (dev_t) 0);
+	  dump_file (file_name, 1, (dev_t) 0);
       }
   }
 

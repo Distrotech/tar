@@ -17,7 +17,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-extern char *rmt_path__;
+extern char *rmt_dev_name__;
 
 int rmt_open__ (const char *, int, int, const char *);
 int rmt_close__ (int);
@@ -32,12 +32,13 @@ int rmt_ioctl__ (int, int, char *);
    Distributed File System (DFS).  However, when --force-local, a
    filename is never remote.  */
 
-#define _remdev(Path) \
-  (!force_local_option && (rmt_path__ = strchr (Path, ':')) \
-   && rmt_path__ > (Path) && ! memchr (Path, '/', rmt_path__ - (Path)))
+#define _remdev(dev_name) \
+  (!force_local_option && (rmt_dev_name__ = strchr (dev_name, ':')) \
+   && rmt_dev_name__ > (dev_name) \
+   && ! memchr (dev_name, '/', rmt_dev_name__ - (dev_name)))
 
-#define _isrmt(Fd) \
-  ((Fd) >= __REM_BIAS)
+#define _isrmt(fd) \
+  ((fd) >= __REM_BIAS)
 
 #define __REM_BIAS (1 << 30)
 
@@ -45,51 +46,51 @@ int rmt_ioctl__ (int, int, char *);
 # define O_CREAT 01000
 #endif
 
-#define rmtopen(Path, Oflag, Mode, Command) \
-  (_remdev (Path) ? rmt_open__ (Path, Oflag, __REM_BIAS, Command) \
-   : open (Path, Oflag, Mode))
+#define rmtopen(dev_name, oflag, mode, command) \
+  (_remdev (dev_name) ? rmt_open__ (dev_name, oflag, __REM_BIAS, command) \
+   : open (dev_name, oflag, mode))
 
-#define rmtaccess(Path, Amode) \
-  (_remdev (Path) ? 0 : access (Path, Amode))
+#define rmtaccess(dev_name, amode) \
+  (_remdev (dev_name) ? 0 : access (dev_name, amode))
 
-#define rmtstat(Path, Buffer) \
-  (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : stat (Path, Buffer))
+#define rmtstat(dev_name, buffer) \
+  (_remdev (dev_name) ? (errno = EOPNOTSUPP), -1 : stat (dev_name, buffer))
 
-#define rmtcreat(Path, Mode, Command) \
-   (_remdev (Path) \
-    ? rmt_open__ (Path, 1 | O_CREAT, __REM_BIAS, Command) \
-    : creat (Path, Mode))
+#define rmtcreat(dev_name, mode, command) \
+   (_remdev (dev_name) \
+    ? rmt_open__ (dev_name, 1 | O_CREAT, __REM_BIAS, command) \
+    : creat (dev_name, mode))
 
-#define rmtlstat(Path, Buffer) \
-  (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : lstat (Path, Buffer))
+#define rmtlstat(dev_name, muffer) \
+  (_remdev (dev_name) ? (errno = EOPNOTSUPP), -1 : lstat (dev_name, buffer))
 
-#define rmtread(Fd, Buffer, Length) \
-  (_isrmt (Fd) ? rmt_read__ (Fd - __REM_BIAS, Buffer, Length) \
-   : safe_read (Fd, Buffer, Length))
+#define rmtread(fd, buffer, length) \
+  (_isrmt (fd) ? rmt_read__ (fd - __REM_BIAS, buffer, length) \
+   : safe_read (fd, buffer, length))
 
-#define rmtwrite(Fd, Buffer, Length) \
-  (_isrmt (Fd) ? rmt_write__ (Fd - __REM_BIAS, Buffer, Length) \
-   : full_write (Fd, Buffer, Length))
+#define rmtwrite(fd, buffer, length) \
+  (_isrmt (fd) ? rmt_write__ (fd - __REM_BIAS, buffer, length) \
+   : full_write (fd, buffer, length))
 
-#define rmtlseek(Fd, Offset, Where) \
-  (_isrmt (Fd) ? rmt_lseek__ (Fd - __REM_BIAS, Offset, Where) \
-   : lseek (Fd, Offset, Where))
+#define rmtlseek(fd, offset, where) \
+  (_isrmt (fd) ? rmt_lseek__ (fd - __REM_BIAS, offset, where) \
+   : lseek (fd, offset, where))
 
-#define rmtclose(Fd) \
-  (_isrmt (Fd) ? rmt_close__ (Fd - __REM_BIAS) : close (Fd))
+#define rmtclose(fd) \
+  (_isrmt (fd) ? rmt_close__ (fd - __REM_BIAS) : close (fd))
 
-#define rmtioctl(Fd, Request, Argument) \
-  (_isrmt (Fd) ? rmt_ioctl__ (Fd - __REM_BIAS, Request, Argument) \
-   : ioctl (Fd, Request, Argument))
+#define rmtioctl(fd, request, argument) \
+  (_isrmt (fd) ? rmt_ioctl__ (fd - __REM_BIAS, request, argument) \
+   : ioctl (fd, request, argument))
 
-#define rmtdup(Fd) \
-  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : dup (Fd))
+#define rmtdup(fd) \
+  (_isrmt (fd) ? (errno = EOPNOTSUPP), -1 : dup (fd))
 
-#define rmtfstat(Fd, Buffer) \
-  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fstat (Fd, Buffer))
+#define rmtfstat(fd, buffer) \
+  (_isrmt (fd) ? (errno = EOPNOTSUPP), -1 : fstat (fd, buffer))
 
-#define rmtfcntl(Fd, Command, Argument) \
-  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fcntl (Fd, Command, Argument))
+#define rmtfcntl(cd, command, argument) \
+  (_isrmt (fd) ? (errno = EOPNOTSUPP), -1 : fcntl (fd, command, argument))
 
-#define rmtisatty(Fd) \
-  (_isrmt (Fd) ? 0 : isatty (Fd))
+#define rmtisatty(fd) \
+  (_isrmt (fd) ? 0 : isatty (fd))

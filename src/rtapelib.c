@@ -91,7 +91,7 @@ static int to_remote[MAXUNIT][2] = {{-1, -1}, {-1, -1}, {-1, -1}, {-1, -1}};
 #define RMT_COMMAND (rmt_command_option ? rmt_command_option : "/etc/rmt")
 
 /* Temporary variable used by macros in rmt.h.  */
-char *rmt_path__;
+char *rmt_dev_name__;
 
 
 /* Close remote tape connection HANDLE, and reset errno to ERRNO_VALUE.  */
@@ -348,15 +348,16 @@ encode_oflag (char *buf, int oflag)
 }
 
 /* Open a file (a magnetic tape device?) on the system specified in
-   PATH, as the given user.  PATH has the form `[USER@]HOST:FILE'.
+   FILE_NAME, as the given user. FILE_NAME has the form `[USER@]HOST:FILE'.
    OPEN_MODE is O_RDONLY, O_WRONLY, etc.  If successful, return the
    remote pipe number plus BIAS.  REMOTE_SHELL may be overridden.  On
    error, return -1.  */
 int
-rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
+rmt_open__ (const char *file_name, int open_mode, int bias, 
+            const char *remote_shell)
 {
   int remote_pipe_number;	/* pseudo, biased file descriptor */
-  char *path_copy ;		/* copy of path string */
+  char *file_name_copy;		/* copy of file_name string */
   char *remote_host;		/* remote host name */
   char *remote_file;		/* remote file name (often a device) */
   char *remote_user;		/* remote user name */
@@ -381,21 +382,21 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   {
     char *cursor;
 
-    path_copy = xstrdup (path);
-    remote_host = path_copy;
+    file_name_copy = xstrdup (file_name);
+    remote_host = file_name_copy;
     remote_user = 0;
     remote_file = 0;
 
-    for (cursor = path_copy; *cursor; cursor++)
+    for (cursor = file_name_copy; *cursor; cursor++)
       switch (*cursor)
 	{
 	default:
 	  break;
 
 	case '\n':
-	  /* Do not allow newlines in the path, since the protocol
+	  /* Do not allow newlines in the file_name, since the protocol
 	     uses newline delimiters.  */
-	  free (path_copy);
+	  free (file_name_copy);
 	  errno = ENOENT;
 	  return -1;
 
@@ -431,7 +432,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   if (READ_SIDE (remote_pipe_number) < 0)
     {
       int e = errno;
-      free (path_copy);
+      free (file_name_copy);
       errno = e;
       return -1;
     }
@@ -450,7 +451,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 #ifdef REMOTE_SHELL
 	remote_shell = REMOTE_SHELL;
 #else
-	free (path_copy);
+	free (file_name_copy);
 	errno = EIO;
 	return -1;
 #endif
@@ -463,7 +464,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 	|| pipe (from_remote[remote_pipe_number]) == -1)
       {
 	int e = errno;
-	free (path_copy);
+	free (file_name_copy);
 	errno = e;
 	return -1;
       }
@@ -472,7 +473,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
     if (status == -1)
       {
 	int e = errno;
-	free (path_copy);
+	free (file_name_copy);
 	errno = e;
 	return -1;
       }
@@ -526,14 +527,14 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
       {
 	int e = errno;
 	free (command_buffer);
-	free (path_copy);
+	free (file_name_copy);
 	_rmt_shutdown (remote_pipe_number, e);
 	return -1;
       }
     free (command_buffer);
   }
 
-  free (path_copy);
+  free (file_name_copy);
   return remote_pipe_number + bias;
 }
 

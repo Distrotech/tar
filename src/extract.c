@@ -315,7 +315,7 @@ delay_set_stat (char const *file_name, struct stat const *stat_info,
 }
 
 /* Update the delayed_set_stat info for an intermediate directory
-   created on the path to DIR.  The intermediate directory turned
+   created within the file name of DIR.  The intermediate directory turned
    out to be the same as this directory, e.g. due to ".." or symbolic
    links.  *DIR_STAT_INFO is the status of the directory.  */
 static void
@@ -355,7 +355,7 @@ static int
 make_directories (char *file_name)
 {
   char *cursor0 = file_name + FILESYSTEM_PREFIX_LEN (file_name);
-  char *cursor;			/* points into path */
+  char *cursor;			/* points into the file name */
   int did_something = 0;	/* did we do anything yet? */
   int mode;
   int invert_permissions;
@@ -372,7 +372,7 @@ make_directories (char *file_name)
       if (cursor == cursor0 || ISSLASH (cursor[-1]))
 	continue;
 
-      /* Avoid mkdir where last part of path is "." or "..".  */
+      /* Avoid mkdir where last part of file name is "." or "..".  */
 
       if (cursor[-1] == '.'
 	  && (cursor == cursor0 + 1 || ISSLASH (cursor[-2])
@@ -380,7 +380,7 @@ make_directories (char *file_name)
 		  && (cursor == cursor0 + 2 || ISSLASH (cursor[-3])))))
 	continue;
 
-      *cursor = '\0';		/* truncate the path there */
+      *cursor = '\0';		/* truncate the name there */
       mode = MODE_RWX & ~ newdir_umask;
       invert_permissions = we_are_root ? 0 : MODE_WXUSR & ~ mode;
       status = mkdir (file_name, mode ^ invert_permissions);
