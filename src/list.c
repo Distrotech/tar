@@ -61,10 +61,7 @@ base64_init (void)
     base64_map[(int) base_64_digits[i]] = i;
 }
 
-/*-----------------------------------.
-| Main loop for reading an archive.  |
-`-----------------------------------*/
-
+/* Main loop for reading an archive.  */
 void
 read_and (void (*do_something) ())
 {
@@ -98,8 +95,7 @@ read_and (void (*do_something) ())
 		      < newer_mtime_option))
 	      || excluded_name (current_file_name))
 	    {
-	      char save_typeflag = current_header->header.typeflag;
-	      switch (save_typeflag)
+	      switch (current_header->header.typeflag)
 		{
 		case GNUTYPE_VOLHDR:
 		case GNUTYPE_MULTIVOL:
@@ -112,22 +108,11 @@ read_and (void (*do_something) ())
 			   quotearg_colon (current_file_name)));
 		  /* Fall through.  */
 		default:
-
-		  /* Skip past it in the archive.  */
-
-		  set_next_block_after (current_header);
-		  if (current_header->oldgnu_header.isextended)
-		    skip_extended_headers ();
-
-		  /* Skip to the next header on the archive.  */
-
-		  if (save_typeflag != DIRTYPE)
-		    skip_file (current_stat.st_size);
+		  skip_member ();
 		  continue;
 		}
 	      }
 
-	  apply_nonancestor_delayed_set_stat (current_file_name);
 	  (*do_something) ();
 	  continue;
 
@@ -179,15 +164,11 @@ read_and (void (*do_something) ())
       break;
     }
 
-  apply_delayed_set_stat ();
   close_archive ();
   names_notfound ();		/* print names not found */
 }
 
-/*---------------------------------------------.
-| Print a header block, based on tar options.  |
-`---------------------------------------------*/
-
+/* Print a header block, based on tar options.  */
 void
 list_archive (void)
 {
@@ -244,34 +225,24 @@ list_archive (void)
 
     }
 
-  /* Skip past the header in the archive, and past any extended headers.  */
-
-  set_next_block_after (current_header);
-  if (current_header->oldgnu_header.isextended)
-    skip_extended_headers ();
-
   if (multi_volume_option)
     assign_string (&save_name, current_file_name);
 
-  /* Skip to the next header on the archive.  */
-
-  skip_file (current_stat.st_size);
+  skip_member ();
 
   if (multi_volume_option)
     assign_string (&save_name, 0);
 }
 
-/*-----------------------------------------------------------------------.
-| Read a block that's supposed to be a header block.  Return its address |
-| in "current_header", and if it is good, the file's size in             |
-| current_stat.st_size.                                                  |
-|                                                                        |
-| Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a    |
-| block full of zeros (EOF marker).                                      |
-|                                                                        |
-| You must always set_next_block_after(current_header) to skip past the  |
-| header which this routine reads.                                       |
-`-----------------------------------------------------------------------*/
+/* Read a block that's supposed to be a header block.  Return its
+   address in "current_header", and if it is good, the file's size in
+   current_stat.st_size.
+
+   Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a
+   block full of zeros (EOF marker).
+
+   You must always set_next_block_after(current_header) to skip past
+   the header which this routine reads.  */
 
 /* The standard BSD tar sources create the checksum by adding up the
    bytes in the header as type char.  I think the type char was unsigned
@@ -311,7 +282,7 @@ read_header (void)
       for (i = sizeof *header; i-- != 0;)
 	{
 	  unsigned_sum += (unsigned char) *p;
-	  signed_sum += signed_char (*p++);
+	  signed_sum += (signed char) (*p++);
 	}
 
       if (unsigned_sum == 0)
@@ -322,7 +293,7 @@ read_header (void)
       for (i = sizeof header->header.chksum; i-- != 0;)
 	{
 	  unsigned_sum -= (unsigned char) header->header.chksum[i];
-	  signed_sum -= signed_char (header->header.chksum[i]);
+	  signed_sum -= (signed char) (header->header.chksum[i]);
 	}
       unsigned_sum += ' ' * sizeof header->header.chksum;
       signed_sum += ' ' * sizeof header->header.chksum;
@@ -384,8 +355,8 @@ read_header (void)
 	}
       else
 	{
-	  char *name;
-	  struct posix_header *h = &current_header->header;
+	  char const *name;
+	  struct posix_header const *h = &current_header->header;
 	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
 	  name = next_long_name;
@@ -393,15 +364,19 @@ read_header (void)
 	    {
 	      /* Accept file names as specified by POSIX.1-1996
                  section 10.1.1.  */
-	      int posix_header = strcmp (h->magic, TMAGIC) == 0;
 	      char *np = namebuf;
 
-	      if (posix_header && h->prefix[0])
+	      if (h->prefix[0] && strcmp (h->magic, TMAGIC) == 0)
 		{
 		  memcpy (np, h->prefix, sizeof h->prefix);
 		  np[sizeof h->prefix] = '\0';
 		  np += strlen (np);
 		  *np++ = '/';
+
+		  /* Prevent later references to current_header from
+		     mistakenly treating this as an old GNU header.
+		     This assignment invalidates h->prefix.  */
+		  current_header->oldgnu_header.isextended = 0;
 		}
 	      memcpy (np, h->name, sizeof h->name);
 	      np[sizeof h->name] = '\0';
@@ -433,22 +408,19 @@ read_header (void)
     }
 }
 
-/*-------------------------------------------------------------------------.
-| Decode things from a file HEADER block into STAT_INFO, also setting	   |
-| *FORMAT_POINTER depending on the header block format.  If DO_USER_GROUP, |
-| decode the user/group information (this is useful for extraction, but	   |
-| waste time when merely listing).					   |
-| 									   |
-| read_header() has already decoded the checksum and length, so we don't.  |
-| 									   |
-| This routine should *not* be called twice for the same block, since the  |
-| two calls might use different DO_USER_GROUP values and thus might end up |
-| with different uid/gid for the two calls.  If anybody wants the uid/gid  |
-| they should decode it first, and other callers should decode it without  |
-| uid/gid before calling a routine, e.g. print_header, that assumes	   |
-| decoded data.								   |
-`-------------------------------------------------------------------------*/
+/* Decode things from a file HEADER block into STAT_INFO, also setting
+   *FORMAT_POINTER depending on the header block format.  If
+   DO_USER_GROUP, decode the user/group information (this is useful
+   for extraction, but waste time when merely listing).
 
+   read_header() has already decoded the checksum and length, so we don't.
+
+   This routine should *not* be called twice for the same block, since
+   the two calls might use different DO_USER_GROUP values and thus
+   might end up with different uid/gid for the two calls.  If anybody
+   wants the uid/gid they should decode it first, and other callers
+   should decode it without uid/gid before calling a routine,
+   e.g. print_header, that assumes decoded data.  */
 void
 decode_header (union block *header, struct stat *stat_info,
 	       enum archive_format *format_pointer, int do_user_group)
@@ -514,12 +486,10 @@ decode_header (union block *header, struct stat *stat_info,
     }
 }
 
-/*------------------------------------------------------------------------.
-| Convert buffer at WHERE0 of size DIGS from external format to uintmax_t.|
-| The data is of type TYPE.  The buffer must represent a value in the     |
-| range -MINUS_MINVAL through MAXVAL.  DIGS must be positive.		  |
-`------------------------------------------------------------------------*/
-
+/* Convert buffer at WHERE0 of size DIGS from external format to
+   uintmax_t.  The data is of type TYPE.  The buffer must represent a
+   value in the range -MINUS_MINVAL through MAXVAL.  DIGS must be
+   positive.  */
 static uintmax_t
 from_header (char const *where0, size_t digs, char const *type,
 	     uintmax_t minus_minval, uintmax_t maxval)
@@ -631,9 +601,12 @@ from_header (char const *where0, size_t digs, char const *type,
 	    {
 	      if (value << LG_64 >> LG_64 != value)
 		{
+		  char *string = alloca (digs + 1);
+		  memcpy (string, where0, digs);
+		  string[digs] = '\0';
 		  ERROR ((0, 0,
-			  _("Archive signed base-64 string `%.*s' is out of %s range"),
-			  (int) digs, where0, type));
+			  _("Archive signed base-64 string %s is out of %s range"),
+			  quote (string), type));
 		  return -1;
 		}
 	      value = (value << LG_64) | dig;
@@ -783,12 +756,9 @@ size_from_header (const char *p, size_t s)
 time_t
 time_from_header (const char *p, size_t s)
 {
-  time_t t = from_header (p, s, "time_t",
-			  - (uintmax_t) TYPE_MINIMUM (time_t),
-			  (uintmax_t) TYPE_MAXIMUM (time_t));
-  if (start_time < t && time (0) < t)
-    WARN ((0, 0, _("Archive contains future timestamp %s"), tartime (t)));
-  return t;
+  return from_header (p, s, "time_t",
+		      - (uintmax_t) TYPE_MINIMUM (time_t),
+		      (uintmax_t) TYPE_MAXIMUM (time_t));
 }
 
 uid_t
@@ -807,10 +777,8 @@ uintmax_from_header (const char *p, size_t s)
 }
 
 
-/*----------------------------------------------------------------------.
-| Format O as a null-terminated decimal string into BUF _backwards_;	|
-| return pointer to start of result.					|
-`----------------------------------------------------------------------*/
+/* Format O as a null-terminated decimal string into BUF _backwards_;
+   return pointer to start of result.  */
 char *
 stringify_uintmax_t_backwards (uintmax_t o, char *buf)
 {
@@ -836,8 +804,8 @@ tartime (time_t t)
   if (p)
     {
       char const *time_stamp = p + 4;
-      for (p += 16; p[4] != '\n'; p++)
-	p[0] = p[4];
+      for (p += 16; p[3] != '\n'; p++)
+	p[0] = p[3];
       p[0] = '\0';
       return time_stamp;
     }
@@ -867,16 +835,15 @@ tartime (time_t t)
   return p;
 }
 
-/*-------------------------------------------------------------------------.
-| Actually print it.							   |
-| 									   |
-| Plain and fancy file header block logging.  Non-verbose just prints the  |
-| name, e.g. for "tar t" or "tar x".  This should just contain file names, |
-| so it can be fed back into tar with xargs or the "-T" option.  The	   |
-| verbose option can give a bunch of info, one line per file.  I doubt	   |
-| anybody tries to parse its format, or if they do, they shouldn't.  Unix  |
-| tar is pretty random here anyway.					   |
-`-------------------------------------------------------------------------*/
+/* Actually print it.
+
+   Plain and fancy file header block logging.  Non-verbose just prints
+   the name, e.g. for "tar t" or "tar x".  This should just contain
+   file names, so it can be fed back into tar with xargs or the "-T"
+   option.  The verbose option can give a bunch of info, one line per
+   file.  I doubt anybody tries to parse its format, or if they do,
+   they shouldn't.  Unix tar is pretty random here anyway.  */
+
 
 /* FIXME: Note that print_header uses the globals HEAD, HSTAT, and
    HEAD_STANDARD, which must be set up in advance.  Not very clean...  */
@@ -1043,8 +1010,13 @@ print_header (void)
 	  break;
 
 	default:
-	  fprintf (stdlis, _(" unknown file type `%c'\n"),
-		   current_header->header.typeflag);
+	  {
+	    char type_string[2];
+	    type_string[0] = current_header->header.typeflag;
+	    type_string[1] = '\0';
+	    fprintf (stdlis, _(" unknown file type %s\n"),
+		     quote (type_string));
+	  }
 	  break;
 
 	case AREGTYPE:
@@ -1079,10 +1051,7 @@ print_header (void)
   fflush (stdlis);
 }
 
-/*--------------------------------------------------------------.
-| Print a similar line when we make a directory automatically.  |
-`--------------------------------------------------------------*/
-
+/* Print a similar line when we make a directory automatically.  */
 void
 print_for_mkdir (char *pathname, int length, mode_t mode)
 {
@@ -1107,10 +1076,7 @@ print_for_mkdir (char *pathname, int length, mode_t mode)
     }
 }
 
-/*--------------------------------------------------------.
-| Skip over SIZE bytes of data in blocks in the archive.  |
-`--------------------------------------------------------*/
-
+/* Skip over SIZE bytes of data in blocks in the archive.  */
 void
 skip_file (off_t size)
 {
@@ -1135,21 +1101,26 @@ skip_file (off_t size)
     }
 }
 
-/*---.
-| ?  |
-`---*/
-
+/* Skip the current member in the archive.  */
 void
-skip_extended_headers (void)
+skip_member (void)
 {
-  union block *exhdr;
+  char save_typeflag = current_header->header.typeflag;
+  set_next_block_after (current_header);
 
-  do
+  if (current_header->oldgnu_header.isextended)
     {
-      exhdr = find_next_block ();
-      if (!exhdr)
-	FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-      set_next_block_after (exhdr);
+      union block *exhdr;
+      do
+	{
+	  exhdr = find_next_block ();
+	  if (!exhdr)
+	    FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
+	  set_next_block_after (exhdr);
+	}
+      while (exhdr->sparse_header.isextended);
     }
-  while (exhdr->sparse_header.isextended);
+
+  if (save_typeflag != DIRTYPE)
+    skip_file (current_stat.st_size);
 }
