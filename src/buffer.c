@@ -440,11 +440,12 @@ child_open ()
 			{
 			  if (err < 0)
 			    {
-			      msg_perror ("can't write to compress");
+			      msg_perror ("can't write to compression program");
 			      exit (EX_SYSTEM);
 			    }
 			  else
-			    msg ("write to compress short %d bytes", count - err);
+			    msg ("write to compression program short %d bytes",
+				 count - err);
 			  count = (err < 0) ? 0 : err;
 			}
 		      ptr += count;
@@ -472,20 +473,20 @@ child_open ()
 		  /* EOF */
 		  if (err == 0)
 		    {
-		      if (f_compress < 2)
+		      if (!f_compress_block)
 			blocksize -= n;
 		      else
 			bzero (ar_block->charptr + blocksize - n, n);
 		      err = rmtwrite (archive, ar_block->charptr, blocksize);
 		      if (err != (blocksize))
 			writeerror (err);
-		      if (f_compress < 2)
+		      if (!f_compress_block)
 			blocksize += n;
 		      break;
 		    }
 		  if (n)
 		    {
-		      msg_perror ("can't read from compress");
+		      msg_perror ("can't read from compression program");
 		      exit (EX_SYSTEM);
 		    }
 		  err = rmtwrite (archive, ar_block->charptr, (int) blocksize);
@@ -500,10 +501,10 @@ child_open ()
     }
   /* So we should exec compress (-d) */
   if (ar_reading)
-    execlp ("compress", "compress", "-d", (char *) 0);
+    execlp (f_compressprog, f_compressprog, "-d", (char *) 0);
   else
-    execlp ("compress", "compress", (char *) 0);
-  msg_perror ("can't exec compress");
+    execlp (f_compressprog, f_compressprog, (char *) 0);
+  msg_perror ("can't exec %s", f_compressprog);
   _exit (EX_SYSTEM);
 }
 
@@ -573,7 +574,7 @@ open_archive (reading)
       exit (EX_ARGSBAD);
     }
 
-  if (f_compress)
+  if (f_compressprog)
     {
       if (reading == 2 || f_verify)
 	{
