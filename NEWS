@@ -1,30 +1,60 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+
+version 1.13.6 - Paul Eggert, 1999-08-11.
+
+* An --exclude pattern containing / now excludes a file only if it matches an
+  initial prefix of the file name; a pattern without / continues to
+  exclude a file if it maches any file name compoment.
+
+* The protocol for talking to rmt has been extended slightly.
+  Open flags are now communicated in symbolic format as well as numeric.
+  The symbolic format (e.g. "O_WRONLY|O_CREAT|O_TRUNC" is for portability
+  when rmt is operating on a different operating system from tar.
+  The numeric format is retained, and rmt uses it if symbolic format is absent,
+  for backward compatibility with older versions of tar and rmt.
+
+* When writing GNU tar format headers, tar now uses signed base-64
+  for values that cannot be represented in unsigned octal.
+  This supports larger files (2**66 - 1 bytes instead of 2**33 - 1 bytes),
+  larger uids, negative timestamps, etc.
+
+* When extracting files with unknown ownership, tar now looks up the
+  uid and gid "nobody" on hosts whose headers do not define UID_NOBODY
+  and GID_NOBODY, and falls back on uid/gid -2 if there is no "nobody".
+
+* tar -t --numeric-owner now prints numeric uids and gids, not symbolic.
+
+* New option -y or --bzip2 for bzip2 compression, by popular request.
+
+
 version 1.13.5 - Paul Eggert, 1999-07-20.
 
 * Do the delayed updates of file metadata even after a fatal error.
+
 
 version 1.13.4 - Paul Eggert, 1999-07-20.
 
 * Do not chmod unless we are root or the -p option was given;
   this matches historical practice.
-* Bug fixes.
+
 
 version 1.13.3 - Paul Eggert, 1999-07-16.
 
 * A path name is excluded if any of its file name components matches an
   excluded pattern, even if the path name was specified on the command line.
-* Bug fixes.
+  Also see 1.13.6 for later changes in this area.
+
 
 version 1.13.2 - Paul Eggert, 1999-07-14.
 
 * Bug reporting address changed to <bug-tar@gnu.org>.
-* Bug fixes.
+
 
 version 1.13.1 - Paul Eggert, 1999-07-12.
 
-* Bug fixes.
+* Bug fixes only.
 
 version 1.13 - Paul Eggert, 1999-07-08.
 
