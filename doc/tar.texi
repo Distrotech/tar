@@ -123,9 +123,7 @@ useful if redirected another program with a pipe.)
 * Options::                     How to change the way @code{tar} behaves.
 * Problems::                    Common problems with @code{tar}.
 @end menu
-
-@node Tutorial, Wizardry, Invoking @code{tar}, Top
-@chapter Getting Started With @code{tar}
+@chapter Tutorial Introduction to @code{tar}
 
 This chapter guides you through some basic examples of @code{tar}
 operations.  If you already know how to use some other version of
@@ -143,29 +141,107 @@ works.  See later chapters for full information.
 * Deleting Files::              Deleting Files From an Archive
 @end menu
 
-@node Creating Archives, Listing Archive Contents, Tutorial, Tutorial
+@section What @code{tar} Does
+
+The @code{tar} program is used to create and manipulate @code{tar}
+archives.  An @dfn{archive} is a single file which contains within it
+the contents of many files.  In addition, the archive identifies the
+names of the files, their owner, and so forth.
+
+You can use @code{tar} archives in many ways.  Initially, @code{tar}
+archives were used to store files conveniently on magnetic tape.  The
+name @samp{tar} comes from this use; it stands for Tape ARchiver.
+Often, @code{tar} archives are used to store related files for
+convenient file transfer over a network.  For example, the GNU Project
+distributes its software bundled into @code{tar} archives, so that all
+the files relating to a particular program (or set of related programs)
+can be transferred as a single unit.
+
+The files inside an archive are called @dfn{members}.  Within this
+manual, we use the term @dfn{file} to refer only to files accessible in
+the normal ways (by @code{ls}, @code{cat}, and so forth), and the term
+@dfn{members} to refer only to the members of an archive.  Similarly, a
+@dfn{file name} is the name of a file, as it resides in the filesystem,
+and a @dfn{member name} is the name of an archive member within the
+archive.
+
+The @code{tar} program provides the ability to create @code{tar}
+archives, as well as for various other kinds of manipulation.  The term
+@dfn{extraction} is used to refer to the process of copying an archive
+member into a file in the filesystem.  One might speak of extracting a
+single member.  Extracting all the members of an archive is often called
+extracting the archive.  Often the term @dfn{unpack} is used to refer to
+the extraction of many or all the members of an archive.
+
+Conventionally, @code{tar} archives are given names ending with
+@samp{.tar}.  This is not necessary for @code{tar} to operate properly,
+but this manual follows the convention in order to get the reader used
+to seeing it.
+
+Occasionally archive members are referred to as files.  For people
+familiar with the operation of @code{tar}, this causes no difficulty.
+However, this manual consistently uses the terminology above in
+referring to files and archive members, to make it easier to learn how
+to use @code{tar}.
+
 @section Creating Archives
 
 To create a new archive, use @samp{tar --create}.  You should generally
 use the @samp{--file} option to specify the name the tar archive will
-have.  Then specify the names of the files you wish to place in the
-archive.  For example, to place the files @file{foo}, @file{bar}, and
-@file{baz} into an archive named @file{my-archive}, use the following
-command:
+have.  Then specify the names of the files you wish to place in the new
+archive.  For example, to place the files @file{apple}, @file{angst},
+and @file{asparagus} into an archive named @file{afiles.tar}, use the
+following command:
 
 @example
-tar --create --file=my-archive foo bar baz
+tar --create --file=afiles.tar apple angst asparagus
 @end example
 
 The order of the arguments is not important.  You could also say:
 
 @example
-tar foo --create --file=my-archive bar baz
+tar apple --create angst --file=afiles.tar asparagus
 @end example
 
 This order is harder to understand however.  In this manual, we will
 list the arguments in a reasonable order to make the commands easier to
 understand, but you can type them in any order you wish.
+
+If you don't specify the names of any files to put in the archive, then
+tar will create an empty archive.  So, the following command will create
+an archive with nothing in it:
+
+@example
+tar --create --file=empty-archive.tar
+@end example
+
+Whenever you use @samp{tar --create}, @code{tar} will erase the current
+contents of the file named by @samp{--file} if it exists.  To add files
+to an existing archive, you need to use a different option.
+@xref{Adding to Archives} for information on how to do this.
+
+When @samp{tar --create} creates an archive, the member names of the
+members of the archive are exactly the same as the file names as you
+typed them in the @code{tar} command.  So, the member names of
+@file{afiles} (as created by the first example above) are @file{apple},
+@file{angst}, and @file{asparagus}.  However, suppose an archive were
+created with this command:
+
+@example
+tar --create --file=bfiles.tar ./balloons baboon ./bodacious
+@end example
+
+Then, the three files @file{balloons}, @file{baboon}, and
+@file{bodacious} would get placed in the archive (because @file{./} is a
+synonym for the current directory), but their member names would be
+@file{./balloons}, @file{baboon}, and @file{./bodacious}.
+
+If you want to see the progress of tar as it writes files into the
+archive, you can use the @samp{--verbose} option.
+
+If one of the files named to @samp{tar --create} is a directory, then
+the operation of tar is more complicated.  @xref{Tar and Directories},
+the last section of this tutorial, for more information.
 
 If you don't specify the @samp{--file} option, then @code{tar} will use
 a default.  Usually this default is some physical tape drive attached to
@@ -184,68 +260,31 @@ is using a default value for @samp{--file}.  You should generally specify a
 @samp{--file} argument whenever you use @code{tar}, rather than relying
 on a default.
 
-If you don't specify the names of any files to put in the archive, then
-tar will create an empty archive.  So, the following command will create
-an archive with nothing in it:
-
-@example
-tar --create --file=my-empty-archive
-@end example
-
-Whenever you use @samp{tar --create}, @code{tar} will erase the current
-contents of the file named by @samp{--file} if it exists.  To add files
-to an existing archive, you need to use a different option.
-@xref{Adding to Archives} for information on how to do this.
-
-The names of the members of an archive are called @dfn{member names}.
-When @samp{tar --create} creates an archive, the member names of the
-members of the archive are exactly the same as the file names as you
-typed them in the @code{tar} command.  So, the member names of
-@file{my-archive} (as created by the first example above) are
-@file{foo}, @file{bar}, and @file{baz}.  However, suppose the archive
-were created with this command instead:
-
-@example
-tar --create --file=my-new-archive ./foo bar ./baz
-@end example
-
-Then, the same three files would get placed in the archive (because
-@file{./} is a synonym for the current directory), but their member
-names would now be @file{./foo}, @file{bar}, and @file{./baz}.
-
-If you want to see the progress of tar as it writes files into the
-archive, you can use the @samp{--verbose} option.
-
-If one of the files named to @samp{tar --create} is a directory, then
-the operation of tar is more complicated.  @xref{Tar and Directories},
-the last section of this tutorial, for more information.
-
 @section Listing Archives
 
 Use @samp{tar --list} to print the names of members stored in an
 archive.  Use a @samp{--file} option just as with @samp{tar --create} to
 specify the name of the archive.  For example, the archive
-@file{my-archive} created in the last section could be examined with the
-command @samp{tar --list --file=my-archive}.  The output of tar would
+@file{afiles.tar} created in the last section could be examined with the
+command @samp{tar --list --file=afiles.tar}.  The output of tar would
 then be:
 
 @example
-foo
-bar
-baz
+apple
+angst
+asparagus
 @end example
 
-The archive @file{my-new-archive} would list as follows:
+The archive @file{bfiles.tar} would list as follows:
 
 @example
-./foo
-bar
-./baz
+./baloons
+baboon
+./bodacious
 @end example
 
-Note that, despite the identical contents of the two archives' members,
-the member names are different.  (Of course, @samp{tar --list
---file=my-empty-archive} would produce no output.)
+(Of course, @samp{tar --list --file=empty-archive.tar} would produce no
+output.)
 
 If you use the @samp{--verbose} option with @samp{tar --list}, then tar
 will print out a listing reminiscent of @samp{ls -l}, showing owner,
@@ -253,35 +292,38 @@ file size, and so forth.
 
 You can also specify member names when using @samp{tar --list}.  In this
 case, tar will only list the names of members you identify.  For
-example, @samp{tar --list --file=my-archive foo} would only print
-@samp{foo}.  It is essential when specifying member names to tar that
+example, @samp{tar --list --file=afiles.tar apple} would only print
+@samp{apple}.  It is essential when specifying member names to tar that
 you give the exact member names.  For example, @samp{tar --list
---file=my-new-archive foo} would produce no output, because there is no
-member named @file{foo}, only one named @file{./foo}.  While the file
-names @file{foo} and @file{./foo} name the same file, member names are
-compared using a simplistic name comparison, in which an exact match is
-necessary.  
+--file=bfiles baloons} would produce no output, because there is no
+member named @file{baloons}, only one named @file{./baloons}.  While the
+file names @file{baloons} and @file{./baloons} name the same file,
+member names are compared using a simplistic name comparison, in which
+an exact match is necessary.
 
-@section Extracting Files from an Archive
+@section Extracting Members from an Archive
 
-In order to extract files from an archive, use @samp{tar --extract}.
+In order to extract members from an archive, use @samp{tar --extract}.
 Specify the name of the archive with @samp{--file}.  To extract specific
 archive members, give their member names as arguments.  It essential to
-give their exact member name, as printed by @samp{tar --list}.  
+give their exact member name, as printed by @samp{tar --list}.  This
+will create a copy of the archive member, with a file name the same as
+its name in the archive.
 
 Keeping the example of the two archives created at the beginning of this
-tutorial, @samp{tar --extract --file=my-archive foo} would create a file
-@file{foo} in the current directory with the contents of the archive
-member @file{foo}.  It would remove any file named @file{foo} already
-present in the directory, but it would not change the archive in any
-way.
+tutorial, @samp{tar --extract --file=afiles.tar apple} would create a
+file @file{apple} in the current directory with the contents of the
+archive member @file{apple}.  It would remove any file named
+@file{apple} already present in the directory, but it would not change
+the archive in any way.
 
 Remember that specifying the exact member name is important.  @samp{tar
---extract --file=my-new-archive foo} will fail, because there is no
-member named @file{foo}.  To extract the member named @file{./foo} you
-would need to specify @samp{tar --extract --file=my-new-archive ./foo}.
-To find the exact member names of the members of an archive, use
-@samp{tar --list}.  @xref{Listing Archives}.
+--extract --file=bfiles.tar baloons} will fail, because there is no
+member named @file{baloons}.  To extract the member named
+@file{./baloons} you would need to specify @samp{tar --extract
+--file=bfiles.tar ./baloons}.  To find the exact member names of the
+members of an archive, use @samp{tar --list} (@pxref{Listing
+Archives}).
 
 If you do not list any archive member names, then @samp{tar --extract}
 will extract all the members of the archive.
@@ -292,48 +334,49 @@ print the names of the archive members as it extracts them.
 @section Adding Files to Existing Archives
 
 If you want to add files to an existing archive, then don't use
-@samp{tar --create}.  That will erase an archive and create a new one in
-its place.  Instead, use @samp{tar --add-file}.  The command @samp{tar
---add-file --file=my-archive qux} would add the file @file{qux} to the
-existing archive @file{my-archive}.  It is essential that the archive
-exist already in order to use @samp{tar --add-file}.
+@samp{tar --create}.  That will erase the archive and create a new one
+in its place.  Instead, use @samp{tar --append}.  The command @samp{tar
+--append --file=afiles.tar arbalest} would add the file @file{arbalest}
+to the existing archive @file{afiles.tar}.  The archive must already
+exist in order to use @samp{tar --append}.
 
 As with @samp{tar --create}, the member names of the newly added files
 will be the exact same as their names given on the command line.  The
 @samp{--verbose} option will print out the names of the files as they
 are written into the archive.
 
-If you add a file to an archive using @samp{tar --add-file} with the
+If you add a file to an archive using @samp{tar --append} with the
 same name as an archive member already present in the archive, then the
 old member is not deleted.  What does happen, however, is somewhat
 complex.  @xref{Multiple Members with the Same Name}.  If you want to
 replace an archive member, use @samp{tar --delete} first, and then use
-@samp{tar --add-file}.
+@samp{tar --append}.
 
-@section Deleting Files from Archives
+@section Deleting Members from Archives
 
-You can delete files from an archive using @samp{tar --delete}.  Specify
-the name of the archive with @samp{--file}.  List the member names of
-the files to be deleted.  If you list no member names, then nothing will
-be deleted.  The @samp{--verbose} option will cause @code{tar} to print
-the names of the members as they are deleted.  As with @samp{tar
---extract}, it is important that you give the exact member names when
-using @samp{tar --delete}.  Use @samp{tar --list} to find out the exact
-member names in an archive (@pxref{Listing Archives}).
+You can delete members from an archive using @samp{tar --delete}.
+Specify the name of the archive with @samp{--file}.  List the member
+names of the members to be deleted.  (If you list no member names, then
+nothing will be deleted.)  The @samp{--verbose} option will cause
+@code{tar} to print the names of the members as they are deleted.  As
+with @samp{tar --extract}, it is important that you give the exact
+member names when using @samp{tar --delete}.  Use @samp{tar --list} to
+find out the exact member names in an archive (@pxref{Listing
+Archives}).
 
 The @samp{tar --delete} command only works with archives stored on disk.
-Archives stored on a tape drive cannot be deleted from.
+You cannot delete members from an archive stored on a tape.
 
 @section Directories 
 
-When the names of files or member names specify directories, the
-operation of @code{tar} is more complex.  Generally, when a directory is
-named, @code{tar} also operates on all the contents of the directory,
+When the names of files or members specify directories, the operation of
+@code{tar} is more complex.  Generally, when a directory is named,
+@code{tar} also operates on all the contents of the directory,
 recursively.  Thus, to @code{tar}, the file name @file{/} names the
-entire file system.  
+entire file system.
 
 To archive the entire contents of a directory, use @samp{tar --create}
-(or @samp{tar --add-file}) as usual, and specify the name of the
+(or @samp{tar --append}) as usual, and specify the name of the
 directory.  For example, to archive all the contents of the current
 directory, use @samp{tar --create --file=@var{archive-name} .}.  Doing
 this will give the archive members names starting with @samp{./}.  To
@@ -341,18 +384,18 @@ archive the contents of a directory named @file{foodir}, use @samp{tar
 --create --file=@var{archive-name} foodir}.  In this case, the member
 names will all start with @samp{foodir/}.
 
-If you give @code{tar} a command such as @samp{tar --create --file=foo
-.}, it will report @samp{tar: foo is the archive; not dumped}.  This
-happens because the archive @file{foo} is created before putting any
-files into it.  Then, when @code{tar} attempts to add all the files in
-the directory @file{.} to the archive, it notices that the file
-@file{foo} is the same as the archive, and skips it.  (It makes no sense
-to put an archive into itself.)  GNU @code{tar} will continue in this
-case, and create the archive as normal, except for the exclusion of that
-one file.  Other versions of @code{tar}, however, are not so clever, and
-will enter an infinite loop when this happens, so you should not depend
-on this behavior.  In general, make sure that the archive is not inside
-a directory being dumped.
+If you give @code{tar} a command such as @samp{tar --create
+--file=foo.tar .}, it will report @samp{tar: foo.tar is the archive; not
+dumped}.  This happens because the archive @file{foo.tar} is created
+before putting any files into it.  Then, when @code{tar} attempts to add
+all the files in the directory @file{.} to the archive, it notices that
+the file @file{foo.tar} is the same as the archive, and skips it.  (It
+makes no sense to put an archive into itself.)  GNU @code{tar} will
+continue in this case, and create the archive as normal, except for the
+exclusion of that one file.  Other versions of @code{tar}, however, are
+not so clever, and will enter an infinite loop when this happens, so you
+should not depend on this behavior.  In general, make sure that the
+archive is not inside a directory being dumped.
 
 When extracting files, you can also name directory archive members on
 the command line.  In this case, @code{tar} extracts all the archive
@@ -362,21 +405,52 @@ The command @samp{tar --extract --file=@var{archive-name} .} will not
 extract all the contents of the archive, but only those members whose
 member names begin with @samp{./}.
 
+@section Shorthand names
 
-@node Invoking @code{tar}, Tutorial, Introduction, Top
-@chapter How To Invoke @code{tar}
+Most of the options to @code{tar} come in both long forms and short
+forms.  The options described in this tutorial have the following
+abbreviations (except @samp{--delete}, which has no shorthand form):
+
+@table @samp
+@item --create
+@samp{-c}
+@item --list
+@samp{-t}
+@item --extract
+@samp{-x}
+@item --append
+@samp{-r}
+@item --verbose
+@samp{-v}
+@item --file=@var{archive-name}
+@samp{-f @var{archive-name}}
+@end table
+
+These options make typing long @code{tar} commands easier.  For example,
+instead of typing
+@example
+tar --create --file=/tmp/afiles.tar --verbose apple angst asparagus
+@end example
+you can type
+@example
+tar -c -f /tmp/afiles.tar -v apple angst asparagus
+@end example
+
+For more information on option syntax, @ref{Invoking @code{tar}}.  In
+the remainder of this manual, short forms and long forms are given
+together when an option is discussed.
+
+@chapter Invoking @code{tar}
 
 The usual way to invoke tar is
 
 @example
-@code{tar} @var{options}... [@var{file-names}...]
+@code{tar} @var{options}... [@var{file-or-member-names}...]
 @end example
 
-All the options start with @samp{-}.  The arguments which do not start
-with @samp{-} are taken to be file-name arguments.  (But
-@xref{Argument Form}.)  You can actually type in arguments in any
-order.  In this manual the options always precede the file-name
-arguments, to make examples easier to understand.
+All the options start with @samp{-}.  You can actually type in arguments
+in any order, but in this manual the options always precede the other
+arguments, to make examples easier to understand.  
 
 @menu
 * Option Form::               The Forms of Arguments
@@ -385,7 +459,6 @@ arguments, to make examples easier to understand.
                                    for @code{tar} Commands
 @end menu
 
-@node Option Form, Old Syntax for Commands, Argument Functions, Invoking @code{tar}
 @section The Forms of Arguments
 
 Most options of @code{tar} have a single letter form (a single letter
@@ -398,15 +471,14 @@ mnemonic names can be given unique abbreviations.  For example,
 no other option which begins with @samp{cre}.  
 
 Some options require an additional argument.  Single letter options
-which require arguments use the immediately following argument.  (This
-is an exception to the rule that @code{tar} arguments which are not
-options are file-name arguments.)  Mnemonic options are separated from
-their arguments by an @samp{=} sign.  For example, to create an an
-archive file named @file{george}, use either @samp{tar --create
---file=george} or @samp{tar --create -f george}.  Both
-@samp{--file=@var{archive-name}} and @samp{-f @var{archive-name}}
-denote the option to give the archive a non-default name, which in the
-example is @samp{george}.  
+which require arguments use the immediately following argument.
+Mnemonic options are separated from their arguments by an @samp{=}
+sign.  For example, to create an an archive file named
+@file{george.tar}, use either @samp{tar --create --file=george.tar} or
+@samp{tar --create -f george.tar}.  Both
+@samp{--file=@var{archive-name}} and @samp{-f @var{archive-name}} denote
+the option to give the archive a non-default name, which in the example
+is @file{george.tar}.
 
 You can mix single letter and mnemonic forms in the same command.  You
 could type the above example as @samp{tar -c --file=george} or
@@ -419,68 +491,76 @@ of the directory which to change to).  In this case, tar would think
 it needs to change to a directory named @samp{--file=george}, and
 wouldn't interpret @samp{--file-george} as an option at all!
 
-@node Argument Functions, Argument Form, Invoking @code{tar}, Invoking @code{tar}
 @section The Functions of Arguments
 
 You must give exactly one option from the following list to tar.  This
-option specifies the basic operation for tar to perform.
+option specifies the basic operation for @code{tar} to perform.
 
-@itemize
-@item
-Add files to an existing archive (@samp{--add-file}, @samp{--append} or
-@samp{-r})
+@table samp
+@item --help
+Print a summary of the options to @code{tar} and do nothing else
 
-@item
-Compare files in an archive with files in the file system
-(@samp{--compare}, @samp{--diff} or @samp{-d})
+@item --create
+@item -c
+Create a new archive
 
-@item
-Add archives to another archive (@samp{--add-archive}, @samp{--catenate}
-or @samp{-A})
-@c was --concatenate.   -ringo
+@item --catenate
+@item --concatenate
+@item -A
+Add the contents of one or more archives to another archive
 
-@item
-Create a new archive (@samp{--create} or @samp{-c})
+@item --append
+@item -a
+Add files to an existing archive
 
-@item
-Delete files from an archive (@samp{--delete})
+@item --list
+@item -t
+List the members in an archive
 
-@item
-Extract files from an archive (@samp{--extract}, @samp{--get} or @samp{-x})
+@item --delete
+Delete members from an archive
 
-@item
-List the files in an archive (@samp{--list} or @samp{-t})
+@item --extract
+@item --get
+@item -x
+Extract members from an archive
 
-@item
+@item --compare
+@item --diff
+@item -d
+Compare members in an archive with files in the file system
+
+@item --update
+@item -u
 Update an archive by appending newer versions of already stored files
-(@samp{--update} or @samp{-u})
 @end itemize
-
-@xref{Reading and Writing}, for more information about these
-operations. 
 
 The remaining options to @code{tar} change details of the operation,
 such as archive format, archive name, or level of user interaction.
 You can specify more than one option.
 
-The remaining arguments are file-name arguments.  For --add-file and
---create these arguments specify the names of files (which must
-already exist) to place in the archive.  For the remaining operation
-types, the file-name arguments specify archive members to compare,
-delete, extract, list, or update.  When naming archive members, you
-must give the exact name of the member in the archive.  When naming
+The remaining arguments are interpreted either as file names or as
+member names, depending on the basic operation @code{tar} is
+performing.  For @samp{--append} and @samp{--create} these arguments
+specify the names of files (which must already exist) to place in the
+archive.  For the remaining operation types, the additional arguments
+specify archive members to compare, delete, extract, list, or update.
+When naming archive members, you must give the exact name of the member
+in the archive, as it is printed by @code{tar --list}.  When naming
 files, the normal file name rules apply.
 
-If you don't use any file-name arguments, @samp{--add-file},
-@samp{--update} and @samp{--delete} will do nothing.  Naturally,
-@samp{--create} will make an empty archive if given no file-name
-arguments.  The other operations of @code{tar} will act on defaults.
+If you don't use any additional arguments, @samp{--append},
+@samp{--catenate}, and @samp{--delete} will do nothing.  Naturally,
+@samp{--create} will make an empty archive if given no files to add.
+The other operations of @code{tar} (@samp{--list}, @samp{--extract},
+@samp{--compare}, and @samp{--update}) will act on the entire contents
+of the archive.
 
-Anytime you use a file-name argument to specify a directory file,
-@code{tar} acts recursively on all the files and directories beneath
-that directory.
+If you give the name of a directory as either a file name or a member
+name, then @code{tar} acts recursively on all the files and directories
+beneath that directory.  For example, the name @file{/} identifies all
+the files in the filesystem to @code{tar}.
 
-@node Old Syntax for Commands,  , Argument Form, Invoking @code{tar}
 @section An Old, but Still Supported, Syntax for @code{tar} Commands
 
 For historical reasons, GNU @code{tar} also accepts a syntax for
@@ -509,6 +589,68 @@ confusing.  In the command @samp{tar cvbf 20 /dev/rmt0}, for example,
 argument for @samp{-f}, and @samp{-v} does not have a corresponding
 argument.  The modern syntax---@samp{tar -c -v -b 20 -f
 /dev/rmt0}---is clearer.
+
+@chapter Specifying Names to @code{tar}
+
+When specifying the names of files or members to @code{tar}, it by
+default takes the names of the files from the command line.  There are
+other ways, however, to specify file or member names, or to modify the
+manner in which @code{tar} selects the files or members upon which to
+operate.  In general, these methods work both for specifying the names
+of files and archive members.
+
+@section Reading Names from a File
+
+Instead of giving the names of files or archive members on the command
+line, you can put the names into a file, and then use the
+@samp{--files-from=@var{file-name-list}} (@samp{-T
+@var{file-name-list}}) option to @code{tar}.  Give the name of the file
+which contains the list as the argument to @samp{--files-from}.  The
+file names should be separated by newlines in the list.
+
+If you want to specify names that might contain newlines, use the
+@samp{--null} option.  Then, the filenames should be separated by NUL
+characters (ASCII 000) instead of newlines.  In addition, the
+@samp{--null} option turns off the @samp{-C} option (@pxref{Changing
+Directory}).  
+
+@section Excluding Some Files
+
+The @samp{--exclude=@var{pattern}} option will prevent any file or
+member which matches the regular expression @var{pattern} from being
+operated on.  For example, if you want to create an archive with all the
+contents of @file{/tmp} except the file @file{/tmp/foo}, you can use the
+command @samp{tar --create --file=arch.tar --exclude=foo}.
+
+If there are many files you want to exclude, you can use the
+@samp{--exclude-from=@var{exclude-list}} (@samp{-X @var{exclude-list}})
+option.  This works just like the
+@samp{--files-from=@var{file-name-list}} option: specify the name of a
+file as @var{exclude-list} which contains the list of patterns you want
+to exclude.
+
+@xref{Regular Expressions} for more information on the syntax and
+meaning of regular expressions.
+
+@section Operating Only on New Files
+
+The @samp{--newer=@var{date}} (@samp{--after-date=@var{date}} or
+@samp{-N @var{date}}) limits @code{tar} to only operating on files which
+have been modified after the date specified.  (For more information on
+how to specify a date, @xref{Date Formats}.)  A file is considered to
+have changed if the contents have been modified, or if the owner,
+permissions, and so forth, have been changed.  
+
+If you only want @code{tar} make the date comparison on the basis of the
+actual contents of the file's modification, then use the
+@samp{--newer-mtime=@var{date}} option.
+
+You should not depend on this option for making incremental dumps.  To
+learn how to use @code{tar} to make backups, @ref{Making Backups}.
+
+XXXX MIB XXXX
+
+
 
 @node Wizardry, Archive Structure, Tutorial, Top
 @chapter Wizardry
