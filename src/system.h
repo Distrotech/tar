@@ -339,28 +339,17 @@ extern int errno;
    size is greater than 512 bytes; so ST_BLKSIZE code below, in preparation
    for some cleanup in this area, later.  */
 
-/* Get or fake the disk device blocksize.  Usually defined by sys/param.h
-   (if at all).  */
-
-#if !defined(DEV_BSIZE) && defined(BSIZE)
-# define DEV_BSIZE BSIZE
-#endif
-#if !defined(DEV_BSIZE) && defined(BBSIZE) /* SGI */
-# define DEV_BSIZE BBSIZE
-#endif
-#ifndef DEV_BSIZE
-# define DEV_BSIZE 4096
-#endif
-
 /* Extract or fake data from a `struct stat'.  ST_BLKSIZE gives the
    optimal I/O blocksize for the file, in bytes.  Some systems, like
    Sequents, return st_blksize of 0 on pipes.  */
 
+#define DEFAULT_ST_BLKSIZE 512
+
 #if !HAVE_ST_BLKSIZE
-# define ST_BLKSIZE(Statbuf) DEV_BSIZE
+# define ST_BLKSIZE(Statbuf) DEFAULT_ST_BLKSIZE
 #else
 # define ST_BLKSIZE(Statbuf) \
-    ((Statbuf).st_blksize > 0 ? (Statbuf).st_blksize : DEV_BSIZE)
+    ((Statbuf).st_blksize > 0 ? (Statbuf).st_blksize : DEFAULT_ST_BLKSIZE)
 #endif
 
 /* Extract or fake data from a `struct stat'.  ST_NBLOCKS gives the
@@ -522,5 +511,3 @@ time_t time ();
 #if XENIX
 # include <sys/inode.h>
 #endif
-
-

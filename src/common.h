@@ -581,7 +581,7 @@ char *name_from_list (void);
 void blank_name_list (void);
 char *new_name (const char *, const char *);
 char *safer_name_suffix (char const *, bool);
-size_t stripped_path_len (char const *file_name, size_t num);
+size_t stripped_prefix_len (char const *file_name, size_t num);
 bool all_names_found (struct tar_stat_info *);
 
 bool excluded_name (char const *);

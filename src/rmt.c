@@ -314,7 +314,7 @@ see the file named COPYING for details."));
       if (debug_file == 0)
 	{
 	  report_numbered_error (errno);
-	  exit (EXIT_FAILURE);
+	  return EXIT_FAILURE;
 	}
       setbuf (debug_file, 0);
     }
@@ -395,7 +395,7 @@ top:
 		if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
 		  {
 		    report_error_message (N_("Seek offset out of range"));
-		    exit (EXIT_FAILURE);
+		    return EXIT_FAILURE;
 		  }
 		count = nc;
 	      }
@@ -408,7 +408,7 @@ top:
 	  case 2: whence = SEEK_END; break;
 	  default:
 	    report_error_message (N_("Seek direction out of range"));
-	    exit (EXIT_FAILURE);
+	    return EXIT_FAILURE;
 	  }
 	count = lseek (tape, count, whence);
 	if (count < 0)
@@ -449,7 +449,7 @@ top:
 		DEBUG (_("rmtd: Premature eof\n"));
 
 		report_error_message (N_("Premature end of file"));
-		exit (EXIT_FAILURE); /* exit status used to be 2 */
+		return EXIT_FAILURE; /* exit status used to be 2 */
 	      }
 	  }
 	status = full_write (tape, record_buffer, size);
@@ -515,7 +515,7 @@ top:
 		  if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
 		    {
 		      report_error_message (N_("Seek offset out of range"));
-		      exit (EXIT_FAILURE);
+		      return EXIT_FAILURE;
 		    }
 		  count = nc;
 		}
@@ -525,7 +525,7 @@ top:
 	  if (mtop.mt_count != count)
 	    {
 	      report_error_message (N_("Seek offset out of range"));
-	      exit (EXIT_FAILURE);
+	      return EXIT_FAILURE;
 	    }
 	  mtop.mt_op = atoi (operation_string);
 
@@ -559,7 +559,7 @@ top:
       DEBUG1 (_("rmtd: Garbage command %c\n"), command);
 
       report_error_message (N_("Garbage command"));
-      exit (EXIT_FAILURE);	/* exit status used to be 3 */
+      return EXIT_FAILURE;	/* exit status used to be 3 */
     }
 
 respond:

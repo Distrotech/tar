@@ -218,7 +218,7 @@ enum
   USE_COMPRESS_PROGRAM_OPTION,
   VOLNO_FILE_OPTION,
   WILDCARDS_OPTION,
-  WILDCARDS_MATCH_SLASH_OPTION,
+  WILDCARDS_MATCH_SLASH_OPTION
 };
 
 /* If nonzero, display usage information and exit.  */
@@ -1504,7 +1504,7 @@ main (int argc, char **argv)
     error (0, 0, _("Error exit delayed from previous errors"));
   if (ferror (stderr) || fclose (stderr) != 0)
     exit_status = TAREXIT_FAILURE;
-  exit (exit_status);
+  return exit_status;
 }
 
 void

@@ -1,3 +1,20 @@
+2003-11-12  Paul Eggert  <eggert@twinsun.com>
+
+	Fix some C compatibility bugs reported by Joerg Schilling.
+
+	* src/common.h (stripped_prefix_len): Fix misspelling
+	"stripped_path_len" in declaration.
+	* src/rmt.c (main): Use "return FOO;" rather than
+	"exit (FOO);"; we no longer have to worry about
+	pre-ANSI hosts that mishandled returned values from "main".
+	* src/tar.c (main): Likewise.  This avoids warnings on some
+	compilers.
+	* src/system.c: Include signal.h, for 'kill'.
+	* src/system.h (DEV_BSIZE): Remove.
+	(DEFAULT_ST_BLKSIZE): New macro.
+	(ST_BLKSIZE): Use it, instead of DEV_BSIZE.
+	* src/tar.c (enum): Remove comma just before }.
+	
 2003-11-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (decode_header): Initialize st_atime and

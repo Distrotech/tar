@@ -20,6 +20,7 @@
 
 #include "common.h"
 #include "rmt.h"
+#include <signal.h>
 
 #if MSDOS
 
