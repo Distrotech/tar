@@ -2,7 +2,7 @@
 # Do common operations before a particular test.
 
 case $# in
-    0)   TAR_ARCHIVE_FORMATS=${TAR_ARCHIVE_FORMATS:-v7 oldgnu ustar posix gnu}
+    0)   TAR_ARCHIVE_FORMATS="${TAR_ARCHIVE_FORMATS:-v7 oldgnu ustar posix gnu}"
          for format in $TAR_ARCHIVE_FORMATS
          do
 	     $0 $format
