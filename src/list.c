@@ -172,6 +172,7 @@ read_and(do_something)
 		break;
 	};
 
+	restore_saved_dir_info ();
 	close_archive();
 	names_notfound();		/* Print names not found */
 }		
@@ -380,8 +381,14 @@ decode_header(header, st, stdp, wantug)
 			st->st_uid = from_oct(8,  header->header.uid);
 			st->st_gid = from_oct(8,  header->header.gid);
 #else
-			st->st_uid = finduid(header->header.uname);
-			st->st_gid = findgid(header->header.gname);
+			st->st_uid = 
+			  (*header->header.uname
+			   ? finduid (header->header.uname)
+			   : from_oct (8, header->header.uid));
+			st->st_gid =
+			  (*header->header.gname
+			   ? findgid (header->header.gname)
+			   : from_oct (8, header->header.gid));
 #endif
 		}
 #if defined(S_IFBLK) || defined(S_IFCHR)
@@ -525,13 +532,15 @@ print_header()
 			user  = head->header.uname;
 		} else {
 			user = uform;
-			(void)sprintf(uform, "%d", (int)hstat.st_uid);
+			(void)sprintf(uform, "%d",
+				      from_oct (8, head->header.uid));
 		}
 		if (*head->header.gname && head_standard) {
 			group = head->header.gname;
 		} else {
 			group = gform;
-			(void)sprintf(gform, "%d", (int)hstat.st_gid);
+			(void)sprintf(gform, "%d",
+				      from_oct (8, head->header.gid));
 		}
 
 		/* Format the file size or major/minor device numbers */
