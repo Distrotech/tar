@@ -3,6 +3,7 @@
 EXTRA_DIST = \
 ccstdc.m4 \
 d-ino.m4 \
+fnmatch.m4 \
 getline.m4 \
 gettext.m4 \
 inttypes_h.m4 \
