@@ -159,18 +159,6 @@ enum
   VOLNO_FILE_OPTION,
   WILDCARDS_OPTION,
   WILDCARDS_MATCH_SLASH_OPTION,
-
-  /* Some cleanup is being made in GNU tar long options.  Using old names is
-     allowed for a while, but will also send a warning to stderr.  Take old
-     names out in 1.14, or in summer 1997, whichever happens last.  */
-
-  OBSOLETE_ABSOLUTE_NAMES,
-  OBSOLETE_BLOCK_COMPRESS,
-  OBSOLETE_BLOCKING_FACTOR,
-  OBSOLETE_BLOCK_NUMBER,
-  OBSOLETE_READ_FULL_RECORDS,
-  OBSOLETE_TOUCH,
-  OBSOLETE_VERSION_CONTROL
 };
 
 /* If nonzero, display usage information and exit.  */
@@ -182,15 +170,12 @@ static int show_version;
 static struct option long_options[] =
 {
   {"absolute-names", no_argument, 0, 'P'},
-  {"absolute-paths", no_argument, 0, OBSOLETE_ABSOLUTE_NAMES},
   {"after-date", required_argument, 0, 'N'},
   {"anchored", no_argument, 0, ANCHORED_OPTION},
   {"append", no_argument, 0, 'r'},
   {"atime-preserve", no_argument, 0, ATIME_PRESERVE_OPTION},
   {"backup", optional_argument, 0, BACKUP_OPTION},
-  {"block-compress", no_argument, 0, OBSOLETE_BLOCK_COMPRESS},
   {"block-number", no_argument, 0, 'R'},
-  {"block-size", required_argument, 0, OBSOLETE_BLOCKING_FACTOR},
   {"blocking-factor", required_argument, 0, 'b'},
   {"bzip2", no_argument, 0, 'j'},
   {"catenate", no_argument, 0, 'A'},
@@ -230,7 +215,6 @@ static struct option long_options[] =
   {"list", no_argument, 0, 't'},
   {"listed-incremental", required_argument, 0, 'g'},
   {"mode", required_argument, 0, MODE_OPTION},
-  {"modification-time", no_argument, 0, OBSOLETE_TOUCH},
   {"multi-volume", no_argument, 0, 'M'},
   {"new-volume-script", required_argument, 0, 'F'},
   {"newer", required_argument, 0, 'N'},
@@ -256,10 +240,8 @@ static struct option long_options[] =
   {"preserve-permissions", no_argument, 0, 'p'},
   {"recursion", no_argument, &recursion_option, FNM_LEADING_DIR},
   {"recursive-unlink", no_argument, 0, RECURSIVE_UNLINK_OPTION},
-  {"read-full-blocks", no_argument, 0, OBSOLETE_READ_FULL_RECORDS},
   {"read-full-records", no_argument, 0, 'B'},
   /* FIXME: --partial-blocks might be a synonym for --read-full-records?  */
-  {"record-number", no_argument, 0, OBSOLETE_BLOCK_NUMBER},
   {"record-size", required_argument, 0, RECORD_SIZE_OPTION},
   {"remove-files", no_argument, 0, REMOVE_FILES_OPTION},
   {"rsh-command", required_argument, 0, RSH_COMMAND_OPTION},
@@ -282,7 +264,6 @@ static struct option long_options[] =
   {"verbose", no_argument, 0, 'v'},
   {"verify", no_argument, 0, 'W'},
   {"version", no_argument, &show_version, 1},
-  {"version-control", required_argument, 0, OBSOLETE_VERSION_CONTROL},
   {"volno-file", required_argument, 0, VOLNO_FILE_OPTION},
   {"wildcards", no_argument, 0, WILDCARDS_OPTION},
   {"wildcards-match-slash", no_argument, 0, WILDCARDS_MATCH_SLASH_OPTION},
@@ -618,14 +599,6 @@ decode_options (int argc, char **argv)
 	set_subcommand_option (CAT_SUBCOMMAND);
 	break;
 
-      case OBSOLETE_BLOCK_COMPRESS:
-	WARN ((0, 0, _("Obsolete option, now implied by --blocking-factor")));
-	break;
-
-      case OBSOLETE_BLOCKING_FACTOR:
-	WARN ((0, 0, _("Obsolete option name replaced by --blocking-factor")));
-	/* Fall through.  */
-
       case 'b':
 	{
 	  uintmax_t u;
@@ -637,11 +610,6 @@ decode_options (int argc, char **argv)
 			  _("Invalid blocking factor")));
 	}
 	break;
-
-      case OBSOLETE_READ_FULL_RECORDS:
-	WARN ((0, 0,
-	       _("Obsolete option name replaced by --read-full-records")));
-	/* Fall through.  */
 
       case 'B':
 	/* Try to reblock input records.  For reading 4.2BSD pipes.  */
@@ -751,10 +719,6 @@ decode_options (int argc, char **argv)
 	}
 	break;
 
-      case OBSOLETE_TOUCH:
-	WARN ((0, 0, _("Obsolete option name replaced by --touch")));
-	/* Fall through.  */
-
       case 'm':
 	touch_option = 1;
 	break;
@@ -812,10 +776,6 @@ decode_options (int argc, char **argv)
 	same_permissions_option = 1;
 	break;
 
-      case OBSOLETE_ABSOLUTE_NAMES:
-	WARN ((0, 0, _("Obsolete option name replaced by --absolute-names")));
-	/* Fall through.  */
-
       case 'P':
 	absolute_names_option = 1;
 	break;
@@ -823,10 +783,6 @@ decode_options (int argc, char **argv)
       case 'r':
 	set_subcommand_option (APPEND_SUBCOMMAND);
 	break;
-
-      case OBSOLETE_BLOCK_NUMBER:
-	WARN ((0, 0, _("Obsolete option name replaced by --block-number")));
-	/* Fall through.  */
 
       case 'R':
 	/* Print block numbers for debugging bad tar archives.  */
@@ -909,10 +865,6 @@ decode_options (int argc, char **argv)
       case 'Z':
 	set_use_compress_program_option ("compress");
 	break;
-
-      case OBSOLETE_VERSION_CONTROL:
-	WARN ((0, 0, _("Obsolete option name replaced by --backup")));
-	/* Fall through.  */
 
       case ANCHORED_OPTION:
 	exclude_options |= EXCLUDE_ANCHORED;
