@@ -70,6 +70,7 @@ TESTSUITE_AT = \
  multiv03.at\
  old.at\
  options.at\
+ options02.at\
  pipe.at\
  recurse.at\
  same-order01.at\

@@ -63,6 +63,7 @@ m4_include([version.at])
 m4_include([pipe.at])
 
 m4_include([options.at])
+m4_include([options02.at])
 
 m4_include([append.at])
 
