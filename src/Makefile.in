@@ -97,7 +97,7 @@ SHELL = /bin/sh
 
 SRC1 =	tar.c create.c extract.c buffer.c getoldopt.c update.c gnu.c mangle.c
 SRC2 =  version.c list.c names.c diffarch.c port.c fnmatch.c getopt.c malloc.c
-SRC3 =  getopt1.c regex.c getdate.y alloca.c
+SRC3 =  getopt1.c regex.c getdate.y getdate.c alloca.c
 SRCS =	$(SRC1) $(SRC2) $(SRC3)
 OBJ1 =	tar.o create.o extract.o buffer.o getoldopt.o update.o gnu.o mangle.o
 OBJ2 =	version.o list.o names.o diffarch.o port.o fnmatch.o getopt.o @MALLOC@
