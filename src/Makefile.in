@@ -34,6 +34,7 @@ INSTALL_DATA = @INSTALL_DATA@
 # Things you might add to DEFS:
 # -DSTDC_HEADERS	If you have ANSI C headers and libraries.
 # -DHAVE_UNISTD_H	If you have unistd.h.
+# -DHAVE_LIMITS_H	If you have limits.h.
 # -DBSD42		If you have sys/dir.h (unless you use -DPOSIX),
 #			sys/file.h, and st_blocks in `struct stat'.
 # -DUSG			If you have System V/ANSI C string
@@ -44,19 +45,18 @@ INSTALL_DATA = @INSTALL_DATA@
 # -DMAJOR_IN_MKDEV	If major, minor, makedev defined in sys/mkdev.h.
 # -DMAJOR_IN_SYSMACROS	If major, minor, makedev defined in sys/sysmacros.h.
 # -DRETSIGTYPE=int	If your signal handlers return int, not void.
-# -DNO_MTIO		If you lack sys/mtio.h (magtape ioctls).
-# -DNO_REMOTE		If you do not have a remote shell or rexec.
-# -DUSE_REXEC		To use rexec for remote tape operations
+# -DHAVE_SYS_MTIO_H	If you have sys/mtio.h (magtape ioctls).
+# -DHAVE_NETDB_H	To use rexec for remote tape operations
 #			instead of forking rsh or remsh.
-# -DVPRINTF_MISSING	If you lack vprintf function (but have _doprnt).
-# -DDOPRNT_MISSING	If you lack _doprnt function.  Also need to define
-#			-DVPRINTF_MISSING.
-# -DFTIME_MISSING	If you lack ftime system call.
-# -DSTRSTR_MISSING	If you lack strstr function.
-# -DVALLOC_MISSING	If you lack valloc function.
-# -DMKDIR_MISSING	If you lack mkdir and rmdir system calls.
-# -DRENAME_MISSING 	If you lack rename system call.
-# -DFTRUNCATE_MISSING	If you lack frtruncate system call.
+# -DNO_REMOTE		If you have neither a remote shell nor rexec.
+# -DHAVE_VPRINTF	If you have vprintf function.
+# -DHAVE_DOPRNT		If you have _doprnt function (but lack vprintf).
+# -DHAVE_FTIME		If you have ftime system call.
+# -DHAVE_STRSTR		If you have strstr function.
+# -DHAVE_VALLOC		If you have valloc function.
+# -DHAVE_MKDIR		If you have mkdir and rmdir system calls.
+# -DHAVE_RENAME 	If you have rename system call.
+# -DHAVE_FTRUNCATE	If you have ftruncate system call.
 # -DV7			On Version 7 Unix (not tested in a long time).
 # -DEMUL_OPEN3		If you lack a 3-argument version of open, and want
 #			to emulate it with system calls you do have.
@@ -101,7 +101,7 @@ OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
 AUX =   README INSTALL COPYING ChangeLog Makefile.in makefile.pc \
 	configure configure.in \
 	tar.texinfo tar.info* texinfo.tex \
-	tar.h port.h open3.h getopt.h regex.h \
+	tar.h pathmax.h port.h open3.h getopt.h regex.h \
 	rmt.h rmt.c rtapelib.c alloca.c \
 	msd_dir.h msd_dir.c tcexparg.c \
 	level-0 level-1 backup-specs testpad.c
@@ -125,7 +125,7 @@ install: all
 	-test ! -f rmt || $(INSTALL_PROGRAM) rmt /etc/rmt
 	$(INSTALL_DATA) $(srcdir)/tar.info* $(infodir)
 
-$(OBJS): tar.h port.h testpad.h
+$(OBJS): tar.h pathmax.h port.h testpad.h
 regex.o buffer.o tar.o: regex.h
 
 # getdate.y has 8 shift/reduce conflicts.
