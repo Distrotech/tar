@@ -2,7 +2,7 @@
 # A directory older than the listed entry was skipped completely.
 
 . ./preset
-. $srcdir/before
+. $srcdir/before gnu oldgnu
 
 set -e
 mkdir structure
@@ -22,12 +22,12 @@ ls -l structure/file >/dev/null
 # backing it up.
 sleep 1
 
-tar cf archive --format=gnu --listed=list structure
-tar cfv archive --format=gnu --listed=list structure
+tar cf archive --listed=list structure
+tar cfv archive --listed=list structure
 echo -----
 sleep 1
 echo y >structure/file
-tar cfv archive --format=gnu --listed=list structure
+tar cfv archive --listed=list structure
 
 out="\
 structure/
