@@ -36,10 +36,13 @@ struct xhdr_tab
   void (*decoder) (struct tar_stat_info *, char const *);
 };
 
-/* This declaration must specify the number of elements in xhdr_tab,
-   because ISO C99 section 6.9.2 prohibits a tentative definition that
-   has both internal linkage and incomplete type.  */
-static struct xhdr_tab const xhdr_tab[13];
+/* This declaration must be extern, because ISO C99 section 6.9.2
+   prohibits a tentative definition that has both internal linkage and
+   incomplete type.  If we made it static, we'd have to declare its
+   size which would be a maintenance pain; if we put its initializer
+   here, we'd need a boatload of forward declarations, which would be
+   even more of a pain.  */
+extern struct xhdr_tab const xhdr_tab[];
 
 static struct xhdr_tab const *
 locate_handler (char const *keyword)
@@ -409,7 +412,7 @@ uname_decoder (struct tar_stat_info *st, char const *arg)
   assign_string (&st->uname, arg);
 }
 
-static struct xhdr_tab const xhdr_tab[] = {
+struct xhdr_tab const xhdr_tab[] = {
   { "atime",	atime_coder,	atime_decoder	},
   { "comment",	dummy_coder,	dummy_decoder	},
   { "charset",	dummy_coder,	dummy_decoder	},
