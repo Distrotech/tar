@@ -42,3 +42,5 @@ separator
 $DIR/
 "
 
+. $srcdir/after
+
