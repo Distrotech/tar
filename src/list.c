@@ -76,10 +76,11 @@ read_and (void (*do_something) (void))
   while (1)
     {
       prev_status = status;
-      status = read_header (0);
+      status = read_header (false);
       switch (status)
 	{
 	case HEADER_STILL_UNREAD:
+	case HEADER_SUCCESS_EXTENDED:
 	  abort ();
 
 	case HEADER_SUCCESS:
@@ -159,6 +160,9 @@ read_and (void (*do_something) (void))
 	    case HEADER_FAILURE:
 	      /* We are in the middle of a cascade of errors.  */
 	      break;
+
+	    case HEADER_SUCCESS_EXTENDED:
+	      abort ();
 	    }
 	  continue;
 	}
