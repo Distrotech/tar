@@ -21,6 +21,33 @@
 
 # Written by Paul Eggert.
 
+# URL of our text domain page in Translation Project
+TP_URL="http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/"
+
+usage() {
+ cat <<EOF
+ usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME][--no-po]
+ Options are:
+ --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
+                              sources reside. Use this if you already
+                              have gnulib sources on your machine, and
+                              do not want to waste your bandwidth dowloading
+                              them again.
+ --cvs-auth=METHOD            Set the CVS access method used for downloading
+                              gnulib files. METHOD is one of the keywords
+                              accepted by cvs -d option (see info cvs
+                              repository).
+ --cvs-user=USERNAME          Set the CVS username to be used when accessing
+                              the gnulib repository.
+ --no-po                      Do not download po files.
+
+Running without arguments will suffice in most cases. It is equivalent
+to 
+
+    ./bootstrap --cvs-auth=ext --cvs-user=anoncvs
+    
+EOF
+}
 
 # Parse options.
 
@@ -29,7 +56,7 @@ for option
 do
   case $option in
   --help)
-    echo "$0: usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME]"
+    usage
     exit;;
   --gnulib-srcdir=*)
     GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
@@ -52,6 +79,12 @@ build_cvs_prefix() {
   if [ "${2}" != - ]; then
     CVS_PREFIX=${CVS_PREFIX}${2}@
   fi
+  if [ "$1" = "ext" ]; then
+    if [ -z "${CVS_RSH}" ]; then
+       CVS_RSH=ssh
+       export CVS_RSH
+    fi
+  fi 
 }
 
 # Get gnulib files.
@@ -65,13 +98,11 @@ case ${GNULIB_SRCDIR--} in
     trap 'rm -fr gnulib; exit 1' 0
     
     case "${CVS_AUTH--}" in
-    -)       : ${CVS_RSH:?}
-             CVS_PREFIX="";;
+    -)       build_cvs_prefix ext anoncvs;;
     pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs};;
     gserver|server)
              build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
-    ext)     : ${CVS_RSH:?}
-             build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+    ext)     build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
     *)       echo "$0: Unknown CVS access method" >&2
              exit 1;;
     esac
@@ -171,8 +202,7 @@ if test "$DOWNLOAD_PO" = "yes"; then
   echo "$0: getting translations into po..."
   (cd po &&
    rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
-    wget -nv -nd -r -l 1 -A .po -C off \
-    http://www.iro.umontreal.ca/contrib/po/maint/tar/ &&
+    wget -nv -nd -r -l 1 -A .po -C off $TP_URL &&
     ls *.po | sed 's/\.po$//' >LINGUAS
   ) || exit
 fi
