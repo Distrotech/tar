@@ -3,6 +3,7 @@
 	* tests/sparse01.sh: New file
 	* tests/multiv02.sh: New file
 	* tests/Makefile.am: Add sparse01.sh and multiv02.sh
+	* tests/longv7.sh: Added missing call to 'after'
 	
 	* src/common.h: Added missing prototypes
 	* src/compare.c (diff_archive): Use is_sparse member
