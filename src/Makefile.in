@@ -46,6 +46,7 @@ INSTALL_DATA = @INSTALL_DATA@
 # -DMAJOR_IN_SYSMACROS	If major, minor, makedev defined in sys/sysmacros.h.
 # -DRETSIGTYPE=int	If your signal handlers return int, not void.
 # -DHAVE_SYS_MTIO_H	If you have sys/mtio.h (magtape ioctls).
+# -DHAVE_SYS_GENTAPE_H	If you have sys/gentape.h (ISC magtape ioctls).
 # -DHAVE_NETDB_H	To use rexec for remote tape operations
 #			instead of forking rsh or remsh.
 # -DNO_REMOTE		If you have neither a remote shell nor rexec.
@@ -55,6 +56,7 @@ INSTALL_DATA = @INSTALL_DATA@
 # -DHAVE_STRSTR		If you have strstr function.
 # -DHAVE_VALLOC		If you have valloc function.
 # -DHAVE_MKDIR		If you have mkdir and rmdir system calls.
+# -DHAVE_MKNOD		If you have mknod system call.
 # -DHAVE_RENAME 	If you have rename system call.
 # -DHAVE_FTRUNCATE	If you have ftruncate system call.
 # -DV7			On Version 7 Unix (not tested in a long time).
