@@ -280,9 +280,6 @@ AC_CHECK_HEADERS(iconv.h,
                                           [Conversion descriptor type]),
                                 [#include <iconv.h>])])
 
-AC_CHECK_LIB(iconv, iconv)
-
-
 AC_OUTPUT([Makefile\
            doc/Makefile\
            lib/Makefile\
