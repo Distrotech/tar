@@ -78,6 +78,7 @@ human
 lchown
 memset
 modechange
+obstack
 safe-read
 quote
 quotearg
