@@ -1,3 +1,12 @@
+2003-09-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/buffer.c: Use ngettext where appropriate.
+	* src/compare.c: Likewise.
+	* src/create.c: Likewise.
+	* src/misc.c: Likewise.
+	* src/tar.c: Likewise.
+	* src/update.c: Likewise.
+
 2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* .cvsignore: Added *.shar.gz
