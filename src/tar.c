@@ -28,11 +28,7 @@
 #include "common.h"
 
 #include "backupfile.h"
-enum backup_type get_version ();
-
-/* FIXME: We should use a conversion routine that does reasonable error
-   checking -- atol doesn't.  For now, punt.  */
-#define intconv	atol
+#include "xstrtol.h"
 
 time_t get_date ();
 
@@ -49,48 +45,6 @@ time_t get_date ();
 static void usage PARAMS ((int));
 
 /* Miscellaneous.  */
-
-/*------------------------------------------------------------------------.
-| Check if STRING0 is the decimal representation of number, and store its |
-| value.  If not a decimal number, return 0.				  |
-`------------------------------------------------------------------------*/
-
-static int
-check_decimal (const char *string0, uintmax_t *result)
-{
-  const char *string = string0;
-  uintmax_t value = 0;
-
-  do
-    switch (*string)
-      {
-      case '0':
-      case '1':
-      case '2':
-      case '3':
-      case '4':
-      case '5':
-      case '6':
-      case '7':
-      case '8':
-      case '9':
-	{
-	  uintmax_t v10 = value * 10;
-	  uintmax_t v10d = v10 + (*string - '0');
-	  if (v10 / 10 != value || v10d < v10)
-	    return 0;
-	  value = v10d;
-	}
-	break;
-
-      default:
-	return 0;
-      }
-  while (*++string);
-
-  *result = value;
-  return 1;
-}
 
 /*----------------------------------------------.
 | Doesn't return if stdin already requested.    |
@@ -205,8 +159,6 @@ struct option long_options[] =
   {"block-number", no_argument, NULL, 'R'},
   {"block-size", required_argument, NULL, OBSOLETE_BLOCKING_FACTOR},
   {"blocking-factor", required_argument, NULL, 'b'},
-  {"bunzip2", no_argument, NULL, 'y'},
-  {"bzip2", no_argument, NULL, 'y'},
   {"catenate", no_argument, NULL, 'A'},
   {"checkpoint", no_argument, &checkpoint_option, 1},
   {"compare", no_argument, NULL, 'd'},
@@ -278,7 +230,6 @@ struct option long_options[] =
   {"totals", no_argument, &totals_option, 1},
   {"touch", no_argument, NULL, 'm'},
   {"uncompress", no_argument, NULL, 'Z'},
-  {"unbzip2", no_argument, NULL, 'y'},
   {"ungzip", no_argument, NULL, 'z'},
   {"unlink-first", no_argument, NULL, 'U'},
   {"update", no_argument, NULL, 'u'},
@@ -385,7 +336,6 @@ Archive format selection:\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX conformant archive\n\
-  -y, --bzip2, --unbzip2             filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
@@ -463,7 +413,7 @@ Report bugs to <tar-bugs@gnu.ai.mit.edu>.\n"),
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxyz"
+  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -491,7 +441,7 @@ decode_options (int argc, char *const *argv)
   int optchar;			/* option letter */
   int input_files;		/* number of input files */
   const char *backup_suffix_string;
-  const char *version_control_string;
+  const char *version_control_string = NULL;
 
   /* Set some default option values.  */
 
@@ -504,7 +454,6 @@ decode_options (int argc, char *const *argv)
   group_option = -1;
 
   backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
-  version_control_string = getenv ("VERSION_CONTROL");
 
   /* Convert old-style tar call by exploding option element and rearranging
      options accordingly.  */
@@ -596,8 +545,14 @@ decode_options (int argc, char *const *argv)
 	/* Fall through.  */
 
       case 'b':
-	blocking_factor = intconv (optarg);
-	record_size = blocking_factor * (size_t) BLOCKSIZE;
+	{
+	  long l;
+	  if (! (xstrtol (optarg, (char **) 0, 10, &l, "") == LONGINT_OK
+		 && l == (blocking_factor = l)
+		 && 0 < blocking_factor
+		 && l == (record_size = l * (size_t) BLOCKSIZE) / BLOCKSIZE))
+	    USAGE_ERROR ((0, 0, _("Invalid blocking factor")));
+	}
 	break;
 
       case OBSOLETE_READ_FULL_RECORDS:
@@ -697,10 +652,15 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'L':
-	clear_tarlong (tape_length_option);
-	add_to_tarlong (tape_length_option, intconv (optarg));
-	mult_tarlong (tape_length_option, 1024);
-	multi_volume_option = 1;
+	{
+	  unsigned long u;
+	  if (xstrtoul (optarg, (char **) 0, 10, &u, "") != LONG_MAX)
+	    USAGE_ERROR ((0, 0, _("Invalid tape length")));
+	  clear_tarlong (tape_length_option);
+	  add_to_tarlong (tape_length_option, u);
+	  mult_tarlong (tape_length_option, 1024);
+	  multi_volume_option = 1;
+	}
 	break;
 
       case OBSOLETE_TOUCH:
@@ -828,10 +788,6 @@ decode_options (int argc, char *const *argv)
 	add_exclude_file (optarg);
 	break;
 
-      case 'y':
-	set_use_compress_program_option ("bzip2");
-	break;
-
       case 'z':
 	set_use_compress_program_option ("gzip");
 	break;
@@ -864,10 +820,11 @@ decode_options (int argc, char *const *argv)
 	       && gname_to_gid (optarg, &group_option)))
 	  {
 	    uintmax_t g;
-	    if (!check_decimal (optarg, &g) || g != (gid_t) g)
-	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid group given on option")));
-	    else
+	    if (xstrtoumax (optarg, (char **) 0, 10, &g, "") == LONGINT_OK
+		&& g == (gid_t) g)
 	      group_option = g;
+	    else
+	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid group given on option")));
 	  }
 	break;
 
@@ -894,10 +851,11 @@ decode_options (int argc, char *const *argv)
 	       && uname_to_uid (optarg, &owner_option)))
 	  {
 	    uintmax_t u;
-	    if (!check_decimal (optarg, &u) || u != (uid_t) u)
-	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid owner given on option")));
-	    else
+	    if (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONGINT_OK
+		&& u == (uid_t) u)
 	      owner_option = u;
+	    else
+	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid owner given on option")));
 	  }
 	break;
 
@@ -921,11 +879,17 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case RECORD_SIZE_OPTION:
-	record_size = intconv (optarg);
-	if (record_size % BLOCKSIZE != 0)
-	  USAGE_ERROR ((0, 0, _("Record size must be a multiple of %d."),
-			BLOCKSIZE));
-	blocking_factor = record_size / BLOCKSIZE;
+	{
+	  uintmax_t u;
+	  if (! (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONG_MAX
+		 && u == (size_t) u))
+	    USAGE_ERROR ((0, 0, _("Invalid record size")));
+	  record_size = u;
+	  if (record_size % BLOCKSIZE != 0)
+	    USAGE_ERROR ((0, 0, _("Record size must be a multiple of %d."),
+			  BLOCKSIZE));
+	  blocking_factor = record_size / BLOCKSIZE;
+	}
 	break;
 
       case RSH_COMMAND_OPTION:
@@ -1131,7 +1095,7 @@ Written by John Gilmore and Jay Fenlason.\n"),
     simple_backup_suffix = xstrdup (backup_suffix_string);
 
   if (backup_option)
-    backup_type = get_version (version_control_string);
+    backup_type = xget_version ("--backup", version_control_string);
 }
 
 /* Tar proper.  */
