@@ -1,6 +1,10 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.5 - Paul Eggert, 1999-07-20.
+
+* Do the delayed updates of file metadata even after a fatal error.
+
 version 1.13.4 - Paul Eggert, 1999-07-20.
 
 * Do not chmod unless we are root or the -p option was given;
