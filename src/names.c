@@ -1,5 +1,7 @@
 /* Various processing of names.
-   Copyright 1988,92,94,96,97,98,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001 Free
+   Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -764,7 +766,10 @@ collect_and_sort_names (void)
 
       if (deref_stat (dereference_option, name->name, &statbuf) != 0)
 	{
-	  stat_error (name->name);
+	  if (ignore_failed_read_option)
+	    stat_warn (name->name);
+	  else
+	    stat_error (name->name);
 	  continue;
 	}
       if (S_ISDIR (statbuf.st_mode))
@@ -863,23 +868,10 @@ new_name (const char *path, const char *name)
 /* Return nonzero if file NAME is excluded.  Exclude a name if its
    prefix matches a pattern that contains slashes, or if one of its
    components matches a pattern that contains no slashes.  */
-int
+bool
 excluded_name (char const *name)
 {
-  char const *p;
-  name += FILESYSTEM_PREFIX_LEN (name);
-
-  if (excluded_filename (excluded_with_slash, name,
-			 FNM_FILE_NAME | recursion_option))
-    return 1;
-
-  for (p = name; *p; p++)
-    if (((p == name || ISSLASH (p[-1])) && !ISSLASH (p[0]))
-	&& excluded_filename (excluded_without_slash, p,
-			      FNM_FILE_NAME | FNM_LEADING_DIR))
-      return 1;
-
-  return 0;
+  return excluded_filename (excluded, name + FILESYSTEM_PREFIX_LEN (name));
 }
 
 /* Names to avoid dumping.  */
