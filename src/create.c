@@ -567,8 +567,6 @@ finish_header (union block *header)
 
   uintmax_to_chars ((uintmax_t) sum, header->header.chksum, 7);
 
-  set_next_block_after (header);
-
   if (verbose_option
       && header->header.typeflag != GNUTYPE_LONGLINK
       && header->header.typeflag != GNUTYPE_LONGNAME)
@@ -580,6 +578,8 @@ finish_header (union block *header)
       current_format = archive_format;
       print_header ();
     }
+
+  set_next_block_after (header);
 }
 
 /* Sparse file processing.  */
