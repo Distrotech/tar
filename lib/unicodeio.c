@@ -38,31 +38,18 @@
 extern int errno;
 #endif
 
-/* Define EILSEQ and ENOTSUP as portably as possible.  Some
-   nonstandard systems, like SunOS 4, don't have EILSEQ.  Others, like
-   BSD/OS 4.1, define it in <wchar.h>.  Callers that use EILSEQ and/or
-   ENOTSUP and that want to be portable to these nonstandard systems
-   should mimic the following includes and defines.  */
-
-/* BSD/OS 4.1 wchar.h defines EILSEQ, but it requires FILE (defined in
-   <stdio.h>, included above) and struct tm (defined in <time.h>) to
-   be declared.  */
-#if HAVE_WCHAR_H && ! defined EILSEQ
-# include <time.h>
-# include <wchar.h>
+#if HAVE_ICONV
+# include <iconv.h>
 #endif
 
-/* Do not define EILSEQ to be EINVAL, since callers may want to
-   distinguish EINVAL and EILSEQ.  */
+/* Some systems, like SunOS 4, don't have EILSEQ.  On these systems,
+   define EILSEQ to some value other than EINVAL, because our invokers
+   may want to distinguish EINVAL from EILSEQ.  */
 #ifndef EILSEQ
 # define EILSEQ ENOENT
 #endif
 #ifndef ENOTSUP
 # define ENOTSUP EINVAL
-#endif
-
-#if HAVE_ICONV
-# include <iconv.h>
 #endif
 
 #if HAVE_LANGINFO_CODESET && ! USE_INCLUDED_LIBINTL
