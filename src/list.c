@@ -415,9 +415,28 @@ read_header (void)
 	}
       else
 	{
-	  assign_string (&current_file_name,
-			 (next_long_name ? next_long_name
-			  : current_header->header.name));
+	  char *name = next_long_name;
+	  struct posix_header *h = &current_header->header;
+	  char namebuf[sizeof h->prefix + 1 + sizeof h->name + 1];
+
+	  if (! name)
+	    {
+	      /* Accept file names as specified by POSIX.1-1996
+                 section 10.1.1.  */
+	      char *np = namebuf;
+	      if (h->prefix[0])
+		{
+		  memcpy (np, h->prefix, sizeof h->prefix);
+		  np[sizeof h->prefix] = '\0';
+		  np += strlen (np);
+		  *np++ = '/';
+		}
+	      memcpy (np, h->name, sizeof h->name);
+	      np[sizeof h->name] = '\0';
+	      name = namebuf;
+	    }
+
+	  assign_string (&current_file_name, name);
 	  assign_string (&current_link_name,
 			 (next_long_link ? next_long_link
 			  : current_header->header.linkname));
