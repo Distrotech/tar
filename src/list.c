@@ -563,7 +563,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	{
 	case BLKTYPE:
 	case CHRTYPE:
-	  stat_info->stat.st_rdev = makedev (stat_info->devmajor, stat_info->devminor);
+	  stat_info->stat.st_rdev = makedev (stat_info->devmajor,
+					     stat_info->devminor);
 	  break;
 
 	default:
@@ -571,8 +572,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	}
     }
 
-  current_stat_info.archive_file_size = current_stat_info.stat.st_size;
   xheader_decode (stat_info);
+  current_stat_info.archive_file_size = current_stat_info.stat.st_size;
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
