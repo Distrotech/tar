@@ -1,5 +1,5 @@
 /* Tar -- a tape archiver.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -153,6 +153,7 @@ struct option long_options[] =
   {"listed-incremental", 1, 0, 'g'},
   {"multi-volume", 0, &f_multivol, 1},
   {"info-script", 1, 0, 'F'},
+  {"new-volume-script", 1, 0, 'F'},
   {"absolute-paths", 0, &f_absolute_paths, 1},
   {"interactive", 0, &f_confirm, 1},
   {"confirmation", 0, &f_confirm, 1},
@@ -669,7 +670,8 @@ Other options:\n\
 	   DEF_AR_FILE);
   fputs ("\
 --force-local		archive file is local even if has a colon\n\
--F, --info-script F	run script at end of each tape (implies -M)\n\
+-F, --info-script F\n\
+    --new-volume-script F run script at end of each tape (implies -M)\n\
 -G, --incremental	create/list/extract old GNU-format incremental backup\n\
 -g, --listed-incremental F create/list/extract new GNU-format incremental backup\n\
 -h, --dereference	don't dump symlinks; dump the files they point to\n\
@@ -678,7 +680,7 @@ Other options:\n\
 -k, --keep-old-files	keep existing files; don't overwrite them from archive\n\
 -K, --starting-file F	begin at file F in the archive\n\
 -l, --one-file-system	stay in local file system when creating an archive\n\
--L, --tape-length LENGTH change tapes after writing LENGTH\n\
+-L, --tape-length N	change tapes after writing N*1024 bytes\n\
 ", stdout);			/* KLUDGE */
   fputs ("\
 -m, --modification-time	don't extract file modified time\n\
@@ -866,8 +868,10 @@ tryagain:
 	}
       /* End of JF quick -C hack */
 
+#if 0
       if (f_exclude && check_exclude (p))
 	goto tryagain;
+#endif
       return un_quote_string (p);
     }
   while (p = read_name_from_file (buffer, &buffer_siz, namef))
@@ -891,8 +895,10 @@ tryagain:
 	  next_name_is_dir = 0;
 	  goto tryagain;
 	}
+#if 0
       if (f_exclude && check_exclude (p))
 	goto tryagain;
+#endif
       return un_quote_string (p);
     }
   return NULL;
