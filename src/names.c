@@ -373,9 +373,7 @@ name_next (int change_dirs)
 
       if (chdir_flag)
 	{
-	  if (chdir (name_buffer) < 0)
-	    FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-			  name_buffer));
+	  chdir_from_initial_wd (name_buffer);
 	  chdir_flag = 0;
 	}
       else if (change_dirs && strcmp (name_buffer, "-C") == 0)
@@ -426,10 +424,12 @@ name_gather (void)
   static struct name *buffer;
   static size_t allocated_length = 0;
 
-  char *name;
+  char const *name;
 
   if (same_order_option)
     {
+      char *change_dir = NULL;
+
       if (allocated_length == 0)
 	{
 	  allocated_length = sizeof (struct name) + NAME_FIELD_SIZE;
@@ -437,24 +437,26 @@ name_gather (void)
 	  /* FIXME: This memset is overkill, and ugly...  */
 	  memset (buffer, 0, allocated_length);
 	}
-      name = name_next (0);
+
+      while ((name = name_next (0)) && strcmp (name, "-C") == 0)
+	{
+	  char const *dir = name_next (0);
+	  if (! dir)
+	    FATAL_ERROR ((0, 0, _("Missing file name after -C")));
+	  if (change_dir)
+	    free (change_dir);
+	  change_dir = xstrdup (dir);
+	}
+
       if (name)
 	{
-	  if (strcmp (name, "-C") == 0)
-	    {
-	      char *copy = xstrdup (name_next (0));
-
-	      name = name_next (0);
-	      if (!name)
-		FATAL_ERROR ((0, 0, _("Missing file name after -C")));
-	      buffer->change_dir = copy;
-	    }
 	  buffer->length = strlen (name);
 	  if (sizeof (struct name) + buffer->length >= allocated_length)
 	    {
 	      allocated_length = sizeof (struct name) + buffer->length;
 	      buffer = (struct name *) xrealloc (buffer, allocated_length);
 	    }
+	  buffer->change_dir = change_dir;
 	  strncpy (buffer->name, name, (size_t) buffer->length);
 	  buffer->name[buffer->length] = 0;
 	  buffer->next = NULL;
@@ -464,13 +466,35 @@ name_gather (void)
 	  namelist = buffer;
 	  namelast = namelist;
 	}
+      else if (change_dir)
+	free (change_dir);
+
       return;
     }
 
   /* Non sorted names -- read them all in.  */
 
-  while (name = name_next (0), name)
-    addname (name);
+  for (;;)
+    {
+      char *change_dir = NULL;
+      while ((name = name_next (0)) && strcmp (name, "-C") == 0)
+	{
+	  char const *dir = name_next (0);
+	  if (! dir)
+	    FATAL_ERROR ((0, 0, _("Missing file name after -C")));
+	  if (change_dir)
+	    free (change_dir);
+	  change_dir = xstrdup (dir);
+	}
+      if (name)
+	addname (name, change_dir);
+      else
+	{
+	  if (change_dir)
+	    free (change_dir);
+	  break;
+	}
+    }
 }
 
 /*-----------------------------.
@@ -478,40 +502,10 @@ name_gather (void)
 `-----------------------------*/
 
 void
-addname (const char *string)
+addname (char const *string, char const *change_dir)
 {
-  /* FIXME: This is ugly.  How is memory managed?  */
-  static char *chdir_name = NULL;
-
   struct name *name;
   size_t length;
-
-  if (strcmp (string, "-C") == 0)
-    {
-      chdir_name = xstrdup (name_next (0));
-      string = name_next (0);
-      if (!chdir_name)
-	FATAL_ERROR ((0, 0, _("Missing file name after -C")));
-
-      if (chdir_name[0] != '/')
-	{
-	  char *path = xmalloc (PATH_MAX);
-
-	  /* FIXME: Shouldn't we use xgetcwd?  */
-#if HAVE_GETCWD
-	  if (!getcwd (path, PATH_MAX))
-	    FATAL_ERROR ((0, 0, _("Could not get current directory")));
-#else
-	  char *getwd ();
-
-	  if (!getwd (path))
-	    FATAL_ERROR ((0, 0, _("Could not get current directory: %s"),
-			  path));
-#endif
-	  chdir_name = new_name (path, chdir_name);
-	  free (path);
-	}
-    }
 
   length = string ? strlen (string) : 0;
   name = (struct name *) xmalloc (sizeof (struct name) + length);
@@ -532,7 +526,7 @@ addname (const char *string)
   name->found = 0;
   name->regexp = 0;		/* assume not a regular expression */
   name->firstch = 1;		/* assume first char is literal */
-  name->change_dir = chdir_name;
+  name->change_dir = change_dir;
   name->dir_contents = 0;
 
   if (string && is_pattern (string))
@@ -568,9 +562,7 @@ name_match (const char *path)
 
       if (cursor->fake)
 	{
-	  if (cursor->change_dir && chdir (cursor->change_dir))
-	    FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-			  cursor->change_dir));
+	  chdir_from_initial_wd (cursor->change_dir);
 	  namelist = 0;
 	  return 1;
 	}
@@ -594,9 +586,7 @@ name_match (const char *path)
 		      free (namelist);
 		      namelist = NULL;
 		    }
-		  if (cursor->change_dir && chdir (cursor->change_dir))
-		    FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-				  cursor->change_dir));
+		  chdir_from_initial_wd (cursor->change_dir);
 
 		  /* We got a match.  */
 		  return 1;
@@ -620,9 +610,7 @@ name_match (const char *path)
 		  free ((void *) namelist);
 		  namelist = 0;
 		}
-	      if (cursor->change_dir && chdir (cursor->change_dir))
-		FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-			      cursor->change_dir));
+	      chdir_from_initial_wd (cursor->change_dir);
 
 	      /* We got a match.  */
 	      return 1;
@@ -772,10 +760,7 @@ name_from_list (void)
   if (gnu_list_name)
     {
       gnu_list_name->found = 1;
-      if (gnu_list_name->change_dir)
-	if (chdir (gnu_list_name->change_dir) < 0)
-	  FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-			gnu_list_name->change_dir));
+      chdir_from_initial_wd (gnu_list_name->change_dir);
       return gnu_list_name->name;
     }
   return NULL;
