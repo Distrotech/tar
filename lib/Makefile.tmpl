@@ -31,6 +31,8 @@ localedir.h : Makefile
 	echo "# define DEFAULT_RMT_COMMAND \"$(DEFAULT_RMT_DIR)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
 	echo "#endif" >> $@
 
+rtapelib.o: localedir.h
+
 libtar_a_LIBADD = $(LIBOBJS) $(ALLOCA)
 libtar_a_DEPENDENCIES = $(libtar_a_LIBADD)
 
