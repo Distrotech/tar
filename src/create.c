@@ -1139,7 +1139,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
       if (1 < current_stat.st_nlink)
 	{
 	  static Hash_table *link_table;
-	  struct link *lp = xmalloc (sizeof *lp + strlen (p));
+	  struct link *lp = xmalloc (offsetof (struct link, name)
+				     + strlen (p) + 1);
 	  struct link *dup;
 	  lp->ino = current_stat.st_ino;
 	  lp->dev = current_stat.st_dev;
@@ -1154,7 +1155,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  if (dup != lp)
 	    {
 	      /* We found a link.  */
-	      char const *link_name = dup->name;
+	      char const *link_name = relativize (dup->name);
 
 	      free (lp);
 
