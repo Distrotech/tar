@@ -1006,9 +1006,7 @@ actual names.  Quoting names without history would be meaningless.  FP}
 
 Jay Fenlason put together a draft of a GNU @code{tar} manual,
 borrowing notes from the original man page from John Gilmore.  This
-draft has been distributed in @code{tar} versions 1.04 (or even
-before?) @FIXME{huh?  IMO, either we know or we don't; the
-parenthetical is confusing.}  through 1.10, then withdrawn in version
+was withdrawn in version
 1.11.  Thomas Bushnell, n/BSG and Amy Gorin worked on a tutorial and
 manual for GNU @code{tar}.  Fran@,{c}ois Pinard put version 1.11.8
 of the manual together by taking information from all these sources
@@ -1145,7 +1143,7 @@ three forms: long (mnemonic) form, short form, and old style.  Some of
 the operations and options have no short or ``old'' forms; however, the
 operations and options which we will cover in this tutorial have
 corresponding abbreviations.  @FIXME{make sure this is still the case,
-at the end} We will indicate those abbreviations appropriately to get
+at the end}We will indicate those abbreviations appropriately to get
 you used to seeing them.  (Note that the ``old style'' option forms
 exist in GNU @code{tar} for compatibility with Unix @code{tar}.  We
 present a full discussion of this way of writing options and operations
@@ -1393,7 +1391,7 @@ Whenever you use @samp{create}, @code{tar} will erase the current
 contents of the file named by @value{op-file} if it exists.  @code{tar}
 will not tell you if you are about to overwrite a file unless you
 specify an option which does this.  @FIXME{xref to the node for
---backup!}  To add files to an existing archive, you need to use a
+--backup!}To add files to an existing archive, you need to use a
 different option, such as @value{op-append}; see @ref{append} for
 information on how to do this.
 
@@ -1439,9 +1437,9 @@ is the operation which creates the new archive
 you give it the name you chose.  The files, @file{blues}, @file{folk},
 and @file{jazz}, are now members of the archive, @file{collection.tar}
 (they are @dfn{file name arguments} to the @samp{--create} operation).
-@FIXME{xref here to the discussion of file name args?}  Now that they
-are are in the archive, they are called @emph{archive members}, not
-files.  @FIXME{xref to definitions?}
+@FIXME{xref here to the discussion of file name args?}Now that they are
+in the archive, they are called @emph{archive members}, not files.
+@FIXME{xref to definitions?}
 
 When you create an archive, you @emph{must} specify which files you want
 placed in the archive.  If you do not specify any archive members, GNU
@@ -1839,7 +1837,7 @@ $ @kbd{tar --extract --file=collection.tar blues}
 @noindent
 If you list the files in the directory again, you will see that the file
 @file{blues} has been restored, with its original permissions, creation
-times, and owner.  @FIXME{This is only accidentally true, but not in
+times, and owner.@FIXME{This is only accidentally true, but not in
 general.  In most cases, one has to be root for restoring the owner, and
 use a special option for restoring permissions.  Here, it just happens
 that the restoring user is also the owner of the archived members, and
@@ -3612,7 +3610,7 @@ aspects of it show ways in which tar is more broken than i'd personally
 like to admit to, specifically the last sentence.  On the other hand, i
 don't think it's a good idea to be saying that re explicitly don't
 recommend using something, but i can't see any better way to deal with
-the situation.} When you extract the archive, the older version will be
+the situation.}When you extract the archive, the older version will be
 effectively lost.  This works because files are extracted from an
 archive in the order in which they were archived.  Thus, when the
 archive is extracted, a file archived later in time will overwrite a
@@ -3798,7 +3796,7 @@ folk
 
 When you use @samp{--concatenate}, the source and target archives must
 already exist and must have been created using compatable format
-parameters.  @FIXME-pxref{Matching Format Parameters}  The new,
+parameters.  @FIXME-pxref{Matching Format Parameters}The new,
 concatenated archive will be called by the same name as the first
 archive listed on the command line. @FIXME{is there a way to specify a
 new name?}
@@ -4464,7 +4462,7 @@ You have now seen how to use all eight of the operations available to
 explains how to choose and change file and archive names, how to use
 files to store names of other files which you can then call as
 arguments to @code{tar} (this can help you save time if you expect to
-archive the same list of files a number of times), and how to
+archive the same list of files a number of times), and so forth.
 @FIXME{in case it's not obvious, i'm making this up in some sense
 based on my imited memory of what the next chapter *really* does.  i
 just wanted to flesh out this final section a little bit so i'd
@@ -4836,12 +4834,12 @@ file name lists and @code{tar} commands by hand.
 Before you use these scripts, you need to edit the file
 @file{backup-specs}, which specifies parameters used by the backup
 scripts and by the restore script.  @FIXME{There is no such restore
-script!}  @FIXME-xref{Script Syntax}  Once the backup parameters
+script!}@FIXME-xref{Script Syntax}Once the backup parameters
 are set, you can perform backups or restoration by running the
 appropriate script.
 
 The name of the restore script is @code{restore}.  @FIXME{There is
-no such restore script!}  The names of the level one and full backup
+no such restore script!}The names of the level one and full backup
 scripts are, respectively, @code{level-1} and @code{level-0}.
 The @code{level-0} script also exists under the name @code{weekly}, and
 the @code{level-1} under the name @code{daily}---these additional names
@@ -4854,7 +4852,7 @@ backup scripts.}
 designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
-it is easier to use the scripts.  @FIXME{There is no such restore script!}
+it is easier to use the scripts.@FIXME{There is no such restore script!}
 @value{xref-incremental}, and @value{xref-listed-incremental},
 before making such an attempt.
 
@@ -5238,7 +5236,7 @@ archive.  If you specify any operation other than one of these three,
 By default, @code{tar} takes file names from the command line.  However,
 there are other ways to specify file or member names, or to modify the
 manner in which @code{tar} selects the files or members upon which to
-operate. @FIXME{add xref here}  In general, these methods work both for
+operate.  @FIXME{add xref here}In general, these methods work both for
 specifying the names of files and archive members.
 
 @node files, exclude, Selecting Archive Members, Choosing
@@ -5639,7 +5637,7 @@ themselves, but does not descend on them recursively.  Many people use
 @code{find} for locating files they want to back up, and since
 @code{tar} @emph{usually} recursively descends on directories, they have
 to use the @samp{@w{! -d}} option to @code{find} @FIXME{needs more
-explanation or a cite to another info file} as they usually do not want
+explanation or a cite to another info file}as they usually do not want
 all the files in a directory.  They then use the @value{op-file-from}
 option to archive the files located via @code{find}.
 
@@ -6716,7 +6714,7 @@ Filter the archive through @code{gzip}.
 
 @FIXME{ach; these two bits orig from "compare" (?).  where to put?} Some
 format parameters must be taken into consideration when modifying an
-archive. @FIXME{???}  Compressed archives cannot be modified.
+archive.@FIXME{???}  Compressed archives cannot be modified.
 
 You can use @samp{--gzip} and @samp{--gunzip} on physical devices
 (tape drives, etc.) and remote files as well as on normal files; data
@@ -7028,7 +7026,7 @@ When writing an archive, @code{tar} writes the user id and user name
 separately.  If it can't find a user name (because the user id is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
 and doing a @code{chmod} like when you use @value{op-same-permissions},
-@FIXME{same-owner?} it tries to look the name (if one was written)
+@FIXME{same-owner?}it tries to look the name (if one was written)
 up in @file{/etc/passwd}.  If it fails, then it uses the user id
 stored in the archive instead.
 
@@ -8281,7 +8279,7 @@ data on the tape will be overwritten (unless it is no longer needed).
 Before reading an archive, you should make sure the tape head is at
 the beginning of the archive you want to read.  (The @code{restore}
 script will find the archive automatically.  @FIXME{There is no such
-restore script!}  @FIXME-xref{Scripted Restoration}  @xref{mt}, for
+restore script!}@FIXME-xref{Scripted Restoration}@xref{mt}, for
 an explanation of the tape moving utility.
 
 If you want to add new archive file entries to a tape, you should
@@ -8361,9 +8359,10 @@ If you use @value{op-extract} with the @value{op-label} option specified,
 on it) and print an error if the archive label doesn't match the
 @var{archive-name} specified.  @var{archive-name} can be any regular
 expression.  If the labels match, @code{tar} extracts the archive.
-@value{xref-label}.  @FIXME-xref{Matching Format Parameters}
-@FIXME{fix cross references} @samp{tar --list --label} will cause
-@code{tar} to print the label.
+@value{xref-label}.
+@FIXME-xref{Matching Format Parameters}@FIXME{fix cross
+references}@samp{tar --list --label} will cause @code{tar} to print the
+label.
 
 @FIXME{Program to list all the labels on a tape?}
 
@@ -8566,8 +8565,9 @@ To give the archive a name which will be recorded in it, use the
 @value{op-label} option.  This will write a special block identifying
 @var{volume-label} as the name of the archive to the front of the archive
 which will be displayed when the archive is listed with @value{op-list}.
-If you are creating a multi-volume archive with @value{op-multi-volume}
-@FIXME-pxref{Using Multiple Tapes}, then the volume label will have
+If you are creating a multi-volume archive with
+@value{op-multi-volume}@FIXME-pxref{Using Multiple Tapes}, then the
+volume label will have
 @samp{Volume @var{nnn}} appended to the name you give, where @var{nnn} is
 the number of the volume of the archive.  (If you use the @value{op-label}
 option when reading an archive, it checks to make sure the label on the
