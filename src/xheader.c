@@ -18,9 +18,7 @@
 
 #include "system.h"
 
-#include <grp.h>
 #include <hash.h>
-#include <pwd.h>
 #include <quotearg.h>
 
 #include "common.h"
