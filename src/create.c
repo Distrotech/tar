@@ -353,24 +353,54 @@ write_eot (void)
   set_next_block_after (pointer);
 }
 
+/* Write a "private" header */
+static union block *
+start_private_header (const char *name, size_t size)
+{
+  time_t t;
+  union block *header = find_next_block ();
+  
+  memset (header->buffer, 0, sizeof (union block));
+
+  strncpy (header->header.name, name, NAME_FIELD_SIZE);
+  header->header.name[NAME_FIELD_SIZE - 1] = '\0';
+  OFF_TO_CHARS (size, header->header.size);
+
+  time (&t);
+  TIME_TO_CHARS (t, header->header.mtime);
+  MODE_TO_CHARS (S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, header->header.mode);
+  UID_TO_CHARS (getuid (), header->header.uid);
+  GID_TO_CHARS (getgid (), header->header.gid);
+  MAJOR_TO_CHARS (0, header->header.devmajor);
+  MAJOR_TO_CHARS (0, header->header.devminor);
+  strncpy (header->header.magic, TMAGIC, TMAGLEN);
+  strncpy (header->header.version, TVERSION, TVERSLEN);
+  return header;
+}
+
+/* Create a new header and store there at most NAME_FIELD_SIZE bytes of
+   the file name */
+
+static union block * 
+write_short_name (struct tar_stat_info *st)
+{
+  union block *header = find_next_block ();
+  memset (header->buffer, 0, sizeof (union block));
+  
+  strncpy (header->header.name, st->file_name, NAME_FIELD_SIZE);
+  header->header.name[NAME_FIELD_SIZE - 1] = '\0';
+  return header;
+}
+
 /* Write a GNUTYPE_LONGLINK or GNUTYPE_LONGNAME block.  */
-
-/* FIXME: Cross recursion between start_header and write_long!  */
-
-static union block *start_header (const char *, struct tar_stat_info *);
-
 static void
-write_long (const char *p, char type)
+write_gnu_long_link (const char *p, char type)
 {
   size_t size = strlen (p) + 1;
   size_t bufsize;
   union block *header;
-  struct tar_stat_info foo;
 
-  memset (&foo, 0, sizeof foo);
-  foo.stat.st_size = size;
-
-  header = start_header ("././@LongLink", &foo);
+  header = start_private_header ("././@LongLink", size);
   header->header.typeflag = type;
   finish_header (header, -1);
 
@@ -392,17 +422,104 @@ write_long (const char *p, char type)
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
 
+static size_t
+split_long_name (const char *name, size_t length)
+{
+  size_t i;
+
+  if (length > PREFIX_FIELD_SIZE)
+    length = PREFIX_FIELD_SIZE+2;
+  for (i = length - 1; i > 0; i--)
+    if (ISSLASH (name[i]))
+      break;
+  return i;
+}
+
+static union block *
+write_ustar_long_name (const char *name)
+{
+  size_t length = strlen (name);
+  size_t i;
+  union block *header;
+
+  if (length > PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1)
+    {
+      WARN ((0, 0, _("%s: file name is too long (max %d); not dumped"),
+	     quotearg_colon (name),
+	     PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1));
+      return NULL;
+    }
+  
+  i = split_long_name (name, length);
+  if (i == 0)
+    {
+      WARN ((0, 0,
+	     _("%s: file name is too long (cannot be split); not dumped"),
+	     quotearg_colon (name),
+	     PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1));
+      return NULL;
+    }
+
+  header = find_next_block ();
+  memset (header->buffer, 0, sizeof (header->buffer));
+  memcpy (header->header.prefix, name, i);
+  memcpy (header->header.name, name + i + 1, length - i);
+  
+  return header;
+}
+
 /* Write a long link name, depending on the current archive format */
 static void
 write_long_link (struct tar_stat_info *st)
 {
-  if (archive_format == POSIX_FORMAT)
-    xheader_store ("linkpath", st);
-  else
-    write_long (st->link_name, GNUTYPE_LONGNAME);
+  switch (archive_format)
+    {
+    case POSIX_FORMAT:
+      xheader_store ("linkpath", st);
+      break;
+
+    case V7_FORMAT:			/* old V7 tar format */
+    case USTAR_FORMAT:
+    case STAR_FORMAT:
+      WARN ((0, 0,
+	     _("%s: link name is too long; not dumped"),
+	     quotearg_colon (st->link_name)));
+	    break;
+      
+    case OLDGNU_FORMAT:
+    case GNU_FORMAT:
+      write_gnu_long_link (st->link_name, GNUTYPE_LONGLINK);
+      break;
+
+    default:
+      abort(); /*FIXME*/
+    }
 }
 
-/* NOTE: Cross recursion between start_header and write_extended  */
+static union block *
+write_long_name (struct tar_stat_info *st)
+{
+  switch (archive_format)
+    {
+    case POSIX_FORMAT:
+      xheader_store ("path", st);
+      break;
+
+    case V7_FORMAT:		      
+    case USTAR_FORMAT:
+    case STAR_FORMAT:
+      return write_ustar_long_name (st->file_name);
+      
+    case OLDGNU_FORMAT:
+    case GNU_FORMAT:
+      write_gnu_long_link (st->file_name, GNUTYPE_LONGNAME);
+      break;
+
+    default:
+      abort(); /*FIXME*/
+    }
+  return write_short_name (st);
+}
 
 static union block *
 write_extended (union block *old_header, char type)
@@ -413,20 +530,14 @@ write_extended (union block *old_header, char type)
   char *p;
 
   if (extended_header.buffer || extended_header.stk == NULL)
-    return old_header; /* Prevent recursion */
+    return old_header; 
   
   xheader_finish (&extended_header);
   size = extended_header.size;
-  memset (&foo, 0, sizeof foo);
-  foo.stat.st_mode = S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH;
-  time (&foo.stat.st_ctime);
-  foo.stat.st_atime = foo.stat.st_ctime;
-  foo.stat.st_mtime = foo.stat.st_ctime;
-  foo.stat.st_size = size;
 
   memcpy (hp.buffer, old_header, sizeof (hp));
   
-  header = start_header ("././@PaxHeader", &foo);
+  header = start_private_header ("././@PaxHeader", size);
   header->header.typeflag = type;
 
   finish_header (header, -1);
@@ -449,11 +560,20 @@ write_extended (union block *old_header, char type)
       set_next_block_after (header);
     }
   while (size > 0);
-
+  
   xheader_destroy (&extended_header);
   header = find_next_block ();
   memcpy (header, &hp.buffer, sizeof (hp.buffer));
   return header;
+}
+
+static union block * 
+write_header_name (struct tar_stat_info *st)
+{
+  if (NAME_FIELD_SIZE <= strlen (st->file_name))
+    return write_long_name (st);
+  else
+    return write_short_name (st);
 }
 
 
@@ -468,24 +588,16 @@ start_header (const char *name, struct tar_stat_info *st)
   union block *header;
 
   name = safer_name_suffix (name, 0);
+  if (name[0] == '.' && name[1] == 0) /*FIXME!!!*/
+    return NULL;
   assign_string (&st->file_name, name);
-  
-  if (sizeof header->header.name <= strlen (name))
-    {
-      if (archive_format == POSIX_FORMAT)
-	xheader_store ("path", st);
-      else
-	write_long (name, GNUTYPE_LONGNAME);
-    }
-  
-  header = find_next_block ();
-  memset (header->buffer, 0, sizeof (union block));
+
+  header = write_header_name (st);
+  if (!header)
+    return NULL;
 
   assign_string (&current_stat_info.file_name, name);
 
-  strncpy (header->header.name, name, NAME_FIELD_SIZE);
-  header->header.name[NAME_FIELD_SIZE - 1] = '\0';
-  
   /* Override some stat fields, if requested to do so.  */
 
   if (owner_option != (uid_t) -1)
@@ -519,7 +631,7 @@ start_header (const char *name, struct tar_stat_info *st)
      above, thus making GNU tar both a universal donor and a universal
      acceptor for Paul's test.  */
 
-  if (archive_format == V7_FORMAT)
+  if (archive_format == V7_FORMAT || archive_format == USTAR_FORMAT)
     MODE_TO_CHARS (st->stat.st_mode & MODE_ALL, header->header.mode);
   else
     MODE_TO_CHARS (st->stat.st_mode, header->header.mode);
@@ -589,7 +701,8 @@ start_header (const char *name, struct tar_stat_info *st)
       break;
 
     case POSIX_FORMAT:
-    case GNU_FORMAT:
+    case USTAR_FORMAT:
+    case GNU_FORMAT:   /*FIXME?*/
       strncpy (header->header.magic, TMAGIC, TMAGLEN);
       strncpy (header->header.version, TVERSION, TVERSLEN);
       break;
@@ -1114,7 +1227,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	     files, we'd better put the / on the name.  */
 
 	  header = start_header (namebuf, &current_stat_info);
-
+	  if (!header)
+	    return;
+	  
 	  if (incremental_option)
 	    header->header.typeflag = GNUTYPE_DUMPDIR;
 	  else /* if (standard_option) */
@@ -1248,6 +1363,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 	      current_stat_info.stat.st_size = 0;
 	      header = start_header (p, &current_stat_info);
+	      if (!header)
+		return;
 	      strncpy (header->header.linkname, link_name, NAME_FIELD_SIZE);
 
 	      /* Force null termination.  */
@@ -1324,6 +1441,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 		  block_ordinal = current_block_ordinal ();
 		  header = start_header (p, &current_stat_info);
+		  if (!header)
+		    return;
 		  header->header.typeflag = GNUTYPE_SPARSE;
 		  header_moved = 1;
 
@@ -1395,14 +1514,22 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    {
 	      block_ordinal = current_block_ordinal ();
 	      header = start_header (p, &current_stat_info);
+	      if (!header)
+		return;
 	    }
 
 	  /* Mark contiguous files, if we support them.  */
 
-	  if (archive_format != V7_FORMAT && S_ISCTG (current_stat_info.stat.st_mode))
+	  if (archive_format != V7_FORMAT
+	      && S_ISCTG (current_stat_info.stat.st_mode))
 	    header->header.typeflag = CONTTYPE;
 
-	  isextended = header->oldgnu_header.isextended;
+	  if (archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
+	    isextended = header->oldgnu_header.isextended;
+	  else
+	    isextended = 0;
+	  if (isextended)
+	    abort();
 	  save_typeflag = header->header.typeflag;
 	  finish_header (header, block_ordinal);
 	  if (isextended)
@@ -1578,6 +1705,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  block_ordinal = current_block_ordinal ();
 	  current_stat_info.stat.st_size = 0;	/* force 0 size on symlink */
 	  header = start_header (p, &current_stat_info);
+	  if (!header)
+	    return;
 	  strncpy (header->header.linkname, buffer, NAME_FIELD_SIZE);
 	  header->header.linkname[NAME_FIELD_SIZE - 1] = '\0';
 	  header->header.typeflag = SYMTYPE;
@@ -1618,6 +1747,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
   block_ordinal = current_block_ordinal ();
   current_stat_info.stat.st_size = 0;	/* force 0 size */
   header = start_header (p, &current_stat_info);
+  if (!header)
+    return;
   header->header.typeflag = type;
 
   if (type != FIFOTYPE)
