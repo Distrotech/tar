@@ -925,7 +925,10 @@ print_header (off_t block_ordinal)
   if (verbose_option <= 1)
     {
       /* Just the fax, mam.  */
-      fprintf (stdlis, "%s\n", quotearg (current_file_name));
+      fprintf (stdlis, "%s", quotearg (current_file_name));
+      if (current_trailing_slash)
+	fprintf (stdlis, "/");
+      fprintf (stdlis, "\n");
     }
   else
     {
