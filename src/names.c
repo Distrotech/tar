@@ -212,7 +212,6 @@ name_add (const char *name)
 
 /* Names from external name file.  */
 
-static FILE *name_file;		/* file to read names from */
 static char *name_buffer;	/* buffer to hold the current file name */
 static size_t name_buffer_length; /* allocated length of name_buffer */
 
@@ -233,17 +232,6 @@ name_init (void)
 {
   name_buffer = xmalloc (NAME_FIELD_SIZE + 2);
   name_buffer_length = NAME_FIELD_SIZE;
-
-  if (files_from_option)
-    {
-      if (!strcmp (files_from_option, "-"))
-	{
-	  request_stdin ("-T");
-	  name_file = stdin;
-	}
-      else if (name_file = fopen (files_from_option, "r"), !name_file)
-	open_fatal (files_from_option);
-    }
 }
 
 void
@@ -251,47 +239,6 @@ name_term (void)
 {
   free (name_buffer);
   free (name_array);
-}
-
-/* Read the next filename from name_file and null-terminate it.  Put
-   it into name_buffer, reallocating and adjusting name_buffer_length
-   if necessary.  Return 0 at end of file, 1 otherwise.  */
-static int
-read_name_from_file (void)
-{
-  int character;
-  size_t counter = 0;
-
-  /* FIXME: getc may be called even if character was EOF the last time here.  */
-
-  /* FIXME: This + 2 allocation might serve no purpose.  */
-
-  while (character = getc (name_file),
-	 character != EOF && character != filename_terminator)
-    {
-      if (counter == name_buffer_length)
-	{
-	  if (name_buffer_length * 2 < name_buffer_length)
-	    xalloc_die ();
-	  name_buffer_length *= 2;
-	  name_buffer = xrealloc (name_buffer, name_buffer_length + 2);
-	}
-      name_buffer[counter++] = character;
-    }
-
-  if (counter == 0 && character == EOF)
-    return 0;
-
-  if (counter == name_buffer_length)
-    {
-      if (name_buffer_length * 2 < name_buffer_length)
-	xalloc_die ();
-      name_buffer_length *= 2;
-      name_buffer = xrealloc (name_buffer, name_buffer_length + 2);
-    }
-  name_buffer[counter] = '\0';
-
-  return 1;
 }
 
 /* Get the next name from ARGV or the file of names.  Result is in
@@ -311,40 +258,28 @@ name_next (int change_dirs)
   if (filename_terminator == '\0')
     change_dirs = 0;
 
-  while (1)
+  while (name_index != names)
     {
-      /* Get a name, either from file or from saved arguments.  */
-
-      if (name_index == names)
+      size_t source_len;
+      source = name_array[name_index++];
+      source_len = strlen (source);
+      if (name_buffer_length < source_len)
 	{
-	  if (! name_file)
-	    break;
-	  if (! read_name_from_file ())
-	    break;
-	}
-      else
-	{
-	  size_t source_len;
-	  source = name_array[name_index++];
-	  source_len = strlen (source);
-	  if (name_buffer_length < source_len)
-	    {
-	      do
-		{
-		  name_buffer_length *= 2;
-		  if (! name_buffer_length)
-		    xalloc_die ();
-		}
-	      while (name_buffer_length < source_len);
-
-	      free (name_buffer);
-	      name_buffer = xmalloc (name_buffer_length + 2);
+	  do
+	    { 	
+	      name_buffer_length *= 2;
+	      if (! name_buffer_length)
+		xalloc_die ();
 	    }
-	  strcpy (name_buffer, source);
+	  while (name_buffer_length < source_len);
+	  
+	  free (name_buffer);
+	  name_buffer = xmalloc (name_buffer_length + 2);
 	}
+      strcpy (name_buffer, source);
 
       /* Zap trailing slashes.  */
-
+      
       cursor = name_buffer + strlen (name_buffer) - 1;
       while (cursor > name_buffer && ISSLASH (*cursor))
 	*cursor-- = '\0';
@@ -359,28 +294,15 @@ name_next (int change_dirs)
 	chdir_flag = 1;
       else
 	{
-	  unquote_string (name_buffer);
+	  if (unquote_option)
+	    unquote_string (name_buffer);
 	  if (incremental_option)
 	    register_individual_file (name_buffer);
 	  return name_buffer;
 	}
     }
 
-  /* No more names in file.  */
-
-  if (name_file && chdir_flag)
-    FATAL_ERROR ((0, 0, _("Missing file name after -C")));
-
   return 0;
-}
-
-/* Close the name file, if any.  */
-void
-name_close (void)
-{
-  if (name_file && name_file != stdin)
-    if (fclose (name_file) != 0)
-      close_error (name_buffer);
 }
 
 /* Gather names in a list for scanning.  Could hash them later if we
@@ -557,14 +479,14 @@ name_match (const char *file_name)
       struct name *cursor = namelist;
 
       if (!cursor)
-	return ! files_from_option;
+	return 1;
 
       if (cursor->fake)
 	{
 	  chdir_do (cursor->change_dir);
 	  namelist = 0;
 	  nametail = &namelist;
-	  return ! files_from_option;
+	  return 1;
 	}
 
       cursor = namelist_match (file_name, length);
