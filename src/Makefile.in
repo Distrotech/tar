@@ -1,5 +1,5 @@
 # Un*x Makefile for GNU tar program.
-# Copyright (C) 1991, 1992 Free Software Foundation, Inc.
+# Copyright (C) 1991, 1992, 1993 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -165,7 +165,7 @@ distclean: clean
 	rm -f Makefile config.status
 
 realclean: distclean
-	rm -f TAGS *.info*
+	rm -f TAGS *.info* getdate.c
 
 shar: $(SRCS) $(AUX)
 	shar $(SRCS) $(AUX) | compress > tar-`sed -e '/version_string/!d' -e 's/[^0-9.]*\([0-9.]*\).*/\1/' -e q version.c`.shar.Z
