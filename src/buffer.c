@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -159,17 +159,17 @@ enum compress_type {
 struct zip_magic
 {
   enum compress_type type;
-  unsigned char *magic;
   size_t length;
-  char *program;
-  char *option;
+  char magic[sizeof "BZh" - 1];
+  char program[sizeof "compress"];
+  char option[sizeof "-Z"];
 };
 
-static struct zip_magic magic[] = {
+static struct zip_magic const magic[] = {
   { ct_none, },
-  { ct_compress, "\037\235", 2, "compress", "-Z" },
-  { ct_gzip,     "\037\213", 2, "gzip", "-z"  },
-  { ct_bzip2,    "BZh",      3, "bzip2", "-j" },
+  { ct_compress, 2, "\037\235", "compress", "-Z" },
+  { ct_gzip,     2, "\037\213", "gzip", "-z"  },
+  { ct_bzip2,    3, "BZh",      "bzip2", "-j" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
@@ -178,10 +178,10 @@ static struct zip_magic magic[] = {
 #define compress_program(t) magic[t].program
 
 /* Check if the file ARCHIVE is a compressed archive. */
-enum compress_type 
+enum compress_type
 check_compressed_archive ()
 {
-  struct zip_magic *p;
+  struct zip_magic const *p;
   bool sfr, srp;
 
   /* Prepare global data needed for find_next_block: */
@@ -205,7 +205,7 @@ check_compressed_archive ()
   for (p = magic + 1; p < magic + NMAGIC; p++)
     if (memcmp (record_start->buffer, p->magic, p->length) == 0)
       return p->type;
-  
+
   return ct_none;
 }
 
@@ -220,10 +220,10 @@ open_compressed_archive ()
   if (archive == -1)
     return archive;
 
-  if (!multi_volume_option) 
+  if (!multi_volume_option)
     {
       enum compress_type type = check_compressed_archive ();
-  
+
       if (type == ct_none)
 	return archive;
 
@@ -238,10 +238,10 @@ open_compressed_archive ()
       child_pid = sys_child_open_for_uncompress ();
       read_full_records = reading_from_pipe = true;
     }
-  
+
   records_read = 0;
   record_end = record_start; /* set up for 1st record = # 0 */
-  
+
   return archive;
 }
 
@@ -253,7 +253,7 @@ print_total_written (void)
   char bytes[sizeof (tarlong) * CHAR_BIT];
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
-  
+
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
   sprintf (bytes, TARLONG_FORMAT, written);
@@ -407,9 +407,9 @@ open_archive (enum access_mode wanted_access)
 
   read_full_records = read_full_records_option;
   reading_from_pipe = false;
-  
+
   records_read = 0;
-  
+
   if (use_compress_program_option)
     {
       switch (wanted_access)
@@ -444,7 +444,7 @@ open_archive (enum access_mode wanted_access)
 	case ACCESS_READ:
 	  {
 	    enum compress_type type;
-	    
+
 	    archive = STDIN_FILENO;
 
 	    type = check_compressed_archive (archive);
@@ -564,7 +564,7 @@ flush_write (void)
 
   if (checkpoint_option && !(++checkpoint % 10))
     /* TRANSLATORS: This is a ``checkpoint of write operation'',
-       *not* ``Writing a checkpoint''. 
+       *not* ``Writing a checkpoint''.
        E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
        *not* ``Escribiendo un punto de comprobaci@'on'' */
     WARN ((0, 0, _("Write checkpoint %d"), checkpoint));
@@ -656,7 +656,7 @@ flush_write (void)
 	FATAL_ERROR ((0, 0,
 		      _("%s: file name too long to be stored in a GNU multivolume header"),
 		      quotearg_colon (real_s_name)));
-      
+
       memset (record_start, 0, BLOCKSIZE);
 
       /* FIXME: Michael P Urban writes: [a long name file] is being written
@@ -669,7 +669,7 @@ flush_write (void)
       OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
       OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
 		    record_start->oldgnu_header.offset);
-      
+
       tmp = verbose_option;
       verbose_option = 0;
       finish_header (&current_stat_info, record_start, -1);
@@ -1050,13 +1050,13 @@ seek_archive (off_t size)
   off_t offset;
   off_t nrec, nblk;
   off_t skipped = (blocking_factor - (current_block - record_start));
-  
+
   size -= skipped * BLOCKSIZE;
-  
+
   if (size < record_size)
     return 0;
   /* FIXME: flush? */
-  
+
   /* Compute number of records to skip */
   nrec = size / record_size;
   offset = rmtlseek (archive, nrec * record_size, SEEK_CUR);
@@ -1075,7 +1075,7 @@ seek_archive (off_t size)
   records_read += nblk / blocking_factor;
   record_start_block = offset - blocking_factor;
   current_block = record_end;
- 
+
   return nblk;
 }
 
@@ -1089,7 +1089,7 @@ close_archive (void)
   sys_drain_input_pipe ();
 
   compute_duration ();
-  if (verify_option) 
+  if (verify_option)
     verify_volume ();
 
   if (rmtclose (archive) != 0)
@@ -1310,4 +1310,3 @@ new_volume (enum access_mode mode)
 
   return true;
 }
-
