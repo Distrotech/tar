@@ -375,6 +375,7 @@ void xclose (int fd);
 void archive_write_error (ssize_t) __attribute__ ((noreturn));
 void archive_read_error (void);
 off_t seek_archive (off_t size);
+void set_start_time (void);
 
 /* Module create.c.  */
 
@@ -622,6 +623,8 @@ void add_avoided_name (char const *);
 bool is_avoided_name (char const *);
 
 bool contains_dot_dot (char const *);
+
+bool removed_prefixes_p (void);
 
 #define ISFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
                     (c)->found_count == occurrence_option)
