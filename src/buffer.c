@@ -1375,7 +1375,8 @@ close_archive (void)
      might become clever enough to just stop working, once there is no more
      work to do, we might have to revise this area in such time.  */
 
-  if (access_mode == ACCESS_READ && S_ISFIFO (archive_stat.st_mode))
+  if (access_mode == ACCESS_READ && S_ISFIFO (archive_stat.st_mode) &&
+      !ending_file_option)
     while (rmtread (archive, record_start->buffer, record_size) > 0)
       continue;
 #endif
