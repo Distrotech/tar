@@ -73,7 +73,7 @@ read_and (void (*do_something) (void))
   name_gather ();
   open_archive (ACCESS_READ);
 
-  while (1)
+  while (!all_names_found ())
     {
       prev_status = status;
       status = read_header (false);
