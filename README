@@ -1,4 +1,11 @@
-Here is GNU `tar' 1.12.  Please glance through *all* sections of this
+GNU `tar' 1.12.lfs.1 is an unofficial port of GNU `tar' 1.12 to Large
+File Summit (LFS) environments like Solaris 2.6 that rely on integer
+system types longer than `long'.  Ordinary GNU `tar' 1.12 cannot handle
+files larger than 2 GB when compiled in such environments.  This port
+addresses that problem.  Please send bug reports specific to this
+unofficial version of GNU `tar' to <eggert@twinsun.com>.
+
+Please glance through *all* sections of this
 `README' file before starting configuration.  Also make sure you read files
 `ABOUT-NLS' and `INSTALL' if you are not familiar with them already.
 
