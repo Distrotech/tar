@@ -822,7 +822,7 @@ decode_options (int argc, char *const *argv)
 		&& g == (gid_t) g)
 	      group_option = g;
 	    else
-	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid group given on option")));
+	      FATAL_ERROR ((0, 0, _("Invalid group given on option")));
 	  }
 	break;
 
@@ -831,9 +831,9 @@ decode_options (int argc, char *const *argv)
 	  = mode_compile (optarg,
 			  MODE_MASK_EQUALS | MODE_MASK_PLUS | MODE_MASK_MINUS);
 	if (mode_option == MODE_INVALID)
-	  ERROR ((TAREXIT_FAILURE, 0, _("Invalid mode given on option")));
+	  FATAL_ERROR ((0, 0, _("Invalid mode given on option")));
 	if (mode_option == MODE_MEMORY_EXHAUSTED)
-	  ERROR ((TAREXIT_FAILURE, 0, _("Memory exhausted")));
+	  FATAL_ERROR ((0, 0, _("Memory exhausted")));
 	break;
 
       case NO_RECURSE_OPTION:
@@ -853,7 +853,7 @@ decode_options (int argc, char *const *argv)
 		&& u == (uid_t) u)
 	      owner_option = u;
 	    else
-	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid owner given on option")));
+	      FATAL_ERROR ((0, 0, _("Invalid owner given on option")));
 	  }
 	break;
 
