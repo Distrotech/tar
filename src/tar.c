@@ -217,6 +217,7 @@ struct option long_options[] =
   {"dereference", no_argument, NULL, 'h'},
   {"diff", no_argument, NULL, 'd'},
   {"directory", required_argument, NULL, 'C'},
+  {"ending-file", required_argument, NULL, 'E'},
   {"exclude", required_argument, NULL, EXCLUDE_OPTION},
   {"exclude-from", required_argument, NULL, 'X'},
   {"extract", no_argument, NULL, 'x'},
@@ -397,6 +398,7 @@ Local file selection:\n\
   -h, --dereference            dump instead the files symlinks point to\n\
       --no-recursion           avoid descending automatically in directories\n\
   -l, --one-file-system        stay in local file system when creating archive\n\
+  -E, --ending-file=NAME       end reading the archive before file NAME\n\
   -K, --starting-file=NAME     begin at file NAME in the archive\n"),
 	     stdout);
 #if !MSDOS
@@ -451,13 +453,13 @@ Report bugs to <tar-bugs@gnu.ai.mit.edu>.\n"),
 | Parse the options for tar.  |
 `----------------------------*/
 
-/* Available option letters are DEHIJQY and aejnqy.  Some are reserved:
+/* Available option letters are DHIJQY and aejnqy.  Some are reserved:
 
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
+  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -619,6 +621,10 @@ decode_options (int argc, char *const *argv)
 
       case 'd':
 	set_subcommand_option (DIFF_SUBCOMMAND);
+	break;
+
+      case 'E':
+	ending_file_option = optarg;
 	break;
 
       case 'f':

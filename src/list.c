@@ -28,6 +28,10 @@
   ((unsigned char) (Char) >= '0' && (unsigned char) (Char) <= '7')
 #define ISSPACE(Char) (ISASCII (Char) && isspace (Char))
 
+#ifndef FNM_LEADING_DIR
+# include <fnmatch.h>
+#endif
+
 #include "common.h"
 
 union block *current_header;	/* points to current archive header */
@@ -61,6 +65,12 @@ read_and (void (*do_something) ())
 
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
+
+	  if (ending_file_option &&
+	      fnmatch (ending_file_option, current_file_name,
+		       FNM_LEADING_DIR) == 0) {
+	    goto all_done;
+	  }
 
 	  /* FIXME: This is a quick kludge before 1.12 goes out.  */
 	  current_stat.st_mtime = TIME_FROM_OCT (current_header->header.mtime);
@@ -164,6 +174,7 @@ read_and (void (*do_something) ())
 	}
       break;
     }
+ all_done: ;
 
   apply_delayed_set_stat ();
   close_archive ();
