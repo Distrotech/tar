@@ -301,7 +301,9 @@ write_archive_buffer (void)
     {
       written += status;
       if (written == record_size
-	  || _isrmt (archive) || ! S_ISFIFO (archive_stat.st_mode))
+	  || _isrmt (archive)
+	  || ! (S_ISFIFO (archive_stat.st_mode)
+		|| S_ISSOCK (archive_stat.st_mode)))
 	break;
     }
 
@@ -1335,7 +1337,7 @@ close_archive (void)
 
   if (access_mode == ACCESS_READ
       && ! _isrmt (archive)
-      && S_ISFIFO (archive_stat.st_mode))
+      && (S_ISFIFO (archive_stat.st_mode) || S_ISSOCK (archive_stat.st_mode)))
     while (rmtread (archive, record_start->buffer, record_size) > 0)
       continue;
 #endif
