@@ -453,6 +453,7 @@ decode_options (int argc, char *const *argv)
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
   excluded = new_exclude ();
+  newer_mtime_option = TYPE_MINIMUM (time_t);
 
   owner_option = -1;
   group_option = -1;
@@ -550,11 +551,11 @@ decode_options (int argc, char *const *argv)
 
       case 'b':
 	{
-	  long l;
-	  if (! (xstrtol (optarg, (char **) 0, 10, &l, "") == LONGINT_OK
-		 && l == (blocking_factor = l)
+	  uintmax_t u;
+	  if (! (xstrtoumax (optarg, (char **) 0, 10, &u, "") == LONGINT_OK
+		 && u == (blocking_factor = u)
 		 && 0 < blocking_factor
-		 && l == (record_size = l * (size_t) BLOCKSIZE) / BLOCKSIZE))
+		 && u == (record_size = u * (size_t) BLOCKSIZE) / BLOCKSIZE))
 	    USAGE_ERROR ((0, 0, _("Invalid blocking factor")));
 	}
 	break;
@@ -653,12 +654,10 @@ decode_options (int argc, char *const *argv)
 
       case 'L':
 	{
-	  unsigned long u;
-	  if (xstrtoul (optarg, (char **) 0, 10, &u, "") != LONG_MAX)
+	  uintmax_t u;
+	  if (xstrtoumax (optarg, (char **) 0, 10, &u, "") != LONG_MAX)
 	    USAGE_ERROR ((0, 0, _("Invalid tape length")));
-	  clear_tarlong (tape_length_option);
-	  add_to_tarlong (tape_length_option, u);
-	  mult_tarlong (tape_length_option, 1024);
+	  tape_length_option = 1024 * (tarlong) u;
 	  multi_volume_option = 1;
 	}
 	break;
@@ -1155,9 +1154,6 @@ main (int argc, char *const *argv)
       break;
 
     case CREATE_SUBCOMMAND:
-      if (totals_option)
-	init_total_written ();
-
       create_archive ();
       name_close ();
 
