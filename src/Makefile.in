@@ -116,7 +116,7 @@ all:	@PROGS@
 # tar.info
 
 .c.o:
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -I. $<
+	$(CC) -c $(CPPFLAGS) $(DEFS) -I. -I$(srcdir) $(CFLAGS) $<
 
 tar:	$(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
