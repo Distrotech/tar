@@ -162,6 +162,56 @@ checkout() {
   fi
 }
 
+# Prepare temporary module list
+cat /dev/null > modlist.tmp
+trap 'rm -f modlist.tmp' 0 1 2 13 15
+
+get_modules() {
+	sed '/^[ 	]*#/d;/^[ 	]*$/d' $* >> modlist.tmp
+}
+
+# Get paxutils files
+case ${PAXUTILS_SRCDIR--} in
+-) checkout paxutils
+   PAXUTILS_SRCDIR=paxutils
+esac
+
+if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
+  get_modules $PAXUTILS_SRCDIR/gnulib.modules
+fi
+
+# copy_files srcdir dstdir
+copy_files() {
+  for file in `cat $1/DISTFILES`
+  do
+    case $file in
+    "#*")  continue;;
+    esac
+    echo "$0: Copying file $1/$file"
+    cp -p $1/$file $2/`expr $file : '.*/\(.*\)'`
+  done
+}
+
+copy_files ${PAXUTILS_SRCDIR}/m4 m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([tar_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
+
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+copy_files ${PAXUTILS_SRCDIR}/rmt rmt
+
+copy_files ${PAXUTILS_SRCDIR}/lib lib
+
+copy_files ${PAXUTILS_SRCDIR}/tests tests
+
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
@@ -171,56 +221,12 @@ esac
 
 <$GNULIB_SRCDIR/gnulib-tool || exit
 
-gnulib_modules='
-alloca
-argmatch
-argp
-backupfile
-dirname
-error
-exclude
-fileblocks
-fnmatch-gnu
-ftruncate
-full-write
-getdate
-getline
-getopt
-getpagesize
-gettext
-gettime
-hash
-human
-lchown
-localcharset
-memset
-modechange
-obstack
-quote
-quotearg
-rmdir
-safe-read
-save-cwd
-savedir
-setenv
-stdbool
-stpcpy
-strtol
-strtoul
-timespec
-unlocked-io
-utime
-xalloc
-xalloc-die
-xgetcwd
-xstrtoumax
-'
+get_modules gnulib.modules
 
+gnulib_modules=`sort -u modlist.tmp`
 previous_gnulib_modules=
 while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
   previous_gnulib_modules=$gnulib_modules
-  # In gnulib `alloca-opt' duplicates `alloca', so make sure not
-  # to use it.
   gnulib_modules=`
     (echo "$gnulib_modules"
      for gnulib_module in $gnulib_modules; do
@@ -279,44 +285,6 @@ echo "$0: Creating lib/Makefile.am"
     echo "# $gnulib_module"
     $GNULIB_SRCDIR/gnulib-tool --extract-automake-snippet $gnulib_module
  done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
-
-# Get paxutils files
-case ${PAXUTILS_SRCDIR--} in
--) checkout paxutils
-   PAXUTILS_SRCDIR=paxutils
-esac
-
-# copy_files srcdir dstdir
-copy_files() {
-  for file in `cat $1/DISTFILES`
-  do
-    case $file in
-    "#*")  continue;;
-    esac
-    echo "$0: Copying file $1/$file"
-    cp -p $1/$file $2/`expr $file : '.*/\(.*\)'`
-  done
-}
-
-copy_files ${PAXUTILS_SRCDIR}/m4 m4
-echo "$0: Creating m4/paxutils.m4"
-(echo "# This file is generated automatically. Please, do not edit."
- echo "#"
- echo "AC_DEFUN([tar_PAXUTILS],["
- cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
- echo "])") > ./m4/paxutils.m4
-
-if [ -d rmt ]; then
-   :
-else
-   mkdir rmt
-fi
-
-copy_files ${PAXUTILS_SRCDIR}/rmt rmt
-
-copy_files ${PAXUTILS_SRCDIR}/lib lib
-
-copy_files ${PAXUTILS_SRCDIR}/tests tests
 
 # Get translations.
 if test "$DOWNLOAD_PO" = "yes"; then
