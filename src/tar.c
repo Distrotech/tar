@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
-   59 Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "system.h"
 
@@ -396,7 +396,7 @@ or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
       fputs (_("\
 \n\
-Report bugs to <tar-bugs@gnu.ai.mit.edu>.\n"),
+Report bugs to <tar-bugs@gnu.org>.\n"),
 	       stdout);
     }
   exit (status);

@@ -13,7 +13,7 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
-   59 Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Implement the 'r', 'u' and 'A' options for tar.  'A' means that the
    file names are tar files, and they should simply be appended to the end
