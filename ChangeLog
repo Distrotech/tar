@@ -1,3 +1,13 @@
+2005-02-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* tests/sparse02.at: Test extracting sparse files over a pipe.
+	* tests/Makefile.am: Added sparse02.at
+	* tests/testsuite.at: Likewise
+	* tests/listed02.at: Skip the test on filesystems that do not
+	update ctime of a file when renaming it. To be reverted when
+	the new incremental mode is ready.
+	* tests/sparse01.at: Extract and compare sparse file
+
 2005-02-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c: Extract sparse files even if the output
