@@ -1,5 +1,5 @@
 /* Parse arguments from a string and prepend them to an argv.
-   Copyright 1999, 2000 Free Software Foundation, Inc.
+   Copyright 1999, 2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,6 +24,10 @@
 #include "prepargs.h"
 #include <sys/types.h>
 #include <xalloc.h>
+
+#if HAVE_STRING_H
+# include <string.h>
+#endif
 
 #include <ctype.h>
 
