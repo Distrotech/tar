@@ -169,7 +169,9 @@ print_total_written (void)
     seconds = time (0) - start_time;
 
   sprintf (bytes, TARLONG_FORMAT, written);
-  fprintf (stderr, _("Total written: %s bytes (%sB, %sB/s)\n"), bytes,
+
+  /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
+  fprintf (stderr, _("Total bytes written: %s (%sB, %sB/s)\n"), bytes,
 	   human_readable ((uintmax_t) written, abbr, 1, -1024),
 	   (0 < seconds && written / seconds < (uintmax_t) -1
 	    ? human_readable ((uintmax_t) (written / seconds), rate, 1, -1024)
