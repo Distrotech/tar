@@ -465,11 +465,6 @@ read_header (bool raw_extended_headers)
 		  np[sizeof h->prefix] = '\0';
 		  np += strlen (np);
 		  *np++ = '/';
-
-		  /* Prevent later references to current_header from
-		     mistakenly treating this as an old GNU header.
-		     This assignment invalidates h->prefix.  */
-		  current_header->oldgnu_header.isextended = 0;
 		}
 	      memcpy (np, h->name, sizeof h->name);
 	      np[sizeof h->name] = '\0';
