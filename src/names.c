@@ -440,7 +440,7 @@ name_gather (void)
 	  buffer->change_dir = change_dir;
 	  strcpy (buffer->name, name);
 	  buffer->next = 0;
-	  buffer->found = 0;
+	  buffer->found_count = 0;
 
 	  namelist = buffer;
 	  nametail = &namelist->next;
@@ -497,7 +497,7 @@ addname (char const *string, int change_dir)
 
   name->next = 0;
   name->length = length;
-  name->found = 0;
+  name->found_count = 0;
   name->regexp = 0;		/* assume not a regular expression */
   name->firstch = 1;		/* assume first char is literal */
   name->change_dir = change_dir;
@@ -566,7 +566,9 @@ name_match (const char *path)
       cursor = namelist_match (path, length);
       if (cursor)
 	{
-	  cursor->found = 1; /* remember it matched */
+	  if (!(ISSLASH (path[cursor->length]) && recursion_option)
+	      || cursor->found_count == 0)
+	    cursor->found_count++; /* remember it matched */
 	  if (starting_file_option)
 	    {
 	      free (namelist);
@@ -576,18 +578,18 @@ name_match (const char *path)
 	  chdir_do (cursor->change_dir);
 
 	  /* We got a match.  */
-	  return 1;
+	  return ISFOUND (cursor);
 	}
 
       /* Filename from archive not found in namelist.  If we have the whole
 	 namelist here, just return 0.  Otherwise, read the next name in and
-	 compare it.  If this was the last name, namelist->found will remain
-	 on.  If not, we loop to compare the newly read name.  */
+	 compare it.  If this was the last name, namelist->found_count will
+	 remain on.  If not, we loop to compare the newly read name.  */
 
-      if (same_order_option && namelist->found)
+      if (same_order_option && namelist->found_count)
 	{
 	  name_gather ();	/* read one more */
-	  if (namelist->found)
+	  if (namelist->found_count)
 	    return 0;
 	}
       else
@@ -595,14 +597,29 @@ name_match (const char *path)
     }
 }
 
-/* Returns true if all names from the namelist were processed */
+/* Returns true if all names from the namelist were processed.
+   P is the stat_info of the most recently processed entry.
+   The decision is postponed until the next entry is read if:
+
+   1) P ended with a slash (i.e. it was a directory)
+   2) P matches any entry from the namelist *and* represents a subdirectory
+   or a file lying under this entry (in the terms of directory structure).
+
+   This is necessary to handle contents of directories. */
 bool
-names_done ()
+all_names_found (struct tar_stat_info *p)
 {
   struct name const *cursor;
+  size_t len = strlen (p->file_name);
+  if (occurrence_option == 0 || p->had_trailing_slash)
+    return false;
   for (cursor = namelist; cursor; cursor = cursor->next)
-    if (cursor->regexp || (!cursor->found && !cursor->fake))
-      return false;
+    {
+      if (cursor->regexp
+	  || (!WASFOUND(cursor) && !cursor->fake)
+	  || (len >= cursor->length && ISSLASH (p->file_name[cursor->length])))
+	return false;
+    }
   return true;
 }
 
@@ -613,10 +630,16 @@ names_notfound (void)
   struct name const *cursor;
 
   for (cursor = namelist; cursor; cursor = cursor->next)
-    if (!cursor->found && !cursor->fake)
-      ERROR ((0, 0, _("%s: Not found in archive"),
-	      quotearg_colon (cursor->name)));
-
+    if (!WASFOUND(cursor) && !cursor->fake)
+      {
+	if (cursor->found_count == 0)
+	  ERROR ((0, 0, _("%s: Not found in archive"),
+		  quotearg_colon (cursor->name)));
+	else
+	  ERROR ((0, 0, _("%s: Required occurence not found in archive"),
+		  quotearg_colon (cursor->name)));
+      }
+  
   /* Don't bother freeing the name list; we're about to exit.  */
   namelist = 0;
   nametail = &namelist;
@@ -625,7 +648,7 @@ names_notfound (void)
     {
       char *name;
 
-      while (name = name_next (1), name)
+      while ((name = name_next (1)) != NULL)
 	ERROR ((0, 0, _("%s: Not found in archive"),
 		quotearg_colon (name)));
     }
@@ -714,7 +737,7 @@ merge_sort (struct name *list, int length,
 static int
 compare_names (struct name const *n1, struct name const *n2)
 {
-  int found_diff = n2->found - n1->found;
+  int found_diff = WASFOUND(n2) - WASFOUND(n1);
   return found_diff ? found_diff : strcmp (n1->name, n2->name);
 }
 
@@ -800,7 +823,7 @@ collect_and_sort_names (void)
   for (name = namelist; name; name = next_name)
     {
       next_name = name->next;
-      if (name->found || name->dir_contents)
+      if (name->found_count || name->dir_contents)
 	continue;
       if (name->regexp)		/* FIXME: just skip regexps for now */
 	continue;
@@ -818,7 +841,7 @@ collect_and_sort_names (void)
 	}
       if (S_ISDIR (statbuf.st_mode))
 	{
-	  name->found = 1;
+	  name->found_count++;
 	  add_hierarchy_to_namelist (name, statbuf.st_dev);
 	}
     }
@@ -829,7 +852,7 @@ collect_and_sort_names (void)
   namelist = merge_sort (namelist, num_names, compare_names);
 
   for (name = namelist; name; name = name->next)
-    name->found = 0;
+    name->found_count = 0;
 }
 
 /* This is like name_match, except that it returns a pointer to the
@@ -849,13 +872,13 @@ name_scan (const char *path)
 
       /* Filename from archive not found in namelist.  If we have the whole
 	 namelist here, just return 0.  Otherwise, read the next name in and
-	 compare it.  If this was the last name, namelist->found will remain
-	 on.  If not, we loop to compare the newly read name.  */
+	 compare it.  If this was the last name, namelist->found_count will
+	 remain on.  If not, we loop to compare the newly read name.  */
 
-      if (same_order_option && namelist && namelist->found)
+      if (same_order_option && namelist && namelist->found_count)
 	{
 	  name_gather ();	/* read one more */
-	  if (namelist->found)
+	  if (namelist->found_count)
 	    return 0;
 	}
       else
@@ -873,11 +896,11 @@ name_from_list (void)
 {
   if (!gnu_list_name)
     gnu_list_name = namelist;
-  while (gnu_list_name && (gnu_list_name->found | gnu_list_name->fake))
+  while (gnu_list_name && (gnu_list_name->found_count || gnu_list_name->fake))
     gnu_list_name = gnu_list_name->next;
   if (gnu_list_name)
     {
-      gnu_list_name->found = 1;
+      gnu_list_name->found_count++;
       chdir_do (gnu_list_name->change_dir);
       return gnu_list_name->name;
     }
@@ -891,7 +914,7 @@ blank_name_list (void)
 
   gnu_list_name = 0;
   for (name = namelist; name; name = name->next)
-    name->found = 0;
+    name->found_count = 0;
 }
 
 /* Yield a newly allocated file name consisting of PATH concatenated to
