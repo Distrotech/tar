@@ -1,4 +1,10 @@
+2004-02-23  Paul Eggert  <eggert@twinsun.com>
+
+	* configure.ac: Invoke AM_ICONV, to define ICONV_CONST if needed.
+
 2004-02-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	1.13.93 released.
 
 	* NEWS: Updated
 	* tests/before: Move testing of the prerequisite archive formats

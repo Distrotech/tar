@@ -273,6 +273,7 @@ AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.12.1)
 
 # Iconv
+AM_ICONV
 AC_CHECK_HEADERS(iconv.h,
                  [AC_CHECK_TYPE(iconv_t,:,
                                 AC_DEFINE(iconv_t, int,
