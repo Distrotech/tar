@@ -1,3 +1,14 @@
+2004-02-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* tests/before: Move testing of the prerequisite archive formats
+	to the separate function 'prereq'. Do not expect any arguments
+	* tests/delete03.sh: Use prereq() instead of passing arguments
+	to 'before'.
+	* tests/incremen.sh: Likewise.
+	* tests/listed01.sh: Likewise.
+	* tests/multiv01.sh: Likewise.
+
 2004-02-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Added UTF-8 support. Finished global extended header
