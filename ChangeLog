@@ -1,3 +1,10 @@
+2004-04-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Fixed test for iconv_t
+	* src/rmt.h: Bugfix by Jürgen Weigert 
+	* THANKS: Add Jürgen Weigert
+	* tests/star/README: Fixed typo
+
 2004-04-04  Paul Eggert  <eggert@twinsun.com>
 
 	Merge getdate documentation changes from coreutils.
