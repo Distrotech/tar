@@ -312,6 +312,47 @@ _rmt_rexec (char *host, char *user)
 
 #endif /* WITH_REXEC */
 
+/* Place into BUF a string representing OFLAG, which must be suitable
+   as argument 2 of `open'.  BUF must be large enough to hold the
+   result.  This function should generate a string that decode_oflag
+   can parse.  */
+static void
+encode_oflag (char *buf, int oflag)
+{
+  sprintf (buf, "%d ", oflag);
+
+  switch (oflag & O_ACCMODE)
+    {
+    case O_RDONLY: strcat (buf, "O_RDONLY"); break;
+    case O_RDWR: strcat (buf, "O_RDWR"); break;
+    case O_WRONLY: strcat (buf, "O_WRONLY"); break;
+    default: abort ();
+    }
+
+  if (oflag & O_APPEND) strcat (buf, "|O_APPEND");
+  if (oflag & O_CREAT) strcat (buf, "|O_CREAT");
+#ifdef O_DSYNC
+  if (oflag & O_DSYNC) strcat (buf, "|O_DSYNC");
+#endif
+  if (oflag & O_EXCL) strcat (buf, "|O_EXCL");
+#ifdef O_LARGEFILE
+  if (oflag & O_LARGEFILE) strcat (buf, "|O_LARGEFILE");
+#endif
+#ifdef O_NOCTTY
+  if (oflag & O_NOCTTY) strcat (buf, "|O_NOCTTY");
+#endif
+#ifdef O_NONBLOCK
+  if (oflag & O_NONBLOCK) strcat (buf, "|O_NONBLOCK");
+#endif
+#ifdef O_RSYNC
+  if (oflag & O_RSYNC) strcat (buf, "|O_RSYNC");
+#endif
+#ifdef O_SYNC
+  if (oflag & O_SYNC) strcat (buf, "|O_SYNC");
+#endif
+  if (oflag & O_TRUNC) strcat (buf, "|O_TRUNC");
+}
+
 /*------------------------------------------------------------------------.
 | Open a file (a magnetic tape device?) on the system specified in PATH,  |
 | as the given user.  PATH has the form `[USER@]HOST:FILE'.  OPEN_MODE is |
@@ -359,6 +400,13 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 	default:
 	  break;
 
+	case '\n':
+	  /* Do not allow newlines in the path, since the protocol
+	     uses newline delimiters.  */
+	  free (path_copy);
+	  errno = ENOENT;
+	  return -1;
+
 	case '@':
 	  if (!remote_user)
 	    {
@@ -390,7 +438,9 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   READ_SIDE (remote_pipe_number) = _rmt_rexec (remote_host, remote_user);
   if (READ_SIDE (remote_pipe_number) < 0)
     {
+      int e = errno;
       free (path_copy);
+      errno = e;
       return -1;
     }
 
@@ -408,8 +458,8 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 #ifdef REMOTE_SHELL
 	remote_shell = REMOTE_SHELL;
 #else
-	errno = EIO;		/* FIXME: errno should be read-only */
 	free (path_copy);
+	errno = EIO;
 	return -1;
 #endif
       }
@@ -420,14 +470,18 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
     if (pipe (to_remote[remote_pipe_number]) == -1
 	|| pipe (from_remote[remote_pipe_number]) == -1)
       {
+	int e = errno;
 	free (path_copy);
+	errno = e;
 	return -1;
       }
 
     status = fork ();
     if (status == -1)
       {
+	int e = errno;
 	free (path_copy);
+	errno = e;
 	return -1;
       }
 
@@ -473,16 +527,21 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   /* Attempt to open the tape device.  */
 
   {
-    char command_buffer[COMMAND_BUFFER_SIZE];
-
-    sprintf (command_buffer, "O%s\n%d\n", remote_file, open_mode);
+    size_t remote_file_len = strlen (remote_file);
+    char *command_buffer = xmalloc (remote_file_len + 1000);
+    sprintf (command_buffer, "O%s\n", remote_file);
+    encode_oflag (command_buffer + remote_file_len + 2, open_mode);
+    strcat (command_buffer, "\n");
     if (do_command (remote_pipe_number, command_buffer) == -1
 	|| get_status (remote_pipe_number) == -1)
       {
-	_rmt_shutdown (remote_pipe_number, errno);
+	int e = errno;
+	free (command_buffer);
 	free (path_copy);
+	_rmt_shutdown (remote_pipe_number, e);
 	return -1;
       }
+    free (command_buffer);
   }
 
   free (path_copy);
