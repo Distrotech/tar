@@ -1,5 +1,5 @@
 /* Functions for communicating with a remote tape drive.
-   Copyright 1988, 92, 94, 96, 97, 99, 2000 Free Software Foundation, Inc.
+   Copyright 1988,92,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include "system.h"
 
 #include <safe-read.h>
+#include <full-write.h>
 
 /* Try hard to get EOPNOTSUPP defined.  486/ISC has it in net/errno.h,
    3B2/SVR3 has it in sys/inet.h.  Otherwise, like on MSDOS, use EINVAL.  */
