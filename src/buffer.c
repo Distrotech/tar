@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
-   Copyright 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001 Free
-   Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
+   2003 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -66,14 +66,13 @@ static struct stat archive_stat; /* stat block for archive file */
 
 static off_t record_start_block; /* block ordinal at record_start */
 
-/* Where we write list messages (not errors, not interactions) to.  Stdout
-   unless we're writing a pipe, in which case stderr.  */
+/* Where we write list messages (not errors, not interactions) to.  */
 FILE *stdlis;
 
-static void backspace_output PARAMS ((void));
-static int new_volume PARAMS ((enum access_mode));
-static void archive_write_error PARAMS ((ssize_t)) __attribute__ ((noreturn));
-static void archive_read_error PARAMS ((void));
+static void backspace_output (void);
+static int new_volume (enum access_mode);
+static void archive_write_error (ssize_t) __attribute__ ((noreturn));
+static void archive_read_error (void);
 
 #if !MSDOS
 /* Obnoxious test to see if dimwit is trying to dump the archive.  */
@@ -137,6 +136,7 @@ print_total_written (void)
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
   double seconds;
+  int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
 #if HAVE_CLOCK_GETTIME
   struct timespec now;
@@ -150,10 +150,10 @@ print_total_written (void)
   sprintf (bytes, TARLONG_FORMAT, written);
 
   /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
-  fprintf (stderr, _("Total bytes written: %s (%sB, %sB/s)\n"), bytes,
-	   human_readable ((uintmax_t) written, abbr, 1, -1024),
+  fprintf (stderr, _("Total bytes written: %s (%s, %s/s)\n"), bytes,
+	   human_readable (written, abbr, human_opts, 1, 1),
 	   (0 < seconds && written / seconds < (uintmax_t) -1
-	    ? human_readable ((uintmax_t) (written / seconds), rate, 1, -1024)
+	    ? human_readable (written / seconds, rate, human_opts, 1, 1)
 	    : "?"));
 }
 
@@ -419,8 +419,6 @@ child_open_for_compress (void)
 	{
 	  size_t size = record_size - length;
 
-	  if (size < BLOCKSIZE)
-	    size = BLOCKSIZE;
 	  status = safe_read (STDIN_FILENO, cursor, size);
 	  if (status <= 0)
 	    break;
@@ -656,7 +654,14 @@ open_archive (enum access_mode wanted_access)
 {
   int backed_up_flag = 0;
 
-  stdlis = to_stdout_option ? stderr : stdout;
+  if (index_file_name)
+    {
+      stdlis = fopen (index_file_name, "w");
+      if (! stdlis)
+	open_error (index_file_name);
+    }
+  else
+    stdlis = to_stdout_option ? stderr : stdout;
 
   if (record_size == 0)
     FATAL_ERROR ((0, 0, _("Invalid value for record_size")));
@@ -841,10 +846,11 @@ open_archive (enum access_mode wanted_access)
 	    strcpy (record_start->header.name, volume_label_option);
 
 	  assign_string (&current_file_name, record_start->header.name);
+	  current_trailing_slash = strip_trailing_slashes (current_file_name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
 	  TIME_TO_CHARS (start_time, record_start->header.mtime);
-	  finish_header (record_start);
+	  finish_header (record_start, -1);
 #if 0
 	  current_block++;
 #endif
@@ -885,23 +891,18 @@ flush_write (void)
     {
       if (multi_volume_option)
 	{
-	  char *cursor;
-
-	  if (!save_name)
+	  if (save_name)
+	    {
+	      assign_string (&real_s_name, safer_name_suffix (save_name, 0));
+	      real_s_totsize = save_totsize;
+	      real_s_sizeleft = save_sizeleft;
+	    }
+	  else
 	    {
 	      assign_string (&real_s_name, 0);
 	      real_s_totsize = 0;
 	      real_s_sizeleft = 0;
-	      return;
 	    }
-
-	  cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
-	  while (ISSLASH (*cursor))
-	    cursor++;
-
-	  assign_string (&real_s_name, cursor);
-	  real_s_totsize = save_totsize;
-	  real_s_sizeleft = save_sizeleft;
 	}
       return;
     }
@@ -941,7 +942,7 @@ flush_write (void)
 	       volume_label_option, volno);
       TIME_TO_CHARS (start_time, record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
-      finish_header (record_start);
+      finish_header (record_start, -1);
     }
 
   if (real_s_name)
@@ -964,7 +965,7 @@ flush_write (void)
 		    record_start->oldgnu_header.offset);
       tmp = verbose_option;
       verbose_option = 0;
-      finish_header (record_start);
+      finish_header (record_start, -1);
       verbose_option = tmp;
 
       if (volume_label_option)
@@ -991,12 +992,7 @@ flush_write (void)
 	assign_string (&real_s_name, 0);
       else
 	{
-	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
-
-	  while (ISSLASH (*cursor))
-	    cursor++;
-
-	  assign_string (&real_s_name, cursor);
+	  assign_string (&real_s_name, safer_name_suffix (save_name, 0));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}
@@ -1068,12 +1064,7 @@ flush_read (void)
     {
       if (save_name)
 	{
-	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
-
-	  while (ISSLASH (*cursor))
-	    cursor++;
-
-	  assign_string (&real_s_name, cursor);
+	  assign_string (&real_s_name, safer_name_suffix (save_name, 0));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}
