@@ -1,4 +1,14 @@
 GNU tar NEWS - User visible changes.
+Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+Free Software Foundation, Inc.
+See the end for copying conditions.
+
+Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.13.26
+
+* Bug fixes.
 
 * New options --index-file, --no-overwrite-dir.  The --overwrite-dir
   option is now the default; use --no-overwrite-dir if you prefer
@@ -9,10 +19,6 @@ GNU tar NEWS - User visible changes.
   (Norwegian), ro (Romanian), sk (Slovak), zh_CN (Chinese simplified),
   zh_TW (Chinese traditional).  The code 'no' for Norwegian has been
   withdrawn; use 'nb' instead.
-
-version 1.13.26
-
-* Bug fixes.
 
 * The semantics of -o option is changed. When extracting, it
 does the same as --no-same-owner GNU tar option. This is compatible
@@ -25,6 +31,15 @@ for a file being archived. This corresponds to the UNIX98 -l option.
 The current semantics of the -l option is retained for compatibility
 with previous releases, however such usage is strongly deprecated as
 the option will change to its UNIX98 semantics in the future releases.
+
+* Removed obsolete command line options:
+** --absolute-paths superseeded by --absolute-names
+** --block-compress is not needed any longer
+** --block-size superseeded by --blocking--factor
+** --modification-time superseeded by --touch
+** --read-full-blocks supeseeded by --read-full-records
+** --record-number superseeded by --block-number
+** --version-control superseeded by --backup
 
 version 1.13.25 - Paul Eggert, 2001-09-26
 
