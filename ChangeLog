@@ -5,7 +5,9 @@
 	Exit with code 1 if any of autotools fails.
 	* lib/Makefile.tmpl: Insert Emacs magic to the first line.
 	* tests/Makefile.am: Add append.at
-
+	
+	* m4/.cvsignore: Ignore all *.m4 files
+	
 2005-01-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Rewritten handling of -T (--files-from) option. Now it
