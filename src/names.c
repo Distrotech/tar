@@ -1,5 +1,5 @@
 /* Various processing of names.
-   Copyright (C) 1988, 92, 94, 96, 97, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94, 96, 97, 98, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -48,6 +48,15 @@ static char cached_gname[GNAME_FIELD_SIZE] = "";
 static uid_t cached_uid;	/* valid only if cached_uname is not empty */
 static gid_t cached_gid;	/* valid only if cached_gname is not empty */
 
+/* These variables are valid only if nonempty.  */
+static char cached_no_such_uname[UNAME_FIELD_SIZE] = "";
+static char cached_no_such_gname[GNAME_FIELD_SIZE] = "";
+
+/* These variables are valid only if nonzero.  It's not worth optimizing
+   the case for weird systems where 0 is not a valid uid or gid.  */
+static uid_t cached_no_such_uid = 0;
+static gid_t cached_no_such_gid = 0;
+
 /*------------------------------------------.
 | Given UID, find the corresponding UNAME.  |
 `------------------------------------------*/
@@ -56,6 +65,12 @@ void
 uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
 {
   struct passwd *passwd;
+
+  if (uid != 0 && uid == cached_no_such_uid)
+    {
+      *uname = '\0';
+      return;
+    }
 
   if (!cached_uname[0] || uid != cached_uid)
     {
@@ -67,6 +82,7 @@ uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
 	}
       else
 	{
+	  cached_no_such_uid = uid;
 	  *uname = '\0';
 	  return;
 	}
@@ -83,6 +99,12 @@ gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
 {
   struct group *group;
 
+  if (gid != 0 && gid == cached_no_such_gid)
+    {
+      *gname = '\0';
+      return;
+    }
+
   if (!cached_gname[0] || gid != cached_gid)
     {
       setgrent ();		/* FIXME: why?! */
@@ -94,6 +116,7 @@ gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
 	}
       else
 	{
+	  cached_no_such_gid = gid;
 	  *gname = '\0';
 	  return;
 	}
@@ -110,6 +133,10 @@ uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
 {
   struct passwd *passwd;
 
+  if (cached_no_such_uname[0]
+      && strncmp (uname, cached_no_such_uname, UNAME_FIELD_SIZE) == 0)
+    return 0;
+
   if (!cached_uname[0]
       || uname[0] != cached_uname[0]
       || strncmp (uname, cached_uname, UNAME_FIELD_SIZE) != 0)
@@ -121,7 +148,10 @@ uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
 	  strncpy (cached_uname, uname, UNAME_FIELD_SIZE);
 	}
       else
-	return 0;
+	{
+	  strncpy (cached_no_such_uname, uname, UNAME_FIELD_SIZE);
+	  return 0;
+	}
     }
   *uidp = cached_uid;
   return 1;
@@ -136,6 +166,10 @@ gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *gidp)
 {
   struct group *group;
 
+  if (cached_no_such_gname[0]
+      && strncmp (gname, cached_no_such_gname, GNAME_FIELD_SIZE) == 0)
+    return 0;
+
   if (!cached_gname[0]
       || gname[0] != cached_gname[0]
       || strncmp (gname, cached_gname, GNAME_FIELD_SIZE) != 0)
@@ -147,7 +181,10 @@ gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *gidp)
 	  strncpy (cached_gname, gname, GNAME_FIELD_SIZE);
 	}
       else
-	return 0;
+	{
+	  strncpy (cached_no_such_gname, gname, GNAME_FIELD_SIZE);
+	  return 0;
+	}
     }
   *gidp = cached_gid;
   return 1;
