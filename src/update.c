@@ -30,7 +30,7 @@ extern union block *current_block;
 /* We've hit the end of the old stuff, and its time to start writing new
    stuff to the tape.  This involves seeking back one record and
    re-writing the current record (which has been changed).  */
-int time_to_start_writing = 0;
+int time_to_start_writing;
 
 /* Pointer to where we started to write in the first record we write out.
    This is used if we can't backspace the output and have to null out the
@@ -72,8 +72,7 @@ append_file (char *path)
 	      buffer_size = bytes_left;
 	      status = buffer_size % BLOCKSIZE;
 	      if (status)
-		memset (start->buffer + bytes_left, 0,
-			(size_t) (BLOCKSIZE - status));
+		memset (start->buffer + bytes_left, 0, BLOCKSIZE - status);
 	    }
 
 	  status = safe_read (handle, start->buffer, buffer_size);
