@@ -1412,6 +1412,9 @@ see the file named COPYING for details."));
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
 
+  if (utc_option)
+    verbose_option = 2;
+  
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */
 
