@@ -18,7 +18,7 @@ compare() {
 	mv ${tempfile}.1 ${tempfile}
     fi
     
-    if eval test -z "\${${1}_regex}" ; then
+    if eval test -z \"\${${1}_regex}\" ; then
 	cmp -s ${tempfile}0 ${tempfile} || exit 1
     else
 	awk '{print NR " " $0}' ${tempfile}0 > ${tempfile}.1
