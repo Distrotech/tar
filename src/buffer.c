@@ -515,6 +515,12 @@ open_archive(reading)
 	ar_last   = ar_block + blocking;
 	ar_reading = reading;
 
+	if (f_multivol && f_verify)
+	  {
+	    msg ("cannot verify multi-volume archives");
+	    exit (EX_ARGSBAD);
+	  }
+	
 	if (f_compress) {
 		if(reading==2 || f_verify) {
 			msg("cannot update or verify compressed archives");
