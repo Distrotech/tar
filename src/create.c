@@ -922,6 +922,47 @@ dump_regular_finish (int fd, struct tar_stat_info *st, time_t original_ctime)
     }
 }
 
+/* Look in directory DIRNAME for a cache directory tag file
+   with the magic name "CACHEDIR.TAG" and a standard header,
+   as described at:
+	http://www.brynosaurus.com/cachedir
+   Applications can write this file into directories they create
+   for use as caches containing purely regenerable, non-precious data,
+   allowing us to avoid archiving them if --exclude-caches is specified. */
+
+#define CACHEDIR_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
+#define CACHEDIR_SIGNATURE_SIZE (sizeof CACHEDIR_SIGNATURE - 1)
+
+static bool
+check_cache_directory (char *dirname)
+{
+  static char tagname[] = "CACHEDIR.TAG";
+  char *tagpath;
+  int fd;
+  int tag_present = false;
+
+  tagpath = xmalloc (strlen (dirname) + strlen (tagname) + 1);
+  strcpy (tagpath, dirname);
+  strcat (tagpath, tagname);
+
+  fd = open (tagpath, O_RDONLY);
+  if (fd >= 0)
+    {
+      static char tagbuf[CACHEDIR_SIGNATURE_SIZE];
+      
+      if (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE)
+	  == CACHEDIR_SIGNATURE_SIZE
+	  && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0)
+	tag_present = true;
+
+      close (fd);
+    }
+
+  free (tagpath);
+
+  return tag_present;
+}
+
 static void
 dump_dir0 (char *directory,
 	   struct tar_stat_info *st, int top_level, dev_t parent_device)
@@ -1008,6 +1049,16 @@ dump_dir0 (char *directory,
       if (verbose_option)
 	WARN ((0, 0,
 	       _("%s: file is on a different filesystem; not dumped"),
+	       quotearg_colon (st->orig_file_name)));
+      return;
+    }
+
+  if (exclude_caches_option
+      && check_cache_directory(st->orig_file_name))
+    {
+      if (verbose_option)
+	WARN ((0, 0,
+	       _("%s: contains a cache directory tag; not dumped"),
 	       quotearg_colon (st->orig_file_name)));
       return;
     }
