@@ -28,6 +28,8 @@
 #define obstack_chunk_free free
 #include <obstack.h>
 
+#include <fnmatch.h>
+
 bool xheader_protected_pattern_p (const char *pattern);
 bool xheader_protected_keyword_p (const char *keyword);
 
@@ -592,7 +594,6 @@ void
 xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
 {
   struct xhdr_tab const *t;
-  char *value;
   
   if (extended_header.buffer)
     return;
@@ -899,7 +900,7 @@ size_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
   if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
-    st->stat.st_size = u;
+    st->archive_file_size = st->stat.st_size = u;
 }
 
 static void
@@ -942,7 +943,7 @@ sparse_size_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
   if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
-    st->archive_file_size = u;
+    st->stat.st_size = u;
 }
 
 static void
@@ -996,7 +997,7 @@ sparse_numbytes_decoder (struct tar_stat_info *st, char const *arg)
     {
       if (st->sparse_map_avail == st->sparse_map_size)
 	{
-	  size_t newsize = st->sparse_map_size *= 2;
+	  st->sparse_map_size *= 2;
 	  st->sparse_map = xrealloc (st->sparse_map,
 				     st->sparse_map_size
 				     * sizeof st->sparse_map[0]);
