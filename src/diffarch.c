@@ -620,7 +620,7 @@ diff_sparse_files (filesize)
 		msg_perror ("can't read %s", current_file_name);
 	      else
 		fprintf (msg_file, "%s: could only read %d of %d bytes\n",
-			 err, numbytes);
+			 current_file_name, err, numbytes);
 	      break;
 	    }
 	  if (bcmp (buf, datarec->charptr, RECORDSIZE))
@@ -639,7 +639,7 @@ diff_sparse_files (filesize)
 	    msg_perror ("can't read %s", current_file_name);
 	  else
 	    fprintf (msg_file, "%s: could only read %d of %d bytes\n",
-		     err, numbytes);
+		     current_file_name, err, numbytes);
 	  break;
 	}
 
