@@ -327,7 +327,7 @@ Removing leading `/' from absolute path names in the archive")));
   if (group_option != (gid_t) -1)
     st->st_gid = group_option;
   if (mode_option)
-    st->st_mode = ((st->st_mode & S_IFMT)
+    st->st_mode = ((st->st_mode & ~MODE_ALL)
 		   | mode_adjust (st->st_mode, mode_option));
 
   /* Paul Eggert tried the trivial test ($WRITER cf a b; $READER tvf a)
@@ -1516,9 +1516,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
     type = BLKTYPE;
 #endif
 
-  /* Avoid screwy apollo lossage where S_IFIFO == S_IFSOCK.  */
-
-#if (_ISP__M68K == 0) && (_ISP__A88K == 0) && defined(S_ISFIFO)
+#ifdef S_ISFIFO
   else if (S_ISFIFO (current_stat.st_mode))
     type = FIFOTYPE;
 #endif
@@ -1544,7 +1542,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 
   header->header.typeflag = type;
 
-#if defined(S_IFBLK) || defined(S_IFCHR)
+#if defined S_ISBLK || defined S_ISCHR
   if (type != FIFOTYPE)
     {
       MAJOR_TO_OCT (major (current_stat.st_rdev), header->header.devmajor);
