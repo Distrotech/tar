@@ -565,16 +565,25 @@ from_header (char const *where0, size_t digs, char const *type,
 	}
 
       /* Parse the output of older, unportable tars, which generate
-	 negative values in two's complement octal.  */
-      if ((overflow || maxval < value) && '4' <= *where1)
+         negative values in two's complement octal.  If the leading
+         nonzero digit is 1, we can't recover the original value
+         reliably; so do this only if the digit is 2 or more.  This
+         catches the common case of 32-bit negative time stamps.  */
+      if ((overflow || maxval < value) && '2' <= *where1)
 	{
 	  /* Compute the negative of the input value, assuming two's
 	     complement.  */
-	  for (value = 0, where = where1, overflow = 0; ; )
+	  int digit = (*where1 - '0') | 4;
+	  overflow = 0;
+	  value = 0;
+	  where = where1;
+	  for (;;)
 	    {
-	      value += 7 - (*where++ - '0');
+	      value += 7 - digit;
+	      where++;
 	      if (where == lim || ! ISODIGIT (*where))
 		break;
+	      digit = *where - '0';
 	      overflow |= value ^ (value << LG_8 >> LG_8);
 	      value <<= LG_8;
 	    }
