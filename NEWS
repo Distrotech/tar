@@ -1,9 +1,29 @@
-Current Version: 1.11.1
+Current Version: 1.11.2
 
+
+User-visible changes since 1.11.1:
+
+o Superfluous "Reading dirname" was a bug; fixed.
+o Incompatibility problems with a bug on Solaris are fixed.
+o New option --gzip (aliases are --ungzip and -z); calls gzip instead
+  of compress.  Also, --use-compress-program lets you specify any
+  compress program.  --compress-block is renamed --block-compress and
+  now requires one of the three compression options to be specified.
+o Several error messages are cleaned up.
+o Directory owners are now set properly when running as root.
+o Provide DUMP_REMIND_SCRIPT in backup-specs as a possible option 
+  for --info-script.
+o Behave better with broken rmt servers.
+o Dump scripts no longer use --atime-preserve; this causes a nasty probem.
+o Several Makefile cleanups.
+
+Version 1.11.1
 User-visible changes since 1.11:
 
 o Many bug fixes
 
+================
+Version 1.11
 User-visible changes since 1.10:
 
 o Many bug fixes
@@ -58,7 +78,7 @@ o Longnames support is redone differently--long name info directly
 
 
 ==================
-
+Version 1.10:
 User-visible changes since 1.09:
 
 Filename to -G is optional.  -C works right.  
