@@ -96,8 +96,8 @@ AC_CHECK_TYPE(dev_t, unsigned)
 AC_CHECK_TYPE(ino_t, unsigned)
 
 gt_TYPE_SSIZE_T
+gl_AC_TYPE_INTMAX_T
 jm_AC_TYPE_UINTMAX_T
-
 
 # gnulib modules
 tar_GNULIB
@@ -175,6 +175,9 @@ fi
 
 AC_MSG_CHECKING(for default archive format)
 
+AC_ARG_VAR([DEFAULT_ARCHIVE_FORMAT],
+           [Set the default archive format. Allowed values are: V7, OLDGNU, USTAR, POSIX, GNU. Default is GNU])
+
 if test -z "$DEFAULT_ARCHIVE_FORMAT"; then
   DEFAULT_ARCHIVE_FORMAT="GNU"
 fi
@@ -188,6 +191,8 @@ AC_MSG_RESULT($DEFAULT_ARCHIVE_FORMAT)
 
 AC_MSG_CHECKING(for default archive)
 
+AC_ARG_VAR([DEFAULT_ARCHIVE],
+           [Set the name of the default archive (default: -)])
 if test -z "$DEFAULT_ARCHIVE"; then
   DEFAULT_ARCHIVE=-
 else
@@ -221,11 +226,20 @@ AC_DEFINE_UNQUOTED(DEFAULT_ARCHIVE, "$DEFAULT_ARCHIVE",
   [Define to a string giving the full name of the default archive file.])
 AC_MSG_RESULT($DEFAULT_ARCHIVE)
 
+AC_ARG_VAR([DEFAULT_BLOCKING],
+           [Define default blocking factor (default: 20)])
 AC_MSG_CHECKING(for default blocking)
 DEFAULT_BLOCKING=${DEFAULT_BLOCKING-20}
 AC_DEFINE_UNQUOTED(DEFAULT_BLOCKING, $DEFAULT_BLOCKING,
   [Define to a number giving the default blocking size for archives.])
 AC_MSG_RESULT($DEFAULT_BLOCKING)
+
+AC_ARG_VAR([DEFAULT_RMT_COMMAND],
+           [Define full pathname of rmt program.])
+if test "x$DEFAULT_RMT_COMMAND" != x; then
+  AC_DEFINE_UNQUOTED(DEFAULT_RMT_COMMAND, "$DEFAULT_RMT_COMMAND",
+                     [Define full pathname of rmt program.])
+fi
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
@@ -242,6 +256,17 @@ AC_CHECK_TYPE(iconv_t,:,
 # include <iconv.h>
 #endif
 ])
+
+AC_SUBST(BACKUP_LIBEXEC_SCRIPTS)
+AC_SUBST(BACKUP_SBIN_SCRIPTS)
+AC_ARG_ENABLE(backup-scripts,
+	      AC_HELP_STRING([--enable-backup-scripts],
+                             [Create and install backup and restore scripts]),
+              [case $enableval in
+	       yes) BACKUP_LIBEXEC_SCRIPTS='$(BACKUP_LIBEXEC_SCRIPTS_LIST)'
+                    BACKUP_SBIN_SCRIPTS='$(BACKUP_SBIN_SCRIPTS_LIST)'
+                    ;;
+               esac])
 
 AC_SUBST(BACKUP_SED_COND)
 if date +%Y-%m-%d 2>/dev/null >&2; then
