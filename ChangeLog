@@ -1,3 +1,36 @@
+2004-02-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* configure.ac: Removed spurious AC_CHECK_LIB(iconv)
+	* src/common.h (utc_option): new global
+	(enum old_files.KEEP_NEWER_FILES): New element
+	* src/extract.c: Handle --keep-newer-files option
+	* src/list.c (tartime): Print UTC if --utc was given.
+	* src/tar.c: New options: --utc and keep-newer-files
+	
+	* tests/Makefile.am: Added new tests
+	* tests/after: Rewritten
+	* tests/before: Rewritten
+	* tests/preset.in: Rewritten
+	* tests/delete03.sh: Accomodate for the new testsuite logic
+	* tests/gzip.sh: Likewise
+	* tests/incremen.sh: Likewise
+	* tests/listed01.sh: Likewise
+	* tests/multiv01.sh: Likewise
+	* tests/old.sh: Likewise
+	* tests/options.sh: Likewise
+	* tests/version.sh: Likewise
+	* tests/volume.sh: Likewise
+	
+	* tests/star: New directory
+	* tests/star/README: New file
+	* tests/star/gtarfail.sh: New file
+	* tests/star/gtarfail2.sh: New file
+	* tests/star/pax-big-10g.sh: New file
+	* tests/star/qucktest.sh: New file
+	* tests/star/ustar-big-2g.sh: New file
+	* tests/star/ustar-big-8g.sh: New file
+
 2004-02-26  Paul Eggert  <eggert@twinsun.com>
 
 	* doc/tar.texi (dircategory Individual utilities): Append period,
