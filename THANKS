@@ -32,6 +32,7 @@ Andreas Haumer		andreas@vlsivie.tuwien.ac.at
 Andreas Jaeger		aj@arthur.pfalz.de
 Andreas Koppenhoefer	koppenh@trick.informatik.uni-stuttgart.de
 Andreas Reuter		ar205@bonzo.geowiss.nat.tu-bs.de
+Andreas Schuldei        andreas@schuldei.org
 Andreas Schwab		schwab@issan.informatik.uni-dortmund.de
 Andrew A. Ivanov	ivanov@mics.msu.su
 Andrew J. Schorr	schorr@ead.dsa.com
@@ -483,10 +484,16 @@ Werner Almesberger	werner.almesberger@lrc.di.epfl.ch
 William Bader		william@nscs.fast.net
 William J. Eaton	wje@hoffman.rstnu.bcm.tmc.edu
 William Kucharski	kucharsk@netcom.com
-Wlodzimierz Jan Martin	wjm@pg.gda.pl
+Włodzimierz Jan Martin	wjm@pg.gda.pl
 Wojciech Polak		polak@gnu.org
 Wolfgang Rupprecht	wolfgang@wsrcc.com
 Wolfram Gloger		Wolfram.Gloger@dent.med.uni-muenchen.de
 Wolfram Wagner		ww@mpi-sb.mpg.de
 Yasushi Suzudo		SGR00413@niftyserve.or.jp
 Yu-Min Liang		min@taz.ho.att.com
+
+
+;;;; Local variables:
+;;;; mode: Fundamental
+;;;; buffer-file-coding-system: utf-8
+;;;; End:
