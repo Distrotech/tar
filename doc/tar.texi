@@ -131,11 +131,6 @@
 @set xref-blocking-factor @xref{Blocking Factor}
 @set pxref-blocking-factor @pxref{Blocking Factor}
 
-@set op-bzip2 @kbd{--bzip2} (@kbd{--bunzip2})
-@set ref-bzip2 @ref{gzip}
-@set xref-bzip2 @xref{gzip}
-@set pxref-bzip2 @pxref{gzip}
-
 @set op-checkpoint @kbd{--checkpoint}
 @set ref-checkpoint @ref{verbose}
 @set xref-checkpoint @xref{verbose}
@@ -1094,7 +1089,7 @@ device, such as a tape drive.  However, some of the later examples in
 the tutorial and next chapter will not work on tape drives.
 Additionally, working with tapes is much more complicated than working
 with hard disks.  For these reasons, the tutorial does not cover working
-with tape drives.  @xref{Media} for complete information on using
+with tape drives.  @xref{Media}, for complete information on using
 @code{tar} archives with tape drives.
 
 @FIXME{this is a cop out.  need to add some simple tape drive info.}
@@ -1431,7 +1426,7 @@ short forms.  With short forms, if you type commands in the wrong order
 (even if you type them correctly in all other ways), you may end up with
 results you don't expect.  For this reason, it is a good idea to get
 into the habit of typing options in the order that makes inherent sense.
-@xref{short create} for more information on this.
+@xref{short create}, for more information on this.
 
 In this example, you type the command as shown above: @samp{--create}
 is the operation which creates the new archive
@@ -2518,17 +2513,6 @@ with the block number in the archive file.  @FIXME-xref{}.
 Sets the blocking factor @code{tar} uses to @var{blocking} x 512 bytes per
 record.  @FIXME-xref{}.
 
-@item --bunzip2
-
-(See @samp{--bzip2}; @FIXME-pxref{}.)
-
-@item --bzip2
-@itemx --bunzip2
-@itemx --unbzip2
-
-This option tells @code{tar} to read or write archives through @code{bzip2}.
-@FIXME-xref{}.
-
 @item --checkpoint
 
 This option directs @code{tar} to print periodic checkpoint messages as it
@@ -2880,10 +2864,6 @@ Displays the total number of bytes written after creating an archive.
 Sets the modification time of extracted files to the extraction time,
 rather than the modification time stored in the archive.
 @xref{Writing}.
-
-@item --unbzip2
-
-(See @samp{--bzip2}; @FIXME-pxref{}.)
 
 @item --uncompress
 
@@ -3660,7 +3640,7 @@ The newest version of @file{blues} is now at the end of the archive
 (note the different creation dates and file sizes).  If you extract
 the archive, the older version of the file @file{blues} will be
 overwritten by the newer version.  You can confirm this by extracting
-the archive and running @samp{ls} on the directory.  @xref{Writing}
+the archive and running @samp{ls} on the directory.  @xref{Writing},
 for more information.  (@emph{Please note:} This is the case unless
 you employ the @value{op-backup} option; @FIXME-ref{Multiple Members
 with the Same Name}.)
@@ -3730,7 +3710,7 @@ updating it.
 
 (The reason @code{tar} does not overwrite the older file when updating
 it is because writing to the middle of a section of tape is a difficult
-process.  Tapes are not designed to go backward.  @xref{Media} for more
+process.  Tapes are not designed to go backward.  @xref{Media}, for more
 information about tapes.
 
 @value{op-update} is not suitable for performing backups for two
@@ -3824,7 +3804,7 @@ from the target archive before each new archive is appended.  If you use
 @code{cat} to combine the archives, the result will not be a valid
 @code{tar} format archive.  If you need to retrieve files from an
 archive that was added to using the @code{cat} utility, use the
-@value{op-ignore-zeros} option.  @xref{Ignore Zeros} for further
+@value{op-ignore-zeros} option.  @xref{Ignore Zeros}, for further
 information on dealing with archives improperly combined using the
 @code{cat} shell utility.
 
@@ -6767,10 +6747,6 @@ loose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @table @kbd
-@itemx --bzip2
-@itemx --unbzip2
-Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
-
 @item -Z
 @itemx --compress
 @itemx --uncompress
@@ -6802,9 +6778,6 @@ more information on these operations.
 If there is no compress utility available, @code{tar} will report an error.
 @strong{Please note} that the @code{compress} program may be covered by
 a patent, and therefore we recommend you stop using it.
-
-@value{op-bzip2} acts like @value{op-compress}, except that it uses
-the @code{bzip2} utility.
 
 @table @kbd
 @item --compress
