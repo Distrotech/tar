@@ -1,3 +1,8 @@
+2004-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* tests/listed02.sh: Do not depend on any particular ordering
+	of output.
+
 2004-09-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/tar.texi: Document the use of -C option in
