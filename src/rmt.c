@@ -262,7 +262,7 @@ Manipulate a tape drive, accepting commands from a remote process.\n\
   --version  Output version info.\n\
   --help  Output this help.\n"),
 	      program_name);
-      fputs (_("\nReport bugs to <bug-tar@gnu.org>.\n"), stdout);
+      printf (_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
     }
 
   exit (status);
@@ -293,7 +293,7 @@ main (int argc, char *const *argv)
       
     case 'v':
       {
-	printf ("rmt (GNU %s) %s\n", PACKAGE, VERSION);
+	printf ("rmt (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
 	printf (_("Copyright (C) %d Free Software Foundation, Inc.\n"), 2003);
 	puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
