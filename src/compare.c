@@ -279,7 +279,7 @@ diff_archive (void)
 
       /* Need to treat sparse files completely differently here.  */
 
-      if (current_header->header.typeflag == GNUTYPE_SPARSE)
+      if (current_stat_info.is_sparse)
 	sparse_diff_file (diff_handle, &current_stat_info);
       else
 	{
