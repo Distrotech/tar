@@ -1,6 +1,11 @@
+2003-11-03  Paul Eggert  <eggert@twinsun.com>
+
+	* src/xheader.c (xhdr_tab): Include bounds in forward declaration,
+	as C89 and C99 require this.
+
 2003-10-26  Paul Eggert  <eggert@twinsun.com>
 
-	* system.c (sys_spawn_shell): Cast trailing null to (char *).
+	* src/system.c (sys_spawn_shell): Cast trailing null to (char *).
 	Bug reported by Christian Weisgerber.
 
 2003-10-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>

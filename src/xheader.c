@@ -36,7 +36,10 @@ struct xhdr_tab
   void (*decoder) (struct tar_stat_info *, char const *);
 };
 
-static struct xhdr_tab const xhdr_tab[];
+/* This declaration must specify the number of elements in xhdr_tab,
+   because ISO C99 section 6.9.2 prohibits a tentative definition that
+   has both internal linkage and incomplete type.  */
+static struct xhdr_tab const xhdr_tab[13];
 
 static struct xhdr_tab const *
 locate_handler (char const *keyword)
@@ -419,6 +422,9 @@ static struct xhdr_tab const xhdr_tab[] = {
   { "size",	size_coder,	size_decoder	},
   { "uid",	uid_coder,	uid_decoder	},
   { "uname",	uname_coder,	uname_decoder	},
+
+  /* The number of entries in xhdr_tab must agree with the array
+     bounds in xhdr_tab's forward declaration.  */
 
 #if 0 /* GNU private keywords (not yet implemented) */
   /* Sparse file handling */
