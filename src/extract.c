@@ -114,7 +114,6 @@ extr_init (void)
   we_are_root = geteuid () == 0;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
-  xalloc_fail_func = extract_finish;
 
   /* Save 'root device' to avoid purging mount points.
      FIXME: Should the same be done after handling -C option ? */
@@ -1209,4 +1208,11 @@ fatal_exit (void)
   extract_finish ();
   error (TAREXIT_FAILURE, 0, _("Error is not recoverable: exiting now"));
   abort ();
+}
+
+void
+xalloc_die (void)
+{
+  error (0, 0, "%s", _("memory exhausted"));
+  fatal_exit ();
 }
