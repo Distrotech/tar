@@ -406,6 +406,11 @@ write_short_name (struct tar_stat_info *st)
   return header;
 }
 
+#define FILL(field,byte) do {            \
+  memset(field, byte, sizeof(field)-1);  \
+  (field)[sizeof(field)-1] = 0;          \
+} while (0)
+  
 /* Write a GNUTYPE_LONGLINK or GNUTYPE_LONGNAME block.  */
 static void
 write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
@@ -413,8 +418,22 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   size_t size = strlen (p) + 1;
   size_t bufsize;
   union block *header;
-
+  char *tmpname;
+  
   header = start_private_header ("././@LongLink", size);
+  FILL(header->header.mtime, '0');
+  FILL(header->header.mode, '0');
+  FILL(header->header.uid, '0');
+  FILL(header->header.gid, '0');
+  FILL(header->header.devmajor, 0);
+  FILL(header->header.devminor, 0);
+  uid_to_uname (0, &tmpname);
+  UNAME_TO_CHARS (tmpname, header->header.uname);
+  free (tmpname);
+  gid_to_gname (0, &tmpname);
+  GNAME_TO_CHARS (tmpname, header->header.gname);
+  free (tmpname);
+  
   strcpy (header->header.magic, OLDGNU_MAGIC);
   header->header.typeflag = type;
   finish_header (st, header, -1);
@@ -664,7 +683,7 @@ start_header (struct tar_stat_info *st)
       else
 	MAJOR_TO_CHARS (st->devminor, header->header.devminor);
     }
-  else
+  else if (archive_format != GNU_FORMAT && archive_format != OLDGNU_FORMAT)
     {
       MAJOR_TO_CHARS (0, header->header.devmajor);
       MINOR_TO_CHARS (0, header->header.devminor);
