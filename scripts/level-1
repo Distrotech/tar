@@ -29,7 +29,7 @@ if [ "$1" != "now" ]; then
    fi
    pausetime=`date | awk '{hr=substr($4,1,2);\\
       mn=substr($4,4,2);\\
-      if((hr+0)<spec)\\
+      if((hr+0)<spec+0)\\
          print 3600*(spec-hr)-60*mn;\\
       else\\
          print 3600*(spec+(24-hr))-60*mn; }' spec=$spec`
