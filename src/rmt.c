@@ -25,8 +25,6 @@ char copyright[] =
 static char sccsid[] = "@(#)rmt.c	5.4 (Berkeley) 6/29/88";
 #endif /* not lint */
 
-/* JF added #ifdef about SO_RCVBUF in attempt to make this run on more
-   machines.  Maybe it'll work */
 /*
  * rmt
  */
@@ -34,7 +32,11 @@ static char sccsid[] = "@(#)rmt.c	5.4 (Berkeley) 6/29/88";
 #include <sgtty.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#ifdef GENTAPE			/* e.g. ISC UNIX */
+#include <sys/gentape.h>
+#else
 #include <sys/mtio.h>
+#endif
 #include <errno.h>
 
 #if defined (i386) && defined (AIX)
@@ -167,6 +169,7 @@ top:
 	case 'I':
 		getstring(op); getstring(count);
 		DEBUG2("rmtd: I %s %s\n", op, count);
+#ifdef MTIOCTOP
 		{ struct mtop mtop;
 		  mtop.mt_op = atoi(op);
 		  mtop.mt_count = atoi(count);
@@ -174,17 +177,21 @@ top:
 			goto ioerror;
 		  rval = mtop.mt_count;
 		}
+#endif
 		goto respond;
 
 	case 'S':		/* status */
 		DEBUG("rmtd: S\n");
-		{ struct mtget mtget;
+		{
+#ifdef MTIOCGET
+		  struct mtget mtget;
 		  if (ioctl(tape, MTIOCGET, (char *)&mtget) < 0)
 			goto ioerror;
 		  rval = sizeof (mtget);
 		  (void) sprintf(resp, "A%d\n", rval);
 		  (void) write(1, resp, strlen(resp));
 		  (void) write(1, (char *)&mtget, sizeof (mtget));
+#endif
 		  goto top;
 		}
 
