@@ -115,6 +115,36 @@ clear_read_error_count (void)
   read_error_count = 0;
 }
 
+
+/* Time-related functions */
+
+double duration;
+
+void
+set_start_time ()
+{
+#if HAVE_CLOCK_GETTIME
+  if (clock_gettime (CLOCK_REALTIME, &start_timespec) != 0)
+#endif
+    start_time = time (0);
+}
+
+void
+compute_duration ()
+{
+#if HAVE_CLOCK_GETTIME
+  struct timespec now;
+  if (clock_gettime (CLOCK_REALTIME, &now) == 0)
+    duration += ((now.tv_sec - start_timespec.tv_sec)
+		 + (now.tv_nsec - start_timespec.tv_nsec) / 1e9);
+  else
+#endif
+    duration += time (NULL) - start_time;
+  set_start_time ();
+}
+
+
+
 void
 print_total_written (void)
 {
@@ -122,25 +152,16 @@ print_total_written (void)
   char bytes[sizeof (tarlong) * CHAR_BIT];
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
-  double seconds;
+  
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
-
-#if HAVE_CLOCK_GETTIME
-  struct timespec now;
-  if (clock_gettime (CLOCK_REALTIME, &now) == 0)
-    seconds = ((now.tv_sec - start_timespec.tv_sec)
-	       + (now.tv_nsec - start_timespec.tv_nsec) / 1e9);
-  else
-#endif
-    seconds = time (0) - start_time;
 
   sprintf (bytes, TARLONG_FORMAT, written);
 
   /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
   fprintf (stderr, _("Total bytes written: %s (%s, %s/s)\n"), bytes,
 	   human_readable (written, abbr, human_opts, 1, 1),
-	   (0 < seconds && written / seconds < (uintmax_t) -1
-	    ? human_readable (written / seconds, rate, human_opts, 1, 1)
+	   (0 < duration && written / duration < (uintmax_t) -1
+	    ? human_readable (written / duration, rate, human_opts, 1, 1)
 	    : "?"));
 }
 
@@ -934,7 +955,8 @@ close_archive (void)
 
   sys_drain_input_pipe ();
 
-  if (verify_option)
+  compute_duration ();
+  if (verify_option) 
     verify_volume ();
 
   if (rmtclose (archive) != 0)
