@@ -176,6 +176,9 @@ GLOBAL const char *info_script_option;
 
 GLOBAL bool interactive_option;
 
+/* If nonzero, extract only Nth occurrence of each named file */
+GLOBAL uintmax_t occurrence_option;
+
 enum old_files
 {
   DEFAULT_OLD_FILES, /* default */
@@ -295,7 +298,9 @@ struct name
   {
     struct name *next;
     size_t length;		/* cached strlen(name) */
-    char found;			/* a matching file has been found */
+    uintmax_t found_count;	/* number of times a matching file has
+				   been found */
+    int isdir;
     char firstch;		/* first char is literally matched */
     char regexp;		/* this name is a regexp, not literal */
     int change_dir;		/* set with the -C option */
@@ -560,7 +565,6 @@ void name_close (void);
 void name_gather (void);
 struct name *addname (char const *, int);
 int name_match (const char *);
-bool names_done (void);
 void names_notfound (void);
 void collect_and_sort_names (void);
 struct name *name_scan (const char *);
@@ -569,6 +573,7 @@ void blank_name_list (void);
 char *new_name (const char *, const char *);
 char *safer_name_suffix (char const *, bool);
 size_t stripped_path_len (char const *file_name, size_t num);
+bool all_names_found (struct tar_stat_info *);
 
 bool excluded_name (char const *);
 
@@ -577,12 +582,16 @@ bool is_avoided_name (char const *);
 
 bool contains_dot_dot (char const *);
 
+#define ISFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
+                    (c)->found_count == occurrence_option)
+#define WASFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
+                     (c)->found_count >= occurrence_option)
+
 /* Module tar.c.  */
 
 int confirm (const char *, const char *);
 void request_stdin (const char *);
 void destroy_stat (struct tar_stat_info *);
-bool all_names_found (void);
 
 /* Module update.c.  */
 
