@@ -1,5 +1,21 @@
 2004-02-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/buffer.c (flush_read): Bugfix: the
+	condition at line 714 included
+
+	      || (status > 0 && !read_full_records_option)
+
+	which is grossly wrong, since even if new_volume() below succeeds,
+	the subsequent call to rmtread will overwrite the chunk of data
+        already read in the buffer and thus spoil everything.
+	* src/system.c (sys_child_open_for_uncompress): Minor stylistic
+	fix.
+	* tests/star/multi-fail.sh: New test.
+	* tests/Makefile.am: Added multi-fail.sh
+	* tests/star/README: Updated
+	
+2004-02-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* NEWS: Updated
 	* configure.ac: Removed spurious AC_CHECK_LIB(iconv)
 	* src/common.h (utc_option): new global
