@@ -289,7 +289,7 @@ options (argc, argv)
 
   /* Set default option values */
   blocking = DEFBLOCKING;	/* From Makefile */
-  ar_files = (char **) malloc (sizeof (char *) * 10);
+  ar_files = (char **) ck_malloc (sizeof (char *) * 10);
   ar_files_len = 10;
   n_ar_files = 0;
   cur_ar_file = 0;
