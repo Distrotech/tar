@@ -517,7 +517,6 @@ sys_child_open_for_uncompress (void)
     {
       /* The parent tar is still here!  Just clean up.  */
 
-      read_full_records_option = true;
       archive = parent_pipe[PREAD];
       xclose (parent_pipe[PWRITE]);
       return child_pid;
