@@ -465,7 +465,7 @@
 
 @dircategory GNU Packages
 @direntry
-Tar: (tar).			Making tape (or disk) archives.
+* Tar: (tar).			Making tape (or disk) archives.
 @end direntry
 
 @dircategory Individual utilities
@@ -529,6 +529,9 @@ The first part of this master menu lists the major nodes in this Info
 document.  The rest of the menu lists all the lower level nodes.
 @end ifnottex
 
+@c The master menu, created with texinfo-master-menu, goes here.
+@c (However, getdate.texi's menu is interpolated by hand.)
+
 @menu
 * Introduction::
 * Tutorial::
@@ -539,11 +542,10 @@ document.  The rest of the menu lists all the lower level nodes.
 * Date input formats::
 * Formats::
 * Media::
-* GNU Free Documentation License::
+* Copying This Manual::
 * Index::
 
 @detailmenu
-
  --- The Detailed Node Listing ---
 
 Introduction
@@ -645,7 +647,7 @@ Updating an Archive
 
 * how to update::
 
-Options used by @code{--create}
+Options Used by @code{--create}
 
 * Ignore Failed Read::
 
@@ -660,16 +662,13 @@ Options to Help Read Archives
 * read full records::
 * Ignore Zeros::
 
-Changing How @command{tar} Extracts Files Over Preexisting Files
+Changing How @command{tar} Writes Files
 
 * Dealing with Old Files::
 * Overwrite Old Files::
 * Keep Old Files::
 * Unlink First::
 * Recursive Unlink::
-
-Changing How @command{tar} Writes Files
-
 * Modification Times::
 * Setting Access Permissions::
 * Writing to Standard Output::
@@ -712,6 +711,7 @@ Reading Names from a File
 
 Excluding Some Files
 
+* controlling pattern-patching with exclude::
 * problems with exclude::
 
 Crossing Filesystem Boundaries
@@ -728,7 +728,7 @@ Date input formats
 * Day of week items::              Monday and others.
 * Relative items in date strings:: next tuesday, 2 years ago.
 * Pure numbers in date strings::   19931219, 1440.
-* Authors of getdate::             Bellovin, Eggert, Berets, Salz, et al.
+* Authors of getdate::             Bellovin, Eggert, Salz, Berets, et al.
 
 Controlling the Archive Format
 
@@ -779,6 +779,11 @@ Using Multiple Tapes
 
 * Multi-Volume Archives::       Archives Longer than One Tape or Disk
 * Tape Files::                  Tape Files
+
+Copying This Manual
+
+* GNU Free Documentation License::  License for copying this manual
+
 @end detailmenu
 @end menu
 
@@ -2501,6 +2506,10 @@ member names.  This option disables that behavior.  @FIXME-xref{}
 
 (See @samp{--newer}.) @FIXME-pxref{}
 
+@item --anchored
+An exclude pattern must match an initial subsequence of the name's components.
+@FIXME-xref{}
+
 @item --atime-preserve
 
 Tells @command{tar} to preserve the access time field in a file's inode when
@@ -2626,6 +2635,10 @@ archives transparently.  @FIXME-xref{}
 @command{tar} will print out a short message summarizing the operations and
 options to @command{tar} and exit.  @FIXME-xref{}
 
+@item --ignore-case
+Ignore case when excluding files.
+@FIXME-xref{}
+
 @item --ignore-failed-read
 
 Do not exit unsuccessfully merely because an unreadable file was encountered.
@@ -2649,7 +2662,8 @@ compatibility only.  @FIXME-xref{}
 @itemx -F @var{script-file}
 
 When @command{tar} is performing multi-tape backups, @var{script-file} is run
-at the end of each tape.  @FIXME-xref{}
+at the end of each tape.  If @var{script-file} exits with nonzero status,
+@command{tar} fails immediately.  @FIXME-xref{}
 
 @item --interactive
 @itemx --confirmation
@@ -2723,6 +2737,14 @@ Like @samp{--newer}, but add only files whose
 contents have changed (as opposed to just @samp{--newer}, which will
 also back up files for which any status information has changed).
 
+@item --no-anchored
+An exclude pattern can match any subsequence of the name's components.
+@FIXME-xref{}
+
+@item --no-ignore-case
+Use case-sensitive matching when excluding files.
+@FIXME-xref{}
+
 @item --no-recursion
 
 With this option, @command{tar} will not recurse into directories.
@@ -2739,6 +2761,14 @@ for ordinary users; this option has an effect only for the superuser.
 When extracting an archive, subtract the user's umask from files from
 the permissions specified in the archive.  This is the default behavior
 for ordinary users; this option has an effect only for the superuser.
+
+@item --no-wildcards
+Do not use wildcards when excluding files.
+@FIXME-xref{}
+
+@item --no-wildcards-match-slash
+Wildcards do not match @samp{/} when excluding files.
+@FIXME-xref{}
 
 @item --null
 
@@ -2823,6 +2853,11 @@ systems with buggy implementations.  @xref{Reading}.
 
 Instructs @command{tar} to use @var{size} bytes per record when accessing the
 archive.  @FIXME-xref{}
+
+@item --recursion
+
+With this option, @command{tar} recurses into directories.
+@FIXME-xref{}
 
 @item --recursive-unlink
 
@@ -2948,6 +2983,14 @@ copyright message, some credits, and then exit.  @FIXME-xref{}
 
 Used in conjunction with @samp{--multi-volume}.  @command{tar} will keep track
 of which volume of a multi-volume archive its working in @var{file}.
+@FIXME-xref{}
+
+@item --wildcards
+Use wildcards when excluding files.
+@FIXME-xref{}
+
+@item --wildcards-match-slash
+Wildcards match @samp{/} when excluding files.
 @FIXME-xref{}
 @end table
 
@@ -4122,7 +4165,7 @@ To be more cautious and prevent existing files from being replaced, use
 the @value{op-keep-old-files} option.  It causes @command{tar} to refuse
 to replace or update a file that already exists, i.e., a file with the
 same name as an archive member prevents extraction of that archive
-member.
+member.  Instead, it reports an error.
 
 To be more aggressive about altering existing files, use the
 @value{op-overwrite} option.  It causes @command{tar} to overwrite
@@ -5373,21 +5416,6 @@ For example, to create an archive with all the contents of the directory
 @file{src} except for files whose names end in @file{.o}, use the
 command @samp{tar -cf src.tar --exclude='*.o' src}.
 
-A @var{pattern} containing @samp{/} excludes a name if an initial
-subsequence of the name's components matches @var{pattern}; a
-@var{pattern} without @samp{/} excludes a name if it matches any of its
-name components.  For example, the pattern @samp{*b/RCS} contains
-@samp{/}, so it excludes @file{blob/RCS} and @file{.blob/RCS/f} but not
-@file{blob/RCSit/RCS} or @file{/blob/RCS}, whereas the pattern
-@samp{RCS} excludes all these names.  Conversely, the pattern @samp{*.o}
-lacks @samp{/}, so it excludes @file{.f.o}, @file{d/f.o}, and
-@file{d.o/f}.
-
-Other than optionally stripping leading @samp{/} from names
-(@pxref{absolute}), patterns and candidate names are used as-is.  For
-example, trailing @samp{/} is not trimmed from a user-specified name
-before deciding whether to exclude it.
-
 You may give multiple @samp{--exclude} options.
 
 @table @kbd
@@ -5399,8 +5427,8 @@ Causes @command{tar} to ignore files that match the patterns listed in
 
 @findex exclude-from
 Use the @samp{--exclude-from=@var{file-of-patterns}} option to read a
-list of shell wildcards, one per line, from @var{file}; @command{tar} will
-ignore files matching those regular expressions.  Thus if @command{tar} is
+list of patterns, one per line, from @var{file}; @command{tar} will
+ignore files matching those patterns.  Thus if @command{tar} is
 called as @w{@samp{tar -c -X foo .}} and the file @file{foo} contains a
 single line @file{*.o}, no files whose names end in @file{.o} will be
 added to the archive.
@@ -5409,8 +5437,63 @@ added to the archive.
 newlines the same as the files-from option does?}
 
 @menu
+* controlling pattern-patching with exclude::
 * problems with exclude::
 @end menu
+
+@node controlling pattern-patching with exclude
+@unnumberedsubsec Controlling Pattern-Matching with the @code{exclude} Options
+
+Normally, a pattern matches a name if an initial subsequence of the
+name's components matches the pattern, where @samp{*}, @samp{?}, and
+@samp{[...]} are the usual shell wildcards, @samp{\} escapes wildcards,
+and wildcards can match @samp{/}.
+
+Other than optionally stripping leading @samp{/} from names
+(@pxref{absolute}), patterns and names are used as-is.  For
+example, trailing @samp{/} is not trimmed from a user-specified name
+before deciding whether to exclude it.
+
+However, this matching procedure can be altered by the options listed
+below.  These options accumulate.  For example:
+
+@example
+--ignore-case --exclude='makefile' --no-ignore-case ---exclude='readme'
+@end example
+
+ignores case when excluding @samp{makefile}, but not when excluding
+@samp{readme}.
+
+@table @option
+@item --anchored
+@itemx --no-anchored
+If anchored (the default), a pattern must match an initial subsequence
+of the name's components.  Otherwise, the pattern can match any subsequence.
+
+@item --ignore-case
+@itemx --no-ignore-case
+When ignoring case, upper-case patterns match lower-case names and vice versa.
+When not ignoring case (the default), matching is case-sensitive.
+
+@item --wildcards
+@itemx --no-wildcards
+When using wildcards (the default), @samp{*}, @samp{?}, and @samp{[...]}
+are the usual shell wildcards, and @samp{\} escapes wildcards.
+Otherwise, none of these characters are special, and patterns must match
+names literally.
+
+@item --wildcards-match-slash
+@itemx --no-wildcards-match-slash
+When wildcards match slash (the default), a wildcard like @samp{*} in
+the pattern can match a @samp{/} in the name.  Otherwise, @samp{/} is
+matched only by @samp{/}.
+
+@end table
+
+The @option{--recursion} and @option{--no-recursion} options
+(@pxref{recurse}) also affect how exclude patterns are interpreted.  If
+recursion is in effect, a pattern excludes a name if it matches any of
+the name's parent directories.
 
 @node problems with exclude
 @unnumberedsubsec Problems with Using the @code{exclude} Options
@@ -5638,6 +5721,10 @@ archive; see @ref{files} for more information on using @command{find} with
 @table @kbd
 @item --no-recursion
 Prevents @command{tar} from recursively descending directories.
+
+@item --recursion
+Requires @command{tar} to recursively descend directories.
+This is the default.
 @end table
 
 When you use @samp{--no-recursion}, @sc{gnu} @command{tar} grabs directory entries
@@ -5659,6 +5746,9 @@ no new files on its own.
 The @value{op-no-recursion} option also applies when extracting: it
 causes @command{tar} to extract only the matched directory entries, not
 the files under those directories.
+
+The @value{op-no-recursion} option also affects how exclude patterns
+are interpreted (@pxref{controlling pattern-patching with exclude}).
 
 @FIXME{example here}
 
@@ -7214,8 +7304,8 @@ maximum tape length, you might avoid the problem entirely.
 @item -F @var{file}
 @itemx --info-script=@var{file}
 @itemx --new-volume-script=@var{file}
-Execute @file{file} at end of each tape.  This implies
-@value{op-multi-volume}.
+Execute @file{file} at end of each tape.  If @file{file} exits with
+nonzero status, exit.  This implies @value{op-multi-volume}.
 @end table
 
 @node Remote Tape Server
@@ -7973,8 +8063,9 @@ otherwise @command{tar} will write over the volume it just finished.)
 If you want more elaborate behavior than this, give @command{tar} the
 @value{op-info-script} option.  The file @var{script-name} is expected
 to be a program (or shell script) to be run instead of the normal
-prompting procedure.  When the program finishes, @command{tar} will
-immediately begin writing the next volume.  The behavior of the
+prompting procedure.  If the program fails, @command{tar} exits;
+otherwise, @command{tar} begins writing the next volume.  The behavior
+of the
 @samp{n} response to the normal tape-change prompt is not available
 if you use @value{op-info-script}.
 
@@ -8308,6 +8399,12 @@ The @value{op-verify} option will not work in conjunction with the
 @value{op-update} and @value{op-delete} operations.  @xref{Operations},
 for more information on these operations.
 
+Also, since @command{tar} normally strips leading @samp{/} from file
+names (@pxref{absolute}), a command like @samp{tar --verify -cf
+/tmp/foo.tar /etc} will work as desired only if the working directory is
+@file{/}, as @command{tar} uses the archive's relative member names
+(e.g., @file{etc/motd}) when verifying the archive.
+
 @node Write Protection
 @section Write Protection
 
@@ -8324,10 +8421,17 @@ disabled) switch, a notch which can be popped out or covered, a ring
 which can be removed from the center of a tape reel, or some other
 changeable feature.
 
+@node Copying This Manual
+@appendix Copying This Manual
+
+@menu
+* GNU Free Documentation License::  License for copying this manual
+@end menu
+
 @include fdl.texi
 
 @node Index
-@unnumbered Index
+@appendix Index
 
 @printindex cp
 
