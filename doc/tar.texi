@@ -3484,7 +3484,7 @@ long list output:
 
 @smallexample
 $ @kbd{tar --extract --file=archive.tar --verbose --verbose}
-$ @kbd{tar xvv archive.tar}
+$ @kbd{tar xvvf archive.tar}
 @end smallexample
 
 Verbose output appears on the standard output except when an archive is
