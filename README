@@ -24,11 +24,11 @@ See file `NEWS' for a list of major changes in the current release.
 See file `THANKS' for a list of contributors.
 
 Besides those configure options documented in files `INSTALL' and
-`ABOUT-NLS', a few extra options may be accepted after `./configure':
+`ABOUT-NLS', an extra option may be accepted after `./configure':
 
-* `--with-dmalloc' is a debugging option for looking at memory management
-problems, it prerequires Gray Watson's package, which is available as
-`ftp://ftp.letters.com/src/dmalloc/dmalloc.tar.gz'.
+* `--disable-largefile' omits support for large files, even if the
+operating system supports large files.  Typically, large files are
+those larger on 2 GB on a 32-bit host.
 
 The default archive device is now `stdin' on read and `stdout' on write.
 The installer can still override this by presetting `DEFAULT_ARCHIVE'
@@ -39,7 +39,7 @@ in the environment before configuring (the behavior of `-[0-7]' or
 For comprehensive modifications to GNU tar, you might need tools beyond
 those used in simple installations.  Fully install GNU m4 1.4 first,
 and only then, Autoconf 2.13 or later.  Install Perl, then Automake
-1.4 or later.  You might need Bison 1.26 or later, and GNU tar itself.
+1.4 or later.  You might need Bison 1.28 or later, and GNU tar itself.
 All are available on GNU archive sites, like in
 ftp://ftp.gnu.org/pub/gnu/.
 
@@ -94,41 +94,15 @@ GNU Makefiles for the last few years.  We would like a general solution.
 * BSD compatibility matters.
 
 Set LIBS to `-lbsd' before configuration (see `INSTALL') if the linker
-complains about undefined `valloc' (AIX) or `bsd_ioctl' (Slackware).
-Also set CPPFLAGS to `-I/usr/include/bsd/sys' before configuration to
-solve dirent problems (NeXT), or to `-I/usr/include/bsd' if <sgtty.h>
-is not found (Slackware).
+complains about `bsd_ioctl' (Slackware).  Also set CPPFLAGS to
+`-I/usr/include/bsd' if <sgtty.h> is not found (Slackware).
 
-* `union wait' problems.
+* OPENStep 4.2 swap files
 
-Configuration of `union wait' does not always take the best decision.
-If you have this problem, edit file `config.cache' after configuration,
-find the line about `tar_cv_header_union_wait', change `yes' by `no'
-or vice-versa, execute `./config.status', then launch `make'.
-
-* `%lld' unsupported in `printf'.
-
-GNU C has `long long', but the underneath C library might not support
-the `%lld' format.  If you have this problem, edit file `config.cache'
-after configuration, find the line about `ac_cv_sizeof_long_long, change
-`8' by `0', execute `./config.status', then launch `make'.
-
-* FreeBSD users -- `configure' fails.
-
-It has been reported that `configure' does not run on FreeBSD 2.1.7,
-because of a buggy `sh'.  It works using `bash', however.
-
-* ISC users -- `S_*' symbols undefined.
-
-On ISC 4.1mu, POSIX environment, set CFLAGS to `-posix' and CPPFLAGS to
-`-D_SYSV3' before configuration (see `INSTALL').  This will trigger the
-definition of a few `S_' prefixed symbols from <sys/stat.h>.
-
-* Ultrix users -- broken `make'.
-
-It seems that Ultrix make does not correctly handle shell commands
-having logical connectives in them.  Use `s5make' if you have it, try
-`PROG_ENV=SYSTEM_FIVE make' (works on Ultrix 4.4), or install GNU Make.
+Tar cannot read the file /private/vm/swapfile.front (even as root).
+This file is not a real file, but some kind of uncompressed view of
+the real compressed swap file; there is no reason to back it up, so
+the simplest workaround is to avoid tarring this file.
 
 .------------------.
 | Special topics.  |
@@ -163,7 +137,7 @@ archives by default, but there is a long way before we get there.
 
 * What's next?
 
-The emphasis from 1.11.2 to 1.12 has been on solving the main portability,
+The emphasis from 1.11.2 to 1.14 has been on solving the main portability,
 execution or usability bugs.  This was accompanied all over with an
 internal cleanup in the sources, and the reassembly of a `tar' manual.
 
