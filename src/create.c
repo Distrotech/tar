@@ -1478,9 +1478,10 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 
       while (entry = readdir (directory), entry)
 	{
-	  /* Skip `.' and `..'.  */
+	  /* Skip `.', `..', and excluded file names.  */
 
-	  if (is_dot_or_dotdot (entry->d_name))
+	  if (is_dot_or_dotdot (entry->d_name)
+	      || excluded_filename (excluded, entry->d_name))
 	    continue;
 
 	  if ((int) NAMLEN (entry) + len >= buflen)
@@ -1495,8 +1496,6 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 #endif
 	    }
 	  strcpy (namebuf + len, entry->d_name);
-	  if (exclude_option && check_exclude (namebuf))
-	    continue;
 	  dump_file (namebuf, our_device, 0);
 	}
 
