@@ -289,7 +289,7 @@ int
 read_header()
 {
 	register int	i;
-	register long	sum, recsum;
+	register long	sum, signed_sum, recsum;
 	register char	*p;
 	register union record *header;
 	long	from_oct();
@@ -315,13 +315,18 @@ read_header()
 		 * We can't use unsigned char here because of old compilers,
 		 * e.g. V7.
 		 */
+	  	signed_sum += *p;
 		sum += 0xFF & *p++;
 	}
 
 	/* Adjust checksum to count the "chksum" field as blanks. */
 	for (i = sizeof(header->header.chksum); --i >= 0;)
+	  {
 		sum -= 0xFF & header->header.chksum[i];
+		signed_sum -= (char) header->header.chksum[i];
+	  }
 	sum += ' '* sizeof header->header.chksum;	
+	signed_sum += ' ' * sizeof header->header.chksum;
 
 	if (sum == 8*' ') {
 		/*
@@ -331,7 +336,7 @@ read_header()
 		return 2;
 	}
 
-	if (sum != recsum) 
+	if (sum != recsum && signed_sum != recsum) 
 	  return 0;
 	
 	/*
