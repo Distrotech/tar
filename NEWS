@@ -1,5 +1,13 @@
 GNU tar NEWS - User visible changes.
-Copyright 1994-1999, 2000 Free Software Foundation, Inc.
+Copyright 1994, 95, 96, 97, 98, 99, 2000, 2001 Free Software Foundation, Inc.
+
+version 1.13.19 - Paul Eggert, 2001-01-13
+
+* The -I option has been withdrawn, as it was buggy and confusing.
+  Eventually it is planned to be reintroduced, with the same meaning as -T.
+
+* With an option like -N DATE, if DATE starts with "/" or ".", it is taken
+  to be a file name; the last-modified time of that file is used as the date.
 
 version 1.13.18 - Paul Eggert, 2000-10-29
 
