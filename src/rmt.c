@@ -31,7 +31,11 @@ char copyright[] =
 #ifdef HAVE_SYS_GENTAPE_H	/* e.g., ISC UNIX */
 #include <sys/gentape.h>
 #else
+#ifdef M_UNIX
+#include <sys/tape.h>
+#else
 #include <sys/mtio.h>
+#endif
 #endif
 #include <errno.h>
 

@@ -23,7 +23,7 @@
 #ifdef __MSDOS__
 #include <io.h>
 #else /* !__MSDOS__ */
-extern off_t lseek();
+extern off_t lseek ();
 #endif /* __MSDOS__ */
 #endif /* _POSIX_VERSION */
 
@@ -59,7 +59,7 @@ extern char *__rmt_path;
 #include <string.h>
 #define index strchr
 #else
-extern char *index();
+extern char *index ();
 #endif
 
 #define _remdev(path)	(!f_force_local && (__rmt_path=index(path, ':')))
@@ -91,6 +91,6 @@ int __rmt_open ();
 int __rmt_close ();
 int __rmt_read ();
 int __rmt_write ();
-long __rmt_lseek();
+long __rmt_lseek ();
 int __rmt_ioctl ();
 #endif /* !NO_REMOTE */
