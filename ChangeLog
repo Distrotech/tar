@@ -1,5 +1,7 @@
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* configure.ac: Fixed check for setsockopt
+
 	* src/create.c: Do not zero-terminate name field if
 	the name is exactly 100 characters long. 
 	(write_ustar_long_name): Fixed cheking for unsplittable
