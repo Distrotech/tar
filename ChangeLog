@@ -1,3 +1,17 @@
+2004-05-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Minor fix
+	* scripts/Makefile.am: Updated
+	* scripts/backup-specs: Updated
+	* scripts/backup.in: Minor fixes
+	* scripts/backup.sh: Removed
+	* scripts/backup.sh.in: New file. Source for backup.sh
+	* scripts/restore.in: New file
+	* scripts/.cvsignore: Updated
+	* scripts/WARNING: Removed
+	* doc/tar.texi: Updated
+	* NEWS: Updated
+
 2004-05-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/names.c (name_gather): Bugfix: Honor single -C with
