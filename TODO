@@ -32,7 +32,20 @@ so that the GNU extensions (--sparse, --incremental, --label and
 
 * Add tests for testing the added functonality.
 
-* Revise the --sparse option functionality.
+* Consider this:
+
+  From: Dennis Pund
+  Subject: TAR suggestion...
+  Date: Wed, 1 May 2002 18:26:36 -0500 (EST)
+
+  What I would like to do is:
+
+  foo my.tar.gz | tar -xzOf - | tar -cMf - -L 650000 - | bar
+
+  where 'foo' is a program that retrieves the archive and streams it
+  to stdout and bar is a program that streams the stdin to CDR.
+
+  (http://mail.gnu.org/archive/html/bug-gnu-utils/2002-05/msg00022.html)
 
   
 * Copyright notice
