@@ -201,6 +201,19 @@ else
     [Define to the full path of your rsh, if any.])
 fi
 
+AC_MSG_CHECKING(for default archive format)
+
+if test -z "$DEFAULT_ARCHIVE_FORMAT"; then
+  DEFAULT_ARCHIVE_FORMAT="GNU"
+fi
+case $DEFAULT_ARCHIVE_FORMAT in
+  V7|OLDGNU|POSIX|GNU) ;;
+  *) AC_MSG_ERROR(Invalid format name);;
+esac
+AC_DEFINE_UNQUOTED(DEFAULT_ARCHIVE_FORMAT, ${DEFAULT_ARCHIVE_FORMAT}_FORMAT,
+  [By default produce archives of this format])
+AC_MSG_RESULT($DEFAULT_ARCHIVE_FORMAT)
+
 AC_MSG_CHECKING(for default archive)
 
 if test -z "$DEFAULT_ARCHIVE"; then
