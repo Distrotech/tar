@@ -65,15 +65,26 @@ struct link *linklist = NULL;	/* points to first link in list */
 | fact is used by start_header and finish_header, so don't change it!     |
 `------------------------------------------------------------------------*/
 
-/* This should be equivalent to: sprintf (WHERE, "%*lo", SIZE, VALUE);
-   except that we don't assume VALUE fits in an unsigned long, and
-   except that sprintf fills in the trailing NUL and we don't.  */
+/* Output VALUE in octal, using SUBSTITUTE if value won't fit.
+   Output to buffer WHERE with size SIZE.
+   TYPE is the kind of value being output (useful for diagnostics).
+   Prefer SIZE - 1 octal digits (with leading '0's), followed by '\0';
+   but if SIZE octal digits would fit, omit the '\0'.  */
 
 static void
 to_oct (uintmax_t value, uintmax_t substitute, char *where, size_t size, const char *type)
 {
   uintmax_t v = value;
   size_t i = size;
+
+# define MAX_OCTAL_VAL_WITH_DIGITS(digits) \
+    ((digits) * 3 < sizeof (uintmax_t) * CHAR_BIT \
+     ? ((uintmax_t) 1 << ((digits) * 3)) - 1 \
+     : (uintmax_t) -1)
+
+  /* Output a trailing NUL unless the value is too large.  */
+  if (value <= MAX_OCTAL_VAL_WITH_DIGITS (size - 1))
+    where[--i] = '\0';
 
   /* Produce the digits -- at least one.  */
 
@@ -84,16 +95,13 @@ to_oct (uintmax_t value, uintmax_t substitute, char *where, size_t size, const c
     }
   while (i != 0 && v != 0);
 
-  /* Leading spaces, if necessary.  */
+  /* Leading zeros, if necessary.  */
   while (i != 0)
-    where[--i] = ' ';
+    where[--i] = '0';
 
   if (v != 0)
     {
-      int bits = size * 3;
-      uintmax_t maxval = (bits < sizeof (uintmax_t) * CHAR_BIT
-			  ? ((uintmax_t) 1 << bits) - 1
-			  : (uintmax_t) -1);
+      uintmax_t maxval = MAX_OCTAL_VAL_WITH_DIGITS (size);
       char buf1[UINTMAX_STRSIZE_BOUND];
       char buf2[UINTMAX_STRSIZE_BOUND];
       char buf3[UINTMAX_STRSIZE_BOUND];
@@ -395,7 +403,7 @@ finish_header (union block *header)
 
   /* Fill in the checksum field.  It's formatted differently from the
      other fields: it has [6] digits, a null, then a space -- rather than
-     digits, then a null.  We use to_oct then write the null.
+     digits, then a null.  We use to_oct.
      The final space is already there, from checksumming,
      and to_oct doesn't modify it.
 
@@ -403,8 +411,7 @@ finish_header (union block *header)
 
      sprintf(header->header.chksum, "%6o", sum);  */
 
-  uintmax_to_oct ((uintmax_t) sum, header->header.chksum, 6);
-  header->header.chksum[6] = '\0';
+  uintmax_to_oct ((uintmax_t) sum, header->header.chksum, 7);
 
   set_next_block_after (header);
 
