@@ -110,7 +110,7 @@ AUX =   README INSTALL NEWS COPYING ChangeLog Makefile.in makefile.pc \
 	rmt.h rmt.c rtapelib.c \
 	msd_dir.h msd_dir.c tcexparg.c \
 	level-0 level-1 backup-specs dump-remind testpad.c getpagesize.h
-#	tar.texinfo tar.info* texinfo.tex \
+#	tar.texinfo tar.info* texinfo.tex
 
 all:	@PROGS@ 
 # tar.info
