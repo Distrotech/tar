@@ -510,13 +510,18 @@ flush_write (void)
       if (volume_label_option)
 	record_start++;
 
+      if (strlen (real_s_name) > NAME_FIELD_SIZE)
+	FATAL_ERROR ((0, 0,
+		      _("%s: file name too long to be stored in a GNU multivolume header"),
+		      quotearg_colon (real_s_name)));
+      
       memset (record_start, 0, BLOCKSIZE);
 
       /* FIXME: Michael P Urban writes: [a long name file] is being written
 	 when a new volume rolls around [...]  Looks like the wrong value is
 	 being preserved in real_s_name, though.  */
 
-      strcpy (record_start->header.name, real_s_name);
+      strncpy (record_start->header.name, real_s_name, NAME_FIELD_SIZE);
       record_start->header.typeflag = GNUTYPE_MULTIVOL;
       OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
       OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
@@ -763,7 +768,7 @@ flush_read (void)
 	{
 	  uintmax_t s1, s2;
 	  if (cursor->header.typeflag != GNUTYPE_MULTIVOL
-	      || strcmp (cursor->header.name, real_s_name))
+	      || strncmp (cursor->header.name, real_s_name, NAME_FIELD_SIZE))
 	    {
 	      WARN ((0, 0, _("%s is not continued on this volume"),
 		     quote (real_s_name)));
