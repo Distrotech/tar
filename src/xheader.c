@@ -31,8 +31,23 @@
 bool xheader_protected_pattern_p (const char *pattern);
 bool xheader_protected_keyword_p (const char *keyword);
 
-/* Number of the global headers written so far. Not used yet */
+/* Used by xheader_finish() */
+static void code_string (char const *string, char const *keyword,
+			 struct xheader *xhdr);
+static void extended_header_init ();
+
+/* Number of global headers written so far. */
 static size_t global_header_count;
+/* FIXME: Possibly it should be reset after changing the volume.
+   POSIX %n specification says that it is expanded to the sequence
+   number of current global header in *the* archive. However, for
+   multi-volume archives this will yield duplicate header names
+   in different volumes, which I'd like to avoid. The best way
+   to solve this would be to use per-archive header count as required
+   by POSIX *and* set globexthdr.name to, say,
+   $TMPDIR/GlobalHead.%p.$NUMVOLUME.%n.
+
+   However it should wait until buffer.c is finally rewritten */
 
 
 /* Keyword options */
@@ -173,7 +188,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
   char pidbuf[64];
   char nbuf[64];
   
-  for (p = exthdr_name; *p && (p = strchr (p, '%')); )
+  for (p = fmt; *p && (p = strchr (p, '%')); )
     {
       switch (p[1])
 	{
@@ -182,13 +197,20 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	  break;
 
 	case 'd':
-	  dirname = safer_name_suffix (dir_name (st->orig_file_name), false);
-	  len += strlen (dirname) - 1;
+	  if (st)
+	    {
+	      dirname = safer_name_suffix (dir_name (st->orig_file_name),
+					   false);
+	      len += strlen (dirname) - 1;
+	    }
 	  break;
 	      
 	case 'f':
-	  basename = base_name (st->orig_file_name);
-	  len += strlen (basename) - 1;
+	  if (st)
+	    {
+	      basename = base_name (st->orig_file_name);
+	      len += strlen (basename) - 1;
+	    }
 	  break;
 	      
 	case 'p':
@@ -222,12 +244,14 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	      break;
 	      
 	    case 'd':
-	      q = stpcpy (q, dirname);
+	      if (dirname)
+		q = stpcpy (q, dirname);
 	      p += 2;
 	      break;
 	      
 	    case 'f':
-	      q = stpcpy (q, basename);
+	      if (basename)
+		q = stpcpy (q, basename);
 	      p += 2;
 	      break;
 	      
@@ -264,16 +288,15 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 char *
 xheader_xhdr_name (struct tar_stat_info *st)
 {
-  /* FIXME: POSIX requires the default name to be '%d/PaxHeaders.%p/%f' */
   if (!exthdr_name)
-    return xstrdup ("././@PaxHeader");
+    assign_string (&exthdr_name, "%d/PaxHeaders.%p/%f");
   return xheader_format_name (st, exthdr_name, false);
 }
 
 #define GLOBAL_HEADER_TEMPLATE "/GlobalHead.%p.%n"
 
 char *
-xheader_ghdr_name (struct tar_stat_info *st)
+xheader_ghdr_name ()
 {
   if (!globexthdr_name)
     {
@@ -287,15 +310,64 @@ xheader_ghdr_name (struct tar_stat_info *st)
       strcat(globexthdr_name, GLOBAL_HEADER_TEMPLATE);
     }
 
-  return xheader_format_name (st, globexthdr_name, true);
+  return xheader_format_name (NULL, globexthdr_name, true);
+}
+
+void
+xheader_write (char type, char *name, struct xheader *xhdr)
+{
+  union block *header;
+  size_t size;
+  char *p;
+  
+  size = xhdr->size;
+  header = start_private_header (name, size);
+  header->header.typeflag = type;
+
+  simple_finish_header (header);
+
+  p = xhdr->buffer;
+  
+  do
+    {
+      size_t len;
+      
+      header = find_next_block ();
+      len = BLOCKSIZE;
+      if (len > size)
+	len = size;
+      memcpy (header->buffer, p, len);
+      if (len < BLOCKSIZE)
+	memset (header->buffer + len, 0, BLOCKSIZE - len);
+      p += len;
+      size -= len;
+      set_next_block_after (header);
+    }
+  while (size > 0);
+  xheader_destroy (xhdr);
+}  
+
+void
+xheader_write_global ()
+{
+  char *name;
+  struct keyword_list *kp;
+
+  if (!keyword_global_override_list)
+    return;
+  
+  extended_header_init ();
+  for (kp = keyword_global_override_list; kp; kp = kp->next)
+    code_string (kp->value, kp->pattern, &extended_header);
+  xheader_finish (&extended_header);
+  xheader_write (XGLTYPE, name = xheader_ghdr_name (),
+		 &extended_header);
+  free (name);
+  global_header_count++;
 }
 
 
 /* General Interface */
-
-/* Used by xheader_finish() */
-static void code_string (char const *string, char const *keyword,
-			 struct xheader *xhdr);
 
 struct xhdr_tab
 {
@@ -419,16 +491,28 @@ run_override_list (struct keyword_list *kp, struct tar_stat_info *st)
 void
 xheader_decode (struct tar_stat_info *st)
 {
-  char *p = extended_header.buffer + BLOCKSIZE;
-  char *endp = &extended_header.buffer[extended_header.size-1];
-
   run_override_list (keyword_global_override_list, st);
   
-  while (p < endp)
-    if (!decode_record (&p, st))
-      break;
-
+  if (extended_header.size)
+    {
+      char *p = extended_header.buffer + BLOCKSIZE;
+      char *endp = &extended_header.buffer[extended_header.size-1];
+      
+      while (p < endp)
+	if (!decode_record (&p, st))
+	  break;
+    }
   run_override_list (keyword_override_list, st);
+}
+
+static void
+extended_header_init ()
+{
+  if (!extended_header.stk)
+    {
+      extended_header.stk = xmalloc (sizeof *extended_header.stk);
+      obstack_init (extended_header.stk);
+    }
 }
 
 void
@@ -445,11 +529,7 @@ xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
   if (xheader_keyword_deleted_p (keyword)
       || xheader_keyword_override_p (keyword))
     return;
-  if (!extended_header.stk)
-    {
-      extended_header.stk = xmalloc (sizeof *extended_header.stk);
-      obstack_init (extended_header.stk);
-    }
+  extended_header_init ();
   t->coder (st, keyword, &extended_header, data);
 }
 
