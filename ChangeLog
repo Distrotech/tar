@@ -1,3 +1,19 @@
+2005-01-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (read_header): Fixed calculation of the
+	size for GNU long name/link. Tar was reading one block
+	more if name_size was divisible by 512. Thanks Josef
+	Bauer.
+	* tests/long01.at: New file. Test listing of GNU long names
+	divisible by 512.
+	* tests/pipe.at: Sort tar output.
+	* tests/Makefile.am: Added long01.at
+	* tests/testsuite.at: Likewise.
+	* THANKS: Added Josef Bauer
+	* lib/.cvsignore: Updated
+	* m4/.cvsignore: Updated
+	* NEWS: Updated
+	
 2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* directory: Updated for 1.15.1
@@ -17,6 +33,7 @@
 	* tests/listed02.at: Do not create useless directory
 
 2005-01-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	* src/tar.c (parse_opt): Bugfix: Use ARGP_KEY_ARG. Thanks
 	Mike Frysinger <vapier@gentoo.org> for reporting.
 	
