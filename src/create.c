@@ -235,7 +235,7 @@ badfile:
 	}
 	
 	restore_times[0] = hstat.st_atime;
-	restore_times[1] = hstat.st_utime;
+	restore_times[1] = hstat.st_mtime;
 
 #ifdef S_ISHIDDEN
 	if (S_ISHIDDEN (hstat.st_mode)) {
@@ -1200,7 +1200,7 @@ start_header(name, st)
 		}
 	}
 	strncpy(header->header.name, name, NAMSIZ);
-	header->header.name[NAMSIZE-1] = '\0';
+	header->header.name[NAMSIZ-1] = '\0';
 
 	to_oct((long) (st->st_mode & 07777),
 					8,  header->header.mode);
@@ -1337,7 +1337,6 @@ write_eot()
 }
 
 /* Write a LF_LONGLINK or LF_LONGNAME record. */
-void
 write_long (p, type)
      char *p;
      char type;
