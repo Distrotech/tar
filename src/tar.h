@@ -92,8 +92,8 @@ union record
 	struct sparse sp[SPARSE_IN_HDR];
 	char isextended;
 	char realsize[12];	/* true size of the sparse file */
-	/*		char	ending_blanks[12];*//* number of nulls at the
-						   end of the file, if any */
+	/* char	ending_blanks[12];*//* number of nulls at the
+	   end of the file, if any */
       }
     header;
     struct extended_header
@@ -151,8 +151,8 @@ union record
 #define	EX_BADARCH	3	/* bad archive */
 #define	EX_SYSTEM	4	/* system gave unexpected error */
 #define EX_BADVOL	5	/* Special error code means
-					   Tape volume doesn't match the one
-					   specified on the command line */
+				   Tape volume doesn't match the one
+				   specified on the command line */
 
 /*
  * Global variables
@@ -193,22 +193,15 @@ TAR_EXTERN int cmd_mode;
 #define CMD_DELETE	8	/* -D */
 #define CMD_VERSION	9	/* --version */
 
-/* -[0-9][lmh] */
-/* CMD_CAT	   -A */
-/* -b */
+
 TAR_EXTERN int f_reblock;	/* -B */
-/* CMD_CREATE	   -c */
-/* -C */
-/* CMD_DIFF	   -d */
 #if 0
 TAR_EXTERN char f_dironly;	/* -D */
 #endif
-/* -f */
 TAR_EXTERN int f_run_script_at_end;	/* -F */
 TAR_EXTERN int f_gnudump;	/* -G */
 TAR_EXTERN int f_follow_links;	/* -h */
 TAR_EXTERN int f_ignorez;	/* -i */
-/* CMD_DELETE	   -J */
 TAR_EXTERN int f_keep;		/* -k */
 TAR_EXTERN int f_startfile;	/* -K */
 TAR_EXTERN int f_local_filesys;	/* -l */
@@ -224,15 +217,12 @@ TAR_EXTERN int f_sayblock;	/* -R */
 TAR_EXTERN int f_sorted_names;	/* -s */
 TAR_EXTERN int f_sparse_files;	/* -S  ... JK */
 TAR_EXTERN int f_namefile;	/* -T */
-/* CMD_UPDATE	   -u */
 TAR_EXTERN int f_verbose;	/* -v */
 TAR_EXTERN char *f_volhdr;	/* -V */
 TAR_EXTERN int f_confirm;	/* -w */
 TAR_EXTERN int f_verify;	/* -W */
-/* CMD_EXTRACT     -x */
 TAR_EXTERN int f_exclude;	/* -X */
 TAR_EXTERN int f_compress;	/* -z */
-/* -Z */
 TAR_EXTERN int f_do_chown;	/* --do-chown */
 TAR_EXTERN int f_totals;	/* --totals */
 TAR_EXTERN int f_remove_files;	/* --remove-files */
