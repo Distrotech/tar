@@ -1,3 +1,13 @@
+2003-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Allow to redefine the default output format.
+	* src/tar.c: Use DEFAULT_ARCHIVE_FORMAT macro
+	(archive_format_string): New function.
+	(usage): Updated help output.
+	* README: Updated.
+	* NEWS: Updated.
+	* TODO: Updated.
+	
 2003-09-02  Paul Eggert  <eggert@twinsun.com>
 
 	* src/common.h (destroy_stat, xheader_decode, xheader_store,
