@@ -48,4 +48,8 @@ echo checking for HP-UX
 test -f /hp-ux && test ! -f /vmunix && MALLOC=malloc.o
 AC_SUBST(MALLOC)
 AC_XENIX_DIR
+echo checking for Solaris libraries
+test -f /lib/libsocket.a && LIBS="$LIBS -lsocket"
+test -f /lib/libnsl.a && LIBS="$LIBS -lnsl"
+
 AC_OUTPUT(Makefile)
