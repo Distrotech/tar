@@ -112,14 +112,14 @@ _rmt_shutdown (int handle, int errno_value)
 static int
 do_command (int handle, const char *buffer)
 {
-  int length;
+  size_t length;
   RETSIGTYPE (*pipe_handler) ();
 
   /* Save the current pipe handler and try to make the request.  */
 
   pipe_handler = signal (SIGPIPE, SIG_IGN);
   length = strlen (buffer);
-  if (write (WRITE_SIDE (handle), buffer, (size_t) length) == length)
+  if (write (WRITE_SIDE (handle), buffer, length) == length)
     {
       signal (SIGPIPE, pipe_handler);
       return 0;
@@ -132,15 +132,9 @@ do_command (int handle, const char *buffer)
   return -1;
 }
 
-/*----------------------------------------------------------------------.
-| Read and return the status from remote tape connection HANDLE.  If an |
-| error occurred, return -1 and set errno.			        |
-`----------------------------------------------------------------------*/
-
-static int
-get_status (int handle)
+static char *
+get_status_string (int handle, char *command_buffer)
 {
-  char command_buffer[COMMAND_BUFFER_SIZE];
   char *cursor;
   int counter;
 
@@ -153,7 +147,7 @@ get_status (int handle)
       if (read (READ_SIDE (handle), cursor, 1) != 1)
 	{
 	  _rmt_shutdown (handle, EIO);
-	  return -1;
+	  return 0;
 	}
       if (*cursor == '\n')
 	{
@@ -165,7 +159,7 @@ get_status (int handle)
   if (counter == COMMAND_BUFFER_SIZE)
     {
       _rmt_shutdown (handle, EIO);
-      return -1;
+      return 0;
     }
 
   /* Check the return status.  */
@@ -194,7 +188,7 @@ get_status (int handle)
       if (*cursor == 'F')
 	_rmt_shutdown (handle, errno);
 
-      return -1;
+      return 0;
     }
 
   /* Check for mis-synced pipes.  */
@@ -202,12 +196,67 @@ get_status (int handle)
   if (*cursor != 'A')
     {
       _rmt_shutdown (handle, EIO);
-      return -1;
+      return 0;
     }
 
   /* Got an `A' (success) response.  */
 
-  return atoi (cursor + 1);
+  return cursor + 1;
+}
+
+/*----------------------------------------------------------------------.
+| Read and return the status from remote tape connection HANDLE.  If an |
+| error occurred, return -1 and set errno.			        |
+`----------------------------------------------------------------------*/
+
+static long
+get_status (int handle)
+{
+  char command_buffer[COMMAND_BUFFER_SIZE];
+  const char *status = get_status_string (handle, command_buffer);
+  return status ? atol (status) : -1L;
+}
+
+static off_t
+get_status_off (int handle)
+{
+  char command_buffer[COMMAND_BUFFER_SIZE];
+  const char *status = get_status_string (handle, command_buffer);
+
+  if (! status)
+    return -1;
+  else
+    {
+      /* Parse status, taking care to check for overflow.
+	 We can't use standard functions,
+	 since off_t might be longer than long.  */
+
+      off_t count = 0;
+      int negative;
+
+      for (;  *status == ' ' || *status == '\t';  status++)
+	continue;
+      
+      negative = *status == '-';
+      status += negative || *status == '+';
+      
+      for (;;)
+	{
+	  int digit = *status++ - '0';
+	  if (9 < (unsigned) digit)
+	    break;
+	  else
+	    {
+	      off_t c10 = 10 * count;
+	      off_t nc = negative ? c10 - digit : c10 + digit;
+	      if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
+		return -1;
+	      count = nc;
+	    }
+	}
+
+      return count;
+    }
 }
 
 #if HAVE_NETDB_H
@@ -347,7 +396,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 #else /* not HAVE_NETDB_H */
   {
     const char *remote_shell_basename;
-    int status;
+    pid_t status;
 
     /* Identify the remote command to be executed.  */
 
@@ -464,22 +513,22 @@ rmt_close__ (int handle)
 | Return the number of bytes read on success, -1 on error.		   |
 `-------------------------------------------------------------------------*/
 
-int
-rmt_read__ (int handle, char *buffer, unsigned int length)
+ssize_t
+rmt_read__ (int handle, char *buffer, size_t length)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
-  int status;
-  int counter;
+  ssize_t status, rlen;
+  size_t counter;
 
-  sprintf (command_buffer, "R%d\n", length);
+  sprintf (command_buffer, "R%lu\n", (unsigned long) length);
   if (do_command (handle, command_buffer) == -1
       || (status = get_status (handle)) == -1)
     return -1;
 
-  for (counter = 0; counter < status; counter += length, buffer += length)
+  for (counter = 0; counter < status; counter += rlen, buffer += rlen)
     {
-      length = read (READ_SIDE (handle), buffer, (size_t) (status - counter));
-      if (length <= 0)
+      rlen = read (READ_SIDE (handle), buffer, status - counter);
+      if (rlen <= 0)
 	{
 	  _rmt_shutdown (handle, EIO);
 	  return -1;
@@ -494,13 +543,13 @@ rmt_read__ (int handle, char *buffer, unsigned int length)
 | the number of bytes written on success, -1 on error.			   |
 `-------------------------------------------------------------------------*/
 
-int
-rmt_write__ (int handle, char *buffer, unsigned int length)
+ssize_t
+rmt_write__ (int handle, char *buffer, size_t length)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
   RETSIGTYPE (*pipe_handler) ();
 
-  sprintf (command_buffer, "W%d\n", length);
+  sprintf (command_buffer, "W%lu\n", (unsigned long) length);
   if (do_command (handle, command_buffer) == -1)
     return -1;
 
@@ -523,16 +572,26 @@ rmt_write__ (int handle, char *buffer, unsigned int length)
 | Return the new file offset if successful, -1 if on error.		  |
 `------------------------------------------------------------------------*/
 
-long
+off_t
 rmt_lseek__ (int handle, off_t offset, int whence)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
+  char operand_buffer[UINTMAX_STRSIZE_BOUND];
+  uintmax_t u = offset < 0 ? - (uintmax_t) offset : (uintmax_t) offset;
+  char *p = operand_buffer + sizeof operand_buffer;
 
-  sprintf (command_buffer, "L%ld\n%d\n", offset, whence);
+  do
+    *--p = '0' + (int) (u % 10);
+  while ((u /= 10) != 0);
+  if (offset < 0)
+    *--p = '-';
+
+  sprintf (command_buffer, "L%s\n%d\n", p, whence);
+
   if (do_command (handle, command_buffer) == -1)
     return -1;
 
-  return get_status (handle);
+  return get_status_off (handle);
 }
 
 /*-----------------------------------------------------------------------.
@@ -553,15 +612,24 @@ rmt_ioctl__ (int handle, int operation, char *argument)
     case MTIOCTOP:
       {
 	char command_buffer[COMMAND_BUFFER_SIZE];
+	char operand_buffer[UINTMAX_STRSIZE_BOUND];
+	uintmax_t u = (((struct mtop *) argument)->mt_count < 0
+		       ? - (uintmax_t) ((struct mtop *) argument)->mt_count
+		       : (uintmax_t) ((struct mtop *) argument)->mt_count);
+	char *p = operand_buffer + sizeof operand_buffer;
+	
+	do
+	  *--p = '0' + (int) (u % 10);
+	while ((u /= 10) != 0);
+	if (((struct mtop *) argument)->mt_count < 0)
+	  *--p = '-';
 
 	/* MTIOCTOP is the easy one.  Nothing is transfered in binary.  */
 
-	sprintf (command_buffer, "I%d\n%d\n", ((struct mtop *) argument)->mt_op,
-		 ((struct mtop *) argument)->mt_count);
+	sprintf (command_buffer, "I%d\n%s\n",
+		 ((struct mtop *) argument)->mt_op, p);
 	if (do_command (handle, command_buffer) == -1)
 	  return -1;
-
-	/* Return the count.  */
 
 	return get_status (handle);
       }
@@ -570,8 +638,8 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 #ifdef MTIOCGET
     case MTIOCGET:
       {
-	int status;
-	int counter;
+	ssize_t status;
+	ssize_t counter;
 
 	/* Grab the status and read it directly into the structure.  This
 	   assumes that the status buffer is not padded and that 2 shorts
