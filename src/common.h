@@ -128,6 +128,9 @@ GLOBAL size_t record_size;
 
 GLOBAL bool absolute_names_option;
 
+/* Display file times in UTC */
+GLOBAL bool utc_option;
+
 /* This variable tells how to interpret newer_mtime_option, below.  If zero,
    files get archived if their mtime is not less than newer_mtime_option.
    If nonzero, files get archived if *either* their ctime or mtime is not less
@@ -181,11 +184,12 @@ GLOBAL uintmax_t occurrence_option;
 
 enum old_files
 {
-  DEFAULT_OLD_FILES, /* default */
+  DEFAULT_OLD_FILES,          /* default */
   NO_OVERWRITE_DIR_OLD_FILES, /* --no-overwrite-dir */
-  OVERWRITE_OLD_FILES, /* --overwrite */
-  UNLINK_FIRST_OLD_FILES, /* --unlink-first */
-  KEEP_OLD_FILES /* --keep-old-files */
+  OVERWRITE_OLD_FILES,        /* --overwrite */
+  UNLINK_FIRST_OLD_FILES,     /* --unlink-first */
+  KEEP_OLD_FILES,             /* --keep-old-files */
+  KEEP_NEWER_FILES,           /* --keep-newer-files */
 };
 GLOBAL enum old_files old_files_option;
 
