@@ -393,6 +393,7 @@
 @set xref-remove-files @xref{Writing}
 @set pxref-remove-files @pxref{Writing}
 
+@set op-rmt-command @kbd{rmt-command=@var{command}}
 @set op-rsh-command @kbd{rsh-command=@var{command}}
 
 @set op-same-order @kbd{--same-order} (@kbd{--preserve-order}, @kbd{-s})
@@ -3206,6 +3207,11 @@ from the archive.  @xref{Writing}.
 Directs @command{tar} to remove the source file from the file system after
 appending it to an archive.  @FIXME-xref{}
 
+@item --rmt-command=@var{cmd}
+
+Notifies @command{tar} that it should use @var{cmd} instead of
+the default @file{/usr/libexec/rmt} (@pxref{Remote Tape Server}).
+
 @item --rsh-command=@var{cmd}
 
 Notifies @command{tar} that is should use @var{cmd} to communicate with remote
@@ -5950,8 +5956,11 @@ program, with a username of @var{user}.  If the username is omitted
 (along with the @samp{@@} sign), then your user name will be used.
 (This is the normal @command{rsh} behavior.)  It is necessary for the
 remote machine, in addition to permitting your @command{rsh} access, to
-have the @file{/usr/ucb/rmt} program installed.  If you need to use a
-file whose name includes a colon, then the remote tape drive behavior
+have the @file{rmt} program installed (This command is included in
+the @GNUTAR{} distribution and by default is installed under
+@file{@var{prefix}/libexec/rmt}, were @var{prefix} means your
+installation prefix). If you need to use a file whose name includes a
+colon, then the remote tape drive behavior
 can be inhibited by using the @value{op-force-local} option.
 
 @FIXME{i know we went over this yesterday, but bob (and now i do again,
@@ -7165,7 +7174,7 @@ To use the older, obsolete, @command{compress} program, use the
 uses.  You could be sued for patent infringement merely by running
 @command{compress}.
 
-I have one question, or maybe it's a suggestion if there isn't a way
+@FIXME{I have one question, or maybe it's a suggestion if there isn't a way
 to do it now. I would like to use @value{op-gzip}, but I'd also like
 the output to be fed through a program like @acronym{GNU}
 @command{ecc} (actually, right now that's @samp{exactly} what I'd like
@@ -7197,7 +7206,7 @@ extraction is needed rather than creation.
 It has been reported that if one writes compressed data (through the
 @value{op-gzip} or @value{op-compress} options) to a DLT and tries to use
 the DLT compression mode, the data will actually get bigger and one will
-end up with less space on the tape.
+end up with less space on the tape.}
 
 @node sparse
 @subsection Archiving Sparse Files
@@ -7918,12 +7927,19 @@ If the file name contains a @samp{:}, it is interpreted as
 @samp{hostname:file name}.  If the @var{hostname} contains an @dfn{at}
 sign (@kbd{@@}), it is treated as @samp{user@@hostname:file name}.  In
 either case, @command{tar} will invoke the command @command{rsh} (or
-@command{remsh}) to start up an @file{/etc/rmt} on the remote machine.  If
-you give an alternate login name, it will be given to the @command{rsh}.
-Naturally, the remote machine must have an executable @file{/etc/rmt}.
-This program is free software from the University of California, and a
-copy of the source code can be found with the sources for @command{tar};
-it's compiled and installed by default.
+@command{remsh}) to start up an @command{/usr/libexec/rmt} on the remote
+machine. If you give an alternate login name, it will be given to the
+@command{rsh}.
+Naturally, the remote machine must have an executable
+@command{/usr/libexec/rmt}. This program is free software from the
+University of California, and a copy of the source code can be found
+with the sources for @command{tar}; it's compiled and installed by default.
+The exact path to this utility is determined when configuring the package.
+It is @file{@var{prefix}/libexec/rmt}, where @var{prefix} stands for
+your installation prefix. This location may also be overridden at
+runtime by using @value{op-rmt-command} option (@xref{Option Summary,
+---rmt-command}, for detailed description of this option. @xref{Remote
+Tape Server}, for the description of @command{rmt} command).
 
 If this option is not given, but the environment variable @env{TAPE}
 is set, its value is used; otherwise, old versions of @command{tar}
@@ -8009,15 +8025,16 @@ nonzero status, exit.  This implies @value{op-multi-volume}.
 @pindex rmt
 In order to access the tape drive on a remote machine, @command{tar}
 uses the remote tape server written at the University of California at
-Berkeley.  The remote tape server must be installed as @file{/etc/rmt}
-on any machine whose tape drive you want to use.  @command{tar} calls
-@file{/etc/rmt} by running an @command{rsh} or @command{remsh} to the remote
-machine, optionally using a different login name if one is supplied.
+Berkeley.  The remote tape server must be installed as
+@file{@var{prefix}/libexec/rmt} on any machine whose tape drive you
+want to use.  @command{tar} calls @command{rmt} by running an
+@command{rsh} or @command{remsh} to the remote machine, optionally
+using a different login name if one is supplied.
 
 A copy of the source for the remote tape server is provided.  It is
 Copyright @copyright{} 1983 by the Regents of the University of
-California, but can be freely distributed.  Instructions for compiling
-and installing it are included in the @file{Makefile}.
+California, but can be freely distributed. It is compiled and
+installed by default.
 
 @cindex absolute file names
 Unless you use the @value{op-absolute-names} option, @GNUTAR{}

@@ -46,6 +46,28 @@ in the environment before configuring (the behavior of `-[0-7]' or
 `-[0-7]lmh' options in `tar' are then derived automatically).  Similarly,
 `DEFAULT_BLOCKING' can be preset to something else than 20.
 
+** Selecting full pathname of the "rmt" binary.
+
+Previous versions of tar always looked for "rmt" binary using
+hardcoded path "/etc/rmt". However, the "rmt" program included
+in the distribution was installed under "$prefix/libexec/rmt".
+To fix this discrepancy, tar now looks for "$prefix/libexec/rmt".
+If you do not want this behavior, specify full path name of
+"rmt" binary using DEFAULT_RMT_COMMAND variable, e.g.:
+
+./configure DEFAULT_RMT_COMMAND=/etc/rmt
+
+** Installing backup scripts.
+
+This version of tar is shipped with the shell scripts for producing
+incremental backups (dumps) and restoring filesystems from them.
+The name of the backup script is "backup". The name of the
+restore script is "restore". They are installed in "$prefix/sbin"
+directory.
+
+Use option --enable-backup-scripts to compile and install these
+scripts.
+
 ** `--disable-largefile' omits support for large files, even if the
 operating system supports large files.  Typically, large files are
 those larger on 2 GB on a 32-bit host.
@@ -169,9 +191,10 @@ and new `tar' features.
 
 * What's next?
 
-In the future we will try to release tar-1.14 as soon as possible and
-start merging with paxutils afterwards.  We'll also try to rewrite
-some parts of the documentation after paxutils has been merged.
+GNU tar will be merged into GNU paxutils: a project containing
+several utilities related to creating and handling archives in
+various formats. The project will include tar, cpio and pax
+utilities.
 
 * Bug reporting.
 
