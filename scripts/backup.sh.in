@@ -45,7 +45,7 @@ mt_status() {
 # The main configuration file may override any of these variables
 MT_BEGIN=mt_begin
 MT_REWIND=mt_rewind
-MT_OFFLINE=mt_offl
+MT_OFFLINE=mt_offline
 MT_STATUS=mt_status
 
 # Insure `mail' is in PATH.
@@ -104,11 +104,11 @@ test_root() {
     if [ ! -w ${ROOT_FS-/} ]; then
 	bailout "The backup must be run as root or else some files will fail to be dumped."
     fi
-    case "${ROOT_FS}" in
-    */)	  ;;
-    *)	  ROOT_FS="${ROOT_FS}/"
-    esac
 }
+
+root_fs() {
+    echo "${ROOT_FS}$1" | tr -s /
+}    
 
 advice() {
     echo "Directory $1 is not found." >&2
@@ -278,7 +278,7 @@ flush_level_log() {
 # usage: get_dump_time LEVEL
 get_dump_time() {
     ls -r ${LOGPATH}/log-*-level-$1 \
-        | head -1 \
+        | head -n 1 \
 	| sed "s,.*log-\(.*\)-level-$1,\1,"
 }
 
