@@ -337,7 +337,6 @@ tar_checksum (union block *header, bool silent)
 enum read_header
 read_header (bool raw_extended_headers)
 {
-  char *p;
   union block *header;
   union block *header_copy;
   char *bp;

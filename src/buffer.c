@@ -182,7 +182,6 @@ enum compress_type
 check_compressed_archive ()
 {
   struct zip_magic *p;
-  size_t status;
   bool sfr, srp;
 
   /* Prepare global data needed for find_next_block: */
