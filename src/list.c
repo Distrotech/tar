@@ -30,7 +30,6 @@
 #define max(a, b) ((a) < (b) ? (b) : (a))
 
 union block *current_header;	/* points to current archive header */
-struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
 union block *recent_long_name;	/* recent long name header and contents */
 union block *recent_long_link;	/* likewise, for long link */
@@ -88,14 +87,14 @@ read_and (void (*do_something) (void))
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
 
-	  if (! name_match (current_file_name)
+	  if (! name_match (current_stat_info.file_name)
 	      || (newer_mtime_option != TYPE_MINIMUM (time_t)
 		  /* FIXME: We get mtime now, and again later; this causes
 		     duplicate diagnostics if header.mtime is bogus.  */
-		  && ((current_stat.st_mtime
+		  && ((current_stat_info.stat.st_mtime
 		       = TIME_FROM_HEADER (current_header->header.mtime))
 		      < newer_mtime_option))
-	      || excluded_name (current_file_name))
+	      || excluded_name (current_stat_info.file_name))
 	    {
 	      switch (current_header->header.typeflag)
 		{
@@ -107,7 +106,7 @@ read_and (void (*do_something) (void))
 		case DIRTYPE:
 		  if (show_omitted_dirs_option)
 		    WARN ((0, 0, _("%s: Omitting"),
-			   quotearg_colon (current_file_name)));
+			   quotearg_colon (current_stat_info.file_name)));
 		  /* Fall through.  */
 		default:
 		  skip_member ();
@@ -179,7 +178,7 @@ list_archive (void)
   if (verbose_option)
     {
       if (verbose_option > 1)
-	decode_header (current_header, &current_stat, &current_format, 0);
+	decode_header (current_header, &current_stat_info, &current_format, 0);
       print_header (-1);
     }
 
@@ -192,10 +191,10 @@ list_archive (void)
       set_next_block_after (current_header);
       if (multi_volume_option)
 	{
-	  assign_string (&save_name, current_file_name);
-	  save_totsize = current_stat.st_size;
+	  assign_string (&save_name, current_stat_info.file_name);
+	  save_totsize = current_stat_info.stat.st_size;
 	}
-      for (size = current_stat.st_size; size > 0; size -= written)
+      for (size = current_stat_info.stat.st_size; size > 0; size -= written)
 	{
 	  if (multi_volume_option)
 	    save_sizeleft = size;
@@ -214,7 +213,7 @@ list_archive (void)
 				(data_block->buffer + written - 1));
 	  if (check != written)
 	    {
-	      write_error_details (current_file_name, check, written);
+	      write_error_details (current_stat_info.file_name, check, written);
 	      skip_file (size - written);
 	      break;
 	    }
@@ -228,7 +227,7 @@ list_archive (void)
     }
 
   if (multi_volume_option)
-    assign_string (&save_name, current_file_name);
+    assign_string (&save_name, current_stat_info.file_name);
 
   skip_member ();
 
@@ -238,7 +237,7 @@ list_archive (void)
 
 /* Read a block that's supposed to be a header block.  Return its
    address in "current_header", and if it is good, the file's size in
-   current_stat.st_size.
+   current_stat_info.stat.st_size.
 
    Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a
    block full of zeros (EOF marker).
@@ -320,10 +319,17 @@ read_header (bool raw_extended_headers)
 
       /* Good block.  Decode file size and return.  */
 
+      if (header->header.typeflag == XHDTYPE
+	  || header->header.typeflag == XGLTYPE)
+	{
+	  xheader_read (header, OFF_FROM_HEADER (header->header.size));
+	  continue;
+	}
+      
       if (header->header.typeflag == LNKTYPE)
-	current_stat.st_size = 0;	/* links 0 size on tape */
+	current_stat_info.stat.st_size = 0;	/* links 0 size on tape */
       else
-	current_stat.st_size = OFF_FROM_HEADER (header->header.size);
+	current_stat_info.stat.st_size = OFF_FROM_HEADER (header->header.size);
 
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK)
@@ -332,9 +338,9 @@ read_header (bool raw_extended_headers)
 	    return HEADER_SUCCESS_EXTENDED;
 	  else
 	    {
-	      size_t name_size = current_stat.st_size;
+	      size_t name_size = current_stat_info.stat.st_size;
 	      size = name_size - name_size % BLOCKSIZE + 2 * BLOCKSIZE;
-	      if (name_size != current_stat.st_size || size < name_size)
+	      if (name_size != current_stat_info.stat.st_size || size < name_size)
 		xalloc_die ();
 	    }
 
@@ -421,9 +427,9 @@ read_header (bool raw_extended_headers)
 	      recent_long_name = 0;
 	      recent_long_name_blocks = 0;
 	    }
-	  assign_string (&orig_file_name, name);
-	  assign_string (&current_file_name, name);
-	  current_trailing_slash = strip_trailing_slashes (current_file_name);
+	  assign_string (&current_stat_info.orig_file_name, name);
+	  assign_string (&current_stat_info.file_name, name);
+	  current_stat_info.had_trailing_slash = strip_trailing_slashes (current_stat_info.file_name);
 
 	  if (recent_long_link)
 	    free (recent_long_link);
@@ -442,12 +448,14 @@ read_header (bool raw_extended_headers)
 	      recent_long_link = 0;
 	      recent_long_link_blocks = 0;
 	    }
-	  assign_string (&current_link_name, name);
+	  assign_string (&current_stat_info.link_name, name);
 
 	  return HEADER_SUCCESS;
 	}
     }
 }
+
+#define ISOCTAL(c) ((c)>='0'&&(c)<='7')
 
 /* Decode things from a file HEADER block into STAT_INFO, also setting
    *FORMAT_POINTER depending on the header block format.  If
@@ -463,68 +471,85 @@ read_header (bool raw_extended_headers)
    should decode it without uid/gid before calling a routine,
    e.g. print_header, that assumes decoded data.  */
 void
-decode_header (union block *header, struct stat *stat_info,
+decode_header (union block *header, struct tar_stat_info *stat_info,
 	       enum archive_format *format_pointer, int do_user_group)
 {
   enum archive_format format;
 
   if (strcmp (header->header.magic, TMAGIC) == 0)
-    format = POSIX_FORMAT;
+    {
+      if (header->star_header.prefix[130] == 0
+	  && ISOCTAL (header->star_header.atime[0])
+	  && header->star_header.atime[11] == ' '
+	  && ISOCTAL (header->star_header.ctime[0])
+	  && header->star_header.ctime[11] == ' ')
+	format = STAR_FORMAT;
+      else
+	format = POSIX_FORMAT;
+    }
   else if (strcmp (header->header.magic, OLDGNU_MAGIC) == 0)
     format = OLDGNU_FORMAT;
   else
     format = V7_FORMAT;
   *format_pointer = format;
 
-  stat_info->st_mode = MODE_FROM_HEADER (header->header.mode);
-  stat_info->st_mtime = TIME_FROM_HEADER (header->header.mtime);
-
+  stat_info->stat.st_mode = MODE_FROM_HEADER (header->header.mode);
+  stat_info->stat.st_mtime = TIME_FROM_HEADER (header->header.mtime);
+  assign_string (&stat_info->uname, header->header.uname);
+  assign_string (&stat_info->gname, header->header.gname);
+  stat_info->devmajor = MAJOR_FROM_HEADER (header->header.devmajor);
+  stat_info->devminor = MINOR_FROM_HEADER (header->header.devminor);
+  
   if (format == OLDGNU_FORMAT && incremental_option)
     {
-      stat_info->st_atime = TIME_FROM_HEADER (header->oldgnu_header.atime);
-      stat_info->st_ctime = TIME_FROM_HEADER (header->oldgnu_header.ctime);
+      stat_info->stat.st_atime = TIME_FROM_HEADER (header->oldgnu_header.atime);
+      stat_info->stat.st_ctime = TIME_FROM_HEADER (header->oldgnu_header.ctime);
     }
 
   if (format == V7_FORMAT)
     {
-      stat_info->st_uid = UID_FROM_HEADER (header->header.uid);
-      stat_info->st_gid = GID_FROM_HEADER (header->header.gid);
-      stat_info->st_rdev = 0;
+      stat_info->stat.st_uid = UID_FROM_HEADER (header->header.uid);
+      stat_info->stat.st_gid = GID_FROM_HEADER (header->header.gid);
+      stat_info->stat.st_rdev = 0;
     }
   else
     {
+
+      if (format == STAR_FORMAT)
+	{
+	  stat_info->stat.st_atime = TIME_FROM_HEADER (header->star_header.atime);
+	  stat_info->stat.st_ctime = TIME_FROM_HEADER (header->star_header.ctime);
+	}
+
       if (do_user_group)
 	{
 	  /* FIXME: Decide if this should somewhat depend on -p.  */
 
 	  if (numeric_owner_option
 	      || !*header->header.uname
-	      || !uname_to_uid (header->header.uname, &stat_info->st_uid))
-	    stat_info->st_uid = UID_FROM_HEADER (header->header.uid);
+	      || !uname_to_uid (header->header.uname, &stat_info->stat.st_uid))
+	    stat_info->stat.st_uid = UID_FROM_HEADER (header->header.uid);
 
 	  if (numeric_owner_option
 	      || !*header->header.gname
-	      || !gname_to_gid (header->header.gname, &stat_info->st_gid))
-	    stat_info->st_gid = GID_FROM_HEADER (header->header.gid);
+	      || !gname_to_gid (header->header.gname, &stat_info->stat.st_gid))
+	    stat_info->stat.st_gid = GID_FROM_HEADER (header->header.gid);
 	}
+      
       switch (header->header.typeflag)
 	{
 	case BLKTYPE:
-	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_HEADER (header->header.devmajor),
-		       MINOR_FROM_HEADER (header->header.devminor));
-	  break;
-
 	case CHRTYPE:
-	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_HEADER (header->header.devmajor),
-		       MINOR_FROM_HEADER (header->header.devminor));
+	  stat_info->stat.st_rdev = makedev (stat_info->devmajor, stat_info->devminor);
 	  break;
 
 	default:
-	  stat_info->st_rdev = 0;
+	  stat_info->stat.st_rdev = 0;
 	}
     }
+
+  if (extended_header.nblocks)
+    xheader_decode (stat_info);
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
@@ -723,7 +748,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	*--value_string = '-';
       if (minus_minval)
 	*--minval_string = '-';
-      ERROR ((0, 0, _("Archive value %s is out of %s range %s..%s"),
+      ERROR ((0, 0, _("Archive value %s is out of %s range %s.%s"),
 	      value_string, type,
 	      minval_string, STRINGIFY_BIGINT (maxval, maxval_buf)));
     }
@@ -885,7 +910,7 @@ tartime (time_t t)
 
 
 /* FIXME: Note that print_header uses the globals HEAD, HSTAT, and
-   HEAD_STANDARD, which must be set up in advance.  Not very clean...  */
+   HEAD_STANDARD, which must be set up in advance.  Not very clean..  */
 
 /* UGSWIDTH starts with 18, so with user and group names <= 8 chars, the
    columns never shift during the listing.  */
@@ -904,7 +929,7 @@ print_header (off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
-  char *temp_name = orig_file_name ? orig_file_name : current_file_name;
+  char *temp_name = current_stat_info.orig_file_name ? current_stat_info.orig_file_name : current_stat_info.file_name;
   
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
@@ -988,11 +1013,11 @@ print_header (off_t block_ordinal)
 	  break;
 	}
 
-      decode_mode (current_stat.st_mode, modes + 1);
+      decode_mode (current_stat_info.stat.st_mode, modes + 1);
 
       /* Time stamp.  */
 
-      time_stamp = tartime (current_stat.st_mtime);
+      time_stamp = tartime (current_stat_info.stat.st_mtime);
 
       /* User and group names.  */
 
@@ -1047,10 +1072,10 @@ print_header (off_t block_ordinal)
 	case CHRTYPE:
 	case BLKTYPE:
 	  strcpy (size,
-		  STRINGIFY_BIGINT (major (current_stat.st_rdev), uintbuf));
+		  STRINGIFY_BIGINT (major (current_stat_info.stat.st_rdev), uintbuf));
 	  strcat (size, ",");
 	  strcat (size,
-		  STRINGIFY_BIGINT (minor (current_stat.st_rdev), uintbuf));
+		  STRINGIFY_BIGINT (minor (current_stat_info.stat.st_rdev), uintbuf));
 	  break;
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
@@ -1060,7 +1085,7 @@ print_header (off_t block_ordinal)
 		   uintbuf));
 	  break;
 	default:
-	  strcpy (size, STRINGIFY_BIGINT (current_stat.st_size, uintbuf));
+	  strcpy (size, STRINGIFY_BIGINT (current_stat_info.stat.st_size, uintbuf));
 	  break;
 	}
 
@@ -1078,11 +1103,11 @@ print_header (off_t block_ordinal)
       switch (current_header->header.typeflag)
 	{
 	case SYMTYPE:
-	  fprintf (stdlis, " -> %s\n", quotearg (current_link_name));
+	  fprintf (stdlis, " -> %s\n", quotearg (current_stat_info.link_name));
 	  break;
 
 	case LNKTYPE:
-	  fprintf (stdlis, _(" link to %s\n"), quotearg (current_link_name));
+	  fprintf (stdlis, _(" link to %s\n"), quotearg (current_stat_info.link_name));
 	  break;
 
 	default:
@@ -1192,7 +1217,8 @@ skip_member (void)
   char save_typeflag = current_header->header.typeflag;
   set_next_block_after (current_header);
 
-  if (current_header->oldgnu_header.isextended)
+  if (current_format == OLDGNU_FORMAT
+      && current_header->oldgnu_header.isextended)
     {
       union block *exhdr;
       do
@@ -1206,5 +1232,5 @@ skip_member (void)
     }
 
   if (save_typeflag != DIRTYPE)
-    skip_file (current_stat.st_size);
+    skip_file (current_stat_info.stat.st_size);
 }
