@@ -372,7 +372,9 @@ name_next (int change_dirs)
 
       if (chdir_flag)
 	{
-	  chdir_from_initial_wd (name_buffer);
+	  if (chdir (name_buffer) < 0)
+	    FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
+			  name_buffer));
 	  chdir_flag = 0;
 	}
       else if (change_dirs && strcmp (name_buffer, "-C") == 0)
@@ -427,7 +429,7 @@ name_gather (void)
 
   if (same_order_option)
     {
-      char *change_dir = 0;
+      static int change_dir;
 
       if (allocated_length == 0)
 	{
@@ -442,9 +444,7 @@ name_gather (void)
 	  char const *dir = name_next (0);
 	  if (! dir)
 	    FATAL_ERROR ((0, 0, _("Missing file name after -C")));
-	  if (change_dir)
-	    free (change_dir);
-	  change_dir = xstrdup (dir);
+	  change_dir = chdir_arg (xstrdup (dir));
 	}
 
       if (name)
@@ -465,33 +465,30 @@ name_gather (void)
 	  namelist = buffer;
 	  namelast = namelist;
 	}
-      else if (change_dir)
-	free (change_dir);
-
-      return;
     }
-
-  /* Non sorted names -- read them all in.  */
-
-  for (;;)
+  else
     {
-      char *change_dir = 0;
-      while ((name = name_next (0)) && strcmp (name, "-C") == 0)
+      /* Non sorted names -- read them all in.  */
+      int change_dir = 0;
+
+      for (;;)
 	{
-	  char const *dir = name_next (0);
-	  if (! dir)
-	    FATAL_ERROR ((0, 0, _("Missing file name after -C")));
-	  if (change_dir)
-	    free (change_dir);
-	  change_dir = xstrdup (dir);
-	}
-      if (name)
-	addname (name, change_dir);
-      else
-	{
-	  if (change_dir)
-	    addname (0, change_dir);
-	  break;
+	  int change_dir0 = change_dir;
+	  while ((name = name_next (0)) && strcmp (name, "-C") == 0)
+	    {
+	      char const *dir = name_next (0);
+	      if (! dir)
+		FATAL_ERROR ((0, 0, _("Missing file name after -C")));
+	      change_dir = chdir_arg (xstrdup (dir));
+	    }
+	  if (name)
+	    addname (name, change_dir);
+	  else
+	    {
+	      if (change_dir != change_dir0)
+		addname (0, change_dir);
+	      break;
+	    }
 	}
     }
 }
@@ -501,7 +498,7 @@ name_gather (void)
 `-----------------------------*/
 
 void
-addname (char const *string, char const *change_dir)
+addname (char const *string, int change_dir)
 {
   struct name *name;
   size_t length;
@@ -549,7 +546,6 @@ int
 name_match (const char *path)
 {
   size_t length = strlen (path);
-  char const *change_dir = 0;
 
   while (1)
     {
@@ -560,16 +556,13 @@ name_match (const char *path)
 
       if (cursor->fake)
 	{
-	  chdir_from_initial_wd (cursor->change_dir);
+	  chdir_do (cursor->change_dir);
 	  namelist = 0;
 	  return ! files_from_option;
 	}
 
       for (; cursor; cursor = cursor->next)
 	{
-	  if (cursor->change_dir)
-	    change_dir = cursor->change_dir;
-
 	  /* If first chars don't match, quick skip.  */
 
 	  if (cursor->firstch && cursor->name[0] != path[0])
@@ -588,7 +581,7 @@ name_match (const char *path)
 		  free (namelist);
 		  namelist = 0;
 		}
-	      chdir_from_initial_wd (change_dir);
+	      chdir_do (cursor->change_dir);
   
 	      /* We got a match.  */
 	      return 1;
@@ -647,14 +640,205 @@ names_notfound (void)
 	ERROR ((0, 0, _("%s: Not found in archive"), name));
     }
 }
+
+/* Sorting name lists.  */
 
-/*---.
-| ?  |
-`---*/
+/* Sort linked LIST of names, of given LENGTH, using COMPARE to order
+   names.  Return the sorted list.  Apart from the type `struct name'
+   and the definition of SUCCESSOR, this is a generic list-sorting
+   function, but it's too painful to make it both generic and portable
+   in C.  */
+
+static struct name *
+merge_sort (struct name *list, int length,
+	    int (*compare) (struct name const*, struct name const*))
+{
+  struct name *first_list;
+  struct name *second_list;
+  int first_length;
+  int second_length;
+  struct name *result;
+  struct name **merge_point;
+  struct name *cursor;
+  int counter;
+
+# define SUCCESSOR(name) ((name)->next)
+
+  if (length == 1)
+    return list;
+
+  if (length == 2)
+    {
+      if ((*compare) (list, SUCCESSOR (list)) > 0)
+	{
+	  result = SUCCESSOR (list);
+	  SUCCESSOR (result) = list;
+	  SUCCESSOR (list) = 0;
+	  return result;
+	}
+      return list;
+    }
+
+  first_list = list;
+  first_length = (length + 1) / 2;
+  second_length = length / 2;
+  for (cursor = list, counter = first_length - 1;
+       counter;
+       cursor = SUCCESSOR (cursor), counter--)
+    continue;
+  second_list = SUCCESSOR (cursor);
+  SUCCESSOR (cursor) = 0;
+
+  first_list = merge_sort (first_list, first_length, compare);
+  second_list = merge_sort (second_list, second_length, compare);
+
+  merge_point = &result;
+  while (first_list && second_list)
+    if ((*compare) (first_list, second_list) < 0)
+      {
+	cursor = SUCCESSOR (first_list);
+	*merge_point = first_list;
+	merge_point = &SUCCESSOR (first_list);
+	first_list = cursor;
+      }
+    else
+      {
+	cursor = SUCCESSOR (second_list);
+	*merge_point = second_list;
+	merge_point = &SUCCESSOR (second_list);
+	second_list = cursor;
+      }
+  if (first_list)
+    *merge_point = first_list;
+  else
+    *merge_point = second_list;
+
+  return result;
+
+#undef SUCCESSOR
+}
+
+/* A comparison function for sorting names.  Put found names last;
+   break ties by string comparison.  */
+
+static int
+compare_names (struct name const *n1, struct name const *n2)
+{
+  int found_diff = n2->found - n1->found;
+  return found_diff ? found_diff : strcmp (n1->name, n2->name);
+}
+
+/* Add all the dirs in PATH, which is a directory, to the namelist.
+   If any of the files is a directory, recurse on the subdirectory.
+   CHANGE_DIR is the number of the directory that PATH is relative to.
+   DEVICE is the device not to leave, if the -l option is specified.  */
+
+static void
+add_hierarchy_to_namelist (char *path, int change_dir, dev_t device)
+{
+  char *buffer = get_directory_contents (path, device);
+
+  {
+    struct name *name;
+
+    for (name = namelist; name; name = name->next)
+      if (strcmp (name->name, path) == 0)
+	break;
+    if (name)
+      name->dir_contents = buffer ? buffer : "\0\0\0\0";
+  }
+
+  if (buffer)
+    {
+      size_t name_length = strlen (path);
+      size_t allocated_length = (name_length >= NAME_FIELD_SIZE
+				 ? name_length + NAME_FIELD_SIZE
+				 : NAME_FIELD_SIZE);
+      char *name_buffer = xmalloc (allocated_length + 1);
+				/* FIXME: + 2 above?  */
+      char *string;
+      size_t string_length;
+
+      strcpy (name_buffer, path);
+      if (name_buffer[name_length - 1] != '/')
+	{
+	  name_buffer[name_length++] = '/';
+	  name_buffer[name_length] = '\0';
+	}
+
+      for (string = buffer; *string; string += string_length + 1)
+	{
+	  string_length = strlen (string);
+	  if (*string == 'D')
+	    {
+	      if (name_length + string_length >= allocated_length)
+		{
+		  while (name_length + string_length >= allocated_length)
+		    allocated_length += NAME_FIELD_SIZE;
+		  name_buffer = xrealloc (name_buffer, allocated_length + 1);
+		}
+	      strcpy (name_buffer + name_length, string + 1);
+	      addname (name_buffer, change_dir);
+	      if (*string == 'D')
+		add_hierarchy_to_namelist (name_buffer, change_dir, device);
+	    }
+	}
+
+      free (name_buffer);
+    }
+}
+
+/* Collect all the names from argv[] (or whatever), expand them into a
+   directory tree, and sort them.  This gets only subdirectories, not
+   all files.  */
 
 void
-name_expand (void)
+collect_and_sort_names (void)
 {
+  struct name *name;
+  struct name *next_name;
+  int num_names;
+  struct stat statbuf;
+
+  name_gather ();
+
+  if (listed_incremental_option)
+    read_directory_file ();
+
+  if (!namelist)
+    addname (".", 0);
+
+  for (name = namelist; name; name = next_name)
+    {
+      next_name = name->next;
+      if (name->found || name->dir_contents)
+	continue;
+      if (name->regexp)		/* FIXME: just skip regexps for now */
+	continue;
+      chdir_do (name->change_dir);
+      if (name->fake)
+	continue;
+
+      if (deref_stat (dereference_option, name->name, &statbuf) != 0)
+	{
+	  ERROR ((0, errno, _("Cannot stat %s"), name->name));
+	  continue;
+	}
+      if (S_ISDIR (statbuf.st_mode))
+	{
+	  name->found = 1;
+	  add_hierarchy_to_namelist (name->name, name->change_dir,
+				     statbuf.st_dev);
+	}
+    }
+
+  num_names = 0;
+  for (name = namelist; name; name = name->next)
+    num_names++;
+  namelist = merge_sort (namelist, num_names, compare_names);
+
+  for (name = namelist; name; name = name->next)
+    name->found = 0;
 }
 
 /*-------------------------------------------------------------------------.
@@ -721,12 +905,12 @@ name_from_list (void)
 {
   if (!gnu_list_name)
     gnu_list_name = namelist;
-  while (gnu_list_name && gnu_list_name->found)
+  while (gnu_list_name && (gnu_list_name->found | gnu_list_name->fake))
     gnu_list_name = gnu_list_name->next;
   if (gnu_list_name)
     {
       gnu_list_name->found = 1;
-      chdir_from_initial_wd (gnu_list_name->change_dir);
+      chdir_do (gnu_list_name->change_dir);
       return gnu_list_name->name;
     }
   return 0;
@@ -778,5 +962,36 @@ excluded_name (char const *name)
 			      FNM_FILE_NAME | FNM_LEADING_DIR))
       return 1;
 
+  return 0;
+}
+
+/* Names to avoid dumping.  */
+
+struct avoided_name
+{
+  struct avoided_name const *next;
+  char name[1];
+};
+
+static struct avoided_name *avoided_names;
+
+/* Remember to not archive NAME.  */
+void
+add_avoided_name (char const *name)
+{
+  struct avoided_name *p = xmalloc (sizeof *p + strlen (name));
+  p->next = avoided_names;
+  avoided_names = p;
+  strcpy (p->name, name);
+}
+
+/* Should NAME be avoided when archiving?  */
+int
+is_avoided_name (char const *name)
+{
+  struct avoided_name const *p;
+  for (p = avoided_names; p; p = p->next)
+    if (strcmp (p->name, name) == 0)
+      return 1;
   return 0;
 }
