@@ -1,3 +1,17 @@
+2004-12-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* doc/tar.texi: Document auto-detection of compressed archive
+	formats.
+	* src/tar.c (decode_options): Ignore --seek if used with --delete.
+	Delete.c is based on the assumption that the archive is being
+	actually read, not lseeked.
+	
+	* tests/delete05.at: New file
+	* tests/extrac02.at: Fixed typo in AT_SETUP
+	* tests/Makefile.am: Added delete05.at
+	* tests/testsuite.at: Likewise.
+
 2004-12-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/delete.c (delete_archive_members): Bugfix: when
