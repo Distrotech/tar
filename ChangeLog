@@ -25,12 +25,12 @@
 	(names_done): Removed
 	(all_names_found): Changed prototype.
 	(ISFOUND,WASFOUND): New macros
-	* src/delete.c (delete_archive_members): Honor --occurence
+	* src/delete.c (delete_archive_members): Honor --occurrence
 	option.
 	* src/list.c (read_and): Likewise.
 	* src/names.c: Count number of occurrences of each name in the
 	archive.
-	(name_match): Honor --occurence option.
+	(name_match): Honor --occurrence option.
 	(names_done): Removed
 	(all_names_found,names_notfound): Rewritten.
 
