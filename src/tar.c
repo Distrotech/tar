@@ -208,6 +208,7 @@ enum
   NUMERIC_OWNER_OPTION,
   OCCURRENCE_OPTION,
   OLD_ARCHIVE_OPTION,
+  ONE_FILE_SYSTEM_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
   PAX_OPTION,
@@ -460,8 +461,9 @@ static struct argp_option options[] = {
    N_("exclude pattern wildcards do not match '/'"), 71 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), 71 },
-  {"one-file-system", 'l', 0, 0, /* FIXME: emit warning */
+  {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
    N_("stay in local file system when creating archive"), 71 },
+  {NULL, 'l', 0, OPTION_HIDDEN, "", 71},
   {"recursion", RECURSION_OPTION, 0, 0,
    N_("recurse into directories (default)"), 71 },
   {"absolute-names", 'P', 0, 0,
@@ -545,10 +547,14 @@ static void
 show_default_settings (FILE *stream)
 {
   fprintf (stream,
-	   "--format=%s -f%s -b%d --rmt-command=%s --rsh-command=%s\n",
+	   "--format=%s -f%s -b%d --rmt-command=%s",
 	   archive_format_string (DEFAULT_ARCHIVE_FORMAT),
 	   DEFAULT_ARCHIVE, DEFAULT_BLOCKING,
-	   DEFAULT_RMT_COMMAND, REMOTE_SHELL);
+	   DEFAULT_RMT_COMMAND);
+#ifdef REMOTE_SHELL
+  fprintf (stream, " --rsh-command=%s", REMOTE_SHELL);
+#endif
+  fprintf (stream, "\n");
 }
 
 static void
@@ -714,9 +720,19 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
       
     case 'l':
+      /* Historically equivalent to --one-file-system. This usage is
+	 incompatible with UNIX98 and POSIX specs and therefore is
+	 deprecated. The semantics of -l option will be changed in
+	 future versions. See TODO.
+      */
+      WARN ((0, 0,
+	     _("Semantics of -l option will change in the future releases.")));
+      WARN ((0, 0,
+	     _("Please use --one-file-system option instead.")));
+      /* FALL THROUGH */
+    case ONE_FILE_SYSTEM_OPTION:
       /* When dumping directories, don't dump files/subdirectories
-	 that are on other filesystems.  */
-      
+	 that are on other filesystems. */
       one_file_system_option = true;
       break;
       
@@ -1366,7 +1382,7 @@ decode_options (int argc, char **argv)
 
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP,
 		  &index, &args))
-    exit (1); /* FIXME */
+    exit (1);
       
 
   /* Special handling for 'o' option:
