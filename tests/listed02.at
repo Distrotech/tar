@@ -29,7 +29,6 @@ AT_SETUP([working --listed])
 AT_KEYWORDS([listed02])
 
 AT_TAR_CHECK([
-mkdir directory
 
 echo Create directories
 mkdir tart
