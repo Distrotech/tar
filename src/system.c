@@ -714,34 +714,19 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
   int p[2];
   char *argv[4];
   
-  if (pipe (p))
-    {
-      pipe_error (file_name);
-      return -1;
-    }
-
+  xpipe (p);
   pipe_handler = signal (SIGPIPE, SIG_IGN);
-  pid = fork ();
-
-  if (pid < 0)
-    {
-      fork_error (file_name);
-      close (p[1]);
-      close (p[0]);
-      signal (SIGPIPE, pipe_handler);
-      return -1;
-    }
+  pid = xfork ();
 
   if (pid != 0)
     {
-      close (p[0]);
-      return p[1];
+      xclose (p[PREAD]);
+      return p[PWRITE];
     }
 
   /* Child */
-  close (0);
-  dup (p[0]);
-  close (p[1]);
+  xdup2 (p[PREAD], STDIN_FILENO);
+  xclose (p[PWRITE]);
   
   stat_to_env (file_name, typechar, st);
 
@@ -752,8 +737,7 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
 
   execv ("/bin/sh", argv);
 
-  exec_error (file_name);
-  _exit (127);
+  exec_fatal (file_name);
 }
 
 void
@@ -786,7 +770,7 @@ sys_wait_command (void)
     }
   else
     ERROR ((0, 0, _("%lu: Child terminated on unknown reason"),
-	    (unsigned long) pid, WTERMSIG (status)));
+	    (unsigned long) pid));
 
   pid = -1;
 }
