@@ -115,6 +115,9 @@ libtar_a_SOURCES += modechange.h modechange.c
 # pathmax
 libtar_a_SOURCES += pathmax.h
 
+# time_r
+EXTRA_DIST += time_r.h
+
 # quote
 libtar_a_SOURCES += quote.h quote.c
 
@@ -136,6 +139,9 @@ libtar_a_SOURCES += savedir.h savedir.c
 # stdbool
 BUILT_SOURCES += $(STDBOOL_H)
 EXTRA_DIST += stdbool_.h
+
+# strcase
+EXTRA_DIST += strcase.h
 
 # We need the following in order to create an <stdbool.h> when the system
 # doesn't have one that works.
