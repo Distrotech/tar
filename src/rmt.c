@@ -1,5 +1,5 @@
 /* Remote connection server.
-   Copyright 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright 1994, 1995, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -30,7 +30,8 @@
    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
 
 #include "system.h"
-#include "safe-read.h"
+#include <localedir.h>
+#include <safe-read.h>
 
 #include <getopt.h>
 #include <sys/socket.h>
@@ -71,10 +72,7 @@ static FILE *debug_file;
 #define	DEBUG2(File, Arg1, Arg2) \
   if (debug_file) fprintf(debug_file, File, Arg1, Arg2)
 
-/*------------------------------------------------.
-| Return an error string, given an error number.  |
-`------------------------------------------------*/
-
+/* Return an error string, given an error number.  */
 #if HAVE_STRERROR
 # ifndef strerror
 char *strerror ();
@@ -93,10 +91,6 @@ private_strerror (int errnum)
 # define strerror private_strerror
 #endif
 
-/*---.
-| ?  |
-`---*/
-
 static void
 report_error_message (const char *string)
 {
@@ -106,10 +100,6 @@ report_error_message (const char *string)
   full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 }
 
-/*---.
-| ?  |
-`---*/
-
 static void
 report_numbered_error (int num)
 {
@@ -118,10 +108,6 @@ report_numbered_error (int num)
   sprintf (reply_buffer, "E%d\n%s\n", num, strerror (num));
   full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 }
-
-/*---.
-| ?  |
-`---*/
 
 static void
 get_string (char *string)
@@ -138,10 +124,6 @@ get_string (char *string)
     }
   string[counter] = '\0';
 }
-
-/*---.
-| ?  |
-`---*/
 
 static void
 prepare_record_buffer (size_t size)
@@ -283,10 +265,6 @@ Manipulate a tape drive, accepting commands from a remote process.\n\
   exit (status);
 }
 
-/*---.
-| ?  |
-`---*/
-
 int
 main (int argc, char *const *argv)
 {
@@ -312,7 +290,7 @@ main (int argc, char *const *argv)
       
     case 'v':
       printf ("rmt (GNU %s) %s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 1999 Free Software Foundation, Inc.",
+	      "Copyright 2000 Free Software Foundation, Inc.",
 	      _("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
