@@ -303,7 +303,7 @@ options(argc, argv)
 
 	/* Set default option values */
 	blocking = DEFBLOCKING;		/* From Makefile */
-	ar_files = malloc (sizeof (char *) * 10);
+	ar_files = (char **) malloc (sizeof (char *) * 10);
 	ar_files_len = 10;
 	n_ar_files = 0;
 	cur_ar_file = 0;
@@ -401,8 +401,9 @@ options(argc, argv)
 #endif
 				if (n_ar_files == ar_files_len)
 				  ar_files 
-				    = (sizeof (char *)
-				       * (ar_files_len *= 2));
+				    = (char **) 
+				      ck_malloc (sizeof (char *)
+						 * (ar_files_len *= 2));
 				ar_files[n_ar_files++]=buf;
 			}
 			break;
@@ -445,8 +446,8 @@ options(argc, argv)
 		case 'f':	/* Use ar_file for the archive */
 			if (n_ar_files == ar_files_len)
 			  ar_files
-			    = (sizeof (char *)
-			       * (ar_files_len *= 2));
+			    = (char **) ck_malloc (sizeof (char *)
+						   * (ar_files_len *= 2));
 		
 			ar_files[n_ar_files++] = optarg;
 			break;
