@@ -1,5 +1,22 @@
 2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/system.c (sys_child_open_for_uncompress): Do not
+	set read_full_records_option: the compressed archive is
+	likely not to contain integer number of records. Should
+	the user wish to use reblocking, he may always give tar
+	-B option. This is a minor improvement over the change
+	dated 2004-03-22.
+	* src/buffer.c (open_archive): Removed assignment to
+	read_full_records_option.
+	
+	* src/names.c (safer_name_suffix): (safer_name_suffix): Use "%s"
+	as the format argument, rather than a possibly-translated variable
+	string. Patch provided by Jim Meyering  <jim@meyering.net>
+	* src/tar.c (decode_options): Fixed typo in the comment.
+	* tests/star/README: Minor correction
+	
+2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	* directory: New file. GNU directory entry for tar.
 	* doc/Makefile.am: Rewritten. Added rules for generating
 	documentation for the project's website.
