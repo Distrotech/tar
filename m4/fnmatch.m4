@@ -7,7 +7,8 @@ AC_DEFUN(AC_FUNC_FNMATCH,
 # Some versions of Solaris or SCO have a broken or incompatible fnmatch.
 # So we run a test program.  If we are cross-compiling, take no chance.
 # Thanks to John Oleynick, Franc,ois Pinard, and Paul Eggert for this test.
-[AC_TRY_RUN([main() {
+[AC_TRY_RUN([#include <fnmatch.h>
+main() {
   exit (fnmatch ("a*", "abc", 0) != 0
 	|| fnmatch("*c*", "c/x", FNM_FILE_NAME | FNM_LEADING_DIR) != 0);
 }],
