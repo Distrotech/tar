@@ -586,6 +586,14 @@ rmt_lseek__ (int handle, off_t offset, int whence)
   if (offset < 0)
     *--p = '-';
 
+  switch (whence)
+    {
+    case SEEK_SET: whence = 0; break;
+    case SEEK_CUR: whence = 1; break;
+    case SEEK_END: whence = 2; break;
+    default: abort ();
+    }
+
   sprintf (command_buffer, "L%s\n%d\n", p, whence);
 
   if (do_command (handle, command_buffer) == -1)
