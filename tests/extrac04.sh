@@ -14,7 +14,7 @@ touch directory/subdirectory/file1
 touch directory/subdirectory/file2
 tar -cf archive ./file1 directory
 tar -tf archive \
-  --exclude='*1' \
+  --exclude='./*1' \
   --exclude='d*/*1' \
   --exclude='d*/s*/*2' | sort
 
@@ -22,9 +22,6 @@ out="\
 directory/
 directory/file2
 directory/subdirectory/
-"
-
-err="tar: Removing leading \`./' from member names
 "
 
 . $srcdir/after

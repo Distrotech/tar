@@ -37,7 +37,6 @@ out="\
 err="\
 7+0 records in
 7+0 records out
-tar: Removing leading \`./' from member names
 2+1 records in
 2+1 records out
 "

@@ -28,21 +28,18 @@ for i in 1 2 3 4 5 6 7 8 9
 do touch $prefix$i
 done
 tar -cf archive ./$prefix*
-tar --delete -f archive ${prefix}5
+tar --delete -f archive ./${prefix}5
 tar -tf archive
 
 out="\
-${prefix}1
-${prefix}2
-${prefix}3
-${prefix}4
-${prefix}6
-${prefix}7
-${prefix}8
-${prefix}9
-"
-
-err="tar: Removing leading \`./' from member names
+./${prefix}1
+./${prefix}2
+./${prefix}3
+./${prefix}4
+./${prefix}6
+./${prefix}7
+./${prefix}8
+./${prefix}9
 "
 
 . $srcdir/after
