@@ -131,7 +131,7 @@
 @set xref-blocking-factor @xref{Blocking Factor}
 @set pxref-blocking-factor @pxref{Blocking Factor}
 
-@set op-bzip2 @kbd{--bzip2} (@kbd{-I})
+@set op-bzip2 @kbd{--bzip2} (@kbd{-j})
 @set ref-bzip2 @ref{gzip}
 @set xref-bzip2 @xref{gzip}
 @set pxref-bzip2 @pxref{gzip}
@@ -196,7 +196,7 @@
 @set xref-file @xref{file}
 @set pxref-file @pxref{file}
 
-@set op-files-from @kbd{--files-from=@var{file-of-names}} (@kbd{-T @var{file-of-names}})
+@set op-files-from @kbd{--files-from=@var{file-of-names}} (@kbd{-I @var{file-of-names}}, @kbd{-T @var{file-of-names}})
 @set ref-files-from @ref{files}
 @set xref-files-from @xref{files}
 @set pxref-files-from @pxref{files}
@@ -317,9 +317,9 @@
 @set pxref-one-file-system @pxref{one}
 
 @set op-overwrite @kbd{--overwrite}
-@set ref-overwrite @ref{Writing}
-@set xref-overwrite @xref{Writing}
-@set pxref-overwrite @pxref{Writing}
+@set ref-overwrite @ref{Overwrite Old Files}
+@set xref-overwrite @xref{Overwrite Old Files}
+@set pxref-overwrite @pxref{Overwrite Old Files}
 
 @set op-owner @kbd{--owner=@var{user}}
 @set ref-owner @ref{Option Summary}
@@ -474,28 +474,17 @@ Published by the Free Software Foundation,
 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA
 
-Copyright 1992, 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
+Copyright 1992, 1994, 1995, 1996, 1997, 1999, 2000 Free Software
+Foundation, Inc.
 
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no
+Front-Cover Texts, and with no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
 
-@ignore
-Permission is granted to process this file through TeX and print the
-results, provided the printed document carries copying permission
-notice identical to this one except for the removal of this paragraph
-(this paragraph not being relevant to the printed manual).
-
-@end ignore
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
 @end ifinfo
 
 @setchapternewpage odd
@@ -512,27 +501,21 @@ by the Foundation.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999 Free Software
+Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000 Free Software
 Foundation, Inc.
 
-Permission is granted to make and distribute verbatim copies of
-this manual provided the copyright notice and this permission notice
-are preserved on all copies.
-
-Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided that the entire
-resulting derived work is distributed under the terms of a permission
-notice identical to this one.
-
-Permission is granted to copy and distribute translations of this manual
-into another language, under the above conditions for modified versions,
-except that this permission notice may be stated in a translation approved
-by the Foundation.
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1
+or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no
+Front-Cover Texts, and with no Back-Cover Texts.
+A copy of the license is included in the section entitled ``GNU
+Free Documentation License''.
 @end titlepage
 
 @ifnottex
 @node Top
-@top Tar
+@top @sc{gnu} tar: an archiver tool
 
 @cindex file archival
 @cindex archiving files
@@ -555,6 +538,7 @@ document.  The rest of the menu lists all the lower level nodes.
 * Date input formats::
 * Formats::
 * Media::
+* GNU Free Documentation License::
 * Index::
 
 @detailmenu
@@ -736,14 +720,14 @@ Crossing Filesystem Boundaries
 
 Date input formats
 
-* General date syntax::         Common rules.
-* Calendar date item::          19 Dec 1994.
-* Time of day item::            9:20pm.
-* Time zone item::              @sc{est}, @sc{gmt}, @sc{utc}, ...
-* Day of week item::            Monday and others.
-* Relative item in date strings::  next tuesday, 2 years ago.
-* Pure numbers in date strings::  19931219, 1440.
-* Authors of getdate::          Bellovin, Berets, Eggert, Salz, et al.
+* General date syntax::            Common rules.
+* Calendar date items::            19 Dec 1994.
+* Time of day items::              9:20pm.
+* Time zone items::                @sc{est}, @sc{pdt}, @sc{gmt}, ...
+* Day of week items::              Monday and others.
+* Relative items in date strings:: next tuesday, 2 years ago.
+* Pure numbers in date strings::   19931219, 1440.
+* Authors of getdate::             Bellovin, Eggert, Berets, Salz, et al.
 
 Controlling the Archive Format
 
@@ -1436,7 +1420,7 @@ easiest to understand (and we encourage you to do the same when you use
 Note that the part of the command which says,
 @w{@kbd{--file=collection.tar}} is considered to be @emph{one} argument.
 If you substituted any other string of characters for
-@kbd{`collection.tar'},  then that string would become the name of the
+@kbd{collection.tar},  then that string would become the name of the
 archive file you create.
 
 The order of the options becomes more important when you begin to use
@@ -2131,6 +2115,14 @@ You will likely use some options frequently, while you will only use
 others infrequently, or not at all.  (A full list of options is
 available in @pxref{All Options}.)
 
+The @env{TAR_OPTIONS} environment variable specifies default options to
+be placed in front of any explicit options.  For example, if
+@code{TAR_OPTIONS} is @samp{-v --unlink-first}, @command{tar} behaves as
+if the two options @option{-v} and @option{--unlink-first} had been
+specified before any explicit options.  Option specifications are
+separated by whitespace.  A backslash escapes the next character, so it
+can be used to specify an option containing whitespace or a backslash.
+
 Note that @command{tar} options are case sensitive.  For example, the
 options @samp{-T} and @samp{-t} are different; the first requires an
 argument for stating the name of a file providing a list of @var{name}s,
@@ -2511,9 +2503,14 @@ member names.  This option disables that behavior.  @FIXME-xref{}
 @item --atime-preserve
 
 Tells @command{tar} to preserve the access time field in a file's inode when
-dumping it.  Due to limitations in the @code{utimes} system call, the
+reading it.  Due to limitations in the @code{utimes} system call, the
 modification time field is also preserved, which may cause problems if
-the file is simultaneously being modified by another program.  @FIXME-xref{}
+the file is simultaneously being modified by another program.
+This option is incompatible with incremental backups, because
+preserving the access time involves updating the last-changed time.
+Also, this option does not work on files that you do not own,
+unless you're root.
+@FIXME-xref{}
 
 @item --backup=@var{backup-type}
 
@@ -2534,7 +2531,7 @@ Sets the blocking factor @command{tar} uses to @var{blocking} x 512 bytes per
 record.  @FIXME-xref{}
 
 @item --bzip2
-@itemx -I
+@itemx -j
 
 This option tells @command{tar} to read or write archives through @code{bzip2}.
 @FIXME-xref{}
@@ -2590,6 +2587,7 @@ performs operations on, rather than @command{tar}'s compilation dependent
 default.  @FIXME-xref{}
 
 @item --files-from=@var{file}
+@itemx -I @var{file}
 @itemx -T @var{file}
 
 @command{tar} will use the contents of @var{file} as a list of archive members
@@ -2766,7 +2764,7 @@ directory.  @FIXME-xref{}
 @item --overwrite
 
 Overwrite existing files and directory metadata when extracting files
-from an archive.  @xref{Writing}.
+from an archive.  @xref{Overwrite Old Files}.
 
 @item --owner=@var{user}
 
@@ -2981,7 +2979,7 @@ them with the equivalent long option.
 
 @item -I
 
-@samp{--bzip2}
+@samp{--files-from}
 
 @item -K
 
@@ -3405,8 +3403,8 @@ A socket is stored, within a @sc{gnu} @command{tar} archive, as a pipe.
 
 @item @value{op-list}
 
-@sc{gnu} @command{tar} now shows dates as @samp{1996-11-09}, while it used to
-show them as @samp{Nov 11 1996}.  (One can revert to the old behavior by
+@sc{gnu} @command{tar} now shows dates as @samp{1996-08-30}, while it used to
+show them as @samp{Aug 30 1996}.  (One can revert to the old behavior by
 defining @code{USE_OLD_CTIME} in @file{src/list.c} before reinstalling.)
 But preferably, people should get used to ISO 8601 dates.  Local
 American dates should be made available again with full date localization
@@ -4117,7 +4115,8 @@ encountered while reading an archive.  Use in conjunction with
 When extracting files, if @command{tar} discovers that the extracted
 file already exists, it normally replaces the file by removing it before
 extracting it, to prevent confusion in the presence of hard or symbolic
-links.  However, if a directory cannot be removed because it is
+links.  (If the existing file is a symbolic link, it is removed, not
+followed.)  However, if a directory cannot be removed because it is
 nonempty, @command{tar} neither removes it nor modifies its ownership,
 permissions, or time stamps.
 
@@ -4127,7 +4126,39 @@ to replace or update a file that already exists, i.e., a file with the
 same name as an archive member prevents extraction of that archive
 member.
 
-To overwrite existing files, use the @value{op-overwrite} option.  This
+To be more aggressive about altering existing files, use the
+@value{op-overwrite} option.  It causes @command{tar} to overwrite
+existing files and to follow existing symbolic links when extracting.
+
+Some people argue that @sc{gnu} @command{tar} should not hesitate to overwrite
+files with other files when extracting.  When extracting a @command{tar}
+archive, they expect to see a faithful copy of the state of the filesystem
+when the archive was created.  It is debatable that this would always
+be a proper behavior.  For example, suppose one has an archive in
+which @file{usr/local} is a link to @file{usr/local2}.  Since then,
+maybe the site removed the link and renamed the whole hierarchy from
+@file{/usr/local2} to @file{/usr/local}.  Such things happen all the time.
+I guess it would not be welcome at all that @sc{gnu} @command{tar} removes the
+whole hierarchy just to make room for the link to be reinstated (unless it
+@emph{also} simultaneously restores the full @file{/usr/local2}, of course!
+@sc{gnu} @command{tar} is indeed able to remove a whole hierarchy to reestablish a
+symbolic link, for example, but @emph{only if} @value{op-recursive-unlink}
+is specified to allow this behavior.  In any case, single files are
+silently removed.
+
+Finally, the @value{op-unlink-first} option can improve performance in
+some cases by causing @command{tar} to remove files unconditionally
+before extracting them.
+
+@node Overwrite Old Files
+@unnumberedsubsubsec Overwrite Old Files
+
+@table @kbd
+@item --overwrite
+Overwrite existing files and directory metadata when extracting files
+from an archive.
+
+This
 causes @command{tar} to write extracted files into the file system without
 regard to the files already on the system; i.e., files with the same
 names as archive members are overwritten when the archive is extracted.
@@ -4144,32 +4175,6 @@ combined with the @value{op-absolute-names} option, as this combination
 can change the contents, ownership or permissions of any file on your
 system.  Also, many systems do not take kindly to overwriting files that
 are currently being executed.
-
-@FIXME{these two P's have problems.  i don't understand what they're
-trying to talk about well enough to fix them; i may have just made them
-worse (in particular the first of the two).  waiting to talk with hag.}
-
-The @value{op-unlink-first} option causes @command{tar} to always
-attempt to remove a file unconditionally before attempting to extract
-it.  This can make @command{tar} run a bit faster if you know in advance
-that the extracted files all need to be removed.  Normally this option
-slows @command{tar} tar down slightly, so it is disabled by default.
-
-@FIXME{huh?} If you specify the @value{op-recursive-unlink} option,
-@command{tar} removes @emph{anything} that keeps you from extracting a file
-as far as current permissions will allow it.  This could include removal
-of the contents of a full directory hierarchy.  For example, someone
-using this feature may be very surprised at the results when extracting
-a directory entry from the archive.  This option can be dangerous; be
-very aware of what you are doing if you choose to use it.
-
-@node Overwrite Old Files
-@unnumberedsubsubsec Overwrite Old Files
-
-@table @kbd
-@item --overwrite
-Overwrite existing files and directory metadata when extracting files
-from an archive.
 @end table
 
 @node Keep Old Files
@@ -4193,6 +4198,9 @@ extraction.
 @item --unlink-first
 @itemx -U
 Remove files before extracting over them.
+This can make @command{tar} run a bit faster if you know in advance
+that the extracted files all need to be removed.  Normally this option
+slows @command{tar} down slightly, so it is disabled by default.
 @end table
 
 @node Recursive Unlink
@@ -4204,21 +4212,10 @@ When this option is specified, try removing files and directory hierarchies
 before extracting over them.  @emph{This is a dangerous option!}
 @end table
 
-Some people argue that @sc{gnu} @command{tar} should not hesitate to overwrite
-files with other files when extracting.  When extracting a @command{tar}
-archive, they expect to see a faithful copy of the state of the filesystem
-when the archive was created.  It is debatable that this would always
-be a proper behavior.  For example, suppose one has an archive in
-which @file{usr/local} is a link to @file{usr/local2}.  Since then,
-maybe the site removed the link and renamed the whole hierarchy from
-@file{/usr/local2} to @file{/usr/local}.  Such things happen all the time.
-I guess it would not be welcome at all that @sc{gnu} @command{tar} removes the
-whole hierarchy just to make room for the link to be reinstated (unless it
-@emph{also} simultaneously restores the full @file{/usr/local2}, of course!
-@sc{gnu} @command{tar} is indeed able to remove a whole hierarchy to reestablish a
-symbolic link, for example, but @emph{only if} @value{op-recursive-unlink}
-is specified to allow this behavior.  In any case, single files are
-silently removed.
+If you specify the @value{op-recursive-unlink} option,
+@command{tar} removes @emph{anything} that keeps you from extracting a file
+as far as current permissions will allow it.  This could include removal
+of the contents of a full directory hierarchy.
 
 @node Modification Times
 @unnumberedsubsubsec Setting Modification Times
@@ -4449,7 +4446,7 @@ set, the default is @samp{~}, just as in Emacs.
 
 @end table
 
-Some people express the desire to @emph{always} use the @var{op-backup}
+Some people express the desire to @emph{always} use the @value{op-backup}
 option, by defining some kind of alias or script.  This is not as easy
 as one may think, due to the fact that old style options should appear first
 and consume arguments a bit unpredictably for an alias or script.  But,
@@ -4815,6 +4812,11 @@ and device but a changed directory name.  The file is updated after
 the files to be archived are determined, but before the new archive is
 actually created.
 
+Incremental dumps depend crucially on time stamps, so the results are
+unreliable if you modify a file's time stamps during dumping (e.g.@:
+with the @samp{--atime-preserve} option), or if you set the clock
+backwards.
+
 Despite it should be obvious that a device has a non-volatile value, NFS
 devices have non-dependable values when an automounter gets in the picture.
 This led to a great deal of spurious redumping in incremental dumps,
@@ -4916,7 +4918,7 @@ attached to the host on which the dump scripts are run.
 @item TAPE_STATUS
 The command to use to obtain the status of the archive device,
 including error count.  On some tape drives there may not be such a
-command; in that case, simply use `TAPE_STATUS=false'.
+command; in that case, simply use @samp{TAPE_STATUS=false}.
 
 @item BLOCKING
 The blocking factor @command{tar} will use when writing the dump archive.
@@ -5279,13 +5281,14 @@ the list of files to archive with the @command{find} utility.
 
 @table @kbd
 @item --files-from=@var{file name}
+@itemx -I @var{file name}
 @itemx -T @var{file name}
 Get names to extract or create from file @var{file name}.
 @end table
 
 If you give a single dash as a file name for @samp{--files-from}, (i.e.,
-you specify either @samp{--files-from=-} or @samp{-T -}), then the file
-names are read from standard input.
+you specify either @samp{--files-from=-} or @samp{-I -}) or @samp{-T
+-}), then the file names are read from standard input.
 
 Unless you are running @command{tar} with @samp{--create}, you can not use
 both @samp{--files-from=-} and @samp{--file=-} (@samp{-f -}) in the same
@@ -5878,382 +5881,7 @@ $ @kbd{(cd / && tar -c -f archive.tar home)}
 $ @kbd{tar -c -f archive.tar -C  / home}
 @end example
 
-@node Date input formats
-@chapter Date input formats
-
-@cindex date input formats
-@findex getdate
-
-@quotation
-Our units of temporal measurement, from seconds on up to months, are so
-complicated, asymmetrical and disjunctive so as to make coherent mental
-reckoning in time all but impossible.  Indeed, had some tyrannical god
-contrived to enslave our minds to time, to make it all but impossible
-for us to escape subjection to sodden routines and unpleasant surprises,
-he could hardly have done better than handing down our present system.
-It is like a set of trapezoidal building blocks, with no vertical or
-horizontal surfaces, like a language in which the simplest thought
-demands ornate constructions, useless particles and lengthy
-circumlocutions.  Unlike the more successful patterns of language and
-science, which enable us to face experience boldly or at least
-level-headedly, our system of temporal calculation silently and
-persistently encourages our terror of time.
-
-@dots{}  It is as though architects had to measure length in feet, width
-in meters and height in ells; as though basic instruction manuals
-demanded a knowledge of five different languages.  It is no wonder then
-that we often look into our own immediate past or future, last Tuesday
-or a week from Sunday, with feelings of helpless confusion.  @dots{}
-
---- Robert Grudin, @cite{Time and the Art of Living}.
-@end quotation
-
-This section describes the textual date representations that @sc{gnu}
-programs accept.  These are the strings you, as a user, can supply as
-arguments to the various programs.  The C interface (via the
-@code{getdate} function) is not described here.
-
-@cindex beginning of time, for Unix
-@cindex epoch, for Unix
-Although the date syntax here can represent any possible time since zero
-A.D., computer integers are not big enough for such a (comparatively)
-long time.  The earliest date semantically allowed on Unix systems is
-midnight, 1 January 1970 UCT.
-
-@menu
-* General date syntax::         Common rules.
-* Calendar date item::          19 Dec 1994.
-* Time of day item::            9:20pm.
-* Time zone item::              @sc{est}, @sc{gmt}, @sc{utc}, ...
-* Day of week item::            Monday and others.
-* Relative item in date strings::  next tuesday, 2 years ago.
-* Pure numbers in date strings::  19931219, 1440.
-* Authors of getdate::          Bellovin, Berets, Eggert, Salz, et al.
-@end menu
-
-
-@node General date syntax
-@section General date syntax
-
-@cindex general date syntax
-
-@cindex items in date strings
-A @dfn{date} is a string, possibly empty, containing many items
-separated by white space.  The white space may be omitted when no
-ambiguity arises.  The empty string means the beginning of today (i.e.,
-midnight).  Order of the items is immaterial.  A date string may contain
-many flavors of items:
-
-@itemize @bullet
-@item calendar date items
-@item time of the day items
-@item time zone items
-@item day of the week items
-@item relative items
-@item pure numbers.
-@end itemize
-
-@noindent We describe each of these item types in turn, below.
-
-@cindex numbers, written-out
-@cindex ordinal numbers
-@findex first @r{in date strings}
-@findex next @r{in date strings}
-@findex last @r{in date strings}
-A few numbers may be written out in words in most contexts.  This is
-most useful for specifying day of the week items or relative items (see
-below).  Here is the list: @samp{first} for 1, @samp{next} for 2,
-@samp{third} for 3, @samp{fourth} for 4, @samp{fifth} for 5,
-@samp{sixth} for 6, @samp{seventh} for 7, @samp{eighth} for 8,
-@samp{ninth} for 9, @samp{tenth} for 10, @samp{eleventh} for 11 and
-@samp{twelfth} for 12.  Also, @samp{last} means exactly @math{-1}.
-
-@cindex months, written-out
-When a month is written this way, it is still considered to be written
-numerically, instead of being ``spelled in full''; this changes the
-allowed strings.
-
-@cindex case, ignored in dates
-@cindex comments, in dates
-Alphabetic case is completely ignored in dates.  Comments may be introduced
-between round parentheses, as long as included parentheses are properly
-nested.  Hyphens not followed by a digit are currently ignored.  Leading
-zeros on numbers are ignored.
-
-
-@node Calendar date item
-@section Calendar date item
-
-@cindex calendar date item
-
-A @dfn{calendar date item} specifies a day of the year.  It is
-specified differently, depending on whether the month is specified
-numerically or literally.  All these strings specify the same calendar date:
-
-@example
-1970-09-17           # ISO 8601.
-70-9-17              # This century assumed by default.
-70-09-17             # Leading zeros are ignored.
-9/17/72              # Common U.S. writing.
-24 September 1972
-24 Sept 72           # September has a special abbreviation.
-24 Sep 72            # Three-letter abbreviations always allowed.
-Sep 24, 1972
-24-sep-72
-24sep72
-@end example
-
-The year can also be omitted.  In this case, the last specified year is
-used, or the current year if none.  For example:
-
-@example
-9/17
-sep 17
-@end example
-
-Here are the rules.
-
-@cindex ISO 8601 date format
-@cindex date format, ISO 8601
-For numeric months, the ISO 8601 format
-@samp{@var{year}-@var{month}-@var{day}} is allowed, where @var{year} is
-any positive number, @var{month} is a number between 01 and 12, and
-@var{day} is a number between 01 and 31.  A leading zero must be present
-if a number is less than ten.  If @var{year} is less than 100, then 1900
-is added to it to force a date in this century.  The construct
-@samp{@var{month}/@var{day}/@var{year}}, popular in the United States,
-is accepted.  Also @samp{@var{month}/@var{day}}, omitting the year.
-
-@cindex month names in date strings
-@cindex abbreviations for months
-Literal months may be spelled out in full: @samp{January},
-@samp{February}, @samp{March}, @samp{April}, @samp{May}, @samp{June},
-@samp{July}, @samp{August}, @samp{September}, @samp{October},
-@samp{November} or @samp{December}.  Literal months may be abbreviated
-to their first three letters, possibly followed by an abbreviating dot.
-It is also permitted to write @samp{Sept} instead of @samp{September}.
-
-When months are written literally, the calendar date may be given as any
-of the following:
-
-@example
-@var{day} @var{month} @var{year}
-@var{day} @var{month}
-@var{month} @var{day} @var{year}
-@var{day}-@var{month}-@var{year}
-@end example
-
-Or, omitting the year:
-
-@example
-@var{month} @var{day}
-@end example
-
-
-@node Time of day item
-@section Time of day item
-
-@cindex time of day item
-
-A @dfn{time of day item} in date strings specifies the time on a given
-day.  Here are some examples, all of which represent the same time:
-
-@example
-20:02:0
-20:02
-8:02pm
-20:02-0500      # In @sc{est} (U.S. Eastern Standard Time).
-@end example
-
-More generally, the time of the day may be given as
-@samp{@var{hour}:@var{minute}:@var{second}}, where @var{hour} is
-a number between 0 and 23, @var{minute} is a number between 0 and
-59, and @var{second} is a number between 0 and 59.  Alternatively,
-@samp{:@var{second}} can be omitted, in which case it is taken to
-be zero.
-
-@findex am @r{in date strings}
-@findex pm @r{in date strings}
-@findex midnight @r{in date strings}
-@findex noon @r{in date strings}
-If the time is followed by @samp{am} or @samp{pm} (or @samp{a.m.}
-or @samp{p.m.}), @var{hour} is restricted to run from 1 to 12, and
-@samp{:@var{minute}} may be omitted (taken to be zero).  @samp{am}
-indicates the first half of the day, @samp{pm} indicates the second
-half of the day.  In this notation, 12 is the predecessor of 1:
-midnight is @samp{12am} while noon is @samp{12pm}.
-(This is the zero-oriented interpretation of @samp{12am} and @samp{12pm},
-as opposed to the old tradition derived from Latin
-which uses @samp{12m} for noon and @samp{12pm} for midnight.)
-
-@cindex time zone correction
-@cindex minutes, time zone correction by
-The time may be followed by a time zone correction,
-expressed as @samp{@var{s}@var{hh}@var{mm}}, where @var{s} is @samp{+}
-or @samp{-}, @var{hh} is a number of zone hours and @var{mm} is a number
-of zone minutes.  When a time zone correction is given this way, it
-forces interpretation of the time in @sc{utc}, overriding any previous
-specification for the time zone or the local time zone.  The @var{minute}
-part of the time of the day may not be elided when a time zone correction
-is used.
-
-Either @samp{am}/@samp{pm} or a time zone correction may be specified,
-but not both.
-
-
-@node Time zone item
-@section Time zone item
-
-@cindex time zone item
-
-A @dfn{time zone item} specifies an international time zone, indicated
-by a small set of letters, e.g.@: @samp{UTC} for Coordinated Universal
-Time.  Any included period is ignored.  By following a
-non-daylight-saving time zone by the string @samp{DST} in a separate
-word (that is, separated by some white space), the corresponding
-daylight saving time zone may be specified.
-
-Time zone items are obsolescent and are not recommended, because they
-are ambiguous; for example, @samp{EST} has a different meaning in
-Australia than in the United States.  Instead, it's better to use
-unambiguous numeric time zone corrections like @samp{-0500}, as
-described in the previous section.
-
-@node Day of week item
-@section Day of week item
-
-@cindex day of week item
-
-The explicit mention of a day of the week will forward the date
-(only if necessary) to reach that day of the week in the future.
-
-Days of the week may be spelled out in full: @samp{Sunday},
-@samp{Monday}, @samp{Tuesday}, @samp{Wednesday}, @samp{Thursday},
-@samp{Friday} or @samp{Saturday}.  Days may be abbreviated to their
-first three letters, optionally followed by a period.  The special
-abbreviations @samp{Tues} for @samp{Tuesday}, @samp{Wednes} for
-@samp{Wednesday} and @samp{Thur} or @samp{Thurs} for @samp{Thursday} are
-also allowed.
-
-@findex next @var{day}
-@findex last @var{day}
-A number may precede a day of the week item to move forward
-supplementary weeks.  It is best used in expression like @samp{third
-monday}.  In this context, @samp{last @var{day}} or @samp{next
-@var{day}} is also acceptable; they move one week before or after
-the day that @var{day} by itself would represent.
-
-A comma following a day of the week item is ignored.
-
-
-@node Relative item in date strings
-@section Relative item in date strings
-
-@cindex relative items in date strings
-@cindex displacement of dates
-
-@dfn{Relative items} adjust a date (or the current date if none) forward
-or backward.  The effects of relative items accumulate.  Here are some
-examples:
-
-@example
-1 year
-1 year ago
-3 years
-2 days
-@end example
-
-@findex year @r{in date strings}
-@findex month @r{in date strings}
-@findex fortnight @r{in date strings}
-@findex week @r{in date strings}
-@findex day @r{in date strings}
-@findex hour @r{in date strings}
-@findex minute @r{in date strings}
-The unit of time displacement may be selected by the string @samp{year}
-or @samp{month} for moving by whole years or months.  These are fuzzy
-units, as years and months are not all of equal duration.  More precise
-units are @samp{fortnight} which is worth 14 days, @samp{week} worth 7
-days, @samp{day} worth 24 hours, @samp{hour} worth 60 minutes,
-@samp{minute} or @samp{min} worth 60 seconds, and @samp{second} or
-@samp{sec} worth one second.  An @samp{s} suffix on these units is
-accepted and ignored.
-
-@findex ago @r{in date strings}
-The unit of time may be preceded by a multiplier, given as an optionally
-signed number.  Unsigned numbers are taken as positively signed.  No
-number at all implies 1 for a multiplier.  Following a relative item by
-the string @samp{ago} is equivalent to preceding the unit by a
-multiplier with value @math{-1}.
-
-@findex day @r{in date strings}
-@findex tomorrow @r{in date strings}
-@findex yesterday @r{in date strings}
-The string @samp{tomorrow} is worth one day in the future (equivalent
-to @samp{day}), the string @samp{yesterday} is worth
-one day in the past (equivalent to @samp{day ago}).
-
-@findex now @r{in date strings}
-@findex today @r{in date strings}
-@findex this @r{in date strings}
-The strings @samp{now} or @samp{today} are relative items corresponding
-to zero-valued time displacement, these strings come from the fact
-a zero-valued time displacement represents the current time when not
-otherwise change by previous items.  They may be used to stress other
-items, like in @samp{12:00 today}.  The string @samp{this} also has
-the meaning of a zero-valued time displacement, but is preferred in
-date strings like @samp{this thursday}.
-
-
-@node Pure numbers in date strings
-@section Pure numbers in date strings
-
-@cindex pure numbers in date strings
-
-The precise interpretation of a pure decimal number depends on
-the context in the date string.
-
-If the decimal number is of the form @var{yyyy}@var{mm}@var{dd} and no
-other calendar date item (@pxref{Calendar date item}) appears before it
-in the date string, then @var{yyyy} is read as the year, @var{mm} as the
-month number and @var{dd} as the day of the month, for the specified
-calendar date.
-
-If the decimal number is of the form @var{hh}@var{mm} and no other time
-of day item appears before it in the date string, then @var{hh} is read
-as the hour of the day and @var{mm} as the minute of the hour, for the
-specified time of the day.  @var{mm} can also be omitted.
-
-If both a calendar date and a time of day appear to the left of a number
-in the date string, but no relative item, then the number overrides the
-year.
-
-
-@node Authors of getdate
-@section Authors of @code{getdate}
-
-@cindex authors of @code{getdate}
-
-@cindex Bellovin, Steven M.
-@cindex Berets, Jim
-@cindex Eggert, Paul
-@cindex MacKenzie, David
-@cindex Meyering, Jim
-@cindex Salz, Rich
-@code{getdate} was originally implemented by Steven M. Bellovin
-(@samp{smb@@research.att.com}) while at the University of North Carolina
-at Chapel Hill.  The code was later tweaked by a couple of people on
-Usenet, then completely overhauled by Rich $alz (@samp{rsalz@@bbn.com})
-and Jim Berets (@samp{jberets@@bbn.com}) in August, 1990.  Various
-revisions for the @sc{gnu} system were made by David MacKenzie, Jim Meyering,
-and others.  The code was rewritten again in August, 1999 by Paul Eggert,
-to improve its support for daylight saving time.
-
-@cindex Pinard, F.
-@cindex Berry, K.
-This chapter was originally produced by Fran@,{c}ois Pinard
-(@samp{pinard@@iro.umontreal.ca}) from the @file{getdate.y} source code,
-and then edited by K.@: Berry (@samp{kb@@cs.umb.edu}).
+@include getdate.texi
 
 @node Formats
 @chapter Controlling the Archive Format
@@ -6438,7 +6066,7 @@ the @sc{posix} format that we still cannot support.  This simple question
 has a complex answer.  Maybe that, on intimate look, some strong
 limitations will pop up, but until now, nothing sounds too difficult
 (but see below).  I only have these few pages of @sc{posix} telling about
-`Extended tar Format' (P1003.1-1990 -- section 10.1.1), and there are
+``Extended tar Format'' (P1003.1-1990 -- section 10.1.1), and there are
 references to other parts of the standard I do not have, which should
 normally enforce limitations on stored file names (I suspect things
 like fixing what @kbd{/} and @kbd{@key{NUL}} means).  There are also
@@ -6707,7 +6335,7 @@ lose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @table @kbd
-@item -I
+@item -j
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
 
@@ -6735,8 +6363,8 @@ utility from within @command{tar} because the @command{compress} utility by
 itself cannot access remote tape drives.
 
 The @value{op-compress} option will not work in conjunction with the
-@value{op-multi-volume} option or the @value{op-append}, @value{op-update},
-@value{op-append} and @value{op-delete} operations.  @xref{Operations}, for
+@value{op-multi-volume} option or the @value{op-append}, @value{op-update}
+and @value{op-delete} operations.  @xref{Operations}, for
 more information on these operations.
 
 If there is no compress utility available, @command{tar} will report an error.
@@ -6921,19 +6549,18 @@ get it right.
 When @command{tar} reads files, this causes them to have the access
 times updated.  To have @command{tar} attempt to set the access times
 back to what they were before they were read, use the
-@value{op-atime-preserve} option.  This doesn't work for files that you
-don't own, unless you're root, and it doesn't interact with incremental
-dumps nicely (@pxref{Backups}), and it can set access or modification
-times incorrectly if other programs access the file while @command{tar}
-is running; but it is good enough for some purposes.
+@value{op-atime-preserve} option.
 
 Handling of file attributes
 
 @table @kbd
 @item --atime-preserve
-Preserve access times on dumped files.  This also preserves modification
-times, which can be unfortunate if other programs are simultaneously
-modifying the dumped files.
+Preserve access times on files that are read.
+This doesn't work for files that
+you don't own, unless you're root, and it doesn't interact with
+incremental dumps nicely (@pxref{Backups}), and it can set access or
+modification times incorrectly if other programs access the file while
+@command{tar} is running; but it is good enough for some purposes.
 
 @item -m
 @itemx --touch
@@ -8651,9 +8278,7 @@ To check for discrepancies in an archive immediately after it is
 written, use the @value{op-verify} option in conjunction with
 the @value{op-create} operation.  When this option is
 specified, @command{tar} checks archive members against their counterparts
-in the file system, and reports discrepancies on the standard error.  In
-multi-volume archives, each volume is verified after it is written,
-before the next volume is written.
+in the file system, and reports discrepancies on the standard error.
 
 To verify an archive, you must be able to read it from before the end
 of the last written entry.  This option is useful for detecting data
@@ -8683,6 +8308,11 @@ magnetic heads, some able to read after the writes occurred.  One would
 not say that drivers unable to detect all cases are necessarily flawed,
 as long as programming is concerned.
 
+The @value{op-verify} option will not work in conjunction with the
+@value{op-multi-volume} option or the @value{op-append},
+@value{op-update} and @value{op-delete} operations.  @xref{Operations},
+for more information on these operations.
+
 @node Write Protection
 @section Write Protection
 
@@ -8698,6 +8328,8 @@ physical media, and can be a two position (write enabled/write
 disabled) switch, a notch which can be popped out or covered, a ring
 which can be removed from the center of a tape reel, or some other
 changeable feature.
+
+@include fdl.texi
 
 @node Index
 @unnumbered Index
