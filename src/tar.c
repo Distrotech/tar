@@ -106,39 +106,40 @@ confirm (const char *message_action, const char *message_name)
    do it.  For the others, we share the code for the equivalent short
    named option, the name of which is stored in the otherwise-unused `val'
    field of the `struct option'; for long options that have no equivalent
-   short option, we use nongraphic characters as pseudo short option
-   characters, starting at 2 and going upwards.  */
+   short option, we use non-characters as pseudo short options,
+   starting at CHAR_MAX + 1 and going upwards.  */
 
-#define BACKUP_OPTION			2
-#define DELETE_OPTION			3
-#define EXCLUDE_OPTION			4
-#define GROUP_OPTION			5
-#define MODE_OPTION			6
-#define NEWER_MTIME_OPTION		7
-#define NO_RECURSE_OPTION		8
-#define NULL_OPTION			9
-#define OWNER_OPTION			10
-#define POSIX_OPTION			11
-#define PRESERVE_OPTION			12
-#define RECORD_SIZE_OPTION		13
-#define RSH_COMMAND_OPTION		14
-#define SUFFIX_OPTION			15
-#define USE_COMPRESS_PROGRAM_OPTION	16
-#define VOLNO_FILE_OPTION		17
+enum
+{
+  BACKUP_OPTION = CHAR_MAX + 1,
+  DELETE_OPTION,
+  EXCLUDE_OPTION,
+  GROUP_OPTION,
+  MODE_OPTION,
+  NEWER_MTIME_OPTION,
+  NO_RECURSE_OPTION,
+  NULL_OPTION,
+  OWNER_OPTION,
+  POSIX_OPTION,
+  PRESERVE_OPTION,
+  RECORD_SIZE_OPTION,
+  RSH_COMMAND_OPTION,
+  SUFFIX_OPTION,
+  USE_COMPRESS_PROGRAM_OPTION,
+  VOLNO_FILE_OPTION,
 
-/* Some cleanup is being made in GNU tar long options.  Using old names is
-   allowed for a while, but will also send a warning to stderr.  Take old
-   names out in 1.14, or in summer 1997, whichever happens last.  We use
-   nongraphic characters as pseudo short option characters, starting at 31
-   and going downwards.  */
+  /* Some cleanup is being made in GNU tar long options.  Using old names is
+     allowed for a while, but will also send a warning to stderr.  Take old
+     names out in 1.14, or in summer 1997, whichever happens last.  */
 
-#define OBSOLETE_ABSOLUTE_NAMES		31
-#define OBSOLETE_BLOCK_COMPRESS		30
-#define OBSOLETE_BLOCKING_FACTOR	29
-#define OBSOLETE_BLOCK_NUMBER		28
-#define OBSOLETE_READ_FULL_RECORDS	27
-#define OBSOLETE_TOUCH			26
-#define OBSOLETE_VERSION_CONTROL	25
+  OBSOLETE_ABSOLUTE_NAMES,
+  OBSOLETE_BLOCK_COMPRESS,
+  OBSOLETE_BLOCKING_FACTOR,
+  OBSOLETE_BLOCK_NUMBER,
+  OBSOLETE_READ_FULL_RECORDS,
+  OBSOLETE_TOUCH,
+  OBSOLETE_VERSION_CONTROL
+};
 
 /* If nonzero, display usage information and exit.  */
 static int show_help = 0;
@@ -170,7 +171,6 @@ struct option long_options[] =
   {"dereference", no_argument, NULL, 'h'},
   {"diff", no_argument, NULL, 'd'},
   {"directory", required_argument, NULL, 'C'},
-  {"ending-file", required_argument, NULL, 'E'},
   {"exclude", required_argument, NULL, EXCLUDE_OPTION},
   {"exclude-from", required_argument, NULL, 'X'},
   {"extract", no_argument, NULL, 'x'},
@@ -351,7 +351,6 @@ Local file selection:\n\
   -h, --dereference            dump instead the files symlinks point to\n\
       --no-recursion           avoid descending automatically in directories\n\
   -l, --one-file-system        stay in local file system when creating archive\n\
-  -E, --ending-file=NAME       end reading the archive before file NAME\n\
   -K, --starting-file=NAME     begin at file NAME in the archive\n"),
 	     stdout);
 #if !MSDOS
@@ -406,13 +405,13 @@ Report bugs to <tar-bugs@gnu.org>.\n"),
 | Parse the options for tar.  |
 `----------------------------*/
 
-/* Available option letters are DHIJQY and aejnqy.  Some are reserved:
+/* Available option letters are DEHIJQY and aejnqy.  Some are reserved:
 
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
+  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -581,10 +580,6 @@ decode_options (int argc, char *const *argv)
 
       case 'd':
 	set_subcommand_option (DIFF_SUBCOMMAND);
-	break;
-
-      case 'E':
-	ending_file_option = optarg;
 	break;
 
       case 'f':
