@@ -1,5 +1,17 @@
 2003-09-17  Paul Eggert  <eggert@twinsun.com>
 
+	* README-alpha: Document maintainer tool assumptions a bit.  GNU
+	'sed' is no longer required.  For GNU m4 1.4, suggest the patch in
+	Debian bug 211447.  Fix minor misspellings/whitespace nits.
+
+	* configure.ac (AC_AIX, AC_MINIX): Remove; subsumed by
+	gl_USE_SYSTEM_EXTENSIONS.
+
+	* lib/.cvsignore: Add exit.h, time_r.c, time_r.h.
+	* m4/.cvsignore: Add restrict.m4, time_r.m4.
+
+2003-09-17  Paul Eggert  <eggert@twinsun.com>
+
 	* bootstrap: Don't use "for option; do";
 	Solaris 8 /bin/sh doesn't like that.
 
