@@ -7109,61 +7109,90 @@ it issues a warning, as these time stamps are nonstandard and unportable.
 @subsection Creating and Reading Compressed Archives
 @cindex Compressed archives
 @cindex Storing archives in compressed format
-@UNREVISED
+
+@GNUTAR{} is able to create and read compressed archives. It supports
+@command{gzip} and @command{bzip2} compression programms. For backward
+compatibilty, it also supports @command{compress} command, although
+we strongly recommend against using it, since there is a patent
+covering the algorithm it uses and you could be sued for patent
+infringement merely by running @command{compress}! Besides, it is less
+effective than @command{gzip} and @command{bzip2}.
+
+Creating a compressed archive is simple: you just specify a
+@dfn{compression option} along with the usual archive creation
+commands. The compression option is @option{-z} (@option{--gzip}) to
+create a @command{gzip} compressed archive, @option{-j}
+(@option{--bzip2}) to create a @command{bzip2} compressed archive, and
+@option{-Z} (@option{--compress}) to use @command{compress} program.
+For example:
+
+@smallexample
+$ @kbd{tar cfz archive.tar.gz .}
+@end smallexample
+
+Reading compressed archive is even simpler: you don't need to specify
+any additional options as @GNUTAR{} recognizes its format
+automatically. Thus, the following commands will list and extract the
+archive created in previous example:
+
+@smallexample
+# List the compressed archive
+$ @kbd{tar tf archive.tar.gz}
+# Extract the compressed archive
+$ @kbd{tar xf archive.tar.gz}
+@end smallexample
+
+The only case when you have to specify a decompression option while
+reading the archive is when reading from a pipe or from a tape drive
+that does not support random access. However, in this case @GNUTAR{}
+will indicate which option you should use. For example:
+
+@smallexample
+$ @kbd{cat archive.tar.gz | tar tf -}
+tar: Archive is compressed. Use -z option
+tar: Error is not recoverable: exiting now
+@end smallexample
+
+If you see such diagnostics, just add the suggested option to the
+invocation of @GNUTAR{}:
+
+@smallexample
+$ @kbd{cat archive.tar.gz | tar tfz -}
+@end smallexample
+
+Notice also, that there are several restrictions on operations on
+compressed archives. First of all, compressed archives cannot be
+modified, i.e. you cannot update (@value{op-update}) them or delete
+(@value{op-delete}) members from them. Likewise, you cannot append
+another @command{tar} archive to a compressed archive using
+@value{op-append}). Secondly, multi-volume archives cannot be
+compressed.
+
+The following table summarizes compression options used by @GNUTAR{}.
 
 @table @kbd
 @item -z
 @itemx --gzip
 @itemx --ungzip
 Filter the archive through @command{gzip}.
-@end table
-
-@FIXME{ach; these two bits orig from "compare" (?).  where to put?} Some
-format parameters must be taken into consideration when modifying an
-archive.@FIXME{???}  Compressed archives cannot be modified.
 
 You can use @samp{--gzip} and @samp{--gunzip} on physical devices
 (tape drives, etc.) and remote files as well as on normal files; data
 to or from such devices or remote files is reblocked by another copy
 of the @command{tar} program to enforce the specified (or default) record
 size.  The default compression parameters are used; if you need to
-override them, avoid the @value{op-gzip} option and run @command{gzip}
-explicitly.  (Or set the @env{GZIP} environment variable.)
-
-The @value{op-gzip} option does not work with the @value{op-multi-volume}
-option, or with the @value{op-update}, @value{op-append},
-@value{op-concatenate}, or @value{op-delete} operations.
-
-It is not exact to say that @GNUTAR{} is to work in concert
-with @command{gzip} in a way similar to @command{zip}, say.  Surely, it is
-possible that @command{tar} and @command{gzip} be done with a single call,
-like in:
+override them, set @env{GZIP} environment variable, e.g.:
 
 @smallexample
-$ @kbd{tar cfz archive.tar.gz subdir}
+$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
 @end smallexample
 
 @noindent
-to save all of @samp{subdir} into a @code{gzip}'ed archive.  Later you
-can do:
+Another way would be to avoid the @value{op-gzip} option and run
+@command{gzip} explicitly:
 
 @smallexample
-$ @kbd{tar xfz archive.tar.gz}
-@end smallexample
-
-@noindent
-to explode and unpack.
-
-The difference is that the whole archive is compressed.  With
-@command{zip}, archive members are archived individually.  @command{tar}'s
-method yields better compression.  On the other hand, one can view the
-contents of a @command{zip} archive without having to decompress it.  As
-for the @command{tar} and @command{gzip} tandem, you need to decompress the
-archive to see its contents.  However, this may be done without needing
-disk space, by using pipes internally:
-
-@smallexample
-$ @kbd{tar tfz archive.tar.gz}
+$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
 @end smallexample
 
 @cindex corrupted archives
@@ -7181,7 +7210,6 @@ every volume or file, in case of corrupted archives.  Doing so, we might
 lose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
-@table @kbd
 @item -j
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
@@ -7192,56 +7220,23 @@ Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
 Filter the archive through @command{compress}.  Otherwise like
 @value{op-gzip}.
 
-@item --use-compress-program=@var{prog}
-Filter through @var{prog} (must accept @samp{-d}).
-@end table
-
-@value{op-compress} stores an archive in compressed format.  This
-option is useful in saving time over networks and space in pipes, and
-when storage space is at a premium.  @value{op-compress} causes
-@command{tar} to compress when writing the archive, or to uncompress when
-reading the archive.
-
-To perform compression and uncompression on the archive, @command{tar}
-runs the @command{compress} utility.  @command{tar} uses the default
-compression parameters; if you need to override them, avoid the
-@value{op-compress} option and run the @command{compress} utility
-explicitly.  It is useful to be able to call the @command{compress}
-utility from within @command{tar} because the @command{compress} utility by
-itself cannot access remote tape drives.
-
-The @value{op-compress} option will not work in conjunction with the
-@value{op-multi-volume} option or the @value{op-append}, @value{op-update}
-and @value{op-delete} operations.  @xref{Operations}, for
-more information on these operations.
-
-If there is no compress utility available, @command{tar} will report an error.
-@strong{Please note} that the @command{compress} program may be covered by
-a patent, and therefore we recommend you stop using it.
-
-@value{op-bzip2} acts like @value{op-compress}, except that it uses
-the @code{bzip2} utility.
-
-@table @kbd
-@item --compress
-@itemx --uncompress
-@itemx -z
-@itemx -Z
-When this option is specified, @command{tar} will compress (when
-writing an archive), or uncompress (when reading an archive).  Used in
-conjunction with the @value{op-create}, @value{op-extract},
-@value{op-list} and @value{op-compare} operations.
-@end table
-
-You can have archives be compressed by using the @value{op-gzip} option.
-This will arrange for @command{tar} to use the @command{gzip} program to be
-used to compress or uncompress the archive wren writing or reading it.
-
-To use the older, obsolete, @command{compress} program, use the
-@value{op-compress} option.  The @acronym{GNU} Project recommends you not use
+The @acronym{GNU} Project recommends you not use
 @command{compress}, because there is a patent covering the algorithm it
 uses.  You could be sued for patent infringement merely by running
 @command{compress}.
+
+@item --use-compress-program=@var{prog}
+Use external compression program @var{prog}. Use this option if you
+have a compression program that @GNUTAR{} does not support. There
+are two requirements to which @var{prog} should comply:
+
+First, when called without options, it should read data from standard
+input, compress it and output it on standard output.
+
+Secondly, if called with @option{-d} argument, it should do exactly
+the opposite, i.e. read the compressed data from the standard input
+and produce uncompressed data on the standard output.
+@end table
 
 @FIXME{I have one question, or maybe it's a suggestion if there isn't a way
 to do it now. I would like to use @value{op-gzip}, but I'd also like
