@@ -22,13 +22,11 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  *
  * This file should be modified for non-unix systems to do something
  * reasonable.
- *
- * @(#)names.c 1.3 10/30/87 - gnu
  */ 
+
 #include <sys/types.h>
 #include "tar.h"
-
-extern	char	*strncpy();
+#include "port.h"
 
 #ifndef NONAMES
 /* Whole module goes away if NONAMES defined.  Otherwise... */
