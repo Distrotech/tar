@@ -1,5 +1,5 @@
 /* A tar (tape archiver) program.
-   Copyright 1988, 92,93,94,95,96,97, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92,93,94,95,96,97,99, 2000 Free Software Foundation, Inc.
    Written by John Gilmore, starting 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -1050,7 +1050,7 @@ decode_options (int argc, char *const *argv)
   if (show_version)
     {
       printf ("tar (GNU %s) %s\n%s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 1999 Free Software Foundation, Inc.",
+	      "Copyright 2000 Free Software Foundation, Inc.",
 	      _("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\

@@ -1,5 +1,5 @@
 /* Update a tar archive.
-   Copyright 1988, 1992, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92, 94, 96, 97, 99, 2000 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the

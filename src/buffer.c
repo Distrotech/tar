@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright 1988, 92, 93, 94, 96, 97, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92, 93, 94, 96, 97, 99, 2000 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it

@@ -1,5 +1,5 @@
 /* Extract files from a tar archive.
-   Copyright 1988, 92,93,94,96,97,98, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92,93,94,96,97,98,99, 2000 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-11-19.
 
    This program is free software; you can redistribute it and/or modify it
