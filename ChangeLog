@@ -1,6 +1,8 @@
 2004-08-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Merge from gnulib.
+
+	* patches/argp.diff: Remove; no longer needed.
 	
 	* lib/.cvsignore: Add stat-macros.h.
 	Remove addext.c, malloc.c, realloc.c.
