@@ -1,3 +1,8 @@
+2004-04-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/create.c: Produce an error, not warning, if the
+	filename is too long.
+
 2004-04-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed test for iconv_t
