@@ -501,12 +501,12 @@ extract_archive ()
 	}
 
       /*
-		  * Set the modified time of the file.
-		  *
-		  * Note that we set the accessed time to "now", which
-		  * is really "the time we started extracting files".
-		  * unless f_gnudump is used, in which case .st_atime is used
-		  */
+       * Set the modified time of the file.
+       *
+       * Note that we set the accessed time to "now", which
+       * is really "the time we started extracting files".
+       * unless f_gnudump is used, in which case .st_atime is used
+       */
       if (!f_modified)
 	{
 	  /* fixme if f_gnudump should set ctime too, but how? */
