@@ -1,5 +1,5 @@
 /* List a tar archive.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -404,7 +404,7 @@ recurse:
 	      : head->header.arch_name);
       if (current_file_name)
 	free (current_file_name);
-      current_file_name = malloc (strlen (name) + 1);
+      current_file_name = ck_malloc (strlen (name) + 1);
       strcpy (current_file_name, name);
 
       name = (next_long_link
@@ -412,7 +412,7 @@ recurse:
 	      : head->header.arch_linkname);
       if (current_link_name)
 	free (current_link_name);
-      current_link_name = malloc (strlen (name) + 1);
+      current_link_name = ck_malloc (strlen (name) + 1);
       strcpy (current_link_name, name);
 
       next_long_link = next_long_name = 0;

@@ -1,0 +1,98 @@
+This GNU tar 1.10.  Please send bug reports, etc., to
+bug-gnu-utils@prep.ai.mit.edu.  
+
+GNU tar is based heavily on John Gilmore's public domain tar, but with
+added features.  The manual is currently being written.  An old
+manual, surely riddled with errors, is in tar.texinfo.  Please don't
+send in bug reports about that manual.  In particular, the mechanism
+for doing incremental dumps has been significantly changed.
+
+This distribution also includes rmt, the remote tape server (which
+must reside in /etc).  The mt program is in the GNU cpio distribution.
+
+To compile tar (and rmt, if your system has the needed features) on
+Unix-like systems:
+
+1.  Type `./configure'.  This shell script attempts to guess correct
+values for various system-dependent variables used during compilation,
+and creates the file `Makefile'.  This takes a couple of minutes.
+
+If you want to compile in a different directory from the one
+containing the source code, `cd' to that directory and run `configure'
+with the option `--srcdir=DIR', where DIR is the directory that
+contains the source code.  The object files and executables will be
+put in the current directory.  This option only works with versions of
+`make' that support the VPATH variable.  `configure' ignores any other
+arguments you give it.
+
+If your system requires unusual options for compilation or linking
+that `configure' doesn't know about, you can give `configure' initial
+values for variables by setting them in the environment; in
+Bourne-compatible shells, you can do that on the command line like
+this:
+$ CC='gcc -traditional' LIBS=-lposix ./configure
+
+2.  If you want to change the directories where the programs will be
+installed, or the optimization options, edit `Makefile' and change
+those values.  If you have an unusual system that needs special
+compilation options that `configure' doesn't know about, and you
+didn't pass them in the environment when running `configure', you
+should add them to `Makefile' now.  Alternately, teach `configure' how
+to figure out that it is being run on a system where they are needed,
+and mail the diffs to the address listed at the top of this file so we
+can include them in the next release.
+
+3.  Type `make'.
+
+4.  If your system needs to link with -lPW to get alloca, but has
+rename in the C library (so RENAME_MISSING is not used), -lPW might give
+you an incorrect version of rename.  On HP-UX this manifests itself as
+an undefined data symbol called "Error" when linking tar.  If this
+happens, use `ar x' to extract alloca.o from libPW.a and `ar rc' to
+put it in a library liballoca.a, and put that in LIBS instead of -lPW.
+This problem does not occur when using gcc, which has alloca built in.
+
+5.  If the programs compile successfully, type `make install' to
+install them.
+
+6.  After you have installed the programs, you can remove the binaries
+from the source directory by typing `make mostlyclean'.  Type `make
+clean' if you also want to remove `Makefile', for instance if you
+are going to recompile tar next on another type of machine.
+
+makefile.pc is a makefile for Turbo C 2.0 on MS-DOS.
+
+Various people have been having problems using floppies on a NeXT.
+I've gotten conflicting reports about what should be done to solve the
+problems, and we have no way to test it ourselves.
+
+
+User-visible changes since 1.09:
+
+Filename to -G is optional.  -C works right.  
+Names newer and --newer-mtime work right.
+
+-g is now --incremental
+-G is now --listed-incremental
+
+Sparse files now work correctly.
+
+--volume is now called --label.
+
+--exclude now takes a filename argument, and --exclude-from does what
+--exclude used to do.
+
+Exit status is now correct.
+
+--totals keeps track of total I/O and prints it when tar exits.
+
+When using --label with --extract, the label is now a regexp.
+
+New option --tape-length (-L) does multi-volume handling like BSD dump:
+you tell tar how big the tape is and it will prompt at that point
+instead of waiting for a write error.
+
+New backup scripts level-0 and level-1 which might be useful to
+people.  They use a file "backup-specs" for information, and shouldn't
+need local modification.  These are what we use to do all our backups
+at the FSF.
