@@ -144,6 +144,11 @@ jm_FUNC_REALLOC
 jm_FUNC_UTIME
 jm_XSTRTOUMAX
 
+AC_CHECK_MEMBERS([struct stat.st_spare1, struct stat.st_atim.tv_nsec, struct stat.st_atimespec.tv_nsec, struct stat.st_atimensec], , ,
+                 [
+#include <sys/types.h>
+#include <sys/stat.h>])
+ 
 # Save and restore LIBS so e.g., -lrt, isn't added to it.  Otherwise, *all*
 # programs in the package would end up linked with that potentially-shared
 # library, inducing unnecessary run-time overhead.
@@ -160,7 +165,7 @@ tar_save_LIBS=$LIBS
   AC_CHECK_FUNCS(clock_gettime)
 LIBS=$tar_save_LIBS
 
-AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale)
+AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale utimes)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([valloc])
