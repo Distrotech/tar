@@ -1,7 +1,7 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -378,7 +378,11 @@ read_header (bool raw_extended_headers)
 		   || header->header.typeflag == GNUTYPE_LONGLINK)
 	    {
 	      size_t name_size = current_stat_info.stat.st_size;
-	      size = name_size - name_size % BLOCKSIZE + 2 * BLOCKSIZE;
+	      size_t n = name_size % BLOCKSIZE;
+	      size = name_size + BLOCKSIZE;
+	      if (n)
+		size += BLOCKSIZE - n;
+	      
 	      if (name_size != current_stat_info.stat.st_size
 		  || size < name_size)
 		xalloc_die ();
