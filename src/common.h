@@ -614,6 +614,7 @@ void request_stdin (const char *);
 
 void tar_stat_init (struct tar_stat_info *st);
 void tar_stat_destroy (struct tar_stat_info *st);
+void usage (int) __attribute__ ((noreturn));
 
 /* Module update.c.  */
 
@@ -624,12 +625,16 @@ void update_archive (void);
 /* Module xheader.c.  */
 
 void xheader_decode (struct tar_stat_info *);
+void xheader_decode_global (void);
 void xheader_store (char const *, struct tar_stat_info const *, void *);
 void xheader_read (union block *, size_t);
+void xheader_write (char type, char *name, struct xheader *xhdr);
+void xheader_write_global (void);
 void xheader_finish (struct xheader *);
 void xheader_destroy (struct xheader *);
 char *xheader_xhdr_name (struct tar_stat_info *st);
 char *xheader_ghdr_name (void);
+void xheader_set_option (char *string);
 
 /* Module system.c */
 
@@ -649,12 +654,20 @@ pid_t sys_child_open_for_compress (void);
 pid_t sys_child_open_for_uncompress (void);
 ssize_t sys_write_archive_buffer (void);
 bool sys_get_archive_stat (void);
+void sys_reset_uid_gid (void);
 
 /* Module compare.c */
 void report_difference (struct tar_stat_info *st, const char *message, ...);
 
 /* Module sparse.c */
 bool sparse_file_p (struct tar_stat_info *stat);
+bool sparse_member_p (struct tar_stat_info *stat);
+bool sparse_fixup_header (struct tar_stat_info *stat);
 enum dump_status sparse_dump_file (int fd, struct tar_stat_info *stat);
 enum dump_status sparse_extract_file (int fd, struct tar_stat_info *stat, off_t *size);
+enum dump_status sparse_skip_file (struct tar_stat_info *stat);
 bool sparse_diff_file (int fd, struct tar_stat_info *stat);
+
+/* Module utf8.c */
+bool string_ascii_p (const char *str);
+bool utf8_convert(bool to_utf, const char *input, char **output);
