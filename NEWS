@@ -46,7 +46,9 @@ version 1.13.94 - Sergey Poznyakoff, 2004-04-04
 
 * --incremental and --listed-incremental options work correctly on
   individual files, as well as on directories.
-    
+
+* New scripts: backup (replaces old level-0 and level-1) and restore
+      
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
 ** --block-compress is not needed any longer
