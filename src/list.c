@@ -1,5 +1,5 @@
 /* List a tar archive, with support routines for reading a tar archive.
-   Copyright (C) 1988, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+   Copyright 1988,92,93,94,96,97,98,1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-26.
 
    This program is free software; you can redistribute it and/or modify it
@@ -587,42 +587,42 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 gid_t
 gid_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "gid_t", GID_MAX);
+  return from_oct (p, s, "gid_t", (uintmax_t) GID_MAX);
 }
 major_t
 major_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "major_t", MAJOR_MAX);
+  return from_oct (p, s, "major_t", (uintmax_t) MAJOR_MAX);
 }
 minor_t
 minor_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "minor_t", MINOR_MAX);
+  return from_oct (p, s, "minor_t", (uintmax_t) MINOR_MAX);
 }
 mode_t
 mode_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "mode_t", MODE_MAX);
+  return from_oct (p, s, "mode_t", (uintmax_t) MODE_MAX);
 }
 off_t
 off_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "off_t", OFF_MAX);
+  return from_oct (p, s, "off_t", (uintmax_t) OFF_MAX);
 }
 size_t
 size_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "size_t", SIZE_MAX);
+  return from_oct (p, s, "size_t", (uintmax_t) SIZE_MAX);
 }
 time_t
 time_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "time_t", TIME_MAX);
+  return from_oct (p, s, "time_t", (uintmax_t) TIME_MAX);
 }
 uid_t
 uid_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "uid_t", UID_MAX);
+  return from_oct (p, s, "uid_t", (uintmax_t) UID_MAX);
 }
 uintmax_t
 uintmax_from_oct (const char *p, size_t s)
