@@ -534,7 +534,7 @@ int skipcrud;
 	char *from,*to;
 	extern union record *head;
 
-	dirp=opendir(skipcrud+head->header.name);
+	dirp=opendir(skipcrud+current_file_name);
 
 	if(!dirp) {
 			/* The directory doesn't exist now.  It'll be created.
@@ -583,7 +583,7 @@ int skipcrud;
 				break;
 		}
 		if(*arc=='\0') {
-			p=new_name(skipcrud+head->header.name,cur);
+			p=new_name(skipcrud+current_file_name,cur);
 			if(f_confirm && !confirm("delete",p)) {
 				free(p);
 				continue;

@@ -1,5 +1,5 @@
 /* Portability declarations.  Requires sys/types.h.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -17,11 +17,22 @@ You should have received a copy of the GNU General Public License
 along with GNU Tar; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
-#include "pathmax.h"
-
+/* AIX requires this to be the first thing in the file. */
 #ifdef __GNUC__
 #define alloca __builtin_alloca
-#endif
+#else /* not __GNUC__ */
+#if HAVE_ALLOCA_H
+#include <alloca.h>
+#else /* not HAVE_ALLOCA_H */
+#ifdef _AIX
+ #pragma alloca
+#else /* not _AIX */
+char *alloca ();
+#endif /* not _AIX */
+#endif /* not HAVE_ALLOCA_H */
+#endif /* not __GNUC__ */
+
+#include "pathmax.h"
 
 #ifdef _POSIX_VERSION
 #include <sys/wait.h>
