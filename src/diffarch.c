@@ -609,7 +609,7 @@ diff_sparse_files (filesize)
 		 */
       while (buf_size < numbytes)
 	{
-	  buf = (char *) realloc (buf, buf_size * 2 * sizeof (char));
+	  buf = (char *) ck_realloc (buf, buf_size * 2 * sizeof (char));
 	  buf_size *= 2;
 	}
       while (numbytes > RECORDSIZE)
@@ -729,7 +729,7 @@ fill_in_sparse_array ()
 				 *  scratch area - realloc it
  				 */
 		  sparsearray = (struct sp_array *)
-		    realloc (sparsearray,
+		    ck_realloc (sparsearray,
 			     sp_array_size * 2 * sizeof (struct sp_array));
 		  sp_array_size *= 2;
 		}

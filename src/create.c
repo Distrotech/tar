@@ -152,13 +152,13 @@ create_archive()
 	open_archive(0);		/* Open for writing */
 
 	if(f_gnudump) {
-		char *buf = ck_malloc(NAME_MAX);
+		char *buf = ck_malloc(PATH_MAX);
 		char *q,*bufp;
 
 		collect_and_sort_names();
 
 		while(p=name_from_list())
-			dump_file(p,-1);
+			dump_file(p,-1, 1);
 		/* if(!f_dironly) { */
 			blank_name_list();
 			while(p=name_from_list()) {
@@ -169,7 +169,7 @@ create_archive()
 				for(q=gnu_list_name->dir_contents;q && *q;q+=strlen(q)+1) {
 					if(*q=='Y') {
 						strcpy(bufp,q+1);
-						dump_file(buf,-1);
+						dump_file(buf,-1, 1);
 					}
 				}
 			}
@@ -178,9 +178,9 @@ create_archive()
 	} else {
 		p = name_next(1);
 		if(!p)
-			dump_file(".", -1);
+			dump_file(".", -1, 1);
 		else {
-			do dump_file(p, -1);
+			do dump_file(p, -1, 1);
 			while (p = name_next(1));
 		}
 	}
@@ -199,9 +199,10 @@ create_archive()
  * Sets global "hstat" to stat() output for this file.
  */
 void
-dump_file (p, curdev)
+dump_file (p, curdev, toplevel)
 	char	*p;			/* File name to dump */
 	int	curdev;			/* Device our parent dir was on */
+	int 	toplevel;		/* Whether we are a toplevel call */
 {
 	union record	*header;
 	char type;
@@ -211,6 +212,7 @@ dump_file (p, curdev)
 	union record	*exhdr;
 	char save_linkflag;
 	extern time_t new_time;
+	int critical_error = 0;
 /*	int sparse_ind = 0;*/
 
 
@@ -233,7 +235,8 @@ dump_file (p, curdev)
 badperror:
 		msg_perror("can't add file %s",p);
 badfile:
-		errors++;
+		if (!f_ignore_failed_read || critical_error)
+		  errors++;
 		return;
 	}
 
@@ -301,7 +304,11 @@ badfile:
 				/* We found a link. */
 				hstat.st_size = 0;
 				header = start_header(p, &hstat);
-				if (header == NULL) goto badfile;
+				if (header == NULL) 
+				  {
+				    critical_error = 1;
+				    goto badfile;
+				  }
 				while(!f_absolute_paths && *link_name == '/') {
 					static int link_warn = 0;
 
@@ -324,6 +331,11 @@ badfile:
 				header->header.linkflag = LF_LINK;
 				finish_header(header);
 		/* FIXME: Maybe remove from list after all links found? */
+				if (f_remove_files)
+				  {
+				    if (unlink (p) == -1)
+				      msg_perror ("cannot remove %s", p);
+				  }
 				return;		/* We dumped it */
 			}
 		}
@@ -386,7 +398,10 @@ badfile:
 				
 				header = start_header(p, &hstat);
 				if (header == NULL)
-					goto badfile;
+				  {
+				    critical_error = 1;
+				    goto badfile;
+				  }
 				header->header.linkflag = LF_SPARSE;
 				header_moved++;
 				
@@ -462,6 +477,7 @@ badfile:
 			if (header == NULL) {
 				if(f>=0)
 					(void)close(f);
+				critical_error = 1;
 				goto badfile;
 			}
 		}
@@ -483,7 +499,11 @@ badfile:
 			
 	extend:		exhdr = findrec();
 			
-			if (exhdr == NULL) goto badfile;
+			if (exhdr == NULL) 
+			  {
+			    critical_error = 1;
+			    goto badfile;
+			  }
 			bzero(exhdr->charptr, RECORDSIZE);
 			for (i = 0; i < SPARSE_EXT_HDR; i++) {
 				if (i+index_offset > upperbound)
@@ -552,6 +572,11 @@ badfile:
 		if (f >= 0)
 			(void)close(f);
 
+		if (f_remove_files)
+		  {
+		    if (unlink (p) == -1)
+		      msg_perror ("cannot remove %s", p);
+		  }
 		return;
 
 		/*
@@ -580,7 +605,11 @@ badfile:
 
 		hstat.st_size = 0;		/* Force 0 size on symlink */
 		header = start_header(p, &hstat);
-		if (header == NULL) goto badfile;
+		if (header == NULL) 
+		  {
+		    critical_error = 1;
+		    goto badfile;
+		  }
 		size = readlink(p, header->header.linkname, NAMSIZ);
 		if (size < 0) goto badperror;
 		if (size == NAMSIZ) {
@@ -596,6 +625,11 @@ badfile:
 			header->header.linkname[size] = '\0';
 		header->header.linkflag = LF_SYMLINK;
 		finish_header(header);		/* Nothing more to do to it */
+		if (f_remove_files)
+		  {
+		    if (unlink (p) == -1)
+		      msg_perror ("cannot remove %s", p);
+		  }
 		return;
 	}
 #endif
@@ -635,7 +669,10 @@ badfile:
 			 */
 			header = start_header(namebuf, &hstat);
 			if (header == NULL)
-				goto badfile;	/* eg name too long */
+			  {
+			    critical_error = 1;
+			    goto badfile;	/* eg name too long */
+			  }
 
 			if (f_gnudump)
 				header->header.linkflag = LF_DUMPDIR;
@@ -702,7 +739,7 @@ badfile:
 		 * See if we are crossing from one file system to another,
 		 * and avoid doing so if the user only wants to dump one file system.
 		 */
-		if (f_local_filesys && curdev >= 0 && curdev != hstat.st_dev) {
+		if (f_local_filesys && toplevel && curdev != hstat.st_dev) {
 			if(f_verbose)
 				msg("%s: is on a different filesystem; not dumped",p);
 			return;
@@ -742,7 +779,7 @@ badfile:
 			strcpy(namebuf+len, d->d_name);
 			if(f_exclude && check_exclude(namebuf))
 				continue;
-			dump_file(namebuf, our_device);
+			dump_file(namebuf, our_device, 0);
 		}
 
 		closedir(dirp);
@@ -781,7 +818,11 @@ badfile:
 
 	hstat.st_size = 0;		/* Force 0 size */
 	header = start_header(p, &hstat);
-	if (header == NULL) goto badfile;	/* eg name too long */
+	if (header == NULL) 
+	  {
+	    critical_error = 1;
+	    goto badfile;	/* eg name too long */
+	  }
 
 	header->header.linkflag = type;
 #if defined(S_IFBLK) || defined(S_IFCHR)
@@ -794,6 +835,11 @@ badfile:
 #endif
 
 	finish_header(header);
+	if (f_remove_files)
+	  {
+	    if (unlink (p) == -1)
+	      msg_perror ("cannot remove %s", p);
+	  }
 	return;
 
 	unknown:
@@ -879,7 +925,7 @@ finish_sparse_file(fd, sizeleft, fullsize, name)
 
 	}
 	free(sparsearray);
-	printf ("Amount actually written is (I hope) %d.\n", nwritten);
+/*	printf ("Amount actually written is (I hope) %d.\n", nwritten); */
 /*	userec(start+(count-1)/RECORDSIZE);*/
 	return 0;
 
