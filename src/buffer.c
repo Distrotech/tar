@@ -310,7 +310,7 @@ open_archive (enum access_mode wanted_access)
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
     {
-      read_full_records_option = 1; /* could be a pipe, be safe */
+      read_full_records_option = true; /* could be a pipe, be safe */
       if (verify_option)
 	FATAL_ERROR ((0, 0, _("Cannot verify stdin/stdout archive")));
 
@@ -408,8 +408,10 @@ open_archive (enum access_mode wanted_access)
 	  else
 	    strcpy (record_start->header.name, volume_label_option);
 
-	  assign_string (&current_stat_info.file_name, record_start->header.name);
-	  current_stat_info.had_trailing_slash = strip_trailing_slashes (current_stat_info.file_name);
+	  assign_string (&current_stat_info.file_name,
+			 record_start->header.name);
+	  current_stat_info.had_trailing_slash =
+	    strip_trailing_slashes (current_stat_info.file_name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
 	  TIME_TO_CHARS (start_time, record_start->header.mtime);
@@ -703,9 +705,14 @@ flush_read (void)
       return;
     }
 
+  /* The condition below used to include
+	      || (status > 0 && !read_full_records_option)
+     This is incorrect since even if new_volume() succeeds, the
+     subsequent call to rmtread will overwrite the chunk of data
+     already read in the buffer, so the processing will fail */
+        
   if ((status == 0
-       || (status < 0 && errno == ENOSPC)
-       || (status > 0 && !read_full_records_option))
+       || (status < 0 && errno == ENOSPC))
       && multi_volume_option)
     {
       union block *cursor;
