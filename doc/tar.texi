@@ -201,6 +201,11 @@
 @set xref-exclude-from @xref{exclude}
 @set pxref-exclude-from @pxref{exclude}
 
+@set op-exclude-caches @kbd{--exclude-caches}
+@set ref-exclude-from @ref{exclude-caches}
+@set xref-exclude-from @xref{exclude-caches}
+@set pxref-exclude-from @pxref{exclude-caches}
+
 @set op-extract @kbd{--extract} (@kbd{--get}, @kbd{-x})
 @set ref-extract @ref{extract}
 @set xref-extract @xref{extract}
@@ -2747,6 +2752,11 @@ When performing operations, @command{tar} will skip files that match
 
 Similar to @samp{--exclude}, except @command{tar} will use the list of
 patterns in the file @var{file}.  @FIXME-xref{}
+
+@item --exclude-caches
+
+Automatically excludes all directories
+containing a cache directory tag.  @FIXME-xref{}
 
 @item --file=@var{archive}
 @itemx -f @var{archive}
@@ -6156,6 +6166,24 @@ added to the archive.
 
 @FIXME{do the exclude options files need to have stuff separated by
 newlines the same as the files-from option does?}
+
+@table @kbd
+@item --exclude-caches
+Causes @command{tar} to ignore directories containing a cache directory tag.
+@end table
+
+@findex exclude-caches
+When creating an archive,
+the @samp{--exclude-caches} option
+causes @command{tar} to exclude all directories
+that contain a @dfn{cache directory tag}.
+A cache directory tag is a short file
+with the well-known name @file{CACHEDIR.TAG}
+and having a standard header
+specified in @url{http://www.brynosaurus.com/cachedir/spec.html}.
+Various applications write cache directory tags
+into directories they use to hold regenerable, non-precious data,
+so that such data can be more easily excluded from backups.
 
 @menu
 * controlling pattern-patching with exclude::
