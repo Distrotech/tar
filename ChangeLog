@@ -1,3 +1,8 @@
+2003-11-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (decode_header): Initialize st_atime and
+	st_ctime.
+
 2003-11-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac (tar_save_LIBS): Bugfix. Thanks Adrian
