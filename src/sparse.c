@@ -33,7 +33,9 @@ struct tar_sparse_optab
 {
   bool (*init) (struct tar_sparse_file *);
   bool (*done) (struct tar_sparse_file *);
+  bool (*sparse_member_p) (struct tar_sparse_file *);
   bool (*dump_header) (struct tar_sparse_file *);
+  bool (*fixup_header) (struct tar_sparse_file *);
   bool (*decode_header) (struct tar_sparse_file *);
   bool (*scan_block) (struct tar_sparse_file *, enum sparse_scan_state,
 		      void *);
@@ -51,6 +53,14 @@ struct tar_sparse_file
   void *closure;                    /* Any additional data optab calls might
 				       reqiure */
 };
+
+static bool
+tar_sparse_member_p (struct tar_sparse_file *file)
+{
+  if (file->optab->sparse_member_p)
+    return file->optab->sparse_member_p (file);
+  return false;
+}
 
 static bool
 tar_sparse_init (struct tar_sparse_file *file)
@@ -107,7 +117,15 @@ tar_sparse_decode_header (struct tar_sparse_file *file)
 {
   if (file->optab->decode_header)
     return file->optab->decode_header (file);
-  return false;
+  return true;
+}
+
+static bool
+tar_sparse_fixup_header (struct tar_sparse_file *file)
+{
+  if (file->optab->fixup_header)
+    return file->optab->fixup_header (file);
+  return true;
 }
 
 
@@ -364,6 +382,28 @@ sparse_file_p (struct tar_stat_info *stat)
 	     + (stat->stat.st_size % ST_NBLOCKSIZE != 0)));
 }
 
+bool
+sparse_member_p (struct tar_stat_info *stat)
+{
+  struct tar_sparse_file file;
+  
+  if (!sparse_select_optab (&file))
+    return false;
+  file.stat_info = stat;
+  return tar_sparse_member_p (&file);
+}
+
+bool
+sparse_fixup_header (struct tar_stat_info *stat)
+{
+  struct tar_sparse_file file;
+  
+  if (!sparse_select_optab (&file))
+    return false;
+  file.stat_info = stat;
+  return tar_sparse_fixup_header (&file);
+}
+
 enum dump_status
 sparse_extract_file (int fd, struct tar_stat_info *stat, off_t *size)
 {
@@ -382,6 +422,24 @@ sparse_extract_file (int fd, struct tar_stat_info *stat, off_t *size)
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
     rc = tar_sparse_extract_region (&file, i);
   *size = file.stat_info->archive_file_size - file.dumped_size;
+  return (tar_sparse_done (&file) && rc) ? dump_status_ok : dump_status_short;
+}
+
+enum dump_status
+sparse_skip_file (struct tar_stat_info *stat)
+{
+  bool rc = true;
+  struct tar_sparse_file file;
+  
+  file.stat_info = stat;
+  file.fd = -1;
+
+  if (!sparse_select_optab (&file)
+      || !tar_sparse_init (&file))
+    return dump_status_not_implemented;
+
+  rc = tar_sparse_decode_header (&file);
+  skip_file (file.stat_info->archive_file_size);
   return (tar_sparse_done (&file) && rc) ? dump_status_ok : dump_status_short;
 }
 
@@ -522,6 +580,12 @@ enum oldgnu_add_status
     add_fail
   };
 
+static bool
+oldgnu_sparse_member_p (struct tar_sparse_file *file_unused)
+{
+  return current_header->header.typeflag == GNUTYPE_SPARSE;
+}
+
 /* Add a sparse item to the sparse file and its obstack */
 static enum oldgnu_add_status 
 oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
@@ -541,8 +605,18 @@ oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
   return add_ok;
 }
 
-/* Convert old GNU format sparse data to internal representation
-   FIXME: Clubbers current_header! */
+static bool
+oldgnu_fixup_header (struct tar_sparse_file *file)
+{
+  /* NOTE! st_size was initialized from the header
+     which actually contains archived size. The following fixes it */
+  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
+  file->stat_info->stat.st_size =
+                OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
+  return true;
+}
+
+/* Convert old GNU format sparse data to internal representation */
 static bool
 oldgnu_get_sparse_info (struct tar_sparse_file *file)
 {
@@ -550,12 +624,6 @@ oldgnu_get_sparse_info (struct tar_sparse_file *file)
   union block *h = current_header;
   int ext_p;
   static enum oldgnu_add_status rc;
-  
-  /* FIXME: note this! st_size was initialized from the header
-     which actually contains archived size. The following fixes it */
-  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
-  file->stat_info->stat.st_size =
-                OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
   
   file->stat_info->sparse_map_size = 0;
   for (i = 0; i < SPARSES_IN_OLDGNU_HEADER; i++)
@@ -645,7 +713,9 @@ oldgnu_dump_header (struct tar_sparse_file *file)
 static struct tar_sparse_optab oldgnu_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
+  oldgnu_sparse_member_p,
   oldgnu_dump_header,
+  oldgnu_fixup_header,
   oldgnu_get_sparse_info,
   NULL,  /* No scan_block function */
   sparse_dump_region,
@@ -655,8 +725,24 @@ static struct tar_sparse_optab oldgnu_optab = {
 
 /* Star */
 
-/* Convert STAR format sparse data to internal representation
-   FIXME: Clubbers current_header! */
+static bool
+star_sparse_member_p (struct tar_sparse_file *file_unused)
+{
+  return current_header->header.typeflag == GNUTYPE_SPARSE;
+}
+
+static bool
+star_fixup_header (struct tar_sparse_file *file)
+{
+  /* NOTE! st_size was initialized from the header
+     which actually contains archived size. The following fixes it */
+  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
+  file->stat_info->stat.st_size =
+            OFF_FROM_HEADER (current_header->star_in_header.realsize);
+  return true;
+}
+
+/* Convert STAR format sparse data to internal representation */
 static bool
 star_get_sparse_info (struct tar_sparse_file *file)
 {
@@ -664,12 +750,6 @@ star_get_sparse_info (struct tar_sparse_file *file)
   union block *h = current_header;
   int ext_p;
   static enum oldgnu_add_status rc;
-  
-  /* FIXME: note this! st_size was initialized from the header
-     which actually contains archived size. The following fixes it */
-  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
-  file->stat_info->stat.st_size =
-              OFF_FROM_HEADER (current_header->star_in_header.realsize);
   
   file->stat_info->sparse_map_size = 0;
 
@@ -714,7 +794,9 @@ star_get_sparse_info (struct tar_sparse_file *file)
 static struct tar_sparse_optab star_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
+  star_sparse_member_p,
   NULL,
+  star_fixup_header,
   star_get_sparse_info,
   NULL,  /* No scan_block function */
   NULL, /* No dump region function */ 
@@ -732,6 +814,12 @@ static struct tar_sparse_optab star_optab = {
      GNU.sparse.numbytes  Size of the next data block
    end repeat
 */
+
+static bool
+pax_sparse_member_p (struct tar_sparse_file *file)
+{
+  return file->stat_info->archive_file_size != file->stat_info->stat.st_size;
+}
 
 static bool
 pax_dump_header (struct tar_sparse_file *file)
@@ -756,21 +844,13 @@ pax_dump_header (struct tar_sparse_file *file)
   return true;
 }
 
-static bool
-pax_decode_header (struct tar_sparse_file *file)
-{
-  /* Restore actual size */
-  size_t s = file->stat_info->archive_file_size;
-  file->stat_info->archive_file_size = file->stat_info->stat.st_size;
-  file->stat_info->stat.st_size = s;
-  return true;
-}
-
 static struct tar_sparse_optab pax_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
+  pax_sparse_member_p,
   pax_dump_header,
-  pax_decode_header,
+  NULL,  /* No decode_header function */
+  NULL,  /* No fixup_header function */
   NULL,  /* No scan_block function */
   sparse_dump_region,
   sparse_extract_region,
