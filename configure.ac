@@ -171,9 +171,10 @@ tar_save_LIBS=$LIBS
   AC_SEARCH_LIBS(setsockopt, [socket], ,
     [AC_SEARCH_LIBS(setsockopt, [socket], , , [-lnsl])])
   AC_SEARCH_LIBS(setsockopt, [nsl])
-  if test " $LIBS" != " $tar_save_LIBS"; then
-    LIB_SETSOCKOPT=$ac_cv_search_setsockopt
-  fi
+
+  case "$ac_cv_search_setsockopt" in
+    -l*) LIB_SETSOCKOPT=$ac_cv_search_setsockopt
+  esac
   AC_SUBST(LIB_SETSOCKOPT)
 LIBS=$tar_save_LIBS
 
