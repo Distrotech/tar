@@ -27,6 +27,8 @@ version 1.13.12 - Paul Eggert, 1999-09-24.
   that an archive contains garbage at the end.  It attempts to extract
   as many files as possible from the good data before the garbage.
 
+* A read error now causes a nonzero exit status, not just a warning.
+
 * Some diagnostics have been reworded for consistency.
 
 
