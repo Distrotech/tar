@@ -76,7 +76,7 @@ read_and (void (*do_something) (void))
   do
     {
       prev_status = status;
-      destroy_stat (&current_stat_info);
+      tar_stat_destroy (&current_stat_info);
       xheader_destroy (&extended_header);
       
       status = read_header (false);
@@ -185,7 +185,7 @@ list_archive (void)
 
   decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
-    print_header (-1);
+    print_header (&current_stat_info, -1);
 
   if (incremental_option && current_header->header.typeflag == GNUTYPE_DUMPDIR)
     {
@@ -933,11 +933,11 @@ static int ugswidth = UGSWIDTH;	/* maximum width encountered so far */
 #endif
 
 void
-print_header (off_t block_ordinal)
+print_header (struct tar_stat_info *st, off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
-  char *temp_name = current_stat_info.orig_file_name ? current_stat_info.orig_file_name : current_stat_info.file_name;
+  char *temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
   
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
@@ -1021,17 +1021,17 @@ print_header (off_t block_ordinal)
 	  break;
 	}
 
-      decode_mode (current_stat_info.stat.st_mode, modes + 1);
+      decode_mode (st->stat.st_mode, modes + 1);
 
       /* Time stamp.  */
 
-      time_stamp = tartime (current_stat_info.stat.st_mtime);
+      time_stamp = tartime (st->stat.st_mtime);
 
       /* User and group names.  */
 
-      if (current_stat_info.uname && current_format != V7_FORMAT
+      if (st->uname && current_format != V7_FORMAT
 	  && !numeric_owner_option)
-	user = current_stat_info.uname;
+	user = st->uname;
       else
 	{
 	  /* Try parsing it as an unsigned integer first, and as a
@@ -1051,9 +1051,9 @@ print_header (off_t block_ordinal)
 	    }
 	}
 
-      if (current_stat_info.gname && current_format != V7_FORMAT
+      if (st->gname && current_format != V7_FORMAT
 	  && !numeric_owner_option)
-	group = current_stat_info.gname;
+	group = st->gname;
       else
 	{
 	  /* Try parsing it as an unsigned integer first, and as a
@@ -1080,10 +1080,10 @@ print_header (off_t block_ordinal)
 	case CHRTYPE:
 	case BLKTYPE:
 	  strcpy (size,
-		  STRINGIFY_BIGINT (major (current_stat_info.stat.st_rdev), uintbuf));
+		  STRINGIFY_BIGINT (major (st->stat.st_rdev), uintbuf));
 	  strcat (size, ",");
 	  strcat (size,
-		  STRINGIFY_BIGINT (minor (current_stat_info.stat.st_rdev), uintbuf));
+		  STRINGIFY_BIGINT (minor (st->stat.st_rdev), uintbuf));
 	  break;
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
@@ -1093,7 +1093,7 @@ print_header (off_t block_ordinal)
 		   uintbuf));
 	  break;
 	default:
-	  strcpy (size, STRINGIFY_BIGINT (current_stat_info.stat.st_size, uintbuf));
+	  strcpy (size, STRINGIFY_BIGINT (st->stat.st_size, uintbuf));
 	  break;
 	}
 
@@ -1111,11 +1111,11 @@ print_header (off_t block_ordinal)
       switch (current_header->header.typeflag)
 	{
 	case SYMTYPE:
-	  fprintf (stdlis, " -> %s\n", quotearg (current_stat_info.link_name));
+	  fprintf (stdlis, " -> %s\n", quotearg (st->link_name));
 	  break;
 
 	case LNKTYPE:
-	  fprintf (stdlis, _(" link to %s\n"), quotearg (current_stat_info.link_name));
+	  fprintf (stdlis, _(" link to %s\n"), quotearg (st->link_name));
 	  break;
 
 	default:

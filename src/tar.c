@@ -1510,13 +1510,20 @@ main (int argc, char **argv)
 }
 
 void
-destroy_stat (struct tar_stat_info *st)
+tar_stat_init (struct tar_stat_info *st)
+{
+  memset (st, 0, sizeof (*st));
+}
+     
+void
+tar_stat_destroy (struct tar_stat_info *st)
 {
   free (st->orig_file_name);
   free (st->file_name);
   free (st->link_name);
   free (st->uname);
   free (st->gname);
+  free (st->sparse_map);
   memset (st, 0, sizeof (*st));
 }
 

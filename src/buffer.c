@@ -266,7 +266,7 @@ open_archive (enum access_mode wanted_access)
   if (archive_names == 0)
     FATAL_ERROR ((0, 0, _("No archive name given")));
 
-  destroy_stat (&current_stat_info);
+  tar_stat_destroy (&current_stat_info);
   save_name = 0;
   real_s_name = 0;
 
@@ -420,7 +420,7 @@ open_archive (enum access_mode wanted_access)
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
 	  TIME_TO_CHARS (start_time, record_start->header.mtime);
-	  finish_header (record_start, -1);
+	  finish_header (&current_stat_info, record_start, -1);
 #if 0
 	  current_block++;
 #endif
@@ -512,7 +512,7 @@ flush_write (void)
 	       volume_label_option, volno);
       TIME_TO_CHARS (start_time, record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
-      finish_header (record_start, -1);
+      finish_header (&current_stat_info, record_start, -1);
     }
 
   if (real_s_name)
@@ -535,7 +535,7 @@ flush_write (void)
 		    record_start->oldgnu_header.offset);
       tmp = verbose_option;
       verbose_option = 0;
-      finish_header (record_start, -1);
+      finish_header (&current_stat_info, record_start, -1);
       verbose_option = tmp;
 
       if (volume_label_option)
@@ -913,7 +913,7 @@ close_archive (void)
 
   sys_wait_for_child (child_pid);
   
-  destroy_stat (&current_stat_info);
+  tar_stat_destroy (&current_stat_info);
   if (save_name)
     free (save_name);
   if (real_s_name)
