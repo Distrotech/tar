@@ -1,11 +1,31 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.11 - Paul Eggert, 1999-08-23.
+
+* The short name of the --bzip option has been changed to -I,
+  for compatibility with paxutils.
+
+* -T /dev/null now matches nothing; previously, it matched anything
+  if no explicit operands were given.
+
+* The `--' option now works the same as with other GNU utilities;
+  it causes later operands to be interpreted as file names, not options,
+  even if they begin with `-'.
+
+* For the --newer and --after-date options, the table of time zone
+  abbreviations like `EST' has been updated to match current practice.
+  Also, local time abbreviations are now recognized, even if they are
+  not in tar's hardwired table.  Remember, thougy, that you should use
+  numeric UTC offsets like `-0500' instead of abbreviations like
+  `EST', as abbreviations are not standardized and are ambiguous.
+
+
 version 1.13.10 - Paul Eggert, 1999-08-20.
 
 * `tar' now uses signed base-64 when outputting header values that are
   out of the range of the standard unsigned base-8 format.  This
-  affects archive members with negative timestamps or uids, and
+  affects archive members with negative time stamps or uids, and
   archive members 8 GB or larger.  The new tar archives cannot be read
   by traditional tar, or by older versions of GNU tar.  Use the
   --old-archive option to revert to the old behavior, which uses
@@ -45,7 +65,7 @@ version 1.13.6 - Paul Eggert, 1999-08-11.
 
 * An --exclude pattern containing / now excludes a file only if it matches an
   initial prefix of the file name; a pattern without / continues to
-  exclude a file if it matches any file name compoment.
+  exclude a file if it matches any file name component.
 
 * The protocol for talking to rmt has been extended slightly.
   Open flags are now communicated in symbolic format as well as numeric.
@@ -57,7 +77,7 @@ version 1.13.6 - Paul Eggert, 1999-08-11.
 * When writing GNU tar format headers, tar now uses signed base-64
   for values that cannot be represented in unsigned octal.
   This supports larger files (2**66 - 1 bytes instead of 2**33 - 1 bytes),
-  larger uids, negative timestamps, etc.
+  larger uids, negative time stamps, etc.
 
 * When extracting files with unknown ownership, tar now looks up the
   uid and gid "nobody" on hosts whose headers do not define UID_NOBODY
@@ -116,16 +136,16 @@ Sensitive matters
 * Do not quote anymore internally over the quoting done by the shell.
 
 Output for humans
-* Offer internationalisation capabilities of most recent GNU gettext.
+* Offer internationalization capabilities of most recent GNU gettext.
 * Messages available in many more languages, thanks to all translators!
 * Usage of ISO 8601 dates in listings, instead of local American dates.
-* More normalisation and cleanup in error messages.
+* More normalization and cleanup in error messages.
 
 Creation
 * For helping using tar with find, offer a --no-recursion option.
 * Implement --numeric-owner for ignoring symbolic names at create time.
 * New --owner, --group --mode options, still preliminary.
-* Recognise creating an archive on /dev/null, so Amanda works faster.
+* Recognize creating an archive on /dev/null, so Amanda works faster.
 * Object to the creation of an empty archive (like in `tar cf FILE').
 * Barely start implementing --posix and POSIXLY_CORRECT.
 
