@@ -34,7 +34,7 @@ tar cf archive file1 file2
 mkdir directory
 tar -xf archive --same-order -C directory || exit 1
 
-ls directory
+ls directory|sort 2>/dev/null
 ],
 [0],
 [file1
