@@ -18,7 +18,7 @@ so that the GNU extensions (--incremental, --label and
 	 UNIX98 tar warns if all links cannot be resolved.
 	   (GNU tar --check-links option)
 
-  Currently tar prints a warning when this option is used. Somewhere
+  Currently tar prints a warning when this option is used. Sometime
   in the future its semantics will be changed to that of --check-links.
   In the meanwhile we should announce a phase-in period where "l"
   changes in semantics. 	   
@@ -33,7 +33,7 @@ so that the GNU extensions (--incremental, --label and
   It would be useful to be able to use '--remove-files' with '--diff',
   to remove all files that compare successfully, when verifying a backup.
 
-* Add tests for testing the added functonality.
+* Add tests for the new functonality.
 
 * Consider this:
 
