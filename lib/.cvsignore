@@ -78,6 +78,8 @@ strtoll.c
 strtoul.c
 strtoull.c
 strtoumax.c
+stpcpy.c
+stpcpy.h
 time_r.c
 time_r.h
 unlocked-io.h
