@@ -237,6 +237,7 @@ union record *head;
 				nam1end++;
 				nam1end=index(nam1end,' ');
 			}
+			*nam1end = '\0';
 			un_quote_string(nam1);
 			un_quote_string(nam1end+4);
 			if(symlink(nam1,nam1end+4) && (unlink(nam1end+4) || symlink(nam1,nam1end+4)))
