@@ -1,5 +1,5 @@
 /* Encode long filenames for GNU tar.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1988, 1992, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -101,7 +101,7 @@ extract_mangle (void)
 	  else if (verbose_option)
 	    WARN ((0, 0, _("Renamed %s to %s"), name, name_end + 4));
 	}
-#ifdef S_ISLNK
+#ifdef HAVE_SYMLINK
       else if (!strncmp (cursor, "Symlink ", 8))
 	{
 	  name = cursor + 8;
