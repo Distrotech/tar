@@ -459,18 +459,18 @@ write_ustar_long_name (const char *name)
 
   if (length > PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1)
     {
-      WARN ((0, 0, _("%s: file name is too long (max %d); not dumped"),
-	     quotearg_colon (name),
-	     PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1));
+      ERROR ((0, 0, _("%s: file name is too long (max %d); not dumped"),
+	      quotearg_colon (name),
+	      PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1));
       return NULL;
     }
 
   i = split_long_name (name, length);
   if (i == 0 || length - i - 1 > NAME_FIELD_SIZE)
     {
-      WARN ((0, 0,
-	     _("%s: file name is too long (cannot be split); not dumped"),
-	     quotearg_colon (name)));
+      ERROR ((0, 0,
+	      _("%s: file name is too long (cannot be split); not dumped"),
+	      quotearg_colon (name)));
       return NULL;
     }
 
@@ -495,10 +495,10 @@ write_long_link (struct tar_stat_info *st)
     case V7_FORMAT:			/* old V7 tar format */
     case USTAR_FORMAT:
     case STAR_FORMAT:
-      WARN ((0, 0,
-	     _("%s: link name is too long; not dumped"),
-	     quotearg_colon (st->link_name)));
-	    break;
+      ERROR ((0, 0,
+	      _("%s: link name is too long; not dumped"),
+	      quotearg_colon (st->link_name)));
+      break;
 
     case OLDGNU_FORMAT:
     case GNU_FORMAT:
@@ -522,9 +522,9 @@ write_long_name (struct tar_stat_info *st)
     case V7_FORMAT:
       if (strlen (st->file_name) > NAME_FIELD_SIZE-1)
 	{
-	  WARN ((0, 0, _("%s: file name is too long (max %d); not dumped"),
-		 quotearg_colon (st->file_name),
-		 NAME_FIELD_SIZE - 1));
+	  ERROR ((0, 0, _("%s: file name is too long (max %d); not dumped"),
+		  quotearg_colon (st->file_name),
+		  NAME_FIELD_SIZE - 1));
 	  return NULL;
 	}
       break;
