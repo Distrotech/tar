@@ -331,6 +331,8 @@ struct name
 GLOBAL dev_t ar_dev;
 GLOBAL ino_t ar_ino;
 
+GLOBAL bool seekable_archive;
+
 
 /* Declarations for each module.  */
 
@@ -370,6 +372,7 @@ void clear_read_error_count (void);
 void xclose (int fd);
 void archive_write_error (ssize_t) __attribute__ ((noreturn));
 void archive_read_error (void);
+off_t seek_archive (off_t size);
 
 /* Module create.c.  */
 
