@@ -476,8 +476,13 @@ char *getenv ();
 #endif
 
 #include <time.h>
+#include <sys/time.h>
 #ifndef time
 time_t time ();
+#endif
+
+#ifdef HAVE_UTIME_H
+# include <utime.h>
 #endif
 
 /* Library modules.  */
