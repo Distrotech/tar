@@ -23,6 +23,9 @@
 /* The checksum field is filled with this while the checksum is computed.  */
 #define CHKBLANKS	"        "	/* 8 blanks, no null */
 
+/* Old GNU stores zero-terminated file name */
+#define OLDGNU_NAME_FIELD_SIZE   99
+
 /* Some constants from POSIX are given names.  */
 #define NAME_FIELD_SIZE   100
 #define PREFIX_FIELD_SIZE 155
