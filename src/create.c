@@ -1,7 +1,7 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -558,7 +558,12 @@ write_extended (struct tar_stat_info *st, union block *old_header)
 static union block * 
 write_header_name (struct tar_stat_info *st)
 {
-  if (NAME_FIELD_SIZE < strlen (st->file_name))
+  if (archive_format == POSIX_FORMAT && !string_ascii_p (st->file_name))
+    {
+      xheader_store ("path", st, NULL);
+      return write_short_name (st);
+    }
+  else if (NAME_FIELD_SIZE < strlen (st->file_name))
     return write_long_name (st);
   else
     return write_short_name (st);
@@ -702,13 +707,15 @@ start_header (struct tar_stat_info *st)
       gid_to_gname (st->stat.st_gid, &st->gname);
       
       if (archive_format == POSIX_FORMAT
-	  && strlen (st->uname) > UNAME_FIELD_SIZE)
+	  && (strlen (st->uname) > UNAME_FIELD_SIZE
+	      || !string_ascii_p (st->uname)))
 	xheader_store ("uname", st, NULL);
       else
 	UNAME_TO_CHARS (st->uname, header->header.uname);
 
       if (archive_format == POSIX_FORMAT
-	  && strlen (st->gname) > GNAME_FIELD_SIZE)
+	  && (strlen (st->gname) > GNAME_FIELD_SIZE
+	      || !string_ascii_p (st->gname)))
 	xheader_store ("gname", st, NULL);
       else
 	GNAME_TO_CHARS (st->gname, header->header.gname);
