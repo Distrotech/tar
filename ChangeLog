@@ -1,5 +1,51 @@
 2004-02-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/common.h (simple_finish_header,start_private_header): New
+	declarations
+	(xheader_ghdr_name): Changed declaration
+	* src/create.c (start_private_header): Removed static qualifier.
+	(write_extended): Removed superfluous last argument. Use
+	xheader_write()
+	(simple_finish_header): New function.
+	(finish_header): Use simple_finish_header() to break recursive
+	dependency between this function and write_extended().
+	* src/tar.c (assert_format): Do not bail out if several
+	--format arguments are given. This is a common case when
+	TAR_OPTIONS are used.
+	(decode_options): New option --show-defaults displays the
+	compiled-in defaults.
+	Use POSIX format if no --format option was given and
+	--pax-option was specified.
+	Do not allow to use --pax-option unless the archive format is
+	set to POSIX (or reading subcommand is requested).
+
+	* src/update.c (update_archive): Write global extended header if
+	constructed.
+	* src/xheader.c (xheader_format_name): Bugfix. 
+	(xheader_xhdr_name): Changed the default extended header name
+	to '%d/PaxHeaders.%p/%f', as POSIX requires.
+	(xheader_ghdr_name): Removed unused argument.
+	(xheader_write,xheader_write_global): New function.
+	(xheader_decode): Modified to honor overrides whatever
+	the current archive format is.
+
+	* src/delete.c (delete_archive_members): Call xheader_decode
+	unconditionally.
+	* src/list.c (decode_header): Likewise.
+	* src/incremen.c (sort_obstack): Fixed typo in the comment
+	
+	* doc/tar.texi: Document new default for extended
+	header names.
+	
+	* tests/before: Accept an optional list of allowed archive
+	formats. Exit with the status 77 if the current archive
+	format does not match any of them.
+	* tests/delete03.sh: Require gnu, oldgnu or posix format
+	* tests/incremen.sh: Require gnu or oldgnu format
+	* tests/multiv01.sh: Likewise
+	
+2004-02-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	* doc/tar.texi (Option Summary): Documented --pax-option
 	* src/tar.c: Likewise.
 	* NEWS: Likewise.
