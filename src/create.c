@@ -177,12 +177,9 @@ create_archive()
 		free(buf);
 	} else {
 		p = name_next(1);
-		if(!p)
-			dump_file(".", -1, 1);
-		else {
-			do dump_file(p, -1, 1);
-			while (p = name_next(1));
-		}
+		do 
+		  dump_file(p, -1, 1);
+		while (p = name_next(1));
 	}
 
 	write_mangled();
@@ -213,6 +210,7 @@ dump_file (p, curdev, toplevel)
 	char save_linkflag;
 	extern time_t new_time;
 	int critical_error = 0;
+	time_t restore_times[2];
 /*	int sparse_ind = 0;*/
 
 
@@ -239,6 +237,9 @@ badfile:
 		  errors++;
 		return;
 	}
+	
+	restore_times[0] = hstat.st_atime;
+	restore_times[1] = hstat.st_utime;
 
 #ifdef S_ISHIDDEN
 	if (S_ISHIDDEN (hstat.st_mode)) {
@@ -577,6 +578,8 @@ badfile:
 		    if (unlink (p) == -1)
 		      msg_perror ("cannot remove %s", p);
 		  }
+		if (f_atime_preserve)
+		  utime (p, restore_times);
 		return;
 
 		/*
@@ -595,7 +598,9 @@ badfile:
 			save_name=0;
 		if(f>=0)
 			(void)close(f);
-	      return;
+		if (f_atime_preserve)
+		  utime (p, restore_times);
+	        return;
 	}
 
 #ifdef S_ISLNK
@@ -727,6 +732,8 @@ badfile:
 			}
 			if(f_multivol)
 				save_name = 0;
+			if (f_atime_preserve)
+			  utime (p, restore_times);
  			return;
 		}
 
@@ -739,7 +746,7 @@ badfile:
 		 * See if we are crossing from one file system to another,
 		 * and avoid doing so if the user only wants to dump one file system.
 		 */
-		if (f_local_filesys && toplevel && curdev != hstat.st_dev) {
+		if (f_local_filesys && !toplevel && curdev != hstat.st_dev) {
 			if(f_verbose)
 				msg("%s: is on a different filesystem; not dumped",p);
 			return;
@@ -784,6 +791,8 @@ badfile:
 
 		closedir(dirp);
 		free(namebuf);
+		if (f_atime_preserve)
+		  utime (p, restore_times);
 		return;
 	}
 
