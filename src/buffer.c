@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -21,34 +21,38 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  * Buffer management for tar.
  *
  * Written by John Gilmore, ihnp4!hoptoad!gnu, on 25 August 1985.
- *
- * @(#) buffer.c 1.28 11/6/87 - gnu
  */
 
 #include <stdio.h>
 #include <errno.h>
+#ifndef STDC_HEADERS
+extern int errno;
+#endif
 #include <sys/types.h>		/* For non-Berkeley systems */
-#include <sys/stat.h>
 #include <signal.h>
+#include <time.h>
+time_t time();
 
-#ifndef MSDOS
+#ifndef NO_MTIO
 #include <sys/ioctl.h>
-#if !defined(USG) || defined(HAVE_MTIO)
 #include <sys/mtio.h>
 #endif
-#endif
 
-#ifdef	MSDOS
-# include <fcntl.h>
-#include <process.h>
+#ifdef BSD42
+#include <sys/file.h>
 #else
-# ifdef XENIX
-#  include <sys/inode.h>
-# endif
-# include <sys/file.h>
+#ifndef V7
+#include <fcntl.h>
+#endif
 #endif
 
-extern int errno;
+#ifdef	__MSDOS__
+#include <process.h>
+#endif
+
+#ifdef XENIX
+#include <sys/inode.h>
+#endif
 
 #include "tar.h"
 #include "port.h"
@@ -65,37 +69,11 @@ FILE *msg_file = stdout;
 #define	PREAD	0		/* Read  file descriptor from pipe() */
 #define	PWRITE	1		/* Write file descriptor from pipe() */
 
-#ifdef __STDC__
-extern void	*malloc();
-extern void	*valloc();
-#else
-extern char	*malloc();
-extern char	*valloc();
-#endif
-extern time_t time();
-
-extern char	*index(), *strcat();
-extern char	*strcpy();
-
-/*
- * V7 doesn't have a #define for this.
- */
-#ifndef O_RDONLY
-#define	O_RDONLY	0
-#endif
-#ifndef O_RDWR
-#define O_RDWR		2
-#endif
-#ifndef O_CREAT
-#define O_CREAT		0
-#endif
-#ifndef O_BINARY
-#define O_BINARY	0
-#endif
-
 #define	MAGIC_STAT	105	/* Magic status returned by child, if
 				   it can't exec.  We hope compress/sh
 				   never return this status! */
+
+char *valloc();
 
 void writeerror();
 void readerror();
@@ -103,7 +81,12 @@ void readerror();
 void ck_pipe();
 void ck_close();
 
+int backspace_output();
 extern void finish_header();
+void flush_archive();
+int isfile();
+int new_volume();
+void verify_volume();
 extern void to_oct();
 
 #ifndef __MSDOS__
@@ -142,7 +125,10 @@ static int	r_error_count;
 /*
  * Have we hit EOF yet?
  */
-static int	eof;
+static int	hit_eof;
+
+/* Checkpointing counter */
+static int checkpoint;
 
 /* JF we're reading, but we just read the last record and its time to update */
 extern time_to_start_writing;
@@ -151,6 +137,7 @@ int file_to_switch_to= -1;	/* If remote update, close archive, and use
 
 static int volno = 1;		/* JF which volume of a multi-volume tape
 				   we're on */
+static int global_volno = 1;	/* Volume number to print in external messages. */
 
 char *save_name = 0;		/* Name of the file we are currently writing */
 long save_totsize;		/* total size of file we are writing.  Only
@@ -170,8 +157,8 @@ static long real_s_sizeleft;
 void
 reset_eof()
 {
-	if(eof) {
-		eof=0;
+	if(hit_eof) {
+		hit_eof=0;
 		ar_record=ar_block;
 		ar_last=ar_block+blocking;
 		ar_reading=0;
@@ -187,11 +174,11 @@ union record *
 findrec()
 {
 	if (ar_record == ar_last) {
-		if (eof)
+		if (hit_eof)
 			return (union record *)NULL;	/* EOF */
 		flush_archive();
 		if (ar_record == ar_last) {
-			eof++;
+			hit_eof++;
 			return (union record *)NULL;	/* EOF */
 		}
 	}
@@ -258,11 +245,11 @@ dupto(from, to, msg)
 	}
 }
 
-#ifdef MSDOS
+#ifdef __MSDOS__
 void
 child_open()
 {
-	fprintf(stderr,"MSDOS %s can't use compressed or remote archives\n",tar);
+	fprintf(stderr,"MS-DOS %s can't use compressed or remote archives\n",tar);
 	exit(EX_ARGSBAD);
 }
 #else
@@ -474,6 +461,7 @@ child_open()
 
 
 /* return non-zero if p is the name of a directory */
+int
 isfile(p)
 char *p;
 {
@@ -481,7 +469,7 @@ char *p;
 
 	if(stat(p,&stbuf)<0)
 		return 1;
-	if((stbuf.st_mode&S_IFMT)==S_IFREG)
+	if(S_ISREG(stbuf.st_mode))
 		return 1;
 	return 0;
 }
@@ -493,6 +481,7 @@ char *p;
  * reading or writing.
  */
 /* JF if the arg is 2, open for reading and writing. */
+void
 open_archive(reading)
 	int reading;
 {
@@ -557,23 +546,23 @@ open_archive(reading)
 	} else {
 		archive = rmtcreat(ar_file, 0666);
 	}
+	if (archive < 0) {
+		msg_perror("can't open %s",ar_file);
+		exit(EX_BADARCH);
+	}
 #ifndef __MSDOS__
 	if(!_isrmt(archive)) {
 		struct stat tmp_stat;
 
 		fstat(archive,&tmp_stat);
-		if((tmp_stat.st_mode&S_IFMT)==S_IFREG) {
+		if(S_ISREG(tmp_stat.st_mode)) {
 			ar_dev=tmp_stat.st_dev;
 			ar_ino=tmp_stat.st_ino;
 		}
 	}
 #endif
 
-	if (archive < 0) {
-		msg_perror("can't open %s",ar_file);
-		exit(EX_BADARCH);
-	}
-#ifdef	MSDOS
+#ifdef	__MSDOS__
 	setmode(archive, O_BINARY);
 #endif
 
@@ -636,6 +625,7 @@ open_archive(reading)
  * adding (baserec+ar_record), doing a 9-bit shift of baserec, then
  * subtracting ar_block from that, shifting it back, losing the top 9 bits.
  */
+void
 saverec(pointer)
 	union record **pointer;
 {
@@ -657,12 +647,15 @@ saverec(pointer)
   }
  */
 
+void
 fl_write()
 {
 	int err;
 	int copy_back;
 	static long bytes_written = 0;
 
+	if (f_checkpoint && ! (++checkpoint % 10))
+	  msg ("Write checkpoint %d\n", checkpoint);
 	if(tape_length && bytes_written >= tape_length * 1024) {
 		errno = ENOSPC;
 		err = 0;
@@ -683,7 +676,7 @@ fl_write()
 				real_s_sizeleft = 0;
 				return;
 			}
-#ifdef MSDOS
+#ifdef __MSDOS__
 			if(save_name[1]==':')
 				save_name+=2;
 #endif
@@ -699,8 +692,10 @@ fl_write()
 
 	/* We're multivol  Panic if we didn't get the right kind of response */
 	/* ENXIO is for the UNIX PC */
-	if(err>0 || (err<0 && errno!=ENOSPC && errno!=EIO && errno!=ENXIO))
+	if(err<0 && errno!=ENOSPC && errno!=EIO && errno!=ENXIO)
 		writeerror(err);
+
+	/* If error indicates a short write, we just move to the next tape. */
 
 	if(new_volume(0)<0)
 		return;
@@ -760,7 +755,7 @@ fl_write()
 		else if((real_s_sizeleft+RECORDSIZE-1)/RECORDSIZE<=copy_back)
 			real_s_name[0] = '\0';
 		else {
-#ifdef MSDOS
+#ifdef __MSDOS__
 			if(save_name[1]==':')
 				save_name+=2;
 #endif
@@ -827,11 +822,15 @@ readerror()
 /*
  * Perform a read to flush the buffer.
  */
+void
 fl_read()
 {
 	int err;		/* Result from system call */
 	int left;		/* Bytes left */
 	char *more;		/* Pointer to next byte to read */
+
+	if (f_checkpoint && ! (++checkpoint % 10))
+	  msg ("Read checkpoint %d\n", checkpoint);
 
 	/*
 	 * Clear the count of errors.  This only applies to a single
@@ -859,7 +858,7 @@ fl_read()
 	if(f_multivol) {
 		if(save_name) {
 			if(save_name!=real_s_name) {
-#ifdef MSDOS
+#ifdef __MSDOS__
 				if(save_name[1]==':')
 					save_name+=2;
 #endif
@@ -884,7 +883,7 @@ error_loop:
 	if (err == blocksize)
 		return;
 
-	if((err == 0 || (err<0 && errno==ENOSPC)) && f_multivol) {
+	if((err == 0 || (err<0 && errno==ENOSPC) || (err > 0 && !f_reblock)) && f_multivol) {
 		union record *head;
 
 	try_volume:
@@ -915,6 +914,7 @@ error_loop:
 					msg("Volume mismatch! %s!=%s",f_volhdr,
 					    head->header.name);
 					--volno;
+					--global_volno;
 					goto try_volume;
 				      }
 				    
@@ -922,6 +922,7 @@ error_loop:
  				if(strcmp(ptr,head->header.name)) {
 					msg("Volume mismatch! %s!=%s",ptr,head->header.name);
 					--volno;
+					--global_volno;
 					free(ptr);
 					goto try_volume;
 				}
@@ -941,6 +942,7 @@ error_loop:
 			if(head->header.linkflag!=LF_MULTIVOL || strcmp(head->header.name,real_s_name)) {
 				msg("%s is not continued on this volume!",real_s_name);
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			if(real_s_totsize!=from_oct(1+12,head->header.size)+from_oct(1+12,head->header.offset)) {
@@ -949,11 +951,13 @@ error_loop:
 				       from_oct(1+12,head->header.size),
 				       from_oct(1+12,head->header.offset));
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			if(real_s_totsize-real_s_sizeleft!=from_oct(1+12,head->header.offset)) {
 				msg("This volume is out of sequence");
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			head++;
@@ -1010,6 +1014,7 @@ error2loop:
 /*
  * Flush the current buffer to/from the archive.
  */
+void
 flush_archive()
 {
 	int c;
@@ -1041,6 +1046,7 @@ flush_archive()
 /* Backspace the archive descriptor by one blocks worth.
    If its a tape, MTIOCTOP will work.  If its something else,
    we try to seek on it.  If we can't seek, we lose! */
+int
 backspace_output()
 {
 	long cur;
@@ -1078,6 +1084,7 @@ backspace_output()
 /*
  * Close the archive file.
  */
+void
 close_archive()
 {
 	int child;
@@ -1087,12 +1094,11 @@ close_archive()
 	if (time_to_start_writing || !ar_reading)
 		flush_archive();
 	if(cmd_mode==CMD_DELETE) {
-		long pos;
+		off_t pos;
 
 		pos = rmtlseek(archive,0L,1);
-#ifndef MSDOS
-		/* FIXME does ftruncate really take an INT?! */
-		(void) ftruncate(archive,(int)pos);
+#ifndef __MSDOS__
+		(void) ftruncate(archive,pos);
 #else
 		(void)rmtwrite(archive,"",0);
 #endif
@@ -1103,7 +1109,7 @@ close_archive()
 	if((c=rmtclose(archive))<0)
 		msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
 
-#ifndef	MSDOS
+#ifndef	__MSDOS__
 	if (childpid) {
 		/*
 		 * Loop waiting for the right child to die, or for
@@ -1113,32 +1119,32 @@ close_archive()
 			;
 
 		if (child != -1) {
-			switch (TERM_SIGNAL(status)) {
+			switch (WTERMSIG(status)) {
 			case 0:
 				/* Child voluntarily terminated  -- but why? */
-				if (TERM_VALUE(status) == MAGIC_STAT) {
+				if (WEXITSTATUS(status) == MAGIC_STAT) {
 					exit(EX_SYSTEM);/* Child had trouble */
 				}
-				if (TERM_VALUE(status) == (SIGPIPE + 128)) {
+				if (WEXITSTATUS(status) == (SIGPIPE + 128)) {
 					/*
 					 * /bin/sh returns this if its child
 					 * dies with SIGPIPE.  'Sok.
 					 */
 					break;
-				} else if (TERM_VALUE(status))
+				} else if (WEXITSTATUS(status))
 					msg("child returned status %d",
-						TERM_VALUE(status));
+						WEXITSTATUS(status));
 			case SIGPIPE:
 				break;		/* This is OK. */
 
 			default:
 				msg("child died with signal %d%s",
-				 TERM_SIGNAL(status),
-				 TERM_COREDUMP(status)? " (core dumped)": "");
+				 WTERMSIG(status),
+				 WIFCOREDUMPED(status)? " (core dumped)": "");
 			}
 		}
 	}
-#endif	/* MSDOS */
+#endif	/* __MSDOS__ */
 }
 
 
@@ -1197,8 +1203,42 @@ anno(stream, prefix, savedp)
 }
 #endif
 
+/* Called to initialize the global volume number. */
+int
+init_volume_number ()
+{
+  FILE *vf;
+  
+  vf = fopen (f_volno_file, "r");
+  if (!vf && errno != ENOENT)
+    msg_perror ("%s", f_volno_file);
+  
+  if (vf)
+    {
+      fscanf (vf, "%d", &global_volno);
+      fclose (vf);
+    }
+}
+
+/* Called to write out the closing global volume number. */
+int
+closeout_volume_number ()
+{
+  FILE *vf;
+  
+  vf = fopen (f_volno_file, "w");
+  if (!vf)
+    msg_perror ("%s", f_volno_file);
+  else
+    {
+      fprintf (vf, "%d\n", global_volno);
+      fclose (vf);
+    }
+}
+  
 /* We've hit the end of the old volume.  Close it and open the next one */
 /* Values for type:  0: writing  1: reading  2: updating */
+int
 new_volume(type)
 int	type;
 {
@@ -1220,12 +1260,13 @@ int	type;
 	if((c=rmtclose(archive))<0)
 		msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
 
+	global_volno++;
 	volno++;
  tryagain:
 	if (f_run_script_at_end)
 		system(info_script);
 	else for(;;) {
-		fprintf(msg_file,"\007Prepare volume #%d and hit return: ",volno);
+		fprintf(msg_file,"\007Prepare volume #%d and hit return: ",global_volno);
 		fflush(msg_file);
 		if(fgets(inbuf,sizeof(inbuf),read_file)==0) {
  			fprintf(msg_file,"EOF?  What does that mean?");
@@ -1276,7 +1317,7 @@ int	type;
 			break;
 
 		case '!':
-#ifdef MSDOS
+#ifdef __MSDOS__
 			spawnl(P_WAIT,getenv("COMSPEC"),"-",0);
 #else
 				/* JF this needs work! */
@@ -1312,7 +1353,7 @@ int	type;
 		msg_perror("can't open %s",ar_file);
 		goto tryagain;
 	}
-#ifdef MSDOS
+#ifdef __MSDOS__
 	setmode(archive,O_BINARY);
 #endif
 	return 0;
