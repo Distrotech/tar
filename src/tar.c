@@ -310,7 +310,7 @@ static struct argp_option options[] = {
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
   {"seek", 'n', NULL, 0,
-   N_("Archive is seekable"), 21 },
+   N_("archive is seekable"), 21 },
 
   {NULL, 0, NULL, 0,
    N_("Overwrite control:"), 30},
@@ -440,7 +440,7 @@ static struct argp_option options[] = {
    N_("POSIX 1003.1-1988 (ustar) format"), 83 },
   {"  pax", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
    N_("POSIX 1003.1-2001 (pax) format"), 83 },
-  {"  posix", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("Same as pax"), 83 },
+  {"  posix", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("same as pax"), 83 },
   
   {"old-archive", OLD_ARCHIVE_OPTION, 0, 0, /* FIXME */
    N_("same as --format=v7"), 88 },
@@ -450,7 +450,7 @@ static struct argp_option options[] = {
   {"pax-option", PAX_OPTION, N_("keyword[[:]=value][,keyword[[:]=value], ...]"), 0,
    N_("control pax keywords"), 88 },
   {"label", 'V', N_("TEXT"), 0,
-   N_("create archive with volume name NAME. At list/extract time, use TEXT as a globbing pattern"), 88 },
+   N_("create archive with volume name TEXT. At list/extract time, use TEXT as a globbing pattern for volume name"), 88 },
   {"bzip2", 'j', 0, 0,
    N_("filter the archive through bzip2"), 88 },
   {"gzip", 'z', 0, 0,
@@ -470,14 +470,14 @@ static struct argp_option options[] = {
    N_("add given file to the archive (useful if FILE name starts with a dash)"), 91},
   {"directory", 'C', N_("DIR"), 0,
    N_("change to directory DIR"), 91 },
-  {"files-from", 'T', N_("FILE-OF-NAMES"), 0,
-   N_("get names to extract or create from file NAME"), 91 },
+  {"files-from", 'T', N_("FILE"), 0,
+   N_("get names to extract or create from file FILE"), 91 },
   {"null", NULL_OPTION, 0, 0,
    N_("-T reads null-terminated names, disable -C"), 91 },
   {"unquote", UNQUOTE_OPTION, 0, 0,
-   N_("Unquote filenames read with -T (default)"), 91 },
+   N_("unquote filenames read with -T (default)"), 91 },
   {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
-   N_("Do not unquote filenames read with -T"), 91 },
+   N_("do not unquote filenames read with -T"), 91 },
   {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
    N_("exclude files, given as a PATTERN"), 91 },
   {"exclude-from", 'X', N_("FILE"), 0,
@@ -520,7 +520,7 @@ static struct argp_option options[] = {
   {"backup", BACKUP_OPTION, N_("CONTROL"), OPTION_ARG_OPTIONAL,
    N_("backup before removal, choose version CONTROL"), 91 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
-   N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX"), 91 },
+   N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), 91 },
   {"wildcards", WILDCARDS_OPTION, 0, 0,
    N_("exclude patterns use wildcards (default)"), 91 },
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
@@ -932,7 +932,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  if (deref_stat (dereference_option, arg, &st) != 0)
 	    {
 	      stat_error (arg);
-	      USAGE_ERROR ((0, 0, _("Date file not found")));
+	      USAGE_ERROR ((0, 0, _("Date sample file not found")));
 	    }
 	  newer_mtime_option.tv_sec = st.st_mtime;
 	  newer_mtime_option.tv_nsec = TIMESPEC_NS (st.st_mtim);
@@ -1352,7 +1352,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	char *cursor;
 
 	if (arg[1])
-	  argp_error (state, _("Malformed density argument: '%s'"), arg);
+	  argp_error (state, _("Malformed density argument: %s"), quote (arg));
 	
 	strcpy (buf, DEVICE_PREFIX);
 	cursor = buf + strlen (buf);
