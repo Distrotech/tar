@@ -24,18 +24,27 @@
 
 #include <time.h>
 
-#ifndef FNM_LEADING_DIR
-# include <fnmatch.h>
-#endif
-
 #include "common.h"
 
 union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
 
-static uintmax_t from_oct PARAMS ((const char *, size_t, const char *, uintmax_t));
+static uintmax_t from_chars PARAMS ((const char *, size_t, const char *,
+				     uintmax_t, uintmax_t));
 
+/* Table of base 64 digit values indexed by unsigned chars.
+   The value is 64 for unsigned chars that are not base 64 digits.  */
+static char base64_map[1 + (unsigned char) -1];
+
+static void
+base64_init (void)
+{
+  int i;
+  memset (base64_map, 64, sizeof base64_map);
+  for (i = 0; i < 64; i++)
+    base64_map[(int) base_64_digits[i]] = i;
+}
 
 /*-----------------------------------.
 | Main loop for reading an archive.  |
@@ -48,6 +57,7 @@ read_and (void (*do_something) ())
   enum read_header prev_status;
   char save_typeflag;
 
+  base64_init ();
   name_gather ();
   open_archive (ACCESS_READ);
 
@@ -66,11 +76,12 @@ read_and (void (*do_something) ())
 	     Ensure incoming names are null terminated.  */
 
 	  /* FIXME: This is a quick kludge before 1.12 goes out.  */
-	  current_stat.st_mtime = TIME_FROM_OCT (current_header->header.mtime);
+	  current_stat.st_mtime
+	    = TIME_FROM_CHARS (current_header->header.mtime);
 
 	  if (!name_match (current_file_name)
 	      || current_stat.st_mtime < newer_mtime_option
-	      || excluded_pathname (excluded, current_file_name))
+	      || excluded_name (current_file_name))
 	    {
 	      int isextended = 0;
 
@@ -327,9 +338,10 @@ read_header (void)
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      parsed_sum = from_oct (header->header.chksum,
-			     sizeof header->header.chksum,
-			     (char *) 0, TYPE_MAXIMUM (long));
+      parsed_sum = from_chars (header->header.chksum,
+			       sizeof header->header.chksum,
+			       (char *) 0, (uintmax_t) 0,
+			       (uintmax_t) TYPE_MAXIMUM (long));
       if (parsed_sum == (uintmax_t) -1)
 	return HEADER_FAILURE;
 
@@ -372,7 +384,7 @@ read_header (void)
       if (header->header.typeflag == LNKTYPE)
 	current_stat.st_size = 0;	/* links 0 size on tape */
       else
-	current_stat.st_size = OFF_FROM_OCT (header->header.size);
+	current_stat.st_size = OFF_FROM_CHARS (header->header.size);
 
       header->header.name[NAME_FIELD_SIZE - 1] = '\0';
       if (header->header.typeflag == GNUTYPE_LONGNAME
@@ -474,19 +486,19 @@ decode_header (union block *header, struct stat *stat_info,
     format = V7_FORMAT;
   *format_pointer = format;
 
-  stat_info->st_mode = MODE_FROM_OCT (header->header.mode);
-  stat_info->st_mtime = TIME_FROM_OCT (header->header.mtime);
+  stat_info->st_mode = MODE_FROM_CHARS (header->header.mode);
+  stat_info->st_mtime = TIME_FROM_CHARS (header->header.mtime);
 
   if (format == OLDGNU_FORMAT && incremental_option)
     {
-      stat_info->st_atime = TIME_FROM_OCT (header->oldgnu_header.atime);
-      stat_info->st_ctime = TIME_FROM_OCT (header->oldgnu_header.ctime);
+      stat_info->st_atime = TIME_FROM_CHARS (header->oldgnu_header.atime);
+      stat_info->st_ctime = TIME_FROM_CHARS (header->oldgnu_header.ctime);
     }
 
   if (format == V7_FORMAT)
     {
-      stat_info->st_uid = UID_FROM_OCT (header->header.uid);
-      stat_info->st_gid = GID_FROM_OCT (header->header.gid);
+      stat_info->st_uid = UID_FROM_CHARS (header->header.uid);
+      stat_info->st_gid = GID_FROM_CHARS (header->header.gid);
       stat_info->st_rdev = 0;
     }
   else
@@ -498,25 +510,25 @@ decode_header (union block *header, struct stat *stat_info,
 	  if (numeric_owner_option
 	      || !*header->header.uname
 	      || !uname_to_uid (header->header.uname, &stat_info->st_uid))
-	    stat_info->st_uid = UID_FROM_OCT (header->header.uid);
+	    stat_info->st_uid = UID_FROM_CHARS (header->header.uid);
 
 	  if (numeric_owner_option
 	      || !*header->header.gname
 	      || !gname_to_gid (header->header.gname, &stat_info->st_gid))
-	    stat_info->st_gid = GID_FROM_OCT (header->header.gid);
+	    stat_info->st_gid = GID_FROM_CHARS (header->header.gid);
 	}
       switch (header->header.typeflag)
 	{
 	case BLKTYPE:
 	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
-		       MINOR_FROM_OCT (header->header.devminor));
+	    = makedev (MAJOR_FROM_CHARS (header->header.devmajor),
+		       MINOR_FROM_CHARS (header->header.devminor));
 	  break;
 
 	case CHRTYPE:
 	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
-		       MINOR_FROM_OCT (header->header.devminor));
+	    = makedev (MAJOR_FROM_CHARS (header->header.devmajor),
+		       MINOR_FROM_CHARS (header->header.devminor));
 	  break;
 
 	default:
@@ -526,44 +538,71 @@ decode_header (union block *header, struct stat *stat_info,
 }
 
 /*------------------------------------------------------------------------.
-| Quick and dirty octal conversion.  Result is -1 if the field is invalid |
-| (all blank, or nonoctal).						  |
+| Convert buffer at WHERE0 of size DIGS from external format to uintmax_t.|
+| The data is of type TYPE.  The buffer must represent a value in the     |
+| range -MINUS_MINVAL through MAXVAL.					  |
 `------------------------------------------------------------------------*/
 
 static uintmax_t
-from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
+from_chars (char const *where0, size_t digs, char const *type,
+	    uintmax_t minus_minval, uintmax_t maxval)
 {
   uintmax_t value;
-  const char *where = where0;
-  size_t digs = digs0;
+  char const *where = where0;
+  char const *lim = where + digs;
+  int negative = 0;
 
   for (;;)
     {
-      if (digs == 0)
+      if (where == lim)
 	{
 	  if (type)
-	    ERROR ((0, 0, _("Blanks in header where octal %s value expected"),
+	    ERROR ((0, 0,
+		    _("Blanks in header where numeric %s value expected"),
 		    type));
 	  return -1;
 	}
       if (!ISSPACE ((unsigned char) *where))
 	break;
       where++;
-      digs--;
     }
 
   value = 0;
-  while (digs != 0 && ISODIGIT (*where))
+  if (ISODIGIT (*where))
     {
-      /* Scan til nonoctal.  */
+      do
+	{
+	  if (value << LG_8 >> LG_8 != value)
+	    goto out_of_range;
+	  value = (value << LG_8) | (*where++ - '0');
+	}
+      while (where != lim && ISODIGIT (*where));
 
-      if (value << 3 >> 3 != value)
-	goto out_of_range;
-      value = (value << 3) | (*where++ - '0');
-      --digs;
+      /* Parse the output of older tars, which output negative values
+	 in two's complement octal.  This method works only if the
+	 type has the same number of bits as it did on the host that
+	 created the tar file, but that's the best we can do.  */
+      if (maxval < value && value - maxval <= minus_minval)
+	{
+	  value = minus_minval - (value - maxval);
+	  negative = 1;
+	}
+    }
+  else if (*where == '-' || *where == '+')
+    {
+      int dig;
+      negative = *where++ == '-';
+      while (where != lim
+	     && (dig = base64_map[(unsigned char) *where]) < 64)
+	{
+	  if (value << LG_64 >> LG_64 != value)
+	    goto out_of_range;
+	  value = (value << LG_64) | dig;
+	  where++;
+	}
     }
 
-  if (digs != 0 && *where && !ISSPACE ((unsigned char) *where))
+  if (where != lim && *where && !ISSPACE ((unsigned char) *where))
     {
       if (type)
 	{
@@ -576,46 +615,58 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 	      set_quoting_style (o, c_quoting_style);
 	    }
 
-	  for (digs = digs0;  digs && ! where0[digs - 1];  digs--)
-	    continue;
-	  quotearg_buffer (buf, sizeof buf, where0, digs, o);
+	  while (where0 != lim && ! lim[-1])
+	    lim--;
+	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
 	  ERROR ((0, 0,
-		  _("Header contains %.*s where octal %s value expected"),
+		  _("Header contains `%.*s' where numeric %s value expected"),
 		  (int) sizeof buf, buf, type));
 	}
 
       return -1;
     }
 
-  if (value <= maxval)
-    return value;
+  if (value <= (negative ? minus_minval : maxval))
+    return negative ? -value : value;
 
  out_of_range:
   if (type)
-    ERROR ((0, 0, _("Octal value `%.*s' is out of range for %s"),
-	    (int) digs0, where0, type));
+    ERROR ((0, 0, _("Numeric value `%.*s' is out of range for %s"),
+	    (int) digs, where0, type));
   return -1;
 }
+
 gid_t
-gid_from_oct (const char *p, size_t s)
+gid_from_chars (const char *p, size_t s)
 {
-  return from_oct (p, s, "gid_t", (uintmax_t) TYPE_MAXIMUM (gid_t));
+  return from_chars (p, s, "gid_t",
+		     - (uintmax_t) TYPE_MINIMUM (gid_t),
+		     (uintmax_t) TYPE_MAXIMUM (gid_t));
 }
+
 major_t
-major_from_oct (const char *p, size_t s)
+major_from_chars (const char *p, size_t s)
 {
-  return from_oct (p, s, "major_t", (uintmax_t) TYPE_MAXIMUM (major_t));
+  return from_chars (p, s, "major_t",
+		     - (uintmax_t) TYPE_MINIMUM (major_t),
+		     (uintmax_t) TYPE_MAXIMUM (major_t));
 }
+
 minor_t
-minor_from_oct (const char *p, size_t s)
+minor_from_chars (const char *p, size_t s)
 {
-  return from_oct (p, s, "minor_t", (uintmax_t) TYPE_MAXIMUM (minor_t));
+  return from_chars (p, s, "minor_t",
+		     - (uintmax_t) TYPE_MINIMUM (minor_t),
+		     (uintmax_t) TYPE_MAXIMUM (minor_t));
 }
+
 mode_t
-mode_from_oct (const char *p, size_t s)
+mode_from_chars (const char *p, size_t s)
 {
   /* Do not complain about unrecognized mode bits.  */
-  unsigned u = from_oct (p, s, "mode_t", TYPE_MAXIMUM (uintmax_t));
+  unsigned u = from_chars (p, s, "mode_t",
+			   - (uintmax_t) TYPE_MINIMUM (mode_t),
+			   TYPE_MAXIMUM (uintmax_t));
   return ((u & TSUID ? S_ISUID : 0)
 	  | (u & TSGID ? S_ISGID : 0)
 	  | (u & TSVTX ? S_ISVTX : 0)
@@ -629,32 +680,43 @@ mode_from_oct (const char *p, size_t s)
 	  | (u & TOWRITE ? S_IWOTH : 0)
 	  | (u & TOEXEC ? S_IXOTH : 0));
 }
+
 off_t
-off_from_oct (const char *p, size_t s)
+off_from_chars (const char *p, size_t s)
 {
-  return from_oct (p, s, "off_t", (uintmax_t) TYPE_MAXIMUM (off_t));
-}
-size_t
-size_from_oct (const char *p, size_t s)
-{
-  return from_oct (p, s, "size_t", (uintmax_t) TYPE_MAXIMUM (size_t));
-}
-time_t
-time_from_oct (const char *p, size_t s)
-{
-  return from_oct (p, s, "time_t", (uintmax_t) TYPE_MAXIMUM (time_t));
-}
-uid_t
-uid_from_oct (const char *p, size_t s)
-{
-  return from_oct (p, s, "uid_t", (uintmax_t) TYPE_MAXIMUM (uid_t));
-}
-uintmax_t
-uintmax_from_oct (const char *p, size_t s)
-{
-  return from_oct (p, s, "uintmax_t", TYPE_MAXIMUM (uintmax_t));
+  return from_chars (p, s, "off_t",
+		     - (uintmax_t) TYPE_MINIMUM (off_t),
+		     (uintmax_t) TYPE_MAXIMUM (off_t));
 }
 
+size_t
+size_from_chars (const char *p, size_t s)
+{
+  return from_chars (p, s, "size_t", (uintmax_t) 0, 
+		     (uintmax_t) TYPE_MAXIMUM (size_t));
+}
+
+time_t
+time_from_chars (const char *p, size_t s)
+{
+  return from_chars (p, s, "time_t",
+		     - (uintmax_t) TYPE_MINIMUM (time_t),
+		     (uintmax_t) TYPE_MAXIMUM (time_t));
+}
+
+uid_t
+uid_from_chars (const char *p, size_t s)
+{
+  return from_chars (p, s, "uid_t", (uintmax_t) 0,
+		     (uintmax_t) TYPE_MAXIMUM (uid_t));
+}
+
+uintmax_t
+uintmax_from_chars (const char *p, size_t s)
+{
+  return from_chars (p, s, "uintmax_t", (uintmax_t) 0,
+		     TYPE_MAXIMUM (uintmax_t));
+}
 
 
 /*----------------------------------------------------------------------.
@@ -853,16 +915,19 @@ print_header (void)
 
       /* User and group names.  */
 
-      if (*current_header->header.uname && current_format != V7_FORMAT)
+      if (*current_header->header.uname && current_format != V7_FORMAT
+	  && !numeric_owner_option)
 	user = current_header->header.uname;
       else
-	user = STRINGIFY_BIGINT (UINTMAX_FROM_OCT (current_header->header.uid),
+	user = STRINGIFY_BIGINT (UINTMAX_FROM_CHARS
+				 (current_header->header.uid),
 				 uform);
 
-      if (*current_header->header.gname && current_format != V7_FORMAT)
+      if (*current_header->header.gname && current_format != V7_FORMAT
+	  && !numeric_owner_option)
 	group = current_header->header.gname;
       else
-	group = STRINGIFY_BIGINT (UINTMAX_FROM_OCT
+	group = STRINGIFY_BIGINT (UINTMAX_FROM_CHARS
 				  (current_header->header.gid),
 				  gform);
 
@@ -879,7 +944,7 @@ print_header (void)
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_OCT (current_header->oldgnu_header.realsize),
+		  (UINTMAX_FROM_CHARS (current_header->oldgnu_header.realsize),
 		   uintbuf));
 	  break;
 	default:
@@ -959,7 +1024,7 @@ print_header (void)
 	case GNUTYPE_MULTIVOL:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_OCT (current_header->oldgnu_header.offset),
+		  (UINTMAX_FROM_CHARS (current_header->oldgnu_header.offset),
 		   uintbuf));
 	  fprintf (stdlis, _("--Continued at byte %s--\n"), size);
 	  break;
