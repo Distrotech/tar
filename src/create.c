@@ -1181,7 +1181,7 @@ dump_hard_link (struct tar_stat_info *stat)
       if ((dup = hash_lookup (link_table, &lp)))
 	{
 	  /* We found a link.  */
-	  char const *link_name = safer_name_suffix (dup->name, 1);
+	  char const *link_name = safer_name_suffix (dup->name, true);
 
 	  dup->nlink--;
 	      
@@ -1277,7 +1277,7 @@ dump_file0 (struct tar_stat_info *stat, char *p,
     return;
 
   assign_string (&stat->orig_file_name, p);
-  assign_string (&stat->file_name, safer_name_suffix (p, 0));
+  assign_string (&stat->file_name, safer_name_suffix (p, false));
 
   if (deref_stat (dereference_option, p, &stat->stat) != 0)
     {

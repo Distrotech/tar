@@ -572,7 +572,7 @@ extract_archive (void)
   if (verbose_option)
     print_header (&current_stat_info, -1);
 
-  file_name = safer_name_suffix (current_stat_info.file_name, 0);
+  file_name = safer_name_suffix (current_stat_info.file_name, false);
   if (strip_path_elements)
     {
       size_t prefix_len = stripped_prefix_len (file_name, strip_path_elements);
@@ -861,7 +861,8 @@ extract_archive (void)
 
     again_link:
       {
-	char const *link_name = safer_name_suffix (current_stat_info.link_name, 1);
+	char const *link_name = safer_name_suffix (current_stat_info.link_name,
+	                                           true);
 	struct stat st1, st2;
 	int e;
 
