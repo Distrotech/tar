@@ -7775,11 +7775,7 @@ device,
 invocation.
 @end itemize
 
-In previous versions of @acronym{GNU} @command{tar}, the
-@samp{--compress-block} option (or even older:
-@samp{--block-compress}) was necessary to reblock compressed archives.
-It is now a dummy option just asking not to be used, and otherwise
-ignored.  If the output goes directly to a local disk, and not through
+If the output goes directly to a local disk, and not through
 stdout, then the last write is not extended to a full record size.
 Otherwise, reblocking occurs.  Here are a few other remarks on this
 topic:
