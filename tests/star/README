@@ -10,6 +10,11 @@ Sample usage:
 or	
 	make TESTS_ENVIRONMENT='STAR_TESTSCRIPTS=testdir' check
 
+The file `quicktest.sh' is a separate test. It is never executed
+within `make check' command, you will need to run it manually.
+Please, carefully read section `quicktest.sh' below before running
+it.
+	
 Following is a short description of the tests:
 
 * gtarfail.at and gtarfail2.at
@@ -39,6 +44,22 @@ format.
 
 Requires pax-big-10g.tar.bz2. It tests handling pax (POSIX.1-2001) archves
 containing very large files (in this case -- 10 GB).
+
+* quicktest.sh
+
+This is a test for compliance to POSIX.1-1990 tar specification. It
+requires two files: ustar-all-quicktest.tar and quicktest.filelist,
+(they usually reside in star/tartest directory), and `tartest' program
+(also part of star distribution). The test must be run only with root
+privileges, so it is a good idea to test contents of
+ustar-all-quicktest.tar before running it.
+
+If `tartest' is not in your PATH, use TARTEST variable to specify its
+full file name. You may pass both STAR_TESTSCRIPTS and TARTEST
+variables as command line arguments to quicktest.sh, as shown in
+the example below:
+
+  ./quicktest.sh STAR_TESTSCRIPTS=testdir TARTEST=/path/to/tartest
 
 
 Local variables:
