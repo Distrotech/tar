@@ -304,6 +304,8 @@ copy_files ${PAXUTILS_SRCDIR}/rmt rmt
 
 copy_files ${PAXUTILS_SRCDIR}/lib lib
 
+copy_files ${PAXUTILS_SRCDIR}/tests tests
+
 # Get translations.
 if test "$DOWNLOAD_PO" = "yes"; then
   update_po
