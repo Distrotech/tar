@@ -1,3 +1,21 @@
+2004-02-15  Paul Eggert  <eggert@twinsun.com>
+
+	Fix Debian bug 230872, originally reported by Jeff King in
+	<http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=230872>.
+
+	* doc/tar.texi (posix compliance): Remove.  The whole section
+	was a misunderstanding of what POSIXLY_CORRECT is supposed to
+	mean.  The GNU Coding Standards says that POSIXLY_CORRECT
+	is for disabling extensions that are incompatible with POSIX:
+	it is not for disabling compatible extensions.  All references
+	to this section removed.
+	(posix): This format is created only if the posix format is
+	specified; it is no longer created if gnu format is specified
+	and POSIXLY_CORRECT is set.
+	* src/tar.c (decode_options): Ignore POSIXLY_CORRECT.
+	POSIX does not specify the behavior of tar, so we should
+	not worry about POSIXLY_CORRECT here.
+
 2004-01-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* Makefile.am: Removed m4
@@ -7,7 +25,7 @@
 	* bootstrap: Updated TP URL, improved help output. Default
 	to :ext:anoncvs and set CVS_RSH, unless already set.
 	* m4/Makefile.am: Removed
-	
+
 2004-01-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap: Bugfix by Marco Gerards <metgerards@student.han.nl>:
@@ -16,7 +34,7 @@
 2004-01-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Started rewriting buffer.c ...
-	
+
 	* bootstrap: New option --no-po
 	* src/buffer.c (new_volume,check_label_pattern): Changed return type.
 	(time_to_start_writing): Changed data type
@@ -24,7 +42,7 @@
 	(open_archive) Moved option compatibility checks to tar.c
 	Other minor changes.
 	* src/common.h (maybe_backup_file): Changed return type
-	* src/misc.c: Likewise.	
+	* src/misc.c: Likewise.
 	* src/create.c: Updated invocations of safer_name_suffix
 	* src/extract.c: Likewise
 	* src/delete.c: Updated assignment to write_archive_to_stdout
@@ -34,19 +52,19 @@
 	* tests/recurse.sh: New test case.
 	* tests/mksparse.c: New file.
 	* tests/Makefile.am: Added recurse.sh and mksparse.c
-	
+
 2004-01-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c (sparse_diff_file): Bugfix. Thanks
 	Martin Simmons for the patch.
 	* src/create.c (dump_dir0): Bugfix. Thanks Piotr Czerwinski
 	<pius@pld-linux.org> for the patch.
-	
+
 2003-12-26  Paul Eggert  <eggert@twinsun.com>
 
 	Synchronize with Gettext 0.13.1, Automake 1.8, Autoconf 2.59,
 	and translation website.
-	
+
 	* bootstrap: Don't bother skipping codeset.m4, glibc21.m4,
 	intdiv0.m4, inttypes_h.m4, inttypes.m4, inttypes-pri.m4,
 	isc-posix.m4, and lcmessage.m4 from gnulib.  This list of files is
@@ -105,7 +123,7 @@
 	* tests/delete03.sh: Likewise.
 	* tests/extrac04.sh: Likewise.
 	* tests/multiv01.sh: Likewise.
-	
+
 2003-12-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/incremen.c (write_directory_file): Use sys_truncate
@@ -127,7 +145,7 @@
 	stored on local CVS on mirddin. This repository will
 	be synchronized with Savannah as soon as the latter
 	becomes operational again.
-	
+
 2003-12-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
@@ -175,9 +193,9 @@
 2003-11-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Rewritten sparse file handling.
-	
+
 	* src/sparse.c: New file. Provides a universal framework
-	for various methods for sparse files handling.  
+	for various methods for sparse files handling.
 	* src/Makefile.am: Added sparse.c
 	* src/common.h (struct sp_array,sparsearray,sp_array_size)
 	(init_sparsearray,fill_in_sparse_array): Removed
@@ -203,16 +221,16 @@
 	diagnostics functions.
 	* src/incremen.c: Use new diagnostics functions.
 	* src/names.c: Likewise.
-	
+
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed check for setsockopt
 
 	* src/create.c: Do not zero-terminate name field if
-	the name is exactly 100 characters long. 
+	the name is exactly 100 characters long.
 	(write_ustar_long_name): Fixed cheking for unsplittable
 	names.
-	
+
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c (start_header): Removed debugging hook
@@ -242,7 +260,7 @@
 	* src/xheader.c (atime_decoder,gid_decoder,ctime_decoder)
 	(mtime_decoder,size_decoder,uid_decoder): Use xstrtoumax.
 	Fixes `pax-big-10g' bug.
-	
+
 2003-11-12  Paul Eggert  <eggert@twinsun.com>
 
 	Fix some C compatibility bugs reported by Joerg Schilling.
@@ -259,7 +277,7 @@
 	(DEFAULT_ST_BLKSIZE): New macro.
 	(ST_BLKSIZE): Use it, instead of DEV_BSIZE.
 	* src/tar.c (enum): Remove comma just before }.
-	
+
 2003-11-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (decode_header): Initialize st_atime and
@@ -304,7 +322,7 @@
 	* src/system.h [MSDOS]: Fixed spelling of EACCES. Added
 	macro overriding broken mkdir prototypes.
 
-2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>  
+2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Check for dev_t and ino_t.
 	* m4/Makefile.am: Added missing files.
@@ -318,11 +336,11 @@
 	* src/delete.c: Likewise.
 	* src/extract.c: Likewise.
 	* src/rtapelib.c: Likewise.
-	
-2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net> 
+
+2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Implemented --occurrence option.
-	
+
 	* NEWS: Updated.
 	* src/tar.c: New option --occurrence.
 	* src/common.h (occurrence_option): New global
@@ -340,12 +358,12 @@
 	(names_done): Removed
 	(all_names_found,names_notfound): Rewritten.
 
-2003-10-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net> 
+2003-10-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c: Removed extra precaution regarding
 	subcommand_option == CAT_SUBCOMMAND
 	* lib/Makefile.am: Updated
-	
+
 2003-10-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/common.h (names_done): New function.
@@ -354,7 +372,7 @@
 	condition.
 	* src/tar.c: New option --first-copy
 	* NEWS: Updated
-	
+
 2003-09-24  Paul Eggert  <eggert@twinsun.com>
 
 	* src/rmt.c (main): Don't translate Copyright string; international
@@ -4548,8 +4566,9 @@
 See ChangeLog.1 for earlier changes.
 
 
-Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation,
-Inc.
+
+Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004 Free Software
+Foundation, Inc.
 
 This file is part of GNU tar.
 

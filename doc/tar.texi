@@ -584,7 +584,6 @@ Introduction
 * Definitions::                 Some Definitions
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
-* posix compliance::
 * Current status::              Current development status of @GNUTAR{}
 * Authors::                     @GNUTAR{} Authors
 * Reports::                     Reporting bugs or suggestions
@@ -832,7 +831,6 @@ archives need not (and these days, typically do not) reside on tapes.
 * Definitions::                 Some Definitions
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
-* posix compliance::
 * Current status::              Current development status of @GNUTAR{}
 * Authors::                     @GNUTAR{} Authors
 * Reports::                     Reporting bugs or suggestions
@@ -1000,37 +998,6 @@ archive members as ``files'' or ``entries''.  For people familiar with
 the operation of @command{tar}, this causes no difficulty.  However, in
 this manual, we consistently refer to ``archives'' and ``archive
 members'' to make learning to use @command{tar} easier for novice users.
-
-@node posix compliance
-@section @sc{posix} Compliance
-
-@noindent
-@FIXME{must ask franc,ois about this.  dan hagerty thinks this might
-be an issue, but we're not really sure at this time.  dan just tried a
-test case of mixing up options' orders while the variable was set, and
-there was no problem...}
-@FIXME{I did not notice any problems either. Besides, the only piece
-of code that really uses POSIXLY_CORRECT is the one that forces
-creation of POSIX archives. I guess this paragraph should be removed.
-
---gray}
-
-
-We make some of our recommendations throughout this book for one
-reason in addition to what we think of as ``good sense''.  The main
-additional reason for a recommendation is to be compliant with the
-@sc{posix} standards.  If you set the shell environment variable
-@env{POSIXLY_CORRECT}, @GNUTAR{} will force you to
-adhere to these standards.  Therefore, if this variable is set and you
-violate one of the @sc{posix} standards in the way you phrase a
-command, for example, @GNUTAR{} will not allow the
-command and will signal an error message.  You would then have to
-reorder the options or rephrase the command to comply with the
-@sc{posix} standards.
-
-Notice also, that if this environment variable is set, @GNUTAR{}
-will create @acronym{POSIX} archives. Currently this means that
-no @acronym{GNU} extensions will be allowed (@pxref{posix}).
 
 @node Current status
 @section Current development status of @GNUTAR{}
@@ -1671,8 +1638,7 @@ written out mnemonically can affect how well you remember which option
 does what, and therefore where different names have to be placed.
 (Placing options in an unusual order can also cause @command{tar} to
 report an error if you have set the shell environment variable
-@env{POSIXLY_CORRECT}; @pxref{posix compliance} for more information
-on this.)
+@env{POSIXLY_CORRECT}.)
 
 @node create dir
 @subsection Archiving Directories
@@ -6393,12 +6359,7 @@ The version @value{VERSION} of @GNUTAR{} is able
 to read and create archives conforming to @sc{posix.1-2001} standard.
 
 A @sc{posix} conformant archive will be created if @command{tar}
-was given @value{op-format-posix} option, or if it was given
-@value{op-format-gnu} option and the environment variable
-@env{POSIXLY_CORRECT} is set. The later usage is retained for
-compatibility with previous versions of @GNUTAR{}
-and is discouraged.
-
+was given @value{op-format-posix} option.
 Notice, that currently @acronym{GNU} extensions are not
 allowed with this format. Following is the list of options that
 cannot be used with @value{op-format-posix}:

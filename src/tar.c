@@ -1275,9 +1275,6 @@ see the file named COPYING for details."));
   if (archive_format == DEFAULT_FORMAT)
     archive_format = DEFAULT_ARCHIVE_FORMAT;
 
-  if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
-    archive_format = POSIX_FORMAT; /*FIXME?*/
-
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
