@@ -1122,13 +1122,21 @@ decode_options (int argc, char **argv)
 
   if (show_version)
     {
-      printf ("tar (GNU %s) %s\n%s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 2001 Free Software Foundation, Inc.",
-	      _("\
+      printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
+
+      /* Note to translator: Please translate "Copyright " to "©"
+	 (C-in-a-circle) if available in the translation's character
+	 set and encoding.  */
+      printf (_("Copyright %d Free Software Foundation, Inc."), 2001);
+      printf ("\n");
+
+      puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
-see the file named COPYING for details."),
-	      _("Written by John Gilmore and Jay Fenlason."));
+see the file named COPYING for details."));
+
+      puts (_("Written by John Gilmore and Jay Fenlason."));
+
       exit (TAREXIT_SUCCESS);
     }
 
@@ -1342,3 +1350,9 @@ main (int argc, char **argv)
     error (0, 0, _("Error exit delayed from previous errors"));
   exit (exit_status);
 }
+
+/*
+  Local Variables:
+  coding: iso-latin-1
+  End:
+*/
