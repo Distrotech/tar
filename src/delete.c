@@ -173,12 +173,18 @@ delete_archive_members (void)
 	  abort ();
 
 	case HEADER_SUCCESS:
-	  if (name = name_scan (current_stat_info.file_name), !name)
+	  if ((name = name_scan (current_stat_info.file_name)) == NULL)
 	    {
 	      skip_member ();
 	      break;
 	    }
-	  name->found = 1;
+	  name->found_count++;
+	  if (!ISFOUND(name))
+	    {
+	      skip_member ();
+	      break;
+	    }
+	  
 	  /* Fall through.  */
 	case HEADER_SUCCESS_EXTENDED:
 	  logical_status = status;
@@ -279,23 +285,26 @@ delete_archive_members (void)
 
 	  /* Found another header.  */
 
-	  if (name = name_scan (current_stat_info.file_name), name)
+	  if ((name = name_scan (current_stat_info.file_name)) != NULL)
 	    {
-	      name->found = 1;
-	    flush_file:
-	      set_next_block_after (current_header);
-	      blocks_to_skip = (current_stat_info.stat.st_size + BLOCKSIZE - 1) / BLOCKSIZE;
-
-	      while (record_end - current_block <= blocks_to_skip)
+	      name->found_count++;
+	      if (ISFOUND(name))
 		{
-		  blocks_to_skip -= (record_end - current_block);
-		  flush_archive ();
-		}
-	      current_block += blocks_to_skip;
-	      blocks_to_skip = 0;
-	      continue;
-	    }
+		flush_file:
+		  set_next_block_after (current_header);
+		  blocks_to_skip = (current_stat_info.stat.st_size
+				    + BLOCKSIZE - 1) / BLOCKSIZE;
 
+		  while (record_end - current_block <= blocks_to_skip)
+		    {
+		      blocks_to_skip -= (record_end - current_block);
+		      flush_archive ();
+		    }
+		  current_block += blocks_to_skip;
+		  blocks_to_skip = 0;
+		  continue;
+		}
+	    }
 	  /* Copy header.  */
 
 	  if (extended_header.size)
