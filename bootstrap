@@ -66,7 +66,7 @@ dirname
 error
 exclude
 fileblocks
-fnmatch
+fnmatch-gnu
 ftruncate
 full-write
 getdate
@@ -79,10 +79,10 @@ lchown
 memset
 modechange
 obstack
-safe-read
 quote
 quotearg
 rmdir
+safe-read
 save-cwd
 savedir
 stdbool

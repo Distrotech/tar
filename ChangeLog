@@ -1,3 +1,17 @@
+2003-09-01  Paul Eggert  <eggert@twinsun.com>
+
+	Update from gnulib, and correct fnmatch to fnmatch-gnu.
+	* bootstrap (gnulib_modules): Change fnmatch to fnmatch-gnu.
+	Sort.
+	* configure.ac (gl_USE_SYSTEM_EXTENSIONS): Use this instead
+	of AC_GNU_SOURCE.
+	* lib/.cvsignore: Add alloca.h, stdbool.h.  Sort.  Append newline.
+	* lib/Makefile.am (lib_OBJECTS): New macro, for convenience when
+	copying rules from gnulib module descriptions.
+	(BUILT_SOURCES, EXTRA_DIST, all-local, alloca.h):
+	Update from gnulib modules alloca, fnmatch, getline, stdbool.
+	* m4/.cvsignore: Add utimes-null.m4.  Sort.
+
 2003-09-01  Sergey Poznyakoff 
 
 	Added initial support for creating POSIX headers.

@@ -1,7 +1,9 @@
-Makefile.in
+.deps
 Makefile
+Makefile.in
 addext.c
 alloca.c
+alloca.h
 alloca_.h
 argmatch.c
 argmatch.h
@@ -24,6 +26,7 @@ fnmatch_loop.c
 ftruncate.c
 full-write.c
 full-write.h
+getdate.c
 getdate.h
 getdate.y
 getline.c
@@ -45,8 +48,8 @@ memset.c
 mktime.c
 modechange.c
 modechange.h
-obstack.h
 obstack.c
+obstack.h
 pathmax.h
 quote.c
 quote.h
@@ -62,6 +65,7 @@ save-cwd.c
 save-cwd.h
 savedir.c
 savedir.h
+stdbool.h
 stdbool_.h
 strcase.h
 strcasecmp.c
@@ -84,5 +88,3 @@ xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
-getdate.c
-.deps

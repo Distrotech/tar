@@ -29,16 +29,21 @@ BUILT_SOURCES =
 EXTRA_DIST =
 MAINTAINERCLEANFILES =
 MOSTLYCLEANFILES =
+lib_OBJECTS = $(libtar_a_OBJECTS)
 
 
 # gnulib modules
 
 # alloca
+BUILT_SOURCES += $(ALLOCA_H)
 EXTRA_DIST += alloca_.h
-all-local $(lib_OBJECTS): @ALLOCA_H@
+
+# We need the following in order to create an <alloca.h> when the system
+# doesn't have one that works with the given compiler.
+all-local $(lib_OBJECTS): $(ALLOCA_H)
 alloca.h: alloca_.h
-	cp $(srcdir)/alloca_.h alloca.h-t
-	mv alloca.h-t alloca.h
+	cp $(srcdir)/alloca_.h $@-t
+	mv $@-t $@
 MOSTLYCLEANFILES += alloca.h alloca.h-t
 
 # argmatch
@@ -53,12 +58,19 @@ libtar_a_SOURCES += dirname.h dirname.c basename.c stripslash.c
 # exclude
 libtar_a_SOURCES += exclude.h exclude.c
 
+# exitfail
+libtar_a_SOURCES += exitfail.h exitfail.c
+
 # fnmatch
+BUILT_SOURCES += $(FNMATCH_H)
 EXTRA_DIST += fnmatch_.h fnmatch_loop.c
-all-local $(lib_OBJECTS): @FNMATCH_H@
+
+# We need the following in order to create an <fnmatch.h> when the system
+# doesn't have one that supports the required API.
+all-local $(lib_OBJECTS): $(FNMATCH_H)
 fnmatch.h: fnmatch_.h
-	cp $(srcdir)/fnmatch_.h fnmatch.h-t
-	mv fnmatch.h-t fnmatch.h
+	cp $(srcdir)/fnmatch_.h $@-t
+	mv $@-t $@
 MOSTLYCLEANFILES += fnmatch.h fnmatch.h-t
 
 # full-write
@@ -77,6 +89,7 @@ $(srcdir)/getdate.c: getdate.y
 
 # getline
 libtar_a_SOURCES += getline.h
+EXTRA_DIST += getndelim2.h getndelim2.c
 
 # getopt
 libtar_a_SOURCES += getopt.h getopt.c getopt1.c
@@ -89,9 +102,6 @@ libtar_a_SOURCES += hash.h hash.c
 
 # human
 libtar_a_SOURCES += human.h human.c
-
-# exitfail
-libtar_a_SOURCES += exitfail.h exitfail.c
 
 # lchown
 libtar_a_SOURCES += lchown.h
@@ -121,11 +131,15 @@ libtar_a_SOURCES += save-cwd.h save-cwd.c
 libtar_a_SOURCES += savedir.h savedir.c
 
 # stdbool
+BUILT_SOURCES += $(STDBOOL_H)
 EXTRA_DIST += stdbool_.h
+
+# We need the following in order to create an <stdbool.h> when the system
+# doesn't have one that works.
 all-local $(lib_OBJECTS): $(STDBOOL_H)
 stdbool.h: stdbool_.h
-	sed -e 's/@''HAVE__BOOL''@/$(HAVE__BOOL)/g' < $(srcdir)/stdbool_.h > stdbool.h-t
-	mv stdbool.h-t stdbool.h
+	sed -e 's/@''HAVE__BOOL''@/$(HAVE__BOOL)/g' < $(srcdir)/stdbool_.h > $@-t
+	mv $@-t $@
 MOSTLYCLEANFILES += stdbool.h stdbool.h-t
 
 # unlocked-io

@@ -25,7 +25,7 @@ AC_CONFIG_HEADERS([config.h:config.hin])
 AC_PREREQ([2.57])
 AM_INIT_AUTOMAKE([1.7.5 gnits dist-bzip2 dist-shar])
 
-AC_GNU_SOURCE
+gl_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_AIX
 AC_MINIX
