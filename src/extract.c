@@ -129,14 +129,15 @@ extr_init (void)
 }
 
 /* If restoring permissions, restore the mode for FILE_NAME from
-   information given in *STAT_INFO (where *CURRENT_STAT_INFO gives
-   the current status if CURRENT_STAT_INFO is nonzero); otherwise invert the
+   information given in *STAT_INFO (where *CUR_INFO gives
+   the current status if CUR_INFO is nonzero); otherwise invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.
    TYPEFLAG specifies the type of the file.  */
 static void
-set_mode (char const *file_name, struct stat const *stat_info,
-	  struct stat const *current_stat_info,
+set_mode (char const *file_name,
+	  struct stat const *stat_info,
+	  struct stat const *cur_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -168,16 +169,16 @@ set_mode (char const *file_name, struct stat const *stat_info,
 	 that we created, so there's no point optimizing this code for
 	 other cases.  */
       struct stat st;
-      if (! current_stat_info)
+      if (! cur_info)
 	{
 	  if (stat (file_name, &st) != 0)
 	    {
 	      stat_error (file_name);
 	      return;
 	    }
-	  current_stat_info = &st;
+	  cur_info = &st;
 	}
-      mode = current_stat_info->st_mode ^ invert_permissions;
+      mode = cur_info->st_mode ^ invert_permissions;
     }
 
   if (chmod (file_name, mode) != 0)
@@ -199,7 +200,7 @@ check_time (char const *file_name, time_t t)
 
 /* Restore stat attributes (owner, group, mode and times) for
    FILE_NAME, using information given in *STAT_INFO.
-   If CURRENT_STAT_INFO is nonzero, *CURRENT_STAT_INFO is the
+   If CUR_INFO is nonzero, *CUR_INFO is the
    file's currernt status.
    If not restoring permissions, invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
@@ -212,8 +213,9 @@ check_time (char const *file_name, time_t t)
    punt for the rest.  Sigh!  */
 
 static void
-set_stat (char const *file_name, struct stat const *stat_info,
-	  struct stat const *current_stat_info,
+set_stat (char const *file_name,
+	  struct stat const *stat_info,
+	  struct stat const *cur_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -252,7 +254,7 @@ set_stat (char const *file_name, struct stat const *stat_info,
 	 done, it is not possible anymore to change file permissions, so we
 	 have to set permissions prior to possibly giving files away.  */
 
-      set_mode (file_name, stat_info, current_stat_info,
+      set_mode (file_name, stat_info, cur_info,
 		invert_permissions, permstatus, typeflag);
     }
 
@@ -332,9 +334,9 @@ repair_delayed_set_stat (char const *dir_name,
       if (st.st_dev == dir_stat_info->st_dev
 	  && st.st_ino == dir_stat_info->st_ino)
 	{
-	  data->stat_info = current_stat;
-	  data->invert_permissions = (MODE_RWX
-				      & (current_stat.st_mode ^ st.st_mode));
+	  data->stat_info = current_stat_info.stat;
+	  data->invert_permissions =
+	    (MODE_RWX & (current_stat_info.stat.st_mode ^ st.st_mode));
 	  data->permstatus = ARCHIVED_PERMSTATUS;
 	  return;
 	}
@@ -388,7 +390,7 @@ make_directories (char *file_name)
 	     invert_permissions is zero, because
 	     repair_delayed_set_stat may need to update the struct.  */
 	  delay_set_stat (file_name,
-			  &current_stat /* ignored */,
+			  &current_stat_info.stat /* ignored */,
 			  invert_permissions, INTERDIR_PERMSTATUS);
 
 	  print_for_mkdir (file_name, cursor - file_name, mode);
@@ -400,13 +402,16 @@ make_directories (char *file_name)
 
       *cursor = '/';
 
-      if (errno == EEXIST
+      if (errno == EEXIST)
+	continue;	        /* Directory already exists.  */
+      else if ((errno == ENOSYS /* Automounted dirs on Solaris return
+				   this. Reported by Warren Hyde
+				   <Warren.Hyde@motorola.com> */
 #if MSDOS
-	  /* Turbo C mkdir gives a funny errno.  */
-	  || errno == EACCES
+	       || errno == EACCES  /* Turbo C mkdir gives a funny errno.  */
 #endif
-	  )
-	/* Directory already exists.  */
+	       )
+	       && access (file_name, W_OK) == 0)
 	continue;
 
       /* Some other error in the mkdir.  We return to the caller.  */
@@ -493,7 +498,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 bool
 fill_in_sparse_array (void)
 {
-  off_t sparse_data_size = current_stat.st_size;
+  off_t sparse_data_size = current_stat_info.stat.st_size;
   off_t file_size = OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
   int sparses;
   int counter;
@@ -560,7 +565,8 @@ fill_in_sparse_array (void)
   return 1;
 
  invalid_member:
-  ERROR ((0, 0, "%s: invalid sparse archive member", current_file_name));
+  ERROR ((0, 0, _("%s: invalid sparse archive member"),
+	  current_stat_info.file_name));
   return 0;
 }
 
@@ -640,7 +646,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
       struct delayed_set_stat *data = delayed_set_stat_head;
       bool skip_this_one = 0;
       struct stat st;
-      struct stat const *current_stat_info = 0;
+      struct stat const *cur_info = 0;
 
       check_for_renamed_directories |= data->after_symlinks;
 
@@ -654,7 +660,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
 
       if (check_for_renamed_directories)
 	{
-	  current_stat_info = &st;
+	  cur_info = &st;
 	  if (stat (data->file_name, &st) != 0)
 	    {
 	      stat_error (data->file_name);
@@ -671,7 +677,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
 	}
 
       if (! skip_this_one)
-	set_stat (data->file_name, &data->stat_info, current_stat_info,
+	set_stat (data->file_name, &data->stat_info, cur_info,
 		  data->invert_permissions, data->permstatus, DIRTYPE);
 
       delayed_set_stat_head = data->next;
@@ -694,13 +700,12 @@ extract_archive (void)
   off_t file_size;
   int interdir_made = 0;
   char typeflag;
-  union block *exhdr;
   char *file_name;
 
   set_next_block_after (current_header);
-  decode_header (current_header, &current_stat, &current_format, 1);
+  decode_header (current_header, &current_stat_info, &current_format, 1);
 
-  if (interactive_option && !confirm ("extract", current_file_name))
+  if (interactive_option && !confirm ("extract", current_stat_info.file_name))
     {
       skip_member ();
       return;
@@ -711,7 +716,7 @@ extract_archive (void)
   if (verbose_option)
     print_header (-1);
 
-  file_name = safer_name_suffix (current_file_name, 0);
+  file_name = safer_name_suffix (current_stat_info.file_name, 0);
 
   apply_nonancestor_delayed_set_stat (file_name, 0);
 
@@ -745,7 +750,7 @@ extract_archive (void)
       /* Appears to be a file.  But BSD tar uses the convention that a slash
 	 suffix means a directory.  */
 
-      if (current_trailing_slash)
+      if (current_stat_info.had_trailing_slash)
 	goto really_dir;
 
       /* FIXME: deal with protection issues.  */
@@ -755,7 +760,7 @@ extract_archive (void)
 		  | (old_files_option == OVERWRITE_OLD_FILES
 		     ? O_TRUNC
 		     : O_EXCL));
-      mode = current_stat.st_mode & MODE_RWX & ~ current_umask;
+      mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
 
       if (to_stdout_option)
 	{
@@ -776,7 +781,7 @@ extract_archive (void)
 	 the open call that creates them.  */
 
       if (typeflag == CONTTYPE)
-	fd = open (file_name, openflag | O_CTG, mode, current_stat.st_size);
+	fd = open (file_name, openflag | O_CTG, mode, current_stat_info.stat.st_size);
       else
 	fd = open (file_name, openflag, mode);
 
@@ -823,16 +828,16 @@ extract_archive (void)
 	  name = xmalloc (name_length_bis);
 	  memcpy (name, file_name, name_length_bis);
 	  size = extract_sparse_file (fd, name,
-				      current_stat.st_size, file_size);
+				      current_stat_info.stat.st_size, file_size);
 	  free (sparsearray);
 	}
       else
-	for (size = current_stat.st_size; size > 0; )
+	for (size = current_stat_info.stat.st_size; size > 0; )
 	  {
 	    if (multi_volume_option)
 	      {
-		assign_string (&save_name, current_file_name);
-		save_totsize = current_stat.st_size;
+		assign_string (&save_name, current_stat_info.file_name);
+		save_totsize = current_stat_info.stat.st_size;
 		save_sizeleft = size;
 	      }
 
@@ -883,7 +888,7 @@ extract_archive (void)
 	    undo_last_backup ();
 	}
 
-      set_stat (file_name, &current_stat, 0, 0,
+      set_stat (file_name, &current_stat_info.stat, 0, 0,
 		(old_files_option == OVERWRITE_OLD_FILES
 		 ? UNKNOWN_PERMSTATUS
 		 : ARCHIVED_PERMSTATUS),
@@ -896,19 +901,19 @@ extract_archive (void)
 	break;
 
       if (absolute_names_option
-	  || ! (ISSLASH (current_link_name
-			 [FILESYSTEM_PREFIX_LEN (current_link_name)])
-		|| contains_dot_dot (current_link_name)))
+	  || ! (ISSLASH (current_stat_info.link_name
+			 [FILESYSTEM_PREFIX_LEN (current_stat_info.link_name)])
+		|| contains_dot_dot (current_stat_info.link_name)))
 	{
-	  while (status = symlink (current_link_name, file_name),
+	  while (status = symlink (current_stat_info.link_name, file_name),
 		 status != 0)
 	    if (!maybe_recoverable (file_name, &interdir_made))
 	      break;
 
 	  if (status == 0)
-	    set_stat (file_name, &current_stat, 0, 0, 0, SYMTYPE);
+	    set_stat (file_name, &current_stat_info.stat, 0, 0, 0, SYMTYPE);
 	  else
-	    symlink_error (current_link_name, file_name);
+	    symlink_error (current_stat_info.link_name, file_name);
 	}
       else
 	{
@@ -937,19 +942,19 @@ extract_archive (void)
 	      struct delayed_set_stat *h;
 	      struct delayed_symlink *p =
 		xmalloc (offsetof (struct delayed_symlink, target)
-			 + strlen (current_link_name) + 1);
+			 + strlen (current_stat_info.link_name) + 1);
 	      p->next = delayed_symlink_head;
 	      delayed_symlink_head = p;
 	      p->dev = st.st_dev;
 	      p->ino = st.st_ino;
 	      p->mtime = st.st_mtime;
-	      p->uid = current_stat.st_uid;
-	      p->gid = current_stat.st_gid;
+	      p->uid = current_stat_info.stat.st_uid;
+	      p->gid = current_stat_info.stat.st_gid;
 	      p->sources = xmalloc (offsetof (struct string_list, string)
 				    + strlen (file_name) + 1);
 	      p->sources->next = 0;
 	      strcpy (p->sources->string, file_name);
-	      strcpy (p->target, current_link_name);
+	      strcpy (p->target, current_stat_info.link_name);
 
 	      h = delayed_set_stat_head;
 	      if (h && ! h->after_symlinks
@@ -1002,7 +1007,7 @@ extract_archive (void)
 
     again_link:
       {
-	char const *link_name = safer_name_suffix (current_link_name, 1);
+	char const *link_name = safer_name_suffix (current_stat_info.link_name, 1);
 	struct stat st1, st2;
 	int e;
 
@@ -1049,13 +1054,13 @@ extract_archive (void)
 
 #if S_IFCHR
     case CHRTYPE:
-      current_stat.st_mode |= S_IFCHR;
+      current_stat_info.stat.st_mode |= S_IFCHR;
       goto make_node;
 #endif
 
 #if S_IFBLK
     case BLKTYPE:
-      current_stat.st_mode |= S_IFBLK;
+      current_stat_info.stat.st_mode |= S_IFBLK;
 #endif
 
 #if S_IFCHR || S_IFBLK
@@ -1063,8 +1068,8 @@ extract_archive (void)
       if (! prepare_to_extract (file_name, 0))
 	break;
 
-      status = mknod (file_name, current_stat.st_mode,
-		      current_stat.st_rdev);
+      status = mknod (file_name, current_stat_info.stat.st_mode,
+		      current_stat_info.stat.st_rdev);
       if (status != 0)
 	{
 	  if (maybe_recoverable (file_name, &interdir_made))
@@ -1074,7 +1079,7 @@ extract_archive (void)
 	    undo_last_backup ();
 	  break;
 	};
-      set_stat (file_name, &current_stat, 0, 0,
+      set_stat (file_name, &current_stat_info.stat, 0, 0,
 		ARCHIVED_PERMSTATUS, typeflag);
       break;
 #endif
@@ -1084,13 +1089,13 @@ extract_archive (void)
       if (! prepare_to_extract (file_name, 0))
 	break;
 
-      while (status = mkfifo (file_name, current_stat.st_mode),
+      while (status = mkfifo (file_name, current_stat_info.stat.st_mode),
 	     status != 0)
 	if (!maybe_recoverable (file_name, &interdir_made))
 	  break;
 
       if (status == 0)
-	set_stat (file_name, &current_stat, 0, 0,
+	set_stat (file_name, &current_stat_info.stat, NULL, 0,
 		  ARCHIVED_PERMSTATUS, typeflag);
       else
 	{
@@ -1114,7 +1119,7 @@ extract_archive (void)
       else if (typeflag == GNUTYPE_DUMPDIR)
 	skip_member ();
 
-      mode = ((current_stat.st_mode
+      mode = ((current_stat_info.stat.st_mode
 	       | (we_are_root ? 0 : MODE_WXUSR))
 	      & MODE_RWX);
 
@@ -1167,8 +1172,8 @@ extract_archive (void)
       if (status == 0
 	  || old_files_option == DEFAULT_OLD_FILES
 	  || old_files_option == OVERWRITE_OLD_FILES)
-	delay_set_stat (file_name, &current_stat,
-			MODE_RWX & (mode ^ current_stat.st_mode),
+	delay_set_stat (file_name, &current_stat_info.stat,
+			MODE_RWX & (mode ^ current_stat_info.stat.st_mode),
 			(status == 0
 			 ? ARCHIVED_PERMSTATUS
 			 : UNKNOWN_PERMSTATUS));
@@ -1176,7 +1181,7 @@ extract_archive (void)
 
     case GNUTYPE_VOLHDR:
       if (verbose_option)
-	fprintf (stdlis, _("Reading %s\n"), quote (current_file_name));
+	fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
       break;
 
     case GNUTYPE_NAMES:
@@ -1186,7 +1191,7 @@ extract_archive (void)
     case GNUTYPE_MULTIVOL:
       ERROR ((0, 0,
 	      _("%s: Cannot extract -- file is continued from another volume"),
-	      quotearg_colon (current_file_name)));
+	      quotearg_colon (current_stat_info.file_name)));
       skip_member ();
       if (backup_option)
 	undo_last_backup ();

@@ -359,7 +359,7 @@ write_eot (void)
 
 /* FIXME: Cross recursion between start_header and write_long!  */
 
-static union block *start_header (const char *, struct stat *);
+static union block *start_header (const char *, struct tar_stat_info *);
 
 static void
 write_long (const char *p, char type)
@@ -367,10 +367,10 @@ write_long (const char *p, char type)
   size_t size = strlen (p) + 1;
   size_t bufsize;
   union block *header;
-  struct stat foo;
+  struct tar_stat_info foo;
 
   memset (&foo, 0, sizeof foo);
-  foo.st_size = size;
+  foo.stat.st_size = size;
 
   header = start_header ("././@LongLink", &foo);
   header->header.typeflag = type;
@@ -400,7 +400,7 @@ write_long (const char *p, char type)
    and return its address.  */
 
 static union block *
-start_header (const char *name, struct stat *st)
+start_header (const char *name, struct tar_stat_info *st)
 {
   union block *header;
 
@@ -411,7 +411,7 @@ start_header (const char *name, struct stat *st)
   header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
 
-  assign_string (&current_file_name, name);
+  assign_string (&current_stat_info.file_name, name);
 
   strncpy (header->header.name, name, NAME_FIELD_SIZE);
   header->header.name[NAME_FIELD_SIZE - 1] = '\0';
@@ -419,12 +419,12 @@ start_header (const char *name, struct stat *st)
   /* Override some stat fields, if requested to do so.  */
 
   if (owner_option != (uid_t) -1)
-    st->st_uid = owner_option;
+    st->stat.st_uid = owner_option;
   if (group_option != (gid_t) -1)
-    st->st_gid = group_option;
+    st->stat.st_gid = group_option;
   if (mode_option)
-    st->st_mode = ((st->st_mode & ~MODE_ALL)
-		   | mode_adjust (st->st_mode, mode_option));
+    st->stat.st_mode = ((st->stat.st_mode & ~MODE_ALL)
+		   | mode_adjust (st->stat.st_mode, mode_option));
 
   /* Paul Eggert tried the trivial test ($WRITER cf a b; $READER tvf a)
      for a few tars and came up with the following interoperability
@@ -450,22 +450,22 @@ start_header (const char *name, struct stat *st)
      acceptor for Paul's test.  */
 
   if (archive_format == V7_FORMAT)
-    MODE_TO_CHARS (st->st_mode & MODE_ALL, header->header.mode);
+    MODE_TO_CHARS (st->stat.st_mode & MODE_ALL, header->header.mode);
   else
-    MODE_TO_CHARS (st->st_mode, header->header.mode);
+    MODE_TO_CHARS (st->stat.st_mode, header->header.mode);
 
-  UID_TO_CHARS (st->st_uid, header->header.uid);
-  GID_TO_CHARS (st->st_gid, header->header.gid);
-  OFF_TO_CHARS (st->st_size, header->header.size);
-  TIME_TO_CHARS (st->st_mtime, header->header.mtime);
+  UID_TO_CHARS (st->stat.st_uid, header->header.uid);
+  GID_TO_CHARS (st->stat.st_gid, header->header.gid);
+  OFF_TO_CHARS (st->stat.st_size, header->header.size);
+  TIME_TO_CHARS (st->stat.st_mtime, header->header.mtime);
   MAJOR_TO_CHARS (0, header->header.devmajor);
   MINOR_TO_CHARS (0, header->header.devminor);
 
   if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
       {
-	TIME_TO_CHARS (st->st_atime, header->oldgnu_header.atime);
-	TIME_TO_CHARS (st->st_ctime, header->oldgnu_header.ctime);
+	TIME_TO_CHARS (st->stat.st_atime, header->oldgnu_header.atime);
+	TIME_TO_CHARS (st->stat.st_ctime, header->oldgnu_header.ctime);
       }
 
   header->header.typeflag = archive_format == V7_FORMAT ? AREGTYPE : REGTYPE;
@@ -496,8 +496,8 @@ start_header (const char *name, struct stat *st)
     }
   else
     {
-      uid_to_uname (st->st_uid, header->header.uname);
-      gid_to_gname (st->st_gid, header->header.gname);
+      uid_to_uname (st->stat.st_uid, header->header.uname);
+      gid_to_gname (st->stat.st_gid, header->header.gname);
     }
 
   return header;
@@ -541,7 +541,7 @@ finish_header (union block *header, off_t block_ordinal)
       /* These globals are parameters to print_header, sigh.  */
 
       current_header = header;
-      /* current_stat is already set up.  */
+      /* current_stat_info is already set up.  */
       current_format = archive_format;
       print_header (block_ordinal);
     }
@@ -859,7 +859,7 @@ static Hash_table *link_table;
    of an incremental dump.  PARENT_DEVICE is the device of P's
    parent directory; it is examined only if TOP_LEVEL is zero.
 
-   Set global CURRENT_STAT to stat output for this file.  */
+   Set global CURRENT_STAT_INFO to stat output for this file.  */
 
 /* FIXME: One should make sure that for *every* path leading to setting
    exit_status to failure, a clear diagnostic has been issued.  */
@@ -881,7 +881,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
   if (interactive_option && !confirm ("add", p))
     return;
 
-  if (deref_stat (dereference_option, p, &current_stat) != 0)
+  if (deref_stat (dereference_option, p, &current_stat_info.stat) != 0)
     {
       if (ignore_failed_read_option)
 	stat_warn (p);
@@ -890,12 +890,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
       return;
     }
 
-  original_ctime = current_stat.st_ctime;
-  restore_times.actime = current_stat.st_atime;
-  restore_times.modtime = current_stat.st_mtime;
+  original_ctime = current_stat_info.stat.st_ctime;
+  restore_times.actime = current_stat_info.stat.st_atime;
+  restore_times.modtime = current_stat_info.stat.st_mtime;
 
 #ifdef S_ISHIDDEN
-  if (S_ISHIDDEN (current_stat.st_mode))
+  if (S_ISHIDDEN (current_stat_info.stat.st_mode))
     {
       char *new = (char *) alloca (strlen (p) + 2);
       if (new)
@@ -911,9 +911,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
      put in the archive.  */
 
   if ((0 < top_level || !incremental_option)
-      && !S_ISDIR (current_stat.st_mode)
-      && current_stat.st_mtime < newer_mtime_option
-      && (!after_date_option || current_stat.st_ctime < newer_ctime_option))
+      && !S_ISDIR (current_stat_info.stat.st_mode)
+      && current_stat_info.stat.st_mtime < newer_mtime_option
+      && (!after_date_option || current_stat_info.stat.st_ctime < newer_ctime_option))
     {
       if (0 < top_level)
 	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
@@ -925,7 +925,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 #if !MSDOS
   /* See if we are trying to dump the archive.  */
 
-  if (ar_dev && current_stat.st_dev == ar_dev && current_stat.st_ino == ar_ino)
+  if (ar_dev && current_stat_info.stat.st_dev == ar_dev && current_stat_info.stat.st_ino == ar_ino)
     {
       WARN ((0, 0, _("%s: file is the archive; not dumped"),
 	     quotearg_colon (p)));
@@ -933,7 +933,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
     }
 #endif
 
-  if (S_ISDIR (current_stat.st_mode))
+  if (S_ISDIR (current_stat_info.stat.st_mode))
     {
       char *directory;
       char const *entry;
@@ -941,7 +941,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
       char *namebuf;
       size_t buflen;
       size_t len;
-      dev_t our_device = current_stat.st_dev;
+      dev_t our_device = current_stat_info.stat.st_dev;
 
       errno = 0;
 
@@ -979,18 +979,18 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	     directory blocks to be written even with old archives.  */
 
 	  block_ordinal = current_block_ordinal ();
-	  current_stat.st_size = 0;	/* force 0 size on dir */
+	  current_stat_info.stat.st_size = 0;	/* force 0 size on dir */
 
 	  /* FIXME: If people could really read standard archives, this
 	     should be:
 
 	     header
-	       = start_header (standard_option ? p : namebuf, &current_stat);
+	       = start_header (standard_option ? p : namebuf, &current_stat_info);
 
 	     but since they'd interpret DIRTYPE blocks as regular
 	     files, we'd better put the / on the name.  */
 
-	  header = start_header (namebuf, &current_stat);
+	  header = start_header (namebuf, &current_stat_info);
 
 	  if (incremental_option)
 	    header->header.typeflag = GNUTYPE_DUMPDIR;
@@ -1063,7 +1063,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	 avoid doing so if the user only wants to dump one file system.  */
 
       if (one_file_system_option && !top_level
-	  && parent_device != current_stat.st_dev)
+	  && parent_device != current_stat_info.stat.st_dev)
 	{
 	  if (verbose_option)
 	    WARN ((0, 0,
@@ -1104,12 +1104,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
     {
       /* Check for multiple links.  */
 
-      if (1 < current_stat.st_nlink && link_table)
+      if (1 < current_stat_info.stat.st_nlink && link_table)
 	{
 	  struct link lp;
 	  struct link *dup;
-	  lp.ino = current_stat.st_ino;
-	  lp.dev = current_stat.st_dev;
+	  lp.ino = current_stat_info.stat.st_ino;
+	  lp.dev = current_stat_info.stat.st_dev;
 
 	  if ((dup = hash_lookup (link_table, &lp)))
 	    {
@@ -1121,10 +1121,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      block_ordinal = current_block_ordinal ();
 	      if (NAME_FIELD_SIZE <= strlen (link_name))
 		write_long (link_name, GNUTYPE_LONGLINK);
-	      assign_string (&current_link_name, link_name);
+	      assign_string (&current_stat_info.link_name, link_name);
 
-	      current_stat.st_size = 0;
-	      header = start_header (p, &current_stat);
+	      current_stat_info.stat.st_size = 0;
+	      header = start_header (p, &current_stat_info);
 	      strncpy (header->header.linkname, link_name, NAME_FIELD_SIZE);
 
 	      /* Force null termination.  */
@@ -1146,8 +1146,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
       /* This is not a link to a previously dumped file, so dump it.  */
 
-      if (S_ISREG (current_stat.st_mode)
-	  || S_ISCTG (current_stat.st_mode))
+      if (S_ISREG (current_stat_info.stat.st_mode)
+	  || S_ISCTG (current_stat_info.stat.st_mode))
 	{
 	  int f;			/* file descriptor */
 	  size_t bufsize;
@@ -1193,14 +1193,14 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		 st_blocks, so `du' and `ls -s' give wrong results.  So, the
 		 --sparse option would not work on a minix filesystem.  */
 
-	      if (ST_NBLOCKS (current_stat)
-		  < (current_stat.st_size / ST_NBLOCKSIZE
-		     + (current_stat.st_size % ST_NBLOCKSIZE != 0)))
+	      if (ST_NBLOCKS (current_stat_info.stat)
+		  < (current_stat_info.stat.st_size / ST_NBLOCKSIZE
+		     + (current_stat_info.stat.st_size % ST_NBLOCKSIZE != 0)))
 		{
 		  int counter;
 
 		  block_ordinal = current_block_ordinal ();
-		  header = start_header (p, &current_stat);
+		  header = start_header (p, &current_stat_info);
 		  header->header.typeflag = GNUTYPE_SPARSE;
 		  header_moved = 1;
 
@@ -1221,15 +1221,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		     <file>.  It might be kind of disconcerting if the
 		     shrunken file size was the one that showed up.  */
 
-		  OFF_TO_CHARS (current_stat.st_size,
+		  OFF_TO_CHARS (current_stat_info.stat.st_size,
 				header->oldgnu_header.realsize);
 
 		  /* This will be the new "size" of the file, i.e., the size
 		     of the file minus the blocks of holes that we're
 		     skipping over.  */
 
-		  current_stat.st_size = find_new_file_size (sparses);
-		  OFF_TO_CHARS (current_stat.st_size, header->header.size);
+		  current_stat_info.stat.st_size = find_new_file_size (sparses);
+		  OFF_TO_CHARS (current_stat_info.stat.st_size, header->header.size);
 
 		  for (counter = 0;
 		       counter < sparses && counter < SPARSES_IN_OLDGNU_HEADER;
@@ -1243,14 +1243,14 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		}
 	    }
 
-	  sizeleft = current_stat.st_size;
+	  sizeleft = current_stat_info.stat.st_size;
 
 	  /* Don't bother opening empty, world readable files.  Also do not open
 	     files when archive is meant for /dev/null.  */
 
 	  if (dev_null_output
 	      || (sizeleft == 0
-		  && MODE_R == (MODE_R & current_stat.st_mode)))
+		  && MODE_R == (MODE_R & current_stat_info.stat.st_mode)))
 	    f = -1;
 	  else
 	    {
@@ -1271,12 +1271,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  if (!header_moved)
 	    {
 	      block_ordinal = current_block_ordinal ();
-	      header = start_header (p, &current_stat);
+	      header = start_header (p, &current_stat_info);
 	    }
 
 	  /* Mark contiguous files, if we support them.  */
 
-	  if (archive_format != V7_FORMAT && S_ISCTG (current_stat.st_mode))
+	  if (archive_format != V7_FORMAT && S_ISCTG (current_stat_info.stat.st_mode))
 	    header->header.typeflag = CONTTYPE;
 
 	  isextended = header->oldgnu_header.isextended;
@@ -1312,7 +1312,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    {
 	      if (f < 0
 		  || finish_sparse_file (f, &sizeleft,
-					 current_stat.st_size, p))
+					 current_stat_info.stat.st_size, p))
 		goto padit;
 	    }
 	  else
@@ -1322,7 +1322,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		  {
 		    assign_string (&save_name, p);
 		    save_sizeleft = sizeleft;
-		    save_totsize = current_stat.st_size;
+		    save_totsize = current_stat_info.stat.st_size;
 		  }
 		start = find_next_block ();
 
@@ -1346,7 +1346,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		    (ignore_failed_read_option
 		     ? read_warn_details
 		     : read_error_details)
-		      (p, current_stat.st_size - sizeleft, bufsize);
+		      (p, current_stat_info.stat.st_size - sizeleft, bufsize);
 		    goto padit;
 		  }
 		sizeleft -= count;
@@ -1428,12 +1428,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  goto file_was_dumped;
 	}
 #ifdef HAVE_READLINK
-      else if (S_ISLNK (current_stat.st_mode))
+      else if (S_ISLNK (current_stat_info.stat.st_mode))
 	{
 	  char *buffer;
 	  int size;
-	  size_t linklen = current_stat.st_size;
-	  if (linklen != current_stat.st_size || linklen + 1 == 0)
+	  size_t linklen = current_stat_info.stat.st_size;
+	  if (linklen != current_stat_info.stat.st_size || linklen + 1 == 0)
 	    xalloc_die ();
 	  buffer = (char *) alloca (linklen + 1);
 	  size = readlink (p, buffer, linklen + 1);
@@ -1448,11 +1448,11 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  buffer[size] = '\0';
 	  if (size >= NAME_FIELD_SIZE)
 	    write_long (buffer, GNUTYPE_LONGLINK);
-	  assign_string (&current_link_name, buffer);
+	  assign_string (&current_stat_info.link_name, buffer);
 
 	  block_ordinal = current_block_ordinal ();
-	  current_stat.st_size = 0;	/* force 0 size on symlink */
-	  header = start_header (p, &current_stat);
+	  current_stat_info.stat.st_size = 0;	/* force 0 size on symlink */
+	  header = start_header (p, &current_stat_info);
 	  strncpy (header->header.linkname, buffer, NAME_FIELD_SIZE);
 	  header->header.linkname[NAME_FIELD_SIZE - 1] = '\0';
 	  header->header.typeflag = SYMTYPE;
@@ -1467,18 +1467,18 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  goto file_was_dumped;
 	}
 #endif
-      else if (S_ISCHR (current_stat.st_mode))
+      else if (S_ISCHR (current_stat_info.stat.st_mode))
 	type = CHRTYPE;
-      else if (S_ISBLK (current_stat.st_mode))
+      else if (S_ISBLK (current_stat_info.stat.st_mode))
 	type = BLKTYPE;
-      else if (S_ISFIFO (current_stat.st_mode))
+      else if (S_ISFIFO (current_stat_info.stat.st_mode))
 	type = FIFOTYPE;
-      else if (S_ISSOCK (current_stat.st_mode))
+      else if (S_ISSOCK (current_stat_info.stat.st_mode))
 	{
 	  WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
 	  return;
 	}
-      else if (S_ISDOOR (current_stat.st_mode))
+      else if (S_ISDOOR (current_stat_info.stat.st_mode))
 	{
 	  WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
 	  return;
@@ -1491,14 +1491,14 @@ dump_file (char *p, int top_level, dev_t parent_device)
     goto unknown;
 
   block_ordinal = current_block_ordinal ();
-  current_stat.st_size = 0;	/* force 0 size */
-  header = start_header (p, &current_stat);
+  current_stat_info.stat.st_size = 0;	/* force 0 size */
+  header = start_header (p, &current_stat_info);
   header->header.typeflag = type;
 
   if (type != FIFOTYPE)
     {
-      MAJOR_TO_CHARS (major (current_stat.st_rdev), header->header.devmajor);
-      MINOR_TO_CHARS (minor (current_stat.st_rdev), header->header.devminor);
+      MAJOR_TO_CHARS (major (current_stat_info.stat.st_rdev), header->header.devmajor);
+      MINOR_TO_CHARS (minor (current_stat_info.stat.st_rdev), header->header.devminor);
     }
 
   finish_header (header, block_ordinal);
@@ -1517,14 +1517,14 @@ unknown:
   return;
 
 file_was_dumped:
-  if (1 < current_stat.st_nlink)
+  if (1 < current_stat_info.stat.st_nlink)
     {
       struct link *dup;
       struct link *lp = xmalloc (offsetof (struct link, name)
 				 + strlen (p) + 1);
-      lp->ino = current_stat.st_ino;
-      lp->dev = current_stat.st_dev;
-      lp->nlink = current_stat.st_nlink;
+      lp->ino = current_stat_info.stat.st_ino;
+      lp->dev = current_stat_info.stat.st_dev;
+      lp->nlink = current_stat_info.stat.st_nlink;
       strcpy (lp->name, p);
 
       if (! ((link_table

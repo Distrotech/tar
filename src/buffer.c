@@ -669,8 +669,7 @@ open_archive (enum access_mode wanted_access)
   if (archive_names == 0)
     FATAL_ERROR ((0, 0, _("No archive name given")));
 
-  current_file_name = 0;
-  current_link_name = 0;
+  destroy_stat (&current_stat_info);
   save_name = 0;
   real_s_name = 0;
 
@@ -845,8 +844,8 @@ open_archive (enum access_mode wanted_access)
 	  else
 	    strcpy (record_start->header.name, volume_label_option);
 
-	  assign_string (&current_file_name, record_start->header.name);
-	  current_trailing_slash = strip_trailing_slashes (current_file_name);
+	  assign_string (&current_stat_info.file_name, record_start->header.name);
+	  current_stat_info.had_trailing_slash = strip_trailing_slashes (current_stat_info.file_name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
 	  TIME_TO_CHARS (start_time, record_start->header.mtime);
@@ -1362,10 +1361,7 @@ close_archive (void)
     }
 #endif /* !MSDOS */
 
-  if (current_file_name)
-    free (current_file_name);
-  if (current_link_name)
-    free (current_link_name);
+  destroy_stat (&current_stat_info);
   if (save_name)
     free (save_name);
   if (real_s_name)
