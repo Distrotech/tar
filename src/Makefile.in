@@ -128,9 +128,9 @@ tar.info: tar.texinfo
 install: all
 	$(INSTALL_PROGRAM) tar $(bindir)/$(binprefix)tar
 	-test ! -f rmt || $(INSTALL_PROGRAM) rmt $(libdir)/rmt
-	for file in $(srcdir)/tar.info*; \
-	do $(INSTALL_DATA) $$file $(infodir)/$$file; \
-	done
+#	for file in $(srcdir)/tar.info*; \
+#	do $(INSTALL_DATA) $$file $(infodir)/$$file; \
+#	done
 
 uninstall:
 	rm -f $(bindir)/$(binprefix)tar	$(infodir)/tar.info*
