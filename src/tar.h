@@ -122,6 +122,10 @@ union record {
 					   the names of files that were in
 					   the dir at the time the dump
 					   was made */
+#define LF_LONGLINK	'K'		/* Identifies the NEXT file on the tape
+					   as having a long linkname */
+#define LF_LONGNAME	'L'		/* Identifies the NEXT file on the tape
+					   as having a long name. */
 #define LF_MULTIVOL	'M'		/* This is the continuation
 					   of a file that began on another
 					   volume */
