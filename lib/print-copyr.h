@@ -6,4 +6,4 @@
 #  endif
 # endif
 
-char const *copyright_symbol PARAMS((char *, size_t));
+void print_copyright PARAMS((char const *));
