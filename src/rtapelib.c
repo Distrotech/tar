@@ -29,18 +29,18 @@
    Redone as a library that can replace open, read, write, etc., by
    Fred Fish, with some additional work by Arnold Robbins.
    Modified to make all rmtXXX calls into macros for speed by Jay Fenlason.
-   Use -DUSE_REXEC for rexec code, courtesy of Dan Kegel, srs!dan.  */
+   Use -DHAVE_NETDB_H for rexec code, courtesy of Dan Kegel, srs!dan.  */
 
 #include <stdio.h>
 #include <sys/types.h>
 #include <signal.h>
 
-#ifndef NO_MTIO
+#ifdef HAVE_SYS_MTIO_H
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #endif
 
-#ifdef USE_REXEC
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
 #endif
 
@@ -50,6 +50,14 @@
 
 #ifndef errno
 extern int errno;
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef STDC_HEADERS
+#include <string.h>
+#include <stdlib.h>
 #endif
 
 /* Maximum size of a fully qualified host name.  */
@@ -192,7 +200,7 @@ status (fildes)
   return atoi (cp + 1);
 }
 
-#ifdef USE_REXEC
+#ifdef HAVE_NETDB_H
 /* Execute /etc/rmt as user USER on remote system HOST using rexec.
    Return a file descriptor of a bidirectional socket for stdin and stdout.
    If USER is NULL, or an empty string, use the current username.
@@ -240,7 +248,7 @@ _rmt_rexec (host, user)
 
   return tape_fd;
 }
-#endif /* USE_REXEC */
+#endif /* HAVE_NETDB_H */
 
 /* Open a magtape device on the system specified in PATH, as the given user.
    PATH has the form `[user@]system:/dev/????'.
@@ -328,12 +336,12 @@ __rmt_open (path, oflag, mode, bias)
     }
   *dev = '\0';
 
-#ifdef USE_REXEC
+#ifdef HAVE_NETDB_H
   /* Execute the remote command using rexec.  */
   READ (i) = WRITE (i) = _rmt_rexec (system, login);
   if (READ (i) < 0)
     return -1;
-#else /* !USE_REXEC */
+#else /* !HAVE_NETDB_H */
   /* Set up the pipes for the `rsh' command, and fork.  */
 
   if (pipe (to_rmt[i]) == -1 || pipe (from_rmt[i]) == -1)
@@ -395,7 +403,7 @@ __rmt_open (path, oflag, mode, bias)
   /* Parent.  */
   close (to_rmt[i][0]);
   close (from_rmt[i][1]);
-#endif /* !USE_REXEC */
+#endif /* !HAVE_NETDB_H */
 
   /* Attempt to open the tape device.  */
 
@@ -504,7 +512,8 @@ __rmt_lseek (fildes, offset, whence)
 /* Perform a raw tape operation on remote tape connection FILDES.
    Return the results of the ioctl, or -1 on error.  */
 
-#ifndef NO_MTIO
+#ifdef MTIOCTOP
+int
 __rmt_ioctl (fildes, op, arg)
      int fildes, op;
      char *arg;
@@ -566,4 +575,4 @@ __rmt_ioctl (fildes, op, arg)
       return 0;
     }
 }
-#endif /* NO_MTIO */
+#endif

@@ -28,6 +28,8 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <stdio.h>
 #include "getopt.h"
 #include "tar.h"		/* For msg() declaration if STDC_MSG. */
+#include <sys/types.h>
+#include "port.h"		/* For index() redefinition if USG. */
 
 int
 getoldopt(argc, argv, optstring, long_options, opt_index)
@@ -41,7 +43,6 @@ getoldopt(argc, argv, optstring, long_options, opt_index)
 	extern int	optind;		/* Global argv index */
 	static char	*key;		/* Points to next keyletter */
 	static char	use_getopt;	/* !=0 if argv[1][0] was '-' */
-	extern char	*index();
 	char		c;
 	char		*place;
 
