@@ -680,16 +680,53 @@ extract_archive ()
 	       skipcrud + current_file_name);
 	}
 
-      if (f_modified)
-	goto set_filestat;
-      tmp = (struct saved_dir_info *) ck_malloc (sizeof (struct saved_dir_info));
-      tmp->path = ck_malloc (strlen (skipcrud + current_file_name) + 1);
-      strcpy (tmp->path, skipcrud + current_file_name);
-      tmp->mode = hstat.st_mode;
-      tmp->atime = hstat.st_atime;
-      tmp->mtime = hstat.st_mtime;
-      tmp->next = saved_dir_info_head;
-      saved_dir_info_head = tmp;
+      /*
+       * If we are root, set the owner and group of the extracted
+       * file.  This does what is wanted both on real Unix and on
+       * System V.  If we are running as a user, we extract as that
+       * user; if running as root, we extract as the original owner.
+       */
+      if (we_are_root || f_do_chown)
+	{
+	  if (chown (skipcrud + current_file_name,
+		     hstat.st_uid, hstat.st_gid) < 0)
+	    {
+	      msg_perror ("cannot chown file %s to uid %d gid %d",
+			  skipcrud + current_file_name,
+			  hstat.st_uid, hstat.st_gid);
+	    }
+	}
+
+      if (!f_modified)
+	{
+	  tmp = ((struct saved_dir_info *) 
+		 ck_malloc (sizeof (struct saved_dir_info)));
+	  tmp->path = (char *) ck_malloc (strlen (skipcrud 
+						  + current_file_name) + 1);
+	  strcpy (tmp->path, skipcrud + current_file_name);
+	  tmp->mode = hstat.st_mode;
+	  tmp->atime = hstat.st_atime;
+	  tmp->mtime = hstat.st_mtime;
+	  tmp->next = saved_dir_info_head;
+	  saved_dir_info_head = tmp;
+	}
+      else
+	{
+	  /* This functions exactly as the code for set_filestat above. */
+	  if ((!f_keep)
+	      || (hstat.st_mode & (S_ISUID | S_ISGID | S_ISVTX)))
+	    {
+	      if (chmod (skipcrud + current_file_name,
+			 notumask & (int) hstat.st_mode) < 0)
+		{
+		  msg_perror ("cannot change mode of file %s to %ld",
+			      skipcrud + current_file_name,
+			      notumask & (int) hstat.st_mode);
+		}
+	    }
+	}
+      break;
+
     case LF_VOLHDR:
       if (f_verbose)
 	{

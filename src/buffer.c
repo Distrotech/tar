@@ -125,7 +125,7 @@ static int	r_error_count;
 /*
  * Have we hit EOF yet?
  */
-static int	eof;
+static int	hit_eof;
 
 /* JF we're reading, but we just read the last record and its time to update */
 extern time_to_start_writing;
@@ -153,8 +153,8 @@ static long real_s_sizeleft;
 void
 reset_eof()
 {
-	if(eof) {
-		eof=0;
+	if(hit_eof) {
+		hit_eof=0;
 		ar_record=ar_block;
 		ar_last=ar_block+blocking;
 		ar_reading=0;
@@ -170,11 +170,11 @@ union record *
 findrec()
 {
 	if (ar_record == ar_last) {
-		if (eof)
+		if (hit_eof)
 			return (union record *)NULL;	/* EOF */
 		flush_archive();
 		if (ar_record == ar_last) {
-			eof++;
+			hit_eof++;
 			return (union record *)NULL;	/* EOF */
 		}
 	}
@@ -546,7 +546,6 @@ open_archive(reading)
 		msg_perror("can't open %s",ar_file);
 		exit(EX_BADARCH);
 	}
-
 #ifndef __MSDOS__
 	if(!_isrmt(archive)) {
 		struct stat tmp_stat;
