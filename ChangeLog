@@ -1,3 +1,39 @@
+2004-08-31  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/sparse.c (sparse_add_map): Fixed improper initializations
+	of sparse_map_size. We assume that whatever number it contains
+	describes adequately the current size of sparse_map. The only
+	number we need to reset is sparse_map_avail.
+	* src/compare.c (verify_volume): Call set_next_block_after
+	if read_header returns HEADER_FAILURE
+	Destroy and reinitialize content of current_stat_info and
+	extended_header after each iteration (bug reported by
+	John L. Males <jlmales@yahoo.com>).
+	Issue a warning if the created archive contains some members
+	whose file names were stripped off their leading prefixes.
+	This is a temporary fix of the issue reported by Bdale Garbee
+	<bdale@gag.com> (Refs: Debian bug 230064, Message-Id
+	<87n07kyzhi.fsf@rover.gag.com>, Sun, 15 Feb 2004 11:22:17 -0700)
+
+	* src/names.c (removed_prefixes_p): New function.
+	
+	* src/buffer.c: When computing write rate do not take
+	into account the time needed to verify the archive(s).
+	The bug reported by John L. Males <jlmales@yahoo.com>
+	(set_start_time,compute_duration): New functions.
+	(print_total_written): Use the result of compute_duration().
+	(close_archive): Call compute_duration.
+	* src/common.h (set_start_time, removed_prefixes_p): New prototypes.
+	* src/list.c (decode_header): Fixed initialization
+	of stat_info->is_sparse
+	* src/tar.c (main): Call set_start_time().
+	
+	* src/misc.c (unquote_string): Unquote '\a' and '\v'.
+	Reported by Helmut Waitzmann <helmut.waitzmann@web.de>.
+
+	* NEWS: Updated
+	* THANKS: Updated
+	
 2004-08-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c: Fix copy-n-paste errors in the license
