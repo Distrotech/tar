@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -697,6 +697,7 @@ open_archive (reading)
 	sprintf (ar_block->header.arch_name, "%s Volume 1", f_volhdr);
       else
 	strcpy (ar_block->header.arch_name, f_volhdr);
+      current_file_name = ar_block->header.arch_name;
       ar_block->header.linkflag = LF_VOLHDR;
       to_oct (time (0), 1 + 12, ar_block->header.mtime);
       finish_header (ar_block);
