@@ -190,6 +190,7 @@ enum
   EXCLUDE_CACHES_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
+  HANG_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
@@ -203,6 +204,7 @@ enum
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
+  NO_UNQUOTE_OPTION,
   NO_WILDCARDS_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NULL_OPTION,
@@ -227,6 +229,7 @@ enum
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TOTALS_OPTION,
+  UNQUOTE_OPTION,
   USAGE_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
   UTC_OPTION,
@@ -444,12 +447,18 @@ static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Local file selection:"), 70 },
 
+  {"add-file", ARGP_KEY_ARG, N_("FILE"), 0,
+   N_("add given file to the archive (useful if FILE name starts with a dash)"), 71},
   {"directory", 'C', N_("DIR"), 0,
    N_("change to directory DIR"), 71 },
   {"files-from", 'T', N_("FILE-OF-NAMES"), 0,
    N_("get names to extract or create from file NAME"), 71 },
   {"null", NULL_OPTION, 0, 0,
    N_("-T reads null-terminated names, disable -C"), 71 },
+  {"unquote", UNQUOTE_OPTION, 0, 0,
+   N_("Unquote filenames read with -T (default)"), 71 },
+  {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
+   N_("Do not unquote filenames read with -T"), 71 },
   {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
    N_("exclude files, given as a PATTERN"), 71 },
   {"exclude-from", 'X', N_("FILE"), 0,
@@ -538,7 +547,8 @@ static struct argp_option options[] = {
   {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
   /* FIXME -V (--label) conflicts with the default short option for
      --version */
-  
+  {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
+   N_("Hang for SECS seconds (default 3600)"), 0},
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -610,8 +620,123 @@ for complete list of authors.\n"));
   exit (0);
 }
 
+static volatile int _argp_hang;
+
+static bool
+read_name_from_file (FILE *fp, struct obstack *stk)
+{
+  int c;
+  size_t counter = 0;
+
+  for (c = getc (fp); c != EOF && c != filename_terminator; c = getc (fp))
+    {
+      if (c == 0)
+	FATAL_ERROR((0, 0, N_("file name contains null character")));
+      obstack_1grow (stk, c);
+      counter++;
+    }
+
+  obstack_1grow (stk, 0);
+
+  return !(counter == 0 && c == EOF);
+}
+
+
+static bool files_from_option;  /* When set, tar will not refuse to create
+				   empty archives */
+static struct obstack argv_stk; /* Storage for additional command line options
+				   read using -T option */
+
+/* Prevent recursive inclusion of the same file */
+struct file_id_list
+{
+  struct file_id_list *next;
+  ino_t ino;
+  dev_t dev;
+};
+
+static struct file_id_list *file_id_list;
+
+static void
+add_file_id (const char *filename)
+{
+  struct file_id_list *p;
+  struct stat st;
+
+  if (stat (filename, &st))
+    stat_fatal (filename);
+  for (p = file_id_list; p; p = p->next)
+    if (p->ino == st.st_ino && p->dev == st.st_dev)
+      {
+	FATAL_ERROR ((0, 0, _("%s: file list already read"),
+		      quotearg_colon (filename)));
+      }
+  p = xmalloc (sizeof *p);
+  p->next = file_id_list;
+  p->ino = st.st_ino;
+  p->dev = st.st_dev;
+  file_id_list = p;
+}
+      
+static int
+update_argv (const char *filename, struct argp_state *state)
+{
+  FILE *fp;
+  size_t count = 0, i;
+  char *start, *p;
+  char **new_argv;
+  size_t new_argc;
+  bool is_stdin = false;
+  
+  if (!strcmp (filename, "-"))
+    {
+      is_stdin = true;
+      request_stdin ("-T");
+      fp = stdin;
+    }
+  else
+    {
+      add_file_id (filename);
+      if ((fp = fopen (filename, "r")) == NULL)
+	open_fatal (filename);
+    }
+  
+  while (read_name_from_file (fp, &argv_stk))
+    count++;
+
+  if (!is_stdin)
+    fclose (fp);
+  
+  if (count == 0)
+    return;
+
+  start = obstack_finish (&argv_stk);
+  
+  if (filename_terminator == 0)
+    for (p = start; *p; p += strlen (p) + 1)
+      if (p[0] == '-')
+	count++;
+    
+  new_argc = state->argc + count;
+  new_argv = xmalloc (sizeof (state->argv[0]) * (new_argc + 1));
+  memcpy (new_argv, state->argv, sizeof (state->argv[0]) * (state->argc + 1));
+  state->argv = new_argv;
+  memmove (&state->argv[state->next + count], &state->argv[state->next],
+	   (state->argc - state->next + 1) * sizeof (state->argv[0]));
+
+  state->argc = new_argc;
+
+  for (i = state->next, p = start; *p; p += strlen (p) + 1, i++)
+    {
+      if (filename_terminator == 0 && p[0] == '-')
+	state->argv[i++] = "--add-file";
+      state->argv[i] = p;
+    }
+}
+
+
 static error_t
-parse_opt(int key, char *arg, struct argp_state *state)
+parse_opt (int key, char *arg, struct argp_state *state)
 {
   struct tar_args *args = state->input;
   
@@ -855,7 +980,11 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
 
     case 'T':
-      files_from_option = arg;
+      update_argv (arg, state);
+      /* Indicate we've been given -T option. This is for backward
+	 compatibility only, so that `tar cfT archive /dev/null will
+	 succeed */
+      files_from_option = true; 
       break;
       
     case 'u':
@@ -913,7 +1042,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case 'Z':
       set_use_compress_program_option ("compress");
       break;
-      
+
     case ANCHORED_OPTION:
       args->exclude_options |= EXCLUDE_ANCHORED;
       break;
@@ -1164,6 +1293,14 @@ parse_opt(int key, char *arg, struct argp_state *state)
     case SAME_OWNER_OPTION:
       same_owner_option = 1;
       break;
+
+    case UNQUOTE_OPTION:
+      unquote_option = true;
+      break;
+
+    case NO_UNQUOTE_OPTION:
+      unquote_option = false;
+      break;
       
     case '0':
     case '1':
@@ -1266,6 +1403,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
       license ();
       break;
 
+    case HANG_OPTION:
+      _argp_hang = atoi (arg ? arg : "3600");
+      while (_argp_hang-- > 0)
+	sleep (1);
+      break;
+      
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -1328,7 +1471,8 @@ decode_options (int argc, char **argv)
   newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
   newer_mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
-
+  unquote_option = true;
+  
   owner_option = -1;
   group_option = -1;
 
@@ -1453,7 +1597,7 @@ decode_options (int argc, char **argv)
 
   if (occurrence_option)
     {
-      if (!args.input_files && !files_from_option)
+      if (!args.input_files)
 	USAGE_ERROR ((0, 0,
 		      _("--occurrence is meaningless without a file list")));
       if (subcommand_option != DELETE_SUBCOMMAND
@@ -1637,6 +1781,8 @@ main (int argc, char **argv)
     xmalloc (sizeof (const char *) * allocated_archive_names);
   archive_names = 0;
 
+  obstack_init (&argv_stk);
+  
 #ifdef SIGCHLD
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
@@ -1672,8 +1818,6 @@ main (int argc, char **argv)
 
     case CREATE_SUBCOMMAND:
       create_archive ();
-      name_close ();
-
       if (totals_option)
 	print_total_written ();
       break;
