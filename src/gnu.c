@@ -30,28 +30,6 @@ time_t time ();
 #include "tar.h"
 #include "port.h"
 
-#if defined(_POSIX_VERSION) || defined(DIRENT)
-#include <dirent.h>
-#ifdef direct
-#undef direct
-#endif /* direct */
-#define direct dirent
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* _POSIX_VERSION or DIRENT */
-#if !defined(_POSIX_VERSION) && !defined(DIRENT) && defined(BSD42)
-#include <sys/dir.h>
-#define DP_NAMELEN(x)	(x)->d_namlen
-#endif /* not _POSIX_VERSION and BSD42 */
-#ifdef __MSDOS__
-#include "msd_dir.h"
-#define DP_NAMELEN(x)	(x)->d_namlen
-#define direct dirent
-#endif
-#if defined(USG) && !defined(_POSIX_VERSION) && !defined(DIRENT)
-#include <ndir.h>
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* USG and not _POSIX_VERSION and not DIRENT */
-
 #ifndef S_ISLNK
 #define lstat stat
 #endif
@@ -127,7 +105,7 @@ read_dir_file ()
   time (&this_time);
   if (gnu_dumpfile[0] != '/')
     {
-#if defined(__MSDOS__) || defined(USG) || defined(_POSIX_VERSION)
+#if defined(__MSDOS__) || defined(HAVE_GETCWD) || defined(_POSIX_VERSION)
       if (!getcwd (path, PATH_MAX))
 	{
 	  msg ("Couldn't get current directory.");
@@ -323,7 +301,7 @@ get_dir_contents (p, device)
      int device;
 {
   DIR *dirp;
-  register struct direct *d;
+  register struct dirent *d;
   char *new_buf;
   char *namebuf;
   int bufsiz;
@@ -369,7 +347,7 @@ get_dir_contents (p, device)
 	  /* Skip . and .. */
 	  if (is_dot_or_dotdot (d->d_name))
 	    continue;
-	  if (DP_NAMELEN (d) + len >= bufsiz)
+	  if (NLENGTH (d) + len >= bufsiz)
 	    {
 	      bufsiz += NAMSIZ;
 	      namebuf = ck_realloc (namebuf, bufsiz + 2);
@@ -433,7 +411,7 @@ get_dir_contents (p, device)
 	    add_buffer (the_buffer, "N", 1);
 	  else
 	    add_buffer (the_buffer, "Y", 1);
-	  add_buffer (the_buffer, d->d_name, (int) (DP_NAMELEN (d) + 1));
+	  add_buffer (the_buffer, d->d_name, (int) (NLENGTH (d) + 1));
 	}
       add_buffer (the_buffer, "\000\000", 2);
       closedir (dirp);
@@ -570,7 +548,7 @@ gnu_restore (skipcrud)
   PTR the_buffer;
   char *p;
   DIR *dirp;
-  struct direct *d;
+  struct dirent *d;
   char *cur, *arc;
   extern struct stat hstat;	/* Stat struct corresponding */
   long size, copied;
@@ -594,7 +572,7 @@ gnu_restore (skipcrud)
       if (is_dot_or_dotdot (d->d_name))
 	continue;
 
-      add_buffer (the_buffer, d->d_name, (int) (DP_NAMELEN (d) + 1));
+      add_buffer (the_buffer, d->d_name, (int) (NLENGTH (d) + 1));
     }
   closedir (dirp);
   add_buffer (the_buffer, "", 1);
@@ -660,7 +638,7 @@ recursively_delete (path)
 {
   struct stat sbuf;
   DIR *dirp;
-  struct direct *dp;
+  struct dirent *dp;
   char *path_buf;
   /* int path_len; */
 

@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <alloca.h>
 #else /* not HAVE_ALLOCA_H */
 #ifdef _AIX
- #pragma alloca
+#pragma alloca
 #else /* not _AIX */
 char *alloca ();
 #endif /* not _AIX */
@@ -62,7 +62,7 @@ char *alloca ();
 #define	major(dev)		(dev)
 #define	minor(dev)		(dev)
 typedef long off_t;
-#endif	/* __MSDOS__ */
+#endif /* __MSDOS__ */
 
 #if defined(__STDC__) || defined(__TURBOC__)
 #define PTR void *
@@ -116,17 +116,17 @@ typedef long off_t;
 #if defined(STDC_HEADERS)
 #include <stdlib.h>
 #else
-char *malloc(), *realloc();
-char *getenv();
+char *malloc (), *realloc ();
+char *getenv ();
 #endif
 
 #ifndef _POSIX_VERSION
 #ifdef __MSDOS__
 #include <io.h>
-#else				/* !__MSDOS__ */
-off_t lseek();
-#endif				/* !__MSDOS__ */
-char *getcwd();
+#else /* !__MSDOS__ */
+off_t lseek ();
+#endif /* !__MSDOS__ */
+char *getcwd ();
 #endif /* !_POSIX_VERSION */
 
 #ifndef NULL
@@ -175,14 +175,14 @@ char *getcwd();
 #if !defined(S_ISSOCK) && defined(S_IFSOCK)
 #define	S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
 #endif
-#if !defined(S_ISMPB) && defined(S_IFMPB) /* V7 */
+#if !defined(S_ISMPB) && defined(S_IFMPB)	/* V7 */
 #define S_ISMPB(m) (((m) & S_IFMT) == S_IFMPB)
 #define S_ISMPC(m) (((m) & S_IFMT) == S_IFMPC)
 #endif
-#if !defined(S_ISNWK) && defined(S_IFNWK) /* HP/UX */
+#if !defined(S_ISNWK) && defined(S_IFNWK)	/* HP/UX */
 #define S_ISNWK(m) (((m) & S_IFMT) == S_IFNWK)
 #endif
-#if !defined(S_ISCTG) && defined(S_IFCTG) /* contiguous file */
+#if !defined(S_ISCTG) && defined(S_IFCTG)	/* contiguous file */
 #define S_ISCTG(m) (((m) & S_IFMT) == S_IFCTG)
 #endif
 #if !defined(S_ISVTX)
