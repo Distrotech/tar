@@ -1,3 +1,12 @@
+2003-07-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* TODO: Updated
+	* NEWS: Updated
+	* src/tar.c: Removed support for the obsolete command line
+	options.
+	* doc/tar.texi: Removed references to the obsolete command
+	line options.
+
 2003-07-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
