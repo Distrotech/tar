@@ -94,3 +94,4 @@ xgetcwd.m4
 xsize.m4
 xstrtol.m4
 xstrtoumax.m4
+*_gl.m4
