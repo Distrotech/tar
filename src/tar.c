@@ -364,7 +364,8 @@ static struct argp_option options[] = {
   {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
    N_("use remote COMMAND instead of rsh"), 41 },
 #ifdef DEVICE_PREFIX
-  {"-[0-7][lmh]", 0, NULL, OPTION_DOC,
+  {"-[0-7][lmh]", 0, NULL, OPTION_DOC, /* It is OK, since `name' will never be
+					  translated */
    N_("specify drive and density"), 41 },
 #endif  
   {NULL, '0', NULL, OPTION_HIDDEN, NULL, 41 },
@@ -406,12 +407,13 @@ static struct argp_option options[] = {
   {"format", 'H', N_("FORMAT"), 0,
    N_("create archive of the given format."), 61 },
 
-  {"", 0, NULL, OPTION_DOC, N_("FORMAT is one of the following:"), 62},
-  {"", 0, NULL, OPTION_DOC, N_("v7        old V7 tar format"), 63},
-  {"", 0, NULL, OPTION_DOC, N_("oldgnu    GNU format as per tar <= 1.12"), 63},
-  {"", 0, NULL, OPTION_DOC, N_("gnu       GNU tar 1.13.x format"), 63},
-  {"", 0, NULL, OPTION_DOC, N_("ustar     POSIX 1003.1-1988 (ustar) format"), 63 },
-  {"", 0, NULL, OPTION_DOC, N_("posix     POSIX 1003.1-2001 (pax) format"), 63 },
+  {NULL, 0, NULL, 0, N_("FORMAT is one of the following:"), 62 },
+  {"  v7", 0, NULL, OPTION_DOC, N_("old V7 tar format"), 63},
+  {"  oldgnu", 0, NULL, OPTION_DOC, N_("GNU format as per tar <= 1.12"), 63},
+  {"  gnu", 0, NULL, OPTION_DOC, N_("GNU tar 1.13.x format"), 63},
+  {"  ustar", 0, NULL, OPTION_DOC, N_("POSIX 1003.1-1988 (ustar) format"), 63 },
+  {"  pax", 0, NULL, OPTION_DOC, N_("POSIX 1003.1-2001 (pax) format"), 63 },
+  {"  posix", 0, NULL, OPTION_DOC, N_("Same as pax"), 63 },
 
   {"old-archive", OLD_ARCHIVE_OPTION, 0, 0, /* FIXME */
    N_("same as --format=v7"), 68 },

@@ -5302,7 +5302,7 @@ to comparing directories; this is fairly gross, but there does not seem
 to be a better way to go.
 
 @command{tar} doesn't access @var{snapshot-file} when
-@value{op-create} or @value{op-list} are specified, but the
+@value{op-extract} or @value{op-list} are specified, but the
 @value{op-listed-incremental} option must still be given.  A
 placeholder @var{snapshot-file} can be specified, e.g.,
 @file{/dev/null}.
