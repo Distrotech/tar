@@ -304,7 +304,7 @@ child_open()
 #ifdef NO_REMOTE
 	if(!(ar_files[0][0]=='-' && ar_files[0][1]=='\0') && isfile(ar_files[0]))
 #else
-	if(!(ar_files[0][0]=='-' && ar_file[0][1]=='\0') && !_remdev(ar_files[0]) && isfile(ar_files[0]))
+	if(!(ar_files[0][0]=='-' && ar_files[0][1]=='\0') && !_remdev(ar_files[0]) && isfile(ar_files[0]))
 #endif
 	{
 		/* We don't need a child tar.  Open the archive */
@@ -362,7 +362,7 @@ child_open()
 				ck_close(kidpipe[WRITE]);
 			}
 
-			if (ar_file[0] == '-' && ar_file[1] == '\0') {
+			if (ar_files[0][0] == '-' && ar_files[0][1] == '\0') {
 				if (ar_reading)
 					archive = STDIN;
 				else
@@ -1367,7 +1367,7 @@ int	type;
 	else if(type==1)
 		archive=rmtopen(ar_files[cur_ar_file],O_RDONLY,0666);
 	else if(type==0)
-		archive=rmtcreat(ar_file[cur_ar_file],0666);
+		archive=rmtcreat(ar_files[cur_ar_file],0666);
 	else
 		archive= -1;
 
