@@ -413,6 +413,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   union block *header;
 
   header = start_private_header ("././@LongLink", size);
+  strcpy (header->header.magic, OLDGNU_MAGIC);
   header->header.typeflag = type;
   finish_header (st, header, -1);
 
