@@ -1,20 +1,17 @@
 GNU tar NEWS - User visible changes.
-Copyright © 1994, 1995-1998, 1999 Free Software Foundation, Inc.
+Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
-version 1.12.64014 - Paul Eggert, 1999-06-25.
+version 1.12.64015 - Paul Eggert, 1999-06-28.
 
-This is an unofficial port of GNU `tar' 1.12 to large file
-environments like AIX 4.2, HP-UX 10.20, IRIX 6.2, and Solaris 2.6 that
-(among other things) rely on integer system types longer than `long'.
-Please send bug reports specific to this unofficial version of GNU `tar'
-to <eggert@twinsun.com>.
+* Support for large files, e.g. files larger than 2 GB on many 32-bit hosts.
+  Also, support for larger uids, device ids, etc.
+* Many bug fixes.
+* This release is intended only as a bugfix release.  A more ambitious version,
+  with new features, is also available as part of paxutils.  Please see:
+    http://www.iro.umontreal.ca/contrib/paxutils/
+  The bug fixes in this release are intended to be merged with paxutils
+  at some point, but they haven't been merged as of this writing.
 
-This is not intended to be a forked release for GNU tar; it's
-just an interim experimental release, mostly intended for
-large file hosts.  The patches of this
-release have all been (or will be) submitted via the usual channels and
-they should no longer be needed once the next official release
-of GNU tar is out.
 
 Version 1.12 - François Pinard, 1997-04.
 
