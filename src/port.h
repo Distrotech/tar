@@ -98,6 +98,12 @@ typedef long off_t;
 #if !defined(__MSDOS__) && !defined(STDC_HEADERS)
 #include <memory.h>
 #endif
+#ifdef index
+#undef index
+#endif
+#ifdef rindex
+#undef rindex
+#endif
 #define index strchr
 #define rindex strrchr
 #define bcopy(s, d, n) memcpy(d, s, n)

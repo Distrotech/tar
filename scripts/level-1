@@ -67,17 +67,21 @@ here="`pwd`"
 # Logfile name should be in the form  ``log-1993-03-18-level-1''
 # i.e. year-month-date.  This format is useful for sorting by name, since
 # logfiles are intentionally kept online for future reference.
-LOGFILE=log-`date | awk '
-   BEGIN {
-      d["Jan"] = "01";  d["Feb"] = "02"; d["Mar"] = "03";
-      d["Apr"] = "04";  d["May"] = "05"; d["Jun"] = "06";
-      d["Jul"] = "07";  d["Aug"] = "08"; d["Sep"] = "09";
-      d["Oct"] = "10";  d["Nov"] = "11"; d["Dec"] = "12";
-   }
-   {
-    if ($3 < 10) $3 = "0" $3;
-    print $6 "-" d[$2] "-" $3;
-   }'`-level-${DUMP_LEVEL}
+LOGFILE="log-`date | sed -ne '
+   s/[^ ]*  *\([^ ]*\)  *\([^ ]*\).* \([^ ]*\)$/\3-\1-\2/
+   /-[0-9]$/s/\([0-9]\)$/0\1/
+   /Jan/{s/Jan/01/p;q;}
+   /Feb/{s/Feb/02/p;q;}
+   /Mar/{s/Mar/03/p;q;}
+   /Apr/{s/Apr/04/p;q;}
+   /May/{s/May/05/p;q;}
+   /Jun/{s/Jun/06/p;q;}
+   /Jul/{s/Jul/07/p;q;}
+   /Aug/{s/Aug/08/p;q;}
+   /Sep/{s/Sep/09/p;q;}
+   /Oct/{s/Oct/10/p;q;}
+   /Nov/{s/Nov/11/p;q;}
+   /Dec/{s/Dec/12/p;q;}'`-level-${DUMP_LEVEL}"
 
 localhost="`hostname | sed -e 's/\..*//'`"
 

@@ -126,9 +126,10 @@ read_dir_file()
 	time(&this_time);
 	if(gnu_dumpfile[0]!='/') {
 #if defined(__MSDOS__) || defined(USG) || defined(_POSIX_VERSION)
-			if(!getcwd(path,PATH_MAX))
+			if(!getcwd(path,PATH_MAX)) {
 				msg("Couldn't get current directory.");
 				exit(EX_SYSTEM);
+			}
 #else
 			char *getwd();
 
