@@ -53,7 +53,7 @@ struct link
     char name[1];
   };
 
-struct link *linklist = NULL;	/* points to first link in list */
+static struct link *linklist;	/* points to first link in list */
 
 /* Base 64 digits; see Internet RFC 2045 Table 1.  */
 char const base_64_digits[64] =
@@ -170,14 +170,14 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 	  char *sub_string = STRINGIFY_BIGINT (s, buf3 + 1);
 	  if (negsub)
 	    *--sub_string = '-';
-	  WARN ((0, 0, _("%s value %s out of range %s..%s; substituting %s"),
-		 type, value_string, minval_string, maxval_string,
+	  WARN ((0, 0, _("value %s out of %s range %s..%s; substituting %s"),
+		 value_string, type, minval_string, maxval_string,
 		 sub_string));
-	  to_chars (negsub, s, valsize, NULL, where, size, type);
+	  to_chars (negsub, s, valsize, 0, where, size, type);
 	}
       else
-	ERROR ((0, 0, _("%s value %s out of range %s..%s"),
-		type, value_string, minval_string, maxval_string));
+	ERROR ((0, 0, _("value %s out of %s range %s..%s"),
+		value_string, type, minval_string, maxval_string));
     }
 }
 
@@ -206,13 +206,13 @@ gid_to_chars (gid_t v, char *p, size_t s)
 void
 major_to_chars (major_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "major_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "major_t");
 }
 
 void
 minor_to_chars (minor_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "minor_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "minor_t");
 }
 
 void
@@ -248,25 +248,25 @@ mode_to_chars (mode_t v, char *p, size_t s)
 	   | (v & S_IWOTH ? TOWRITE : 0)
 	   | (v & S_IXOTH ? TOEXEC : 0));
     }
-  to_chars (negative, u, sizeof v, NULL, p, s, "mode_t");
+  to_chars (negative, u, sizeof v, 0, p, s, "mode_t");
 }
 
 void
 off_to_chars (off_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "off_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "off_t");
 }
 
 void
 size_to_chars (size_t v, char *p, size_t s)
 {
-  to_chars (0, (uintmax_t) v, sizeof v, NULL, p, s, "size_t");
+  to_chars (0, (uintmax_t) v, sizeof v, 0, p, s, "size_t");
 }
 
 void
 time_to_chars (time_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, NULL, p, s, "time_t");
+  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "time_t");
 }
 
 static uintmax_t
@@ -294,7 +294,7 @@ uid_to_chars (uid_t v, char *p, size_t s)
 void
 uintmax_to_chars (uintmax_t v, char *p, size_t s)
 {
-  to_chars (0, v, sizeof v, NULL, p, s, "uintmax_t");
+  to_chars (0, v, sizeof v, 0, p, s, "uintmax_t");
 }
 
 /* Writing routines.  */
@@ -372,7 +372,7 @@ write_long (const char *p, char type)
 
 /*---------------------------------------------------------------------.
 | Make a header block for the file name whose stat info is st.  Return |
-| header pointer for success, NULL if the name is too long.	       |
+| header pointer for success, zero if the name is too long.	       |
 `---------------------------------------------------------------------*/
 
 static union block *
@@ -410,7 +410,7 @@ start_header (const char *name, struct stat *st)
 
   /* Check the file name and put it in the block.  */
 
-  if (strlen (name) >= (size_t) NAME_FIELD_SIZE)
+  if (sizeof header->header.name <= strlen (name))
     write_long (name, GNUTYPE_LONGNAME);
   header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
@@ -517,11 +517,11 @@ finish_header (union block *header)
   int sum;
   char *p;
 
-  memcpy (header->header.chksum, CHKBLANKS, sizeof (header->header.chksum));
+  memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
 
   sum = 0;
   p = header->buffer;
-  for (i = sizeof (*header); i-- != 0; )
+  for (i = sizeof *header; i-- != 0; )
     /* We can't use unsigned char here because of old compilers, e.g. V7.  */
     sum += 0xFF & *p++;
 
@@ -584,8 +584,7 @@ init_sparsearray (void)
 
   /* Make room for our scratch space -- initially is 10 elts long.  */
 
-  sparsearray = (struct sp_array *)
-    xmalloc (sp_array_size * sizeof (struct sp_array));
+  sparsearray = xmalloc (sp_array_size * sizeof (struct sp_array));
   for (counter = 0; counter < sp_array_size; counter++)
     {
       sparsearray[counter].offset = 0;
@@ -649,8 +648,7 @@ deal_with_sparse (char *name, union block *header)
 
       if (sparse_index > sp_array_size - 1)
 	{
-
-	  sparsearray = (struct sp_array *)
+	  sparsearray =
 	    xrealloc (sparsearray,
 		      2 * sp_array_size * sizeof (struct sp_array));
 	  sp_array_size *= 2;
@@ -945,7 +943,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 #ifdef S_ISHIDDEN
   if (S_ISHIDDEN (current_stat.st_mode))
     {
-      char *new = (char *) alloca (strlen (p) + 2);
+      char *new = alloca (strlen (p) + 2);
       if (new)
 	{
 	  strcpy (new, p);
@@ -1019,7 +1017,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
 	    current_stat.st_size = 0;
 	    header = start_header (p, &current_stat);
-	    if (header == NULL)
+	    if (! header)
 	      {
 		exit_status = TAREXIT_FAILURE;
 		return;
@@ -1046,8 +1044,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
       /* Not found.  Add it to the list of possible links.  */
 
-      lp = (struct link *)
-	xmalloc ((size_t) (sizeof (struct link) + strlen (p)));
+      lp = xmalloc (sizeof (struct link) + strlen (p));
       lp->ino = current_stat.st_ino;
       lp->dev = current_stat.st_dev;
       strcpy (lp->name, p);
@@ -1068,9 +1065,6 @@ dump_file (char *p, dev_t parent_device, int top_level)
       int header_moved;
       char isextended = 0;
       int upperbound;
-#if 0
-      static int cried_once = 0;
-#endif
 
       header_moved = 0;
 
@@ -1115,7 +1109,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	      int counter;
 
 	      header = start_header (p, &current_stat);
-	      if (header == NULL)
+	      if (! header)
 		{
 		  exit_status = TAREXIT_FAILURE;
 		  return;
@@ -1193,7 +1187,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
       if (!header_moved)
 	{
 	  header = start_header (p, &current_stat);
-	  if (header == NULL)
+	  if (! header)
 	    {
 	      if (f >= 0)
 		close (f);
@@ -1224,8 +1218,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
 	extend:
 	  exhdr = find_next_block ();
-
-	  if (exhdr == NULL)
+	  if (! exhdr)
 	    {
 	      exit_status = TAREXIT_FAILURE;
 	      return;
@@ -1281,8 +1274,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 		bufsize = sizeleft;
 		count = bufsize % BLOCKSIZE;
 		if (count)
-		  memset (start->buffer + sizeleft, 0,
-			  (size_t) (BLOCKSIZE - count));
+		  memset (start->buffer + sizeleft, 0, BLOCKSIZE - count);
 	      }
 	    if (f < 0)
 	      count = bufsize;
@@ -1317,7 +1309,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	  }
 
       if (multi_volume_option)
-	assign_string (&save_name, NULL);
+	assign_string (&save_name, 0);
 
       if (f >= 0)
 	{
@@ -1352,7 +1344,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	  sizeleft -= BLOCKSIZE;
 	}
       if (multi_volume_option)
-	assign_string (&save_name, NULL);
+	assign_string (&save_name, 0);
       if (f >= 0)
 	{
 	  close (f);
@@ -1366,7 +1358,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
   else if (S_ISLNK (current_stat.st_mode))
     {
       int size;
-      char *buffer = (char *) alloca (PATH_MAX + 1);
+      char *buffer = alloca (PATH_MAX + 1);
 
       size = readlink (p, buffer, PATH_MAX + 1);
       if (size < 0)
@@ -1383,7 +1375,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
       current_stat.st_size = 0;	/* force 0 size on symlink */
       header = start_header (p, &current_stat);
-      if (header == NULL)
+      if (! header)
 	{
 	  exit_status = TAREXIT_FAILURE;
 	  return;
@@ -1460,7 +1452,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	     files, we'd better put the / on the name.  */
 
 	  header = start_header (namebuf, &current_stat);
-	  if (header == NULL)
+	  if (! header)
 	    {
 	      exit_status = TAREXIT_FAILURE;
 	      return;	/* eg name too long */
@@ -1516,8 +1508,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 		  bufsize = sizeleft;
 		  count = bufsize % BLOCKSIZE;
 		  if (count)
-		    memset (start->buffer + sizeleft, 0,
-			   (size_t) (BLOCKSIZE - count));
+		    memset (start->buffer + sizeleft, 0, BLOCKSIZE - count);
 		}
 	      memcpy (start->buffer, p_buffer, bufsize);
 	      sizeleft -= bufsize;
@@ -1525,7 +1516,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	      set_next_block_after (start + (bufsize - 1) / BLOCKSIZE);
 	    }
 	  if (multi_volume_option)
-	    assign_string (&save_name, NULL);
+	    assign_string (&save_name, 0);
 	  if (atime_preserve_option)
 	    utime (p, &restore_times);
 	  return;
@@ -1571,7 +1562,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 	  if ((int) NAMLEN (entry) + len >= buflen)
 	    {
 	      buflen = len + NAMLEN (entry);
-	      namebuf = (char *) xrealloc (namebuf, buflen + 1);
+	      namebuf = xrealloc (namebuf, buflen + 1);
 #if 0
 	      namebuf[len] = '\0';
 	      ERROR ((0, 0, _("File name %s%s too long"),
@@ -1606,7 +1597,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
   current_stat.st_size = 0;	/* force 0 size */
   header = start_header (p, &current_stat);
-  if (header == NULL)
+  if (! header)
     {
       exit_status = TAREXIT_FAILURE;
       return;	/* eg name too long */
