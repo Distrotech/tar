@@ -1043,6 +1043,23 @@ safer_name_suffix (char const *file_name, bool link_target)
   return (char *) p;
 }
 
+char const *
+cut_path_elements (char const *file_name, size_t num)
+{
+  char const *p = file_name;
+  if (ISSLASH (*p))
+    p++;
+  for (; *p; p++)
+    {
+      if (ISSLASH (*p))
+	{
+	  if (--num == 0)
+	    return p + 1;
+	}
+    }
+  return NULL;
+}
+
 /* Return nonzero if NAME contains ".." as a path name component.  */
 bool
 contains_dot_dot (char const *name)
