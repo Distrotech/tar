@@ -1,6 +1,6 @@
 Hey!  Emacs!  Yo!  This is -*- Text -*- !!!
 
-This GNU tar 1.11.2.  Please send bug reports, etc., to
+This is GNU tar 1.11.2.  Please send bug reports, etc., to
 bug-gnu-utils@prep.ai.mit.edu.  This is a beta-test release.  Please
 try it out.  There is no manual; the release of version 1.12 will
 contain a manual.
@@ -20,7 +20,7 @@ makefile.pc is a makefile for Turbo C 2.0 on MS-DOS.
 
 Various people have been having problems using floppies on a NeXT.  In
 order to have them work right, you need to kill the automounting
-program which tries to monut floppies as soon as they are added.
+program which tries to mount floppies as soon as they are added.
 
 If you want to do incremental dumps, use the distributed backup
 scripts.  They are what we use at the FSF to do all our backups.  Most
