@@ -11,10 +11,10 @@ version 1.13.26
 * Added support for POSIX.1-2001 archive format.
 * New option --format allows to select the output archive format
 * The default output format can be selected at configuration time
-by presetting the environment variable DEFAULT_ARCHIVE_FORMAT.
-Allowed values are GNU, V7, OLDGNU and POSIX.
+  by presetting the environment variable DEFAULT_ARCHIVE_FORMAT.
+  Allowed values are GNU, V7, OLDGNU and POSIX.
 * New option --strip-path allows to cut off a given number of
-path elements from the name of the file being extracted.
+  path elements from the name of the file being extracted.
 
 * Bug fixes.
 
@@ -22,22 +22,23 @@ path elements from the name of the file being extracted.
   option is now the default; use --no-overwrite-dir if you prefer
   the previous default behavior.
 
-* New message translations fi (Finnish), gl (Galician), hr (Croatian),
-  hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
-  (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
-  The code 'no' for Norwegian has been withdrawn; use 'nb' instead.
-
 * The semantics of -o option is changed. When extracting, it
-does the same as --no-same-owner GNU tar option. This is compatible
-with UNIX98 tar. Otherwise, its effect is the same as that of
---old-archive option. This latter is deprecated and will be removed
-in future.
+  does the same as --no-same-owner GNU tar option. This is compatible
+  with UNIX98 tar. Otherwise, its effect is the same as that of
+  --old-archive option. This latter is deprecated and will be removed
+  in future.
 
 * New option --check-links prints a message if not all links are dumped
-for a file being archived. This corresponds to the UNIX98 -l option.
-The current semantics of the -l option is retained for compatibility
-with previous releases, however such usage is strongly deprecated as
-the option will change to its UNIX98 semantics in the future releases.
+  for a file being archived. This corresponds to the UNIX98 -l option.
+  The current semantics of the -l option is retained for compatibility
+  with previous releases, however such usage is strongly deprecated as
+  the option will change to its UNIX98 semantics in the future releases.
+
+* New option --first-copy can be used in conjunction with one of 
+  the subcommands --delete, --diff, --extract or --list when a list of
+  files is given either on the command line or via -T option. This
+  option instructs tar to terminate when all of the filenames from
+  the list were processed.
 
 * Removed obsolete command line options:
 ** --absolute-paths superseeded by --absolute-names
@@ -47,6 +48,11 @@ the option will change to its UNIX98 semantics in the future releases.
 ** --read-full-blocks supeseeded by --read-full-records
 ** --record-number superseeded by --block-number
 ** --version-control superseeded by --backup
+
+* New message translations fi (Finnish), gl (Galician), hr (Croatian),
+  hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
+  (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
+  The code 'no' for Norwegian has been withdrawn; use 'nb' instead.
 
 version 1.13.25 - Paul Eggert, 2001-09-26
 
@@ -553,3 +559,8 @@ You should have received a copy of the GNU General Public License
 along with tar; see the file COPYING.  If not, write to
 the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
+
+Local variables:
+mode: outline
+paragraph-separate: "[	]*$"
+end:
