@@ -92,7 +92,7 @@ do
          prev=$option
     	 ;;
   -V|--v|--ve|--ver|--vers|--versi|--versio|--version)
-    	 echo "restore; @PACKAGE@ (@VERSION@)"
+    	 echo "backup (@PACKAGE@ @VERSION@)"
 	 exit 0;;
   -L|--li|--lic|--lice|--licen|--licens|--license)
     	 license
@@ -179,14 +179,8 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      if [ $DUMP_LEVEL -eq 0 ]; then
 	 make_level_log ${remotehost}
      else
-	 LF=`level_log_name ${fsname} 0`
-	 pdate=`remote_run "${remotehost}" ls -l $LF | awk '{
-	    printf("%s", $6)
-	    for (i=7;i<NF;i++)
-		printf(" %s", $i)
-	    print "" }'`
-	 echo "Last `prev_level` dump on this filesystem was on $pdate"
-	 remote_run "${remotehost}" cp $LF "`level_log_name temp`"
+	 echo "Last `prev_level` dump on this filesystem was on $PREV_DATE"
+	 remote_run "${remotehost}" cp "`level_log_name ${fsname} $PREV_LEVEL`" "`level_log_name temp`"
      fi
     	
      ${DUMP_BEGIN-:} $DUMP_LEVEL $remotehost $fs $fsname
@@ -218,7 +212,12 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
 
      date="`date`"
 
-     make_level_log $localhost 
+     if [ $DUMP_LEVEL -eq 0 ]; then
+         make_level_log $localhost 
+     else
+	 echo "Last `prev_level` dump on this filesystem was on $PREV_DATE"
+	 remote_run "${localhost}" cp "`level_log_name MISC $PREV_LEVEL`" "`level_log_name temp`"
+     fi
 
      echo "Backing up miscellaneous files at ${date}"
     
