@@ -98,3 +98,9 @@ xstrtoumax.m4
 gnulib.m4
 malloc.m4
 realloc.m4
+argp.m4
+mempcpy.m4
+strchrnul.m4
+strndup.m4
+strnlen.m4
+sysexits.m4
