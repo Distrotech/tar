@@ -935,7 +935,7 @@ new_name (const char *file_name, const char *name)
 bool
 excluded_name (char const *name)
 {
-  return excluded_filename (excluded, name + FILESYSTEM_PREFIX_LEN (name));
+  return excluded_filename (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
 }
 
 /* Hash tables of strings.  */
@@ -1019,7 +1019,7 @@ safer_name_suffix (char const *file_name, bool link_target)
       /* Skip file system prefixes, leading file name components that contain
 	 "..", and leading slashes.  */
 
-      size_t prefix_len = FILESYSTEM_PREFIX_LEN (file_name);
+      size_t prefix_len = FILE_SYSTEM_PREFIX_LEN (file_name);
 
       for (p = file_name + prefix_len; *p; )
 	{
@@ -1083,7 +1083,7 @@ safer_name_suffix (char const *file_name, bool link_target)
 size_t
 stripped_prefix_len (char const *file_name, size_t num)
 {
-  char const *p = file_name + FILESYSTEM_PREFIX_LEN (file_name);
+  char const *p = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
   while (ISSLASH (*p))
     p++;
   while (*p)
@@ -1105,7 +1105,7 @@ stripped_prefix_len (char const *file_name, size_t num)
 bool
 contains_dot_dot (char const *name)
 {
-  char const *p = name + FILESYSTEM_PREFIX_LEN (name);
+  char const *p = name + FILE_SYSTEM_PREFIX_LEN (name);
 
   for (;; p++)
     {
