@@ -1,3 +1,59 @@
+2004-02-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/create.c (dump_file0): The conditional at line
+	1296 prevented incremental backups on individual files
+	from working, as reported by Andreas Schuldei
+	<andreas@schuldei.org>.
+
+	This is due to the condition
+     
+          (0 < top_level || !incremental_option) 
+
+	Removing it makes incremental backups work for individual
+	files as well as for directories. On the other hand, it does
+	not affect other functionality, as shown by the reasoning below:
+
+	To begin with, the two parts of this condition are mutually
+	superfluous, because
+
+	  1) when top_level < 0, incremental_option == 1
+	  so the condition yields false
+	  2) when top_level >= 0, incremental_option == 0
+	  so the condition yields true.
+
+	In other words, it is completely equivalent to
+
+	      (!incremental_option)
+
+        Now, let's consider the effect of its removal. There are two cases:
+
+	1) when incremental_option==1
+	This means incremental backup in progress. In this case dump_file
+	is invoked only for directories or for files marked with 'Y' by
+	get_directory_contents. The latter are those that did not meet the
+	condition in incremen.c:242, which is exactly the same condition
+	as this at create.c:1296. So, for these files the check
+	(!incremental_option) is useless, since the rest of the
+	conditional will yield false anyway. On the other hand, if
+	dump_file is invoked on a directory, the conditional will yield
+	false due to !S_ISDIR assertion, so these will be processed as usual.
+
+	Thus, for this case the extra condition (!incremental_option) is
+	irrelevant, and its removal won't alter the behavior of tar,
+	*except* that it will enable incremental backups on individual
+	files, which is the wanted effect.
+     
+        2) when incremental_option==0
+	In this case the condition yields true and its removal does not
+	affect the functionality.
+
+	* THANKS: Updated
+	* configure.ac: Raised patchlevel to 92a
+	* src/incremen.c: Minor stylistic fixes.
+	* tests/listed01.sh: New test. Check listed incremental
+	backups on individual files.
+	* tests/Makefile.am: Added listed01.sh
+	
 2004-02-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/common.h (simple_finish_header,start_private_header): New
