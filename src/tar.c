@@ -1255,7 +1255,7 @@ static struct argp argp = {
 void
 usage (int status)
 {
-  argp_help (&argp, stderr, ARGP_HELP_SEE, program_name);
+  argp_help (&argp, stderr, ARGP_HELP_SEE, (char*) program_name);
   exit (status);
 }
 
