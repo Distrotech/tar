@@ -1,3 +1,8 @@
+2004-09-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* doc/tar.texi: Minor fix
+	* src/tar.c (options): Minor fix
+
 2004-09-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
