@@ -645,6 +645,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	{
 	  if (type && !silent)
 	    ERROR ((0, 0,
+		    /* TRANSLATORS: %s is type of the value (gid_t, uid_t, etc.) */
 		    _("Blanks in header where numeric %s value expected"),
 		    type));
 	  return -1;
@@ -699,6 +700,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	    {
 	      if (!silent)
 		WARN ((0, 0,
+		       /* TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.) */
 		       _("Archive octal value %.*s is out of %s range; assuming two's complement"),
 		       (int) (where - where1), where1, type));
 	      negative = 1;
@@ -709,6 +711,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	{
 	  if (type && !silent)
 	    ERROR ((0, 0,
+		    /* TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.) */
 		    _("Archive octal value %.*s is out of %s range"),
 		    (int) (where - where1), where1, type));
 	  return -1;
@@ -798,6 +801,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
 	  if (!silent)
 	    ERROR ((0, 0,
+		    /* TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.) */
 		    _("Archive contains %.*s where numeric %s value expected"),
 		    (int) sizeof buf, buf, type));
 	}
@@ -819,7 +823,8 @@ from_header (char const *where0, size_t digs, char const *type,
 	*--value_string = '-';
       if (minus_minval)
 	*--minval_string = '-';
-      ERROR ((0, 0, _("Archive value %s is out of %s range %s.%s"),
+      /* TRANSLATORS: Second %s is type name (gid_t,uid_t,etc.) */
+      ERROR ((0, 0, _("Archive value %s is out of %s range %s..%s"),
 	      value_string, type,
 	      minval_string, STRINGIFY_BIGINT (maxval, maxval_buf)));
     }
@@ -1049,7 +1054,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	case GNUTYPE_LONGNAME:
 	case GNUTYPE_LONGLINK:
 	  modes[0] = 'L';
-	  ERROR ((0, 0, _("Visible longname error")));
+	  ERROR ((0, 0, _("Unexpected long name header")));
 	  break;
 
 	case GNUTYPE_SPARSE:
