@@ -1,5 +1,5 @@
 /* Portability declarations.  Requires sys/types.h.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -16,21 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with GNU Tar; see the file COPYING.  If not, write to
 the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-/* AIX requires this to be the first thing in the file. */
-#ifdef __GNUC__
-#define alloca __builtin_alloca
-#else /* not __GNUC__ */
-#if HAVE_ALLOCA_H
-#include <alloca.h>
-#else /* not HAVE_ALLOCA_H */
-#ifdef _AIX
- #pragma alloca
-#else /* not _AIX */
-char *alloca ();
-#endif /* not _AIX */
-#endif /* not HAVE_ALLOCA_H */
-#endif /* not __GNUC__ */
 
 #include "pathmax.h"
 
@@ -62,7 +47,7 @@ char *alloca ();
 #define	major(dev)		(dev)
 #define	minor(dev)		(dev)
 typedef long off_t;
-#endif /* __MSDOS__ */
+#endif	/* __MSDOS__ */
 
 #if defined(__STDC__) || defined(__TURBOC__)
 #define PTR void *
@@ -71,18 +56,16 @@ typedef long off_t;
 #define const
 #endif
 
-/* Since major is a function on SVR4, we can't just use `ifndef major'.  */
-#ifdef major			/* Might be defined in sys/types.h.  */
-#define HAVE_MAJOR
-#endif
-
-#if !defined(HAVE_MAJOR) && defined(MAJOR_IN_MKDEV)
+/* Since major is a function on SVR4, we can't use `ifndef major'.  */
+#ifdef MAJOR_IN_MKDEV
 #include <sys/mkdev.h>
 #define HAVE_MAJOR
 #endif
-
-#if !defined(HAVE_MAJOR) && defined(MAJOR_IN_SYSMACROS)
+#ifdef MAJOR_IN_SYSMACROS
 #include <sys/sysmacros.h>
+#define HAVE_MAJOR
+#endif
+#ifdef major			/* Might be defined in sys/types.h.  */
 #define HAVE_MAJOR
 #endif
 
@@ -98,12 +81,6 @@ typedef long off_t;
 #if !defined(__MSDOS__) && !defined(STDC_HEADERS)
 #include <memory.h>
 #endif
-#ifdef index
-#undef index
-#endif
-#ifdef rindex
-#undef rindex
-#endif
 #define index strchr
 #define rindex strrchr
 #define bcopy(s, d, n) memcpy(d, s, n)
@@ -116,17 +93,17 @@ typedef long off_t;
 #if defined(STDC_HEADERS)
 #include <stdlib.h>
 #else
-char *malloc (), *realloc ();
-char *getenv ();
+char *malloc(), *realloc();
+char *getenv();
 #endif
 
 #ifndef _POSIX_VERSION
 #ifdef __MSDOS__
 #include <io.h>
-#else /* !__MSDOS__ */
-off_t lseek ();
-#endif /* !__MSDOS__ */
-char *getcwd ();
+#else				/* !__MSDOS__ */
+off_t lseek();
+#endif				/* !__MSDOS__ */
+char *getcwd();
 #endif /* !_POSIX_VERSION */
 
 #ifndef NULL
@@ -175,14 +152,14 @@ char *getcwd ();
 #if !defined(S_ISSOCK) && defined(S_IFSOCK)
 #define	S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
 #endif
-#if !defined(S_ISMPB) && defined(S_IFMPB)	/* V7 */
+#if !defined(S_ISMPB) && defined(S_IFMPB) /* V7 */
 #define S_ISMPB(m) (((m) & S_IFMT) == S_IFMPB)
 #define S_ISMPC(m) (((m) & S_IFMT) == S_IFMPC)
 #endif
-#if !defined(S_ISNWK) && defined(S_IFNWK)	/* HP/UX */
+#if !defined(S_ISNWK) && defined(S_IFNWK) /* HP/UX */
 #define S_ISNWK(m) (((m) & S_IFMT) == S_IFNWK)
 #endif
-#if !defined(S_ISCTG) && defined(S_IFCTG)	/* contiguous file */
+#if !defined(S_ISCTG) && defined(S_IFCTG) /* contiguous file */
 #define S_ISCTG(m) (((m) & S_IFMT) == S_IFCTG)
 #endif
 #if !defined(S_ISVTX)

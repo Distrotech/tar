@@ -48,7 +48,6 @@ main ()
   if (fp == 0)
     {
       fprintf (stderr, "testpad: cannot open ");
-      fflush (stderr);
       perror ("testpad.h");
       exit (1);
     }
