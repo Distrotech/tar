@@ -5,6 +5,7 @@ AC_SUBST(PROGS)dnl
 AC_PROG_CC
 AC_PROG_CPP
 AC_GCC_TRADITIONAL
+AC_CONST
 AC_PROG_INSTALL
 AC_PROG_YACC
 AC_AIX
@@ -23,10 +24,13 @@ AC_REMOTE_TAPE
 AC_RSH
 AC_STDC_HEADERS
 AC_UNISTD_H
-AC_HEADER_CHECK(limits.h, AC_DEFINE(HAVE_LIMITS_H))
-AC_USG
+echo checking for getgrgid declaration
+AC_HEADER_EGREP(getgrgid, grp.h, AC_DEFINE(HAVE_GETGRGID))
+echo checking for getpwuid declaration
+AC_HEADER_EGREP(getpwuid, pwd.h, AC_DEFINE(HAVE_GETPWUID))
+AC_HAVE_HEADERS(string.h limits.h)
 echo checking default archive
-# This is likely to guess wrong, but it's not very important.
+# This might guess wrong, but it's not very important.
 for dev in rmt8 rmt0 rmt0h rct0 rst0 tape rct/c7d0s2
 do
   if test -n "`ls /dev/$dev 2>/dev/null`"; then
@@ -39,7 +43,7 @@ if test -z "$DEF_AR_FILE"; then
 fi
 
 AC_SUBST(DEF_AR_FILE)dnl
-AC_HAVE_FUNCS(strstr valloc mkdir mknod rename ftruncate ftime)
+AC_HAVE_FUNCS(strstr valloc mkdir mknod rename ftruncate ftime getcwd)
 AC_VPRINTF
 AC_ALLOCA
 echo checking for BSD
@@ -48,8 +52,6 @@ echo checking for HP-UX
 test -f /hp-ux && test ! -f /vmunix && MALLOC=malloc.o
 AC_SUBST(MALLOC)
 AC_XENIX_DIR
-echo checking for Solaris libraries
-test -f /lib/libsocket.a && LIBS="$LIBS -lsocket"
-test -f /lib/libnsl.a && LIBS="$LIBS -lnsl"
-
+AC_HAVE_LIBRARY(socket, [LIBS="$LIBS -lsocket"])
+AC_HAVE_LIBRARY(nsl, [LIBS="$LIBS -lnsl"])
 AC_OUTPUT(Makefile)
