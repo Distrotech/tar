@@ -192,6 +192,7 @@ enum
   GROUP_OPTION,
   HANG_OPTION,
   IGNORE_CASE_OPTION,
+  IGNORE_COMMAND_ERROR_OPTION,
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
@@ -200,6 +201,7 @@ enum
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
   NO_IGNORE_CASE_OPTION,
+  NO_IGNORE_COMMAND_ERROR_OPTION,
   NO_OVERWRITE_DIR_OPTION,
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
@@ -228,6 +230,7 @@ enum
   SHOW_OMITTED_DIRS_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
+  TO_COMMAND_OPTION,
   TOTALS_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
@@ -315,6 +318,12 @@ static struct argp_option options[] = {
    N_("handle sparse files efficiently"), 21 },
   {"to-stdout", 'O', 0, 0,
    N_("extract files to standard output"), 21 },
+  {"to-command", TO_COMMAND_OPTION, N_("COMMAND"), 0,
+   N_("pipe extracted files to another program"), 21 },
+  {"ignore-command-error", IGNORE_COMMAND_ERROR_OPTION, 0, 0,
+   N_("ignore exit codes of children"), 21 },
+  {"no-ignore-command-error", NO_IGNORE_COMMAND_ERROR_OPTION, 0, 0,
+   N_("treat non-zero exit codes of children as error"), 21 },
   {"incremental", 'G', 0, 0,
    N_("handle old GNU-format incremental backup"), 21 },
   {"listed-incremental", 'g', N_("FILE"), 0,
@@ -1088,6 +1097,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case IGNORE_CASE_OPTION:
       args->exclude_options |= FNM_CASEFOLD;
       break;
+
+    case IGNORE_COMMAND_ERROR_OPTION:
+      ignore_command_error_option = true;
+      break;
       
     case IGNORE_FAILED_READ_OPTION:
       ignore_failed_read_option = true;
@@ -1129,6 +1142,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       args->exclude_options &= ~ FNM_CASEFOLD;
       break;
       
+    case NO_IGNORE_COMMAND_ERROR_OPTION:
+      ignore_command_error_option = false;
+      break;
+
     case NO_OVERWRITE_DIR_OPTION:
       old_files_option = NO_OVERWRITE_DIR_OLD_FILES;
       break;
@@ -1248,6 +1265,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case SUFFIX_OPTION:
       backup_option = true;
       args->backup_suffix_string = arg;
+      break;
+
+    case TO_COMMAND_OPTION:
+      if (to_command_option)
+        USAGE_ERROR ((0, 0, _("Only one --to-command option allowed")));
+      to_command_option = arg;
       break;
       
     case TOTALS_OPTION:
