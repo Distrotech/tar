@@ -29,7 +29,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include "getopt.h"
 #include "tar.h"		/* For msg() declaration if STDC_MSG. */
 #include <sys/types.h>
-#include "port.h"		/* For index() redefinition if USG. */
+#include "port.h"
 
 int
 getoldopt (argc, argv, optstring, long_options, opt_index)
