@@ -448,9 +448,9 @@ static struct argp_option options[] = {
   {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
    N_("exclusion ignores case"), 71 },
   {"anchored", ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match file name start (default)"), 71 },
+   N_("exclude patterns match file name start"), 71 },
   {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match after any /"), 71 },
+   N_("exclude patterns match after any / (default)"), 71 },
   {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
    N_("exclusion is case sensitive (default)"), 71 },
   {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
@@ -1290,7 +1290,6 @@ decode_options (int argc, char **argv)
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
   args.version_control_string = 0;
   args.input_files = 0;
-  
 
   subcommand_option = UNKNOWN_SUBCOMMAND;
   archive_format = DEFAULT_FORMAT;
