@@ -1,3 +1,30 @@
+2003-09-01  Sergey Poznyakoff 
+
+	Added initial support for creating POSIX headers.
+	
+	* src/common.h (MAXOCTAL11,MAXOCTAL7): New defines
+	(string_to_chars): New functions
+	(struct xheader): Changed structure
+	(gid_to_gname,gname_to_gid,uid_to_uname,uname_to_uid): Changed
+	prototypes.
+	* src/create.c (string_to_chars): New function.
+	(write_extended): New function
+	(start_header): Create extended POSIX headers if necessary.
+	(finish_header): Likewise.
+	* src/list.c (print_header): Take user/group from
+	current_stat_info.
+	* src/names.c (gid_to_gname,gname_to_gid)
+	(uid_to_uname,uname_to_uid): Changed prototypes.
+	* src/tar.c: New option --format.
+	* src/tar.h (OLDGNU_COMPATIBILITY): Removed
+	(struct extra_header): Removed unused structure.
+	(union block.extra_header): Removed unused member.
+	* src/xheader.c: Implemented coder functions.
+	* bootstrap: Added obstack.
+	* lib/.cvsignore: Likewise.
+	* configure.ac: Added 'gl_OBSTACK'
+	* TODO: Minor formatting change
+
 2003-08-31  Sergey Poznyakoff 
 
 	Added initial support for POSIX extended and STAR headers
