@@ -497,7 +497,7 @@
 
 @copying
 
-This manual is for @GNUTAR{} (version
+This manual is for @acronym{GNU} @command{tar} (version
 @value{VERSION}, @value{UPDATED}), which creates and extracts files
 from archives.
 
@@ -529,7 +529,7 @@ developing GNU and promoting software freedom.''
 * tar: (tar)tar invocation.                     Invoking @GNUTAR{}
 @end direntry
 
-@shorttitlepage @GNUTAR{}
+@shorttitlepage @acronym{GNU} @command{tar}
 
 @titlepage
 @title @acronym{GNU} tar: an archiver tool
