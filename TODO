@@ -3,7 +3,7 @@ Suggestions for improving GNU tar.
 * Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
 
 * Add support for GNU private keywords in POSIX 1003.1-2001 headers,
-so that the GNU extensions (--sparse, --incremental, --label and
+so that the GNU extensions (--incremental, --label and
 --multi-volume) may be used with POSIX archives.
 
 * Add support for a 'pax' command that conforms to POSIX 1003.1-2001.

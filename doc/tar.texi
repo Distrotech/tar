@@ -46,7 +46,7 @@
 @c do not alter them inconsiderately.  Much work is needed for GNU tar
 @c internals (the sources, the programs themselves).  Revising the
 @c adequacy of the manual while revising the sources, and cleaning them
-@c both at the same time, seems to him like a good way to proceed.
+@c both at the same time, is a good way to proceed.
 @c ---------------------------------------------------------------------
 
 @c Output marks for nodes needing revision, but not in PUBLISH rendition.
@@ -262,9 +262,14 @@
 @set pxref-interactive @pxref{interactive}
 
 @set op-keep-old-files @kbd{--keep-old-files} (@kbd{-k})
-@set ref-keep-old-files @ref{Writing}
-@set xref-keep-old-files @xref{Writing}
-@set pxref-keep-old-files @pxref{Writing}
+@set ref-keep-old-files @ref{Keep Old Files}
+@set xref-keep-old-files @xref{Keep Old Files}
+@set pxref-keep-old-files @pxref{Keep Old Files}
+
+@set op-keep-newer-files @kbd{--keep-old-files} 
+@set ref-keep-newer-files @ref{Keep Newer Files}
+@set xref-keep-newer-files @xref{Keep Newer Files}
+@set pxref-keep-newer-files @pxref{Keep Newer Files}
 
 @set op-label @kbd{--label=@var{archive-label}} (@kbd{-V @var{archive-label}})
 @set ref-label @ref{label}
@@ -696,6 +701,7 @@ Changing How @command{tar} Writes Files
 * Dealing with Old Files::
 * Overwrite Old Files::
 * Keep Old Files::
+* Keep Newer Files::
 * Unlink First::
 * Recursive Unlink::
 * Modification Times::
@@ -821,7 +827,7 @@ Copying This Manual
 @chapter Introduction
 
 @GNUTAR{} creates
-and manipulates (@dfn{archives}) which are actually collections of
+and manipulates @dfn{archives} which are actually collections of
 many other files; the program provides users with an organized and
 systematic method for controlling a large amount of data.
 The name ``tar'' originally came from the phrase ``Tape ARchive'', but
@@ -876,7 +882,7 @@ entirety in other @acronym{GNU} manuals, and is mostly self-contained.
 In addition, one section of this manual (@pxref{Standard}) contains a
 big quote which is taken directly from @command{tar} sources.
 
-In general, we give both the long and short (abbreviated) option names
+In general, we give both long and short (abbreviated) option names
 at least once in each section where the relevant option is covered, so
 that novice readers will become familiar with both styles.  (A few
 options have no short versions, and the relevant sections will
@@ -1010,14 +1016,17 @@ primary aims are:
 @item Improve compatibility between @GNUTAR{} and other @command{tar}
 implementations.
 @item Switch to using @acronym{POSIX} archives.
-@item Revise sparse file handling.
-@item Revise multiple volume processing.
+@item Revise sparse file handling and multiple volume processing.
+@item Merge with the @acronym{GNU} @code{paxutils} project.
 @end itemize
 
-The following issues need mentioning:
+Some of these aims are already attained, while others are still
+being worked upon. From the point of view of an end user, the
+following issues need special mentioning:
 
 @table @asis
 @item Use of short option @option{-o}.
+
 Earlier versions of @GNUTAR{} understood @option{-o} command line
 option as a synonym for @option{--old-archive}.
 
@@ -1029,10 +1038,16 @@ However, to facilitate transition, @option{-o} option retains its
 old semantics when it is used with one of archive-creation commands.
 Users are encouraged to use @value{op-format-oldgnu} instead.
 
+It is especially important, since versions of @acronym{GNU} Automake
+up to and including 1.8.4 invoke tar with this option to produce
+distribution tarballs. @xref{Formats,v7}, for the detailed discussion
+of this issue and its implications.
+
 Future versions of @GNUTAR{} will understand @option{-o} only as a
-synonym for @option{--no-same-owner}. 
+synonym for @option{--no-same-owner}.
 
 @item Use of short option @option{-l}
+
 Earlier versions of @GNUTAR{} understood @option{-l} option as a
 synonym for @samp{--one-file-system}. Such usage is deprecated.
 For compatibility with other implementations future versions of
@@ -1040,9 +1055,11 @@ For compatibility with other implementations future versions of
 @option{--check-links}.
 
 @item Use of options @option{--portability} and @option{--old-archive}
+
 These options are deprecated. Please use @option{--format=v7} instead.
 
 @item Use of option @option{--posix}
+
 This option is deprecated. Please use @option{--format=posix} instead.
 @end table
 
@@ -1052,8 +1069,9 @@ This option is deprecated. Please use @option{--format=posix} instead.
 @GNUTAR{} was originally written by John Gilmore,
 and modified by many people.  The @acronym{GNU} enhancements were
 written by Jay Fenlason, then Joy Kendall, and the whole package has
-been further maintained by Thomas Bushnell, n/BSG, and finally
-Fran@,{c}ois Pinard, with the help of numerous and kind users.
+been further maintained by Thomas Bushnell, n/BSG, Fran@,{c}ois
+Pinard, Paul Eggert, and finally Sergey Poznyakoff with the help of
+numerous and kind users.
 
 We wish to stress that @command{tar} is a collective work, and owes much to
 all those people who reported problems, offered solutions and other
@@ -1098,6 +1116,11 @@ Support for @acronym{POSIX} archives was added by Sergey Poznyakoff.
 @cindex reporting bugs
 If you find problems or have suggestions about this program or manual,
 please report them to @file{bug-tar@@gnu.org}.
+
+When reporting a bug, please be sure to include as much detail as
+possible, in order to reproduce it. @FIXME{Be more specific, I'd
+like to make this node as detailed as 'Bug reporting' node in Emacs
+manual}.
 
 @node Tutorial
 @chapter Tutorial Introduction to @command{tar}
@@ -1175,14 +1198,10 @@ In the examples, @samp{$} represents a typical shell prompt.  It
 precedes lines you should type; to make this more clear, those lines are
 shown in @kbd{this font}, as opposed to lines which represent the
 computer's response; those lines are shown in @code{this font}, or
-sometimes @samp{like this}.  When we have lines which are too long to be
-displayed in any other way, we will show them like this:
+sometimes @samp{like this}.
 
-@smallexample
-This is an example of a line which would otherwise not fit in this space.
-@end smallexample
-
-@FIXME{how often do we use smallexample?}
+@c When we have lines which are too long to be
+@c displayed in any other way, we will show them like this:
 
 @node basic tar options
 @section Basic @command{tar} Operations and Options
@@ -1216,7 +1235,7 @@ you used to seeing them.  (Note that the ``old style'' option forms
 exist in @GNUTAR{} for compatibility with Unix
 @command{tar}.  We present a full discussion of this way of writing
 options and operations appears in @ref{Old Options}, and we discuss
-the other two styles of writing options in @ref{Mnemonic Options} and
+the other two styles of writing options in @ref{Mnemonic Options}, and
 @ref{Short Options}.)
 
 In the examples and in the text of this tutorial, we usually use the
@@ -1509,7 +1528,7 @@ and @file{jazz}, are now members of the archive, @file{collection.tar}
 (they are @dfn{file name arguments} to the @samp{--create} operation).
 @FIXME{xref here to the discussion of file name args?}Now that they are
 in the archive, they are called @emph{archive members}, not files.
-@FIXME{xref to definitions?}
+(@pxref{Definitions,members}).
 
 When you create an archive, you @emph{must} specify which files you
 want placed in the archive.  If you do not specify any archive
@@ -1803,12 +1822,6 @@ stored in the specified archive.
 
 @node list dir
 @unnumberedsubsec Listing the Contents of a Stored Directory
-@UNREVISED
-
-@FIXME{i changed the order of these nodes around and haven't had a
-chance to play around with this node's example, yet.  i have to play
-with it and see what it actually does for my own satisfaction, even if
-what it says *is* correct..}
 
 To get information about the contents of an archived directory,
 use the directory name as a file name argument in conjunction with
@@ -1891,8 +1904,10 @@ arguments, as printed by @value{op-list}.  If you had mistakenly deleted
 one of the files you had placed in the archive @file{collection.tar}
 earlier (say, @file{blues}), you can extract it from the archive without
 changing the archive's structure.  It will be identical to the original
-file @file{blues} that you deleted.  @FIXME{check this; will the times,
-permissions, owner, etc be the same, also?}
+file @file{blues} that you deleted.  @FIXME{At the time of this
+writing, atime and ctime are not restored. Since this is a tutorial
+for a beginnig user, it should hardly be mentioned here. Maybe in
+a footnote? --gray}.
 
 First, make sure you are in the @file{practice} directory, and list the
 files in the directory.  Now, delete the file, @samp{blues}, and list
@@ -1930,7 +1945,7 @@ exact member names of the members of an archive, use @value{op-list}
 (@pxref{list}).
 
 You can extract a file to standard output by combining the above options
-with the @option{--to-stdout} option (@pxref{Writing to Standard
+with the @value{op-to-stdout} option (@pxref{Writing to Standard
 Output}).
 
 If you give the @value{op-verbose} option, then @value{op-extract} will
@@ -1948,7 +1963,9 @@ files in the pre-existing directory with the same names as the members
 which you extract, the files from the extracted archive will replace
 the files already in the working directory (and possible
 subdirectories).  This will happen regardless of whether or not the
-files in the working directory were more recent than those extracted.
+files in the working directory were more recent than those extracted
+(there exist, however, special options that alter this behavior
+@pxref{Writing}).
 
 However, if a file was stored with a directory name as part of its file
 name, and that directory does not exist under the working directory when
@@ -1966,11 +1983,20 @@ following command:
 
 @smallexample
 $ @kbd{tar -xvf music.tar practice/folk practice/jazz}
+practice/folk
+practice/jazz
 @end smallexample
 
-@FIXME{need to show tar's response; used verbose above.  also, here's a
-good place to demonstrate the -v -v thing.  have to write that up
-(should be trivial, but i'm too tired!).}
+@noindent
+If you were to specify two @value{op-verbose} options, @command{tar}
+would have displayed more detail about the extracted files, as shown
+in the example below:
+
+@smallexample
+$ @kbd{tar -xvvf music.tar practice/folk practice/jazz}
+-rw-rw-rw- me user     28 1996-10-18 16:31 practice/jazz
+-rw-rw-rw- me user     20 1996-09-23 16:44 practice/folk
+@end smallexample
 
 @noindent
 Because you created the directory with @file{practice} as part of the
@@ -1997,6 +2023,10 @@ $ @kbd{mkdir newdir}
 $ @kbd{cd newdir}
 $ @kbd{tar -xvf ../untrusted.tar}
 @end smallexample
+
+It is also a good practice to examine contents of the archive
+before extracting it, using @option{op-list} option, possibly combined
+with @option{op-verbose}.
 
 @node failing commands
 @subsection Commands That Will Fail
@@ -2254,8 +2284,12 @@ number of important files.  We urge you to note these differences, and
 only use the option style(s) which makes the most sense to you until you
 feel comfortable with the others.
 
-@FIXME{hag to write a brief paragraph on the option(s) which can
-optionally take an argument}
+Some options @emph{may} take an argument (currently, there are 
+two such options: @value{op-backup} and @value{op-occurrence}). Such
+options may have at most long and short forms, they do not have old style
+equivalent. The rules for specifying an argument for such options
+are stricter than those for specifying mandatory arguments. Please,
+pay special attention to them.
 
 @menu
 * Mnemonic Options::            Mnemonic Option Style
@@ -2299,11 +2333,18 @@ gives a fairly good set of hints about what the command does, even
 for those not fully acquainted with @command{tar}.
 
 Mnemonic options which require arguments take those arguments
-immediately following the option name; they are introduced by an equal
-sign.  For example, the @samp{--file} option (which tells the name
-of the @command{tar} archive) is given a file such as @file{archive.tar}
-as argument by using the notation @samp{--file=archive.tar} for the
-mnemonic option.
+immediately following the option name. There are two ways of
+specifying a mandatory argument. It can be separated from the
+option name either by an equal sign, or by any amount of
+white space characters. For example, the @samp{--file} option (which
+tells the name of the @command{tar} archive) is given a file such as
+@file{archive.tar} as argument by using any of the following notations:
+@samp{--file=archive.tar} or @samp{--file archive.tar}.
+
+In contrast, optional arguments must always be introduced using
+an equal sign. For example, the @samp{--backup} option takes
+an optional argument specifying backup type. It must be used
+as @samp{--backup=@var{backup-type}}.
 
 @node Short Options
 @subsection Short Option Style
@@ -2323,6 +2364,10 @@ archive.tar}} or @samp{-farchive.tar} instead of using
 @samp{--file=archive.tar}.  Both @samp{--file=@var{archive-name}} and
 @w{@samp{-f @var{archive-name}}} denote the option which indicates a
 specific archive, here named @file{archive.tar}.
+
+Short options which take optional arguments take their arguments
+immediately following the option letter, @emph{without any intervening
+white space characters}.
 
 Short options' letters may be clumped together, but you are not
 required to do this (as compared to old options; see below).  When
@@ -2401,7 +2446,7 @@ users.  For example, the two commands:
 are quite different.  The first example uses @file{archive.tar.gz} as
 the value for option @samp{f} and recognizes the option @samp{z}.  The
 second example, however, uses @file{z} as the value for option
-@samp{f}---probably not what was intended.
+@samp{f} --- probably not what was intended.
 
 Old options are kept for compatibility with old versions of @command{tar}.
 
@@ -2740,6 +2785,8 @@ Creates a POSIX.1-2001 archive.
 
 @end table
 
+@xref{Formats}, for a detailed discussion of these formats.
+
 @item --group=@var{group}
 
 Files added to the @command{tar} archive will have a group id of @var{group},
@@ -2804,6 +2851,11 @@ at the end of each tape.  If @var{script-file} exits with nonzero status,
 Specifies that @command{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
 @FIXME-xref{}
+
+@item --keep-newer-files
+
+Do not replace existing files that are newer than their archive copies
+when extracting files from an archive.
 
 @item --keep-old-files
 @itemx -k
@@ -3177,6 +3229,17 @@ effect only for ordinary users.  @FIXME-xref{}
 
 (See @samp{--preserve-permissions}; @pxref{Writing}.)
 
+@item --show-defaults
+
+Displays the default options used by @command{tar} and exits
+successfully. This option is intended for use in shell scripts.
+Here is an example of what you can see using this option:
+
+@smallexample
+$ tar --show-defaults
+--format=gnu -f- -b20
+@end smallexample
+
 @item --show-omitted-dirs
 
 Instructs @command{tar} to mention directories its skipping over when
@@ -3254,6 +3317,11 @@ system before extracting it from the archive.  @xref{Writing}.
 
 Instructs @command{tar} to access the archive through @var{prog}, which is
 presumed to be a compression program of some sort.  @FIXME-xref{}
+
+@item --utc
+
+Display file modification dates in @acronym{UTC}. This option implies
+@samp{--verbose}.
 
 @item --verbose
 @itemx -v
@@ -3970,7 +4038,7 @@ this really a good idea, to give this whole description for something
 which i believe is basically a Stupid way of doing something?  certain
 aspects of it show ways in which tar is more broken than i'd personally
 like to admit to, specifically the last sentence.  On the other hand, i
-don't think it's a good idea to be saying that re explicitly don't
+don't think it's a good idea to be saying that we explicitly don't
 recommend using something, but i can't see any better way to deal with
 the situation.}When you extract the archive, the older version will be
 effectively lost.  This works because files are extracted from an
@@ -4433,6 +4501,7 @@ encountered while reading an archive.  Use in conjunction with
 * Dealing with Old Files::
 * Overwrite Old Files::
 * Keep Old Files::
+* Keep Newer Files::
 * Unlink First::
 * Recursive Unlink::
 * Modification Times::
@@ -4529,6 +4598,15 @@ existing files with files with the same name from the archive.
 The @value{op-keep-old-files} option is meaningless with @value{op-list}.
 Prevents @command{tar} from replacing files in the file system during
 extraction.
+@end table
+
+@node Keep Newer Files
+@unnumberedsubsubsec Keep Newer Files
+
+@table @kbd
+@item --keep-newer-files
+Do not replace existing files that are newer than their archive
+copies. This option is meaningless with @value{op-list}.
 @end table
 
 @node Unlink First
@@ -4839,7 +4917,6 @@ $ @kbd{cd sourcedir; tar -cf - . | (cd targetdir; tar -xf -)}
 @noindent
 The command also works using short option forms:
 
-@FIXME{The following using standard input/output correct??}
 @smallexample
 $ @w{@kbd{cd sourcedir; tar --create --file=- . | (cd targetdir; tar --extract --file=-)}}
 @end smallexample
@@ -6300,24 +6377,91 @@ The most frequently used formats are (in alphabetical order):
 
 @table @asis
 @item gnu
-Format used by @GNUTAR{}.
+Format used by @GNUTAR{} versions up to 1.13.25. This format derived
+from an early POSIX standard, adding some improvements such as
+sparse file handling and incremental archives. Unfortunately these
+features were implemented in a way incompatible with other archive
+formats.
 
-@item v7
-Archive format, compatible with the V7 implementation of tar.
+Archives in @samp{gnu} format are able to hold pathnames of unlimited
+length.
 
 @item oldgnu
 Format used by @GNUTAR{} of versions prior to 1.12.
 
-@item posix
-Archive format defined by POSIX.1-2001 specification.
+@item v7
+Archive format, compatible with the V7 implementation of tar. This
+format imposes a number of limitations. The most important of them
+are:
+
+@enumerate
+@item The maximum length of a file name is limited to 99 characters.
+@item The maximum length of a symbolic link is limited to 99 characters.
+@item It is impossible to store special files (block and character
+devices, fifos etc.)
+@item Maximum value of user or group ID is limited to 2097151 (7777777
+octal)
+@item V7 archives do not contain symbolic ownership information (user
+and group name of the file owner).
+@end enumerate
+
+This format has traditionally been used by Automake when producing
+Makefiles. This practice will change in the future, in the meantime,
+however this means that projects containing filenames more than 99
+characters long will not be able to use @GNUTAR{} @value{VERSION} and
+Automake prior to 1.9.
+
+@item ustar
+Archive format defined by POSIX.1-1988 specification. It stores
+symbolic ownership information. It is also able to store
+special files. However, it imposes several restrictions as well:
+
+@enumerate
+@item The maximum length of a file name is limited to 256 characters,
+provided that the filename can be split at directory separator in
+two parts, first of them being at most 155 bytes long. So, in most
+cases the maximum file name length will be shorter than 256
+characters.
+@item The maximum length of a symbolic link name is limited to
+100 characters.
+@item Maximum size of a file the archive is able to accomodate
+is 8GB
+@item Maximum value of UID/GID is 2097151.
+@item Maximum number of bits in device major and minor numbers is 21.
+@end enumerate
 
 @item star
-Format used by J@"org Schilling @command{star} implementation.
+Format used by J@"org Schilling @command{star}
+implementation. @GNUTAR{} is able to read @samp{star} archives but
+currently does not produce them.
+
+@item posix
+Archive format defined by POSIX.1-2001 specification. This is the
+most flexible and feature-rich format. It does not impose any
+restrictions on file sizes or filename lengths. This format is quite
+recent, so not all tar implementations are able to handle it properly.
+However, this format is designed in such a way that any tar
+implementation able to read @samp{ustar} archives will be able to read
+most @samp{posix} archives as well, with the only exception that any
+additional information (such as long file names etc.) will in such
+case be extracted as plain text files along with the files it refers to.
+
+This archive format will be the default format for future versions
+of @GNUTAR{}.
+
 @end table
 
-@GNUTAR{} is able to create archives in any of these formats,
-except @samp{star}. It is able to read archives in any of these
-formats.
+The following table summarizes the limitations of each of these
+formats:
+
+@multitable @columnfractions .10 .20 .20 .20 .20
+@item Format @tab UID @tab File Size @tab Path Name @tab Devn
+@item gnu    @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
+@item oldgnu @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
+@item v7     @tab 2097151 @tab 8GB @tab 99 @tab n/a
+@item ustar  @tab 2097151 @tab 8GB @tab 256 @tab 21
+@item posix  @tab Unlimited @tab Unlimited @tab Unlimited @tab Unlimited
+@end multitable
 
 The default format for @GNUTAR{} is defined at compilation
 time. You may check it by running @command{tar --help}, and examining
@@ -6975,7 +7119,7 @@ It is equivalent to @value{op-same-permissions} plus @value{op-same-order}.
 @end table
 
 @node Standard
-@section The Standard Format
+@section Basic Tar Format
 @UNREVISED
 
 While an archive may contain many files, the archive itself is a
@@ -6987,7 +7131,8 @@ manipulate without using the @command{tar} utility or Tar mode in
 @acronym{GNU} Emacs.
 
 Physically, an archive consists of a series of file entries terminated
-by an end-of-archive entry, which consists of 512 zero bytes.  A file
+by an end-of-archive entry, which consists of two 512 blocks of zero
+bytes. A file
 entry usually describes one of the files in the archive (an
 @dfn{archive member}), and consists of a file header and the contents
 of the file.  File headers contain file names and statistics, checksum
@@ -7011,10 +7156,11 @@ of as being on magnetic tape, other media are often used.
 
 Each file archived is represented by a header block which describes
 the file, followed by zero or more blocks which give the contents
-of the file.  At the end of the archive file there may be a block
+of the file.  At the end of the archive file there are two 512-byte blocks
 filled with binary zeros as an end-of-file marker.  A reasonable system
-should write a block of zeros at the end, but must not assume that
-such a block exists when reading an archive.
+should write such end-of-file marker at the end of an archive, but
+must not assume that such a block exists when reading an archive. In
+particular @GNUTAR{} always issues a warning if it does not encounter it.
 
 The blocks may be @dfn{blocked} for physical I/O operations.
 Each record of @var{n} blocks (where @var{n} is set by the
@@ -7049,8 +7195,7 @@ of file contents is performed.
 The @code{name}, @code{linkname}, @code{magic}, @code{uname}, and
 @code{gname} are null-terminated character strings.  All other fields
 are zero-filled octal numbers in ASCII.  Each numeric field of width
-@var{w} contains @var{w} minus 2 digits, a space, and a null, except
-@code{size}, and @code{mtime}, which do not contain the trailing null.
+@var{w} contains @var{w} minus 1 digits, and a null.
 
 The @code{name} field is the file name of the file, with directory names
 (if any) preceding the file name, separated by slashes.
