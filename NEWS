@@ -7,6 +7,11 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.14.91 - Sergey Poznyakoff, <DATE>
 
+* It is no longer necessary to specify -Z,-z, or -j options to
+read compressed archives. GNU tar automatically detects the type
+of archive it has to deal with and runs an appropriate decompressing
+command. Thus, you can now run `tar tf archive.tar.gz'.
+
 * When restoring incremental dumps, --one-file-system option
 prevents directory hierarchies residing on different devices
 from being purged.
