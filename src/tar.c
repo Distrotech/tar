@@ -445,11 +445,13 @@ Archive format selection:\n\
                                      FMTNAME is one of the following:\n\
                                      v7        old V7 tar format\n\
                                      oldgnu    GNU format as per tar <= 1.12\n\
+                                     gnu       GNU tar 1.13 format\n\
                                      ustar     POSIX 1003.1-1988 (ustar) format\n\
                                      posix     POSIX 1003.1-2001 (pax) format\n\
-                                     gnu       GNU format\n\
       --old-archive, --portability   same as --format=v7\n\
       --posix                        same as --format=posix\n\
+  --pax-option keyword[[:]=value][,keyword[[:]=value], ...]\n\
+                                     control pax keywords\n\
   -V, --label=NAME                   create archive with volume name NAME\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -j, --bzip2                        filter the archive through bzip2\n\
@@ -1285,9 +1287,11 @@ see the file named COPYING for details."));
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
 
-  if (incremental_option
-      || multi_volume_option
-      || sparse_option)
+  if (incremental_option || multi_volume_option)
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
+		   
+  
+  if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
 		   | FORMAT_MASK (POSIX_FORMAT));
@@ -1296,7 +1300,7 @@ see the file named COPYING for details."));
     {
       if (!input_files && !files_from_option)
 	USAGE_ERROR ((0, 0,
-		      _("--occurrence is meaningless without file list")));
+		      _("--occurrence is meaningless without a file list")));
       if (subcommand_option != DELETE_SUBCOMMAND
 	  && subcommand_option != DIFF_SUBCOMMAND
 	  && subcommand_option != EXTRACT_SUBCOMMAND

@@ -2726,14 +2726,17 @@ Creates an archive that is compatible with Unix V7 @command{tar}.
 Creates an archive that is compatible with GNU @command{tar} version
 1.12 or earlier.
 
+@item gnu
+Creates archive in GNU tar 1.13 format. Basically it is the same as
+@samp{oldgnu} with the only difference in the way it handles long
+numeric fields.
+
 @item ustar
 Creates a POSIX.1-1988 compatible archive.
 
 @item posix
 Creates a POSIX.1-2001 archive.
 
-@item gnu
-Creates archive in GNU format.
 @end table
 
 @item --group=@var{group}
@@ -2984,6 +2987,117 @@ their distributions for the owner of files, because the @code{root} user is
 anonymous anyway, so that might as well be the owner of anonymous archives.
 
 This option does not affect extraction from archives.
+
+@item --pax-option=@var{keyword-list}
+
+This option is meaningful only with POSIX.1-2001 archives
+(@FIXME-xref{}). It modifies the way @command{tar} handles the
+extended header keywords. @var{Keyword-list} is a comma-separated
+list of keyword options, each keyword option taking one of
+the following forms:
+
+@table @asis
+@item delete=@var{pattern}
+When used with one of archive-creation command (@FIXME-xref{}),
+this option instructs @command{tar} to omit from extended header records
+that it produces any keywords matching the string @var{pattern}.
+
+When used in extract or list mode, this option instructs tar
+to ignore any keywords matching the given @var{pattern} in the extended
+header records. In both cases, matching is performed using the pattern
+matching notation described in POSIX 1003.2, 3.13 (@FIXME-xref{}, see
+man 7 glob). For example:
+
+@smallexample
+--pax-option delete=security.*
+@end smallexample
+
+would suppress security-related information.
+
+@item exthdr.name=@var{string}
+
+This keyword allows user control over the name that is written into the
+ustar header blocks for the extended headers. The name is obtained
+from @var{string} after substituting the following meta-characters:
+
+@multitable @columnfractions .30 .70
+@item Meta-character @tab Replaced By
+@item %d @tab  The directory name of the file, equivalent to the
+result of the @command{dirname} utility on the translated pathname.
+@item %f @tab  The filename of the file, equivalent to the result
+of the @command{basename} utility on the translated pathname.
+@item %p @tab  The process ID of the @command{tar} process.
+@item %% @tab  A @samp{%} character.
+@end multitable
+
+Any other @samp{%} characters in @var{string} produce undefined
+results.
+
+If no option @samp{exthdr.name=string} is specified, @command{tar}
+will use the following default value:
+
+@c This should be %d/PaxHeaders.%p/%f
+@smallexample
+././@@PaxHeader
+@end smallexample
+
+@item globexthdr.name=@var{string}
+This keyword allows user control over the name that is written into
+the ustar header blocks for global extended header records. The name
+shall will be obtained from the contents of @var{string}, after the
+following character substitutions have been made:
+
+@multitable @columnfractions .30 .70
+@item Meta-character @tab Replaced By
+@item %n @tab An integer that represents the
+sequence number of the global extended header record in the archive,
+starting at 1.
+@item %p @tab The process ID of the @command{tar} process.
+@item %% @tab A @samp{%} character.
+@end multitable
+
+Any other @samp{%} characters in string produce undefined results.
+
+If no option @samp{globexthdr.name=string} is specified, @command{tar}
+will use the following default value:
+
+@smallexample
+$TMPDIR/GlobalHead.%p.%n
+@end smallexample
+
+@noindent
+where @samp{$TMPDIR} represents the value of the @var{TMPDIR}
+environment variable. If @var{TMPDIR} is not set, @command{tar}
+uses @samp{/tmp}.
+
+@item @var{keyword}=@var{value}
+When used with one of archive-creation commands, these keyword/value pairs
+will be included at the beginning of the archive in a global extended
+header record. When used with one of archive-reading commands,
+@command{tar} will behave as if it has encountered these keyword/value
+pairs at the beginning of the archive in a global extended header
+record.
+
+@item @var{keyword}:=@var{value}
+When used with one of archive-creation commands, these keyword/value pairs
+will be included as records at the beginning of an extended header for
+each file. This is effectively equivalent to @var{keyword}=@var{value}
+form except that it creates no global extended header records.
+
+When used with one of archive-reading commands, @command{tar} will
+behave as if these keyword/value pairs were included as records at the
+end of each extended header; thus, they will override any global or
+file-specific extended header record keywords of the same names.
+For example, in the command:
+
+@smallexample
+tar --format=posix --create \
+    --file archive --pax-option gname:=user .
+@end smallexample
+
+the group name will be forced to a new value for all files
+stored in the archive.
+@end table
 
 @item --portability
 @itemx --old-archive

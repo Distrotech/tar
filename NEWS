@@ -1,5 +1,5 @@
 GNU tar NEWS - User visible changes.
-Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
 Free Software Foundation, Inc.
 See the end for copying conditions.
 
@@ -42,6 +42,10 @@ version 1.13.92
   extracts the first occurrence of `filename' from `archive'
   and terminates without scanning to the end of the archive.
 
+* New option --pax-option allows to control the handling of POSIX
+  keywords in `pax' extended headers. It is equivalent to `pax'
+  -o option.
+  
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
 ** --block-compress is not needed any longer
