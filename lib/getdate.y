@@ -146,6 +146,7 @@ struct parser_control
   table local_time_zone_table[3];
 };
 
+#define PC (* (struct parser_control *) parm)
 #define YYLEX_PARAM parm
 #define YYPARSE_PARAM parm
 #define YYSTYPE int
@@ -174,102 +175,100 @@ spec:
 
 item:
     time
-      { ((struct parser_control *) parm)->times_seen++; }
+      { PC.times_seen++; }
   | local_zone
-      { ((struct parser_control *) parm)->local_zones_seen++; }
+      { PC.local_zones_seen++; }
   | zone
-      { ((struct parser_control *) parm)->zones_seen++; }
+      { PC.zones_seen++; }
   | date
-      { ((struct parser_control *) parm)->dates_seen++; }
+      { PC.dates_seen++; }
   | day
-      { ((struct parser_control *) parm)->days_seen++; }
+      { PC.days_seen++; }
   | rel
-      { ((struct parser_control *) parm)->rels_seen++; }
+      { PC.rels_seen++; }
   | number
   ;
 
 time:
     tUNUMBER tMERIDIAN
       {
-	((struct parser_control *) parm)->hour = $1;
-	((struct parser_control *) parm)->minutes = 0;
-	((struct parser_control *) parm)->seconds = 0;
-	((struct parser_control *) parm)->meridian = $2;
+	PC.hour = $1;
+	PC.minutes = 0;
+	PC.seconds = 0;
+	PC.meridian = $2;
       }
   | tUNUMBER ':' tUNUMBER o_merid
       {
-	((struct parser_control *) parm)->hour = $1;
-	((struct parser_control *) parm)->minutes = $3;
-	((struct parser_control *) parm)->seconds = 0;
-	((struct parser_control *) parm)->meridian = $4;
+	PC.hour = $1;
+	PC.minutes = $3;
+	PC.seconds = 0;
+	PC.meridian = $4;
       }
   | tUNUMBER ':' tUNUMBER tSNUMBER
       {
-	((struct parser_control *) parm)->hour = $1;
-	((struct parser_control *) parm)->minutes = $3;
-	((struct parser_control *) parm)->meridian = MER24;
-	((struct parser_control *) parm)->zones_seen++;
-	((struct parser_control *) parm)->time_zone =
-	  $4 % 100 + ($4 / 100) * 60;
+	PC.hour = $1;
+	PC.minutes = $3;
+	PC.meridian = MER24;
+	PC.zones_seen++;
+	PC.time_zone = $4 % 100 + ($4 / 100) * 60;
       }
   | tUNUMBER ':' tUNUMBER ':' tUNUMBER o_merid
       {
-	((struct parser_control *) parm)->hour = $1;
-	((struct parser_control *) parm)->minutes = $3;
-	((struct parser_control *) parm)->seconds = $5;
-	((struct parser_control *) parm)->meridian = $6;
+	PC.hour = $1;
+	PC.minutes = $3;
+	PC.seconds = $5;
+	PC.meridian = $6;
       }
   | tUNUMBER ':' tUNUMBER ':' tUNUMBER tSNUMBER
       {
-	((struct parser_control *) parm)->hour = $1;
-	((struct parser_control *) parm)->minutes = $3;
-	((struct parser_control *) parm)->seconds = $5;
-	((struct parser_control *) parm)->meridian = MER24;
-	((struct parser_control *) parm)->zones_seen++;
-	((struct parser_control *) parm)->time_zone =
-	  $6 % 100 + ($6 / 100) * 60;
+	PC.hour = $1;
+	PC.minutes = $3;
+	PC.seconds = $5;
+	PC.meridian = MER24;
+	PC.zones_seen++;
+	PC.time_zone = $6 % 100 + ($6 / 100) * 60;
       }
   ;
 
 local_zone:
     tLOCAL_ZONE
-      { ((struct parser_control *) parm)->local_isdst = $1; }
+      { PC.local_isdst = $1; }
   | tLOCAL_ZONE tDST
-      { ((struct parser_control *) parm)->local_isdst = $1 < 0 ? 1 : $1 + 1; }
+      { PC.local_isdst = $1 < 0 ? 1 : $1 + 1; }
   ;
 
 zone:
     tZONE
-      { ((struct parser_control *) parm)->time_zone = $1; }
+      { PC.time_zone = $1; }
   | tDAYZONE
-      { ((struct parser_control *) parm)->time_zone = $1 + 60; }
+      { PC.time_zone = $1 + 60; }
   | tZONE tDST
-      { ((struct parser_control *) parm)->time_zone = $1 + 60; }
+      { PC.time_zone = $1 + 60; }
   ;
 
 day:
     tDAY
       {
-	((struct parser_control *) parm)->day_ordinal = 1;
-	((struct parser_control *) parm)->day_number = $1;
+	PC.day_ordinal = 1;
+	PC.day_number = $1;
       }
   | tDAY ','
       {
-	((struct parser_control *) parm)->day_ordinal = 1;
-	((struct parser_control *) parm)->day_number = $1;
+	PC.day_ordinal = 1;
+	PC.day_number = $1;
       }
   | tUNUMBER tDAY
       {
-	((struct parser_control *) parm)->day_ordinal = $1;
-	((struct parser_control *) parm)->day_number = $2;
+	PC.day_ordinal = $1;
+	PC.day_number = $2;
       }
   ;
 
 date:
     tUNUMBER '/' tUNUMBER
       {
-	((struct parser_control *) parm)->month = $1;
-	((struct parser_control *) parm)->day = $3;
+	PC.month = $1;
+	PC.day = $3;
       }
   | tUNUMBER '/' tUNUMBER '/' tUNUMBER
       {
@@ -279,138 +278,136 @@ date:
 	   you want portability, use the ISO 8601 format.  */
 	if (1000 <= $1)
 	  {
-	    ((struct parser_control *) parm)->year = $1;
-	    ((struct parser_control *) parm)->month = $3;
-	    ((struct parser_control *) parm)->day = $5;
+	    PC.year = $1;
+	    PC.month = $3;
+	    PC.day = $5;
 	  }
 	else
 	  {
-	    ((struct parser_control *) parm)->month = $1;
-	    ((struct parser_control *) parm)->day = $3;
-	    ((struct parser_control *) parm)->year = $5;
+	    PC.month = $1;
+	    PC.day = $3;
+	    PC.year = $5;
 	  }
       }
   | tUNUMBER tSNUMBER tSNUMBER
       {
 	/* ISO 8601 format.  YYYY-MM-DD.  */
-	((struct parser_control *) parm)->year = $1;
-	((struct parser_control *) parm)->month = -$2;
-	((struct parser_control *) parm)->day = -$3;
+	PC.year = $1;
+	PC.month = -$2;
+	PC.day = -$3;
       }
   | tUNUMBER tMONTH tSNUMBER
       {
 	/* e.g. 17-JUN-1992.  */
-	((struct parser_control *) parm)->day = $1;
-	((struct parser_control *) parm)->month = $2;
-	((struct parser_control *) parm)->year = -$3;
+	PC.day = $1;
+	PC.month = $2;
+	PC.year = -$3;
       }
   | tMONTH tUNUMBER
       {
-	((struct parser_control *) parm)->month = $1;
-	((struct parser_control *) parm)->day = $2;
+	PC.month = $1;
+	PC.day = $2;
       }
   | tMONTH tUNUMBER ',' tUNUMBER
       {
-	((struct parser_control *) parm)->month = $1;
-	((struct parser_control *) parm)->day = $2;
-	((struct parser_control *) parm)->year = $4;
+	PC.month = $1;
+	PC.day = $2;
+	PC.year = $4;
       }
   | tUNUMBER tMONTH
       {
-	((struct parser_control *) parm)->month = $2;
-	((struct parser_control *) parm)->day = $1;
+	PC.month = $2;
+	PC.day = $1;
       }
   | tUNUMBER tMONTH tUNUMBER
       {
-	((struct parser_control *) parm)->month = $2;
-	((struct parser_control *) parm)->day = $1;
-	((struct parser_control *) parm)->year = $3;
+	PC.month = $2;
+	PC.day = $1;
+	PC.year = $3;
       }
   ;
 
 rel:
     relunit tAGO
       {
-	((struct parser_control *) parm)->rel_seconds = -((struct parser_control *) parm)->rel_seconds;
-	((struct parser_control *) parm)->rel_minutes = -((struct parser_control *) parm)->rel_minutes;
-	((struct parser_control *) parm)->rel_hour = -((struct parser_control *) parm)->rel_hour;
-	((struct parser_control *) parm)->rel_day = -((struct parser_control *) parm)->rel_day;
-	((struct parser_control *) parm)->rel_month = -((struct parser_control *) parm)->rel_month;
-	((struct parser_control *) parm)->rel_year = -((struct parser_control *) parm)->rel_year;
+	PC.rel_seconds = -PC.rel_seconds;
+	PC.rel_minutes = -PC.rel_minutes;
+	PC.rel_hour = -PC.rel_hour;
+	PC.rel_day = -PC.rel_day;
+	PC.rel_month = -PC.rel_month;
+	PC.rel_year = -PC.rel_year;
       }
   | relunit
   ;
 
 relunit:
     tUNUMBER tYEAR_UNIT
-      { ((struct parser_control *) parm)->rel_year += $1 * $2; }
+      { PC.rel_year += $1 * $2; }
   | tSNUMBER tYEAR_UNIT
-      { ((struct parser_control *) parm)->rel_year += $1 * $2; }
+      { PC.rel_year += $1 * $2; }
   | tYEAR_UNIT
-      { ((struct parser_control *) parm)->rel_year += $1; }
+      { PC.rel_year += $1; }
   | tUNUMBER tMONTH_UNIT
-      { ((struct parser_control *) parm)->rel_month += $1 * $2; }
+      { PC.rel_month += $1 * $2; }
   | tSNUMBER tMONTH_UNIT
-      { ((struct parser_control *) parm)->rel_month += $1 * $2; }
+      { PC.rel_month += $1 * $2; }
   | tMONTH_UNIT
-      { ((struct parser_control *) parm)->rel_month += $1; }
+      { PC.rel_month += $1; }
   | tUNUMBER tDAY_UNIT
-      { ((struct parser_control *) parm)->rel_day += $1 * $2; }
+      { PC.rel_day += $1 * $2; }
   | tSNUMBER tDAY_UNIT
-      { ((struct parser_control *) parm)->rel_day += $1 * $2; }
+      { PC.rel_day += $1 * $2; }
   | tDAY_UNIT
-      { ((struct parser_control *) parm)->rel_day += $1; }
+      { PC.rel_day += $1; }
   | tUNUMBER tHOUR_UNIT
-      { ((struct parser_control *) parm)->rel_hour += $1 * $2; }
+      { PC.rel_hour += $1 * $2; }
   | tSNUMBER tHOUR_UNIT
-      { ((struct parser_control *) parm)->rel_hour += $1 * $2; }
+      { PC.rel_hour += $1 * $2; }
   | tHOUR_UNIT
-      { ((struct parser_control *) parm)->rel_hour += $1; }
+      { PC.rel_hour += $1; }
   | tUNUMBER tMINUTE_UNIT
-      { ((struct parser_control *) parm)->rel_minutes += $1 * $2; }
+      { PC.rel_minutes += $1 * $2; }
   | tSNUMBER tMINUTE_UNIT
-      { ((struct parser_control *) parm)->rel_minutes += $1 * $2; }
+      { PC.rel_minutes += $1 * $2; }
   | tMINUTE_UNIT
-      { ((struct parser_control *) parm)->rel_minutes += $1; }
+      { PC.rel_minutes += $1; }
   | tUNUMBER tSEC_UNIT
-      { ((struct parser_control *) parm)->rel_seconds += $1 * $2; }
+      { PC.rel_seconds += $1 * $2; }
   | tSNUMBER tSEC_UNIT
-      { ((struct parser_control *) parm)->rel_seconds += $1 * $2; }
+      { PC.rel_seconds += $1 * $2; }
   | tSEC_UNIT
-      { ((struct parser_control *) parm)->rel_seconds += $1; }
+      { PC.rel_seconds += $1; }
   ;
 
 number:
     tUNUMBER
       {
-	if (((struct parser_control *) parm)->times_seen
-	    && ((struct parser_control *) parm)->dates_seen
-	    && ! ((struct parser_control *) parm)->rels_seen)
-	  ((struct parser_control *) parm)->year = $1;
+	if (PC.dates_seen && ! PC.rels_seen && (PC.times_seen || 100 <= $1))
+	  PC.year = $1;
 	else
 	  {
 	    if (10000 < $1)
 	      {
-		((struct parser_control *) parm)->dates_seen++;
-		((struct parser_control *) parm)->day = $1 % 100;
-		((struct parser_control *) parm)->month = ($1 / 100) % 100;
-		((struct parser_control *) parm)->year = $1 / 10000;
+		PC.dates_seen++;
+		PC.day = $1 % 100;
+		PC.month = ($1 / 100) % 100;
+		PC.year = $1 / 10000;
 	      }
 	    else
 	      {
-		((struct parser_control *) parm)->times_seen++;
+		PC.times_seen++;
 		if ($1 < 100)
 		  {
-		    ((struct parser_control *) parm)->hour = $1;
-		    ((struct parser_control *) parm)->minutes = 0;
+		    PC.hour = $1;
+		    PC.minutes = 0;
 		  }
 		else
 		  {
-		    ((struct parser_control *) parm)->hour = $1 / 100;
-		    ((struct parser_control *) parm)->minutes = $1 % 100;
+		    PC.hour = $1 / 100;
+		    PC.minutes = $1 % 100;
 		  }
-		((struct parser_control *) parm)->seconds = 0;
-		((struct parser_control *) parm)->meridian = MER24;
+		PC.seconds = 0;
+		PC.meridian = MER24;
 	      }
 	  }
       }
