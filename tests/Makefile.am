@@ -47,6 +47,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 TESTSUITE_AT = \
  testsuite.at\
+ comprec.at\
  delete01.at\
  delete02.at\
  delete03.at\
@@ -69,6 +70,7 @@ TESTSUITE_AT = \
  multiv03.at\
  old.at\
  options.at\
+ pipe.at\
  recurse.at\
  same-order01.at\
  same-order02.at\

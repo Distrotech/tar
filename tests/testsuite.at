@@ -50,11 +50,17 @@ test -z "$STAR_TESTSCRIPTS" && AT_SKIP_TEST
 test -r "$STAR_TESTSCRIPTS/$1" || AT_SKIP_TEST
 ])
 
+m4_define([AT_GZIP_PREREQ],[
+cat /dev/null | m4_if([$1],[],gzip,[$1]) - > /dev/null 2>&1 || AT_SKIP_TEST
+])
+
 AT_INIT
 
 AT_TESTED([tar])
 
 m4_include([version.at])
+
+m4_include([pipe.at])
 
 m4_include([options.at])
 
@@ -99,6 +105,8 @@ m4_include([same-order02.at])
 m4_include([sparse01.at])
 
 m4_include([volume.at])
+
+m4_include([comprec.at])
 
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
