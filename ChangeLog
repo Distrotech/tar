@@ -1,3 +1,22 @@
+2003-07-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* TODO: Updated
+	* NEWS: Updated
+	* doc/tar.texi: Updated
+	* src/common.h (check_links_option): New variable
+	(orig_file_name): New variable
+	(check_links): New proto.
+	* src/create.c (struct link.nlink): New member
+	(link_table): Static for the module.
+	(dump_file): Update `link' member when adding new links
+	to the link_table.
+	(check_links): New function.
+	* src/list.c (print_header): Use orig_file_name.
+	* src/tar.c: New option --check-links. Changed semantics of
+	-o to comply to UNIX98 when extracting and to its previous
+	semantics otherwise.
+	(main): Call check_links if --check-links. was given.
+	
 2003-07-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (print_header): Revised
