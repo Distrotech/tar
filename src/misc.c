@@ -207,7 +207,7 @@ static char *after_backup_name;
 static bool
 must_be_dot_or_slash (char const *file_name)
 {
-  file_name += FILESYSTEM_PREFIX_LEN (file_name);
+  file_name += FILE_SYSTEM_PREFIX_LEN (file_name);
 
   if (ISSLASH (file_name[0]))
     {
