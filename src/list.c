@@ -1096,7 +1096,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 		   uintbuf));
 	  break;
 	default:
-	  strcpy (size, STRINGIFY_BIGINT (st->stat.st_size, uintbuf));
+	  /* st->stat.st_size keeps stored file size */
+	  strcpy (size, STRINGIFY_BIGINT (st->archive_file_size, uintbuf));
 	  break;
 	}
 
