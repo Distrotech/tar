@@ -97,16 +97,16 @@ SHELL = /bin/sh
 
 SRC1 =	tar.c create.c extract.c buffer.c getoldopt.c update.c gnu.c mangle.c
 SRC2 =  version.c list.c names.c diffarch.c port.c fnmatch.c getopt.c malloc.c
-SRC3 =  getopt1.c regex.c getdate.y 
+SRC3 =  getopt1.c regex.c getdate.y alloca.c
 SRCS =	$(SRC1) $(SRC2) $(SRC3)
 OBJ1 =	tar.o create.o extract.o buffer.o getoldopt.o update.o gnu.o mangle.o
 OBJ2 =	version.o list.o names.o diffarch.o port.o fnmatch.o getopt.o @MALLOC@
-OBJ3 =  getopt1.o regex.o getdate.o $(RTAPELIB)
+OBJ3 =  getopt1.o regex.o getdate.o $(RTAPELIB) @ALLOCA@
 OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
 AUX =   README INSTALL NEWS COPYING ChangeLog Makefile.in makefile.pc \
 	configure configure.in \
 	tar.h fnmatch.h pathmax.h port.h open3.h getopt.h regex.h \
-	rmt.h rmt.c rtapelib.c alloca.c \
+	rmt.h rmt.c rtapelib.c \
 	msd_dir.h msd_dir.c tcexparg.c \
 	level-0 level-1 backup-specs testpad.c getpagesize.h
 #	tar.texinfo tar.info* texinfo.tex \
@@ -142,7 +142,7 @@ regex.o buffer.o tar.o: regex.h
 tar.o fnmatch.o: fnmatch.h
 
 getdate.c: getdate.y
-	yacc getdate.y
+	$(YACC) $(srcdir)/getdate.y
 	mv y.tab.c getdate.c
 # getdate.y has 8 shift/reduce conflicts.
 
