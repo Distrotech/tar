@@ -4,7 +4,8 @@ dnl
 undefine([AC_FUNC_FNMATCH])
 AC_DEFUN(AC_FUNC_FNMATCH,
 [AC_CACHE_CHECK(for GNU-style fnmatch, ac_cv_func_fnmatch_works,
-# Some versions of Solaris or SCO have a broken or incompatible fnmatch.
+# Some versions of Solaris, SCO, and the GNU C Library
+# have a broken or incompatible fnmatch.
 # So we run a test program.  If we are cross-compiling, take no chance.
 # Thanks to John Oleynick, Franc,ois Pinard, and Paul Eggert for this test.
 [AC_TRY_RUN([#include <fnmatch.h>
