@@ -1,3 +1,25 @@
+2004-01-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Started rewriting buffer.c ...
+	
+	* bootstrap: New option --no-po
+	* src/buffer.c (new_volume,check_label_pattern): Changed return type.
+	(time_to_start_writing): Changed data type
+	(file_to_switch_to): Removed. Variable never assigned to.
+	(open_archive) Moved option compatibility checks to tar.c
+	Other minor changes.
+	* src/common.h (maybe_backup_file): Changed return type
+	* src/misc.c: Likewise.	
+	* src/create.c: Updated invocations of safer_name_suffix
+	* src/extract.c: Likewise
+	* src/delete.c: Updated assignment to write_archive_to_stdout
+	* src/tar.c (decode_options): More option compatibility checks
+	(moved from buffer.c)
+	* src/update.c (time_to_start_writing): Changed data type.
+	* tests/recurse.sh: New test case.
+	* tests/mksparse.c: New file.
+	* tests/Makefile.am: Added recurse.sh and mksparse.c
+	
 2004-01-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c (sparse_diff_file): Bugfix. Thanks
