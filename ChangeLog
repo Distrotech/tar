@@ -1,3 +1,20 @@
+2003-12-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* TODO: Updated
+	* src/sparse.c: Initial implementation of GNU/pax sparse
+	file format.
+	* src/common.h (xheader_store): Changed prototype.
+	* src/create.c: Update calls to xheader_store
+	* src/extract.c (extract_archive): Check reported size vs.
+	archive file size to determine if we have to do with a
+	sparse file.
+	* src/tar.c (usage): Cleaned up the sample argument to --newer
+	option.
+	(decode_options): Allow --sparse for POSIX_FORMAT archives.
+	* src/xheader.c (struct xhdr_tab.coder; all coder function): Added
+	extra argument
+	Implemeted GNU.sparse.* keywords.
+
 2003-11-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Check for setlocale. Thanks Bruno Haible for
