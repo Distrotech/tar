@@ -369,6 +369,8 @@ void pad_archive (off_t size_left);
 void dump_file (char *, int, dev_t);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *, union block *, off_t);
+void simple_finish_header (union block *header);
+union block *start_private_header (const char *name, size_t size);
 void write_eot (void);
 void check_links (void);
 
@@ -623,7 +625,7 @@ void xheader_read (union block *, size_t);
 void xheader_finish (struct xheader *);
 void xheader_destroy (struct xheader *);
 char *xheader_xhdr_name (struct tar_stat_info *st);
-char *xheader_ghdr_name (struct tar_stat_info *st);
+char *xheader_ghdr_name (void);
 
 /* Module system.c */
 
