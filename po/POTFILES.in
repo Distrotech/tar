@@ -1,16 +1,24 @@
 # List of files which contain translatable strings.
-# Copyright (C) 1996 Free Software Foundation, Inc.
+# Copyright 1996, 1999 Free Software Foundation, Inc.
+
+# Library files
+lib/argmatch.c
+lib/error.c
+lib/getopt.c
+lib/xmalloc.c
 
 # Package source files
-src/common.h
+src/arith.c
 src/buffer.c
-src/create.c
+src/common.h
 src/compare.c
+src/create.c
 src/delete.c
 src/extract.c
 src/incremen.c
 src/list.c
 src/mangle.c
+src/misc.c
 src/names.c
 src/rmt.c
 src/rtapelib.c
