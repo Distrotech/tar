@@ -1,3 +1,7 @@
+2003-12-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Synchronized with the backup repository on Mirddin
+
 2003-12-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Check for varios members of struct stat
