@@ -21,10 +21,15 @@
 # include <config.h>
 #endif
 
-#include "unicodeio.h"
 #include "print-copyr.h"
-
 #include <stdio.h>
+
+#if ENABLE_NLS
+# include "unicodeio.h"
+#else
+# define unicode_to_mb(code, callback, error_callback, callback_arg) \
+    error_callback (code, callback_arg)
+#endif
 
 #define COPYRIGHT_SIGN 0x00A9
 
