@@ -1,3 +1,7 @@
+2005-02-15  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* tests/append01.at: Added reference to bug-tar archive
+
 2005-02-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* THANKS: Added Tim Adye. Fixed UTF.
