@@ -3,20 +3,26 @@ This is GNU tar.
 This is a *pre-release* version, and not ready for production use yet.
 Please send comments and problem reports to <bug-tar@gnu.org>.
 
-If you have taken the sources from CVS you will need the following packages
-to build GNU tar:
+If you have taken the sources from CVS you will need the following
+packages (or later) to build GNU tar.  We don't make any extra effort
+to accommodate older versions of these packages.  If we discover that
+newer versions are needed to bootstrap, we'll update the version
+numbers in this list.
 
 autoconf 2.57
 automake 1.7.5
 bison 1.875
 gettext 0.12.1
-sed 3.0
+m4 1.4
 wget 1.7
 
-Before building the package, run bootstrap. You will need a POSIX
-compliant shell to do so. The bootstrap utility obtains various
+For GNU m4 1.4, we recommend also installing the `translit' patch; see
+Debian bug 211477 <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=211477>.
+This patch is bundled into Debian m4 1.4-17 or later.
+
+Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
-site and prepares the source directory for building. The exact way
+site and prepares the source directory for building.  The exact way
 of invoking bootstrap depends on whether you have the sources for gnulib
 installed somewhere on your system and on the method you use to access
 the CVS at savannah.
@@ -34,11 +40,11 @@ b) if you access CVS via Kerberos, run
 
         ./bootstrap --cvs-auth=gserver
 
-Othervise, if you are not a member of Savannah, run
+Otherwise, if you are not a member of Savannah, run
 
         ./bootstrap --cvs-auth=pserver
 
-When prompted for a password for anoncvs, simply press the Enter key. 
+When prompted for a password for anoncvs, simply press the Enter key.
 
 
 
