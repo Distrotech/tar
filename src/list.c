@@ -70,7 +70,7 @@ read_and (void (*do_something) ())
 
 	  if (!name_match (current_file_name)
 	      || current_stat.st_mtime < newer_mtime_option
-	      || excluded_filename (excluded, base_name (current_file_name)))
+	      || excluded_pathname (excluded, current_file_name))
 	    {
 	      int isextended = 0;
 
@@ -577,12 +577,14 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 	  if (!o)
 	    {
 	      o = clone_quoting_options ((struct quoting_options *) 0);
-	      set_quoting_style (o, escape_quoting_style);
+	      set_quoting_style (o, c_quoting_style);
 	    }
 
-	  quotearg_buffer (buf, sizeof buf, where0, digs0, o);
+	  for (digs = digs0;  digs && ! where0[digs - 1];  digs--)
+	    continue;
+	  quotearg_buffer (buf, sizeof buf, where0, digs, o);
 	  ERROR ((0, 0,
-		  _("Header contains \"%.*s\" where octal %s value expected"),
+		  _("Header contains %.*s where octal %s value expected"),
 		  (int) sizeof buf, buf, type));
 	}
 
