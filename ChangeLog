@@ -1,3 +1,39 @@
+2004-08-09  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (read_and): Call decode_header before
+	calling skip_member()
+	(skip_member): Use is_sparse field to determine if the
+	member is a sparse file.
+
+	* tests/Makefile.am: Added extrac05.sh
+	* tests/extrac05.sh: New file
+	* tests/append.sh: Rearranged leading comments. Added explicit
+	references to report messages wherever available.
+	* tests/delete01.sh: Likewise
+	* tests/delete02.sh: Likewise
+	* tests/delete03.sh: Likewise
+	* tests/delete04.sh: Likewise
+	* tests/extrac01.sh: Likewise
+	* tests/extrac02.sh: Likewise
+	* tests/extrac03.sh: Likewise
+	* tests/extrac04.sh: Likewise
+	* tests/gzip.sh: Likewise
+	* tests/ignfail.sh: Likewise
+	* tests/incremen.sh: Likewise
+	* tests/link01.sh: Likewise
+	* tests/listed01.sh: Likewise
+	* tests/longv7.sh: Likewise
+	* tests/multiv01.sh: Likewise
+	* tests/multiv02.sh: Likewise
+	* tests/old.sh: Likewise
+	* tests/options.sh: Likewise
+	* tests/recurse.sh: Likewise
+	* tests/same-order01.sh: Likewise
+	* tests/same-order02.sh: Likewise
+	* tests/sparse01.sh: Likewise
+	* tests/version.sh: Likewise
+	* tests/volume.sh: Likewise
+
 2004-08-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap: Extended --update-po option to take an
