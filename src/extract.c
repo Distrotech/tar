@@ -450,43 +450,6 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
   return false;
 }
 
-/* Prepare to extract a file.
-   Return zero if extraction should not proceed.  */
-
-static int
-prepare_to_extract (char const *file_name)
-{
-  if (to_stdout_option)
-    return 0;
-
-  switch (old_files_option)
-    {
-    case UNLINK_FIRST_OLD_FILES:
-      if (!remove_any_file (file_name, 
-                            recursive_unlink_option ? RECURSIVE_REMOVE_OPTION 
-                                                      : ORDINARY_REMOVE_OPTION)
-	  && errno && errno != ENOENT)
-	{
-	  unlink_error (file_name);
-	  return 0;
-	}
-      break;
-
-    case KEEP_NEWER_FILES:
-      if (file_newer_p (file_name, &current_stat_info))
-	{
-	  WARN ((0, 0, _("Current %s is newer"), quote (file_name)));
-	  return 0;
-	}
-      break;
-
-    default:
-      break;
-    }
-
-  return 1;
-}
-
 /* Attempt repairing what went wrong with the extraction.  Delete an
    already existing file or create missing intermediate directories.
    Return nonzero if we somewhat increased our chances at a successful
@@ -602,8 +565,11 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
     }
 }
 
+
 
-void
+/* Extractor functions for various member types */
+
+static int
 extract_dir (char *file_name, int typeflag)
 {
   int status;
@@ -618,48 +584,41 @@ extract_dir (char *file_name, int typeflag)
 
   mode = (current_stat_info.stat.st_mode | (we_are_root ? 0 : MODE_WXUSR)) & MODE_RWX;
 
-  status = prepare_to_extract (file_name);
-  if (status == 0)
-    return;
+  while ((status = mkdir (file_name, mode)))
+    {
+      if (errno == EEXIST
+	  && (interdir_made
+	      || old_files_option == DEFAULT_OLD_FILES
+	      || old_files_option == OVERWRITE_OLD_FILES))
+	{
+	  struct stat st;
+	  if (stat (file_name, &st) == 0)
+	    {
+	      if (interdir_made)
+		{
+		  repair_delayed_set_stat (file_name, &st);
+		  return 0;
+		}
+	      if (S_ISDIR (st.st_mode))
+		{
+		  mode = st.st_mode & ~ current_umask;
+		  break;
+		}
+	    }
+	  errno = EEXIST;
+	}
+      
+      if (maybe_recoverable (file_name, &interdir_made))
+	continue;
+      
+      if (errno != EEXIST)
+	{
+	  mkdir_error (file_name);
+	  return 1;
+	}
+      break;
+    }
   
-  if (status > 0)
-    while ((status = mkdir (file_name, mode)))
-      {
-	if (errno == EEXIST
-	    && (interdir_made
-		|| old_files_option == DEFAULT_OLD_FILES
-		|| old_files_option == OVERWRITE_OLD_FILES))
-	  {
-	    struct stat st;
-	    if (stat (file_name, &st) == 0)
-	      {
-		if (interdir_made)
-		  {
-		    repair_delayed_set_stat (file_name, &st);
-		    return;
-		  }
-		if (S_ISDIR (st.st_mode))
-		  {
-		    mode = st.st_mode & ~ current_umask;
-		    break;
-		  }
-	      }
-	    errno = EEXIST;
-	  }
-	
-	if (maybe_recoverable (file_name, &interdir_made))
-	  continue;
-
-	if (errno != EEXIST)
-	  {
-	    mkdir_error (file_name);
-	    if (backup_option)
-	    undo_last_backup ();
-	    return;
-	  }
-	break;
-      }
-
   if (status == 0
       || old_files_option == DEFAULT_OLD_FILES
       || old_files_option == OVERWRITE_OLD_FILES)
@@ -668,6 +627,8 @@ extract_dir (char *file_name, int typeflag)
 		    (status == 0
 		     ? ARCHIVED_PERMSTATUS
 		     : UNKNOWN_PERMSTATUS));
+
+  return status;
 }
 
 
@@ -708,7 +669,7 @@ open_output_file (char *file_name, int typeflag)
   return fd;
 }
 
-static void
+static int
 extract_file (char *file_name, int typeflag)
 {
   int fd;
@@ -721,31 +682,19 @@ extract_file (char *file_name, int typeflag)
   
   /* FIXME: deal with protection issues.  */
 
-  do
+  if (to_stdout_option)
+    fd = STDOUT_FILENO;
+  else
     {
-      if (to_stdout_option)
-	fd = STDOUT_FILENO;
-      else
-	{
-	  if (! prepare_to_extract (file_name))
-	    {
-	      skip_member ();
-	      if (backup_option)
-		undo_last_backup ();
-	      return;
-	    }
-	  fd = open_output_file (file_name, typeflag);
-	}
-    }
-  while (fd < 0 && maybe_recoverable (file_name, &interdir_made));
+      do
+	fd = open_output_file (file_name, typeflag);
+      while (fd < 0 && maybe_recoverable (file_name, &interdir_made));
     
-  if (fd < 0)
-    {
-      open_error (file_name);
-      skip_member ();
-      if (backup_option)
-	undo_last_backup ();
-      return;
+      if (fd < 0)
+	{
+	  open_error (file_name);
+	  return 1;
+	}
     }
     
   if (current_stat_info.is_sparse)
@@ -783,7 +732,8 @@ extract_file (char *file_name, int typeflag)
 			      (data_block->buffer + written - 1));
 	if (count != written)
 	  {
-	    write_error_details (file_name, count, written);
+	    write_error_details (file_name, count, written); /* FIXME: shouldn't we
+								restore from backup? */
 	    break;
 	  }
       }
@@ -797,38 +747,30 @@ extract_file (char *file_name, int typeflag)
      it doesn't exist, or we don't want to touch it anyway.  */
 
   if (to_stdout_option)
-    return;
+    return 0;
 
   status = close (fd);
   if (status < 0)
-    {
-      close_error (file_name);
-      if (backup_option)
-	undo_last_backup ();
-    }
+    close_error (file_name);
 
   set_stat (file_name, &current_stat_info.stat, 0, 0,
-	    (old_files_option == OVERWRITE_OLD_FILES
-	     ? UNKNOWN_PERMSTATUS
-	     : ARCHIVED_PERMSTATUS),
+	    (old_files_option == OVERWRITE_OLD_FILES ?
+	          UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
 	    typeflag);
+
+  return status;
 }  
 
-static void
-extract_link (char *file_name)
+static int
+extract_link (char *file_name, int typeflag)
 {
-  char const *link_name;
+  char const *link_name = safer_name_suffix (current_stat_info.link_name, true);
   int interdir_made = 0;
   
-  if (!prepare_to_extract (file_name))
-    return;
-
   do
     {
       struct stat st1, st2;
       int e;
-      link_name = safer_name_suffix (current_stat_info.link_name, true);
-      
       int status = link (link_name, file_name);
       e = errno;
 
@@ -848,14 +790,14 @@ extract_link (char *file_name)
 		  ds->sources = p;
 		  break;
 		}
-	  return;
+	  return 0;
 	}
       else if ((e == EEXIST && strcmp (link_name, file_name) == 0)
 	       || (lstat (link_name, &st1) == 0
 		   && lstat (file_name, &st2) == 0
 		   && st1.st_dev == st2.st_dev
 		   && st1.st_ino == st2.st_ino))
-	return;
+	return 0;
       
       errno = e;
     }
@@ -864,27 +806,23 @@ extract_link (char *file_name)
   if (!(incremental_option && errno == EEXIST))
     {
       link_error (link_name, file_name);
-      if (backup_option)
-	undo_last_backup ();
+      return 1;
     }
+  return 0;
 }  
 
-static void
-extract_symlink (char *file_name)
+static int
+extract_symlink (char *file_name, int typeflag)
 {
 #ifdef HAVE_SYMLINK
   int status, fd;
   int interdir_made = 0;
   
-  if (! prepare_to_extract (file_name))
-    return;
-
   if (absolute_names_option
       || ! (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
 	    || contains_dot_dot (current_stat_info.link_name)))
     {
-      while (status = symlink (current_stat_info.link_name, file_name),
-	     status != 0)
+      while ((status = symlink (current_stat_info.link_name, file_name)))
 	if (!maybe_recoverable (file_name, &interdir_made))
 	  break;
 
@@ -958,8 +896,7 @@ extract_symlink (char *file_name)
 	}
     }
 
-  if (status != 0 && backup_option)
-    undo_last_backup ();
+  return status;
 
 #else
   static int warned_once;
@@ -969,48 +906,37 @@ extract_symlink (char *file_name)
       warned_once = 1;
       WARN ((0, 0, _("Attempting extraction of symbolic links as hard links")));
     }
-  extract_link (file_name);  
+  return extract_link (file_name, typeflag);  
 #endif
 }  
 
 #if S_IFCHR || S_IFBLK
-static void
+static int
 extract_node (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
   
   do
-    {
-      if (! prepare_to_extract (file_name))
-	return;
-  
-      status = mknod (file_name, current_stat_info.stat.st_mode,
-		      current_stat_info.stat.st_rdev);
-    }
+    status = mknod (file_name, current_stat_info.stat.st_mode,
+		    current_stat_info.stat.st_rdev);
   while (status && maybe_recoverable (file_name, &interdir_made));
   
   if (status != 0)
-    {
-      mknod_error (file_name);
-      if (backup_option)
-	undo_last_backup ();
-    }
+    mknod_error (file_name);
   else
     set_stat (file_name, &current_stat_info.stat, 0, 0, ARCHIVED_PERMSTATUS, typeflag);
+  return status;
 }
 #endif
 
 #if HAVE_MKFIFO || defined mkfifo
-static void
+static int
 extract_fifo (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
   
-  if (! prepare_to_extract (file_name))
-    return;
-
   while ((status = mkfifo (file_name, current_stat_info.stat.st_mode)))
     if (!maybe_recoverable (file_name, &interdir_made))
       break;
@@ -1019,13 +945,156 @@ extract_fifo (char *file_name, int typeflag)
     set_stat (file_name, &current_stat_info.stat, NULL, 0,
 	      ARCHIVED_PERMSTATUS, typeflag);
   else
-    {
-      mkfifo_error (file_name);
-      if (backup_option)
-	undo_last_backup ();
-    }
+    mkfifo_error (file_name);
+  return status;
 }  
 #endif
+
+static int
+extract_mangle_wrapper (char *file_name, int typeflag)
+{
+  extract_mangle ();
+  return 0;
+}
+
+     
+static int
+extract_failure (char *file_name, int typeflag)
+{
+  return 1;
+}
+
+typedef int (*tar_extractor_t) (char *file_name, int typeflag);
+
+
+
+/* Prepare to extract a file. Find extractor function.
+   Return zero if extraction should not proceed.  */
+
+static int
+prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
+{
+  int rc = 1;
+  
+  if (to_stdout_option)
+    rc = 0;
+
+  /* Select the extractor */
+  switch (typeflag)
+    {
+    case GNUTYPE_SPARSE:
+      *fun = extract_file;
+      rc = 1;
+      break;
+      
+    case AREGTYPE:
+    case REGTYPE:
+    case CONTTYPE:
+      /* Appears to be a file.  But BSD tar uses the convention that a slash
+	 suffix means a directory.  */
+      if (current_stat_info.had_trailing_slash)
+	*fun = extract_dir;
+      else
+	{
+	  *fun = extract_file;
+	  rc = 1;
+	}
+      break;
+
+    case SYMTYPE:
+      *fun = extract_symlink;
+      break;
+
+    case LNKTYPE:
+      *fun = extract_link;
+      break;
+
+#if S_IFCHR
+    case CHRTYPE:
+      current_stat_info.stat.st_mode |= S_IFCHR;
+      *fun = extract_node;
+      break;
+#endif
+
+#if S_IFBLK
+    case BLKTYPE:
+      current_stat_info.stat.st_mode |= S_IFBLK;
+      *fun = extract_node;
+      break;
+#endif
+
+#if HAVE_MKFIFO || defined mkfifo
+    case FIFOTYPE:
+      *fun = extract_fifo;
+      break;
+#endif
+
+    case DIRTYPE:
+    case GNUTYPE_DUMPDIR:
+      *fun = extract_dir;
+      break;
+
+    case GNUTYPE_VOLHDR:
+      if (verbose_option)
+	fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
+      *fun = NULL;
+      break;
+
+    case GNUTYPE_NAMES:
+      *fun = extract_mangle_wrapper;
+      break;
+
+    case GNUTYPE_MULTIVOL:
+      ERROR ((0, 0,
+	      _("%s: Cannot extract -- file is continued from another volume"),
+	      quotearg_colon (current_stat_info.file_name)));
+      *fun = extract_failure;
+      break;
+
+    case GNUTYPE_LONGNAME:
+    case GNUTYPE_LONGLINK:
+      ERROR ((0, 0, _("Unexpected long name header")));
+      *fun = extract_failure;
+      break;
+
+    default:
+      WARN ((0, 0,
+	     _("%s: Unknown file type '%c', extracted as normal file"),
+	     quotearg_colon (file_name), typeflag));
+      *fun = extract_file;
+    }
+
+  /* Determine whether the extraction should proceed */
+  if (rc == 0)
+    return 0;
+  
+  switch (old_files_option)
+    {
+    case UNLINK_FIRST_OLD_FILES:
+      if (!remove_any_file (file_name, 
+                            recursive_unlink_option ? RECURSIVE_REMOVE_OPTION 
+                                                      : ORDINARY_REMOVE_OPTION)
+	  && errno && errno != ENOENT)
+	{
+	  unlink_error (file_name);
+	  return 0;
+	}
+      break;
+
+    case KEEP_NEWER_FILES:
+      if (file_newer_p (file_name, &current_stat_info))
+	{
+	  WARN ((0, 0, _("Current %s is newer"), quote (file_name)));
+	  return 0;
+	}
+      break;
+
+    default:
+      break;
+    }
+
+  return 1;
+}
 
 /* Extract a file from the archive.  */
 void
@@ -1033,7 +1102,8 @@ extract_archive (void)
 {
   char typeflag;
   char *file_name;
-
+  tar_extractor_t fun;
+  
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat_info, &current_format, 1);
 
@@ -1080,87 +1150,14 @@ extract_archive (void)
   typeflag = sparse_member_p (&current_stat_info) ?
                   GNUTYPE_SPARSE : current_header->header.typeflag;
 
-  switch (typeflag)
+  if (prepare_to_extract (file_name, typeflag, &fun))
     {
-    case GNUTYPE_SPARSE: /* FIXME: Shouldn't we call extract_file at once? */
-    case AREGTYPE:
-    case REGTYPE:
-    case CONTTYPE:
-
-      /* Appears to be a file.  But BSD tar uses the convention that a slash
-	 suffix means a directory.  */
-
-      if (current_stat_info.had_trailing_slash)
-	extract_dir (file_name, typeflag);
-      else
-	extract_file (file_name, typeflag);
-      break;
-
-    case SYMTYPE:
-      extract_symlink (file_name);
-      break;
-      
-    case LNKTYPE:
-      extract_link (file_name);
-      break;
-
-#if S_IFCHR
-    case CHRTYPE:
-      current_stat_info.stat.st_mode |= S_IFCHR;
-      extract_node (file_name, typeflag);
-      break;
-#endif
-
-#if S_IFBLK
-    case BLKTYPE:
-      current_stat_info.stat.st_mode |= S_IFBLK;
-      extract_node (file_name, typeflag);
-      break;
-#endif
-
-#if HAVE_MKFIFO || defined mkfifo
-    case FIFOTYPE:
-      extract_fifo (file_name, typeflag);
-      break;
-#endif
-
-    case DIRTYPE:
-    case GNUTYPE_DUMPDIR:
-      extract_dir (file_name, typeflag);
-      break;
-
-    case GNUTYPE_VOLHDR:
-      if (verbose_option)
-	fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
-      break;
-
-    case GNUTYPE_NAMES:
-      extract_mangle ();
-      break;
-
-    case GNUTYPE_MULTIVOL:
-      ERROR ((0, 0,
-	      _("%s: Cannot extract -- file is continued from another volume"),
-	      quotearg_colon (current_stat_info.file_name)));
-      skip_member ();
-      if (backup_option)
+      if (fun && (*fun) (file_name, typeflag) && backup_option)
 	undo_last_backup ();
-      break;
-
-    case GNUTYPE_LONGNAME:
-    case GNUTYPE_LONGLINK:
-      ERROR ((0, 0, _("Unexpected long name header")));
-      skip_member ();
-      if (backup_option)
-	undo_last_backup ();
-      break;
-
-    default:
-      WARN ((0, 0,
-	     _("%s: Unknown file type '%c', extracted as normal file"),
-	     quotearg_colon (file_name), typeflag));
-      extract_file (file_name, typeflag);
     }
+  else
+    skip_member ();
+  
 }
 
 /* Extract the symbolic links whose final extraction were delayed.  */
