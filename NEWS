@@ -1,6 +1,11 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.2 - Paul Eggert, 1999-07-14.
+
+* Bug reporting address changed to <bug-tar@gnu.org>.
+* Bug fixes.
+
 version 1.13.1 - Paul Eggert, 1999-07-12.
 
 * Bug fixes.
