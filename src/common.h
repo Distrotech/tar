@@ -237,6 +237,9 @@ GLOBAL bool read_full_records_option;
 
 GLOBAL bool remove_files_option;
 
+/* Specified rmt command.  */
+GLOBAL const char *rmt_command_option;
+
 /* Specified remote shell command.  */
 GLOBAL const char *rsh_command_option;
 
