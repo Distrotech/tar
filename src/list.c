@@ -1,7 +1,7 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
-   Copyright 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
+   2001, 2003 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -37,8 +37,8 @@ union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 
-static uintmax_t from_header PARAMS ((const char *, size_t, const char *,
-				      uintmax_t, uintmax_t));
+static uintmax_t from_header (const char *, size_t, const char *,
+			      uintmax_t, uintmax_t);
 
 /* Base 64 digits; see Internet RFC 2045 Table 1.  */
 static char const base_64_digits[64] =
@@ -65,7 +65,7 @@ base64_init (void)
 
 /* Main loop for reading an archive.  */
 void
-read_and (void (*do_something) ())
+read_and (void (*do_something) (void))
 {
   enum read_header status = HEADER_STILL_UNREAD;
   enum read_header prev_status;
@@ -103,7 +103,7 @@ read_and (void (*do_something) ())
 		case GNUTYPE_MULTIVOL:
 		case GNUTYPE_NAMES:
 		  break;
-		
+
 		case DIRTYPE:
 		  if (show_omitted_dirs_option)
 		    WARN ((0, 0, _("%s: Omitting"),
@@ -180,7 +180,7 @@ list_archive (void)
     {
       if (verbose_option > 1)
 	decode_header (current_header, &current_stat, &current_format, 0);
-      print_header ();
+      print_header (-1);
     }
 
   if (incremental_option && current_header->header.typeflag == GNUTYPE_DUMPDIR)
@@ -422,6 +422,7 @@ read_header (bool raw_extended_headers)
 	      recent_long_name_blocks = 0;
 	    }
 	  assign_string (&current_file_name, name);
+	  current_trailing_slash = strip_trailing_slashes (current_file_name);
 
 	  if (recent_long_link)
 	    free (recent_long_link);
@@ -786,7 +787,7 @@ off_from_header (const char *p, size_t s)
 size_t
 size_from_header (const char *p, size_t s)
 {
-  return from_header (p, s, "size_t", (uintmax_t) 0, 
+  return from_header (p, s, "size_t", (uintmax_t) 0,
 		      (uintmax_t) TYPE_MAXIMUM (size_t));
 }
 
@@ -852,8 +853,8 @@ tartime (time_t t)
   struct tm *tm = localtime (&t);
   if (tm)
     {
-      sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d",
-	       tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+      sprintf (buffer, "%04ld-%02d-%02d %02d:%02d:%02d",
+	       tm->tm_year + 1900L, tm->tm_mon + 1, tm->tm_mday,
 	       tm->tm_hour, tm->tm_min, tm->tm_sec);
       return buffer;
     }
@@ -898,7 +899,7 @@ static int ugswidth = UGSWIDTH;	/* maximum width encountered so far */
 #endif
 
 void
-print_header (void)
+print_header (off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
@@ -913,8 +914,12 @@ print_header (void)
   if (block_number_option)
     {
       char buf[UINTMAX_STRSIZE_BOUND];
+      if (block_ordinal < 0)
+	block_ordinal = current_block_ordinal ();
+      block_ordinal -= recent_long_name_blocks;
+      block_ordinal -= recent_long_link_blocks;
       fprintf (stdlis, _("block %s: "),
-	       STRINGIFY_BIGINT (current_block_ordinal (), buf));
+	       STRINGIFY_BIGINT (block_ordinal, buf));
     }
 
   if (verbose_option <= 1)
@@ -943,16 +948,19 @@ print_header (void)
 
 	case GNUTYPE_LONGNAME:
 	case GNUTYPE_LONGLINK:
+	  modes[0] = 'L';
 	  ERROR ((0, 0, _("Visible longname error")));
 	  break;
 
 	case GNUTYPE_SPARSE:
 	case REGTYPE:
 	case AREGTYPE:
-	case LNKTYPE:
 	  modes[0] = '-';
 	  if (current_file_name[strlen (current_file_name) - 1] == '/')
 	    modes[0] = 'd';
+	  break;
+	case LNKTYPE:
+	  modes[0] = 'h';
 	  break;
 	case GNUTYPE_DUMPDIR:
 	  modes[0] = 'd';
@@ -1094,6 +1102,14 @@ print_header (void)
 	case CONTTYPE:
 	case GNUTYPE_DUMPDIR:
 	  putc ('\n', stdlis);
+	  break;
+
+	case GNUTYPE_LONGLINK:
+	  fprintf (stdlis, _("--Long Link--\n"));
+	  break;
+
+	case GNUTYPE_LONGNAME:
+	  fprintf (stdlis, _("--Long Name--\n"));
 	  break;
 
 	case GNUTYPE_VOLHDR:
