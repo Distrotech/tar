@@ -1,3 +1,13 @@
+2005-02-04  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* src/common.h (OLDGNU_NAME_FIELD_SIZE): New constant
+	* src/create.c (start_private_header,write_header_name)
+	(dump_hard_link): Restore compatibility with 1.13.25
+	* src/extract.c (extract_archive): Rewritten
+	* src/list.c: Add translators' comments
+	* src/tar.c (options) Minor spelling fix
+	* tests/star/quicktest.sh: Determine path to the tar executable.
+
 2005-02-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* po/POTFILES.in: Added tests/genfile.c
