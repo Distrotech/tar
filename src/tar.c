@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
-   Copyright 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free
-   Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2001
+   Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -36,6 +36,7 @@
 #define GLOBAL
 #include "common.h"
 
+#include <copysym.h>
 #include <localedir.h>
 #include <prepargs.h>
 #include <quotearg.h>
@@ -1122,14 +1123,10 @@ decode_options (int argc, char **argv)
 
   if (show_version)
     {
+      char buf[MB_LEN_MAX + 1];
       printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
-
-      /* Note to translator: Please translate "Copyright " to "©"
-	 (C-in-a-circle) if available in the translation's character
-	 set and encoding.  */
-      printf (_("Copyright %d Free Software Foundation, Inc."), 2001);
-      printf ("\n");
-
+      printf ("Copyright %s 2001 Free Software Foundation, Inc.\n",
+	      copyright_symbol (buf, sizeof buf));
       puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
@@ -1350,9 +1347,3 @@ main (int argc, char **argv)
     error (0, 0, _("Error exit delayed from previous errors"));
   exit (exit_status);
 }
-
-/*
-  Local Variables:
-  coding: iso-latin-1
-  End:
-*/
