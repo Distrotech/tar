@@ -56,7 +56,6 @@
 # define DEFAULT_BLOCKING 20
 #endif
 
-void usage (int) __attribute__ ((noreturn));
 
 /* Miscellaneous.  */
 
@@ -1588,4 +1587,3 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->sparse_map);
   memset (st, 0, sizeof (*st));
 }
-
