@@ -498,9 +498,9 @@ Removing leading `/' from absolute path names in the archive")));
       for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
 	{
 	  sparsearray[counter].offset =
-	    OFF_FROM_OCT (current_header->oldgnu_header.sp[counter].offset);
+	    OFF_FROM_CHARS (current_header->oldgnu_header.sp[counter].offset);
 	  sparsearray[counter].numbytes =
-	    SIZE_FROM_OCT (current_header->oldgnu_header.sp[counter].numbytes);
+	    SIZE_FROM_CHARS (current_header->oldgnu_header.sp[counter].numbytes);
 	  if (!sparsearray[counter].numbytes)
 	    break;
 	}
@@ -533,9 +533,9 @@ Removing leading `/' from absolute path names in the archive")));
 		  if (exhdr->sparse_header.sp[counter].numbytes == 0)
 		    break;
 		  sparsearray[counter + ind].offset =
-		    OFF_FROM_OCT (exhdr->sparse_header.sp[counter].offset);
+		    OFF_FROM_CHARS (exhdr->sparse_header.sp[counter].offset);
 		  sparsearray[counter + ind].numbytes =
-		    SIZE_FROM_OCT (exhdr->sparse_header.sp[counter].numbytes);
+		    SIZE_FROM_CHARS (exhdr->sparse_header.sp[counter].numbytes);
 		}
 	      if (!exhdr->sparse_header.isextended)
 		break;
@@ -564,8 +564,8 @@ Removing leading `/' from absolute path names in the archive")));
 
     again_file:
       openflag = (keep_old_files_option || unlink_first_option ?
-		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_EXCL :
-		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_TRUNC)
+		  O_WRONLY | O_BINARY | O_NONBLOCK | O_CREAT | O_EXCL :
+		  O_WRONLY | O_BINARY | O_NONBLOCK | O_CREAT | O_TRUNC)
 	| ((typeflag == GNUTYPE_SPARSE) ? 0 : O_APPEND);
 
       /* JK - The last | is a kludge to solve the problem the O_APPEND
