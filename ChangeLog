@@ -1,3 +1,8 @@
+2004-04-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/utf8.c: Make sure ICONV_CONST is defined. AM_ICONV
+	does not define it if it fails to find iconv.h.
+
 2004-04-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap: Use gnulib-tool to generate lib/Makefile.am
@@ -7,9 +12,11 @@
 	* lib/Makefile.tmpl: New file.
 	* lib/.cvsignore: Updated
 	* m4/.cvsignore: Updated
+	* src/xheader.c: Include stpcpy.h
 	
 	* src/create.c: Produce an error, not warning, if the
 	filename is too long.
+	* tests/longv7.sh: Synchronized with the recent changes.
 
 2004-04-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
