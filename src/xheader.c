@@ -26,10 +26,6 @@
 
 #include "common.h"
 
-#define obstack_chunk_alloc xmalloc
-#define obstack_chunk_free free
-#include <obstack.h>
-
 #include <fnmatch.h>
 
 static bool xheader_protected_pattern_p (char const *pattern);
