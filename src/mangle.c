@@ -18,7 +18,9 @@
 #include "system.h"
 
 #include <time.h>
+#ifndef time
 time_t time ();
+#endif
 
 #include "common.h"
 
@@ -32,8 +34,8 @@ struct mangled
   };
 
 /* Should use a hash table, etc. .  */
-struct mangled *first_mangle;
-int mangled_num = 0;
+static struct mangled *first_mangle;
+static int mangled_num;
 
 /*---------------------------------------------------------------------.
 | Extract a GNUTYPE_NAMES record contents.  It seems that such are not |
