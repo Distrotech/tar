@@ -1580,10 +1580,7 @@ decode_options (int argc, char **argv)
 int
 main (int argc, char **argv)
 {
-#if HAVE_CLOCK_GETTIME
-  if (clock_gettime (CLOCK_REALTIME, &start_timespec) != 0)
-#endif
-    start_time = time (0);
+  set_start_time ();
   program_name = argv[0];
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
