@@ -37,7 +37,7 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 #define _isrmt(Fd) \
   ((Fd) >= __REM_BIAS)
 
-#define __REM_BIAS 128
+#define __REM_BIAS (1 << 30)
 
 #ifndef O_CREAT
 # define O_CREAT 01000
