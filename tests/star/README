@@ -6,7 +6,7 @@ The tests are ignored unless environment variable STAR_TESTSCRIPTS
 is set and points to the directory where the test archives reside.
 Sample usage:
 
-	make STAR_TESTSCRIPTS=testdir check
+	make TESTS_ENVIRONMENT='STAR_TESTSCRIPTS=testdir' check
 
 The following is a short description of the tests:
 
