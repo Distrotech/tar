@@ -17,3 +17,20 @@ exec 1> stdout
 exec 2> stderr
 
 PATH=..:../../src:$PATH
+
+if test $# -ne 0; then
+    case $TAR_OPTIONS in
+        --format=*)   FMTOPT=$TAR_OPTIONS;;
+        *)            FMTOPT=`tar --show-defaults`;;
+    esac
+
+    FORMAT=
+    for option
+    do
+        case $FMTOPT in
+            --format=$option*) FORMAT=$option
+	                       break;;
+        esac
+    done
+    test -z "$FORMAT" && exit 77
+fi
