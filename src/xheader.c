@@ -62,12 +62,19 @@ struct keyword_list
 
 /* List of keyword patterns set by delete= option */
 static struct keyword_list *keyword_pattern_list;
+
 /* List of keyword/value pairs set by `keyword=value' option */
 static struct keyword_list *keyword_global_override_list;
+
 /* List of keyword/value pairs set by `keyword:=value' option */
 static struct keyword_list *keyword_override_list;
+
+/* List of keyword/value pairs decoded from the last 'g' type header */
+static struct keyword_list *global_header_override_list;
+
 /* Template for the name field of an 'x' type header */
 static char *exthdr_name;
+
 /* Template for the name field of a 'g' type header */
 static char *globexthdr_name;
 
@@ -94,7 +101,8 @@ xheader_keyword_override_p (const char *keyword)
 }
 
 void
-xheader_list_append (struct keyword_list **root, char *kw, char *value)
+xheader_list_append (struct keyword_list **root, char const *kw,
+		     char const *value)
 {
   struct keyword_list *kp = xmalloc (sizeof *kp);
   kp->pattern = xstrdup (kw);
@@ -104,9 +112,28 @@ xheader_list_append (struct keyword_list **root, char *kw, char *value)
 }
 
 void
+xheader_list_destroy (struct keyword_list **root)
+{
+  if (root)
+    {
+      struct keyword_list *kw = *root;
+      while (kw)
+	{
+	  struct keyword_list *next = kw->next;
+	  free (kw->pattern);
+	  free (kw->value);
+	  free (kw);
+	  kw = next;
+	}
+      *root = NULL;
+    }
+}
+	  
+  
+void
 xheader_set_single_keyword (char *kw)
 {
-  USAGE_ERROR ((0, 0, "Keyword %s is unknown or not yet imlemented", kw));
+  USAGE_ERROR ((0, 0, _("Keyword %s is unknown or not yet imlemented"), kw));
 }
 
 void
@@ -132,7 +159,7 @@ xheader_set_keyword_equal (char *kw, char *eq)
   if (strcmp (kw, "delete") == 0)
     {
       if (xheader_protected_pattern_p (p))
-	USAGE_ERROR ((0, 0, "Pattern %s cannot be used", p));
+	USAGE_ERROR ((0, 0, _("Pattern %s cannot be used"), p));
       xheader_list_append (&keyword_pattern_list, p, NULL);
     }
   else if (strcmp (kw, "exthdr.name") == 0)
@@ -142,7 +169,7 @@ xheader_set_keyword_equal (char *kw, char *eq)
   else
     {
       if (xheader_protected_keyword_p (kw))
-	USAGE_ERROR ((0, 0, "Keyword %s cannot be overridden", kw));
+	USAGE_ERROR ((0, 0, _("Keyword %s cannot be overridden"), kw));
       if (global)
 	xheader_list_append (&keyword_global_override_list, kw, p);
       else
@@ -423,13 +450,14 @@ xheader_protected_keyword_p (const char *keyword)
    record.
    Returns true on success, false otherwise. */
 static bool
-decode_record (char **p, struct tar_stat_info *st)
+decode_record (char **p,
+	       void (*handler) (void *, char const *, char const *),
+	       void *data)
 {
   size_t len;
   char const *keyword;
-  char *eqp;
   char *start = *p;
-  struct xhdr_tab const *t;
+  char endc;
 
   if (**p == 0)
     return false;
@@ -453,26 +481,15 @@ decode_record (char **p, struct tar_stat_info *st)
       return false;
     }
 
-  eqp = *p;
   **p = 0;
 
-  if (xheader_keyword_deleted_p (keyword)
-      || xheader_keyword_override_p (keyword))
-    return true;
-  t = locate_handler (keyword);
-  if (t)
-    {
-      char endc;
-      char *value;
+  endc = start[len-1];
+  start[len-1] = 0;
 
-      value = ++*p;
+  handler (data, keyword, *p + 1);
 
-      endc = start[len-1];
-      start[len-1] = 0;
-      t->decoder (st, value);
-      start[len-1] = endc;
-    }
-  *eqp = '=';
+  start[len-1] = endc;
+  **p = '=';
   *p = &start[len];
   return true;
 }
@@ -488,10 +505,26 @@ run_override_list (struct keyword_list *kp, struct tar_stat_info *st)
     }
 }
 
+static void
+decx (void *data, char const *keyword, char const *value)
+{
+  struct xhdr_tab const *t;
+  struct tar_stat_info *st = data;
+
+  if (xheader_keyword_deleted_p (keyword)
+      || xheader_keyword_override_p (keyword))
+    return;
+  
+  t = locate_handler (keyword);
+  if (t)
+    t->decoder (st, value);
+}
+
 void
 xheader_decode (struct tar_stat_info *st)
 {
   run_override_list (keyword_global_override_list, st);
+  run_override_list (global_header_override_list, st);
   
   if (extended_header.size)
     {
@@ -499,10 +532,32 @@ xheader_decode (struct tar_stat_info *st)
       char *endp = &extended_header.buffer[extended_header.size-1];
       
       while (p < endp)
-	if (!decode_record (&p, st))
+	if (!decode_record (&p, decx, st))
 	  break;
     }
   run_override_list (keyword_override_list, st);
+}
+
+static void
+decg (void *data, char const *keyword, char const *value)
+{
+  struct keyword_list **kwl = data;
+  xheader_list_append (kwl, keyword, value);
+}
+
+void
+xheader_decode_global ()
+{
+  if (extended_header.size)
+    {
+      char *p = extended_header.buffer + BLOCKSIZE;
+      char *endp = &extended_header.buffer[extended_header.size-1];
+
+      xheader_list_destroy (&global_header_override_list);
+      while (p < endp)
+	if (!decode_record (&p, decg, &global_header_override_list))
+	  break;
+    }
 }
 
 static void
@@ -645,7 +700,29 @@ xheader_destroy (struct xheader *xhdr)
 static void
 code_string (char const *string, char const *keyword, struct xheader *xhdr)
 {
-  xheader_print (xhdr, keyword, string);
+  char *outstr;
+  if (!utf8_convert (true, string, &outstr))
+    {
+      /* FIXME: report error */
+      outstr = xstrdup (string);
+    }
+  xheader_print (xhdr, keyword, outstr);
+  free (outstr);
+}
+
+static void
+decode_string (char **string, char const *arg)
+{
+  if (*string)
+    {
+      free (*string);
+      *string = NULL;
+    }
+  if (!utf8_convert (false, arg, string))
+    {
+      /* FIXME: report error and act accordingly to --pax invalid=UTF-8 */
+      assign_string (string, arg);
+    }
 }
 
 static void
@@ -735,7 +812,7 @@ gname_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 gname_decoder (struct tar_stat_info *st, char const *arg)
 {
-  assign_string (&st->gname, arg);
+  decode_string (&st->gname, arg);
 }
 
 static void
@@ -748,7 +825,7 @@ linkpath_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 linkpath_decoder (struct tar_stat_info *st, char const *arg)
 {
-  assign_string (&st->link_name, arg);
+  decode_string (&st->link_name, arg);
 }
 
 static void
@@ -787,8 +864,8 @@ path_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 path_decoder (struct tar_stat_info *st, char const *arg)
 {
-  assign_string (&st->orig_file_name, arg);
-  assign_string (&st->file_name, arg);
+  decode_string (&st->orig_file_name, arg);
+  decode_string (&st->file_name, arg);
   st->had_trailing_slash = strip_trailing_slashes (st->file_name);
 }
 
@@ -832,7 +909,7 @@ uname_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 uname_decoder (struct tar_stat_info *st, char const *arg)
 {
-  assign_string (&st->uname, arg);
+  decode_string (&st->uname, arg);
 }
 
 static void
@@ -938,7 +1015,8 @@ struct xhdr_tab const xhdr_tab[] = {
   /* The next directory entry actually contains the names of files
      that were in the directory at the time the dump was made.
      Supersedes GNUTYPE_DUMPDIR header type.  */
-  { "GNU.dumpdir",  dumpdir_coder, dumpdir_decoder },
+  { "GNU.dump.name",  dump_name_coder, dump_name_decoder },
+  { "GNU.dump.status", dump_status_coder, dump_status_decoder },
 
   /* Keeps the tape/volume header. May be present only in the global headers.
      Equivalent to GNUTYPE_VOLHDR.  */
