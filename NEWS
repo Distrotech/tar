@@ -1,9 +1,22 @@
 GNU tar NEWS - User visible changes.
-Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004
+Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
+2004, 2005
 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+version 1.15.2 (CVS version -- unreleased)
+
+* Bugfixes
+
+** Allow non-option arguments to be interspersed with options.
+** When extracting or listing archives in old GNU format, tar
+used to read an extra block of data after a long name header
+if length of the member name was divisible by block size (512).
+Consequently, the file pointer was set off and the next member
+was not processed correctly.
+
 
 version 1.15.1 - Sergey Poznyakoff, 2004-12-21
 
