@@ -32,7 +32,7 @@
    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
 
 #include "system.h"
-#include <copysym.h>
+#include <print-copyr.h>
 #include <localedir.h>
 #include <safe-read.h>
 #include <full-write.h>
@@ -294,10 +294,8 @@ main (int argc, char *const *argv)
       
     case 'v':
       {
-	char buf[MB_LEN_MAX + 1];
 	printf ("rmt (GNU %s) %s\n", PACKAGE, VERSION);
-	printf ("Copyright %s 2001 Free Software Foundation, Inc.\n",
-		copyright_symbol (buf, sizeof buf));
+	print_copyright ("2001 Free Software Foundation, Inc.");
 	puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
