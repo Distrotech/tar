@@ -253,7 +253,7 @@ dump_file (p, curdev, toplevel)
       && !S_ISDIR (hstat.st_mode)
       && (f_new_files > 1 || new_time > hstat.st_ctime))
     {
-      if (curdev < 0)
+      if (curdev == -1)
 	{
 	  msg ("%s: is unchanged; not dumped", p);
 	}
