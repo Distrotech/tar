@@ -549,9 +549,10 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
     {
       struct delayed_set_stat *data = delayed_set_stat_head;
       bool skip_this_one = 0;
-      check_for_renamed_directories |= data->after_symlinks;
       struct stat st;
       struct stat const *current_stat_info = 0;
+
+      check_for_renamed_directories |= data->after_symlinks;
 
       if (after_symlinks < data->after_symlinks
 	  || (data->file_name_len < file_name_len
