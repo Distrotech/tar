@@ -928,6 +928,97 @@ performance (because the software layers above the tape drive still
 honor the blocking), but not as dramatically as on tape drives that
 honor blocking.
 
+Wher reading an archive, @code{tar} can usually figure out the block
+size on itself.  When this is the case, and a non-standard block size
+was used when the archive was created, @code{tar} will print a message
+about a non-standard blocking factor, and then operate normally.  On
+some tape devices, however, @code{tar} cannot figure out the block size
+itself.  On most of those, you can specify a blocking factor (with
+@samp{--block-size) larger than the actual blocking factor, and then use
+the @samp{--read-full-blocks} option.  (If you specify a blocking factor
+with @samp{--block-size} and don't use the @samp{--read-full-blocks}
+option, then @code{tar} will not attempt to figure out the blocking size
+itself.)  On some devices, you must always specify the block size
+exactly with @samp{--block-size} when reading, because @code{tar} cannot
+figure it out.  In any case, use @samp{--list} before doing any
+extractions to see whether @code{tar} is reading the archive correctly.
+
+If you use a blocking factor larger than 20, older @code{tar} programs
+might not be able to read the archive, so we recommend this as a limit
+to use in practice.  GNU @code{tar}, however, will support arbitrarily
+large block sizes, limited only by the amount of virtual memory or the
+physical characteristics of the tape device.
+
+@section Using Multiple Tapes
+
+Often you might want to write a large archive, one larger than will fit
+on the actual tape you are using.  In such a case, you can run multiple
+@code{tar} commands, but this can be inconvenient, particularly if you
+are using options like @samp{--exclude} or dumping entire filesystems.
+Therefore, @code{tar} supports multiple tapes automatically.  
+
+Use @samp{--multi-volume} on the command line, and then @code{tar} will,
+when it reaches the end of the tape, prompt for another tape, and
+continue the archive.  Each tape will have an independent archive, and
+can be read without needing the other.  (As an exception to this, the
+file that @code{tar} was archiving when it ran out of tape will usually
+be split between the two archives; in this case you need to extract from
+the first archive, using @samp{--multi-volume}, and then put in the
+second tape when prompted, so @code{tar} can restore both halves of the
+file.)
+
+When prompting for a new tape, @code{tar} accepts any of the following
+responses:  
+
+@table @samp
+@item ?
+Request @code{tar} to explain possible responses
+@item q
+Request @code{tar} to exit immediately.
+@item n @var{file-name}
+Request @code{tar} to write the next volume on the file @var{file-name}.
+@item !
+Request @code{tar} to run a subshell.
+@item y
+Request @code{tar} to begin writing the next volume.
+@end table
+
+(You should only type @samp{y} after you have changed the tape;
+otherwise @code{tar} will write over the volume it just finished.)
+
+If you want more elaborate behavior than this, give @code{tar} the
+@samp{--info-script=@var{script-name}} option.  The file
+@var{script-name} is expected to be a program (or shell script) to be
+run instead of the normal prompting procedure.  When the program
+finishes, @code{tar} will immediately begin writing the next volume.
+(The behavior of the @samp{n} response to the normal tape-change prompt
+is not available if you use @samp{--info-script}.)
+
+The method @code{tar} uses to detect end of tape is not perfect, and
+fails on some operating systems or on some devices.  You can use the
+@samp{--tape-length=@var{size}} (or @samp{-L @var{size}}) option if
+@code{tar} can't detect the end of the tape itself.  The @var{size}
+argument should be the size of the tape. 
+
+The volume number used by @code{tar} in its tape-change prompt can be
+changed; if you give the @samp{--volno-file=@var{file-name}} option,
+then @var{file-name} should contain a decimal number.  That number will
+be used as the volume number of the first volume written.  When
+@code{tar} is finished, it will rewrite the file with the now--current
+volume number.   (This does not change the volume number written on a
+tape label; it @emph{only} affects the number used in the prompt.)
+
+If you want @code{tar} to cycle through a series of tape drives, then
+you can use the @samp{n} response to the tape-change prompt.  This is
+error prone, however, and doesn't work at all with @samp{--info-script}.
+Therefore, if you give @code{tar} multiple @samp{--file} options, then
+the specified files will be used, in sequence, as the successive volumes
+of the archive.  Only when the first one in the sequence needs to be
+used again will @code{tar} prompt for a tape change (or run the info
+script).
+
+
+
 
 
 
