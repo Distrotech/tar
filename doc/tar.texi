@@ -5338,8 +5338,9 @@ matches the shell wildcards (@var{pattern}) from being operated on
 (@var{pattern} can be a single file name or a more complex expression).
 For example, if you want to create an archive with all the contents of
 @file{/tmp} except the file @file{/tmp/foo}, you can use the command
-@samp{tar --create --file=arch.tar --exclude=foo}.  You may give
-multiple @samp{--exclude} options.
+@samp{tar --create --file=arch.tar --exclude=foo}.  A path name is
+excluded if any of its file name components matches @var{pattern}.
+You may give multiple @samp{--exclude} options.
 
 @table @kbd
 @item --exclude-from=@var{file}
@@ -5378,12 +5379,12 @@ pitfalls:
 
 @itemize @bullet
 @item
-The main operating mode of @code{tar} will always act on file names
-listed on the command line, no matter whether or not there is an
-exclusion which would otherwise affect them.  In the example above, if
+The main operating mode of @code{tar} does not act on a path name
+explicitly listed on the command line if one of its file name
+components is excluded.  In the example above, if
 you create an archive and exclude files that end with @samp{*.o}, but
-explicitly name the file @samp{catc.o} after all the options have been
-listed, @samp{catc.o} @emph{will} be included in the archive.
+explicitly name the file @samp{dir.o/foo} after all the options have been
+listed, @samp{dir.o/foo} will be excluded from the archive.
 
 @item
 You can sometimes confuse the meanings of @value{op-exclude} and
