@@ -74,6 +74,7 @@ strtoll.m4
 strtoul.m4
 strtoull.m4
 strtoumax.m4
+stpcpy.m4
 time_r.m4
 tm_gmtoff.m4
 uintmax_t.m4

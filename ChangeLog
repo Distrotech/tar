@@ -1,3 +1,20 @@
+2004-02-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* README: Updated
+	* configure.ac: Added stpcpy
+	* bootstrap: Likewise
+	* lib/Makefile.am: Likewise
+	* src/common.h (xheader_xhdr_name,xheader_ghdr_name): New
+	functions
+	* src/create.c (write_extended): Call xheader_xhdr_name
+	instead of using hardcoded "././@PaxHeader" name.
+	* src/tar.c: New option --pax-option (equivalent to -o option
+	of pax).
+	* src/xheader.c: Implement pax -o option. Fixed misleading
+	heading comment (introduced 2003-09-02). 
+	* src/incremen.c: Minor fixes
+	* m4/.cvsignore: Updated
+	
 2004-02-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/incremen.c: Removed accumulator stuff in favor of obstack.
