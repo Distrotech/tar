@@ -40,6 +40,8 @@ GENDOCS=gendocs.sh
 TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 
 # Make sure you set TEXINPUTS
+# Usual value is:
+# /usr/share/texmf/pdftex/plain/misc:/usr/share/texmf/pdftex/config
 manual:
 	TEXINPUTS=$(srcdir):$(top_srcdir)/config:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
