@@ -27,3 +27,8 @@ tar.ats
 tar.exs
 tar.kws
 tmp-tar.*
+tmp2-tar.*
+html_mono
+html_node
+html_chapter
+*.stamp

@@ -1,5 +1,13 @@
 2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* directory: New file. GNU directory entry for tar.
+	* doc/Makefile.am: Rewritten. Added rules for generating
+	documentation for the project's website.
+	* doc/.cvsignore: Updated
+	* doc/index.html.in: New file.
+	
+2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	
 	* configure.ac: Raised version number to 1.14
 	* NEWS: Updated.
 	* tests/after: Added copyleft statement
