@@ -1,5 +1,6 @@
 /* Convert string representation of a number into an intmax_t value.
-   Copyright 1999, 2001 Free Software Foundation, Inc.
+
+   Copyright (C) 1999, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,7 +66,7 @@ long strtol PARAMS ((char const *, char **, int));
 # ifndef HAVE_DECL_STRTOLL
 "this configure-time declaration test was not run"
 # endif
-# if !HAVE_DECL_STRTOLL && HAVE_UNSIGNED_LONG_LONG
+# if !HAVE_DECL_STRTOLL && HAVE_LONG_LONG
 long long strtoll PARAMS ((char const *, char **, int));
 # endif
 #endif
