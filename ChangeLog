@@ -1,3 +1,13 @@
+2003-11-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (read_and): Initialize current_stat_info
+	and extended_header at the start of the loop.
+	* src/names.c (all_names_found): Check if the argument
+	contains valid filename. Fixes coredump on `not_a_tar_file'
+	* src/xheader.c (atime_decoder,gid_decoder,ctime_decoder)
+	(mtime_decoder,size_decoder,uid_decoder): Use xstrtoumax.
+	Fixes `pax-big-10g' bug.
+	
 2003-11-12  Paul Eggert  <eggert@twinsun.com>
 
 	Fix some C compatibility bugs reported by Joerg Schilling.
