@@ -2,7 +2,8 @@
 
 	* src/tar.c: Removed extra precaution regarding
 	subcommand_option == CAT_SUBCOMMAND
-
+	* lib/Makefile.am: Updated
+	
 2003-10-02  Sergey Poznyakoff
 
 	* src/common.h (names_done): New function.
