@@ -421,6 +421,7 @@ read_header (bool raw_extended_headers)
 	      recent_long_name = 0;
 	      recent_long_name_blocks = 0;
 	    }
+	  assign_string (&orig_file_name, name);
 	  assign_string (&current_file_name, name);
 	  current_trailing_slash = strip_trailing_slashes (current_file_name);
 
@@ -903,7 +904,7 @@ print_header (off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
-  char *temp_name;
+  char *temp_name = orig_file_name ? orig_file_name : current_file_name;
   
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
@@ -924,18 +925,6 @@ print_header (off_t block_ordinal)
 	       STRINGIFY_BIGINT (block_ordinal, buf));
     }
 
-  if (current_trailing_slash)
-    {
-      temp_name = xmalloc (strlen (current_file_name) + 2);
-      strcpy (temp_name, current_file_name);
-      strcat (temp_name, "/");
-    }
-  else
-    {
-      temp_name = xmalloc (strlen (current_file_name) + 1);
-      strcpy (temp_name, current_file_name);
-    }
-  
   if (verbose_option <= 1)
     {
       /* Just the fax, mam.  */
@@ -1143,7 +1132,6 @@ print_header (off_t block_ordinal)
 	  break;
 	}
     }
-  free (temp_name);
   fflush (stdlis);
 }
 
