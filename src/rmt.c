@@ -1,7 +1,7 @@
 /* Remote connection server.
 
-   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free Software
-   Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003 Free
+   Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -32,7 +32,6 @@
    MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
 
 #include "system.h"
-#include <print-copyr.h>
 #include <localedir.h>
 #include <safe-read.h>
 #include <full-write.h>
@@ -130,7 +129,7 @@ get_string (char *string)
 }
 
 static void
-prepare_record_buffer (size_t size)
+prepare_input_buffer (int fd, size_t size)
 {
   if (size <= allocated_size)
     return;
@@ -151,14 +150,14 @@ prepare_record_buffer (size_t size)
   allocated_size = size;
 
 #ifdef SO_RCVBUF
-  while (size > 1024 &&
-	 (setsockopt (STDIN_FILENO, SOL_SOCKET, SO_RCVBUF,
-		      (char *) &size, sizeof size)
-	  < 0))
-    size -= 1024;
-#else
-  /* FIXME: I do not see any purpose to the following line...  Sigh! */
-  size = 1 + ((size - 1) % 1024);
+  if (0 <= fd)
+    {
+      int isize = size < INT_MAX ? size : INT_MAX;
+      while (setsockopt (fd, SOL_SOCKET, SO_RCVBUF,
+			 (char *) &isize, sizeof isize)
+	     && 1024 < isize)
+	isize >>= 1;
+    }
 #endif
 }
 
@@ -295,7 +294,7 @@ main (int argc, char *const *argv)
     case 'v':
       {
 	printf ("rmt (GNU %s) %s\n", PACKAGE, VERSION);
-	print_copyright ("2001 Free Software Foundation, Inc.");
+	printf (_("Copyright (C) %d Free Software Foundation, Inc.\n"), 2003);
 	puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
@@ -440,7 +439,7 @@ top:
 	size = atol (count_string);
 	DEBUG1 ("rmtd: W %s\n", count_string);
 
-	prepare_record_buffer (size);
+	prepare_input_buffer (STDIN_FILENO, size);
 	for (counter = 0; counter < size; counter += status)
 	  {
 	    status = safe_read (STDIN_FILENO, &record_buffer[counter],
@@ -468,7 +467,7 @@ top:
 	DEBUG1 ("rmtd: R %s\n", count_string);
 
 	size = atol (count_string);
-	prepare_record_buffer (size);
+	prepare_input_buffer (-1, size);
 	status = safe_read (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
