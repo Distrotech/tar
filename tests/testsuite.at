@@ -66,6 +66,7 @@ m4_include([options.at])
 m4_include([options02.at])
 
 m4_include([append.at])
+m4_include([append01.at])
 
 m4_include([delete01.at])
 m4_include([delete02.at])
