@@ -94,14 +94,16 @@ static int notumask = ~0;		/* Masks out bits user doesn't want */
 /* number of elts storable in the sparsearray */
 /*int	sp_array_size = 10;*/
 
-struct saved_info
+struct saved_dir_info
 {
   char *path;
   int mode;
   int atime;
   int mtime;
-  saved_info *next;
+  saved_dir_info *next;
 };
+  
+struct saved_dir_info *saved_dir_info_head;
 
 /*
  * Set up to extract files.
@@ -141,6 +143,7 @@ extract_archive()
 	register int i;
 /*	int sparse_ind = 0;*/
 	union record *exhdr;	
+	struct saved_dir_info *tmp;
 /*	int end_nulls; */
 	
 	saverec(&head);			/* Make sure it sticks around */
@@ -621,9 +624,16 @@ extract_archive()
 			  skipcrud+head->header.name);
 		}
 
-		goto set_filestat;
-		/* FIXME, Remember timestamps for after files created? */
-		/* FIXME, change mode after files created (if was R/O dir) */
+		if (f_modified)
+		  goto set_filestat;
+		tmp = malloc (sizeof (struct saved_dir_info));
+		tmp->path = malloc (strlen (skipcrud + head->header.name) + 1);
+		strcpy (tmp->path, skipcrud + head->header.name);
+		tmp->mode = hstat.st_mode;
+		tmp->atime = hstat.st_atime;
+		tmp->mtime = hstat.st_mtime;
+		tmp->next = saved_dir_info_head;
+		saved_dir_info_head = tmp;
 	case LF_VOLHDR:
 		if(f_verbose) {
 			printf("Reading %s\n",head->header.name);
@@ -753,4 +763,34 @@ extract_sparse_file(fd, sizeleft, totalsize, name)
 			write(fd, "\000", 1);
 	}*/
 	userec(datarec);
+}
+
+/* Set back the utime and mode for all the extracted directories. */
+void restore_saved_dir_info ()
+{
+  time_t acc_upd_times[2];
+  saved_dir_info *tmp;
+
+  while (saved_info_head != NULL)
+    {
+      /* fixme if f_gnudump should set ctime too, but how? */
+      if(f_gnudump)
+	acc_upd_times[0]=saved_info_head -> atime;
+      else acc_upd_times[0] = now; /* Accessed now */
+      acc_upd_times[1] = saved_info_head -> mtime; /* Mod'd */
+      if (utime(saved_info_head -> path, acc_upd_times) < 0) {
+	msg_perror("couldn't change access and modification times of %s",
+		   saved_info_head -> path);
+      }
+      if ((!f_keep) || (saved_info_head -> mode & (S_ISUID|S_ISGID|S_ISVTX)))
+	{
+	  if (chmod(saved_info_head -> path,
+		    notumask & saved_info_head -> mode) < 0) {
+	    msg_perror("cannot change mode of file %s to %ld",
+		       saved_info_head -> path,
+		       notumask & saved_info_head -> mode);
+	  }
+	}
+      saved_info_head = saved_info_head -> next;
+    }
 }
