@@ -586,6 +586,8 @@ void write_fatal_details (char const *, ssize_t, size_t)
 pid_t xfork (void);
 void xpipe (int[2]);
 
+void *page_aligned_alloc (void **, size_t);
+
 /* Module names.c.  */
 
 extern struct name *gnu_list_name;
