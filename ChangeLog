@@ -1,5 +1,15 @@
 2004-01-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* Makefile.am: Removed m4
+	* configure.ac: Require automake-1.8/autoconf-2.59. Removed
+	m4/Makefile.
+	* README-alpha: Updated
+	* bootstrap: Updated TP URL, improved help output. Default
+	to :ext:anoncvs and set CVS_RSH, unless already set.
+	* m4/Makefile.am: Removed
+	
+2004-01-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* bootstrap: Bugfix by Marco Gerards <metgerards@student.han.nl>:
 	Use $option instead of $1 so all options will be parsed.
 
