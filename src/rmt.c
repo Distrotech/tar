@@ -32,6 +32,7 @@
 #include "system.h"
 #include "safe-read.h"
 
+#include <getopt.h>
 #include <sys/socket.h>
 
 #ifndef EXIT_FAILURE
@@ -252,6 +253,34 @@ decode_oflag (char const *oflag_string)
   return symbolic_oflag;
 }
 
+static struct option const long_opts[] =
+{
+  {"help", no_argument, 0, 'h'},
+  {"version", no_argument, 0, 'v'},
+  {0, 0, 0, 0}
+};
+
+static void
+usage (int status)
+{
+  if (status != EXIT_SUCCESS)
+    fprintf (stderr, _("Try `%s --help' for more information.\n"),
+	     program_name);
+  else
+    {
+      printf (_("\
+Usage: %s [OPTION]\n\
+Manipulate a tape drive, accepting commands from a remote process.\n\
+\n\
+  --version  Output version info.\n\
+  --help  Output this help.\n"),
+	      program_name);
+      fputs (_("\nReport bugs to <bug-tar@gnu.org>.\n"), stdout);
+    }
+
+  exit (status);
+}
+
 /*---.
 | ?  |
 `---*/
@@ -271,12 +300,32 @@ main (int argc, char *const *argv)
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
-  /* FIXME: Implement --help and --version as for any other GNU program.  */
-
-  argc--, argv++;
-  if (argc > 0)
+  switch (getopt_long (argc, argv, "", long_opts, NULL))
     {
-      debug_file = fopen (*argv, "w");
+    default:
+      usage (EXIT_FAILURE);
+      
+    case 'h':
+      usage (EXIT_SUCCESS);
+      
+    case 'v':
+      printf ("rmt (GNU %s) %s\n%s\n%s\n", PACKAGE, VERSION,
+	      "Copyright 1999 Free Software Foundation, Inc.",
+	      _("\
+This program comes with NO WARRANTY, to the extent permitted by law.\n\
+You may redistribute it under the terms of the GNU General Public License;\n\
+see the file named COPYING for details."));
+      return EXIT_SUCCESS;
+
+    case -1:
+      break;
+    }
+
+  if (optind < argc)
+    {
+      if (optind != argc - 1)
+	usage (EXIT_FAILURE);
+      debug_file = fopen (argv[optind], "w");
       if (debug_file == 0)
 	{
 	  report_numbered_error (errno);
@@ -289,7 +338,7 @@ top:
   errno = 0;			/* FIXME: errno should be read-only */
   status = 0;
   if (safe_read (STDIN_FILENO, &command, 1) != 1)
-    exit (EXIT_SUCCESS);
+    return EXIT_SUCCESS;
 
   switch (command)
     {
