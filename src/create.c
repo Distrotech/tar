@@ -33,6 +33,8 @@ struct utimbuf
   };
 #endif
 
+#include <quotearg.h>
+
 #include "common.h"
 
 #ifndef MSDOS
@@ -422,7 +424,7 @@ start_header (const char *name, struct stat *st)
 	  if (!warned_once)
 	    {
 	      warned_once = 1;
-	      WARN ((0, 0, _("Removing `%.*s' prefix from archive names"),
+	      WARN ((0, 0, _("Removing `%.*s' prefix from member names"),
 		     (int) prefix_len, name));
 	    }
 	  name += prefix_len;
@@ -434,10 +436,19 @@ start_header (const char *name, struct stat *st)
 	  if (!warned_once)
 	    {
 	      warned_once = 1;
-	      WARN ((0, 0, _("Removing leading `/' from archive names")));
+	      WARN ((0, 0, _("Removing leading `/' from member names")));
 	    }
 	  name++;
 	}
+
+      {
+	static int warned_once;
+	if (! warned_once && contains_dot_dot (name))
+	  {
+	    warned_once = 1;
+	    WARN ((0, 0, _("Member names contain `..'")));
+	  }
+      }
     }
 
   if (sizeof header->header.name <= strlen (name))
@@ -767,17 +778,18 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 
 	  ERROR ((0, 0, _("Wrote %s of %s bytes to file %s"),
 		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf1),
-		  STRINGIFY_BIGINT (fullsize, buf2),
-		  name));
+		  STRINGIFY_BIGINT (fullsize, buf2), quote (name)));
 	  break;
 	}
 
       if (lseek (file, sparsearray[sparse_index++].offset, SEEK_SET) < 0)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
-	  ERROR ((0, errno, _("lseek error at byte %s in file %s"),
-		  STRINGIFY_BIGINT (sparsearray[sparse_index - 1].offset, buf),
-		  name));
+	  int e = errno;
+	  ERROR ((0, e, _("lseek error at byte %s in file %s"),
+		  STRINGIFY_BIGINT (sparsearray[sparse_index - 1].offset,
+				    buf),
+		  quote (name)));
 	  break;
 	}
 
@@ -804,10 +816,11 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 	  if (count < 0)
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
-	      ERROR ((0, errno,
+	      int e = errno;
+	      ERROR ((0, e,
 		      _("Read error at byte %s, reading %lu bytes, in file %s"),
 		      STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
-		      (unsigned long) bufsize, name));
+		      (unsigned long) bufsize, quote (name)));
 	      return 1;
 	    }
 	  bufsize -= count;
@@ -828,11 +841,11 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
       if (count < 0)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
-	  
-	  ERROR ((0, errno,
+	  int e = errno;
+	  ERROR ((0, e,
 		  _("Read error at byte %s, reading %lu bytes, in file %s"),
 		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
-		  (unsigned long) bufsize, name));
+		  (unsigned long) bufsize, quote (name)));
 	  return 1;
 	}
 #if 0
@@ -843,8 +856,7 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 	  if (count != bufsize)
 	    {
 	      ERROR ((0, 0,
-		      _("File %s shrunk, padding with zeros"),
-		      name));
+		      _("File %s shrunk, padding with zeros"), quote (name)));
 	      return 1;
 	    }
 	  start = find_next_block ();
@@ -950,9 +962,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
   if (deref_stat (dereference_option, p, &current_stat) != 0)
     {
-      WARN ((0, errno, _("Cannot add file %s"), p));
-      if (!ignore_failed_read_option)
-	exit_status = TAREXIT_FAILURE;
+      if (ignore_failed_read_option)
+	stat_error (p);
+      else
+	stat_warn (p);
       return;
     }
 
@@ -982,7 +995,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
       && (!after_date_option || current_stat.st_ctime < newer_ctime_option))
     {
       if (0 < top_level)
-	WARN ((0, 0, _("%s: is unchanged; not dumped"), p));
+	WARN ((0, 0, _("%s is unchanged; not dumped"), quote (p)));
       /* FIXME: recheck this return.  */
       return;
     }
@@ -992,7 +1005,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
   if (ar_dev && current_stat.st_dev == ar_dev && current_stat.st_ino == ar_ino)
     {
-      WARN ((0, 0, _("%s is the archive; not dumped"), p));
+      WARN ((0, 0, _("%s is the archive; not dumped"), quote (p)));
       return;
     }
 #endif
@@ -1006,18 +1019,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
       size_t len;
       dev_t our_device = current_stat.st_dev;
 
-      /* If this tar program is installed suid root, like for Amanda, the
-	 access might look like denied, while it is not really.
+      errno = 0;
 
-	 FIXME: I have the feeling this test is done too early.  Couldn't it
-	 just be bundled in later actions?  I guess that the proper support
-	 of --ignore-failed-read is the key of the current writing.  */
-
-      if (access (p, R_OK) == -1 && geteuid () != 0)
+      directory = opendir (p);
+      if (! directory)
 	{
-	  WARN ((0, errno, _("Cannot add directory %s"), p));
-	  if (!ignore_failed_read_option)
-	    exit_status = TAREXIT_FAILURE;
+	  if (ignore_failed_read_option)
+	    opendir_warn (p);
+	  else
+	    opendir_error (p);
 	  return;
 	}
 
@@ -1134,24 +1144,16 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  && parent_device != current_stat.st_dev)
 	{
 	  if (verbose_option)
-	    WARN ((0, 0, _("%s: On a different filesystem; not dumped"), p));
+	    WARN ((0, 0, _("%s is on a different filesystem; not dumped"),
+		   quote (p)));
 	  return;
 	}
 
       /* Now output all the files in the directory.  */
 
-      errno = 0;
-
-      directory = opendir (p);
-      if (!directory)
-	{
-	  ERROR ((0, errno, _("Cannot open directory %s"), p));
-	  return;
-	}
-
       /* FIXME: Should speed this up by cd-ing into the dir.  */
 
-      while (entry = readdir (directory), entry)
+      while (errno = 0, (entry = readdir (directory)))
 	{
 	  /* Skip `.', `..', and excluded file names.  */
 
@@ -1168,7 +1170,16 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    dump_file (namebuf, 0, our_device);
 	}
 
-      closedir (directory);
+      if (errno)
+	{
+	  if (ignore_failed_read_option)
+	    readdir_warn (p);
+	  else
+	    readdir_error (p);
+	}
+
+      if (closedir (directory) != 0)
+	closedir_error (p);
       free (namebuf);
       if (atime_preserve_option)
 	utime (p, &restore_times);
@@ -1229,7 +1240,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 		if (remove_files_option)
 		  if (unlink (p) == -1)
-		    ERROR ((0, errno, _("Cannot remove %s"), p));
+		    unlink_error (p);
 
 		/* We dumped it.  */
 		return;
@@ -1364,11 +1375,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      if (f < 0)
 		{
 		  if (! top_level && errno == ENOENT)
-		    WARN ((0, 0, _("%s: file removed before we read it"), p));
+		    WARN ((0, 0, _("File %s removed before we read it"),
+			   quote (p)));
+		  else if (ignore_failed_read_option)
+		    open_warn (p);
 		  else
-		    WARN ((0, errno, _("Cannot add file %s"), p));
-		  if (!ignore_failed_read_option)
-		    exit_status = TAREXIT_FAILURE;
+		    open_error (p);
 		  return;
 		}
 	    }
@@ -1416,7 +1428,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  if (save_typeflag == GNUTYPE_SPARSE)
 	    {
 	      if (f < 0
-		  || finish_sparse_file (f, &sizeleft, current_stat.st_size, p))
+		  || finish_sparse_file (f, &sizeleft,
+					 current_stat.st_size, p))
 		goto padit;
 	    }
 	  else
@@ -1448,11 +1461,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		if (count < 0)
 		  {
 		    char buf[UINTMAX_STRSIZE_BOUND];
-		    ERROR ((0, errno,
+		    int e = errno;
+		    ERROR ((0, e,
 			    _("Read error at byte %s, reading %lu bytes, in file %s"),
 			    STRINGIFY_BIGINT (current_stat.st_size - sizeleft,
 					      buf),
-			    (unsigned long) bufsize, p));
+			    (unsigned long) bufsize, quote (p)));
 		    goto padit;
 		  }
 		sizeleft -= count;
@@ -1468,7 +1482,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		    char buf[UINTMAX_STRSIZE_BOUND];
 		    ERROR ((0, 0,
 			    _("File %s shrunk by %s bytes, padding with zeros"),
-			    p, STRINGIFY_BIGINT (sizeleft, buf)));
+			    quote (p), STRINGIFY_BIGINT (sizeleft, buf)));
 		    goto padit;		/* short read */
 		  }
 	      }
@@ -1480,18 +1494,18 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    {
 	      struct stat final_stat;
 	      if (fstat (f, &final_stat) != 0)
-		ERROR ((0, errno, "%s: fstat", p));
+		stat_error (p);
 	      else if (final_stat.st_ctime != original_ctime)
-		ERROR ((0, 0, _("%s: file changed as we read it"), p));
+		ERROR ((0, 0, _("File %s changed as we read it"), quote (p)));
 	      if (close (f) != 0)
-		ERROR ((0, errno, _("%s: close"), p));
+		close_error (p);
 	      if (atime_preserve_option)
 		utime (p, &restore_times);
 	    }
 	  if (remove_files_option)
 	    {
 	      if (unlink (p) == -1)
-		ERROR ((0, errno, _("Cannot remove %s"), p));
+		unlink_error (p);
 	    }
 	  return;
 
@@ -1526,9 +1540,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  size = readlink (p, buffer, PATH_MAX + 1);
 	  if (size < 0)
 	    {
-	      WARN ((0, errno, _("Cannot add file %s"), p));
-	      if (!ignore_failed_read_option)
-		exit_status = TAREXIT_FAILURE;
+	      if (ignore_failed_read_option)
+		readlink_warn (p);
+	      else
+		readlink_error (p);
 	      return;
 	    }
 	  buffer[size] = '\0';
@@ -1545,7 +1560,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  if (remove_files_option)
 	    {
 	      if (unlink (p) == -1)
-		ERROR ((0, errno, _("Cannot remove %s"), p));
+		unlink_error (p);
 	    }
 	  return;
 	}
@@ -1554,16 +1569,18 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	type = CHRTYPE;
       else if (S_ISBLK (current_stat.st_mode))
 	type = BLKTYPE;
-      else if (S_ISFIFO (current_stat.st_mode)
-	       || S_ISSOCK (current_stat.st_mode))
+      else if (S_ISFIFO (current_stat.st_mode))
 	type = FIFOTYPE;
-#ifdef S_ISDOOR
-      else if (S_ISDOOR (current_stat.st_mode))
+      else if (S_ISSOCK (current_stat.st_mode))
 	{
-	  WARN ((0, 0, _("%s: door ignored"), p));
+	  WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
 	  return;
 	}
-#endif
+      else if (S_ISDOOR (current_stat.st_mode))
+	{
+	  WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
+	  return;
+	}
       else
 	goto unknown;
     }
@@ -1585,10 +1602,11 @@ dump_file (char *p, int top_level, dev_t parent_device)
   if (remove_files_option)
     {
       if (unlink (p) == -1)
-	ERROR ((0, errno, _("Cannot remove %s"), p));
+	unlink_error (p);
     }
   return;
 
 unknown:
-  ERROR ((0, 0, _("%s: Unknown file type; file ignored"), p));
+  ERROR ((0, 0, _("%s: Unknown file type; file ignored"),
+	  quotearg_colon (p)));
 }
