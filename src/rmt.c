@@ -252,7 +252,7 @@ checkbuf(record, size)
 	maxrecsize = size;
 #ifdef SO_RCVBUF
 	while (size > 1024 &&
-	       setsockopt(0, SOL_SOCKET, SO_RCVBUF, &size, sizeof (size)) < 0)
+	       setsockopt(0, SOL_SOCKET, SO_RCVBUF, (char *)&size, sizeof (size)) < 0)
 		size -= 1024;
 #else
 	size= 1+((size-1)%1024);

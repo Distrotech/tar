@@ -62,7 +62,7 @@ extern char *__rmt_path;
 extern char *index();
 #endif
 
-#define _remdev(path)	(!f_force_local && __rmt_path=index(path, ':'))
+#define _remdev(path)	(!f_force_local && (__rmt_path=index(path, ':')))
 #define _isrmt(fd)		((fd) >= __REM_BIAS)
 
 #define rmtopen(path,oflag,mode) (_remdev(path) ? __rmt_open(path, oflag, mode, __REM_BIAS) : open(path, oflag, mode))
