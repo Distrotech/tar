@@ -597,6 +597,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
       sparse_fixup_header (stat_info);
       stat_info->is_sparse = true;
     }
+  else
+    stat_info->is_sparse = false;
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
