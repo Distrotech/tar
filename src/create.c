@@ -939,8 +939,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
   char type;
   union block *exhdr;
   char save_typeflag;
+  time_t original_ctime;
   struct utimbuf restore_times;
-  off_t restore_size;
 
   /* FIXME: `header' and `upperbound' might be used uninitialized in this
      function.  Reported by Bruno Haible.  */
@@ -956,9 +956,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
       return;
     }
 
+  original_ctime = current_stat.st_ctime;
   restore_times.actime = current_stat.st_atime;
   restore_times.modtime = current_stat.st_mtime;
-  restore_size = current_stat.st_size;
 
 #ifdef S_ISHIDDEN
   if (S_ISHIDDEN (current_stat.st_mode))
@@ -1363,16 +1363,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      f = open (p, O_RDONLY | O_BINARY);
 	      if (f < 0)
 		{
-		  /* Do not diagnose a file that the parent directory
-		     said should be there, but is absent.  It was
-		     probably removed between then and now.  */
-		  if (top_level || errno != ENOENT)
-		    {
-		      WARN ((0, errno, _("Cannot add file %s"), p));
-		      if (! ignore_failed_read_option)
-			exit_status = TAREXIT_FAILURE;
-		    }
-
+		  if (! top_level && errno == ENOENT)
+		    WARN ((0, 0, _("%s: file removed before we read it"), p));
+		  else
+		    WARN ((0, errno, _("Cannot add file %s"), p));
+		  if (!ignore_failed_read_option)
+		    exit_status = TAREXIT_FAILURE;
 		  return;
 		}
 	    }
@@ -1485,8 +1481,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      struct stat final_stat;
 	      if (fstat (f, &final_stat) != 0)
 		ERROR ((0, errno, "%s: fstat", p));
-	      else if (final_stat.st_mtime != restore_times.modtime
-		       || final_stat.st_size != restore_size)
+	      else if (final_stat.st_ctime != original_ctime)
 		ERROR ((0, 0, _("%s: file changed as we read it"), p));
 	      if (close (f) != 0)
 		ERROR ((0, errno, _("%s: close"), p));
