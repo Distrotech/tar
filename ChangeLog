@@ -1,3 +1,17 @@
+2005-01-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Create m4/paxutils.m4
+	* configure.ac: Call tar_PAXUTILS
+	* tests/options02.at: Test that tar correctly handles non-option
+	arguments interspersed with options.
+	* tests/Makefile.am: Add options02.at
+	* tests/testsuite.at: Likewise
+	* tests/listed02.at: Do not create useless directory
+
+2005-01-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+	* src/tar.c (parse_opt): Bugfix: Use ARGP_KEY_ARG. Thanks
+	Mike Frysinger <vapier@gentoo.org> for reporting.
+	
 2005-01-04  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* lib/Makefile.tmpl (localedir.h): Omit needless quotes and a
