@@ -462,7 +462,9 @@ prepare_to_extract (char const *file_name)
   switch (old_files_option)
     {
     case UNLINK_FIRST_OLD_FILES:
-      if (!remove_any_file (file_name, recursive_unlink_option)
+      if (!remove_any_file (file_name, 
+                            recursive_unlink_option ? RECURSIVE_REMOVE_OPTION 
+                                                      : ORDINARY_REMOVE_OPTION)
 	  && errno && errno != ENOENT)
 	{
 	  unlink_error (file_name);
@@ -519,7 +521,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	case NO_OVERWRITE_DIR_OLD_FILES:
 	case OVERWRITE_OLD_FILES:
 	  {
-	    int r = remove_any_file (file_name, 0);
+	    int r = remove_any_file (file_name, ORDINARY_REMOVE_OPTION);
 	    errno = EEXIST;
 	    return r;
 	  }
