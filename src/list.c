@@ -268,14 +268,14 @@ read_header (bool raw_extended_headers)
   uintmax_t parsed_sum;
   char *p;
   union block *header;
-  union block **longp;
+  union block *header_copy;
   char *bp;
   union block *data_block;
   size_t size, written;
-  static union block *next_long_name;
-  static union block *next_long_link;
-  static size_t next_long_name_blocks;
-  static size_t next_long_link_blocks;
+  union block *next_long_name = 0;
+  union block *next_long_link = 0;
+  size_t next_long_name_blocks;
+  size_t next_long_link_blocks;
 
   while (1)
     {
@@ -338,23 +338,26 @@ read_header (bool raw_extended_headers)
 		xalloc_die ();
 	    }
 
+	  header_copy = xmalloc (size + 1);
+
 	  if (header->header.typeflag == GNUTYPE_LONGNAME)
 	    {
-	      longp = &next_long_name;
+	      if (next_long_name)
+		free (next_long_name);
+	      next_long_name = header_copy;
 	      next_long_name_blocks = size / BLOCKSIZE;
 	    }
 	  else
 	    {
-	      longp = &next_long_link;
+	      if (next_long_link)
+		free (next_long_link);
+	      next_long_link = header_copy;
 	      next_long_link_blocks = size / BLOCKSIZE;
 	    }
 
 	  set_next_block_after (header);
-	  if (*longp)
-	    free (*longp);
-	  *longp = xmalloc (size + 1);
-	  **longp = *header;
-	  bp = (*longp)->buffer + BLOCKSIZE;
+	  *header_copy = *header;
+	  bp = header_copy->buffer + BLOCKSIZE;
 
 	  for (size -= BLOCKSIZE; size > 0; size -= written)
 	    {
@@ -385,6 +388,9 @@ read_header (bool raw_extended_headers)
 	  struct posix_header const *h = &current_header->header;
 	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
+	  if (recent_long_name)
+	    free (recent_long_name);
+
 	  if (next_long_name)
 	    {
 	      name = next_long_name->buffer + BLOCKSIZE;
@@ -412,10 +418,14 @@ read_header (bool raw_extended_headers)
 	      memcpy (np, h->name, sizeof h->name);
 	      np[sizeof h->name] = '\0';
 	      name = namebuf;
+	      recent_long_name = 0;
 	      recent_long_name_blocks = 0;
 	    }
 	  assign_string (&current_file_name, name);
-	  
+
+	  if (recent_long_link)
+	    free (recent_long_link);
+
 	  if (next_long_link)
 	    {
 	      name = next_long_link->buffer + BLOCKSIZE;
@@ -427,6 +437,7 @@ read_header (bool raw_extended_headers)
 	      memcpy (namebuf, h->linkname, sizeof h->linkname);
 	      namebuf[sizeof h->linkname] = '\0';
 	      name = namebuf;
+	      recent_long_link = 0;
 	      recent_long_link_blocks = 0;
 	    }
 	  assign_string (&current_link_name, name);
