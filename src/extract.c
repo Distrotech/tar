@@ -281,7 +281,8 @@ delay_set_stat (char const *file_name, struct stat const *stat_info,
 {
   size_t file_name_len = strlen (file_name);
   struct delayed_set_stat *data =
-    xmalloc (offsetof (struct delayed_set_stat, file_name) + file_name_len);
+    xmalloc (offsetof (struct delayed_set_stat, file_name)
+	     + file_name_len + 1);
   data->file_name_len = file_name_len;
   strcpy (data->file_name, file_name);
   data->invert_permissions = invert_permissions;
@@ -899,11 +900,9 @@ extract_archive (void)
 	    close_error (CURRENT_FILE_NAME);
 	  else
 	    {
-	      size_t filelen = strlen (CURRENT_FILE_NAME);
-	      size_t linklen = strlen (current_link_name);
 	      struct delayed_symlink *p =
 		xmalloc (offsetof (struct delayed_symlink, target)
-			 + linklen + 1);
+			 + strlen (current_link_name) + 1);
 	      p->next = delayed_symlink_head;
 	      delayed_symlink_head = p;
 	      p->dev = st.st_dev;
@@ -912,10 +911,10 @@ extract_archive (void)
 	      p->uid = current_stat.st_uid;
 	      p->gid = current_stat.st_gid;
 	      p->sources = xmalloc (offsetof (struct string_list, string)
-				    + filelen + 1);
+				    + strlen (CURRENT_FILE_NAME) + 1);
 	      p->sources->next = 0;
-	      memcpy (p->sources->string, CURRENT_FILE_NAME, filelen + 1);
-	      memcpy (p->target, current_link_name, linklen + 1);
+	      strcpy (p->sources->string, CURRENT_FILE_NAME);
+	      strcpy (p->target, current_link_name);
 	      status = 0;
 	    }
 	}
