@@ -1,3 +1,15 @@
+2004-08-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+
+	* src/buffer.c (flush_write): Limit filenames
+	of the members that straddle multivolume archive
+	boundary to 100 characters.
+	(flush_read): Use strncmp when comparing multivolume member
+	names.
+	* tests/multiv03.sh: New file
+	* tests/Makefile.am: Added multiv03.sh
+
 2004-08-09  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (read_and): Call decode_header before
