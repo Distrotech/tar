@@ -20,6 +20,7 @@
 #undef USE_OLD_CTIME
 
 #include "system.h"
+#include <quotearg.h>
 
 #include <ctype.h>
 #include <time.h>
@@ -37,6 +38,9 @@
 union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
+
+static uintmax_t from_oct PARAMS ((const char *, size_t, const char *, uintmax_t));
+
 
 /*-----------------------------------.
 | Main loop for reading an archive.  |
@@ -319,6 +323,7 @@ read_header (void)
   long unsigned_sum;		/* the POSIX one :-) */
   long signed_sum;		/* the Sun one :-( */
   long recorded_sum;
+  uintmax_t parsed_sum;
   char *p;
   union block *header;
   char **longp;
@@ -334,8 +339,13 @@ read_header (void)
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      recorded_sum = UINTMAX_FROM_OCT (header->header.chksum);
+      parsed_sum = from_oct (header->header.chksum,
+			     sizeof header->header.chksum,
+			     (char *) 0, TYPE_MAXIMUM (long));
+      if (parsed_sum == (uintmax_t) -1)
+	return HEADER_FAILURE;
 
+      recorded_sum = parsed_sum;
       unsigned_sum = 0;
       signed_sum = 0;
       p = header->buffer;
@@ -548,8 +558,9 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
     {
       if (digs == 0)
 	{
-	  ERROR ((0, 0, _("Blanks in header where octal %s value expected"),
-		  type));
+	  if (type)
+	    ERROR ((0, 0, _("Blanks in header where octal %s value expected"),
+		    type));
 	  return -1;
 	}
       if (!ISSPACE (*where))
@@ -571,8 +582,23 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 
   if (digs != 0 && *where && !ISSPACE (*where))
     {
-      ERROR ((0, 0, _("Header contains `%.*s' where octal %s value expected"),
-	      (int) digs0, where0, type));
+      if (type)
+	{
+	  char buf[1000]; /* Big enough to represent any header.  */
+	  static struct quoting_options *o;
+
+	  if (!o)
+	    {
+	      o = clone_quoting_options ((struct quoting_options *) 0);
+	      set_quoting_style (o, escape_quoting_style);
+	    }
+
+	  quotearg_buffer (buf, sizeof buf, where0, digs0, o);
+	  ERROR ((0, 0,
+		  _("Header contains \"%.*s\" where octal %s value expected"),
+		  (int) sizeof buf, buf, type));
+	}
+
       return -1;
     }
 
@@ -580,8 +606,9 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
     return value;
 
  out_of_range:
-  ERROR ((0, 0, _("Octal value `%.*s' is out of range for %s"),
-	  (int) digs0, where0, type));
+  if (type)
+    ERROR ((0, 0, _("Octal value `%.*s' is out of range for %s"),
+	    (int) digs0, where0, type));
   return -1;
 }
 gid_t
