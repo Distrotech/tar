@@ -1,3 +1,14 @@
+2004-11-27  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* doc/getdate.texi: Remove, since bootstrap gets it from gnulib now.
+	* .cvsignore: Add rmt, rmt/*, rmt/*/*.
+	* lib/.cvsignore: Add allocsa.c, allocsa.h, allocsa.valgrind,
+	charset.alias, config.charset, getcwd.c, getcwd.h, localcharset.c,
+	localcharset.h, ref-add.sed, ref-add.sin, ref-del.sed,
+	ref-del.sin, setenv.c, setenv.h, unsetenv.c.
+	* m4/.cvsignore: Add allocsa.m4, eealloc.m4, getcwd-path-max.m4,
+	localcharset.m4, realloc.m4, setenv.m4.
+
 2004-11-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Raised version number to 1.14.91
@@ -12,7 +23,7 @@
 	* src/list.c (tar_checksum): New function
 	(read_header): Use tar_checksum().
 	* src/common.h (tar_checksum): New function
-	
+
 	* tests/star/README: Updated
 	* NEWS: Updated
 	* PORTS: Updated
@@ -37,7 +48,7 @@
 
 	* NEWS: Updated
 	* TODO: Minor fix
-	
+
 2004-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* THANKS: Added Bryan Ford
@@ -50,7 +61,7 @@
 	cache directories automatically on archive creation.
 	Cache directories are directories containing a
 	standardized tag file, as specified at:
-		http://www.brynosaurus.com/cachedir/spec.html	
+		http://www.brynosaurus.com/cachedir/spec.html
 	* src/common.h: New variable exclude_caches_option.
 	* src/create.c: New function check_cache_directory(),
 	called from dump_dir0() if exclude_caches_option is set,
@@ -72,11 +83,11 @@
 	* src/misc.c: Likewise.
 	* src/tar.c (parse_opt): Emit warning if -l option is used.
 	(show_default_settings): REMOTE_SHELL may be undefined
-	
+
 2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Test suite rewritten in autotest.
-	
+
 	* configure.ac: Updated for autotest
 	* src/tar.c (argp_program_version): Modified.
 	* tests/Makefile.am: Rewritten for autotest.
@@ -166,12 +177,12 @@
 	(paxutils) genfile.c
 	* tests/Makefile.am: Removed mksparse
 	* tests/sparse01.sh: Use genfile instead of mksparse
-	
+
 2004-09-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Started merging with cpio into paxutils. Sources before
 	this point are tagged alpha-1_14_90
-	
+
 	* Makefile.am: Updated for use with paxutils
 	* README-alpha: Likewise
 	* bootstrap: Likewise
@@ -196,12 +207,12 @@
 	* src/update.c: Likewise
 	* src/utf8.c: Likewise
 	* src/xheader.c: Likewise
-	
+
 	* src/system.h: Removed
 	* src/rmt.c: Removed
 	* src/rmt.h: Removed
 	* src/rtapelib.c: Removed
-	
+
 2004-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* tests/listed02.sh: Do not depend on any particular ordering
@@ -250,7 +261,7 @@
 	<87n07kyzhi.fsf@rover.gag.com>, Sun, 15 Feb 2004 11:22:17 -0700)
 
 	* src/names.c (removed_prefixes_p): New function.
-	
+
 	* src/buffer.c: When computing write rate do not take
 	into account the time needed to verify the archive(s).
 	The bug reported by John L. Males <jlmales@yahoo.com>
@@ -261,17 +272,17 @@
 	* src/list.c (decode_header): Fixed initialization
 	of stat_info->is_sparse
 	* src/tar.c (main): Call set_start_time().
-	
+
 	* src/misc.c (unquote_string): Unquote '\a' and '\v'.
 	Reported by Helmut Waitzmann <helmut.waitzmann@web.de>.
 
 	* NEWS: Updated
 	* THANKS: Updated
-	
+
 2004-08-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c: Fix copy-n-paste errors in the license
-	
+
 2004-08-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* scripts/backup.in: Renamed LIBPATH to LIBDIR.
@@ -285,7 +296,7 @@
 	(restore_fs,restore_files): Fixed use of --listed option.
 	* doc/tar.texi: Updated
 	* NEWS: Updated
-	
+
 2004-08-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c (find_argp_option): Fixed typo
@@ -298,7 +309,7 @@
 	Set LC_ALL=C so that file names sort consistently.
 	Prefer the gnulib copies of gettext.m4, glibc21.m4,
 	lib-ld.m4, lib-prefix.m4, po.m4 too.
-	
+
 	* patches/getopt.diff: Remove; gnulib now works unpatched.
 	* configure.ac (_getopt_long_only_r): Remove check.
 	gl_ARGP now does this for us.
@@ -369,7 +380,7 @@
 	Merge from gnulib.
 
 	* patches/argp.diff: Remove; no longer needed.
-	
+
 	* lib/.cvsignore: Add stat-macros.h.
 	Remove addext.c, malloc.c, realloc.c.
 

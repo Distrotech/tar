@@ -5,6 +5,9 @@ Makefile.in
 alloca.c
 alloca.h
 alloca_.h
+allocsa.c
+allocsa.h
+allocsa.valgrind
 argmatch.c
 argmatch.h
 argp-ba.c
@@ -22,7 +25,9 @@ argp.h
 backupfile.c
 backupfile.h
 basename.c
+charset.alias
 chown.c
+config.charset
 dirname.c
 dirname.h
 error.c
@@ -41,6 +46,8 @@ fnmatch_loop.c
 ftruncate.c
 full-write.c
 full-write.h
+getcwd.c
+getcwd.h
 getdate.c
 getdate.h
 getdate.y
@@ -63,6 +70,9 @@ human.c
 human.h
 lchown.c
 lchown.h
+localcharset.c
+localcharset.h
+localedir.h
 mempcpy.c
 mempcpy.h
 memset.c
@@ -76,7 +86,13 @@ quote.c
 quote.h
 quotearg.c
 quotearg.h
+ref-add.sed
+ref-add.sin
+ref-del.sed
+ref-del.sin
 rmdir.c
+rmt.h
+rtapelib.c
 safe-read.c
 safe-read.h
 safe-write.c
@@ -85,6 +101,8 @@ save-cwd.c
 save-cwd.h
 savedir.c
 savedir.h
+setenv.c
+setenv.h
 stat-macros.h
 stdbool.h
 stdbool_.h
@@ -108,10 +126,12 @@ strtoumax.c
 sysexit.h
 sysexit_.h
 sysexits.h
+system.h
 time_r.c
 time_r.h
 timespec.h
 unlocked-io.h
+unsetenv.c
 utime.c
 xalloc-die.c
 xalloc.h
@@ -123,7 +143,3 @@ xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
-localedir.h
-rmt.h
-rtapelib.c
-system.h
