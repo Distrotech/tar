@@ -1,3 +1,13 @@
+2004-09-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* TODO: Updated
+	* lib/Makefile.tmpl: Added 'rtapelib.o: localedir.h' dependency
+	* src/common.h: Comment WANT_DIRECTORY_REMOVE_OPTION.
+	* src/extract.c: Normalized use of remove_any_file().
+	* src/misc.c: Likewise.
+	* src/tar.c (parse_opt): Emit warning if -l option is used.
+	(show_default_settings): REMOTE_SHELL may be undefined
+	
 2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Test suite rewritten in autotest.

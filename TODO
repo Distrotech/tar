@@ -18,9 +18,10 @@ so that the GNU extensions (--incremental, --label and
 	 UNIX98 tar warns if all links cannot be resolved.
 	   (GNU tar --check-links option)
 
-  Perhaps we could announce a phase-in period where "l" changes in semantics.
-  In the meanwhile we could make the "l" semantics to be determined by the
-  value of POSIXLY_CORRECT variable.
+  Currently tar prints a warning when this option is used. Somewhere
+  in the future its semantics will be changed to that of --check-links.
+  In the meanwhile we should announce a phase-in period where "l"
+  changes in semantics. 	   
 
 * Interoperate better with Joerg Schilling's star implementation.
 
@@ -52,7 +53,7 @@ so that the GNU extensions (--incremental, --label and
   
 * Copyright notice
 
-  Copyright (C) 2003 Free Software Foundation, Inc.
+  Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
   This file is part of GNU tar.
 
