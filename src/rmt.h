@@ -19,9 +19,9 @@ extern char *rmt_path__;
 
 int rmt_open__ PARAMS ((const char *, int, int, const char *));
 int rmt_close__ PARAMS ((int));
-int rmt_read__ PARAMS ((int, char *, unsigned int));
-int rmt_write__ PARAMS ((int, char *, unsigned int));
-long rmt_lseek__ PARAMS ((int, off_t, int));
+ssize_t rmt_read__ PARAMS ((int, char *, size_t));
+ssize_t rmt_write__ PARAMS ((int, char *, size_t));
+off_t rmt_lseek__ PARAMS ((int, off_t, int));
 int rmt_ioctl__ PARAMS ((int, int, char *));
 
 /* A filename is remote if it contains a colon not preceeded by a slash,
