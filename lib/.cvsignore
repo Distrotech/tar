@@ -21,6 +21,7 @@ exclude.h
 exit.h
 exitfail.c
 exitfail.h
+fchown-stub.c
 fileblocks.c
 fnmatch.c
 fnmatch_.h
