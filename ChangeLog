@@ -1,3 +1,7 @@
+2004-08-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/tar.c: Fix copy-n-paste errors in the license
+	
 2004-08-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* scripts/backup.in: Renamed LIBPATH to LIBDIR.
