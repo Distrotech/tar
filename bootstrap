@@ -188,6 +188,7 @@ timespec
 unlocked-io
 utime
 xalloc
+xalloc-die
 xgetcwd
 xstrtoumax
 '
@@ -234,14 +235,6 @@ for gnulib_file in $gnulib_files; do
   echo "$0: Copying file $GNULIB_SRCDIR/$gnulib_file" &&
   cp -p $GNULIB_SRCDIR/$gnulib_file $dest || exit
 done
-
-if [ -d patches ]; then
-    echo "$0: Patching gnulib"
-    for file in patches/*.diff
-    do
-      patch -p0 < $file
-    done
-fi
 
 echo "$0: Creating m4/gnulib.m4"
 (echo "# This file is generated automatically. Please, do not edit."
