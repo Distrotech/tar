@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-AC_INIT([GNU tar], [1.13.26], [bug-tar@gnu.org])
+AC_INIT([GNU tar], [1.13.90], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h:config.hin])
@@ -114,6 +114,8 @@ gl_FUNC_MKTIME
 gl_FUNC_RMDIR
 gl_FUNC_STRTOL
 gl_FUNC_STRTOUL
+gl_FUNC_STRTOIMAX
+gl_FUNC_STRTOUMAX
 gl_GETDATE
 gl_GETOPT
 gl_HASH
@@ -128,18 +130,19 @@ gl_SAFE_WRITE
 gl_SAVE_CWD
 gl_SAVEDIR
 gl_STRCASE
+gl_TIME_R
 gl_XALLOC
 gl_XGETCWD
 gl_XSTRTOL
 
 jm_FUNC_FTRUNCATE
 jm_FUNC_GLIBC_UNLOCKED_IO
+jm_FUNC_CHOWN
 jm_FUNC_LCHOWN
 jm_FUNC_MALLOC
 jm_FUNC_REALLOC
 jm_FUNC_UTIME
 jm_XSTRTOUMAX
-
 
 # Save and restore LIBS so e.g., -lrt, isn't added to it.  Otherwise, *all*
 # programs in the package would end up linked with that potentially-shared
