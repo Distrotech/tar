@@ -3036,9 +3036,8 @@ results.
 If no option @samp{exthdr.name=string} is specified, @command{tar}
 will use the following default value:
 
-@c This should be %d/PaxHeaders.%p/%f
 @smallexample
-././@@PaxHeader
+%d/PaxHeaders.%p/%f
 @end smallexample
 
 @item globexthdr.name=@var{string}
