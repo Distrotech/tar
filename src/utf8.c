@@ -320,7 +320,7 @@ utf8_convert(bool to_utf, char *input, char **output)
   size_t inlen;
   size_t outlen;
   size_t rc;
-  iconv_t cd = utf8_init(to_utf);
+  iconv_t cd = utf8_init (to_utf);
 
   if (cd == 0)
     {
