@@ -243,7 +243,6 @@ get_input_charset ()
 {
   const char *charset = NULL;
   char *tmp;
-  int rc;
 
   /* Try to deduce the charset from LC_ALL or LANG variables */
 
@@ -313,7 +312,7 @@ utf8_init (bool to_utf)
 }
 		  
 bool
-utf8_convert(bool to_utf, char *input, char **output)
+utf8_convert(bool to_utf, const char *input, char **output)
 {
   const char *ib;
   char *ob;
