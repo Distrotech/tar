@@ -32,6 +32,9 @@
 
 #include "system.h"
 
+#include "basename.h"
+#include "safe-read.h"
+
 /* Try hard to get EOPNOTSUPP defined.  486/ISC has it in net/errno.h,
    3B2/SVR3 has it in sys/inet.h.  Otherwise, like on MSDOS, use EINVAL.  */
 
@@ -410,7 +413,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 	return -1;
 #endif
       }
-    remote_shell_basename = strrchr (remote_shell, '/');
+    remote_shell_basename = base_name (remote_shell);
     if (remote_shell_basename)
       remote_shell_basename++;
     else
