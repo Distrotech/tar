@@ -46,23 +46,16 @@ extern long baserec;
 #ifdef __MSDOS__
 char TTY_NAME[] = "con";
 
-#define MKNOD_MISSING
-#define UTILS_MISSING
-#define VALLOC_MISSING
-
 #else /* not __MSDOS__ */
 
 char TTY_NAME[] ="/dev/tty";
-
-#define UTILS_MISSING
-#define CK_PIPE_MISSING
 
 #endif /* not __MSDOS__ */
 
 /* End of system-dependent #ifdefs */
 
 
-#ifdef VALLOC_MISSING
+#ifndef HAVE_VALLOC
 /*
  * valloc() does a malloc() on a page boundary.  On some systems,
  * this can make large block I/O more efficient.
@@ -73,9 +66,9 @@ valloc (size)
 {
 	return (malloc (size));
 }
-#endif
+#endif /* !HAVE_VALLOC */
 
-#ifdef MKDIR_MISSING
+#ifndef HAVE_MKDIR
 /*
  * Written by Robert Rother, Mariah Corporation, August 1985. 
  *
@@ -171,9 +164,9 @@ rmdir(dpath)
 
 	return 0;
 }
-#endif
+#endif /* !HAVE_MKDIR */
 
-#ifdef RENAME_MISSING
+#ifndef HAVE_RENAME
 /* Rename file FROM to file TO.
    Return 0 if successful, -1 if not. */
 
@@ -184,18 +177,26 @@ rename (from, to)
 {
   struct stat from_stats;
 
-  if (stat (from, &from_stats) == 0)
-    {
-      if (unlink (to) && errno != ENOENT)
-	return -1;
-      if (link (from, to) == 0 && (unlink (from) == 0 || errno == ENOENT))
-	return 0;
-    }
-  return -1;
-}
-#endif
+  if (stat (from, &from_stats))
+    return -1;
 
-#ifdef BZERO_MISSING
+  if (unlink (to) && errno != ENOENT)
+    return -1;
+
+  if (link (from, to))
+    return -1;
+
+  if (unlink (from) && errno != ENOENT)
+    {
+      unlink (to);
+      return -1;
+    }
+
+  return 0;
+}
+#endif /* !HAVE_RENAME */
+
+#ifdef minix
 /* Minix has bcopy but not bzero, and no memset.  Thanks, Andy. */
 void
 bzero (s1, n)
@@ -326,7 +327,7 @@ fail:
 	free(fnbuffer);
 	return -1;
 }
-#endif
+#endif /* minix */
 
 
 #ifdef EMUL_OPEN3
@@ -455,9 +456,9 @@ int flags, mode;
 	 */
 	return open(path, flags & (O_RDONLY|O_WRONLY|O_RDWR|O_BINARY));
 }
-#endif
+#endif /* EMUL_OPEN3 */
 
-#ifdef	MKNOD_MISSING
+#ifndef HAVE_MKNOD
 #ifdef __MSDOS__
 typedef int dev_t;
 #endif
@@ -523,7 +524,7 @@ geteuid()
 {
 	return 0;
 }
-#endif	/* MKNOD_MISSING */
+#endif	/* !HAVE_MKNOD */
 
 #ifdef __TURBOC__
 #include <time.h>
@@ -572,9 +573,8 @@ utime (char *filename, struct utimbuf *utb)
   _close (fd);
   return status;
 }
-#endif
+#endif /* __TURBOC__ */
 
-#ifdef UTILS_MISSING
 /* Stash argv[0] here so panic will know what the program is called */
 char *myname = 0;
 
@@ -925,9 +925,7 @@ char *string;
 		*to_there++='\0';
 	return ret;
 }
-#endif
 
-#ifdef CK_PIPE_MISSING
 void ck_pipe(pipes)
 int *pipes;
 {
@@ -937,10 +935,8 @@ int *pipes;
 	}
 }
 
-#endif
 
-#ifdef STRSTR_MISSING
-
+#ifndef HAVE_STRSTR
 /*
  * strstr - find first occurrence of wanted in s
  */
@@ -968,9 +964,9 @@ char *wanted;
 			return (char *)0;
 	return scan;
 }
-#endif
+#endif /* !HAVE_STRSTR */
 
-#ifdef FTRUNCATE_MISSING
+#ifndef HAVE_FTRUNCATE
 
 #ifdef F_CHSIZE
 int
@@ -980,7 +976,7 @@ ftruncate (fd, length)
 {
   return fcntl (fd, F_CHSIZE, length);
 }
-#else
+#else /* !F_CHSIZE */
 #ifdef F_FREESP
 /* code courtesy of William Kucharski, kucharsk@Solbourne.com */
 
@@ -1010,7 +1006,7 @@ off_t length;         /* length to set file to */
 	return 0;
 }
 
-#else
+#else /* !F_FREESP */
 
 int
 ftruncate(fd, length)
@@ -1020,14 +1016,14 @@ off_t length;
 	errno = EIO;
 	return -1;
 }
-#endif
-#endif
-#endif
+#endif /* !F_FREESP */
+#endif /* !F_CHSIZE */
+#endif /* !HAVE_FTRUNCATE */
 
 
 extern FILE *msg_file;
 
-#if !defined (VPRINTF_MISSING) && defined (__STDC__)
+#if defined (HAVE_VPRINTF) && __STDC__
 #include <stdarg.h>
 
 void
@@ -1064,9 +1060,9 @@ msg_perror(char *str,...)
 	perror(" ");
 	fflush(stderr);
 }
-#endif /* not VPRINTF_MISSING or __STDC__ */
+#endif /* HAVE_VPRINTF and __STDC__ */
 
-#if !defined(VPRINTF_MISSING) && !defined(__STDC__)
+#if defined(HAVE_VPRINTF) && !__STDC__
 #include <varargs.h>
 void
 msg(str,va_alist)
@@ -1106,9 +1102,9 @@ va_dcl
 	perror(" ");
 	fflush(stderr);
 }
-#endif /* not VPRINTF_MISSING and not __STDC__ */
+#endif /* HAVE_VPRINTF and not __STDC__ */
 
-#if defined(VPRINTF_MISSING) && !defined(DOPRNT_MISSING)
+#if !defined(HAVE_VPRINTF) && defined(HAVE_DOPRNT)
 void
 msg(str,args)
 char *str;
@@ -1139,9 +1135,9 @@ char *str;
 	perror(" ");
 	fflush(stderr);
 }
-#endif /* VPRINTF_MISSING and not DOPRNT_MISSING */
+#endif /* !HAVE_VPRINTF and HAVE_DOPRNT */
 
-#if defined(VPRINTF_MISSING) && defined(DOPRNT_MISSING)
+#if !defined(HAVE_VPRINTF) && !defined(HAVE_DOPRNT)
 void msg(str,a1,a2,a3,a4,a5,a6)
 char *str;
 {
@@ -1170,4 +1166,4 @@ char *str;
 	errno=save_e;
 	perror(" ");
 }
-#endif /* VPRINTF_MISSING and DOPRNT_MISSING */
+#endif /* !HAVE_VPRINTF and !HAVE_DOPRNT */
