@@ -165,7 +165,7 @@ distclean: clean
 	rm -f Makefile config.status
 
 realclean: distclean
-	rm -f TAGS *.info* getdate.c
+	rm -f TAGS *.info* getdate.c y.tab.c
 
 shar: $(SRCS) $(AUX)
 	shar $(SRCS) $(AUX) | compress > tar-`sed -e '/version_string/!d' -e 's/[^0-9.]*\([0-9.]*\).*/\1/' -e q version.c`.shar.Z
