@@ -162,15 +162,17 @@ struct sparse_header
 struct oldgnu_header
 {				/* byte offset */
   char unused_pad1[345];	/*   0 */
-  char atime[12];		/* 345 */
-  char ctime[12];		/* 357 */
-  char offset[12];		/* 369 */
-  char longnames[4];		/* 381 */
+  char atime[12];		/* 345 Incr. archive: atime of the file */
+  char ctime[12];		/* 357 Incr. archive: ctime of the file */
+  char offset[12];		/* 369 Multivolume archive: the offset of
+				   the start of this volume */
+  char longnames[4];		/* 381 Not used */
   char unused_pad2;		/* 385 */
   struct sparse sp[SPARSES_IN_OLDGNU_HEADER];
 				/* 386 */
-  char isextended;		/* 482 */
-  char realsize[12];		/* 483 */
+  char isextended;		/* 482 Sparse file: Extension sparse header
+				   follows */
+  char realsize[12];		/* 483 Sparse file: Real size*/
 				/* 495 */
 };
 
@@ -226,6 +228,13 @@ enum archive_format
   GNU_FORMAT			/* POSIX format with GNU extensions */
 };
 
+/* Information about a sparse file.  */
+struct sp_array
+  {
+    off_t offset;
+    size_t numbytes;
+  };
+
 struct tar_stat_info
 {
   char *orig_file_name;     /* name of file read from the archive header */
@@ -239,7 +248,16 @@ struct tar_stat_info
   unsigned int  devmajor;   /* device major number */
   char          *uname;     /* user name of owner */
   char          *gname;     /* group name of owner */
-  struct stat   stat;       /* regular filesystem stat */ 
+  struct stat   stat;       /* regular filesystem stat */
+
+  off_t archive_file_size;  /* Size of file as stored in the archive.
+			       Equals stat.st_size for non-sparse files */
+
+  size_t sparse_map_avail;  /* Index to the first unused element in
+			       sparse_map array. Zero if the file is
+			       not sparse */
+  size_t sparse_map_size;   /* Size of the sparse map */
+  struct sp_array *sparse_map; 
 };
 
 union block
