@@ -1036,13 +1036,52 @@ archive_read_error (void)
   return;
 }
 
+static void
+short_read (ssize_t status)
+{
+  size_t left;			/* bytes left */
+  char *more;			/* pointer to next byte to read */
+
+  more = record_start->buffer + status;
+  left = record_size - status;
+
+  while (left % BLOCKSIZE != 0
+	 || (left && status && read_full_records_option))
+    {
+      if (status)
+	while ((status = rmtread (archive, more, left)) < 0)
+	  archive_read_error ();
+
+      if (status == 0)
+	break;
+
+      if (! read_full_records_option)
+	FATAL_ERROR ((0, 0, _("Unaligned block (%lu bytes) in archive"),
+		      (unsigned long) (record_size - left)));
+
+      /* User warned us about this.  Fix up.  */
+
+      left -= status;
+      more += status;
+    }
+
+  /* FIXME: for size=0, multi-volume support.  On the first record, warn
+     about the problem.  */
+
+  if (!read_full_records_option && verbose_option
+      && record_start_block == 0 && status > 0)
+    WARN ((0, 0, _("Record size = %lu blocks"),
+	   (unsigned long) ((record_size - left) / BLOCKSIZE)));
+
+  record_end = record_start + (record_size - left) / BLOCKSIZE;
+  records_read++;
+}
+
 /* Perform a read to flush the buffer.  */
 void
 flush_read (void)
 {
   ssize_t status;		/* result from system call */
-  size_t left;			/* bytes left */
-  char *more;			/* pointer to next byte to read */
 
   if (checkpoint_option && !(++checkpoint % 10))
     WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
@@ -1115,7 +1154,7 @@ flush_read (void)
 	  goto vol_error;
 	}
       if (status != record_size)
-	goto short_read;
+	short_read (status); 
 
       cursor = record_start;
 
@@ -1189,40 +1228,7 @@ flush_read (void)
       goto error_loop;		/* try again */
     }
 
- short_read:
-  more = record_start->buffer + status;
-  left = record_size - status;
-
-  while (left % BLOCKSIZE != 0
-	 || (left && status && read_full_records_option))
-    {
-      if (status)
-	while ((status = rmtread (archive, more, left)) < 0)
-	  archive_read_error ();
-
-      if (status == 0)
-	break;
-
-      if (! read_full_records_option)
-	FATAL_ERROR ((0, 0, _("Unaligned block (%lu bytes) in archive"),
-		      (unsigned long) (record_size - left)));
-
-      /* User warned us about this.  Fix up.  */
-
-      left -= status;
-      more += status;
-    }
-
-  /* FIXME: for size=0, multi-volume support.  On the first record, warn
-     about the problem.  */
-
-  if (!read_full_records_option && verbose_option
-      && record_start_block == 0 && status > 0)
-    WARN ((0, 0, _("Record size = %lu blocks"),
-	   (unsigned long) ((record_size - left) / BLOCKSIZE)));
-
-  record_end = record_start + (record_size - left) / BLOCKSIZE;
-  records_read++;
+  short_read (status);
 }
 
 /*  Flush the current buffer to/from the archive.  */
@@ -1551,7 +1557,12 @@ new_volume (enum access_mode access)
 	  }
     }
 
-  if (verify_option)
+  if (strcmp (archive_name_cursor[0], "-") == 0)
+    {
+      read_full_records_option = true;
+      archive = STDIN_FILENO;
+    }
+  else if (verify_option)
     archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
 		       rsh_command_option);
   else
@@ -1589,3 +1600,4 @@ new_volume (enum access_mode access)
 
   return 1;
 }
+
