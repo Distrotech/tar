@@ -43,18 +43,19 @@ main ()
   struct test1 t1;
   struct test2 t2;
   int t1diff, t2diff;
-  FILE *fp = fopen("testpad.h", "w");
+  FILE *fp = fopen ("testpad.h", "w");
 
   if (fp == 0)
     {
       fprintf (stderr, "testpad: cannot open ");
+      fflush (stderr);
       perror ("testpad.h");
       exit (1);
     }
 
-  t1diff = (char *)&t1.in[0] - (char *)&t1;
-  t2diff = (char *)&t2.in[0] - (char *)&t2;
-  
+  t1diff = (char *) &t1.in[0] - (char *) &t1;
+  t2diff = (char *) &t2.in[0] - (char *) &t2;
+
   if (t2diff == t1diff + 1)
     fprintf (fp, "#define NEEDPAD\n");
   else if (t1diff != t2diff)

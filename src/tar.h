@@ -101,7 +101,7 @@ union record {
 #define	CHKBLANKS	"        "	/* 8 blanks, no null */
 
 /* The magic field is filled with this if uname and gname are valid. */
-#define	TMAGIC		"ustar"		/* 5 chars and a null */
+#define	TMAGIC		"ustar  "	/* 7 chars and a null */
 
 /* The linkflag defines the type of file */
 #define	LF_OLDNORMAL	'\0'		/* Normal disk file, Unix compat */
@@ -122,6 +122,8 @@ union record {
 					   the names of files that were in
 					   the dir at the time the dump
 					   was made */
+#define LF_LONGNAME	'L'		/* Identifies the NEXT file on the tape
+					   as having a long name. */
 #define LF_MULTIVOL	'M'		/* This is the continuation
 					   of a file that began on another
 					   volume */
@@ -152,7 +154,6 @@ TAR_EXTERN union record	*ar_last;	/* Last+1 record of archive block */
 TAR_EXTERN char		ar_reading;	/* 0 writing, !0 reading archive */
 TAR_EXTERN int		blocking;	/* Size of each block, in records */
 TAR_EXTERN int		blocksize;	/* Size of each block, in bytes */
-TAR_EXTERN char		*ar_file;	/* File containing archive */
 TAR_EXTERN char		*info_script;	/* Script to run at end of each tape change */
 TAR_EXTERN char		*name_file;	/* File containing names to work on */
 TAR_EXTERN char		filename_terminator; /* \n or \0. */
@@ -162,6 +163,10 @@ TAR_EXTERN int		sp_array_size;	/* Initial size of the sparsearray */
 TAR_EXTERN int 		tot_written;    /* Total written to output */
 TAR_EXTERN struct re_pattern_buffer
   			*label_pattern;	/* compiled regex for extract label */
+TAR_EXTERN char    	**ar_files;	/* list of tape drive names */
+TAR_EXTERN int		n_ar_files;	/* number of tape drive names */
+TAR_EXTERN int		cur_ar_file;	/* tape drive currently being used */
+TAR_EXTERN int		ar_files_len;	/* malloced size of ar_files */
 
 /*
  * Flags from the command line
@@ -225,6 +230,8 @@ TAR_EXTERN int	f_ignore_failed_read;	/* --ignore-failed-read */
 TAR_EXTERN int	f_checkpoint;		/* --checkpoint */
 TAR_EXTERN int	f_show_omitted_dirs;	/* --show-omitted-dirs */
 TAR_EXTERN char *f_volno_file;		/* --volno-file */
+TAR_EXTERN int	f_force_local;		/* --force-local */
+TAR_EXTERN int	f_atime_preserve;	/* --atime-preserve */
 
 /*
  * We default to Unix Standard format rather than 4.2BSD tar format.
