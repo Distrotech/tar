@@ -1,5 +1,8 @@
 2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	Released version 1.15. Sources up to this point are
+	tagged release_1_15.
+
 	* configure.ac: Raised version number to 1.15
 	* NEWS: Likewise
 	* directory: Updated
