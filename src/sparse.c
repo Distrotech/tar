@@ -225,7 +225,7 @@ sparse_scan_file (struct tar_sparse_file *file)
 {
   static char buffer[BLOCKSIZE];
   size_t count;
-  size_t offset = 0;
+  off_t offset = 0;
   struct sp_array sp = {0, 0};
 
   if (!lseek_or_error (file, 0))
