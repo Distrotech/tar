@@ -38,6 +38,7 @@ time_t time ();
 #endif
 
 #include <fnmatch.h>
+#include <human.h>
 
 #include "common.h"
 #include "rmt.h"
@@ -152,9 +153,27 @@ myfork (void)
 void
 print_total_written (void)
 {
-  fprintf (stderr, _("Total bytes written: "));
-  fprintf (stderr, TARLONG_FORMAT, prev_written + bytes_written);
-  fprintf (stderr, "\n");
+  tarlong written = prev_written + bytes_written;
+  char bytes[sizeof (tarlong) * CHAR_BIT];
+  char abbr[LONGEST_HUMAN_READABLE + 1];
+  char rate[LONGEST_HUMAN_READABLE + 1];
+  double seconds;
+
+#if HAVE_CLOCK_GETTIME
+  struct timespec now;
+  if (clock_gettime (CLOCK_REALTIME, &now) == 0)
+    seconds = ((now.tv_sec - start_timespec.tv_sec)
+	       + (now.tv_nsec - start_timespec.tv_nsec) / 1e9);
+  else
+#endif
+    seconds = time (0) - start_time;
+
+  sprintf (bytes, TARLONG_FORMAT, written);
+  fprintf (stderr, _("Total written: %s bytes (%sB, %sB/s)\n"), bytes,
+	   human_readable ((uintmax_t) written, abbr, 1, -1024),
+	   (0 < seconds && written / seconds < (uintmax_t) -1
+	    ? human_readable ((uintmax_t) (written / seconds), rate, 1, -1024)
+	    : "?"));
 }
 
 /*--------------------------------------------------------.
@@ -866,7 +885,7 @@ open_archive (enum access_mode access)
 	  assign_string (&current_file_name, record_start->header.name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
-	  TIME_TO_CHARS (time (0), record_start->header.mtime);
+	  TIME_TO_CHARS (start_time, record_start->header.mtime);
 	  finish_header (record_start);
 #if 0
 	  current_block++;
@@ -961,7 +980,7 @@ flush_write (void)
     {
       memset (record_start, 0, BLOCKSIZE);
       sprintf (record_start->header.name, "%s Volume %d", volume_label_option, volno);
-      TIME_TO_CHARS (time (0), record_start->header.mtime);
+      TIME_TO_CHARS (start_time, record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
       finish_header (record_start);
     }
@@ -1118,7 +1137,7 @@ flush_read (void)
 	}
     }
 
-error_loop:
+ error_loop:
   status = rmtread (archive, record_start->buffer, record_size);
   if (status == record_size)
     return;
@@ -1190,8 +1209,8 @@ error_loop:
 	      global_volno--;
 	      goto try_volume;
 	    }
-	  s1 = UINTMAX_FROM_CHARS (cursor->header.size);
-	  s2 = UINTMAX_FROM_CHARS (cursor->oldgnu_header.offset);
+	  s1 = UINTMAX_FROM_HEADER (cursor->header.size);
+	  s2 = UINTMAX_FROM_HEADER (cursor->oldgnu_header.offset);
 	  if (real_s_totsize != s1 + s2 || s1 + s2 < s2)
 	    {
 	      char totsizebuf[UINTMAX_STRSIZE_BOUND];
@@ -1208,7 +1227,7 @@ error_loop:
 	      goto try_volume;
 	    }
 	  if (real_s_totsize - real_s_sizeleft
-	      != OFF_FROM_CHARS (cursor->oldgnu_header.offset))
+	      != OFF_FROM_HEADER (cursor->oldgnu_header.offset))
 	    {
 	      WARN ((0, 0, _("This volume is out of sequence")));
 	      volno--;
@@ -1226,49 +1245,41 @@ error_loop:
       goto error_loop;		/* try again */
     }
 
-short_read:
+ short_read:
   more = record_start->buffer + status;
   left = record_size - status;
 
-again:
-  if (left % BLOCKSIZE == 0)
+  while (left % BLOCKSIZE != 0)
     {
-      /* FIXME: for size=0, multi-volume support.  On the first record, warn
-	 about the problem.  */
+      while ((status = rmtread (archive, more, left)) < 0)
+	read_error ();
 
-      if (!read_full_records_option && verbose_option
-	  && record_start_block == 0 && status > 0)
-	WARN ((0, 0, _("Record size = %lu blocks"),
-	       (unsigned long) (status / BLOCKSIZE)));
+      if (status == 0)
+	{
+	  ERROR ((0, 0, _("%d garbage bytes ignored at end of archive"),
+		  (int) ((record_size - left) % BLOCKSIZE)));
+	  break;
+	}
 
-      record_end = record_start + (record_size - left) / BLOCKSIZE;
-
-      return;
-    }
-  if (read_full_records_option)
-    {
+      if (! read_full_records_option)
+	FATAL_ERROR ((0, 0, _("Unaligned block (%lu bytes) in archive"),
+		      (unsigned long) (record_size - left)));
+	  
       /* User warned us about this.  Fix up.  */
 
-      if (left > 0)
-	{
-	error2loop:
-	  status = rmtread (archive, more, left);
-	  if (status < 0)
-	    {
-	      read_error ();
-	      goto error2loop;	/* try again */
-	    }
-	  if (status == 0)
-	    FATAL_ERROR ((0, 0, _("Archive %s EOF not on block boundary"),
-			  *archive_name_cursor));
-	  left -= status;
-	  more += status;
-	  goto again;
-	}
+      left -= status;
+      more += status;
     }
-  else
-    FATAL_ERROR ((0, 0, _("Only read %lu bytes from archive %s"),
-		  (unsigned long) status, *archive_name_cursor));
+
+  /* FIXME: for size=0, multi-volume support.  On the first record, warn
+     about the problem.  */
+
+  if (!read_full_records_option && verbose_option
+      && record_start_block == 0 && status > 0)
+    WARN ((0, 0, _("Record size = %lu blocks"),
+	   (unsigned long) ((record_size - left) / BLOCKSIZE)));
+
+  record_end = record_start + (record_size - left) / BLOCKSIZE;
 }
 
 /*-----------------------------------------------.
@@ -1547,7 +1558,7 @@ new_volume (enum access_mode access)
 
 	    if (fgets (input_buffer, sizeof input_buffer, read_file) == 0)
 	      {
-		fprintf (stderr, _("EOF where user reply was expected"));
+		WARN ((0, 0, _("EOF where user reply was expected")));
 
 		if (subcommand_option != EXTRACT_SUBCOMMAND
 		    && subcommand_option != LIST_SUBCOMMAND
@@ -1577,7 +1588,7 @@ new_volume (enum access_mode access)
 	      case 'q':
 		/* Quit.  */
 
-		fprintf (stdlis, _("No new volume; exiting.\n"));
+		WARN ((0, 0, _("No new volume; exiting.\n")));
 
 		if (subcommand_option != EXTRACT_SUBCOMMAND
 		    && subcommand_option != LIST_SUBCOMMAND
