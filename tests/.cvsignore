@@ -1,9 +1,11 @@
 Makefile.in
 Makefile
-preset
 .deps
 genfile
-mksparse
-tmp-*
-directory
-archive
+tests/atconfig
+tests/atlocal
+tests/testsuite
+tests/genfile.c
+tests/testsuite.dir
+tests/testsuite.log
+tests/package.m4
