@@ -214,7 +214,7 @@ sys_spawn_shell ()
   child = xfork ();
   if (child == 0)
     {
-      execlp (shell, "-sh", "-i", 0);
+      execlp (shell, "-sh", "-i", (char *) 0);
       exec_fatal (shell);
     }
   else

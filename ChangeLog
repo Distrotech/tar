@@ -1,3 +1,8 @@
+2003-10-26  Paul Eggert  <eggert@twinsun.com>
+
+	* system.c (sys_spawn_shell): Cast trailing null to (char *).
+	Bug reported by Christian Weisgerber.
+
 2003-10-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* AUTHORS: Updated
