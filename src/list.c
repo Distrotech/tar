@@ -573,8 +573,14 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	}
     }
 
+  stat_info->archive_file_size = stat_info->stat.st_size;
   xheader_decode (stat_info);
-  current_stat_info.archive_file_size = current_stat_info.stat.st_size;
+
+  if (sparse_member_p (stat_info))
+    {
+      sparse_fixup_header (stat_info);
+      stat_info->is_sparse = true;
+    }
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
@@ -1102,16 +1108,10 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  strcat (size,
 		  STRINGIFY_BIGINT (minor (st->stat.st_rdev), uintbuf));
 	  break;
-	case GNUTYPE_SPARSE:
-	  strcpy (size,
-		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_HEADER (current_header
-					->oldgnu_header.realsize),
-		   uintbuf));
-	  break;
+	  
 	default:
 	  /* st->stat.st_size keeps stored file size */
-	  strcpy (size, STRINGIFY_BIGINT (st->archive_file_size, uintbuf));
+	  strcpy (size, STRINGIFY_BIGINT (st->stat.st_size, uintbuf));
 	  break;
 	}
 
@@ -1243,20 +1243,10 @@ skip_member (void)
   char save_typeflag = current_header->header.typeflag;
   set_next_block_after (current_header);
 
-  if (current_format == OLDGNU_FORMAT
-      && current_header->oldgnu_header.isextended)
-    {
-      union block *exhdr;
-      do
-	{
-	  exhdr = find_next_block ();
-	  if (!exhdr)
-	    FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-	  set_next_block_after (exhdr);
-	}
-      while (exhdr->sparse_header.isextended);
-    }
+  assign_string (&save_name, current_stat_info.file_name);
 
-  if (save_typeflag != DIRTYPE)
+  if (sparse_member_p (&current_stat_info))
+    sparse_skip_file (&current_stat_info);
+  else if (save_typeflag != DIRTYPE)
     skip_file (current_stat_info.stat.st_size);
 }
