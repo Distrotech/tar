@@ -262,8 +262,7 @@ delete_archive_members (void)
 	    flush_archive ();
 	  status = read_header (false);
 	  
-	  if (extended_header.size)
-	    xheader_decode (&current_stat_info);
+	  xheader_decode (&current_stat_info);
 	  
 	  if (status == HEADER_ZERO_BLOCK && ignore_zeros_option)
 	    {
