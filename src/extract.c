@@ -1,5 +1,5 @@
 /* Extract files from a tar archive.
-   Copyright (C) 1988, 92,93,94,96,97,98, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92,93,94,96,97,98, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-11-19.
 
    This program is free software; you can redistribute it and/or modify it
@@ -19,7 +19,9 @@
 #include "system.h"
 
 #include <time.h>
+#ifndef time
 time_t time ();
+#endif
 
 #if HAVE_UTIME_H
 # include <utime.h>
@@ -63,7 +65,7 @@ static struct delayed_set_stat *delayed_set_stat_head;
 void
 extr_init (void)
 {
-  now = time ((time_t *) 0);
+  now = time (0);
   we_are_root = geteuid () == 0;
 
   /* Option -p clears the kernel umask, so it does not affect proper
@@ -447,15 +449,14 @@ extract_archive (void)
   skipcrud = 0;
   while (!absolute_names_option && CURRENT_FILE_NAME[0] == '/')
     {
-      static int warned_once = 0;
+      static int warned_once;
 
-      skipcrud++;		/* force relative path */
       if (!warned_once)
 	{
 	  warned_once = 1;
-	  WARN ((0, 0, _("\
-Removing leading `/' from absolute path names in the archive")));
+	  WARN ((0, 0, _("Removing leading `/' from archive names")));
 	}
+      skipcrud++;		/* force relative path */
     }
 
   /* Take a safety backup of a previously existing file.  */
