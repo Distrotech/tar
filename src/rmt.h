@@ -65,7 +65,7 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 
 #define rmtread(Fd, Buffer, Length) \
   (_isrmt (Fd) ? rmt_read__ (Fd - __REM_BIAS, Buffer, Length) \
-   : full_read (Fd, Buffer, Length))
+   : safe_read (Fd, Buffer, Length))
 
 #define rmtwrite(Fd, Buffer, Length) \
   (_isrmt (Fd) ? rmt_write__ (Fd - __REM_BIAS, Buffer, Length) \

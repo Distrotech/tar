@@ -144,7 +144,7 @@ get_status_string (int handle, char *command_buffer)
        counter < COMMAND_BUFFER_SIZE;
        counter++, cursor++)
     {
-      if (full_read (READ_SIDE (handle), cursor, 1) != 1)
+      if (safe_read (READ_SIDE (handle), cursor, 1) != 1)
 	{
 	  _rmt_shutdown (handle, EIO);
 	  return 0;
@@ -180,7 +180,7 @@ get_status_string (int handle, char *command_buffer)
       {
 	char character;
 
-	while (full_read (READ_SIDE (handle), &character, 1) == 1)
+	while (safe_read (READ_SIDE (handle), &character, 1) == 1)
 	  if (character == '\n')
 	    break;
       }
@@ -527,7 +527,7 @@ rmt_read__ (int handle, char *buffer, size_t length)
 
   for (counter = 0; counter < status; counter += rlen, buffer += rlen)
     {
-      rlen = full_read (READ_SIDE (handle), buffer, status - counter);
+      rlen = safe_read (READ_SIDE (handle), buffer, status - counter);
       if (rlen <= 0)
 	{
 	  _rmt_shutdown (handle, EIO);
@@ -661,7 +661,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 
 	for (; status > 0; status -= counter, argument += counter)
 	  {
-	    counter = full_read (READ_SIDE (handle),
+	    counter = safe_read (READ_SIDE (handle),
 				 argument, (size_t) status);
 	    if (counter <= 0)
 	      {

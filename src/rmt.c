@@ -128,7 +128,7 @@ get_string (char *string)
 
   for (counter = 0; counter < STRING_SIZE; counter++)
     {
-      if (full_read (STDIN_FILENO, string + counter, 1) != 1)
+      if (safe_read (STDIN_FILENO, string + counter, 1) != 1)
 	exit (EXIT_SUCCESS);
 
       if (string[counter] == '\n')
@@ -210,7 +210,7 @@ main (int argc, char *const *argv)
 top:
   errno = 0;			/* FIXME: errno should be read-only */
   status = 0;
-  if (full_read (STDIN_FILENO, &command, 1) != 1)
+  if (safe_read (STDIN_FILENO, &command, 1) != 1)
     exit (EXIT_SUCCESS);
 
   switch (command)
@@ -330,8 +330,8 @@ top:
 	prepare_record_buffer (size);
 	for (counter = 0; counter < size; counter += status)
 	  {
-	    status = full_read (STDIN_FILENO, &record_buffer[counter],
-			   size - counter);
+	    status = safe_read (STDIN_FILENO, &record_buffer[counter],
+				size - counter);
 	    if (status <= 0)
 	      {
 		DEBUG (_("rmtd: Premature eof\n"));
@@ -356,7 +356,7 @@ top:
 
 	size = atol (count_string);
 	prepare_record_buffer (size);
-	status = full_read (tape, record_buffer, size);
+	status = safe_read (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
 	sprintf (reply_buffer, "A%ld\n", status);

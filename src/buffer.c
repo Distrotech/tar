@@ -457,7 +457,7 @@ child_open_for_compress (void)
 
 	  if (size < BLOCKSIZE)
 	    size = BLOCKSIZE;
-	  status = full_read (STDIN_FILENO, cursor, size);
+	  status = safe_read (STDIN_FILENO, cursor, size);
 	  if (status <= 0)
 	    break;
 	}
