@@ -6,7 +6,7 @@ See the end for copying conditions.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.13.93 - Sergey Poznyakoff, 2004-02-24
+version 1.13.94 - Sergey Poznyakoff, 2004-04-04
 
 * Added support for POSIX.1-2001 and ustar archive formats.
 * New option --format allows to select the output archive format
@@ -59,7 +59,7 @@ version 1.13.93 - Sergey Poznyakoff, 2004-02-24
 * New message translations fi (Finnish), gl (Galician), hr (Croatian),
   hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
   (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
-  The code 'no' for Norwegian has been withdrawn; use 'nb' instead.
+  The code 'no' for Norwegian (Bokmål) has been withdrawn; use 'nb' instead.
 
 * Bug fixes.
 
