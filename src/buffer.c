@@ -40,6 +40,7 @@
 
 static tarlong prev_written;	/* bytes written on previous volumes */
 static tarlong bytes_written;	/* bytes written on this volume */
+static void *record_buffer;	/* allocated memory */
 
 /* FIXME: The following variables should ideally be static to this
    module.  However, this cannot be done yet.  The cleanup continues!  */
@@ -270,17 +271,12 @@ open_archive (enum access_mode wanted_access)
   save_name = 0;
   real_s_name = 0;
 
+  record_start =
+    page_aligned_alloc (&record_buffer,
+			(record_size
+			 + (multi_volume_option ? 2 * BLOCKSIZE : 0)));
   if (multi_volume_option)
-    {
-      record_start = valloc (record_size + (2 * BLOCKSIZE));
-      if (record_start)
-	record_start += 2;
-    }
-  else
-    record_start = valloc (record_size);
-  if (!record_start)
-    FATAL_ERROR ((0, 0, _("Cannot allocate memory for blocking factor %d"),
-		  blocking_factor));
+    record_start += 2;
 
   current_block = record_start;
   record_end = record_start + blocking_factor;
@@ -946,7 +942,7 @@ close_archive (void)
     free (save_name);
   if (real_s_name)
     free (real_s_name);
-  free (multi_volume_option ? record_start - 2 : record_start);
+  free (record_buffer);
 }
 
 /* Called to initialize the global volume number.  */
