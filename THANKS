@@ -4,7 +4,7 @@ Public domain tar was written by John Gilmore, with contributions
 from Henry Spencer, Fred Fish, Ian Darwin, Geoff Collyer, Stan Barber,
 Guy Harris, Dave Brower, Richard Todd, Michael Rendell, Stu Heiss and
 Rich $alz.  The FSF version, named GNU tar, was derived from PDTAR by
-Jay Fenlason and Joy Kendall, and was maintained in turn by François
+Jay Fenlason and Joy Kendall, and was maintained in turn by Fran�§ois
 Pinard and Paul Eggert.
 
 Many people further contributed to GNU tar by reporting problems,
@@ -164,7 +164,7 @@ Ezra Peisach		epeisach@mit.edu
 Fabio d'Alessi		cars@civ.bio.unipd.it
 Frank Koenen		koenfr@lidp.com
 Franz-Werner Gergen	gergen@edvulx.mpi-stuttgart.mpg.de
-François Pinard		pinard@iro.umontreal.ca
+Fran�§ois Pinard		pinard@iro.umontreal.ca
 Fritz Elfert		fritz@fsun.triltsch.de
 George Chyu		gschyu@ccgate.dp.beckman.com
 Gerben Wierda		gerben@rna.indiv.nluug.nl
@@ -178,9 +178,9 @@ Greg Chung		gchung@caip.rutgers.edu
 Greg Hudson		ghudson@mit.edu
 Greg Maples		greg@clari.net
 Greg McGary		gkm@cstone.net
-Göran Uddeborg		gvran@uddeborg.pp.se
+G�¶ran Uddeborg		gvran@uddeborg.pp.se
 Hans Guerth		100664.3101@compuserve.com
-Harald König		koenig@tat.physik.uni-tuebingen.de
+Harald K�¶nig		koenig@tat.physik.uni-tuebingen.de
 Harald Milz		hm@seneca.ix.de
 Heiko Schinke		mdqac@biochemtech.uni-halle.de
 Heiko Schlichting	heiko@fu-berlin.de
@@ -251,11 +251,11 @@ Joy Kendall		jak8@world.std.com
 Judy Ricker		jricker@gdstech.grumman.com
 Juha Sarlin		juha@tds.kth.se
 Jurgen Botz		jbotz@orixa.mtholyoke.edu
-Jürgen Lüters		jlueters@t-online.de
-Jürgen Reiss		reiss@psychologie.uni-wuerzburg.de
+J�¼rgen L�¼ters		jlueters@t-online.de
+J�¼rgen Reiss		reiss@psychologie.uni-wuerzburg.de
 Jyh-Shyang Wang		erik@vsp.ee.nctu.edu.tw
-Jörg Weule		weule@cs.uni-duesseldorf.de
-Jörgen Hägg		Jorgen.Hagg@axis.se
+J�¶rg Weule		weule@cs.uni-duesseldorf.de
+J�¶rgen H�¤gg		Jorgen.Hagg@axis.se
 Kai Petzke		wpp@marie.physik.tu-berlin.de
 Kai Schlichting		kai@computel.com
 Karl Berry		karl@cs.umb.edu
@@ -279,9 +279,10 @@ Larry Creech		lcreech@lonestar.rcclub.org
 Larry Schwimmer		rosebud@cyclone.stanford.edu
 Laurent Caillat-Vallet	caillat@noe.lyon.cemagref.fr
 Laurent Sainte-Marthe	smarthe@genethon.fr
+Leland Lucius		llucius@tiny.net
 Les Mikesell		les@mcs.com
 Loren J. Rittle		rittle@comm.mot.com
-Loïc Prylli		Loic.Prylli@lip.ens-lyon.fr
+Lo�¯c Prylli		Loic.Prylli@lip.ens-lyon.fr
 Luke Mewburn		lukem@connect.com.au
 Machael Stone		mstone@cs.loyola.edu
 Manfred Weichel		Manfred.Weichel@mch.sni.de
@@ -443,7 +444,7 @@ Tarang Kumar Patel	mombasa@ptolemy.arc.nasa.gov
 Ted Rule		Ted_Rule@flextech.co.uk
 The King		elvis@gnu.org
 Thomas Bushnell n/BSG	thomas@gnu.org
-Thomas König		Thomas.Koenig@ciw.uni-karlsruhe.de
+Thomas K�¶nig		Thomas.Koenig@ciw.uni-karlsruhe.de
 Thomas Krebs		krebs@faps.uni-erlangen.de
 Thomas M. Browder Jr.	browder@use1.eglin.af.mil
 Thomas Priesner		priesner@flo.sh.bosch.de
