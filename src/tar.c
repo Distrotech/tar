@@ -187,6 +187,7 @@ enum
   CHECK_LINKS_OPTION,
   DELETE_OPTION,
   EXCLUDE_OPTION,
+  EXCLUDE_CACHES_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   IGNORE_CASE_OPTION,
@@ -414,7 +415,7 @@ static struct argp_option options[] = {
   {"  ustar", 0, NULL, OPTION_DOC, N_("POSIX 1003.1-1988 (ustar) format"), 63 },
   {"  pax", 0, NULL, OPTION_DOC, N_("POSIX 1003.1-2001 (pax) format"), 63 },
   {"  posix", 0, NULL, OPTION_DOC, N_("Same as pax"), 63 },
-
+  
   {"old-archive", OLD_ARCHIVE_OPTION, 0, 0, /* FIXME */
    N_("same as --format=v7"), 68 },
   {"portability", 0, 0, OPTION_ALIAS, NULL, 68 },
@@ -449,6 +450,8 @@ static struct argp_option options[] = {
    N_("exclude files, given as a PATTERN"), 71 },
   {"exclude-from", 'X', N_("FILE"), 0,
    N_("exclude patterns listed in FILE"), 71 },
+  {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
+   N_("exclude directories containing a cache tag"), 71 },
   {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
    N_("exclusion ignores case"), 71 },
   {"anchored", ANCHORED_OPTION, 0, 0,
@@ -933,6 +936,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
       add_exclude (excluded, arg, args->exclude_options | recursion_option);
       break;
       
+    case EXCLUDE_CACHES_OPTION:
+      exclude_caches_option = true;
+      break;
+
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
