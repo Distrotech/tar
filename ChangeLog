@@ -1,3 +1,9 @@
+2005-01-13  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* tests/testsuite.at (RE_CHECK): Use "join - file", not
+	"join file -", to work around a bug in Solaris 8 join.
+	Problem reported by Tomohiro Suzuki.
+
 2005-01-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (read_header): Fixed calculation of the
@@ -13,7 +19,7 @@
 	* lib/.cvsignore: Updated
 	* m4/.cvsignore: Updated
 	* NEWS: Updated
-	
+
 2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* directory: Updated for 1.15.1
@@ -33,10 +39,10 @@
 	* tests/listed02.at: Do not create useless directory
 
 2005-01-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
-	
+
 	* src/tar.c (parse_opt): Bugfix: Use ARGP_KEY_ARG. Thanks
 	Mike Frysinger <vapier@gentoo.org> for reporting.
-	
+
 2005-01-04  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* lib/Makefile.tmpl (localedir.h): Omit needless quotes and a
@@ -5860,7 +5866,7 @@ See ChangeLog.1 for earlier changes.
 
 
 
-Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004 Free Software
+Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005 Free Software
 Foundation, Inc.
 
 This file is part of GNU tar.
