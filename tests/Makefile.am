@@ -37,6 +37,7 @@ TESTS = \
  gzip.sh\
  incremen.sh\
  ignfail.sh\
+ link01.sh\
  listed01.sh\
  longv7.sh\
  multiv01.sh\
