@@ -40,7 +40,7 @@
 /* Find the white-space-separated options specified by OPTIONS, and
    using BUF to store copies of these options, set ARGV[0], ARGV[1],
    etc. to the option copies.  Return the number N of options found.
-   Do not set ARGV[N] to NULL.  If ARGV is NULL, do not store ARGV[0]
+   Do not set ARGV[N].  If ARGV is null, do not store ARGV[0]
    etc.  Backslash can be used to escape whitespace (and backslashes).  */
 static int
 prepend_args (char const *options, char *buf, char **argv)
@@ -77,7 +77,7 @@ prepend_default_options (char const *options, int *pargc, char ***pargv)
   if (options)
     {
       char *buf = xmalloc (strlen (options) + 1);
-      int prepended = prepend_args (options, buf, (char **) NULL);
+      int prepended = prepend_args (options, buf, (char **) 0);
       int argc = *pargc;
       char * const *argv = *pargv;
       char **pp = (char **) xmalloc ((prepended + argc + 1) * sizeof *pp);
