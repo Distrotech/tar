@@ -1,7 +1,7 @@
 GNU tar NEWS - User visible changes.
 Copyright © 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
-version 1.12.64011 - Paul Eggert, 1999-04-09.
+version 1.12.64012 - Paul Eggert, 1999-06-16.
 
 This is an unofficial port of GNU `tar' 1.12 to large file
 environments like AIX 4.2, HP-UX 10.20, IRIX 6.2, and Solaris 2.6 that
