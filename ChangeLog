@@ -1,5 +1,16 @@
 2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* .cvsignore: Added *.shar.gz
+	* NEWS: Updated
+	* TODO: Updated
+	* src/common.h (strip_path_elements): New variable.
+	* src/extract.c (extract_archive): Implemented --strip-path
+	* src/names.c (cut_path_elements): New functon.
+	* src/tar.c: New option --strip-path=NUM.
+	(decode_options) Assign boolean values to bool variables. 
+
+2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* src/delete.c: Fixed deletion from the POSIX archives.
 	* src/list.c (read_header): Minor change.
 	* src/tar.c (main): Do not check for volume_label_option
