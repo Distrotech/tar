@@ -50,6 +50,10 @@ BACKUP_FILES=''
 # this file may be overridden by setting FILELIST variable:
 # FILELIST=/etc/my-backup/filelist
 
+# Name of 'exclude file list'. It is searched under $SYSCONFDIR/tar-backup
+# on remote machines
+XLIST=exclude_files
+
 # Default directory for storing incremental listings on remote
 # machines is $SYSCONFDIR/tar-backup. It can be overridden using
 # REMOTEBACKUPDIR variable

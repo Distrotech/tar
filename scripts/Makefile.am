@@ -17,22 +17,30 @@
 
 libexec_SCRIPTS=backup.sh dump-remind
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT=backup.sh dump-remind
-sbin_SCRIPTS=backup
-EXTRA_DIST=$(libexec_SCRIPTS) backup.in dump-remind.in backup-specs
-CLEANFILES=backup dump-remind
+sbin_SCRIPTS=backup restore
+EXTRA_DIST=\
+ backup.sh.in\
+ backup.in\
+ restore.in\
+ dump-remind.in\
+ backup-specs
+CLEANFILES=backup.sh backup restore dump-remind
+
+SED_CMD="s,\@libexecdir\@,$(libexecdir),;\
+         s,\@sysconfdir\@,$(sysconfdir),;\
+         s,\@PACKAGE\@,$(PACKAGE),;\
+         s,\@VERSION\@,$(VERSION),;\
+         s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
+         s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@"
+
+backup.sh: $(srcdir)/backup.sh.in
+	sed $(SED_CMD) $? > $@
 
 backup: $(srcdir)/backup.in
-	sed "s,\@libexecdir\@,$(libexecdir),;\
-             s,\@sysconfdir\@,$(sysconfdir),;\
-             s,\@PACKAGE\@,$(PACKAGE),;\
-             s,\@VERSION\@,$(VERSION),;\
-             s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
-             s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@" $? > $@
+	sed $(SED_CMD) $? > $@
+
+restore: $(srcdir)/restore.in
+	sed $(SED_CMD) $? > $@
 
 dump-remind: $(srcdir)/dump-remind.in
-	sed "s,\@libexecdir\@,$(libexecdir),;\
-             s,\@sysconfdir\@,$(sysconfdir),;\
-             s,\@PACKAGE\@,$(PACKAGE),;\
-             s,\@VERSION\@,$(VERSION),;\
-             s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
-             s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@" $? > $@
+	sed $(SED_CMD) $? > $@
