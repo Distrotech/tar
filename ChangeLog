@@ -2,7 +2,7 @@
 
 	* tests/sparse01.sh: New file
 	* tests/multiv02.sh: New file
-	* tests/Makefile.am: Add sparse01.sh
+	* tests/Makefile.am: Add sparse01.sh and multiv02.sh
 	
 	* src/common.h: Added missing prototypes
 	* src/compare.c (diff_archive): Use is_sparse member
@@ -39,6 +39,8 @@
 	st->stat.st_size.
 	(st->stat.st_size): Assign to st->stat.st_size
 	(sparse_numbytes_decoder): Removed unused variable
+	* src/.cvsignore: Added .gdbinit
+	* THANKS: Added Mads Martin Joergensen
 	
 2004-03-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
