@@ -492,7 +492,7 @@ static struct argp_option options[] = {
   {"verbose", 'v', 0, 0,
    N_("verbosely list files processed"), 81 },
   {"checkpoint", CHECKPOINT_OPTION, 0, 0,
-   N_("print directory names while reading the archive"), 81 },
+   N_("display progress messages every 10th record"), 81 },
   {"check-links", CHECK_LINKS_OPTION, 0, 0,
    N_("print a message if not all links are dumped"), 82 },
   {"totals", TOTALS_OPTION, 0, 0,
