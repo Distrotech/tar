@@ -266,6 +266,61 @@ list_archive (void)
     assign_string (&save_name, 0);
 }
 
+/* Check header checksum */
+/* The standard BSD tar sources create the checksum by adding up the
+   bytes in the header as type char.  I think the type char was unsigned
+   on the PDP-11, but it's signed on the Next and Sun.  It looks like the
+   sources to BSD tar were never changed to compute the checksum
+   correctly, so both the Sun and Next add the bytes of the header as
+   signed chars.  This doesn't cause a problem until you get a file with
+   a name containing characters with the high bit set.  So tar_checksum
+   computes two checksums -- signed and unsigned.  */
+
+enum read_header
+tar_checksum (union block *header)
+{
+  size_t i;
+  int unsigned_sum = 0;		/* the POSIX one :-) */
+  int signed_sum = 0;		/* the Sun one :-( */
+  int recorded_sum;
+  uintmax_t parsed_sum;
+  char *p;
+  
+  p = header->buffer;
+  for (i = sizeof *header; i-- != 0;)
+    {
+      unsigned_sum += (unsigned char) *p;
+      signed_sum += (signed char) (*p++);
+    }
+
+  if (unsigned_sum == 0)
+    return HEADER_ZERO_BLOCK;
+
+  /* Adjust checksum to count the "chksum" field as blanks.  */
+
+  for (i = sizeof header->header.chksum; i-- != 0;)
+    {
+      unsigned_sum -= (unsigned char) header->header.chksum[i];
+      signed_sum -= (signed char) (header->header.chksum[i]);
+    }
+  unsigned_sum += ' ' * sizeof header->header.chksum;
+  signed_sum += ' ' * sizeof header->header.chksum;
+
+  parsed_sum = from_header (header->header.chksum,
+			    sizeof header->header.chksum, 0,
+			    (uintmax_t) 0,
+			    (uintmax_t) TYPE_MAXIMUM (int));
+  if (parsed_sum == (uintmax_t) -1)
+    return HEADER_FAILURE;
+
+  recorded_sum = parsed_sum;
+  
+  if (unsigned_sum != recorded_sum && signed_sum != recorded_sum)
+    return HEADER_FAILURE;
+
+  return HEADER_SUCCESS;
+}
+
 /* Read a block that's supposed to be a header block.  Return its
    address in "current_header", and if it is good, the file's size in
    current_stat_info.stat.st_size.
@@ -279,23 +334,9 @@ list_archive (void)
    You must always set_next_block_after(current_header) to skip past
    the header which this routine reads.  */
 
-/* The standard BSD tar sources create the checksum by adding up the
-   bytes in the header as type char.  I think the type char was unsigned
-   on the PDP-11, but it's signed on the Next and Sun.  It looks like the
-   sources to BSD tar were never changed to compute the checksum
-   correctly, so both the Sun and Next add the bytes of the header as
-   signed chars.  This doesn't cause a problem until you get a file with
-   a name containing characters with the high bit set.  So read_header
-   computes two checksums -- signed and unsigned.  */
-
 enum read_header
 read_header (bool raw_extended_headers)
 {
-  size_t i;
-  int unsigned_sum;		/* the POSIX one :-) */
-  int signed_sum;		/* the Sun one :-( */
-  int recorded_sum;
-  uintmax_t parsed_sum;
   char *p;
   union block *header;
   union block *header_copy;
@@ -309,44 +350,15 @@ read_header (bool raw_extended_headers)
 
   while (1)
     {
+      enum read_header status;
+      
       header = find_next_block ();
       current_header = header;
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      unsigned_sum = 0;
-      signed_sum = 0;
-      p = header->buffer;
-      for (i = sizeof *header; i-- != 0;)
-	{
-	  unsigned_sum += (unsigned char) *p;
-	  signed_sum += (signed char) (*p++);
-	}
-
-      if (unsigned_sum == 0)
-	return HEADER_ZERO_BLOCK;
-
-      /* Adjust checksum to count the "chksum" field as blanks.  */
-
-      for (i = sizeof header->header.chksum; i-- != 0;)
-	{
-	  unsigned_sum -= (unsigned char) header->header.chksum[i];
-	  signed_sum -= (signed char) (header->header.chksum[i]);
-	}
-      unsigned_sum += ' ' * sizeof header->header.chksum;
-      signed_sum += ' ' * sizeof header->header.chksum;
-
-      parsed_sum = from_header (header->header.chksum,
-				sizeof header->header.chksum, 0,
-				(uintmax_t) 0,
-				(uintmax_t) TYPE_MAXIMUM (int));
-      if (parsed_sum == (uintmax_t) -1)
-	return HEADER_FAILURE;
-
-      recorded_sum = parsed_sum;
-
-      if (unsigned_sum != recorded_sum && signed_sum != recorded_sum)
-	return HEADER_FAILURE;
+      if ((status = tar_checksum (header)) != HEADER_SUCCESS)
+	return status;
 
       /* Good block.  Decode file size and return.  */
 
