@@ -27,7 +27,7 @@
 #ifndef __attribute__
 /* This feature is available in gcc versions 2.5 and later.  */
 # if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 5) || __STRICT_ANSI__
-#  define __attribute__(Spec) /* empty */
+#  define __attribute__(spec) /* empty */
 # endif
 #endif
 
@@ -126,11 +126,11 @@ extern int errno;
 # ifdef stat
 #  undef stat
 # endif
-# define stat(path, buf) statx (path, buf, STATSIZE, STX_HIDDEN)
+# define stat(file_name, buf) statx (file_name, buf, STATSIZE, STX_HIDDEN)
 # ifdef lstat
 #  undef lstat
 # endif
-# define lstat(path, buf) statx (path, buf, STATSIZE, STX_HIDDEN | STX_LINK)
+# define lstat(file_name, buf) statx (file_name, buf, STATSIZE, STX_HIDDEN | STX_LINK)
 #endif
 
 #if STAT_MACROS_BROKEN
@@ -152,60 +152,60 @@ extern int errno;
 #endif
 
 #ifndef S_ISDIR
-# define S_ISDIR(Mode) (((Mode) & S_IFMT) == S_IFDIR)
+# define S_ISDIR(mode) (((mode) & S_IFMT) == S_IFDIR)
 #endif
 #ifndef S_ISREG
-# define S_ISREG(Mode) (((Mode) & S_IFMT) == S_IFREG)
+# define S_ISREG(mode) (((mode) & S_IFMT) == S_IFREG)
 #endif
 
 #ifndef S_ISBLK
 # ifdef S_IFBLK
-#  define S_ISBLK(Mode) (((Mode) & S_IFMT) == S_IFBLK)
+#  define S_ISBLK(mode) (((mode) & S_IFMT) == S_IFBLK)
 # else
-#  define S_ISBLK(Mode) 0
+#  define S_ISBLK(mode) 0
 # endif
 #endif
 #ifndef S_ISCHR
 # ifdef S_IFCHR
-#  define S_ISCHR(Mode) (((Mode) & S_IFMT) == S_IFCHR)
+#  define S_ISCHR(mode) (((mode) & S_IFMT) == S_IFCHR)
 # else
-#  define S_ISCHR(Mode) 0
+#  define S_ISCHR(mode) 0
 # endif
 #endif
 #ifndef S_ISCTG
 # ifdef S_IFCTG
-#  define S_ISCTG(Mode) (((Mode) & S_IFMT) == S_IFCTG)
+#  define S_ISCTG(mode) (((mode) & S_IFMT) == S_IFCTG)
 # else
-#  define S_ISCTG(Mode) 0
+#  define S_ISCTG(mode) 0
 # endif
 #endif
 #ifndef S_ISDOOR
-# define S_ISDOOR(Mode) 0
+# define S_ISDOOR(mode) 0
 #endif
 #ifndef S_ISFIFO
 # ifdef S_IFIFO
-#  define S_ISFIFO(Mode) (((Mode) & S_IFMT) == S_IFIFO)
+#  define S_ISFIFO(mode) (((mode) & S_IFMT) == S_IFIFO)
 # else
-#  define S_ISFIFO(Mode) 0
+#  define S_ISFIFO(mode) 0
 # endif
 #endif
 #ifndef S_ISLNK
 # ifdef S_IFLNK
-#  define S_ISLNK(Mode) (((Mode) & S_IFMT) == S_IFLNK)
+#  define S_ISLNK(mode) (((mode) & S_IFMT) == S_IFLNK)
 # else
-#  define S_ISLNK(Mode) 0
+#  define S_ISLNK(mode) 0
 # endif
 #endif
 #ifndef S_ISSOCK
 # ifdef S_IFSOCK
-#  define S_ISSOCK(Mode) (((Mode) & S_IFMT) == S_IFSOCK)
+#  define S_ISSOCK(mode) (((mode) & S_IFMT) == S_IFSOCK)
 # else
-#  define S_ISSOCK(Mode) 0
+#  define S_ISSOCK(mode) 0
 # endif
 #endif
 
 #if !HAVE_MKFIFO && !defined mkfifo && defined S_IFIFO
-# define mkfifo(Path, Mode) (mknod (Path, (Mode) | S_IFIFO, 0))
+# define mkfifo(file_name, mode) (mknod (file_name, (mode) | S_IFIFO, 0))
 #endif
 
 #ifndef S_ISUID
@@ -297,9 +297,9 @@ extern int errno;
 
 #ifndef GOT_MAJOR
 # if MSDOS
-#  define major(Device)		(Device)
-#  define minor(Device)		(Device)
-#  define makedev(Major, Minor)	(((Major) << 8) | (Minor))
+#  define major(device)		(device)
+#  define minor(device)		(device)
+#  define makedev(major, minor)	(((major) << 8) | (minor))
 #  define GOT_MAJOR
 # endif
 #endif
@@ -313,9 +313,9 @@ extern int errno;
 #endif
 
 #ifndef GOT_MAJOR
-# define major(Device)		(((Device) >> 8) & 0xff)
-# define minor(Device)		((Device) & 0xff)
-# define makedev(Major, Minor)	(((Major) << 8) | (Minor))
+# define major(device)		(((device) >> 8) & 0xff)
+# define minor(device)		((device) & 0xff)
+# define makedev(major, minor)	(((major) << 8) | (minor))
 #endif
 
 #undef GOT_MAJOR
@@ -346,10 +346,10 @@ extern int errno;
 #define DEFAULT_ST_BLKSIZE 512
 
 #if !HAVE_ST_BLKSIZE
-# define ST_BLKSIZE(Statbuf) DEFAULT_ST_BLKSIZE
+# define ST_BLKSIZE(statbuf) DEFAULT_ST_BLKSIZE
 #else
-# define ST_BLKSIZE(Statbuf) \
-    ((Statbuf).st_blksize > 0 ? (Statbuf).st_blksize : DEFAULT_ST_BLKSIZE)
+# define ST_BLKSIZE(statbuf) \
+    ((statbuf).st_blksize > 0 ? (statbuf).st_blksize : DEFAULT_ST_BLKSIZE)
 #endif
 
 /* Extract or fake data from a `struct stat'.  ST_NBLOCKS gives the
@@ -360,13 +360,13 @@ extern int errno;
 
 #if !HAVE_ST_BLOCKS
 # if defined(_POSIX_SOURCE) || !defined(BSIZE)
-#  define ST_NBLOCKS(Statbuf) ((Statbuf).st_size / ST_NBLOCKSIZE + ((Statbuf).st_size % ST_NBLOCKSIZE != 0))
+#  define ST_NBLOCKS(statbuf) ((statbuf).st_size / ST_NBLOCKSIZE + ((statbuf).st_size % ST_NBLOCKSIZE != 0))
 # else
    off_t st_blocks ();
-#  define ST_NBLOCKS(Statbuf) (st_blocks ((Statbuf).st_size))
+#  define ST_NBLOCKS(statbuf) (st_blocks ((statbuf).st_size))
 # endif
 #else
-# define ST_NBLOCKS(Statbuf) ((Statbuf).st_blocks)
+# define ST_NBLOCKS(statbuf) ((statbuf).st_blocks)
 # if defined(hpux) || defined(__hpux__) || defined(__hpux)
 #  define ST_NBLOCKSIZE 1024
 # else
@@ -475,7 +475,7 @@ char *getenv ();
 # include <locale.h>
 #endif
 #if !HAVE_SETLOCALE
-# define setlocale(Category, Locale) /* empty */
+# define setlocale(category, locale) /* empty */
 #endif
 
 #include <time.h>
@@ -503,7 +503,7 @@ time_t time ();
 #define N_(msgid) msgid
 
 #if ! defined valloc && ! HAVE_DECL_VALLOC
-# define valloc(Size) malloc (Size)
+# define valloc(size) malloc (size)
 #endif
 
 #if MSDOS
