@@ -476,8 +476,10 @@ char *getenv ();
 #endif
 
 #include <time.h>
-#include <sys/time.h>
-#ifndef time
+#if defined(HAVE_SYS_TIME_H) && defined(TIME_WITH_SYS_TIME)
+# include <sys/time.h>
+#endif
+#if ! HAVE_DECL_TIME
 time_t time ();
 #endif
 
