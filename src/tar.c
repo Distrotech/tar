@@ -186,6 +186,11 @@ struct option long_options[] =
 	{"compress-block",	0,	&f_compress,		2},
 	{"sparse",		0,	&f_sparse_files,	1},
 	{"tape-length",		1,	0,			'L'},
+	{"remove-files",	0,	&f_remove_files,	1},
+	{"ignore-failed-read",	0,	&f_ignore_failed_read,	1},
+	{"checkpoint",		0,	&f_checkpoint,		1},
+	{"show-omitted-dirs",	0,	&f_show_omitted_dirs,	1},
+	{"volno-file",		1,	0,			17},
 
 	{0, 0, 0, 0}
 };
@@ -209,6 +214,9 @@ main(argc, argv)
 	if(!n_argv)
 		name_init(argc, argv);
 
+	if (f_volno_file)
+	  init_volume_number ();
+	
 	switch(cmd_mode) {
 	case CMD_CAT:
 	case CMD_UPDATE:
@@ -273,6 +281,8 @@ main(argc, argv)
  		fprintf(stderr,"For more information, type ``%s +help''.\n",tar);
 		exit(EX_ARGSBAD);
 	}
+	if (f_volno_file)
+	  closeout_volume_number ();
 	exit(errors);
 	/* NOTREACHED */
 }
@@ -341,6 +351,10 @@ options(argc, argv)
 			filename_terminator = '\0';
 			break;
 
+		case 17:
+			f_volno_file = optarg;
+			break;
+			
 		case 'g':	/* We are making a GNU dump; save
 				   directories at the beginning of
 				   the archive, and include in each
@@ -630,6 +644,7 @@ Other options:\n\
 	fputs ("\
 -B, --read-full-blocks	reblock as we read (for reading 4.2BSD pipes)\n\
 -C, --directory DIR	change to directory DIR\n\
+--checkpoint		print directory names while reading the archive\n\
 ", stdout); /* KLUDGE */ fprintf(stdout, "\
 -f, --file [HOSTNAME:]F	use archive file or device F (default %s)\n",
 				 DEF_AR_FILE); fputs("\
@@ -638,6 +653,7 @@ Other options:\n\
 -g, --listed-incremental F create/list/extract new GNU-format incremental backup\n\
 -h, --dereference	don't dump symlinks; dump the files they point to\n\
 -i, --ignore-zeros	ignore blocks of zeros in archive (normally mean EOF)\n\
+--ignore-failed-read	don't exit with non-zero status on unreadable files\n\
 -k, --keep-old-files	keep existing files; don't overwrite them from archive\n\
 -K, --starting-file FILE	begin at FILE in the archive\n\
 -l, --one-file-system	stay in local file system when creating an archive\n\
@@ -656,6 +672,7 @@ Other options:\n\
 --preserve		like -p -s\n\
 ", stdout); /* KLUDGE */ fputs("\
 -R, --record-number	show record number within archive with each message\n\
+--remove-files		remove files after adding them to the archive\n\
 -s, --same-order,\n\
     --preserve-order	list of names to extract is sorted to match archive\n\
 --same-order		create extracted files with the same ownership \n\
