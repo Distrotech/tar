@@ -50,7 +50,7 @@ time_t time ();
 
 /* Variables.  */
 
-static tarlong total_written;	/* bytes written on all volumes */
+static tarlong prev_written;	/* bytes written on previous volumes */
 static tarlong bytes_written;	/* bytes written on this volume */
 
 /* FIXME: The following four variables should ideally be static to this
@@ -145,17 +145,10 @@ myfork (void)
 #endif /* DEBUG FORK */
 
 void
-init_total_written (void)
-{
-  clear_tarlong (total_written);
-  clear_tarlong (bytes_written);
-}
-
-void
 print_total_written (void)
 {
   fprintf (stderr, _("Total bytes written: "));
-  print_tarlong (total_written, stderr);
+  fprintf (stderr, TARLONG_FORMAT, prev_written + bytes_written);
   fprintf (stderr, "\n");
 }
 
@@ -894,8 +887,7 @@ flush_write (void)
   if (checkpoint_option && !(++checkpoint % 10))
     WARN ((0, 0, _("Write checkpoint %d"), checkpoint));
 
-  if (!zerop_tarlong (tape_length_option)
-      && !lessp_tarlong (bytes_written, tape_length_option))
+  if (tape_length_option && tape_length_option <= bytes_written)
     {
       errno = ENOSPC;		/* FIXME: errno should be read-only */
       status = 0;
@@ -906,11 +898,9 @@ flush_write (void)
     status = write_archive_buffer ();
   if (status != record_size && !multi_volume_option)
     write_error (status);
-  else if (totals_option)
-    add_to_tarlong (total_written, record_size);
 
   if (status > 0)
-    add_to_tarlong (bytes_written, status);
+    bytes_written += status;
 
   if (status == record_size)
     {
@@ -952,7 +942,9 @@ flush_write (void)
   if (!new_volume (ACCESS_WRITE))
     return;
 
-  clear_tarlong (bytes_written);
+  if (totals_option)
+    prev_written += bytes_written;
+  bytes_written = 0;
 
   if (volume_label_option && real_s_name[0])
     {
@@ -1006,10 +998,9 @@ flush_write (void)
   status = write_archive_buffer ();
   if (status != record_size)
     write_error (status);
-  else if (totals_option)
-    add_to_tarlong (total_written, record_size);
 
-  add_to_tarlong (bytes_written, record_size);
+  bytes_written += status;
+
   if (copy_back)
     {
       record_start += copy_back;
