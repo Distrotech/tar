@@ -1,6 +1,6 @@
 %{
 /* Parse a string into an internal time stamp.
-   Copyright 1999, 2000 Free Software Foundation, Inc.
+   Copyright (C) 1999, 2000, 2002, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,10 +27,9 @@
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
-# ifdef HAVE_ALLOCA_H
-#  include <alloca.h>
-# endif
 #endif
+
+#include <alloca.h>
 
 /* Since the code of getdate.y is not included in the Emacs executable
    itself, there is no need to #define static in this file.  Even if
@@ -908,7 +907,7 @@ get_date (const char *p, const time_t *now)
   pc.local_zones_seen = 0;
   pc.zones_seen = 0;
 
-#if HAVE_TM_ZONE
+#if HAVE_STRUCT_TM_TM_ZONE
   pc.local_time_zone_table[0].name = tmp->tm_zone;
   pc.local_time_zone_table[0].type = tLOCAL_ZONE;
   pc.local_time_zone_table[0].value = tmp->tm_isdst;
