@@ -27,16 +27,38 @@
 for option; do
   case $option in
   --help)
-    echo "$0: usage: $0 [--gnulib-srcdir=DIR]"
+    echo "$0: usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME]"
     exit;;
   --gnulib-srcdir=*)
     GNULIB_SRCDIR=`expr "$1" : '--gnulib-srcdir=\(.*\)'`;;
+  --cvs-auth=*)
+    CVS_AUTH=`expr "$1" : '--cvs-auth=\(.*\)'`;;
+  --cvs-user=*)
+    CVS_USER=`expr "$1" : '--cvs-user=\(.*\)'`;;
   *)
     echo >&2 "$0: $option: unknown option"
     exit 1;;
   esac
 done
 
+build_cvs_prefix() {
+  CVS_PREFIX=:${1}:
+  if [ "${2}" != - ]; then
+    CVS_PREFIX=${CVS_PREFIX}${2}@
+  fi
+}
+
+case "${CVS_AUTH--}" in
+-)       : ${CVS_RSH:?}
+         CVS_PREFIX="";;
+pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs};;
+gserver|server)
+         build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+ext)     : ${CVS_RSH:?}
+         build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+*)       echo "$0: Unknown CVS access method" >&2
+         exit 1;;
+esac
 
 echo "$0: Bootstrapping CVS tar..."
 
@@ -50,7 +72,11 @@ case ${GNULIB_SRCDIR--} in
   if [ ! -d gnulib ]; then
     trap exit 1 2 13 15
     trap 'rm -fr gnulib; exit 1' 0
-    cvs -q -d savannah.gnu.org:/cvsroot/gnulib co gnulib  || exit
+    
+    if [ "${CVS_AUTH--}" = "pserver" ]; then
+      cvs -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib login || exit
+    fi
+    cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib co gnulib  || exit
     trap 0
   fi
   GNULIB_SRCDIR=gnulib
