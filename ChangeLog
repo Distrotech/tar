@@ -1,3 +1,15 @@
+2003-11-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/sparse.c (sparse_diff_file): New function
+	* src/common.h (sys_compare_uid,sys_compare_gid): New functions
+	(sys_compare_uid_gid): Removed.
+	(sys_compare_links,report_difference): Changed prototype
+	(sparse_diff_file): New function
+	* src/system.c (sys_compare_uid,sys_compare_gid): New functions
+	(sys_compare_uid_gid): Removed.
+	(sys_compare_links): Changed declaration
+	* src/compare.c (diff_archive): Use sparse_diff_file.
+
 2003-11-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Rewritten sparse file handling.
