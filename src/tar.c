@@ -1224,7 +1224,7 @@ see the file named COPYING for details."));
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
     archive_format = POSIX_FORMAT;
 
-  if ((volume_label_option
+  if (((volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
        || incremental_option || multi_volume_option || sparse_option)
       && archive_format != OLDGNU_FORMAT && archive_format != GNU_FORMAT)
     USAGE_ERROR ((0, 0,
