@@ -298,7 +298,7 @@ clear_buffer (char *buffer)
 }
 
 /*-------------------------------------------------------------------------.
-| Write the EOT block(s).  We actually zero at least one block, through	   |
+| Write the EOT block(s).  We zero at least two blocks, through		   |
 | the end of the record.  Old tar, as previous versions of GNU tar, writes |
 | garbage after two zeroed blocks.					   |
 `-------------------------------------------------------------------------*/
@@ -307,14 +307,11 @@ void
 write_eot (void)
 {
   union block *pointer = find_next_block ();
-
-  if (pointer)
-    {
-      size_t space = available_space_after (pointer);
-
-      memset (pointer->buffer, 0, space);
-      set_next_block_after (pointer);
-    }
+  memset (pointer->buffer, 0, BLOCKSIZE);
+  set_next_block_after (pointer);
+  pointer = find_next_block ();
+  memset (pointer->buffer, 0, available_space_after (pointer));
+  set_next_block_after (pointer);
 }
 
 /*-----------------------------------------------------.
