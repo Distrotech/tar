@@ -307,13 +307,10 @@ is_regular_file (const char *name)
 {
   struct stat stbuf;
 
-  if (stat (name, &stbuf) < 0)
-    return 1;
-
-  if (S_ISREG (stbuf.st_mode))
-    return 1;
-
-  return 0;
+  if (stat (name, &stbuf) == 0)
+    return S_ISREG (stbuf.st_mode);
+  else
+    return errno == ENOENT;
 }
 
 static ssize_t
@@ -808,8 +805,7 @@ open_archive (enum access_mode access)
 
       if (backed_up_flag)
 	undo_last_backup ();
-      FATAL_ERROR ((0, saved_errno, _("Cannot open %s"),
-		    archive_name_array[0]));
+      FATAL_ERROR ((0, saved_errno, "%s", archive_name_array[0]));
     }
 
 #if !MSDOS
@@ -822,8 +818,9 @@ open_archive (enum access_mode access)
     dev_null_output =
       (strcmp (archive_name_array[0], dev_null) == 0
        || (! _isrmt (archive)
-	   && stat (dev_null, &dev_null_stat) == 0
 	   && S_ISCHR (archive_stat.st_mode)
+	   && stat (dev_null, &dev_null_stat) == 0
+	   && S_ISCHR (dev_null_stat.st_mode)
 	   && archive_stat.st_rdev == dev_null_stat.st_rdev));
   }
 
