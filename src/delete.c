@@ -234,7 +234,7 @@ delete_archive_members (void)
   if (logical_status == HEADER_SUCCESS
       || logical_status == HEADER_SUCCESS_EXTENDED)
     {
-      write_archive_to_stdout = 0;
+      write_archive_to_stdout = false;
 
       /* Save away blocks before this one in this record.  */
 
