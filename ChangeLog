@@ -1,3 +1,35 @@
+2004-05-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* README: Updated
+	* PORTS: Updated
+	* configure.ac: Call gl_AC_TYPE_INTMAX_T. Document
+	DEFAULT_.* variables. Use DEFAULT_RMT_COMMAND to set
+	the pathname of the rmt utility.
+	New option --enable-backup-scripts.
+	* doc/tar.texi: Updated
+	* scripts/Makefile.am: Install the scripts only if requested
+	by the configure.
+	* scripts/backup.in: Fixed --version output.
+	Fixed initialization of the listing files and printing
+	the time of the last previous level dump.
+	* scripts/restore.in: Fixed --version output.
+	* src/Makefile.am (localedir.h rule): Generate correct
+	DEFAULT_RMT_COMMAND variable.
+	* src/common.h (rmt_command_option): New variable.
+	* src/list.c (read_and): Print block number before
+	issuing 'Skipping to next header' diagnostics, if
+	requested by block_number_option.
+	* src/rtapelib.c: Use rmt_command_option instead of 
+	hardcoded "/etc/rmt".
+	* src/tar.c: New option --rmt-command.
+	(decode_options): Handle --rmt-command. Initialize
+	rmt_command_option to DEFAULT_RMT_COMMAND.
+
+2004-05-09  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* doc/tar.texi: Further update.
+
 2004-05-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Minor fix
