@@ -131,7 +131,7 @@
 @set xref-blocking-factor @xref{Blocking Factor}
 @set pxref-blocking-factor @pxref{Blocking Factor}
 
-@set op-bzip2 @kbd{--bzip2} (@kbd{-y})
+@set op-bzip2 @kbd{--bzip2} (@kbd{-I})
 @set ref-bzip2 @ref{gzip}
 @set xref-bzip2 @xref{gzip}
 @set pxref-bzip2 @pxref{gzip}
@@ -720,7 +720,7 @@ Date input formats
 * General date syntax::         Common rules.
 * Calendar date item::          19 Dec 1994.
 * Time of day item::            9:20pm.
-* Timezone item::               EST, DST, BST, UCT, AHST, ...
+* Time zone item::              EST, GMT, UTC, ...
 * Day of week item::            Monday and others.
 * Relative item in date strings::  next tuesday, 2 years ago.
 * Pure numbers in date strings::  19931219, 1440.
@@ -879,7 +879,7 @@ archive does not destroy the copies of the files that exist outside of
 the archive.  You may also @dfn{list} the members in a given archive
 (this is often thought of as ``printing'' them to the standard output,
 or the command line), or @dfn{append} members to a pre-existing archive.
-All of these operations can be peformed using @code{tar}.
+All of these operations can be performed using @code{tar}.
 
 @node What tar Does, Naming tar Archives, Definitions, Introduction
 @section What @code{tar} Does
@@ -1256,7 +1256,7 @@ tar: can't open /dev/rsmt0 : I/O error
 @end example
 
 @noindent
-To avoid confusion, we recommend that you always specfiy an archive file
+To avoid confusion, we recommend that you always specify an archive file
 name by using @value{op-file} when writing your @code{tar} commands.
 For more information on using the @value{op-file} option, see
 @ref{file}.
@@ -2170,7 +2170,7 @@ optionally take an argument}
 "mnemonic" with "long", or *ugh* vice versa.}
 
 Each option has at least one long (or mnemonic) name starting with two
-dashes in a row, e.g. @samp{list}.  The long names are more clear than
+dashes in a row, e.g.@: @samp{--list}.  The long names are more clear than
 their corresponding short or old names.  It sometimes happens that a
 single mnemonic option has many different different names which are
 synonymous, such as @samp{--compare} and @samp{--diff}.  In addition,
@@ -2208,7 +2208,7 @@ mnemonic option.
 @subsection Short Option Style
 
 Most options also have a short option name.  Short options start with
-a single dash, and are followed by a single character, e.g. @samp{-t}
+a single dash, and are followed by a single character, e.g.@: @samp{-t}
 (which is equivalent to @samp{--list}).  The forms are absolutely
 identical in function; they are interchangeable.
 
@@ -2225,7 +2225,7 @@ specific archive, here named @file{archive.tar}.
 
 Short options' letters may be clumped together, but you are not
 required to do this (as compared to old options; see below).  When short
-options are clumped as a set, use one (single) dash for them all, e.g.
+options are clumped as a set, use one (single) dash for them all, e.g.@:
 @w{@samp{@code{tar} -cvf}}.  Only the last option in such a set is allowed
 to have an argument@footnote{Clustering many options, the last of which
 has an argument, is a rather opaque way to write options.  Some wonder if
@@ -2254,7 +2254,7 @@ them or dashes preceding them@footnote{Beware that if you precede options
 with a dash, you are announcing the short option style instead of the
 old option style; short options are decoded differently.}.  This set
 of letters must be the first to appear on the command line, after the
-@code{tar} program name and some whitespace; old options cannot appear
+@code{tar} program name and some white space; old options cannot appear
 anywhere else.  The letter of an old option is exactly the same letter as
 the corresponding short option.  For example, the old option @samp{t} is
 the same as the short option @samp{-t}, and consequently, the same as the
@@ -2335,7 +2335,7 @@ with mnemonic options in some cases.}.  Old style options and either of the
 modern styles of options may be mixed within a single @code{tar} command.
 However, old style options must be introduced as the first arguments only,
 following the rule for old options (old options must appear directly
-after the @code{tar} command and some whitespace).  Modern options may
+after the @code{tar} command and some white space).  Modern options may
 be given only after all arguments to the old options have been collected.
 If this rule is not respected, a modern option might be falsely interpreted
 as the value of the argument to one of the old style options.
@@ -2517,7 +2517,7 @@ Sets the blocking factor @code{tar} uses to @var{blocking} x 512 bytes per
 record.  @FIXME-xref{}
 
 @item --bzip2
-@itemx -y
+@itemx -I
 
 This option tells @code{tar} to read or write archives through @code{bzip2}.
 @FIXME-xref{}
@@ -2678,7 +2678,7 @@ When adding files to an archive, @code{tar} will use @var{permissions}
 for the archive members, rather than the permissions from the files.
 The program @code{chmod} and this @code{tar} option share the same syntax
 for what @var{permissions} might be.  @xref{File permissions, Permissions,
-File permissions, filetutils, GNU file utilities}.  This reference also
+File permissions, fileutils, GNU file utilities}.  This reference also
 has useful information for those not being overly familiar with the Unix
 permission system.
 
@@ -2946,6 +2946,10 @@ them with the equivalent long option.
 
 @samp{--incremental}
 
+@item -I
+
+@samp{--bzip2}
+
 @item -K
 
 @samp{--starting-file}
@@ -3078,10 +3082,6 @@ them with the equivalent long option.
 
 @samp{--extract}
 
-@item -y
-
-@samp{--bzip2}
-
 @item -z
 
 @samp{--gzip}
@@ -3147,7 +3147,7 @@ previous paragraphs.  It is written that both @value{op-version} and
 fact, they cannot ignore each other, and one of them has to win.  We do
 not specify which is stronger, here; experiment if you really wonder!
 
-The short help output is quite succint, and you might have to get back
+The short help output is quite succinct, and you might have to get back
 to the full documentation for precise points.  If you are reading this
 paragraph, you already have the @code{tar} manual in some form.  This
 manual is available in printed form, as a kind of small book.  It may
@@ -3174,7 +3174,7 @@ except, of course, the short result of @kbd{tar --help}.
 @cindex Status information
 @cindex Information on progress and status of operations
 @cindex Verbose operation
-@cindex Block number where error occured
+@cindex Block number where error occurred
 @cindex Error message, block number of
 @cindex Version of the @code{tar} program
 
@@ -3374,9 +3374,9 @@ A socket is stored, within a GNU @code{tar} archive, as a pipe.
 GNU @code{tar} now shows dates as @samp{1996-11-09}, while it used to
 show them as @samp{Nov 11 1996}.  (One can revert to the old behavior by
 defining @code{USE_OLD_CTIME} in @file{src/list.c} before reinstalling.)
-But preferrably, people you should get used to ISO 8601 dates.  Local
-American dates should be made available again with full date localisation
-support, once ready.  In the meantime, programs not being localisable
+But preferably, people should get used to ISO 8601 dates.  Local
+American dates should be made available again with full date localization
+support, once ready.  In the meantime, programs not being localizable
 for dates should prefer international dates, that's really the way to go.
 
 Look up @url{http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html} if you
@@ -3538,7 +3538,7 @@ If you want to replace an archive member, use @value{op-delete} to
 delete the member you want to remove from the archive, , and then use
 @samp{--append} to add the member you want to be in the archive.  Note
 that you can not change the order of the archive; the most recently
-added member will still appear last.  In this sense, you cannot truely
+added member will still appear last.  In this sense, you cannot truly
 ``replace'' one member with another.  (Replacing one member with another
 will not work on certain types of media, such as tapes; see @ref{delete}
 and @ref{Media}, for more information.)
@@ -3795,7 +3795,7 @@ folk
 @end example
 
 When you use @samp{--concatenate}, the source and target archives must
-already exist and must have been created using compatable format
+already exist and must have been created using compatible format
 parameters.  @FIXME-pxref{Matching Format Parameters}The new,
 concatenated archive will be called by the same name as the first
 archive listed on the command line. @FIXME{is there a way to specify a
@@ -4025,7 +4025,7 @@ The @value{op-ignore-zeros} option is turned off by default because many
 versions of @code{tar} write garbage after the end-of-archive entry,
 since that part of the media is never supposed to be read.  GNU
 @code{tar} does not write after the end of an archive, but seeks to
-maintain compatablity among archiving utilities.
+maintain compatiblity among archiving utilities.
 
 @table @kbd
 @item --ignore-zeros
@@ -4158,7 +4158,7 @@ Some people argue that GNU @code{tar} should not hesitate to overwrite
 files with other files when extracting.  When extracting a @code{tar}
 archive, they expect to see a faithful copy of the state of the filesystem
 when the archive was created.  It is debatable that this would always
-be a proper behaviour.  For example, suppose one has an archive in
+be a proper behavior.  For example, suppose one has an archive in
 which @file{usr/local} is a link to @file{usr/local2}.  Since then,
 maybe the site removed the link and renamed the whole hierarchy from
 @file{/usr/local2} to @file{/usr/local}.  Such things happen all the time.
@@ -4167,7 +4167,7 @@ whole hierarchy just to make room for the link to be reinstated (unless it
 @emph{also} simultaneously restores the full @file{/usr/local2}, of course!
 GNU @code{tar} is indeed able to remove a whole hierarchy to reestablish a
 symbolic link, for example, but @emph{only if} @value{op-recursive-unlink}
-is specified to allow this behaviour.  In any case, single files are
+is specified to allow this behavior.  In any case, single files are
 silently removed.
 
 @node Modification Times, Setting Access Permissions, Recursive Unlink, Writing
@@ -4194,7 +4194,7 @@ Use in conjunction with @value{op-extract}.
 @unnumberedsubsubsec Setting Access Permissions
 
 To set the modes (access permissions) of extracted files to those
-recorded for those files in the archive, use @samp{--same-persmissions}
+recorded for those files in the archive, use @samp{--same-permissions}
 in conjunction with the @value{op-extract} operation.  @FIXME{Should be
 aliased to ignore-umask.}
 
@@ -4406,7 +4406,7 @@ Always make simple backups.
 Some people express the desire to @emph{always} use the @var{op-backup}
 option, by defining some kind of alias or script.  This is not as easy
 as one may thing, due to the fact old style options should appear first
-and consume arguments a bit inpredictably for an alias or script.  But,
+and consume arguments a bit unpredictably for an alias or script.  But,
 if you are ready to give up using old style options, you may resort to
 using something like (a Bourne shell function here):
 
@@ -4545,7 +4545,7 @@ options which are more specific to usage as a backup tool.
 To @dfn{back up} a file system means to create archives that contain
 all the files in that file system.  Those archives can then be used to
 restore any or all of those files (for instance if a disk crashes or a
-file is accidently deleted).  File system @dfn{backups} are also
+file is accidentally deleted).  File system @dfn{backups} are also
 called @dfn{dumps}.
 
 @menu
@@ -4647,7 +4647,7 @@ This option handles new GNU-format incremental backup.  It has much the
 same effect as @value{op-incremental}, but also the time when the dump
 is done and the list of directories dumped is written to the given
 @var{file}. When restoring, only files newer than the saved time are
-restored, and the direcotyr list is used to speed up operations.
+restored, and the directory list is used to speed up operations.
 
 @value{op-listed-incremental} acts like @value{op-incremental}, but when
 used in conjunction with @value{op-create} will also cause @code{tar} to
@@ -5394,13 +5394,6 @@ newlines the same as the files-from option does?}
 @node problems with exclude,  , exclude, exclude
 @unnumberedsubsec Problems with Using the @code{exclude} Options
 
-@FIXME{put in for the editor's/editors' amusement, but should be taken
-out in the final draft, just in case! : }
-
-@ignore
-subtitled: getting screwed using exclewed
-@end ignore
-
 Some users find @samp{exclude} options confusing.  Here are some common
 pitfalls:
 
@@ -5591,7 +5584,7 @@ in renamed directories) are not selected properly by these options.
 To select files newer than the modification time of a file that already
 exists, you can use the @samp{--reference} (@samp{-r}) option of GNU
 @code{date}, available in GNU shell utilities 1.13 or later.  It returns
-the timestamp of that already existing file; this timestamp expands to
+the time stamp of the already-existing file; this time stamp expands to
 become the referent date which @samp{--newer} uses to determine which
 files to archive.  For example, you could say,
 
@@ -5831,7 +5824,7 @@ to transfer files between systems.}
 
 @table @kbd
 @item --absolute-names
-Preserves full file names (inclusing superior dirctory names) when
+Preserves full file names (including superior directory names) when
 archiving files.  Preserves leading slash when extracting files.
 
 @end table
@@ -5907,7 +5900,7 @@ midnight, 1 January 1970 UCT.
 * General date syntax::         Common rules.
 * Calendar date item::          19 Dec 1994.
 * Time of day item::            9:20pm.
-* Timezone item::               EST, DST, BST, UCT, AHST, ...
+* Time zone item::              EST, GMT, UTC, ...
 * Day of week item::            Monday and others.
 * Relative item in date strings::  next tuesday, 2 years ago.
 * Pure numbers in date strings::  19931219, 1440.
@@ -5922,7 +5915,7 @@ midnight, 1 January 1970 UCT.
 
 @cindex items in date strings
 A @dfn{date} is a string, possibly empty, containing many items
-separated by whitespace.  The whitespace may be omitted when no
+separated by white space.  The white space may be omitted when no
 ambiguity arises.  The empty string means the beginning of today (i.e.,
 midnight).  Order of the items is immaterial.  A date string may contain
 many flavors of items:
@@ -6033,7 +6026,7 @@ Or, omitting the year:
 @end example
 
 
-@node Time of day item, Timezone item, Calendar date item, Date input formats
+@node Time of day item, Time zone item, Calendar date item, Date input formats
 @section Time of day item
 
 @cindex time of day item
@@ -6045,7 +6038,7 @@ day.  Here are some examples, all of which represent the same time:
 20:02:0
 20:02
 8:02pm
-20:02-0500      # In EST (Eastern U.S. Standard Time).
+20:02-0500      # In EST (U.S. Eastern Standard Time).
 @end example
 
 More generally, the time of the day may be given as
@@ -6069,166 +6062,39 @@ midnight is @samp{12am} while noon is @samp{12pm}.
 as opposed to the old tradition derived from Latin
 which uses @samp{12m} for noon and @samp{12pm} for midnight.)
 
-@cindex timezone correction
-@cindex minutes, timezone correction by
-The time may alternatively be followed by a timezone correction,
+@cindex time zone correction
+@cindex minutes, time zone correction by
+The time may be followed by a time zone correction,
 expressed as @samp{@var{s}@var{hh}@var{mm}}, where @var{s} is @samp{+}
 or @samp{-}, @var{hh} is a number of zone hours and @var{mm} is a number
-of zone minutes.  When a timezone correction is given this way, it
+of zone minutes.  When a time zone correction is given this way, it
 forces interpretation of the time in UTC, overriding any previous
-specification for the timezone or the local timezone.  The @var{minute}
-part of the time of the day may not be elided when a timezone correction
-is used.  This is the only way to specify a timezone correction by
-fractional parts of an hour.
+specification for the time zone or the local time zone.  The @var{minute}
+part of the time of the day may not be elided when a time zone correction
+is used.
 
-Either @samp{am}/@samp{pm} or a timezone correction may be specified,
+Either @samp{am}/@samp{pm} or a time zone correction may be specified,
 but not both.
 
 
-@node Timezone item, Day of week item, Time of day item, Date input formats
-@section Timezone item
+@node Time zone item, Day of week item, Time of day item, Date input formats
+@section Time zone item
 
-@cindex timezone item
+@cindex time zone item
 
-A @dfn{timezone item} specifies an international timezone, indicated by
-a small set of letters.  Any included period is ignored.  Military
-timezone designations use a single letter.  Currently, only integral
-zone hours may be represented in a timezone item.  See the previous
-section for a finer control over the timezone correction.
+A @dfn{time zone item} specifies an international time zone, indicated
+by a small set of letters, e.g.@: @samp{UTC} for Coordinated Universal
+Time.  Any included period is ignored.  By following a non-DST time zone
+by the string @samp{DST} in a separate word (that is, separated by some
+white space), the corresponding DST time zone may be specified.
 
-Here are many non-daylight-savings-time timezones, indexed by the zone
-hour value.
+Time zone items are obsolescent and are not recommended, because they
+are ambiguous; for example, @samp{EST} has a different meaning in
+Australia than in the United States.  Instead, it's better to use
+unambiguous numeric time zone corrections like @samp{-0500}, as
+described in the previous section.
 
-@table @asis
-@item +000
-@cindex Greenwich Mean Time
-@cindex Universal Coordinated Time
-@cindex Western European Time
-@samp{GMT} for Greenwich Mean, @samp{UT} or @samp{UTC} for Universal
-(Coordinated), @samp{WET} for Western European and @samp{Z} for
-militaries.
-@item +100
-@cindex West African Time
-@samp{WAT} for West Africa and
-@samp{A} for militaries.
-@item +200
-@cindex Azores Time
-@samp{AT} for Azores and @samp{B} for militaries.
-@item +300
-@samp{C} for militaries.
-@item +400
-@cindex Atlantic Standard Time
-@samp{AST} for Atlantic Standard and @samp{D} for militaries.
-@item +500
-@cindex Eastern Standard Time
-@samp{E} for militaries and @samp{EST} for Eastern Standard.
-@item +600
-@cindex Central Standard Time
-@samp{CST} for Central Standard and @samp{F} for militaries.
-@item +700
-@cindex Mountain Standard Time
-@samp{G} for militaries and @samp{MST} for Mountain Standard.
-@item +800
-@cindex Pacific Standard Time
-@samp{H} for militaries and @samp{PST} for Pacific Standard.
-@item +900
-@cindex Yukon Standard Time
-@samp{I} for militaries and @samp{YST} for Yukon Standard.
-@item +1000
-@cindex Alaska-Hawaii Time
-@cindex Central Alaska Time
-@cindex Hawaii Standard Time
-@samp{AHST} for Alaska-Hawaii Standard, @samp{CAT} for Central Alaska,
-@samp{HST} for Hawaii Standard and @samp{K} for militaries.
-@item +1100
-@cindex Nome Standard Time
-@samp{L} for militaries and @samp{NT} for Nome.
-@item +1200
-@cindex International Date Line West
-@samp{IDLW} for International Date Line West and @samp{M} for
-militaries.
-@item -100
-@cindex Central European Time
-@cindex Middle European Time
-@cindex Middle European Winter Time
-@cindex French Winter Time
-@cindex Swedish Winter Time
-@samp{CET} for Central European, @samp{FWT} for French Winter,
-@samp{MET} for Middle European, @samp{MEWT} for Middle European
-Winter, @samp{N} for militaries and @samp{SWT} for Swedish Winter.
-@item -200
-@cindex Eastern European Time
-@cindex USSR Zone
-@samp{EET} for Eastern European, USSR Zone 1 and @samp{O} for militaries.
-@item -300
-@cindex Baghdad Time
-@samp{BT} for Baghdad, USSR Zone 2 and @samp{P} for militaries.
-@item -400
-@samp{Q} for militaries and @samp{ZP4} for USSR Zone 3.
-@item -500
-@samp{R} for militaries and @samp{ZP5} for USSR Zone 4.
-@item -600
-@samp{S} for militaries and @samp{ZP6} for USSR Zone 5.
-@item -700
-@cindex West Australian Standard Time
-@samp{T} for militaries and @samp{WAST} for West Australian Standard.
-@item -800
-@cindex China Coast Time
-@samp{CCT} for China Coast, USSR Zone 7 and @samp{U} for militaries.
-@item -900
-@cindex Japan Standard Time
-@samp{JST} for Japan Standard, USSR Zone 8 and @samp{V} for militaries.
-@item -1000
-@cindex East Australian Standard Time
-@cindex Guam Standard Time
-@samp{EAST} for East Australian Standard, @samp{GST} for Guam
-Standard, USSR Zone 9 and @samp{W} for militaries.
-@item -1100
-@samp{X} for militaries.
-@item -1200
-@cindex International Date Line East
-@cindex New Zealand Standard Time
-@samp{IDLE} for International Date Line East, @samp{NZST} for
-New Zealand Standard, @samp{NZT} for New Zealand and @samp{Y} for
-militaries.
-@end table
-
-@cindex daylight savings time
-Here are many DST timezones, indexed by the zone hour value.  Also, by
-following a non-DST timezone by the string @samp{DST} in a separate word
-(that is, separated by some whitespace), the corresponding DST timezone
-may be specified.
-
-@table @asis
-@item 0
-@samp{BST} for British Summer.
-@item +400
-@samp{ADT} for Atlantic Daylight.
-@item +500
-@samp{EDT} for Eastern Daylight.
-@item +600
-@samp{CDT} for Central Daylight.
-@item +700
-@samp{MDT} for Mountain Daylight.
-@item +800
-@samp{PDT} for Pacific Daylight.
-@item +900
-@samp{YDT} for Yukon Daylight.
-@item +1000
-@samp{HDT} for Hawaii Daylight.
-@item -100
-@samp{MEST} for Middle European Summer, @samp{MESZ} for Middle European
-Summer, @samp{SST} for Swedish Summer and @samp{FST} for French Summer.
-@item -700
-@samp{WADT} for West Australian Daylight.
-@item -1000
-@samp{EADT} for Eastern Australian Daylight.
-@item -1200
-@samp{NZDT} for New Zealand Daylight.
-@end table
-
-
-@node Day of week item, Relative item in date strings, Timezone item, Date input formats
+@node Day of week item, Relative item in date strings, Time zone item, Date input formats
 @section Day of week item
 
 @cindex day of week item
@@ -6293,7 +6159,7 @@ The unit of time may be preceded by a multiplier, given as an optionally
 signed number.  Unsigned numbers are taken as positively signed.  No
 number at all implies 1 for a multiplier.  Following a relative item by
 the string @samp{ago} is equivalent to preceding the unit by a
-multiplicator with value @math{-1}.
+multiplier with value @math{-1}.
 
 @findex day @r{in date strings}
 @findex tomorrow @r{in date strings}
@@ -6323,7 +6189,7 @@ to the local time.
 
 @cindex pure numbers in date strings
 
-The precise intepretation of a pure decimal number is dependent of
+The precise interpretation of a pure decimal number depends on
 the context in the date string.
 
 If the decimal number is of the form @var{yyyy}@var{mm}@var{dd} and no
@@ -6387,7 +6253,7 @@ Creating a @code{tar} archive on a particular system that is meant to be
 useful later on many other machines and with other versions of @code{tar}
 is more challenging than you might think.  @code{tar} archive formats
 have been evolving since the first versions of Unix.  Many such formats
-are around, and are not always comptible with each other.  This section
+are around, and are not always compatible with each other.  This section
 discusses a few problems, and gives some advice about making @code{tar}
 archives more portable.
 
@@ -6537,7 +6403,7 @@ old V7 format, and process them conveniently.  It would take years
 before this whole area stabilizes@dots{}
 
 There are plans to raise this 100 limit to 256, and yet produce POSIX
-conformant archives.  Past 256, I do not know yet if GNU @code{tar}
+conforming archives.  Past 256, I do not know yet if GNU @code{tar}
 will go non-POSIX again, or merely refuse to archive the file.
 
 There are plans so GNU @code{tar} support more fully the latest POSIX
@@ -6765,18 +6631,18 @@ About corrupted compressed archives: @code{gzip}'ed files have no
 redundancy, for maximum compression.  The adaptive nature of the
 compression scheme means that the compression tables are implicitly
 spread all over the archive.  If you lose a few blocks, the dynamic
-construction of the compression tables becomes unsychronized, and there
+construction of the compression tables becomes unsynchronized, and there
 is little chance that you could recover later in the archive.
 
 There are pending suggestions for having a per-volume or per-file
 compression in GNU @code{tar}.  This would allow for viewing the
 contents without decompression, and for resynchronizing decompression at
 every volume or file, in case of corrupted archives.  Doing so, we might
-loose some compressibility.  But this would have make recovering easier.
+lose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @table @kbd
-@item -y
+@item -I
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
 
@@ -6833,7 +6699,7 @@ used to compress or uncompress the archive wren writing or reading it.
 To use the older, obsolete, @code{compress} program, use the
 @value{op-compress} option.  The GNU Project recommends you not use
 @code{compress}, because there is a patent covering the algorithm it
-uses.  You could be sued for patent infringment merely by running
+uses.  You could be sued for patent infringement merely by running
 @code{compress}.
 
 I have one question, or maybe it's a suggestion if there isn't a way
@@ -6856,7 +6722,7 @@ choosers and anything you decide on would be fine with me.
 By the way, I like @code{ecc} but if (as the comments say) it can't
 deal with loss of block sync, I'm tempted to throw some time at adding
 that capability.  Supposing I were to actually do such a thing and
-get it (apparantly) working, do you accept contributed changes to
+get it (apparently) working, do you accept contributed changes to
 utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
 
 Isn't that exactly the role of the @value{op-use-compress-prog} option?
@@ -6951,7 +6817,7 @@ all-zero blocks of a file.  Although it works, it's painfully slow for a
 large (sparse) file, even though the resulting tar archive may be small.
 (One user reports that dumping a @file{core} file of over 400 megabytes,
 but with only about 3 megabytes of actual data, took about 9 minutes on
-a Sun Sparstation ELC, with full CPU utilisation.)
+a Sun Sparcstation ELC, with full CPU utilization.)
 
 This reading is required in all cases and is not related to the fact
 the @value{op-sparse} option is used or not, so by merely @emph{not}
@@ -7180,7 +7046,7 @@ mode, and the user restoring files from the archive does not hold such
 permissions, the mode bit(s) specifying those special permissions
 are ignored.  Modes which are not supported by the operating system
 restoring files from the archive will be ignored.  Unsupported modes
-should be faked up when creating or updating an archive; e.g. the
+should be faked up when creating or updating an archive; e.g.@: the
 group permission could be copied from the @emph{other} permission.
 
 The @code{uid} and @code{gid} fields are the numeric user and group
@@ -7258,7 +7124,7 @@ The @code{isextended} flag is set when an @code{extended_header}
 is needed to deal with a file.  Note that this means that this flag
 can only be set when dealing with a sparse file, and it is only set
 in the event that the description of the file will not fit in the
-alloted room for sparse structures in the header.  In other words,
+allotted room for sparse structures in the header.  In other words,
 an extended_header is needed.
 
 The @code{extended_header} structure is used for sparse files which
@@ -7484,7 +7350,7 @@ Theoretically it should be easier under @code{tar} since the blocking
 lets you find a header with some variation of @samp{dd skip=@var{nn}}.
 However, modern @code{cpio}'s and variations have an option to just
 search for the next file header after an error with a reasonable chance
-of re-syncing.  However, lots of tape driver software won't allow you to
+of resyncing.  However, lots of tape driver software won't allow you to
 continue past a media error which should be the only reason for getting
 out of sync unless a file changed sizes while you were writing the
 archive.
@@ -7524,14 +7390,14 @@ mag tapes, or floppy disks.
 
 The amount of data a tape or disk holds depends not only on its size,
 but also on how it is formatted.  A 2400 foot long reel of mag tape
-holds 40 megabytes of data when formated at 1600 bits per inch.  The
+holds 40 megabytes of data when formatted at 1600 bits per inch.  The
 physically smaller EXABYTE tape cartridge holds 2.3 gigabytes.
 
 Magnetic media are re-usable---once the archive on a tape is no longer
 needed, the archive can be erased and the tape or disk used over.
 Media quality does deteriorate with use, however.  Most tapes or disks
-should be disgarded when they begin to produce data errors.  EXABYTE
-tape cartridges should be disgarded when they generate an @dfn{error
+should be discarded when they begin to produce data errors.  EXABYTE
+tape cartridges should be discarded when they generate an @dfn{error
 count} (number of non-usable bits) of more than 10k.
 
 Magnetic media are written and erased using magnetic fields, and
@@ -7592,7 +7458,7 @@ standard output as the default device, and I will not try anymore
 supporting automatic device detection at installation time.  This was
 failing really in too many cases, it was hopeless.  This is now
 completely left to the installer to override standard input and standard
-output for default device, if this seems preferrable to him/her.
+output for default device, if this seems preferable.
 Further, I think @emph{most} actual usages of @code{tar} are done with
 pipes or disks, not really tapes, cartridges or diskettes.
 
@@ -7627,7 +7493,7 @@ When this command is not used, the shell command found when
 the @code{tar} program was installed is used instead.  This is
 the first found of @file{/usr/ucb/rsh}, @file{/usr/bin/remsh},
 @file{/usr/bin/rsh}, @file{/usr/bsd/rsh} or @file{/usr/bin/nsh}.
-The installer may have overriden this by defining the environment
+The installer may have overridden this by defining the environment
 variable @code{RSH} @emph{at installation time}.
 
 @item -[0-7][lmh]
@@ -7920,7 +7786,7 @@ If you are archiving on magnetic tape, using a larger blocking factor
 to fit more data on a tape (because there are fewer gaps). If you are
 archiving on cartridge, a very large blocking factor (say 126 or more)
 greatly increases performance. A smaller blocking factor, on the other
-hand, may be usefull when archiving small files, to avoid archiving lots
+hand, may be useful when archiving small files, to avoid archiving lots
 of nulls as @code{tar} fills out the archive to the end of the record.
 In general, the ideal record size depends on the size of the
 inter-record gaps on the tape you are using, and the average size of the
@@ -8025,7 +7891,7 @@ redirected nor piped,
 the archive is directly handled to a local disk, instead of any special
 device,
 @item
-@value{op-blocking-factor} is not explicitely specified on the @code{tar}
+@value{op-blocking-factor} is not explicitly specified on the @code{tar}
 invocation.
 @end itemize
 
@@ -8132,7 +7998,7 @@ reading error on a huge record, this is less likely that the system will
 succeed in recovering the information.  So, blocking should not be too
 low, nor it should be too high.  @code{tar} uses by default a blocking of
 20 for historical reasons, and it does not really matter when reading or
-writing to disk.  Current tape technology would easily accomodate higher
+writing to disk.  Current tape technology would easily accommodate higher
 blockings.  Sun recommends a blocking of 126 for Exabytes and 96 for DATs.
 We were told that for some DLT drives, the blocking should be a multiple
 of 4Kb, preferably 64Kb (@w{@kbd{-b 128}}) or 256 for decent performance.
@@ -8189,7 +8055,7 @@ So, a rewinding device is normally meant to hold one and only one file.
 If you want to put more than one @code{tar} archive on a given tape, you
 will need to avoid using the rewinding version of the tape device.  You
 will also have to pay special attention to tape positioning.  Errors in
-positionning may overwrite the valuable data already on your tape.  Many
+positioning may overwrite the valuable data already on your tape.  Many
 people, burnt by past experiences, will only use rewinding devices and
 limit themselves to one file per tape, precisely to avoid the risk of
 such errors.  Be fully aware that writing at the wrong position on a
@@ -8526,7 +8392,7 @@ automatically label volumes which are added later.  To label subsequent
 volumes, specify @value{op-label} again in conjunction with the
 @value{op-append}, @value{op-update} or @value{op-concatenate} operation.
 
-@cindex Labelling multi-volume archives
+@cindex Labeling multi-volume archives
 @FIXME{example}
 
 @FIXME{There should be a sample program here, including an exit
@@ -8677,7 +8543,7 @@ to when GNU @code{tar} initially attempted to write it, often soon
 after the operator launches @code{tar} or types the carriage return
 telling that the next tape is ready.  Comparing date labels does give
 an idea of tape throughput only if the delays for rewinding tapes
-and the operator switching them were negligible, which is ususally
+and the operator switching them were negligible, which is usually
 not the case.
 
 @FIXME{was --volume}
@@ -8720,7 +8586,7 @@ of the last written entry.  This option is useful for detecting data
 errors on some tapes.  Archives written to pipes, some cartridge tape
 drives, and some other devices cannot be verified.
 
-One can explicitely compare an already made archive with the file system
+One can explicitly compare an already made archive with the file system
 by using the @value{op-compare} option, instead of using the more automatic
 @value{op-verify} option.  @value{xref-compare}.
 
@@ -8749,7 +8615,7 @@ as long as programming is concerned.
 Almost all tapes and diskettes, and in a few rare cases, even disks can
 be @dfn{write protected}, to protect data on them from being changed.
 Once an archive is written, you should write protect the media to prevent
-the archive from being accidently overwritten or deleted.  (This will
+the archive from being accidentally overwritten or deleted.  (This will
 protect the archive from being changed with a tape or floppy drive---it
 will not protect it from magnet fields or other physical hazards).
 
