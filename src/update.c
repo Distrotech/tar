@@ -1,5 +1,5 @@
 /* Update a tar archive.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright 1988, 1992, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -108,8 +108,6 @@ update_archive (void)
   int found_end = 0;
 
   name_gather ();
-  if (subcommand_option == UPDATE_SUBCOMMAND)
-    name_expand ();
   open_archive (ACCESS_UPDATE);
 
   while (!found_end)
@@ -128,14 +126,14 @@ update_archive (void)
 	    if (subcommand_option == UPDATE_SUBCOMMAND
 		&& (name = name_scan (current_file_name), name))
 	      {
-		struct stat stat_data;
+		struct stat s;
 		enum archive_format unused;
 
 		decode_header (current_header, &current_stat, &unused, 0);
-		if (stat (current_file_name, &stat_data) < 0)
-		  ERROR ((0, errno, _("Cannot stat %s"), current_file_name));
-		else if (current_stat.st_mtime >= stat_data.st_mtime)
-		  name->found = 1;
+		chdir_do (name->change_dir);
+		if (deref_stat (dereference_option, current_file_name, &s) == 0
+		    && s.st_mtime <= current_stat.st_mtime)
+		  add_avoided_name (current_file_name);
 	      }
 	    set_next_block_after (current_header);
 	    if (current_header->oldgnu_header.isextended)
@@ -194,7 +192,7 @@ update_archive (void)
 	if (subcommand_option == CAT_SUBCOMMAND)
 	  append_file (path);
 	else
-	  dump_file (path, (dev_t) -1, 1);
+	  dump_file (path, (dev_t) 0, 1);
       }
   }
 
