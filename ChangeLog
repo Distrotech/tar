@@ -1,3 +1,7 @@
+2004-12-14  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* TODO: Mention sub-second resolution, lutimes, lchmod.
+
 2004-11-27  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Adjust to recent gnulib changes.
