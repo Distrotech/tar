@@ -24,7 +24,7 @@ ssize_t rmt_write__ PARAMS ((int, char *, size_t));
 off_t rmt_lseek__ PARAMS ((int, off_t, int));
 int rmt_ioctl__ PARAMS ((int, int, char *));
 
-/* A filename is remote if it contains a colon not preceeded by a slash,
+/* A filename is remote if it contains a colon not preceded by a slash,
    to take care of `/:/' which is a shorthand for `/.../<CELL-NAME>/fs'
    on machines running OSF's Distributing Computing Environment (DCE) and
    Distributed File System (DFS).  However, when --force-local, a
