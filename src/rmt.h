@@ -1,5 +1,5 @@
 /* Definitions for communicating with a remote tape drive.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1996, 1997 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -12,87 +12,87 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
+extern char *rmt_path__;
 
-#if !defined(_POSIX_VERSION)
-#ifdef __MSDOS__
-#include <io.h>
-#else /* !__MSDOS__ */
-extern off_t lseek ();
-#endif /* __MSDOS__ */
-#endif /* _POSIX_VERSION */
+int rmt_open__ PARAMS ((const char *, int, int, const char *));
+int rmt_close__ PARAMS ((int));
+int rmt_read__ PARAMS ((int, char *, unsigned int));
+int rmt_write__ PARAMS ((int, char *, unsigned int));
+long rmt_lseek__ PARAMS ((int, off_t, int));
+int rmt_ioctl__ PARAMS ((int, int, char *));
 
-#ifdef NO_REMOTE
-#define _isrmt(f)	0
-#define rmtopen		open
-#define rmtaccess	access
-#define rmtstat		stat
-#define rmtcreat	creat
-#define rmtlstat	lstat
-#define rmtread		read
-#define rmtwrite	write
-#define rmtlseek	lseek
-#define rmtclose	close
-#define rmtioctl	ioctl
-#define rmtdup		dup
-#define rmtfstat	fstat
-#define rmtfcntl	fcntl
-#define rmtisatty	isatty
+/* A filename is remote if it contains a colon not preceeded by a slash,
+   to take care of `/:/' which is a shorthand for `/.../<CELL-NAME>/fs'
+   on machines running OSF's Distributing Computing Environment (DCE) and
+   Distributed File System (DFS).  However, when --force-local, a
+   filename is never remote.  */
 
-#else /* !NO_REMOTE */
+#define _remdev(Path) \
+  (!force_local_option && (rmt_path__ = strchr (Path, ':')) \
+   && rmt_path__ > (Path) && rmt_path__[-1] != '/')
 
-#define __REM_BIAS	128
-#define RMTIOCTL
+#define _isrmt(Fd) \
+  ((Fd) >= __REM_BIAS)
+
+#define __REM_BIAS 128
 
 #ifndef O_CREAT
-#define O_CREAT	01000
+# define O_CREAT 01000
 #endif
 
-extern char *__rmt_path;
+#define rmtopen(Path, Oflag, Mode, Command) \
+  (_remdev (Path) ? rmt_open__ (Path, Oflag, __REM_BIAS, Command) \
+   : open (Path, Oflag, Mode))
 
-#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
-#include <string.h>
-#ifndef index
-#define index strchr
-#endif
-#else
-extern char *index ();
-#endif
+#define rmtaccess(Path, Amode) \
+  (_remdev (Path) ? 0 : access (Path, Amode))
 
-#define _remdev(path)	(!f_force_local && (__rmt_path=index(path, ':')))
-#define _isrmt(fd)		((fd) >= __REM_BIAS)
+#define rmtstat(Path, Buffer) \
+  (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : stat (Path, Buffer))
+				/* FIXME: errno should be read-only */
 
-#define rmtopen(path,oflag,mode) (_remdev(path) ? __rmt_open(path, oflag, mode, __REM_BIAS) : open(path, oflag, mode))
-#define rmtaccess(path, amode)	(_remdev(path) ? 0 : access(path, amode))
-#define rmtstat(path, buf)	(_remdev(path) ? (errno = EOPNOTSUPP), -1 : stat(path, buf))
-#define rmtcreat(path, mode)	(_remdev(path) ? __rmt_open (path, 1 | O_CREAT, mode, __REM_BIAS) : creat(path, mode))
-#define rmtlstat(path,buf)	(_remdev(path) ? (errno = EOPNOTSUPP), -1 : lstat(path,buf))
+#define rmtcreat(Path, Mode, Command) \
+   (_remdev (Path) \
+    ? rmt_open__ (Path, 1 | O_CREAT, __REM_BIAS, Command) \
+    : creat (Path, Mode))
 
-#define rmtread(fd, buf, n)	(_isrmt(fd) ? __rmt_read(fd - __REM_BIAS, buf, n) : read(fd, buf, n))
-#define rmtwrite(fd, buf, n)	(_isrmt(fd) ? __rmt_write(fd - __REM_BIAS, buf, n) : write(fd, buf, n))
-#define rmtlseek(fd, off, wh)	(_isrmt(fd) ? __rmt_lseek(fd - __REM_BIAS, off, wh) : lseek(fd, off, wh))
-#define rmtclose(fd)		(_isrmt(fd) ? __rmt_close(fd - __REM_BIAS) : close(fd))
-#ifdef RMTIOCTL
-#define rmtioctl(fd,req,arg)	(_isrmt(fd) ? __rmt_ioctl(fd - __REM_BIAS, req, arg) : ioctl(fd, req, arg))
-#else
-#define rmtioctl(fd,req,arg)	(_isrmt(fd) ? (errno = EOPNOTSUPP), -1 : ioctl(fd, req, arg))
-#endif
-#define rmtdup(fd)		(_isrmt(fd) ? (errno = EOPNOTSUPP), -1 : dup(fd))
-#define rmtfstat(fd, buf)	(_isrmt(fd) ? (errno = EOPNOTSUPP), -1 : fstat(fd, buf))
-#define rmtfcntl(fd,cmd,arg)	(_isrmt(fd) ? (errno = EOPNOTSUPP), -1 : fcntl (fd, cmd, arg))
-#define rmtisatty(fd)		(_isrmt(fd) ? 0 : isatty(fd))
+#define rmtlstat(Path, Buffer) \
+  (_remdev (Path) ? (errno = EOPNOTSUPP), -1 : lstat (Path, Buffer))
+				/* FIXME: errno should be read-only */
 
-#undef RMTIOCTL
+#define rmtread(Fd, Buffer, Length) \
+  (_isrmt (Fd) ? rmt_read__ (Fd - __REM_BIAS, Buffer, Length) \
+   : read (Fd, Buffer, Length))
 
-int __rmt_open ();
-int __rmt_close ();
-int __rmt_read ();
-int __rmt_write ();
-long __rmt_lseek ();
-int __rmt_ioctl ();
-#endif /* !NO_REMOTE */
+#define rmtwrite(Fd, Buffer, Length) \
+  (_isrmt (Fd) ? rmt_write__ (Fd - __REM_BIAS, Buffer, Length) \
+   : write (Fd, Buffer, Length))
+
+#define rmtlseek(Fd, Offset, Where) \
+  (_isrmt (Fd) ? rmt_lseek__ (Fd - __REM_BIAS, Offset, Where) \
+   : lseek (Fd, Offset, Where))
+
+#define rmtclose(Fd) \
+  (_isrmt (Fd) ? rmt_close__ (Fd - __REM_BIAS) : close (Fd))
+
+#define rmtioctl(Fd, Request, Argument) \
+  (_isrmt (Fd) ? rmt_ioctl__ (Fd - __REM_BIAS, Request, Argument) \
+   : ioctl (Fd, Request, Argument))
+
+#define rmtdup(Fd) \
+  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : dup (Fd))
+				/* FIXME: errno should be read-only */
+
+#define rmtfstat(Fd, Buffer) \
+  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fstat (Fd, Buffer))
+				/* FIXME: errno should be read-only */
+
+#define rmtfcntl(Fd, Command, Argument) \
+  (_isrmt (Fd) ? (errno = EOPNOTSUPP), -1 : fcntl (Fd, Command, Argument))
+				/* FIXME: errno should be read-only */
+
+#define rmtisatty(Fd) \
+  (_isrmt (Fd) ? 0 : isatty (Fd))
