@@ -1,5 +1,5 @@
 /* Extract files from a tar archive.
-   Copyright 1988, 92,93,94,96,97,98,99, 2000 Free Software Foundation, Inc.
+   Copyright 1988,92,93,94,96,97,98,99,2000,2001 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-11-19.
 
    This program is free software; you can redistribute it and/or modify it
@@ -18,7 +18,6 @@
 
 #include "system.h"
 #include <quotearg.h>
-#include <time.h>
 
 #if HAVE_UTIME_H
 # include <utime.h>
@@ -321,27 +320,30 @@ repair_delayed_set_stat (char const *dir_name,
 static int
 make_directories (char *file_name)
 {
+  char *cursor0 = file_name + FILESYSTEM_PREFIX_LEN (file_name);
   char *cursor;			/* points into path */
   int did_something = 0;	/* did we do anything yet? */
   int mode;
   int invert_permissions;
   int status;
 
-  for (cursor = strchr (file_name, '/');
-       cursor;
-       cursor = strchr (cursor + 1, '/'))
+  
+  for (cursor = cursor0; *cursor; cursor++)
     {
+      if (! ISSLASH (*cursor))
+	continue;
+
       /* Avoid mkdir of empty string, if leading or double '/'.  */
 
-      if (cursor == file_name || cursor[-1] == '/')
+      if (cursor == cursor0 || ISSLASH (cursor[-1]))
 	continue;
 
       /* Avoid mkdir where last part of path is "." or "..".  */
 
       if (cursor[-1] == '.'
-	  && (cursor == file_name + 1 || cursor[-2] == '/'
+	  && (cursor == cursor0 + 1 || ISSLASH (cursor[-2])
 	      || (cursor[-2] == '.'
-		  && (cursor == file_name + 2 || cursor[-3] == '/'))))
+		  && (cursor == cursor0 + 2 || ISSLASH (cursor[-3])))))
 	continue;
 
       *cursor = '\0';		/* truncate the path there */
@@ -453,13 +455,13 @@ static void
 extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 {
   int sparse_ind = 0;
-  size_t written;
-  ssize_t count;
 
   /* assuming sizeleft is initially totalsize */
 
   while (*sizeleft > 0)
     {
+      size_t written;
+      size_t count;
       union block *data_block = find_next_block ();
       if (! data_block)
 	{
@@ -475,10 +477,13 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
       while (written > BLOCKSIZE)
 	{
 	  count = full_write (fd, data_block->buffer, BLOCKSIZE);
-	  if (count < 0)
-	    write_error (name);
 	  written -= count;
 	  *sizeleft -= count;
+	  if (count != BLOCKSIZE)
+	    {
+	      write_error_details (name, count, BLOCKSIZE);
+	      return;
+	    }
 	  set_next_block_after (data_block);
 	  data_block = find_next_block ();
 	  if (! data_block)
@@ -489,21 +494,16 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 	}
 
       count = full_write (fd, data_block->buffer, written);
+      *sizeleft -= count;
 
-      if (count < 0)
-	write_error (name);
-      else if (count != written)
+      if (count != written)
 	{
 	  write_error_details (name, count, written);
-	  skip_file (*sizeleft);
+	  return;
 	}
 
-      written -= count;
-      *sizeleft -= count;
       set_next_block_after (data_block);
     }
-
-  free (sparsearray);
 }
 
 /* Fix the statuses of all directories whose statuses need fixing, and
@@ -518,8 +518,8 @@ apply_nonancestor_delayed_set_stat (char const *file_name)
       struct delayed_set_stat *data = delayed_set_stat_head;
       if (data->file_name_len < file_name_len
 	  && file_name[data->file_name_len]
-	  && (file_name[data->file_name_len] == '/'
-	      || file_name[data->file_name_len - 1] == '/')
+	  && (ISSLASH (file_name[data->file_name_len])
+	      || ISSLASH (file_name[data->file_name_len - 1]))
 	  && memcmp (file_name, data->file_name, data->file_name_len) == 0)
 	break;
       delayed_set_stat_head = data->next;
@@ -536,13 +536,13 @@ extract_archive (void)
   union block *data_block;
   int fd;
   int status;
-  ssize_t sstatus;
+  size_t count;
   size_t name_length;
   size_t written;
   int openflag;
   mode_t mode;
   off_t size;
-  int skipcrud;
+  size_t skipcrud;
   int counter;
   int interdir_made = 0;
   char typeflag;
@@ -569,24 +569,28 @@ extract_archive (void)
   skipcrud = 0;
   if (! absolute_names_option)
     {
-      while (CURRENT_FILE_NAME[0] == '/')
-	{
-	  static int warned_once;
-	  
-	  if (!warned_once)
-	    {
-	      warned_once = 1;
-	      WARN ((0, 0, _("Removing leading `/' from member names")));
-	    }
-	  skipcrud++;		/* force relative path */
-	}
-
       if (contains_dot_dot (CURRENT_FILE_NAME))
 	{
 	  ERROR ((0, 0, _("%s: Member name contains `..'"),
 		  quotearg_colon (CURRENT_FILE_NAME)));
 	  skip_member ();
 	  return;
+	}
+
+      skipcrud = FILESYSTEM_PREFIX_LEN (current_file_name);
+      while (ISSLASH (CURRENT_FILE_NAME[0]))
+	skipcrud++;
+
+      if (skipcrud)
+	{
+	  static int warned_once;
+	  
+	  if (!warned_once)
+	    {
+	      warned_once = 1;
+	      WARN ((0, 0, _("Removing leading `%.*s' from member names"),
+		     (int) skipcrud, current_file_name));
+	    }
 	}
     }
 
@@ -693,7 +697,8 @@ extract_archive (void)
 	 suffix means a directory.  */
 
       name_length = strlen (CURRENT_FILE_NAME);
-      if (name_length && CURRENT_FILE_NAME[name_length - 1] == '/')
+      if (FILESYSTEM_PREFIX_LEN (CURRENT_FILE_NAME) < name_length
+	  && CURRENT_FILE_NAME[name_length - 1] == '/')
 	goto really_dir;
 
       /* FIXME: deal with protection issues.  */
@@ -773,11 +778,10 @@ extract_archive (void)
 	  memcpy (name, CURRENT_FILE_NAME, name_length_bis);
 	  size = current_stat.st_size;
 	  extract_sparse_file (fd, &size, current_stat.st_size, name);
+	  free (sparsearray);
 	}
       else
-	for (size = current_stat.st_size;
-	     size > 0;
-	     size -= written)
+	for (size = current_stat.st_size; size > 0; )
 	  {
 	    if (multi_volume_option)
 	      {
@@ -802,20 +806,19 @@ extract_archive (void)
 	    if (written > size)
 	      written = size;
 	    errno = 0;
-	    sstatus = full_write (fd, data_block->buffer, written);
+	    count = full_write (fd, data_block->buffer, written);
+	    size -= count;
 
 	    set_next_block_after ((union block *)
 				  (data_block->buffer + written - 1));
-	    if (sstatus == written)
-	      continue;
-
-	    /* Error in writing to file.  Print it, skip to next file in
-	       archive.  */
-
-	    write_error_details (CURRENT_FILE_NAME, sstatus, written);
-	    skip_file (size - written);
-	    break;		/* still do the close, mod time, chmod, etc */
+	    if (count != written)
+	      {
+		write_error_details (CURRENT_FILE_NAME, count, written);
+		break;
+	      }
 	  }
+
+      skip_file (size);
 
       if (multi_volume_option)
 	assign_string (&save_name, 0);
@@ -847,7 +850,8 @@ extract_archive (void)
 	break;
 
       if (absolute_names_option
-	  || (current_link_name[0] != '/'
+	  || (ISSLASH (current_link_name
+		       [FILESYSTEM_PREFIX_LEN (current_link_name)])
 	      && ! contains_dot_dot (current_link_name)))
 	{
 	  while (status = symlink (current_link_name, CURRENT_FILE_NAME),
@@ -1014,6 +1018,7 @@ extract_archive (void)
       name_length = strlen (CURRENT_FILE_NAME);
 
     really_dir:
+
       if (incremental_option)
 	{
 	  /* Read the entry and delete files that aren't listed in the
@@ -1032,7 +1037,19 @@ extract_archive (void)
 	      & MODE_RWX);
 
     again_dir:
-      status = mkdir (CURRENT_FILE_NAME, mode);
+      {
+	/* Do not pass redundant trailing "/" to mkdir, as POSIX does
+	   not allow mkdir to ignore it.  */
+	size_t len = name_length;
+	char ch = '\0';
+	while (FILESYSTEM_PREFIX_LEN (CURRENT_FILE_NAME) < len
+	       && CURRENT_FILE_NAME[len - 1] == '/')
+	  len--, ch = '/';
+	CURRENT_FILE_NAME[len] = '\0';
+	status = mkdir (CURRENT_FILE_NAME, mode);
+	CURRENT_FILE_NAME[len] = ch;
+      }
+
       if (status != 0)
 	{
 	  if (errno == EEXIST && interdir_made)
@@ -1049,7 +1066,7 @@ extract_archive (void)
 	  if (maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
 	    goto again_dir;
 
-	  if (errno != EEXIST || old_files_option == KEEP_OLD_FILES)
+	  if (errno != EEXIST)
 	    {
 	      mkdir_error (CURRENT_FILE_NAME);
 	      if (backup_option)
