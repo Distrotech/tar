@@ -23,11 +23,13 @@
 # include <iconv.h>
 #endif
 
+#ifdef HAVE_LIBICONV
+
 struct langtab
 {
-  char *lang;        /* Language code */
-  char *terr;        /* Territory code */
-  char *charset;     /* Corresponding charset */
+  char const *lang;        /* Language code */
+  char const *terr;        /* Territory code */
+  char const *charset;     /* Corresponding charset */
 };
 
 /* The list of language codes defined in ISO 639 with the corresponding
@@ -216,22 +218,22 @@ static struct langtab langtab[] = {
   { "zh",    "TW", "big5"},            /* Chinese */
   { "zh",    NULL, "gb2312"},          /* Chinese */
   { "zu",    NULL, NULL},              /* Zulu */
-  { NULL }
+  { NULL,    NULL, NULL}
 };
 
 /* Given the language and (optionally) territory code, return the
    default character set for that language. See notes above. */
 
-const char *
-charset_lookup (char *lang, char *terr)
+static char const *
+charset_lookup (char const *lang, char const *terr)
 {
-  static struct langtab *p;
+  struct langtab const *p;
 
   if (!lang)
     return NULL;
   for (p = langtab; p->lang; p++)
     if (strcasecmp (p->lang, lang) == 0
-	&& (terr == NULL 
+	&& (terr == NULL
 	    || p->terr == NULL
 	    || !strcasecmp (p->terr, terr) == 0))
       return p->charset;
@@ -239,7 +241,7 @@ charset_lookup (char *lang, char *terr)
 }
 
 static const char *
-get_input_charset ()
+get_input_charset (void)
 {
   const char *charset = NULL;
   char *tmp;
@@ -268,30 +270,18 @@ get_input_charset ()
   return charset;
 }
 
+#else /* !defined HAVE_LIBICONV */
 
-
-#ifndef HAVE_LIBICONV
+# undef iconv_open
+# define iconv_open(tocode, fromcode) ((iconv_t) -1)
 
-iconv_t
-iconv_open (const char *tocode, const char *fromcode)
-{
-  return (iconv_t)(-1);
-}
+# undef iconv
+# define iconv(cd, inbuf, inbytesleft, outbuf, outbytesleft) ((size_t) 0)
 
-size_t
-iconv (iconv_t cd, ICONV_CONST char **inbuf, size_t *inbytesleft,
-       char **outbuf, size_t *outbytesleft)
-{
-  return 0;
-}
+# undef iconv_close
+# define iconv_close(cd) 0
 
-int
-iconv_close (iconv_t cd)
-{
-  return 0;
-}
-
-#endif /* !HAVE_LIBICONV */
+#endif /* !defined HAVE_LIBICONV */
 
 
 
@@ -310,11 +300,11 @@ utf8_init (bool to_utf)
     }
   return conv_desc[(int) to_utf];
 }
-		  
+
 bool
-utf8_convert(bool to_utf, const char *input, char **output)
+utf8_convert (bool to_utf, char const *input, char **output)
 {
-  const char *ib;
+  char ICONV_CONST *ib;
   char *ob;
   size_t inlen;
   size_t outlen;
@@ -332,7 +322,7 @@ utf8_convert(bool to_utf, const char *input, char **output)
   inlen = strlen (input) + 1;
   outlen = inlen * MB_LEN_MAX + 1;
   ob = *output = xmalloc (outlen);
-  ib = input;
+  ib = (char ICONV_CONST *) input;
   rc = iconv (cd, &ib, &inlen, &ob, &outlen);
   *ob = 0;
   return rc != -1;

@@ -18,6 +18,7 @@
 
 #include "system.h"
 
+#include <fnmatch.h>
 #include <hash.h>
 #include <quotearg.h>
 #include <xstrtol.h>
@@ -30,13 +31,14 @@
 
 #include <fnmatch.h>
 
-bool xheader_protected_pattern_p (const char *pattern);
-bool xheader_protected_keyword_p (const char *keyword);
+static bool xheader_protected_pattern_p (char const *pattern);
+static bool xheader_protected_keyword_p (char const *keyword);
+static void xheader_set_single_keyword (char *) __attribute__ ((noreturn));
 
 /* Used by xheader_finish() */
 static void code_string (char const *string, char const *keyword,
 			 struct xheader *xhdr);
-static void extended_header_init ();
+static void extended_header_init (void);
 
 /* Number of global headers written so far. */
 static size_t global_header_count;
@@ -80,7 +82,7 @@ static char *exthdr_name;
 /* Template for the name field of a 'g' type header */
 static char *globexthdr_name;
 
-bool
+static bool
 xheader_keyword_deleted_p (const char *kw)
 {
   struct keyword_list *kp;
@@ -91,7 +93,7 @@ xheader_keyword_deleted_p (const char *kw)
   return false;
 }
 
-bool
+static bool
 xheader_keyword_override_p (const char *keyword)
 {
   struct keyword_list *kp;
@@ -102,7 +104,7 @@ xheader_keyword_override_p (const char *keyword)
   return false;
 }
 
-void
+static void
 xheader_list_append (struct keyword_list **root, char const *kw,
 		     char const *value)
 {
@@ -113,7 +115,7 @@ xheader_list_append (struct keyword_list **root, char const *kw,
   *root = kp;
 }
 
-void
+static void
 xheader_list_destroy (struct keyword_list **root)
 {
   if (root)
@@ -130,15 +132,14 @@ xheader_list_destroy (struct keyword_list **root)
       *root = NULL;
     }
 }
-	  
-  
-void
+
+static void
 xheader_set_single_keyword (char *kw)
 {
   USAGE_ERROR ((0, 0, _("Keyword %s is unknown or not yet imlemented"), kw));
 }
 
-void
+static void
 xheader_set_keyword_equal (char *kw, char *eq)
 {
   bool global = true;
@@ -157,7 +158,7 @@ xheader_set_keyword_equal (char *kw, char *eq)
 
   for (p = eq + 1; *p && isspace (*p); p++)
     ;
-  
+
   if (strcmp (kw, "delete") == 0)
     {
       if (xheader_protected_pattern_p (p))
@@ -232,11 +233,11 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
   size_t len = strlen (fmt);
   char *q;
   const char *p;
-  char *dirname = NULL;
-  char *basename = NULL;
+  char *dir = NULL;
+  char *base = NULL;
   char pidbuf[64];
   char nbuf[64];
-  
+
   for (p = fmt; *p && (p = strchr (p, '%')); )
     {
       switch (p[1])
@@ -248,25 +249,24 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	case 'd':
 	  if (st)
 	    {
-	      dirname = safer_name_suffix (dir_name (st->orig_file_name),
-					   false);
-	      len += strlen (dirname) - 1;
+	      dir = safer_name_suffix (dir_name (st->orig_file_name), false);
+	      len += strlen (dir) - 1;
 	    }
 	  break;
-	      
+
 	case 'f':
 	  if (st)
 	    {
-	      basename = base_name (st->orig_file_name);
-	      len += strlen (basename) - 1;
+	      base = base_name (st->orig_file_name);
+	      len += strlen (base) - 1;
 	    }
 	  break;
-	      
+
 	case 'p':
 	  to_decimal (getpid (), pidbuf, sizeof pidbuf);
 	  len += strlen (pidbuf) - 1;
 	  break;
-	  
+
 	case 'n':
 	  if (allow_n)
 	    {
@@ -277,7 +277,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	}
       p++;
     }
-  
+
   buf = xmalloc (len + 1);
   for (q = buf, p = fmt; *p; )
     {
@@ -289,19 +289,19 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	      *q++ = *p++;
 	      p++;
 	      break;
-	      
+
 	    case 'd':
-	      if (dirname)
-		q = stpcpy (q, dirname);
+	      if (dir)
+		q = stpcpy (q, dir);
 	      p += 2;
 	      break;
-	      
+
 	    case 'f':
-	      if (basename)
-		q = stpcpy (q, basename);
+	      if (base)
+		q = stpcpy (q, base);
 	      p += 2;
 	      break;
-	      
+
 	    case 'p':
 	      q = stpcpy (q, pidbuf);
 	      p += 2;
@@ -314,7 +314,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 		  p += 2;
 		}
 	      /* else fall through */
-	      
+
 	    default:
 	      *q++ = *p++;
 	      if (*p)
@@ -343,7 +343,7 @@ xheader_xhdr_name (struct tar_stat_info *st)
 #define GLOBAL_HEADER_TEMPLATE "/GlobalHead.%p.%n"
 
 char *
-xheader_ghdr_name ()
+xheader_ghdr_name (void)
 {
   if (!globexthdr_name)
     {
@@ -366,7 +366,7 @@ xheader_write (char type, char *name, struct xheader *xhdr)
   union block *header;
   size_t size;
   char *p;
-  
+
   size = xhdr->size;
   header = start_private_header (name, size);
   header->header.typeflag = type;
@@ -374,11 +374,11 @@ xheader_write (char type, char *name, struct xheader *xhdr)
   simple_finish_header (header);
 
   p = xhdr->buffer;
-  
+
   do
     {
       size_t len;
-      
+
       header = find_next_block ();
       len = BLOCKSIZE;
       if (len > size)
@@ -392,17 +392,17 @@ xheader_write (char type, char *name, struct xheader *xhdr)
     }
   while (size > 0);
   xheader_destroy (xhdr);
-}  
+}
 
 void
-xheader_write_global ()
+xheader_write_global (void)
 {
   char *name;
   struct keyword_list *kp;
 
   if (!keyword_global_override_list)
     return;
-  
+
   extended_header_init ();
   for (kp = keyword_global_override_list; kp; kp = kp->next)
     code_string (kp->value, kp->pattern, &extended_header);
@@ -444,7 +444,7 @@ locate_handler (char const *keyword)
   return NULL;
 }
 
-bool
+static bool
 xheader_protected_pattern_p (const char *pattern)
 {
   struct xhdr_tab const *p;
@@ -455,7 +455,7 @@ xheader_protected_pattern_p (const char *pattern)
   return false;
 }
 
-bool
+static bool
 xheader_protected_keyword_p (const char *keyword)
 {
   struct xhdr_tab const *p;
@@ -534,7 +534,7 @@ decx (void *data, char const *keyword, char const *value)
   if (xheader_keyword_deleted_p (keyword)
       || xheader_keyword_override_p (keyword))
     return;
-  
+
   t = locate_handler (keyword);
   if (t)
     t->decoder (st, value);
@@ -545,12 +545,12 @@ xheader_decode (struct tar_stat_info *st)
 {
   run_override_list (keyword_global_override_list, st);
   run_override_list (global_header_override_list, st);
-  
+
   if (extended_header.size)
     {
       char *p = extended_header.buffer + BLOCKSIZE;
       char *endp = &extended_header.buffer[extended_header.size-1];
-      
+
       while (p < endp)
 	if (!decode_record (&p, decx, st))
 	  break;
@@ -566,7 +566,7 @@ decg (void *data, char const *keyword, char const *value)
 }
 
 void
-xheader_decode_global ()
+xheader_decode_global (void)
 {
   if (extended_header.size)
     {
@@ -581,7 +581,7 @@ xheader_decode_global ()
 }
 
 static void
-extended_header_init ()
+extended_header_init (void)
 {
   if (!extended_header.stk)
     {
@@ -594,7 +594,7 @@ void
 xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
 {
   struct xhdr_tab const *t;
-  
+
   if (extended_header.buffer)
     return;
   t = locate_handler (keyword);
@@ -625,7 +625,7 @@ xheader_read (union block *p, size_t size)
 
       if (len > BLOCKSIZE)
 	len = BLOCKSIZE;
-      
+
       memcpy (&extended_header.buffer[j], p->buffer, len);
       set_next_block_after (p);
 
@@ -783,19 +783,22 @@ code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
 }
 
 static void
-dummy_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+dummy_coder (struct tar_stat_info const *st __attribute__ ((unused)),
+	     char const *keyword __attribute__ ((unused)),
+	     struct xheader *xhdr __attribute__ ((unused)),
+	     void *data __attribute__ ((unused)))
 {
 }
 
 static void
-dummy_decoder (struct tar_stat_info *st, char const *arg)
+dummy_decoder (struct tar_stat_info *st __attribute__ ((unused)),
+	       char const *arg __attribute__ ((unused)))
 {
 }
 
 static void
 atime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_time (st->stat.st_atime, st->atime_nsec, keyword, xhdr);
 }
@@ -808,7 +811,7 @@ atime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 gid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr, void *data)
+	   struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_gid, keyword, xhdr);
 }
@@ -823,7 +826,7 @@ gid_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 gname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_string (st->gname, keyword, xhdr);
 }
@@ -836,7 +839,7 @@ gname_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 linkpath_coder (struct tar_stat_info const *st, char const *keyword,
-		struct xheader *xhdr, void *data)
+		struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_string (st->link_name, keyword, xhdr);
 }
@@ -849,7 +852,7 @@ linkpath_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 ctime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_time (st->stat.st_ctime, st->ctime_nsec, keyword, xhdr);
 }
@@ -862,7 +865,7 @@ ctime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_time (st->stat.st_mtime, st->mtime_nsec, keyword, xhdr);
 }
@@ -875,7 +878,7 @@ mtime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 path_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr, void *data)
+	    struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_string (st->file_name, keyword, xhdr);
 }
@@ -890,7 +893,7 @@ path_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 size_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr, void *data)
+	    struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_size, keyword, xhdr);
 }
@@ -905,7 +908,7 @@ size_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 uid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr, void *data)
+	   struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_uid, keyword, xhdr);
 }
@@ -920,7 +923,7 @@ uid_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 uname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
   code_string (st->uname, keyword, xhdr);
 }
@@ -948,7 +951,8 @@ sparse_size_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 sparse_numblocks_coder (struct tar_stat_info const *st, char const *keyword,
-			struct xheader *xhdr, void *data)
+			struct xheader *xhdr,
+			void *data __attribute__ ((unused)))
 {
   code_num (st->sparse_map_avail, keyword, xhdr);
 }
@@ -1007,18 +1011,18 @@ sparse_numbytes_decoder (struct tar_stat_info *st, char const *arg)
 }
 
 struct xhdr_tab const xhdr_tab[] = {
-  { "atime",	atime_coder,	atime_decoder	},
-  { "comment",	dummy_coder,	dummy_decoder	},
-  { "charset",	dummy_coder,	dummy_decoder	},
-  { "ctime",	ctime_coder,	ctime_decoder	},
-  { "gid",	gid_coder,	gid_decoder	},
-  { "gname",	gname_coder,	gname_decoder	},
-  { "linkpath", linkpath_coder, linkpath_decoder},
-  { "mtime",	mtime_coder,	mtime_decoder	},
-  { "path",	path_coder,	path_decoder	},
-  { "size",	size_coder,	size_decoder	},
-  { "uid",	uid_coder,	uid_decoder	},
-  { "uname",	uname_coder,	uname_decoder	},
+  { "atime",	atime_coder,	atime_decoder,	  false },
+  { "comment",	dummy_coder,	dummy_decoder,	  false },
+  { "charset",	dummy_coder,	dummy_decoder,	  false },
+  { "ctime",	ctime_coder,	ctime_decoder,	  false },
+  { "gid",	gid_coder,	gid_decoder,	  false },
+  { "gname",	gname_coder,	gname_decoder,	  false },
+  { "linkpath", linkpath_coder, linkpath_decoder, false },
+  { "mtime",	mtime_coder,	mtime_decoder,	  false },
+  { "path",	path_coder,	path_decoder,	  false },
+  { "size",	size_coder,	size_decoder,	  false },
+  { "uid",	uid_coder,	uid_decoder,	  false },
+  { "uname",	uname_coder,	uname_decoder,	  false },
 
   /* Sparse file handling */
   { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder, true },
@@ -1034,12 +1038,12 @@ struct xhdr_tab const xhdr_tab[] = {
   /* The next directory entry actually contains the names of files
      that were in the directory at the time the dump was made.
      Supersedes GNUTYPE_DUMPDIR header type.  */
-  { "GNU.dump.name",  dump_name_coder, dump_name_decoder },
-  { "GNU.dump.status", dump_status_coder, dump_status_decoder },
+  { "GNU.dump.name",  dump_name_coder, dump_name_decoder, false },
+  { "GNU.dump.status", dump_status_coder, dump_status_decoder, false },
 
   /* Keeps the tape/volume header. May be present only in the global headers.
      Equivalent to GNUTYPE_VOLHDR.  */
-  { "GNU.volume.header", volume_header_coder, volume_header_decoder },
+  { "GNU.volume.header", volume_header_coder, volume_header_decoder, false },
 
   /* These may be present in a first global header of the archive.
      They provide the same functionality as GNUTYPE_MULTIVOL header.
@@ -1047,9 +1051,9 @@ struct xhdr_tab const xhdr_tab[] = {
      otherwise kept in the size field of a multivolume header.  The
      GNU.volume.offset keeps the offset of the start of this volume,
      otherwise kept in oldgnu_header.offset.  */
-  { "GNU.volume.size", volume_size_coder, volume_size_decoder },
-  { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder },
+  { "GNU.volume.size", volume_size_coder, volume_size_decoder, false },
+  { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder, false },
 #endif
 
-  { NULL, NULL, NULL }
+  { NULL, NULL, NULL, false }
 };

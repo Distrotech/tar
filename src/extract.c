@@ -1,7 +1,7 @@
 /* Extract files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003 Free Software Foundation, Inc.
+   2001, 2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -315,11 +315,11 @@ delay_set_stat (char const *file_name, struct stat const *stat_info,
 }
 
 /* Update the delayed_set_stat info for an intermediate directory
-   created on the path to DIR_NAME.  The intermediate directory turned
+   created on the path to DIR.  The intermediate directory turned
    out to be the same as this directory, e.g. due to ".." or symbolic
    links.  *DIR_STAT_INFO is the status of the directory.  */
 static void
-repair_delayed_set_stat (char const *dir_name,
+repair_delayed_set_stat (char const *dir,
 			 struct stat const *dir_stat_info)
 {
   struct delayed_set_stat *data;
@@ -344,7 +344,7 @@ repair_delayed_set_stat (char const *dir_name,
     }
 
   ERROR ((0, 0, _("%s: Unexpected inconsistency when making directory"),
-	  quotearg_colon (dir_name)));
+	  quotearg_colon (dir)));
 }
 
 /* After a file/link/symlink/directory creation has failed, see if
@@ -361,7 +361,7 @@ make_directories (char *file_name)
   int invert_permissions;
   int status;
 
-  
+
   for (cursor = cursor0; *cursor; cursor++)
     {
       if (! ISSLASH (*cursor))
@@ -423,25 +423,25 @@ static bool
 file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
 {
   struct stat st;
-	    
+
   if (stat (file_name, &st))
     {
       stat_warn (file_name);
       return true; /* Be on the safe side */
     }
   if (!S_ISDIR (st.st_mode)
-      && st.st_mtime >= current_stat_info.stat.st_mtime)
+      && st.st_mtime >= tar_stat->stat.st_mtime)
     {
       return true;
     }
   return false;
-}  
+}
 
 /* Prepare to extract a file.
    Return zero if extraction should not proceed.  */
 
 static int
-prepare_to_extract (char const *file_name, bool directory)
+prepare_to_extract (char const *file_name)
 {
   if (to_stdout_option)
     return 0;
@@ -460,7 +460,7 @@ prepare_to_extract (char const *file_name, bool directory)
     case KEEP_NEWER_FILES:
       if (file_newer_p (file_name, &current_stat_info))
 	{
-	  WARN ((0, 0, _("Current `%s' is newer"), file_name)); 
+	  WARN ((0, 0, _("Current `%s' is newer"), file_name));
 	  return 0;
 	}
       break;
@@ -480,7 +480,7 @@ static int
 maybe_recoverable (char *file_name, int *interdir_made)
 {
   int e = errno;
-  
+
   if (*interdir_made)
     return 0;
 
@@ -501,7 +501,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	      return 0;
 	    }
 	  /* FALL THROUGH */
-	    
+
 	case DEFAULT_OLD_FILES:
 	case NO_OVERWRITE_DIR_OLD_FILES:
 	case OVERWRITE_OLD_FILES:
@@ -628,7 +628,7 @@ extract_archive (void)
 	}
       file_name += prefix_len;
     }
-  
+
   apply_nonancestor_delayed_set_stat (file_name, 0);
 
   /* Take a safety backup of a previously existing file.  */
@@ -648,7 +648,7 @@ extract_archive (void)
   /* KLUDGE */
   typeflag = sparse_member_p (&current_stat_info) ?
                   GNUTYPE_SPARSE : current_header->header.typeflag;
-  
+
   switch (typeflag)
     {
     case GNUTYPE_SPARSE:
@@ -679,7 +679,7 @@ extract_archive (void)
 	  goto extract_file;
 	}
 
-      if (! prepare_to_extract (file_name, 0))
+      if (! prepare_to_extract (file_name))
 	{
 	  skip_member ();
 	  if (backup_option)
@@ -794,7 +794,7 @@ extract_archive (void)
 
     case SYMTYPE:
 #ifdef HAVE_SYMLINK
-      if (! prepare_to_extract (file_name, 0))
+      if (! prepare_to_extract (file_name))
 	break;
 
       if (absolute_names_option
@@ -878,7 +878,7 @@ extract_archive (void)
 	      status = 0;
 	    }
 	}
-  
+
       if (status != 0 && backup_option)
 	undo_last_backup ();
       break;
@@ -899,7 +899,7 @@ extract_archive (void)
 #endif
 
     case LNKTYPE:
-      if (! prepare_to_extract (file_name, 0))
+      if (! prepare_to_extract (file_name))
 	break;
 
     again_link:
@@ -922,7 +922,7 @@ extract_archive (void)
 		    && ds->ino == st1.st_ino
 		    && ds->mtime == st1.st_mtime)
 		  {
-		    struct string_list *p = 
+		    struct string_list *p =
 		      xmalloc (offsetof (struct string_list, string)
 			       + strlen (file_name) + 1);
 		    strcpy (p->string, file_name);
@@ -963,7 +963,7 @@ extract_archive (void)
 
 #if S_IFCHR || S_IFBLK
     make_node:
-      if (! prepare_to_extract (file_name, 0))
+      if (! prepare_to_extract (file_name))
 	break;
 
       status = mknod (file_name, current_stat_info.stat.st_mode,
@@ -984,7 +984,7 @@ extract_archive (void)
 
 #if HAVE_MKFIFO || defined mkfifo
     case FIFOTYPE:
-      if (! prepare_to_extract (file_name, 0))
+      if (! prepare_to_extract (file_name))
 	break;
 
       while (status = mkfifo (file_name, current_stat_info.stat.st_mode),
@@ -1021,7 +1021,7 @@ extract_archive (void)
 	       | (we_are_root ? 0 : MODE_WXUSR))
 	      & MODE_RWX);
 
-      status = prepare_to_extract (file_name, 1);
+      status = prepare_to_extract (file_name);
       if (status == 0)
 	break;
       if (status < 0)
@@ -1053,7 +1053,7 @@ extract_archive (void)
 		}
 	      errno = EEXIST;
 	    }
-	
+
 	  if (maybe_recoverable (file_name, &interdir_made))
 	    goto again_dir;
 

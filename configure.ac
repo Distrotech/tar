@@ -119,6 +119,7 @@ gl_FUNC_STRTOIMAX
 gl_FUNC_STRTOUMAX
 gl_GETDATE
 gl_GETOPT
+gl_GETTIME
 gl_HASH
 gl_HUMAN
 gl_MODECHANGE
@@ -132,6 +133,7 @@ gl_SAVE_CWD
 gl_SAVEDIR
 gl_STRCASE
 gl_TIME_R
+gl_TIMESPEC
 gl_XALLOC
 gl_XGETCWD
 gl_XSTRTOL
@@ -150,7 +152,7 @@ AC_CHECK_MEMBERS([struct stat.st_spare1, struct stat.st_atim.tv_nsec, struct sta
                  [
 #include <sys/types.h>
 #include <sys/stat.h>])
- 
+
 # Save and restore LIBS so e.g., -lrt, isn't added to it.  Otherwise, *all*
 # programs in the package would end up linked with that potentially-shared
 # library, inducing unnecessary run-time overhead.

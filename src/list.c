@@ -1,7 +1,7 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003 Free Software Foundation, Inc.
+   2001, 2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -20,7 +20,7 @@
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Define to non-zero for forcing old ctime format instead of ISO format.  */
-#undef USE_OLD_CTIME 
+#undef USE_OLD_CTIME
 
 #include "system.h"
 #include <quotearg.h>
@@ -78,7 +78,7 @@ read_and (void (*do_something) (void))
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
       xheader_destroy (&extended_header);
-      
+
       status = read_header (false);
       switch (status)
 	{
@@ -92,12 +92,17 @@ read_and (void (*do_something) (void))
 	     Ensure incoming names are null terminated.  */
 
 	  if (! name_match (current_stat_info.file_name)
-	      || (newer_mtime_option != TYPE_MINIMUM (time_t)
+	      || (NEWER_OPTION_INITIALIZED (newer_mtime_option)
 		  /* FIXME: We get mtime now, and again later; this causes
 		     duplicate diagnostics if header.mtime is bogus.  */
 		  && ((current_stat_info.stat.st_mtime
-		       = TIME_FROM_HEADER (current_header->header.mtime))
-		      < newer_mtime_option))
+		       = TIME_FROM_HEADER (current_header->header.mtime)),
+#ifdef ST_MTIM_NSEC
+		      /* FIXME: Grab fractional time stamps from
+			 extended header.  */
+		      current_stat_info.stat.st_mtim.ST_MTIM_NSEC = 0,
+#endif
+		      OLDER_STAT_TIME (current_stat_info.stat, m)))
 	      || excluded_name (current_stat_info.file_name))
 	    {
 	      switch (current_header->header.typeflag)
@@ -356,7 +361,7 @@ read_header (bool raw_extended_headers)
 		xalloc_die ();
 
 	      header_copy = xmalloc (size + 1);
-	      
+
 	      if (header->header.typeflag == GNUTYPE_LONGNAME)
 		{
 		  if (next_long_name)
@@ -371,7 +376,7 @@ read_header (bool raw_extended_headers)
 		  next_long_link = header_copy;
 		  next_long_link_blocks = size / BLOCKSIZE;
 		}
-	      
+
 	      set_next_block_after (header);
 	      *header_copy = *header;
 	      bp = header_copy->buffer + BLOCKSIZE;
@@ -387,7 +392,7 @@ read_header (bool raw_extended_headers)
 		  written = available_space_after (data_block);
 		  if (written > size)
 		    written = size;
-		  
+
 		  memcpy (bp, data_block->buffer, written);
 		  bp += written;
 		  set_next_block_after ((union block *)
@@ -403,7 +408,7 @@ read_header (bool raw_extended_headers)
 	      xheader_read (header, OFF_FROM_HEADER (header->header.size));
 	      xheader_decode_global ();
 	    }
-      
+
 	  /* Loop!  */
 
 	}
@@ -520,7 +525,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   assign_string (&stat_info->gname, header->header.gname);
   stat_info->devmajor = MAJOR_FROM_HEADER (header->header.devmajor);
   stat_info->devminor = MINOR_FROM_HEADER (header->header.devminor);
-  
+
   stat_info->stat.st_atime = start_time;
   stat_info->stat.st_ctime = start_time;
 
@@ -559,7 +564,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	      || !gname_to_gid (header->header.gname, &stat_info->stat.st_gid))
 	    stat_info->stat.st_gid = GID_FROM_HEADER (header->header.gid);
 	}
-      
+
       switch (header->header.typeflag)
 	{
 	case BLKTYPE:
@@ -961,7 +966,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
   char modes[11];
   char const *time_stamp;
   char *temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
-  
+
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
   char *user, *group;
@@ -1108,7 +1113,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  strcat (size,
 		  STRINGIFY_BIGINT (minor (st->stat.st_rdev), uintbuf));
 	  break;
-	  
+
 	default:
 	  /* st->stat.st_size keeps stored file size */
 	  strcpy (size, STRINGIFY_BIGINT (st->stat.st_size, uintbuf));

@@ -1,6 +1,6 @@
 /* Generate a file containing some preset patterns.
 
-   Copyright (C) 1995, 1996, 1997, 2001, 2003 Free Software
+   Copyright (C) 1995, 1996, 1997, 2001, 2003, 2004 Free Software
    Foundation, Inc.
 
    François Pinard <pinard@iro.umontreal.ca>, 1995.
@@ -54,7 +54,8 @@ static int file_length = 0;
 static enum pattern pattern = DEFAULT_PATTERN;
 
 /* Explain how to use the program, then get out.  */
-void
+static void usage (int) __attribute__ ((noreturn));
+static void
 usage (int status)
 {
   if (status != EXIT_SUCCESS)

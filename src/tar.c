@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
-   2001, 2003 Free Software Foundation, Inc.
+   2001, 2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -335,7 +335,7 @@ static struct option long_options[] =
   {"volno-file", required_argument, 0, VOLNO_FILE_OPTION},
   {"wildcards", no_argument, 0, WILDCARDS_OPTION},
   {"wildcards-match-slash", no_argument, 0, WILDCARDS_MATCH_SLASH_OPTION},
-  
+
   {0, 0, 0, 0}
 };
 
@@ -519,7 +519,7 @@ Compatibility options:\n\
   -o                                 when creating, same as --old-archive\n\
                                      when extracting, same as --no-same-owner\n"),
              stdout);
-      
+
       fputs (_("\
 \n\
 The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
@@ -595,7 +595,8 @@ decode_options (int argc, char **argv)
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
   excluded = new_exclude ();
-  newer_mtime_option = TYPE_MINIMUM (time_t);
+  newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
+  newer_mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
 
   owner_option = -1;
@@ -823,7 +824,7 @@ decode_options (int argc, char **argv)
 	/* Fall through.  */
 
       case NEWER_MTIME_OPTION:
-	if (newer_mtime_option != TYPE_MINIMUM (time_t))
+	if (NEWER_OPTION_INITIALIZED (newer_mtime_option))
 	  USAGE_ERROR ((0, 0, _("More than one threshold date")));
 
 	if (FILESYSTEM_PREFIX_LEN (optarg) != 0
@@ -836,14 +837,17 @@ decode_options (int argc, char **argv)
 		stat_error (optarg);
 		USAGE_ERROR ((0, 0, _("Date file not found")));
 	      }
-	    newer_mtime_option = st.st_mtime;
+	    newer_mtime_option.tv_sec = st.st_mtime;
+	    newer_mtime_option.tv_nsec = TIMESPEC_NS (st.st_mtim);
 	  }
 	else
 	  {
-	    newer_mtime_option = get_date (optarg, 0);
-	    if (newer_mtime_option == (time_t) -1)
-	      WARN ((0, 0, _("Substituting %s for unknown date format %s"),
-		     tartime (newer_mtime_option), quote (optarg)));
+	    if (! get_date (&newer_mtime_option, optarg, NULL))
+	      {
+		WARN ((0, 0, _("Substituting %s for unknown date format %s"),
+		       tartime (newer_mtime_option.tv_sec), quote (optarg)));
+		newer_mtime_option.tv_nsec = 0;
+	      }
 	    else
 	      textual_date_option = optarg;
 	  }
@@ -912,7 +916,7 @@ decode_options (int argc, char **argv)
       case UTC_OPTION:
 	utc_option = true;
 	break;
-	
+
       case 'v':
 	verbose_option++;
 	break;
@@ -990,7 +994,7 @@ decode_options (int argc, char **argv)
       case FORMAT_OPTION:
 	set_archive_format (optarg);
 	break;
-	
+
       case INDEX_FILE_OPTION:
 	index_file_name = optarg;
 	break;
@@ -1006,7 +1010,7 @@ decode_options (int argc, char **argv)
       case KEEP_NEWER_FILES_OPTION:
 	old_files_option = KEEP_NEWER_FILES;
 	break;
-	
+
       case GROUP_OPTION:
 	if (! (strlen (optarg) < GNAME_FIELD_SIZE
 	       && gname_to_gid (optarg, &group_option)))
@@ -1072,7 +1076,7 @@ decode_options (int argc, char **argv)
 			    _("Invalid number")));
 	  }
 	break;
-	
+
       case OVERWRITE_OPTION:
 	old_files_option = OVERWRITE_OLD_FILES;
 	break;
@@ -1095,7 +1099,7 @@ decode_options (int argc, char **argv)
 	pax_option++;
 	xheader_set_option (optarg);
 	break;
-			    
+
       case POSIX_OPTION:
 	set_archive_format ("posix");
 	break;
@@ -1148,7 +1152,7 @@ decode_options (int argc, char **argv)
 	  strip_path_elements = u;
 	}
 	break;
-	
+
       case SUFFIX_OPTION:
 	backup_option = true;
 	backup_suffix_string = optarg;
@@ -1157,7 +1161,7 @@ decode_options (int argc, char **argv)
       case TOTALS_OPTION:
 	totals_option = true;
 	break;
-	
+
       case USE_COMPRESS_PROGRAM_OPTION:
 	set_use_compress_program_option (optarg);
 	break;
@@ -1285,7 +1289,7 @@ decode_options (int argc, char **argv)
   if (show_version)
     {
       printf ("tar (%s) %s\n%s\n", PACKAGE_NAME, PACKAGE_VERSION,
-	      "Copyright (C) 2003 Free Software Foundation, Inc.");
+	      "Copyright (C) 2004 Free Software Foundation, Inc.");
       puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
@@ -1308,7 +1312,7 @@ see the file named COPYING for details."));
       else
 	archive_format = DEFAULT_ARCHIVE_FORMAT;
     }
-  
+
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
@@ -1316,12 +1320,12 @@ see the file named COPYING for details."));
 
   if (incremental_option || multi_volume_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
-		   
+
   if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
 		   | FORMAT_MASK (POSIX_FORMAT));
-  
+
   if (occurrence_option)
     {
       if (!input_files && !files_from_option)
@@ -1353,7 +1357,7 @@ see the file named COPYING for details."));
 		  _("Multiple archive files require `-M' option")));
 
   if (listed_incremental_option
-      && newer_mtime_option != TYPE_MINIMUM (time_t))
+      && NEWER_OPTION_INITIALIZED (newer_mtime_option))
     USAGE_ERROR ((0, 0,
 		  _("Cannot combine --listed-incremental with --newer")));
 
@@ -1403,7 +1407,7 @@ see the file named COPYING for details."));
 	  || subcommand_option != DIFF_SUBCOMMAND
 	  || subcommand_option != LIST_SUBCOMMAND))
     USAGE_ERROR ((0, 0, _("--pax-option can be used only on POSIX archives")));
-  
+
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
@@ -1455,10 +1459,12 @@ see the file named COPYING for details."));
 
   if (verbose_option && textual_date_option)
     {
-      char const *treated_as = tartime (newer_mtime_option);
+      /* FIXME: tartime should support nanoseconds, too, so that this
+	 comparison doesn't complain about lost nanoseconds.  */
+      char const *treated_as = tartime (newer_mtime_option.tv_sec);
       if (strcmp (textual_date_option, treated_as) != 0)
-	WARN ((0, 0, _("Treating date `%s' as %s"),
-	       textual_date_option, treated_as));
+	WARN ((0, 0, _("Treating date `%s' as %s + %ld nanoseconds"),
+	       textual_date_option, treated_as, newer_mtime_option.tv_nsec));
     }
 }
 
@@ -1499,7 +1505,7 @@ main (int argc, char **argv)
   /* Decode options.  */
 
   decode_options (argc, argv);
-  name_init (argc, argv);
+  name_init ();
 
   /* Main command execution.  */
 
@@ -1575,7 +1581,7 @@ tar_stat_init (struct tar_stat_info *st)
 {
   memset (st, 0, sizeof (*st));
 }
-     
+
 void
 tar_stat_destroy (struct tar_stat_info *st)
 {

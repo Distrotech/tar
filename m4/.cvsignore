@@ -4,6 +4,7 @@ alloca.m4
 backupfile.m4
 bison.m4
 chown.m4
+clock_time.m4
 codeset.m4
 d-ino.m4
 dirname.m4
@@ -21,6 +22,8 @@ getline.m4
 getndelim2.m4
 getopt.m4
 gettext.m4
+gettime.m4
+gettimeofday.m4
 glibc21.m4
 hash.m4
 human.m4
@@ -39,7 +42,6 @@ lib-link.m4
 lib-prefix.m4
 longdouble.m4
 longlong.m4
-malloc.m4
 mbrtowc.m4
 mbstate_t.m4
 memset.m4
@@ -54,7 +56,6 @@ printf-posix.m4
 progtest.m4
 quote.m4
 quotearg.m4
-realloc.m4
 restrict.m4
 rmdir.m4
 safe-read.m4
@@ -64,8 +65,10 @@ savedir.m4
 signed.m4
 size_max.m4
 ssize_t.m4
+st_mtim.m4
 stdbool.m4
 stdint_h.m4
+stpcpy.m4
 strcase.m4
 strerror_r.m4
 strtoimax.m4
@@ -74,8 +77,8 @@ strtoll.m4
 strtoul.m4
 strtoull.m4
 strtoumax.m4
-stpcpy.m4
 time_r.m4
+timespec.m4
 tm_gmtoff.m4
 uintmax_t.m4
 ulonglong.m4

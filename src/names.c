@@ -1,7 +1,7 @@
 /* Various processing of names.
 
    Copyright (C) 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -118,7 +118,7 @@ gid_to_gname (gid_t gid, char **gname)
 
 /* Given UNAME, set the corresponding UID and return 1, or else, return 0.  */
 int
-uname_to_uid (char *uname, uid_t *uidp)
+uname_to_uid (char const *uname, uid_t *uidp)
 {
   struct passwd *passwd;
 
@@ -148,7 +148,7 @@ uname_to_uid (char *uname, uid_t *uidp)
 
 /* Given GNAME, set the corresponding GID and return 1, or else, return 0.  */
 int
-gname_to_gid (char *gname, gid_t *gidp)
+gname_to_gid (char const *gname, gid_t *gidp)
 {
   struct group *group;
 
@@ -227,7 +227,7 @@ is_pattern (const char *string)
 /* Set up to gather file names for tar.  They can either come from a
    file or were saved from decoding arguments.  */
 void
-name_init (int argc, char *const *argv)
+name_init (void)
 {
   name_buffer = xmalloc (NAME_FIELD_SIZE + 2);
   name_buffer_length = NAME_FIELD_SIZE;
@@ -639,7 +639,7 @@ names_notfound (void)
 	  ERROR ((0, 0, _("%s: Required occurrence not found in archive"),
 		  quotearg_colon (cursor->name)));
       }
-  
+
   /* Don't bother freeing the name list; we're about to exit.  */
   namelist = 0;
   nametail = &namelist;
@@ -759,18 +759,18 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
       size_t allocated_length = (name_length >= NAME_FIELD_SIZE
 				 ? name_length + NAME_FIELD_SIZE
 				 : NAME_FIELD_SIZE);
-      char *name_buffer = xmalloc (allocated_length + 1);
+      char *namebuf = xmalloc (allocated_length + 1);
 				/* FIXME: + 2 above?  */
       char *string;
       size_t string_length;
       int change_dir = name->change_dir;
 
       name->dir_contents = buffer;
-      strcpy (name_buffer, path);
-      if (! ISSLASH (name_buffer[name_length - 1]))
+      strcpy (namebuf, path);
+      if (! ISSLASH (namebuf[name_length - 1]))
 	{
-	  name_buffer[name_length++] = '/';
-	  name_buffer[name_length] = '\0';
+	  namebuf[name_length++] = '/';
+	  namebuf[name_length] = '\0';
 	}
 
       for (string = buffer; *string; string += string_length + 1)
@@ -788,15 +788,15 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 		    }
 		  while (allocated_length <= name_length + string_length);
 
-		  name_buffer = xrealloc (name_buffer, allocated_length + 1);
+		  namebuf = xrealloc (namebuf, allocated_length + 1);
 		}
-	      strcpy (name_buffer + name_length, string + 1);
-	      add_hierarchy_to_namelist (addname (name_buffer, change_dir),
+	      strcpy (namebuf + name_length, string + 1);
+	      add_hierarchy_to_namelist (addname (namebuf, change_dir),
 					 device);
 	    }
 	}
 
-      free (name_buffer);
+      free (namebuf);
     }
 }
 
@@ -1023,7 +1023,7 @@ safer_name_suffix (char const *file_name, bool link_target)
 	{
           if (p[0] == '.' && p[1] == '.' && (ISSLASH (p[2]) || !p[2]))
 	    prefix_len = p + 2 - file_name;
-	  
+
 	  do
 	    {
 	      char c = *p++;
@@ -1067,7 +1067,7 @@ safer_name_suffix (char const *file_name, bool link_target)
 	  };
 	  WARN ((0, 0, _(diagnostic[link_target])));
 	}
-      
+
       p = ".";
     }
 

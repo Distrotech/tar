@@ -1,7 +1,7 @@
 # Makefile for GNU tar library.
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003 Free
-# Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004
+# Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -103,6 +103,9 @@ libtar_a_SOURCES += getopt.h getopt.c getopt1.c
 # gettext
 libtar_a_SOURCES += gettext.h
 
+# gettime
+libtar_a_SOURCES += gettime.c
+
 # hash
 libtar_a_SOURCES += hash.h hash.c
 
@@ -120,6 +123,9 @@ libtar_a_SOURCES += pathmax.h
 
 # time_r
 EXTRA_DIST += time_r.h
+
+# timespec
+libtar_a_SOURCES += timespec.h
 
 # quote
 libtar_a_SOURCES += quote.h quote.c

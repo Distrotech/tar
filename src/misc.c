@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -331,16 +331,17 @@ remove_any_file (const char *path, enum remove_option option)
 /* Check if PATH already exists and make a backup of it right now.
    Return success (nonzero) only if the backup is either unneeded, or
    successful.  For now, directories are considered to never need
-   backup.  If ARCHIVE is nonzero, this is the archive and so, we do
-   not have to backup block or character devices, nor remote entities.  */
+   backup.  If THIS_IS_THE_ARCHIVE is nonzero, this is the archive and
+   so, we do not have to backup block or character devices, nor remote
+   entities.  */
 bool
-maybe_backup_file (const char *path, int archive)
+maybe_backup_file (const char *path, int this_is_the_archive)
 {
   struct stat file_stat;
 
   /* Check if we really need to backup the file.  */
 
-  if (archive && _remdev (path))
+  if (this_is_the_archive && _remdev (path))
     return true;
 
   if (stat (path, &file_stat))
@@ -355,7 +356,8 @@ maybe_backup_file (const char *path, int archive)
   if (S_ISDIR (file_stat.st_mode))
     return true;
 
-  if (archive && (S_ISBLK (file_stat.st_mode) || S_ISCHR (file_stat.st_mode)))
+  if (this_is_the_archive
+      && (S_ISBLK (file_stat.st_mode) || S_ISCHR (file_stat.st_mode)))
     return true;
 
   assign_string (&before_backup_name, path);
@@ -584,12 +586,6 @@ void
 close_error (char const *name)
 {
   call_arg_error ("close", name);
-}
-
-void
-close_fatal (char const *name)
-{
-  call_arg_fatal ("close", name);
 }
 
 void
@@ -875,16 +871,16 @@ write_error (char const *name)
 }
 
 void
-write_error_details (char const *name, ssize_t status, size_t size)
+write_error_details (char const *name, size_t status, size_t size)
 {
-  if (status < 0)
+  if (status == 0)
     write_error (name);
   else
     ERROR ((0, 0,
 	    ngettext ("%s: Wrote only %lu of %lu byte",
 		      "%s: Wrote only %lu of %lu bytes",
-		      record_size),
-	    name, (unsigned long) status, (unsigned long) record_size));
+		      size),
+	    name, (unsigned long int) status, (unsigned long int) size));
 }
 
 void

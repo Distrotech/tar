@@ -1,7 +1,7 @@
 /* Remote connection server.
 
-   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003 Free
-   Software Foundation, Inc.
+   Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -117,12 +117,12 @@ get_string (char *string)
 {
   int counter;
 
-  for (counter = 0; counter < STRING_SIZE; counter++)
+  for (counter = 0; ; counter++)
     {
       if (safe_read (STDIN_FILENO, string + counter, 1) != 1)
 	exit (EXIT_SUCCESS);
 
-      if (string[counter] == '\n')
+      if (string[counter] == '\n' || counter == STRING_SIZE - 1)
 	break;
     }
   string[counter] = '\0';
@@ -179,11 +179,11 @@ decode_oflag (char const *oflag_string)
   char *oflag_num_end;
   int numeric_oflag = strtol (oflag_string, &oflag_num_end, 10);
   int symbolic_oflag = 0;
-  
+
   oflag_string = oflag_num_end;
   while (ISSPACE ((unsigned char) *oflag_string))
     oflag_string++;
-    
+
   do
     {
       struct name_value_pair { char const *name; int value; };
@@ -247,6 +247,8 @@ static struct option const long_opts[] =
   {0, 0, 0, 0}
 };
 
+static void usage (int) __attribute__ ((noreturn));
+
 static void
 usage (int status)
 {
@@ -272,7 +274,7 @@ int
 main (int argc, char *const *argv)
 {
   char command;
-  ssize_t status;
+  size_t status;
 
   /* FIXME: Localization is meaningless, unless --help and --version are
      locally used.  Localization would be best accomplished by the calling
@@ -287,14 +289,14 @@ main (int argc, char *const *argv)
     {
     default:
       usage (EXIT_FAILURE);
-      
+
     case 'h':
       usage (EXIT_SUCCESS);
-      
+
     case 'v':
       {
 	printf ("rmt (%s) %s\n%s\n", PACKAGE_NAME, PACKAGE_VERSION,
-		"Copyright (C) 2003 Free Software Foundation, Inc.");
+		"Copyright (C) 2004 Free Software Foundation, Inc.");
 	puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
@@ -421,7 +423,7 @@ top:
 	do
 	  *--p = '0' + (int) (count % 10);
 	while ((count /= 10) != 0);
-	
+
 	DEBUG1 ("rmtd: A %s\n", p);
 
 	sprintf (reply_buffer, "A%s\n", p);
@@ -444,7 +446,7 @@ top:
 	  {
 	    status = safe_read (STDIN_FILENO, &record_buffer[counter],
 				size - counter);
-	    if (status <= 0)
+	    if (status == SAFE_READ_ERROR || status == 0)
 	      {
 		DEBUG (_("rmtd: Premature eof\n"));
 
@@ -453,7 +455,7 @@ top:
 	      }
 	  }
 	status = full_write (tape, record_buffer, size);
-	if (status < 0)
+	if (status != size)
 	  goto ioerror;
 	goto respond;
       }
@@ -469,9 +471,9 @@ top:
 	size = atol (count_string);
 	prepare_input_buffer (-1, size);
 	status = safe_read (tape, record_buffer, size);
-	if (status < 0)
+	if (status == SAFE_READ_ERROR)
 	  goto ioerror;
-	sprintf (reply_buffer, "A%ld\n", (long) status);
+	sprintf (reply_buffer, "A%lu\n", (unsigned long int) status);
 	full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 	full_write (STDOUT_FILENO, record_buffer, status);
 	goto top;
@@ -496,13 +498,13 @@ top:
 	  /* Parse count_string, taking care to check for overflow.
 	     We can't use standard functions,
 	     since off_t might be longer than long.  */
-	  
+
 	  for (p = count_string;  *p == ' ' || *p == '\t';  p++)
 	    continue;
-	  
+
 	  negative = *p == '-';
 	  p += negative || *p == '+';
-	  
+
 	  for (;;)
 	    {
 	      int digit = *p++ - '0';

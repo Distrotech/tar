@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -62,7 +62,8 @@ diff_init (void)
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
    given MESSAGE is nonzero.  Also set the exit status if not already.  */
 void
-report_difference (struct tar_stat_info *st, const char *fmt, ...)
+report_difference (struct tar_stat_info *st __attribute__ ((unused)),
+		   const char *fmt, ...)
 {
   if (fmt)
     {
@@ -74,35 +75,34 @@ report_difference (struct tar_stat_info *st, const char *fmt, ...)
       va_end (ap);
       fprintf (stdlis, "\n");
     }
-  
+
   if (exit_status == TAREXIT_SUCCESS)
     exit_status = TAREXIT_DIFFERS;
 }
 
 /* Take a buffer returned by read_and_process and do nothing with it.  */
 static int
-process_noop (size_t size, char *data)
+process_noop (size_t size __attribute__ ((unused)),
+	      char *data __attribute__ ((unused)))
 {
-  /* Yes, I know.  SIZE and DATA are unused in this function.  Some
-     compilers may even report it.  That's OK, just relax!  */
   return 1;
 }
 
 static int
 process_rawdata (size_t bytes, char *buffer)
 {
-  ssize_t status = safe_read (diff_handle, diff_buffer, bytes);
+  size_t status = safe_read (diff_handle, diff_buffer, bytes);
 
   if (status != bytes)
     {
-      if (status < 0)
+      if (status == SAFE_READ_ERROR)
 	{
 	  read_error (current_stat_info.file_name);
 	  report_difference (&current_stat_info, NULL);
 	}
       else
 	{
-	  report_difference (&current_stat_info, 
+	  report_difference (&current_stat_info,
 			     ngettext ("Could only read %lu of %lu byte",
 				       "Could only read %lu of %lu bytes",
 				       bytes),
@@ -308,19 +308,20 @@ diff_archive (void)
 
     case LNKTYPE:
       {
-	struct stat link_data, stat_data;
+	struct stat file_data;
+	struct stat link_data;
 
-	if (!get_stat_data (current_stat_info.file_name, &stat_data))
+	if (!get_stat_data (current_stat_info.file_name, &file_data))
 	  break;
 	if (!get_stat_data (current_stat_info.link_name, &link_data))
 	  break;
-	if (!sys_compare_links (&stat_data, &link_data))
+	if (!sys_compare_links (&file_data, &link_data))
 	  report_difference (&current_stat_info,
 			     _("Not linked to %s"),
 			     quote (current_stat_info.link_name));
       }
       break;
-      
+
 #ifdef HAVE_READLINK
     case SYMTYPE:
       {

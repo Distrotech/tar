@@ -1,6 +1,6 @@
 /* System-dependent calls for tar.
 
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -23,46 +23,33 @@
 #include <signal.h>
 
 void
-sys_stat_nanoseconds(struct tar_stat_info *stat)
+sys_stat_nanoseconds (struct tar_stat_info *st)
 {
 #if defined(HAVE_STRUCT_STAT_ST_SPARE1)
-  stat->atime_nsec = stat->stat.st_spare1 * 1000;
-  stat->mtime_nsec = stat->stat.st_spare2 * 1000;
-  stat->ctime_nsec = stat->stat.st_spare3 * 1000;
+  st->atime_nsec = st->stat.st_spare1 * 1000;
+  st->mtime_nsec = st->stat.st_spare2 * 1000;
+  st->ctime_nsec = st->stat.st_spare3 * 1000;
 #elif defined(HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC)
-  stat->atime_nsec = stat->stat.st_atim.tv_nsec;
-  stat->mtime_nsec = stat->stat.st_mtim.tv_nsec;
-  stat->ctime_nsec = stat->stat.st_ctim.tv_nsec;
+  st->atime_nsec = st->stat.st_atim.tv_nsec;
+  st->mtime_nsec = st->stat.st_mtim.tv_nsec;
+  st->ctime_nsec = st->stat.st_ctim.tv_nsec;
 #elif defined(HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC)
-  stat->atime_nsec = stat->stat.st_atimespec.tv_nsec;
-  stat->mtime_nsec = stat->stat.st_mtimespec.tv_nsec;
-  stat->ctime_nsec = stat->stat.st_ctimespec.tv_nsec;
+  st->atime_nsec = st->stat.st_atimespec.tv_nsec;
+  st->mtime_nsec = st->stat.st_mtimespec.tv_nsec;
+  st->ctime_nsec = st->stat.st_ctimespec.tv_nsec;
 #elif defined(HAVE_STRUCT_STAT_ST_ATIMENSEC)
-  stat->atime_nsec = stat->stat.st_atimensec;
-  stat->mtime_nsec = stat->stat.st_mtimensec;
-  stat->ctime_nsec = stat->stat.st_ctimensec;
+  st->atime_nsec = st->stat.st_atimensec;
+  st->mtime_nsec = st->stat.st_mtimensec;
+  st->ctime_nsec = st->stat.st_ctimensec;
 #else
-  stat->atime_nsec  = stat->mtime_nsec = stat->ctime_nsec = 0;
-#endif
-}
-
-int
-sys_utimes(char *file_name, struct timeval tvp[3])
-{
-#ifdef HAVE_UTIMES
-  return utimes (file_name, tvp);
-#else
-  struct utimbuf utimbuf;
-  utimbuf.actime = tvp[0].tv_sec;
-  utimbuf.modtime = tvp[1].tv_sec;
-  return utime (file_name, &utimbuf);
+  st->atime_nsec  = st->mtime_nsec = st->ctime_nsec = 0;
 #endif
 }
 
 #if MSDOS
 
 bool
-sys_get_archive_stat ()
+sys_get_archive_stat (void)
 {
   return 0;
 }
@@ -74,12 +61,12 @@ sys_file_is_archive (struct tar_stat_info *p)
 }
 
 void
-sys_save_archive_dev_ino ()
+sys_save_archive_dev_ino (void)
 {
 }
 
 void
-sys_detect_dev_null_output ()
+sys_detect_dev_null_output (void)
 {
   static char const dev_null[] = "nul";
 
@@ -88,7 +75,7 @@ sys_detect_dev_null_output ()
 }
 
 void
-sys_drain_input_pipe ()
+sys_drain_input_pipe (void)
 {
 }
 
@@ -98,7 +85,7 @@ sys_wait_for_child (pid_t child_pid)
 }
 
 void
-sys_spawn_shell ()
+sys_spawn_shell (void)
 {
   spawnl (P_WAIT, getenv ("COMSPEC"), "-", 0);
 }
@@ -132,25 +119,14 @@ sys_truncate (int fd)
 }
 
 void
-sys_reset_uid_gid ()
+sys_reset_uid_gid (void)
 {
 }
 
-ssize_t
+size_t
 sys_write_archive_buffer (void)
 {
-  ssize_t status;
-  ssize_t written = 0;
-
-  while (0 <= (status = full_write (archive, record_start->buffer + written,
-				    record_size - written)))
-    {
-      written += status;
-      if (written == record_size)
-        break;
-    }
-
-  return written ? written : status;
+  return full_write (archive, record_start->buffer, record_size);
 }
 
 /* Set ARCHIVE for writing, then compressing an archive.  */
@@ -174,11 +150,11 @@ extern union block *record_start; /* FIXME */
 static struct stat archive_stat; /* stat block for archive file */
 
 bool
-sys_get_archive_stat ()
+sys_get_archive_stat (void)
 {
   return fstat (archive, &archive_stat) == 0;
 }
-    
+
 bool
 sys_file_is_archive (struct tar_stat_info *p)
 {
@@ -187,7 +163,7 @@ sys_file_is_archive (struct tar_stat_info *p)
 
 /* Save archive file inode and device numbers */
 void
-sys_save_archive_dev_ino ()
+sys_save_archive_dev_ino (void)
 {
   if (!_isrmt (archive) && S_ISREG (archive_stat.st_mode))
     {
@@ -200,7 +176,7 @@ sys_save_archive_dev_ino ()
 
 /* Detect if outputting to "/dev/null".  */
 void
-sys_detect_dev_null_output ()
+sys_detect_dev_null_output (void)
 {
   static char const dev_null[] = "/dev/null";
   struct stat dev_null_stat;
@@ -219,12 +195,15 @@ sys_detect_dev_null_output ()
    work to do, we might have to revise this area in such time.  */
 
 void
-sys_drain_input_pipe ()
+sys_drain_input_pipe (void)
 {
+  size_t r;
+
   if (access_mode == ACCESS_READ
       && ! _isrmt (archive)
       && (S_ISFIFO (archive_stat.st_mode) || S_ISSOCK (archive_stat.st_mode)))
-    while (rmtread (archive, record_start->buffer, record_size) > 0)
+    while ((r = rmtread (archive, record_start->buffer, record_size)) != 0
+	   && r != SAFE_READ_ERROR)
       continue;
 }
 
@@ -252,7 +231,7 @@ sys_wait_for_child (pid_t child_pid)
 }
 
 void
-sys_spawn_shell ()
+sys_spawn_shell (void)
 {
   pid_t child;
   const char *shell = getenv ("SHELL");
@@ -303,7 +282,7 @@ sys_truncate (int fd)
 }
 
 void
-sys_reset_uid_gid ()
+sys_reset_uid_gid (void)
 {
   setuid (getuid ());
   setgid (getgid ());
@@ -322,24 +301,10 @@ is_regular_file (const char *name)
     return errno == ENOENT;
 }
 
-ssize_t
+size_t
 sys_write_archive_buffer (void)
 {
-  ssize_t status;
-  ssize_t written = 0;
-
-  while (0 <= (status = rmtwrite (archive, record_start->buffer + written,
-				  record_size - written)))
-    {
-      written += status;
-      if (written == record_size
-	  || _isrmt (archive)
-	  || ! (S_ISFIFO (archive_stat.st_mode)
-		|| S_ISSOCK (archive_stat.st_mode)))
-	break;
-    }
-
-  return written ? written : status;
+  return rmtwrite (archive, record_start->buffer, record_size);
 }
 
 #define	PREAD 0			/* read file descriptor from pipe() */
@@ -471,7 +436,7 @@ sys_child_open_for_compress (void)
 
   while (1)
     {
-      ssize_t status = 0;
+      size_t status = 0;
       char *cursor;
       size_t length;
 
@@ -484,12 +449,11 @@ sys_child_open_for_compress (void)
 	  size_t size = record_size - length;
 
 	  status = safe_read (STDIN_FILENO, cursor, size);
-	  if (status <= 0)
+	  if (status == SAFE_READ_ERROR)
+	    read_fatal (use_compress_program_option);
+	  if (status == 0)
 	    break;
 	}
-
-      if (status < 0)
-	read_fatal (use_compress_program_option);
 
       /* Copy the record.  */
 
@@ -628,13 +592,13 @@ sys_child_open_for_uncompress (void)
       char *cursor;
       size_t maximum;
       size_t count;
-      ssize_t status;
+      size_t status;
 
       clear_read_error_count ();
 
     error_loop:
       status = rmtread (archive, record_start->buffer, record_size);
-      if (status < 0)
+      if (status == SAFE_READ_ERROR)
 	{
 	  archive_read_error ();
 	  goto error_loop;

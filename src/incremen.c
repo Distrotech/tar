@@ -145,7 +145,7 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 
   directory = find_directory (path);
   children = directory ? directory->children : CHANGED_CHILDREN;
-  
+
   if (dirp && children != NO_CHILDREN)
     for (entry = dirp;
 	 (entrylen = strlen (entry)) != 0;
@@ -159,23 +159,23 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 	    name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
 	  }
 	strcpy (name_buffer + name_length, entry);
-	
+
 	if (excluded_name (name_buffer))
 	  obstack_1grow (stk, 'N');
 	else
 	  {
 	    struct stat stat_data;
-	    
+
 	    if (deref_stat (dereference_option, name_buffer, &stat_data))
 	      {
 		stat_diag (name_buffer);
 		continue;
 	      }
-	    
+
 	    if (S_ISDIR (stat_data.st_mode))
 	      {
 		bool nfs = NFS_FILE_STAT (stat_data);
-		
+
 		if ((directory = find_directory (name_buffer)) != NULL)
 		  {
 		    /* With NFS, the same file can have two different devices
@@ -184,7 +184,7 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 		       To avoid spurious incremental redumping of
 		       directories, consider all NFS devices as equal,
 		       relying on the i-node to establish differences.  */
-		    
+
 		    if (! (((directory->nfs & nfs)
 			    || directory->device_number == stat_data.st_dev)
 			   && directory->inode_number == stat_data.st_ino))
@@ -209,13 +209,13 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 						stat_data.st_ino, nfs, 1);
 		    directory->children =
 		      ((listed_incremental_option
-			|| newer_mtime_option <= stat_data.st_mtime
-			|| (after_date_option &&
-			    newer_ctime_option <= stat_data.st_ctime))
+			|| OLDER_STAT_TIME (stat_data, m)
+			|| (after_date_option
+			    && OLDER_STAT_TIME (stat_data, c)))
 		       ? ALL_CHILDREN
 		       : CHANGED_CHILDREN);
 		  }
-		
+
 		if (one_file_system_option && device != stat_data.st_dev)
 		  directory->children = NO_CHILDREN;
 		else if (children == ALL_CHILDREN)
@@ -239,19 +239,18 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 
 	    else
 	      if (children == CHANGED_CHILDREN
-		  && stat_data.st_mtime < newer_mtime_option
-		  && (!after_date_option
-		      || stat_data.st_ctime < newer_ctime_option))
+		  && OLDER_STAT_TIME (stat_data, m)
+		  && (!after_date_option || OLDER_STAT_TIME (stat_data, c)))
 		obstack_1grow (stk, 'N');
 	      else
 		obstack_1grow (stk, 'Y');
 	  }
-	
+
 	obstack_grow (stk, entry, entrylen + 1);
       }
 
   obstack_grow (stk, "\000\000", 2);
-  
+
   free (name_buffer);
   if (dirp)
     free (dirp);
@@ -267,16 +266,16 @@ sort_obstack (struct obstack *stk)
   char *buffer;
   char **array;
   char **array_cursor;
-  
+
   counter = 0;
   for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
     counter++;
-  
+
   if (!counter)
     return NULL;
 
   array = obstack_alloc (stk, sizeof (char *) * (counter + 1));
-  
+
   array_cursor = array;
   for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
     *array_cursor++ = cursor;
@@ -290,7 +289,7 @@ sort_obstack (struct obstack *stk)
   for (array_cursor = array; *array_cursor; array_cursor++)
     {
       char *string = *array_cursor;
-      
+
       while ((*cursor++ = *string++))
 	continue;
     }
@@ -357,7 +356,10 @@ read_directory_file (void)
 	ERROR ((0, 0, "%s:1: %s", quotearg_colon (listed_incremental_option),
 		_("Time stamp out of range")));
       else
-	newer_mtime_option = t;
+	{
+	  newer_mtime_option.tv_sec = t;
+	  newer_mtime_option.tv_nsec = 0;
+	}
 
       while (0 < (n = getline (&buf, &bufsize, fp)))
 	{

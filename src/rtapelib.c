@@ -1,7 +1,7 @@
 /* Functions for communicating with a remote tape drive.
 
-   Copyright 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001 Free Software
-   Foundation, Inc.
+   Copyright 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001, 2004 Free
+   Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -163,8 +163,6 @@ get_status_string (int handle, char *command_buffer)
 
   if (*cursor == 'E' || *cursor == 'F')
     {
-      errno = atoi (cursor + 1);
-
       /* Skip the error message line.  */
 
       /* FIXME: there is better to do than merely ignoring error messages
@@ -177,6 +175,8 @@ get_status_string (int handle, char *command_buffer)
 	  if (character == '\n')
 	    break;
       }
+
+      errno = atoi (cursor + 1);
 
       if (*cursor == 'F')
 	_rmt_shutdown (handle, errno);
@@ -199,12 +199,19 @@ get_status_string (int handle, char *command_buffer)
 
 /* Read and return the status from remote tape connection HANDLE.  If
    an error occurred, return -1 and set errno.  */
-static long
+static long int
 get_status (int handle)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
   const char *status = get_status_string (handle, command_buffer);
-  return status ? atol (status) : -1L;
+  if (status)
+    {
+      long int result = atol (status);
+      if (0 <= result)
+	return result;
+      errno = EIO;
+    }
+  return -1;
 }
 
 static off_t
@@ -226,10 +233,10 @@ get_status_off (int handle)
 
       for (;  *status == ' ' || *status == '\t';  status++)
 	continue;
-      
+
       negative = *status == '-';
       status += negative || *status == '+';
-      
+
       for (;;)
 	{
 	  int digit = *status++ - '0';
@@ -533,7 +540,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 int
 rmt_close__ (int handle)
 {
-  int status;
+  long int status;
 
   if (do_command (handle, "C\n") == -1)
     return -1;
@@ -544,26 +551,27 @@ rmt_close__ (int handle)
 }
 
 /* Read up to LENGTH bytes into BUFFER from remote tape connection HANDLE.
-   Return the number of bytes read on success, -1 on error.  */
-ssize_t
+   Return the number of bytes read on success, SAFE_READ_ERROR on error.  */
+size_t
 rmt_read__ (int handle, char *buffer, size_t length)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
-  ssize_t status, rlen;
+  size_t status;
+  size_t rlen;
   size_t counter;
 
   sprintf (command_buffer, "R%lu\n", (unsigned long) length);
   if (do_command (handle, command_buffer) == -1
-      || (status = get_status (handle)) == -1)
-    return -1;
+      || (status = get_status (handle)) == SAFE_READ_ERROR)
+    return SAFE_READ_ERROR;
 
   for (counter = 0; counter < status; counter += rlen, buffer += rlen)
     {
       rlen = safe_read (READ_SIDE (handle), buffer, status - counter);
-      if (rlen <= 0)
+      if (rlen == SAFE_READ_ERROR || rlen == 0)
 	{
 	  _rmt_shutdown (handle, EIO);
-	  return -1;
+	  return SAFE_READ_ERROR;
 	}
     }
 
@@ -571,8 +579,8 @@ rmt_read__ (int handle, char *buffer, size_t length)
 }
 
 /* Write LENGTH bytes from BUFFER to remote tape connection HANDLE.
-   Return the number of bytes written on success, -1 on error.  */
-ssize_t
+   Return the number of bytes written.  */
+size_t
 rmt_write__ (int handle, char *buffer, size_t length)
 {
   char command_buffer[COMMAND_BUFFER_SIZE];
@@ -581,18 +589,25 @@ rmt_write__ (int handle, char *buffer, size_t length)
 
   sprintf (command_buffer, "W%lu\n", (unsigned long) length);
   if (do_command (handle, command_buffer) == -1)
-    return -1;
+    return 0;
 
   pipe_handler = signal (SIGPIPE, SIG_IGN);
   written = full_write (WRITE_SIDE (handle), buffer, length);
   signal (SIGPIPE, pipe_handler);
   if (written == length)
-    return get_status (handle);
+    {
+      long int r = get_status (handle);
+      if (r < 0)
+	return 0;
+      if (r == length)
+	return length;
+      written = r;
+    }
 
   /* Write error.  */
 
   _rmt_shutdown (handle, EIO);
-  return -1;
+  return written;
 }
 
 /* Perform an imitation lseek operation on remote tape connection
@@ -648,7 +663,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 		       ? - (uintmax_t) ((struct mtop *) argument)->mt_count
 		       : (uintmax_t) ((struct mtop *) argument)->mt_count);
 	char *p = operand_buffer + sizeof operand_buffer;
-	
+
         *--p = 0;
 	do
 	  *--p = '0' + (int) (u % 10);
@@ -671,7 +686,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
     case MTIOCGET:
       {
 	ssize_t status;
-	ssize_t counter;
+	size_t counter;
 
 	/* Grab the status and read it directly into the structure.  This
 	   assumes that the status buffer is not padded and that 2 shorts
@@ -686,7 +701,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 	for (; status > 0; status -= counter, argument += counter)
 	  {
 	    counter = safe_read (READ_SIDE (handle), argument, status);
-	    if (counter <= 0)
+	    if (counter == SAFE_READ_ERROR || counter == 0)
 	      {
 		_rmt_shutdown (handle, EIO);
 		return -1;

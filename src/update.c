@@ -1,7 +1,7 @@
 /* Update a tar archive.
 
-   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001, 2003
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001, 2003,
+   2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -33,7 +33,7 @@ extern union block *current_block;
 /* We've hit the end of the old stuff, and its time to start writing new
    stuff to the tape.  This involves seeking back one record and
    re-writing the current record (which has been changed).
-   FIXME: Either eliminate it or move it to common.h. 
+   FIXME: Either eliminate it or move it to common.h.
 */
 bool time_to_start_writing;
 
@@ -66,7 +66,7 @@ append_file (char *path)
 	{
 	  union block *start = find_next_block ();
 	  size_t buffer_size = available_space_after (start);
-	  ssize_t status;
+	  size_t status;
 	  char buf[UINTMAX_STRSIZE_BOUND];
 
 	  if (bytes_left < buffer_size)
@@ -78,7 +78,7 @@ append_file (char *path)
 	    }
 
 	  status = safe_read (handle, start->buffer, buffer_size);
-	  if (status < 0)
+	  if (status == SAFE_READ_ERROR)
 	    read_fatal_details (path, stat_data.st_size - bytes_left,
 				buffer_size);
 	  if (status == 0)
@@ -111,7 +111,7 @@ update_archive (void)
   name_gather ();
   open_archive (ACCESS_UPDATE);
   xheader_write_global ();
-  
+
   while (!found_end)
     {
       enum read_header status = read_header (false);

@@ -37,7 +37,10 @@ getndelim2.h
 getopt.c
 getopt.h
 getopt1.c
+getopt_int.h
 gettext.h
+gettime.c
+gettimeofday.c
 hash.c
 hash.h
 human.c
@@ -68,6 +71,8 @@ savedir.c
 savedir.h
 stdbool.h
 stdbool_.h
+stpcpy.c
+stpcpy.h
 strcase.h
 strcasecmp.c
 stripslash.c
@@ -78,10 +83,9 @@ strtoll.c
 strtoul.c
 strtoull.c
 strtoumax.c
-stpcpy.c
-stpcpy.h
 time_r.c
 time_r.h
+timespec.h
 unlocked-io.h
 utime.c
 xalloc.h

@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -85,6 +85,7 @@ GLOBAL int exit_status;
 #include <modechange.h>
 #include <quote.h>
 #include <safe-read.h>
+#include <timespec.h>
 
 /* Log base 2 of common values.  */
 #define LG_8 3
@@ -189,7 +190,7 @@ enum old_files
   OVERWRITE_OLD_FILES,        /* --overwrite */
   UNLINK_FIRST_OLD_FILES,     /* --unlink-first */
   KEEP_OLD_FILES,             /* --keep-old-files */
-  KEEP_NEWER_FILES,           /* --keep-newer-files */
+  KEEP_NEWER_FILES	      /* --keep-newer-files */
 };
 GLOBAL enum old_files old_files_option;
 
@@ -201,13 +202,23 @@ GLOBAL struct mode_change *mode_option;
 
 GLOBAL bool multi_volume_option;
 
-/* The same variable hold the time, whether mtime or ctime.  Just fake a
+/* The same variable holds the time, whether mtime or ctime.  Just fake a
    non-existing option, for making the code clearer, elsewhere.  */
 #define newer_ctime_option newer_mtime_option
 
 /* Specified threshold date and time.  Files having an older time stamp
    do not get archived (also see after_date_option above).  */
-GLOBAL time_t newer_mtime_option;
+GLOBAL struct timespec newer_mtime_option;
+
+/* Return true if newer_mtime_option is initialized.  */
+#define NEWER_OPTION_INITIALIZED(opt) (0 <= (opt).tv_nsec)
+
+/* Return true if the struct stat ST's M time is less than
+   newer_mtime_option.  */
+#define OLDER_STAT_TIME(st, m) \
+  ((st).st_##m##time < newer_mtime_option.tv_sec \
+   || ((st).st_##m##time == newer_mtime_option.tv_sec \
+       && TIMESPEC_NS ((st).st_##m##tim) < newer_mtime_option.tv_nsec))
 
 /* Zero if there is no recursion, otherwise FNM_LEADING_DIR.  */
 GLOBAL int recursion_option;
@@ -367,7 +378,7 @@ enum dump_status
     dump_status_not_implemented
   };
 
-bool file_dumpable_p (struct tar_stat_info *stat);
+bool file_dumpable_p (struct tar_stat_info *);
 void create_archive (void);
 void pad_archive (off_t size_left);
 void dump_file (char *, int, dev_t);
@@ -535,7 +546,7 @@ void open_diag (char const *name);
 void read_error (char const *);
 void read_error_details (char const *, off_t, size_t);
 void read_fatal (char const *) __attribute__ ((noreturn));
-void read_fatal_details (char const *, off_t, size_t);
+void read_fatal_details (char const *, off_t, size_t) __attribute__ ((noreturn));
 void read_warn_details (char const *, off_t, size_t);
 void read_diag_details (char const *name, off_t offset, size_t size);
 void readlink_error (char const *);
@@ -559,7 +570,7 @@ void unlink_error (char const *);
 void utime_error (char const *);
 void waitpid_error (char const *);
 void write_error (char const *);
-void write_error_details (char const *, ssize_t, size_t);
+void write_error_details (char const *, size_t, size_t);
 void write_fatal (char const *) __attribute__ ((noreturn));
 void write_fatal_details (char const *, ssize_t, size_t)
      __attribute__ ((noreturn));
@@ -572,13 +583,13 @@ void xpipe (int[2]);
 extern struct name *gnu_list_name;
 
 void gid_to_gname (gid_t, char **gname);
-int gname_to_gid (char *gname, gid_t *);
+int gname_to_gid (char const *, gid_t *);
 void uid_to_uname (uid_t, char **uname);
-int uname_to_uid (char *uname, uid_t *);
+int uname_to_uid (char const *, uid_t *);
 
 void init_names (void);
 void name_add (const char *);
-void name_init (int, char *const *);
+void name_init (void);
 void name_term (void);
 char *name_next (int);
 void name_close (void);
@@ -609,6 +620,8 @@ bool contains_dot_dot (char const *);
 
 /* Module tar.c.  */
 
+void usage (int);
+
 int confirm (const char *, const char *);
 void request_stdin (const char *);
 
@@ -634,11 +647,13 @@ void xheader_finish (struct xheader *);
 void xheader_destroy (struct xheader *);
 char *xheader_xhdr_name (struct tar_stat_info *st);
 char *xheader_ghdr_name (void);
+void xheader_write (char, char *, struct xheader *);
+void xheader_write_global (void);
 void xheader_set_option (char *string);
 
 /* Module system.c */
 
-void sys_stat_nanoseconds (struct tar_stat_info *stat);
+void sys_stat_nanoseconds (struct tar_stat_info *);
 void sys_detect_dev_null_output (void);
 void sys_save_archive_dev_ino (void);
 void sys_drain_input_pipe (void);
@@ -652,7 +667,8 @@ int sys_truncate (int fd);
 void sys_reset_uid_gid (void);
 pid_t sys_child_open_for_compress (void);
 pid_t sys_child_open_for_uncompress (void);
-ssize_t sys_write_archive_buffer (void);
+void sys_reset_uid_gid (void);
+size_t sys_write_archive_buffer (void);
 bool sys_get_archive_stat (void);
 void sys_reset_uid_gid (void);
 
@@ -660,14 +676,14 @@ void sys_reset_uid_gid (void);
 void report_difference (struct tar_stat_info *st, const char *message, ...);
 
 /* Module sparse.c */
-bool sparse_file_p (struct tar_stat_info *stat);
-bool sparse_member_p (struct tar_stat_info *stat);
-bool sparse_fixup_header (struct tar_stat_info *stat);
-enum dump_status sparse_dump_file (int fd, struct tar_stat_info *stat);
-enum dump_status sparse_extract_file (int fd, struct tar_stat_info *stat, off_t *size);
-enum dump_status sparse_skip_file (struct tar_stat_info *stat);
-bool sparse_diff_file (int fd, struct tar_stat_info *stat);
+bool sparse_file_p (struct tar_stat_info *);
+bool sparse_member_p (struct tar_stat_info *);
+bool sparse_fixup_header (struct tar_stat_info *);
+enum dump_status sparse_dump_file (int, struct tar_stat_info *);
+enum dump_status sparse_extract_file (int, struct tar_stat_info *, off_t *);
+enum dump_status sparse_skip_file (struct tar_stat_info *);
+bool sparse_diff_file (int, struct tar_stat_info *);
 
 /* Module utf8.c */
 bool string_ascii_p (const char *str);
-bool utf8_convert(bool to_utf, const char *input, char **output);
+bool utf8_convert (bool to_utf, char const *input, char **output);

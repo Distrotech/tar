@@ -75,7 +75,7 @@ static int checkpoint;
    Declared in update.c
 
    As least EXTERN like this one as possible. (?? --gray)
-   FIXME: Either eliminate it or move it to common.h. 
+   FIXME: Either eliminate it or move it to common.h.
 */
 extern bool time_to_start_writing;
 
@@ -109,7 +109,7 @@ static off_t real_s_sizeleft;
 /* Functions.  */
 
 void
-clear_read_error_count ()
+clear_read_error_count (void)
 {
   read_error_count = 0;
 }
@@ -600,7 +600,7 @@ archive_read_error (void)
 }
 
 static void
-short_read (ssize_t status)
+short_read (size_t status)
 {
   size_t left;			/* bytes left */
   char *more;			/* pointer to next byte to read */
@@ -612,23 +612,23 @@ short_read (ssize_t status)
 	 || (left && status && read_full_records_option))
     {
       if (status)
-	while ((status = rmtread (archive, more, left)) < 0)
+	while ((status = rmtread (archive, more, left)) == SAFE_READ_ERROR)
 	  archive_read_error ();
 
       if (status == 0)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
-	  
+
 	  WARN((0, 0, _("Read %s bytes from %s"),
 		STRINGIFY_BIGINT (record_size - left, buf),
 		*archive_name_cursor));
 	  break;
 	}
-  
+
       if (! read_full_records_option)
 	{
 	  unsigned long rest = record_size - left;
-	  
+
 	  FATAL_ERROR ((0, 0,
 			ngettext ("Unaligned block (%lu byte) in archive",
 				  "Unaligned block (%lu bytes) in archive",
@@ -646,7 +646,7 @@ short_read (ssize_t status)
      about the problem.  */
 
   if (!read_full_records_option && verbose_option > 1
-      && record_start_block == 0 && status > 0)
+      && record_start_block == 0 && status != 0)
     {
       unsigned long rsize = (record_size - left) / BLOCKSIZE;
       WARN ((0, 0,
@@ -664,7 +664,7 @@ short_read (ssize_t status)
 void
 flush_read (void)
 {
-  ssize_t status;		/* result from system call */
+  size_t status;		/* result from system call */
 
   if (checkpoint_option && !(++checkpoint % 10))
     WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
@@ -711,9 +711,9 @@ flush_read (void)
      This is incorrect since even if new_volume() succeeds, the
      subsequent call to rmtread will overwrite the chunk of data
      already read in the buffer, so the processing will fail */
-        
+
   if ((status == 0
-       || (status < 0 && errno == ENOSPC))
+       || (status == SAFE_READ_ERROR && errno == ENOSPC))
       && multi_volume_option)
     {
       union block *cursor;
@@ -734,12 +734,12 @@ flush_read (void)
 	  break;
 	}
 
-      while ((status =
-	      rmtread (archive, record_start->buffer, record_size)) < 0)
+      while ((status = rmtread (archive, record_start->buffer, record_size))
+	     == SAFE_READ_ERROR)
 	archive_read_error ();
-      
+
       if (status != record_size)
-	short_read (status); 
+	short_read (status);
 
       cursor = record_start;
 
@@ -807,7 +807,7 @@ flush_read (void)
       records_read++;
       return;
     }
-  else if (status < 0)
+  else if (status == SAFE_READ_ERROR)
     {
       archive_read_error ();
       goto error_loop;		/* try again */
@@ -897,7 +897,7 @@ close_archive (void)
     flush_archive ();
 
   sys_drain_input_pipe ();
-  
+
   if (verify_option)
     verify_volume ();
 
@@ -905,7 +905,7 @@ close_archive (void)
     close_warn (*archive_name_cursor);
 
   sys_wait_for_child (child_pid);
-  
+
   tar_stat_destroy (&current_stat_info);
   if (save_name)
     free (save_name);
@@ -957,7 +957,7 @@ closeout_volume_number (void)
    Return nonzero on success.
 */
 static bool
-new_volume (enum access_mode access)
+new_volume (enum access_mode mode)
 {
   static FILE *read_file;
   static int looped;
@@ -1086,7 +1086,7 @@ new_volume (enum access_mode access)
     archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
 		       rsh_command_option);
   else
-    switch (access)
+    switch (mode)
       {
       case ACCESS_READ:
 	archive = rmtopen (*archive_name_cursor, O_RDONLY, MODE_RW,
@@ -1109,7 +1109,7 @@ new_volume (enum access_mode access)
   if (archive < 0)
     {
       open_warn (*archive_name_cursor);
-      if (!verify_option && access == ACCESS_WRITE && backup_option)
+      if (!verify_option && mode == ACCESS_WRITE && backup_option)
 	undo_last_backup ();
       goto tryagain;
     }
