@@ -1,6 +1,36 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994-1999, 2000 Free Software Foundation, Inc.
 
+version 1.13.18 - Paul Eggert, 2000-10-29
+
+* Some security problems have been fixed.  `tar -x' now modifies only
+  files under the working directory, unless you also specify an unsafe
+  option like --absolute-names or --overwrite.
+
+* The short name of the --bzip option has been changed to -j,
+  and -I is now an alias for -T, for compatibility with Solaris tar.
+
+* The manual is now distributed under the GNU Free Documentation License.
+
+* The new environment variable TAR_OPTIONS holds default command-line options.
+
+* The --no-recursion option now affects extraction too.
+
+* The wording in some diagnostics has been changed slightly.
+
+* Snapshot files now record whether each file was accessed via NFS.
+  The new file format is upward- and downward-compatible with the old.
+
+* New language supported: da.
+
+* Compilation by traditional (K&R) C compilers is no longer supported.
+  If you still use such a compiler, please use GCC instead.
+
+* This version of tar works best with GNU gzip test version 1.3 or later.
+  Please see <ftp://alpha.gnu.org/gnu/gzip/>.
+  
+* `tar --delete -f -' now works again.
+
 version 1.13.17 - Paul Eggert, 2000-01-07.
 
 * `tar --delete -f -' is no longer allowed; it was too buggy.
@@ -8,11 +38,13 @@ version 1.13.17 - Paul Eggert, 2000-01-07.
 
 version 1.13.16 - Paul Eggert, 1999-12-13.
 
-* By default, tar now refuses to overwrite existing files when
-  extracting files from an archive; instead, it removes them before
-  extracting.  There is one exception: existing nonempty directories
-  are not removed, nor are their ownerships or permissions extracted.
-  This fixes some longstanding security problems.
+* By default, tar now refuses to overwrite an existing file when
+  extracting files from an archive; instead, it removes the file
+  before extracting it.  If the existing file is a symbolic link, the
+  link is removed and not the pointed-to file.  There is one
+  exception: existing nonempty directories are not removed, nor are
+  their ownerships or permissions extracted.  This fixes some
+  longstanding security problems.
 
   The new --overwrite option enables the old default behavior.
 
@@ -160,7 +192,7 @@ version 1.13.6 - Paul Eggert, 1999-08-11.
 
 * The protocol for talking to rmt has been extended slightly.
   Open flags are now communicated in symbolic format as well as numeric.
-  The symbolic format (e.g. "O_WRONLY|O_CREAT|O_TRUNC" is for portability
+  The symbolic format (e.g. "O_WRONLY|O_CREAT|O_TRUNC") is for portability
   when rmt is operating on a different operating system from tar.
   The numeric format is retained, and rmt uses it if symbolic format is absent,
   for backward compatibility with older versions of tar and rmt.
@@ -213,7 +245,7 @@ version 1.13 - Paul Eggert, 1999-07-08.
 * Many bug fixes and porting fixes.
 * This release is only for fixes.  A more ambitious test release,
   with new features, is available as part of the paxutils.  Please see:
-    http://www.iro.umontreal.ca/contrib/paxutils/
+    ftp://alpha.gnu.org/gnu/paxutils/
   The fixes in this release are intended to be merged with paxutils
   at some point, but they haven't been merged yet.
 * An interim GNU tar alpha had new --bzip2 and --ending-file options,
