@@ -28,6 +28,12 @@
 #define PREFIX_FIELD_SIZE 155
 #define UNAME_FIELD_SIZE   32
 #define GNAME_FIELD_SIZE   32
+
+/* FIXME */
+#define MAXOCTAL11      017777777777L
+#define MAXOCTAL7       07777777
+
+
 
 /* Some various global definitions.  */
 
@@ -358,6 +364,8 @@ void check_links (void);
 #define TIME_TO_CHARS(val, where) time_to_chars (val, where, sizeof (where))
 #define UID_TO_CHARS(val, where) uid_to_chars (val, where, sizeof (where))
 #define UINTMAX_TO_CHARS(val, where) uintmax_to_chars (val, where, sizeof (where))
+#define UNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
+#define GNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 
 void gid_to_chars (gid_t, char *, size_t);
 void major_to_chars (major_t, char *, size_t);
@@ -368,6 +376,7 @@ void size_to_chars (size_t, char *, size_t);
 void time_to_chars (time_t, char *, size_t);
 void uid_to_chars (uid_t, char *, size_t);
 void uintmax_to_chars (uintmax_t, char *, size_t);
+void string_to_chars (char *, char *, size_t);
 
 /* Module diffarch.c.  */
 
@@ -411,8 +420,9 @@ enum read_header
 
 struct xheader
 {
-  int nblocks;
-  union block *blocks;
+  struct obstack *stk;
+  size_t size;
+  char *buffer;
 };
 
 GLOBAL struct xheader extended_header;
@@ -532,10 +542,10 @@ void xpipe (int[2]);
 
 extern struct name *gnu_list_name;
 
-void gid_to_gname (gid_t, char gname[GNAME_FIELD_SIZE]);
-int gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *);
-void uid_to_uname (uid_t, char uname[UNAME_FIELD_SIZE]);
-int uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *);
+void gid_to_gname (gid_t, char **gname);
+int gname_to_gid (char *gname, gid_t *);
+void uid_to_uname (uid_t, char **uname);
+int uname_to_uid (char *uname, uid_t *);
 
 void init_names (void);
 void name_add (const char *);
