@@ -278,7 +278,13 @@ usage (int status)
 GNU `tar' saves many files together into a single tape or disk archive, and\n\
 can restore individual files from the archive.\n"),
 	     stdout);
-      printf (_("\nUsage: %s [OPTION]... [FILE]...\n"), program_name);
+      printf (_("\nUsage: %s [OPTION]... [FILE]...\n\
+\n\
+Examples:\n\
+  %s -cf archive.tar foo bar  # Create archive.tar from files foo and bar.\n\
+  %s -tvf archive.tar         # List all files in archive.tar verbosely.\n\
+  %s -xf archive.tar          # Extract all files from archive.tar.\n"),
+	     program_name, program_name, program_name, program_name);
       fputs (_("\
 \n\
 If a long option shows an argument as mandatory, then it is mandatory\n\
@@ -417,10 +423,7 @@ Support for POSIX is only partially implemented, don't count on it yet.\n\
 ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; and FILE may be a file\n\
 or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
-      fputs (_("\
-\n\
-Report bugs to <bug-tar@gnu.org>.\n"),
-	       stdout);
+      fputs (_("\nReport bugs to <bug-tar@gnu.org>.\n"), stdout);
     }
   exit (status);
 }
