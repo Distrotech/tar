@@ -16,8 +16,6 @@ version 1.13.93
 * New option --strip-path allows to cut off a given number of
   path elements from the name of the file being extracted.
 
-* Bug fixes.
-
 * New options --index-file, --no-overwrite-dir.  The --overwrite-dir
   option is now the default; use --no-overwrite-dir if you prefer
   the previous default behavior.
@@ -45,7 +43,10 @@ version 1.13.93
 * New option --pax-option allows to control the handling of POSIX
   keywords in `pax' extended headers. It is equivalent to `pax'
   -o option.
-  
+
+* --incremental and --listed-incremental options work correctly on
+individual files, as well as on directories.
+    
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
 ** --block-compress is not needed any longer
@@ -59,6 +60,8 @@ version 1.13.93
   hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
   (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
   The code 'no' for Norwegian has been withdrawn; use 'nb' instead.
+
+* Bug fixes.
 
 version 1.13.25 - Paul Eggert, 2001-09-26
 
