@@ -491,7 +491,7 @@ write_directory_file (void)
 
   if (fseek (fp, 0L, SEEK_SET) != 0)
     seek_error (listed_incremental_option);
-  if (ftruncate (fileno (fp), (off_t) 0) != 0)
+  if (sys_truncate (fileno (fp)) != 0)
     truncate_error (listed_incremental_option);
 
   fprintf (fp, "%lu\n", (unsigned long) start_time);
