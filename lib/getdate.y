@@ -526,28 +526,27 @@ static TABLE const OtherTable[] = {
     { NULL, 0, 0 }
 };
 
-/* The timezone table. */
+/* The timezone table.  This table is necessarily incomplete, as time
+   zone abbreviations are ambiguous; e.g. Australians interpret "EST"
+   as Eastern time in Australia, not as US Eastern Standard Time.
+   You cannot rely on getdate to handle arbitrary time zone
+   abbreviations; use numeric abbreviations like `-0500' instead.  */
 static TABLE const TimezoneTable[] = {
     { "gmt",	tZONE,     HOUR ( 0) },	/* Greenwich Mean */
     { "ut",	tZONE,     HOUR ( 0) },	/* Universal (Coordinated) */
     { "utc",	tZONE,     HOUR ( 0) },
     { "wet",	tZONE,     HOUR ( 0) },	/* Western European */
+    { "west",	tDAYZONE,  HOUR ( 0) },	/* Western European Summer */
     { "bst",	tDAYZONE,  HOUR ( 0) },	/* British Summer */
-    { "wat",	tZONE,     HOUR ( 1) },	/* West Africa */
-    { "at",	tZONE,     HOUR ( 2) },	/* Azores */
-#if	0
-    /* For completeness.  BST is also British Summer, and GST is
-     * also Guam Standard. */
-    { "bst",	tZONE,     HOUR ( 3) },	/* Brazil Standard */
-    { "gst",	tZONE,     HOUR ( 3) },	/* Greenland Standard */
-#endif
-#if 0
-    { "nft",	tZONE,     HOUR (3.5) },	/* Newfoundland */
-    { "nst",	tZONE,     HOUR (3.5) },	/* Newfoundland Standard */
-    { "ndt",	tDAYZONE,  HOUR (3.5) },	/* Newfoundland Daylight */
-#endif
+    { "art",	tZONE,	   HOUR ( 3) },	/* Argentina */
+    { "brt",	tZONE,	   HOUR ( 3) },	/* Brazil */
+    { "brst",	tDAYZONE,  HOUR ( 3) },	/* Brazil Summer */
+    { "nst",	tZONE,	   HOUR ( 3) + 30 },	/* Newfoundland Standard */
+    { "ndt",	tDAYZONE,  HOUR ( 3) + 30 },	/* Newfoundland Daylight */
     { "ast",	tZONE,     HOUR ( 4) },	/* Atlantic Standard */
     { "adt",	tDAYZONE,  HOUR ( 4) },	/* Atlantic Daylight */
+    { "clt",	tZONE,     HOUR ( 4) },	/* Chile */
+    { "clst",	tDAYZONE,  HOUR ( 4) },	/* Chile Summer */
     { "est",	tZONE,     HOUR ( 5) },	/* Eastern Standard */
     { "edt",	tDAYZONE,  HOUR ( 5) },	/* Eastern Daylight */
     { "cst",	tZONE,     HOUR ( 6) },	/* Central Standard */
@@ -556,58 +555,33 @@ static TABLE const TimezoneTable[] = {
     { "mdt",	tDAYZONE,  HOUR ( 7) },	/* Mountain Daylight */
     { "pst",	tZONE,     HOUR ( 8) },	/* Pacific Standard */
     { "pdt",	tDAYZONE,  HOUR ( 8) },	/* Pacific Daylight */
-    { "yst",	tZONE,     HOUR ( 9) },	/* Yukon Standard */
-    { "ydt",	tDAYZONE,  HOUR ( 9) },	/* Yukon Daylight */
+    { "akst",	tZONE,     HOUR ( 9) },	/* Alaska Standard */
+    { "akdt",	tDAYZONE,  HOUR ( 9) },	/* Alaska Daylight */
     { "hst",	tZONE,     HOUR (10) },	/* Hawaii Standard */
-    { "hdt",	tDAYZONE,  HOUR (10) },	/* Hawaii Daylight */
-    { "cat",	tZONE,     HOUR (10) },	/* Central Alaska */
-    { "ahst",	tZONE,     HOUR (10) },	/* Alaska-Hawaii Standard */
-    { "nt",	tZONE,     HOUR (11) },	/* Nome */
-    { "idlw",	tZONE,     HOUR (12) },	/* International Date Line West */
+    { "hast",	tZONE,	   HOUR (10) },	/* Hawaii-Aleutian Standard */
+    { "hadt",	tDAYZONE,  HOUR (10) },	/* Hawaii-Aleutian Daylight */
+    { "sst",	tZONE,     HOUR (12) },	/* Samoa Standard */
+    { "wat",	tZONE,     -HOUR (1) },	/* West Africa */
     { "cet",	tZONE,     -HOUR (1) },	/* Central European */
+    { "cest",	tDAYZONE,  -HOUR (1) },	/* Central European Summer */
     { "met",	tZONE,     -HOUR (1) },	/* Middle European */
-    { "mewt",	tZONE,     -HOUR (1) },	/* Middle European Winter */
+    { "mez",	tZONE,     -HOUR (1) },	/* Middle European */
     { "mest",	tDAYZONE,  -HOUR (1) },	/* Middle European Summer */
     { "mesz",	tDAYZONE,  -HOUR (1) },	/* Middle European Summer */
-    { "swt",	tZONE,     -HOUR (1) },	/* Swedish Winter */
-    { "sst",	tDAYZONE,  -HOUR (1) },	/* Swedish Summer */
-    { "fwt",	tZONE,     -HOUR (1) },	/* French Winter */
-    { "fst",	tDAYZONE,  -HOUR (1) },	/* French Summer */
-    { "eet",	tZONE,     -HOUR (2) },	/* Eastern Europe, USSR Zone 1 */
-    { "bt",	tZONE,     -HOUR (3) },	/* Baghdad, USSR Zone 2 */
-#if 0
-    { "it",	tZONE,     -HOUR (3.5) },/* Iran */
-#endif
-    { "zp4",	tZONE,     -HOUR (4) },	/* USSR Zone 3 */
-    { "zp5",	tZONE,     -HOUR (5) },	/* USSR Zone 4 */
-#if 0
-    { "ist",	tZONE,     -HOUR (5.5) },/* Indian Standard */
-#endif
-    { "zp6",	tZONE,     -HOUR (6) },	/* USSR Zone 5 */
-#if	0
-    /* For completeness.  NST is also Newfoundland Standard, and SST is
-     * also Swedish Summer. */
-    { "nst",	tZONE,     -HOUR (6.5) },/* North Sumatra */
-    { "sst",	tZONE,     -HOUR (7) },	/* South Sumatra, USSR Zone 6 */
-#endif	/* 0 */
-    { "wast",	tZONE,     -HOUR (7) },	/* West Australian Standard */
-    { "wadt",	tDAYZONE,  -HOUR (7) },	/* West Australian Daylight */
-#if 0
-    { "jt",	tZONE,     -HOUR (7.5) },/* Java (3pm in Cronusland!) */
-#endif
-    { "cct",	tZONE,     -HOUR (8) },	/* China Coast, USSR Zone 7 */
-    { "jst",	tZONE,     -HOUR (9) },	/* Japan Standard, USSR Zone 8 */
-#if 0
-    { "cast",	tZONE,     -HOUR (9.5) },/* Central Australian Standard */
-    { "cadt",	tDAYZONE,  -HOUR (9.5) },/* Central Australian Daylight */
-#endif
-    { "east",	tZONE,     -HOUR (10) },	/* Eastern Australian Standard */
-    { "eadt",	tDAYZONE,  -HOUR (10) },	/* Eastern Australian Daylight */
-    { "gst",	tZONE,     -HOUR (10) },	/* Guam Standard, USSR Zone 9 */
-    { "nzt",	tZONE,     -HOUR (12) },	/* New Zealand */
+    { "eet",	tZONE,     -HOUR (2) },	/* Eastern European */
+    { "eest",	tDAYZONE,  -HOUR (2) },	/* Eastern European Summer */
+    { "cat",	tZONE,	   -HOUR (2) },	/* Central Africa */
+    { "sast",	tZONE,	   -HOUR (2) },	/* South Africa Standard */
+    { "eat",	tZONE,	   -HOUR (3) },	/* East Africa */
+    { "msk",	tZONE,	   -HOUR (3) },	/* Moscow */
+    { "msd",	tDAYZONE,  -HOUR (3) },	/* Moscow Daylight */
+    { "ist",	tZONE,	   - (HOUR (5) + 30) },	/* India Standard */
+    { "sgt",	tZONE,     -HOUR (8) },	/* Singapore */
+    { "kst",	tZONE,     -HOUR (9) },	/* Korea Standard */
+    { "jst",	tZONE,     -HOUR (9) },	/* Japan Standard */
+    { "gst",	tZONE,     -HOUR (10) },	/* Guam Standard */
     { "nzst",	tZONE,     -HOUR (12) },	/* New Zealand Standard */
     { "nzdt",	tDAYZONE,  -HOUR (12) },	/* New Zealand Daylight */
-    { "idle",	tZONE,     -HOUR (12) },	/* International Date Line East */
     {  NULL, 0, 0  }
 };
 
