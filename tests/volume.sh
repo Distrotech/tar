@@ -4,7 +4,7 @@
 . ./preset
 . $srcdir/before
 
-tar cfVT archive label /dev/null || exit 1
+tar -cf archive -V label -T /dev/null --format=gnu || exit 1
 
 tar xfV archive label || exit 1
 tar xfV archive 'la?el' || exit 1

@@ -6,14 +6,28 @@
 
 set -e
 mkdir structure
-touch structure/file
-# FIXME: The sleep is necessary for the second tar to work.  Exactly why?
+echo x >structure/file
+
+# On Nextstep (and perhaps other 4.3BSD systems),
+# a newly created file's ctime isn't updated
+# until the next sync or stat operation on the file.
+ls -l structure/file >/dev/null
+
+# If the time of an initial backup and the creation time of a file contained
+# in that backup are the same, the file will be backed up again when an
+# incremental backup is done, because the incremental backup backs up
+# files created `on or after' the initial backup time.  Without the sleep
+# command, behaviour of tar becomes variable, depending whether the system
+# clock ticked over to the next second between creating the file and
+# backing it up.
 sleep 1
-tar cf archive --listed=list structure
-tar cfv archive --listed=list structure
+
+tar cf archive --format=gnu --listed=list structure
+tar cfv archive --format=gnu --listed=list structure
 echo -----
-touch structure/file
-tar cfv archive --listed=list structure
+sleep 1
+echo y >structure/file
+tar cfv archive --format=gnu --listed=list structure
 
 out="\
 structure/
