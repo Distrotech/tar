@@ -881,7 +881,7 @@ decode_options (int argc, char *const *argv)
 	if (mode_option == MODE_INVALID)
 	  FATAL_ERROR ((0, 0, _("Invalid mode given on option")));
 	if (mode_option == MODE_MEMORY_EXHAUSTED)
-	  FATAL_ERROR ((0, 0, _("Memory exhausted")));
+	  xalloc_die ();
 	break;
 
       case NO_RECURSE_OPTION:
@@ -1132,12 +1132,13 @@ see the file named COPYING for details."),
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
     case APPEND_SUBCOMMAND:
+    case DELETE_SUBCOMMAND:
       for (archive_name_cursor = archive_name_array;
 	   archive_name_cursor < archive_name_array + archive_names;
 	   archive_name_cursor++)
 	if (!strcmp (*archive_name_cursor, "-"))
 	  USAGE_ERROR ((0, 0,
-			_("Options `-Aru' are incompatible with `-f -'")));
+			_("Options `-Aru' and `--delete' are incompatible with `-f -'")));
 
     default:
       break;
