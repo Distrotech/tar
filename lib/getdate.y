@@ -503,7 +503,7 @@ static table const relative_time_table[] =
   { "TODAY",	tMINUTE_UNIT,	 0 },
   { "NOW",	tMINUTE_UNIT,	 0 },
   { "LAST",	tUNUMBER,	-1 },
-  { "THIS",	tMINUTE_UNIT,	 0 },
+  { "THIS",	tUNUMBER,	 0 },
   { "NEXT",	tUNUMBER,	 1 },
   { "FIRST",	tUNUMBER,	 1 },
 /*{ "SECOND",	tUNUMBER,	 2 }, */
@@ -876,18 +876,18 @@ get_date (const char *p, const time_t *now)
   /* Probe the names used in the next three calendar quarters, looking
      for a tm_isdst different from the one we already have.  */
   {
-    int probe;
-    for (probe = 1; probe <= 3; probe++)
+    int quarter;
+    for (quarter = 1; quarter <= 3; quarter++)
       {
-	time_t probe = Start + probe * (90 * 24 * 60 * 60);
-	struct tm *tm = localtime (&probe);
-	if (tm && tm->tm_zone
-	    && tm->tm_isdst != pc.local_time_zone_table[0].value)
+	time_t probe = Start + quarter * (90 * 24 * 60 * 60);
+	struct tm *probe_tm = localtime (&probe);
+	if (probe_tm && probe_tm->tm_zone
+	    && probe_tm->tm_isdst != pc.local_time_zone_table[0].value)
 	  {
 	      {
-		pc.local_time_zone_table[1].name = tm->tm_zone;
+		pc.local_time_zone_table[1].name = probe_tm->tm_zone;
 		pc.local_time_zone_table[1].type = tLOCAL_ZONE;
-		pc.local_time_zone_table[1].value = tm->tm_isdst;
+		pc.local_time_zone_table[1].value = probe_tm->tm_isdst;
 		pc.local_time_zone_table[2].name = 0;
 	      }
 	    break;
