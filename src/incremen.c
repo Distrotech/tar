@@ -1,7 +1,7 @@
 /* GNU dump extensions to tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -176,7 +176,7 @@ scan_path (struct obstack *stk, char *path, dev_t device)
 	      {
 		bool nfs = NFS_FILE_STAT (stat_data);
 		
-		if (directory = find_directory (name_buffer), directory)
+		if ((directory = find_directory (name_buffer)) != NULL)
 		  {
 		    /* With NFS, the same file can have two different devices
 		       if an NFS directory is mounted in multiple locations,
@@ -453,9 +453,13 @@ write_directory_file (void)
   if (fclose (fp) != 0)
     close_error (listed_incremental_option);
 }
+
 
 /* Restoration of incremental dumps.  */
 
+/* Examine the directories under directory_name and delete any
+   files that were not there at the time of the back-up.
+   FIXME: The function name is obviously a misnomer */
 void
 gnu_restore (char const *directory_name)
 {
