@@ -24,7 +24,7 @@
    and to separate the various arguments with \n instead of a space.  I
    personally don't think that this is much of a problem, but I wanted to
    point it out. -- Arnold Robbins
- 
+
    Originally written by Jeff Lee, modified some by Arnold Robbins.
    Redone as a library that can replace open, read, write, etc., by
    Fred Fish, with some additional work by Arnold Robbins.
@@ -52,6 +52,14 @@
 extern int errno;
 #endif
 
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+#ifdef STDC_HEADERS
+#include <string.h>
+#include <stdlib.h>
+#endif
+
 /* Maximum size of a fully qualified host name.  */
 #define MAXHOSTLEN 257
 
@@ -74,17 +82,19 @@ extern int errno;
 #define WRITE(fildes) (to_rmt[fildes][1])
 
 /* The pipes for receiving data from remote tape drives.  */
-static int from_rmt[MAXUNIT][2] = {-1, -1, -1, -1, -1, -1, -1, -1};
+static int from_rmt[MAXUNIT][2] =
+{-1, -1, -1, -1, -1, -1, -1, -1};
 
 /* The pipes for sending data to remote tape drives.  */
-static int to_rmt[MAXUNIT][2] = {-1, -1, -1, -1, -1, -1, -1, -1};
+static int to_rmt[MAXUNIT][2] =
+{-1, -1, -1, -1, -1, -1, -1, -1};
 
 /* Temporary variable used by macros in rmt.h.  */
 char *__rmt_path;
 
 /* Close remote tape connection FILDES.  */
 
-static void 
+static void
 _rmt_shutdown (fildes)
      int fildes;
 {
@@ -98,7 +108,7 @@ _rmt_shutdown (fildes)
    on remote tape connection FILDES.
    Return 0 if successful, -1 on error.  */
 
-static int 
+static int
 command (fildes, buf)
      int fildes;
      char *buf;
@@ -127,7 +137,7 @@ command (fildes, buf)
 /* Read and return the status from remote tape connection FILDES.
    If an error occurred, return -1 and set errno.  */
 
-static int 
+static int
 status (fildes)
      int fildes;
 {
@@ -240,6 +250,7 @@ _rmt_rexec (host, user)
 
   return tape_fd;
 }
+
 #endif /* HAVE_NETDB_H */
 
 /* Open a magtape device on the system specified in PATH, as the given user.
@@ -252,7 +263,7 @@ _rmt_rexec (host, user)
    If successful, return the remote tape pipe number plus BIAS.
    On error, return -1.  */
 
-int 
+int
 __rmt_open (path, oflag, mode, bias)
      char *path;
      int oflag;
@@ -263,7 +274,7 @@ __rmt_open (path, oflag, mode, bias)
   char buffer[CMDBUFSIZE];	/* Command buffer.  */
   char system[MAXHOSTLEN];	/* The remote host name.  */
   char device[CMDBUFSIZE];	/* The remote device name.  */
-  char login[CMDBUFSIZE];		/* The remote user name.  */
+  char login[CMDBUFSIZE];	/* The remote user name.  */
   char *sys, *dev, *user;	/* For copying into the above buffers.  */
 
   sys = system;
@@ -409,7 +420,7 @@ __rmt_open (path, oflag, mode, bias)
 /* Close remote tape connection FILDES and shut down.
    Return 0 if successful, -1 on error.  */
 
-int 
+int
 __rmt_close (fildes)
      int fildes;
 {
@@ -426,7 +437,7 @@ __rmt_close (fildes)
 /* Read up to NBYTE bytes into BUF from remote tape connection FILDES.
    Return the number of bytes read on success, -1 on error.  */
 
-int 
+int
 __rmt_read (fildes, buf, nbyte)
      int fildes;
      char *buf;
@@ -441,7 +452,7 @@ __rmt_read (fildes, buf, nbyte)
 
   for (i = 0; i < rc; i += nbyte, buf += nbyte)
     {
-      nbyte = read (READ (fildes), buf, rc);
+      nbyte = read (READ (fildes), buf, rc - i);
       if (nbyte <= 0)
 	{
 	  _rmt_shutdown (fildes);
@@ -456,7 +467,7 @@ __rmt_read (fildes, buf, nbyte)
 /* Write NBYTE bytes from BUF to remote tape connection FILDES.
    Return the number of bytes written on success, -1 on error.  */
 
-int 
+int
 __rmt_write (fildes, buf, nbyte)
      int fildes;
      char *buf;
@@ -486,7 +497,7 @@ __rmt_write (fildes, buf, nbyte)
 /* Perform an imitation lseek operation on remote tape connection FILDES.
    Return the new file offset if successful, -1 if on error.  */
 
-long 
+long
 __rmt_lseek (fildes, offset, whence)
      int fildes;
      long offset;
@@ -505,6 +516,7 @@ __rmt_lseek (fildes, offset, whence)
    Return the results of the ioctl, or -1 on error.  */
 
 #ifdef MTIOCTOP
+int
 __rmt_ioctl (fildes, op, arg)
      int fildes, op;
      char *arg;
@@ -566,4 +578,5 @@ __rmt_ioctl (fildes, op, arg)
       return 0;
     }
 }
+
 #endif
