@@ -2,6 +2,12 @@ Suggestions for improving GNU tar.
 
 * Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
 
+* Add support for restoring file time stamps to sub-second resolution,
+  if the file system supports this.
+
+* Add support for restoring the attributes of symbolic links, for
+  OSes like FreeBSD that have the lutimes and lchmod functions.
+
 * --append should bail out if the two archives are of different types.
 
 * Add support for GNU private keywords in POSIX 1003.1-2001 headers,
@@ -21,7 +27,7 @@ so that the GNU extensions (--incremental, --label and
   Currently tar prints a warning when this option is used. Sometime
   in the future its semantics will be changed to that of --check-links.
   In the meanwhile we should announce a phase-in period where "l"
-  changes in semantics. 	   
+  changes in semantics.
 
 * Interoperate better with Joerg Schilling's star implementation.
 
@@ -50,7 +56,7 @@ so that the GNU extensions (--incremental, --label and
 
   (http://mail.gnu.org/archive/html/bug-gnu-utils/2002-05/msg00022.html)
 
-  
+
 * Copyright notice
 
   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
