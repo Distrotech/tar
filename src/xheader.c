@@ -250,15 +250,31 @@ code_string (char const *string, char const *keyword, struct xheader *xhdr)
 }
 
 static void
-code_time (time_t t, char const *keyword, struct xheader *xhdr)
+code_time (time_t t, unsigned long nano,
+	   char const *keyword, struct xheader *xhdr)
 {
-  char sbuf[100];
+  char sbuf[200];
   size_t s = format_uintmax (t, NULL, 0);
+  if (s + 11 >= sizeof sbuf)
+    return;
   format_uintmax (t, sbuf, s);
   sbuf[s++] = '.';
-  format_uintmax (0, sbuf + s, 9);
-  sbuf[s+9] = 0;
+  s += format_uintmax (nano, sbuf + s, 9);
+  sbuf[s] = 0;
   xheader_print (xhdr, keyword, sbuf);
+}
+
+static void
+decode_time (char const *arg, time_t *secs, unsigned long *nsecs)
+{
+  uintmax_t u;
+  char *p;
+  if (xstrtoumax (arg, &p, 10, &u, "") == LONGINT_OK)
+    {
+      *secs = u;
+      if (*p == '.' && xstrtoumax (p+1, NULL, 10, &u, "") == LONGINT_OK)
+	*nsecs = u;
+    }
 }
 
 static void
@@ -286,15 +302,13 @@ static void
 atime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data)
 {
-  code_time (st->stat.st_atime, keyword, xhdr);
+  code_time (st->stat.st_atime, st->atime_nsec, keyword, xhdr);
 }
 
 static void
 atime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
-    st->stat.st_atime = u;
+  decode_time (arg, &st->stat.st_atime, &st->atime_nsec);
 }
 
 static void
@@ -308,7 +322,7 @@ static void
 gid_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     st->stat.st_gid = u;
 }
 
@@ -342,30 +356,26 @@ static void
 ctime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data)
 {
-  code_time (st->stat.st_ctime, keyword, xhdr);
+  code_time (st->stat.st_ctime, st->ctime_nsec, keyword, xhdr);
 }
 
 static void
 ctime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
-    st->stat.st_ctime = u;
+  decode_time (arg, &st->stat.st_ctime, &st->ctime_nsec);
 }
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data)
 {
-  code_time (st->stat.st_mtime, keyword, xhdr);
+  code_time (st->stat.st_mtime, st->mtime_nsec, keyword, xhdr);
 }
 
 static void
 mtime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
-    st->stat.st_mtime = u;
+  decode_time (arg, &st->stat.st_mtime, &st->mtime_nsec);
 }
 
 static void
@@ -394,7 +404,7 @@ static void
 size_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     st->stat.st_size = u;
 }
 
@@ -409,7 +419,7 @@ static void
 uid_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     st->stat.st_uid = u;
 }
 
@@ -437,7 +447,7 @@ static void
 sparse_size_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     st->archive_file_size = u;
 }
 
@@ -452,7 +462,7 @@ static void
 sparse_numblocks_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     {
       st->sparse_map_size = u;
       st->sparse_map = calloc(st->sparse_map_size, sizeof(st->sparse_map[0]));
@@ -472,7 +482,7 @@ static void
 sparse_offset_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     st->sparse_map[st->sparse_map_avail].offset = u;
 }
 
@@ -488,7 +498,7 @@ static void
 sparse_numbytes_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
-  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+  if (xstrtoumax (arg, NULL, 10, &u, "") == LONGINT_OK)
     {
       if (st->sparse_map_avail == st->sparse_map_size)
 	{
