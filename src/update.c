@@ -188,7 +188,7 @@ update_archive (void)
 
     while (path = name_from_list (), path)
       {
-	if (excluded_pathname (excluded, path))
+	if (excluded_name (path))
 	  continue;
 	if (interactive_option && !confirm ("add", path))
 	  continue;
