@@ -142,9 +142,6 @@ set_archive_format (char const *name)
       USAGE_ERROR ((0, 0, _("%s: Invalid archive format"),
 		    quotearg_colon (name)));
 
-  if (archive_format != DEFAULT_FORMAT && archive_format != p->fmt)
-    USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
-  
   archive_format = p->fmt;
 }
 
@@ -213,6 +210,7 @@ enum
   RECURSIVE_UNLINK_OPTION,
   REMOVE_FILES_OPTION,
   RSH_COMMAND_OPTION,
+  SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
   STRIP_PATH_OPTION,
   SUFFIX_OPTION,
@@ -313,6 +311,7 @@ static struct option long_options[] =
   {"same-order", no_argument, 0, 's'},
   {"same-owner", no_argument, &same_owner_option, 1},
   {"same-permissions", no_argument, 0, 'p'},
+  {"show-defaults", no_argument, 0, SHOW_DEFAULTS_OPTION},
   {"show-omitted-dirs", no_argument, 0, SHOW_OMITTED_DIRS_OPTION},
   {"sparse", no_argument, 0, 'S'},
   {"starting-file", required_argument, 0, 'K'},
@@ -581,7 +580,8 @@ decode_options (int argc, char **argv)
   char const *version_control_string = 0;
   int exclude_options = EXCLUDE_WILDCARDS;
   bool o_option = 0;
-  
+  int pax_option = 0;
+
   /* Set some default option values.  */
 
   subcommand_option = UNKNOWN_SUBCOMMAND;
@@ -1078,6 +1078,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case PAX_OPTION:
+	pax_option++;
 	xheader_set_option (optarg);
 	break;
 			    
@@ -1116,6 +1117,12 @@ decode_options (int argc, char **argv)
       case RSH_COMMAND_OPTION:
 	rsh_command_option = optarg;
 	break;
+
+      case SHOW_DEFAULTS_OPTION:
+	printf ("--format=%s -f%s -b%d\n",
+		archive_format_string (DEFAULT_ARCHIVE_FORMAT),
+		DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
+	exit(0);
 
       case STRIP_PATH_OPTION:
 	{
@@ -1281,8 +1288,13 @@ see the file named COPYING for details."));
   /* Derive option values and check option consistency.  */
 
   if (archive_format == DEFAULT_FORMAT)
-    archive_format = DEFAULT_ARCHIVE_FORMAT;
-
+    {
+      if (pax_option)
+	archive_format = POSIX_FORMAT;
+      else
+	archive_format = DEFAULT_ARCHIVE_FORMAT;
+    }
+  
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
@@ -1290,7 +1302,6 @@ see the file named COPYING for details."));
   if (incremental_option || multi_volume_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
 		   
-  
   if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
@@ -1366,6 +1377,17 @@ see the file named COPYING for details."));
       if (subcommand_option == UPDATE_SUBCOMMAND)
 	USAGE_ERROR ((0, 0, _("Cannot update compressed archives")));
     }
+
+  /* It is no harm to use --pax-option on non-pax archives in archive
+     reading mode. It may even be useful, since it allows to override
+     file attributes from tar headers. Therefore I allow such usage.
+     --gray */
+  if (pax_option
+      && archive_format != POSIX_FORMAT
+      && (subcommand_option != EXTRACT_SUBCOMMAND
+	  || subcommand_option != DIFF_SUBCOMMAND
+	  || subcommand_option != LIST_SUBCOMMAND))
+    USAGE_ERROR ((0, 0, _("--pax-option can be used only on POSIX archives")));
   
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
