@@ -40,6 +40,10 @@ time_t time();
 #endif
 #endif
 
+#if defined(POSIX)
+#include <utime.h>
+#endif
+
 #ifdef NO_OPEN3
 /* We need the #define's even though we don't use them. */
 #include "open3.h"
@@ -52,10 +56,6 @@ time_t time();
 
 #include "tar.h"
 #include "port.h"
-
-#if defined(_POSIX_VERSION)
-#include <utime.h>
-#endif
 
 extern FILE *msg_file;
 

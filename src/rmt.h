@@ -1,29 +1,31 @@
-/* Definitions for communicating with a remote tape drive.
-   Copyright (C) 1988, 1992 Free Software Foundation, Inc.
+/* Remote tape drive defines for tar.
+   Copyright (C) 1988 Free Software Foundation
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+This file is part of GNU Tar.
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+GNU Tar is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+GNU Tar is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-#ifdef HAVE_UNISTD_H
+You should have received a copy of the GNU General Public License
+along with GNU Tar; see the file COPYING.  If not, write to
+the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
-#endif
+#endif /* HAVE_UNISTD_H */
 
 #if !defined(_POSIX_VERSION)
 #ifdef __MSDOS__
 #include <io.h>
 #else /* !__MSDOS__ */
-extern off_t lseek ();
+extern off_t lseek();
 #endif /* __MSDOS__ */
 #endif /* _POSIX_VERSION */
 
@@ -44,7 +46,7 @@ extern off_t lseek ();
 #define rmtfcntl	fcntl
 #define rmtisatty	isatty
 
-#else /* !NO_REMOTE */
+#else
 
 #define __REM_BIAS	128
 #define RMTIOCTL
@@ -55,14 +57,14 @@ extern off_t lseek ();
 
 extern char *__rmt_path;
 
-#if defined(USG) || defined(STDC_HEADERS)
-#include <string.h>
-#define index strchr
-#else
-extern char *index ();
-#endif
+extern long __rmt_lseek();
 
-#define _remdev(path)	(!f_force_local && (__rmt_path=index(path, ':')))
+#if !defined(USG) && !defined(STDC_HEADERS)
+#define strchr index
+#endif
+extern char *strchr();
+
+#define _remdev(path)	((__rmt_path=strchr(path, ':')) && strncmp(__rmt_path, ":/dev/", 6)==0)
 #define _isrmt(fd)		((fd) >= __REM_BIAS)
 
 #define rmtopen(path,oflag,mode) (_remdev(path) ? __rmt_open(path, oflag, mode, __REM_BIAS) : open(path, oflag, mode))
@@ -86,11 +88,4 @@ extern char *index ();
 #define rmtisatty(fd)		(_isrmt(fd) ? 0 : isatty(fd))
 
 #undef RMTIOCTL
-
-int __rmt_open ();
-int __rmt_close ();
-int __rmt_read ();
-int __rmt_write ();
-long __rmt_lseek ();
-int __rmt_ioctl ();
-#endif /* !NO_REMOTE */
+#endif
