@@ -132,7 +132,6 @@ enum
   GROUP_OPTION,
   MODE_OPTION,
   NEWER_MTIME_OPTION,
-  NO_RECURSE_OPTION,
   NULL_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
@@ -216,7 +215,7 @@ static struct option long_options[] =
   {"newer", required_argument, 0, 'N'},
   {"newer-mtime", required_argument, 0, NEWER_MTIME_OPTION},
   {"null", no_argument, 0, NULL_OPTION},
-  {"no-recursion", no_argument, 0, NO_RECURSE_OPTION},
+  {"no-recursion", no_argument, &recursion_option, 0},
   {"no-same-owner", no_argument, &same_owner_option, -1},
   {"no-same-permissions", no_argument, &same_permissions_option, -1},
   {"numeric-owner", no_argument, &numeric_owner_option, 1},
@@ -489,6 +488,7 @@ decode_options (int argc, char **argv)
   excluded_with_slash = new_exclude ();
   excluded_without_slash = new_exclude ();
   newer_mtime_option = TYPE_MINIMUM (time_t);
+  recursion_option = FNM_LEADING_DIR;
 
   owner_option = -1;
   group_option = -1;
@@ -883,10 +883,6 @@ decode_options (int argc, char **argv)
 	  FATAL_ERROR ((0, 0, _("Invalid mode given on option")));
 	if (mode_option == MODE_MEMORY_EXHAUSTED)
 	  xalloc_die ();
-	break;
-
-      case NO_RECURSE_OPTION:
-	no_recurse_option = 1;
 	break;
 
       case NULL_OPTION:
