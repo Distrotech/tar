@@ -487,7 +487,7 @@ write_long_link (struct tar_stat_info *st)
   switch (archive_format)
     {
     case POSIX_FORMAT:
-      xheader_store ("linkpath", st);
+      xheader_store ("linkpath", st, NULL);
       break;
 
     case V7_FORMAT:			/* old V7 tar format */
@@ -514,7 +514,7 @@ write_long_name (struct tar_stat_info *st)
   switch (archive_format)
     {
     case POSIX_FORMAT:
-      xheader_store ("path", st);
+      xheader_store ("path", st, NULL);
       break;
 
     case V7_FORMAT:		      
@@ -641,17 +641,17 @@ start_header (struct tar_stat_info *st)
     MODE_TO_CHARS (st->stat.st_mode, header->header.mode);
 
   if (st->stat.st_uid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-    xheader_store ("uid", st);
+    xheader_store ("uid", st, NULL);
   else
     UID_TO_CHARS (st->stat.st_uid, header->header.uid);
   
   if (st->stat.st_gid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-    xheader_store ("gid", st);
+    xheader_store ("gid", st, NULL);
   else
     GID_TO_CHARS (st->stat.st_gid, header->header.gid);
 
   if (st->stat.st_size > MAXOCTAL11 && archive_format == POSIX_FORMAT)
-    xheader_store ("size", st);
+    xheader_store ("size", st, NULL);
   else
     OFF_TO_CHARS (st->stat.st_size, header->header.size);
 
@@ -665,12 +665,12 @@ start_header (struct tar_stat_info *st)
       st->devminor = minor (st->stat.st_rdev);
 
       if (st->devmajor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-	xheader_store ("devmajor", st);
+	xheader_store ("devmajor", st, NULL);
       else
 	MAJOR_TO_CHARS (st->devmajor, header->header.devmajor);
 
       if (st->devminor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-	xheader_store ("devminor", st);
+	xheader_store ("devminor", st, NULL);
       else
 	MAJOR_TO_CHARS (st->devminor, header->header.devminor);
     }
@@ -682,8 +682,8 @@ start_header (struct tar_stat_info *st)
   
   if (archive_format == POSIX_FORMAT)
     {
-      xheader_store ("atime", st);
-      xheader_store ("ctime", st);
+      xheader_store ("atime", st, NULL);
+      xheader_store ("ctime", st, NULL);
     }
   else if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
@@ -726,13 +726,13 @@ start_header (struct tar_stat_info *st)
       
       if (archive_format == POSIX_FORMAT
 	  && strlen (st->uname) > UNAME_FIELD_SIZE)
-	xheader_store ("uname", st);
+	xheader_store ("uname", st, NULL);
       else
 	UNAME_TO_CHARS (st->uname, header->header.uname);
 
       if (archive_format == POSIX_FORMAT
 	  && strlen (st->gname) > GNAME_FIELD_SIZE)
-	xheader_store ("gname", st);
+	xheader_store ("gname", st, NULL);
       else
 	GNAME_TO_CHARS (st->gname, header->header.gname);
     }
