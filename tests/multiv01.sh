@@ -2,14 +2,15 @@
 # Test multivolume dumps from pipes.
 
 . ./preset
-. $srcdir/before gnu oldgnu
+. $srcdir/before
+prereq gnu oldgnu
 
 # Fixme: should be configurable
 #  TRUSS=truss -o /tmp/tr
 #  TRUSS=strace
 set -e
 
-dd if=/dev/zero bs=1024 count=7 >file1
+dd if=/dev/zero bs=1024 count=7 2>/dev/null >file1
 
 for block in " 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" \
               " 9" "10" "11" "12" "13" "14" "15" "16" ; do \
@@ -24,7 +25,7 @@ tar -c --multi-volume --tape-length=10 \
   -f t1-pipe.tar -f t2-pipe.tar ./file1 ./file2
 
 mkdir extract-dir-pipe
-dd bs=4096 count=10 if=t2-pipe.tar |
+dd bs=4096 count=10 if=t2-pipe.tar 2>/dev/null |
 PATH=$PATH ${TRUSS} tar -f t1-pipe.tar -f - \
       -C extract-dir-pipe -x --multi-volume \
       --tape-length=10 --read-full-records
@@ -33,12 +34,6 @@ cmp file1 extract-dir-pipe/file1
 cmp file2 extract-dir-pipe/file2
 
 out="\
-"
-err="\
-7+0 records in
-7+0 records out
-2+1 records in
-2+1 records out
 "
 
 . $srcdir/after
