@@ -1,5 +1,9 @@
 GNU tar NEWS - User visible changes.
 
+version 1.13.25 - Paul Eggert, 2001-09-26
+
+* Bug fixes.
+
 version 1.13.24 - Paul Eggert, 2001-09-22
 
 * New option --overwrite-dir.
