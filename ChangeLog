@@ -1,3 +1,10 @@
+2004-12-23  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Accommodate latest gnulib.
+	* doc/.cvsignore: Add getdate.texi.
+	* bootstrap: Do not treat alloca-opt specially; this is no
+	longer needed (and breaks builds) with latest gnulib.
+
 2004-12-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c (main): Reverted recent changes (#ifdef).
@@ -20,18 +27,18 @@
 	* tests/Makefile.am (comprec.at,pipe.at): New tests
 	* tests/testsuite.at: Likewise
 	* tests/gzip.at: Use AT_GZIP_PREREQ
-	* tests/star/pax-big-10g.at: Likewise 
+	* tests/star/pax-big-10g.at: Likewise
 	* tests/star/ustar-big-2g.at: Likewise
 	* tests/star/ustar-big-8g.at: Likewise
-	
+
 	* tests/extrac04.at: Discard stderr from sort, on some
 	systems it spits out lots of irrelevant info.
 	* tests/listed02.at: Likewise
-	
+
 	* doc/index.html.in: Rewritten in xhtml to follow recent
 	GNU site standards.
 	* THANKS: Updated
-	
+
 2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Released version 1.15. Sources up to this point are
@@ -42,12 +49,12 @@
 	* directory: Updated
 	* bootstrap (update_po): Give -r to wget. Always remove index.html
 	Ignore alloca-opt module (it duplicates alloca)
-	
+
 	* tests/Makefile.am: Distribute star/quicktest.sh
 	* tests/star/README: Document quicktest.sh
 	* tests/star/qucktest.sh: Removed.
-	* tests/star/quicktest.sh: New file. 
-	
+	* tests/star/quicktest.sh: New file.
+
 2004-12-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
@@ -56,7 +63,7 @@
 	* src/tar.c (decode_options): Ignore --seek if used with --delete.
 	Delete.c is based on the assumption that the archive is being
 	actually read, not lseeked.
-	
+
 	* tests/delete05.at: New file
 	* tests/extrac02.at: Fixed typo in AT_SETUP
 	* tests/Makefile.am: Added delete05.at
