@@ -67,7 +67,7 @@ do
 	 ;;
   -v*)   VERBOSE=`expr $option : "-v\(.*\)"`;;
   -V|--v|--ve|--ver|--vers|--versi|--versio|--version)
-    	 echo "restore; @PACKAGE@ (@VERSION@)"
+    	 echo "restore (@PACKAGE@ @VERSION@)"
 	 exit 0;;
   -L|--li|--lic|--lice|--licen|--licens|--license)
     	 license
