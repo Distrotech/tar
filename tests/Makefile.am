@@ -47,6 +47,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 TESTSUITE_AT = \
  testsuite.at\
+ append.at\
  comprec.at\
  delete01.at\
  delete02.at\
