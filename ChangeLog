@@ -1,3 +1,17 @@
+2004-08-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* scripts/backup.in: Renamed LIBPATH to LIBDIR.
+	Use ROOT_FS with -C option. Do not send mail
+	if ADMINISTRATOR is set to NONE.
+	* scripts/backup.sh.in (test_root): Append / to
+	ROOT_FS if it does not already end in it.
+	* scripts/restore.in: Renamed LIBPATH to LIBDIR.
+	New option -a (--all). Do not start restore unless
+	-a or patterns are given.
+	(restore_fs,restore_files): Fixed use of --listed option.
+	* doc/tar.texi: Updated
+	* NEWS: Updated
+	
 2004-08-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c (find_argp_option): Fixed typo

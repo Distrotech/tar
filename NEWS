@@ -20,7 +20,10 @@ back up. This change fixes the bug.
   the GNU convention.
 
 * Skipping archive members is sped up.
-  
+
+* restore script starts restoring only if it is given --all (-a) option,
+or some patterns. This is to prevent accidental restores.
+
 * Bugfixes:
 ** Correctly recognize sparse archive members when used with -T option
 ** GNU multivolume headers cannot store filenames longer than 100 characters.
