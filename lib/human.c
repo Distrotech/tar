@@ -76,6 +76,23 @@ static const char suffixes[] =
   'Y'	/* Yotta */
 };
 
+/* If INEXACT_STYLE is not human_round_to_even, and if easily
+   possible, adjust VALUE according to the style.  */
+static double
+adjust_value (enum human_inexact_style inexact_style, double value)
+{
+  /* Do not use the floor or ceil functions, as that would mean
+     linking with the standard math library, which is a porting pain.
+     So leave the value alone if it is too large to easily round.  */
+  if (inexact_style != human_round_to_even && value < (uintmax_t) -1)
+    {
+      uintmax_t u = value;
+      value = u + (inexact_style == human_ceiling && u != value);
+    }
+
+  return value;
+}
+
 /* Like human_readable_inexact, except always round to even.  */
 char *
 human_readable (uintmax_t n, char *buf,
@@ -173,7 +190,7 @@ human_readable_inexact (uintmax_t n, char *buf,
 	double damt = n * (from_block_size / (double) to_block_size);
 
 	if (! base)
-	  sprintf (buf, "%.0f", damt);
+	  sprintf (buf, "%.0f", adjust_value (inexact_style, damt));
 	else
 	  {
 	    double e = 1;
@@ -188,9 +205,12 @@ human_readable_inexact (uintmax_t n, char *buf,
 
 	    damt /= e;
 
-	    sprintf (buf, "%.1f%c", damt, suffixes[power]);
+	    sprintf (buf, "%.1f%c", adjust_value (inexact_style, damt),
+		     suffixes[power]);
 	    if (4 < strlen (buf))
-	      sprintf (buf, "%.0f%c", damt, suffixes[power]);
+	      sprintf (buf, "%.0f%c",
+		       adjust_value (inexact_style, damt * 10) / 10,
+		       suffixes[power]);
 	  }
 
 	return buf;
