@@ -124,7 +124,7 @@ wait_time $TIME
 if [ $DUMP_LEVEL -ne 0 ]; then
     PREV_LEVEL=`expr $DUMP_LEVEL - 1`
     PREV_DATE=`ls -t ${LOGPATH}/log-*-level-$PREV_LEVEL|
-                head -1|
+                head -n 1|
 		sed "s,${LOGPATH}/log-\(.*\)-level.*,\1,"`
     if [ "x$PREV_DATE" = x ]; then
         bailout "Can't determine date of the previous backup"
@@ -166,6 +166,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
  while [ $# -ne 0 ] ; do
      date="`date`"
      fs="`echo \"${1}\" | sed -e 's/^.*://'`"
+     fs=`root_fs $fs`
      fsname="`echo \"${1}\" | sed -e 's/\//:/g'`"
      remotehost="`expr \"${1}\" : '\([^/][^/]*\):.*'`"
      if [ -z "$remotehost" ]; then
@@ -187,7 +188,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      backup_host ${remotehost} \
                 "--listed=`level_log_name temp`" \
                 "--label='`print_level` backup of ${fs} on ${remotehost} at ${NOW}'" \
-		-C ${ROOT_FS}${fs} .
+		-C ${fs} .
 
      # `rsh' doesn't exit with the exit status of the remote command.  What
      # stupid lossage.  TODO: think of a reliable workaround.
@@ -198,7 +199,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      else
          flush_level_log ${remotehost} ${fsname}
      fi
-     ${MT_STATUS}
+     ${MT_STATUS} $TAPE_FILE
      ${DUMP_END-:} $DUMP_LEVEL $remotehost $fs $fsname
      echo "sleeping ${SLEEP_TIME} seconds"
      sleep ${SLEEP_TIME}
@@ -234,7 +235,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      else
 	 flush_level_log $localhost MISC
      fi
-     ${MT_STATUS}
+     ${MT_STATUS} $TAPE_FILE
      ${DUMP_END-:} $DUMP_LEVEL $localhost MISC MISC
  else
      echo "No miscellaneous files specified"
