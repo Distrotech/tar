@@ -24,8 +24,22 @@ EXTRA_PROGRAMS = rmt
 
 noinst_HEADERS = arith.h common.h rmt.h system.h tar.h
 rmt_SOURCES = rmt.c
-tar_SOURCES = buffer.c compare.c create.c delete.c extract.c \
-  xheader.c incremen.c list.c mangle.c misc.c names.c rtapelib.c tar.c update.c
+tar_SOURCES = \
+ buffer.c\
+ compare.c\
+ create.c\
+ delete.c\
+ extract.c\
+ xheader.c\
+ incremen.c\
+ list.c\
+ mangle.c\
+ misc.c\
+ names.c\
+ rtapelib.c\
+ system.c\
+ tar.c\
+ update.c
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib 
