@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003 Free Software Foundation, Inc.
+   2003, 2004 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -57,7 +57,7 @@ static off_t record_start_block; /* block ordinal at record_start */
 FILE *stdlis;
 
 static void backspace_output (void);
-static int new_volume (enum access_mode);
+static bool new_volume (enum access_mode);
 
 /* PID of child program, if compress_option or remote archive access.  */
 static pid_t child_pid;
@@ -71,12 +71,13 @@ static int hit_eof;
 /* Checkpointing counter */
 static int checkpoint;
 
-/* We're reading, but we just read the last block and its time to update.  */
-/* As least EXTERN like this one as possible.  FIXME!  */
-extern int time_to_start_writing;
+/* We're reading, but we just read the last block and it's time to update.
+   Declared in update.c
 
-int file_to_switch_to = -1;	/* if remote update, close archive, and use
-				   this descriptor to write to */
+   As least EXTERN like this one as possible. (?? --gray)
+   FIXME: Either eliminate it or move it to common.h. 
+*/
+extern bool time_to_start_writing;
 
 static int volno = 1;		/* which volume of a multi-volume tape we're
 				   on */
@@ -182,8 +183,7 @@ find_next_block (void)
   return current_block;
 }
 
-/* Indicate that we have used all blocks up thru BLOCK.
-   FIXME: should the arg have an off-by-1?  */
+/* Indicate that we have used all blocks up thru BLOCK. */
 void
 set_next_block_after (union block *block)
 {
@@ -201,7 +201,7 @@ set_next_block_after (union block *block)
 /* Return the number of bytes comprising the space between POINTER
    through the end of the current buffer of blocks.  This space is
    available for filling with data, or taking data from.  POINTER is
-   usually (but not always) the result previous find_next_block call.  */
+   usually (but not always) the result of previous find_next_block call.  */
 size_t
 available_space_after (union block *pointer)
 {
@@ -220,20 +220,20 @@ xclose (int fd)
    pattern.  Return true if the pattern matches.  In case of failure,
    retry matching a volume sequence number before giving up in
    multi-volume mode.  */
-static int
+static bool
 check_label_pattern (union block *label)
 {
   char *string;
-  int result;
+  bool result;
 
   if (! memchr (label->header.name, '\0', sizeof label->header.name))
-    return 0;
+    return false;
 
   if (fnmatch (volume_label_option, label->header.name, 0) == 0)
-    return 1;
+    return true;
 
   if (!multi_volume_option)
-    return 0;
+    return false;
 
   string = xmalloc (strlen (volume_label_option)
 		    + sizeof VOLUME_LABEL_APPEND + 1);
@@ -272,8 +272,6 @@ open_archive (enum access_mode wanted_access)
 
   if (multi_volume_option)
     {
-      if (verify_option)
-	FATAL_ERROR ((0, 0, _("Cannot verify multi-volume archives")));
       record_start = valloc (record_size + (2 * BLOCKSIZE));
       if (record_start)
 	record_start += 2;
@@ -291,11 +289,6 @@ open_archive (enum access_mode wanted_access)
 
   if (use_compress_program_option)
     {
-      if (multi_volume_option)
-	FATAL_ERROR ((0, 0, _("Cannot use multi-volume compressed archives")));
-      if (verify_option)
-	FATAL_ERROR ((0, 0, _("Cannot verify compressed archives")));
-
       switch (wanted_access)
 	{
 	case ACCESS_READ:
@@ -307,7 +300,7 @@ open_archive (enum access_mode wanted_access)
 	  break;
 
 	case ACCESS_UPDATE:
-	  FATAL_ERROR ((0, 0, _("Cannot update compressed archives")));
+	  abort (); /* Should not happen */
 	  break;
 	}
 
@@ -335,7 +328,7 @@ open_archive (enum access_mode wanted_access)
 	case ACCESS_UPDATE:
 	  archive = STDIN_FILENO;
 	  stdlis = stderr;
-	  write_archive_to_stdout = 1;
+	  write_archive_to_stdout = true;
 	  break;
 	}
     }
@@ -421,9 +414,6 @@ open_archive (enum access_mode wanted_access)
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
 	  TIME_TO_CHARS (start_time, record_start->header.mtime);
 	  finish_header (&current_stat_info, record_start, -1);
-#if 0
-	  current_block++;
-#endif
 	}
       break;
     }
@@ -463,7 +453,7 @@ flush_write (void)
 	{
 	  if (save_name)
 	    {
-	      assign_string (&real_s_name, safer_name_suffix (save_name, 0));
+	      assign_string (&real_s_name, safer_name_suffix (save_name, false));
 	      real_s_totsize = save_totsize;
 	      real_s_sizeleft = save_sizeleft;
 	    }
@@ -562,7 +552,7 @@ flush_write (void)
 	assign_string (&real_s_name, 0);
       else
 	{
-	  assign_string (&real_s_name, safer_name_suffix (save_name, 0));
+	  assign_string (&real_s_name, safer_name_suffix (save_name, false));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}
@@ -693,7 +683,7 @@ flush_read (void)
     {
       if (save_name)
 	{
-	  assign_string (&real_s_name, safer_name_suffix (save_name, 0));
+	  assign_string (&real_s_name, safer_name_suffix (save_name, false));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}
@@ -736,13 +726,10 @@ flush_read (void)
 	  break;
 	}
 
-    vol_error:
-      status = rmtread (archive, record_start->buffer, record_size);
-      if (status < 0)
-	{
-	  archive_read_error ();
-	  goto vol_error;
-	}
+      while ((status =
+	      rmtread (archive, record_start->buffer, record_size)) < 0)
+	archive_read_error ();
+      
       if (status != record_size)
 	short_read (status); 
 
@@ -832,17 +819,8 @@ flush_archive (void)
   if (access_mode == ACCESS_READ && time_to_start_writing)
     {
       access_mode = ACCESS_WRITE;
-      time_to_start_writing = 0;
-
-      if (file_to_switch_to >= 0)
-	{
-	  if (rmtclose (archive) != 0)
-	    close_warn (*archive_name_cursor);
-
-	  archive = file_to_switch_to;
-	}
-      else
-	backspace_output ();
+      time_to_start_writing = false;
+      backspace_output ();
     }
 
   switch (access_mode)
@@ -968,8 +946,9 @@ closeout_volume_number (void)
 }
 
 /* We've hit the end of the old volume.  Close it and open the next one.
-   Return nonzero on success.  */
-static int
+   Return nonzero on success.
+*/
+static bool
 new_volume (enum access_mode access)
 {
   static FILE *read_file;
@@ -980,7 +959,7 @@ new_volume (enum access_mode access)
     read_file = archive == STDIN_FILENO ? fopen (TTY_NAME, "r") : stdin;
 
   if (now_verifying)
-    return 0;
+    return false;
   if (verify_option)
     verify_volume ();
 
@@ -1041,6 +1020,7 @@ new_volume (enum access_mode access)
 	      {
 	      case '?':
 		{
+		  /* FIXME: Might it be useful to disable the '!' command? */
 		  fprintf (stderr, _("\
  n [name]   Give a new file name for the next (and subsequent) volume(s)\n\
  q          Abort tar\n\
@@ -1068,11 +1048,13 @@ new_volume (enum access_mode access)
 		  char *name = &input_buffer[1];
 		  char *cursor;
 
-		  while (*name == ' ' || *name == '\t')
-		    name++;
-		  cursor = name;
-		  while (*cursor && *cursor != '\n')
-		    cursor++;
+		  for (name = input_buffer + 1;
+		       *name == ' ' || *name == '\t';
+		       name++)
+		    ;
+
+		  for (cursor = name; *cursor && *cursor != '\n'; cursor++)
+		    ;
 		  *cursor = '\0';
 
 		  /* FIXME: the following allocation is never reclaimed.  */
@@ -1126,6 +1108,6 @@ new_volume (enum access_mode access)
 
   SET_BINARY_MODE (archive);
 
-  return 1;
+  return true;
 }
 
