@@ -23,6 +23,10 @@
 # include <iconv.h>
 #endif
 
+#ifndef ICONV_CONST
+# define ICONV_CONST
+#endif
+
 #ifdef HAVE_LIBICONV
 
 struct langtab
