@@ -293,7 +293,6 @@ open_archive (enum access_mode wanted_access)
 	{
 	case ACCESS_READ:
 	  child_pid = sys_child_open_for_uncompress ();
-	  read_full_records_option = false;
 	  break;
 
 	case ACCESS_WRITE:
