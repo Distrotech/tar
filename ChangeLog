@@ -1,5 +1,13 @@
 2004-03-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/buffer.c (open_archive): Clear read_full_records_option
+	if reading from a pipe.
+	(short_read): Display warning about the deduced record size
+	if version > 1
+	* tests/star/pax-big-10g.sh: Updated to match the above changes.
+	* tests/star/ustar-big-2g.sh: Likewise.
+	* tests/star/ustar-big-8g.sh: Likewise.
+
 	* configure.ac: Added gl_FUNC_STRTOULL
 	* src/create.c (start_header): Check for GNU_FORMAT
 	if incremental_option is set.
