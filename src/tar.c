@@ -137,7 +137,6 @@ struct option long_options[] =
   {"to-stdout", 0, &f_exstdout, 1},
   {"ignore-zeros", 0, &f_ignorez, 1},
   {"keep-old-files", 0, 0, 'k'},
-  {"uncompress", 0, &f_compress, 1},
   {"same-permissions", 0, &f_use_protection, 1},
   {"preserve-permissions", 0, &f_use_protection, 1},
   {"modification-time", 0, &f_modified, 1},
@@ -163,8 +162,15 @@ struct option long_options[] =
   {"one-file-system", 0, &f_local_filesys, 1},
   {"old-archive", 0, 0, 'o'},
   {"portability", 0, 0, 'o'},
-  {"compress", 0, &f_compress, 1},
-  {"compress-block", 0, &f_compress, 2},
+  {"compress", 0, 0, 'Z'},
+  {"uncompress", 0, 0, 'Z'},
+  {"compress-block", 0, &f_compress_block, 1},
+  {"gzip", 0, 0, 'z'},
+  {"ungzip", 0, 0, 'z'},
+  {"use-compress-program", 1, 0, 18},
+    
+
+  {"same-permissions", 0, &f_use_protection, 1},
   {"sparse", 0, &f_sparse_files, 1},
   {"tape-length", 1, 0, 'L'},
   {"remove-files", 0, &f_remove_files, 1},
@@ -344,6 +350,15 @@ options (argc, argv)
 
 	case 17:
 	  f_volno_file = optarg;
+	  break;
+
+	case 18:
+	  if (f_compressprog)
+	    {
+	      msg ("Only one compression option permitted\n");
+	      exit (EX_ARGSBAD);
+	    }
+	  f_compressprog = optarg;
 	  break;
 
 	case 'g':		/* We are making a GNU dump; save
@@ -602,9 +617,22 @@ options (argc, argv)
 	  add_exclude_file (optarg);
 	  break;
 
-	case 'z':		/* Easy to type */
-	case 'Z':		/* Like the filename extension .Z */
-	  f_compress++;
+	case 'z':
+	  if (f_compressprog)
+	    {
+	      msg ("Only one compression option permitted\n");
+	      exit (EX_ARGSBAD);
+	    }
+	  f_compressprog = "gzip";
+	  break;
+
+	case 'Z':
+	  if (f_compressprog)
+	    {
+	      msg ("Only one compression option permitted\n");
+	      exit (EX_ARGSBAD);
+	    }
+	  f_compressprog = "compress";
 	  break;
 
 	case '?':
@@ -626,6 +654,12 @@ options (argc, argv)
   if (n_ar_files > 1 && !f_multivol)
     {
       msg ("Multiple archive files requires --multi-volume\n");
+      exit (EX_ARGSBAD);
+    }
+  if (f_compress_block && !f_compressprog)
+    {
+      msg ("You must use a compression option (--gzip, --compress\n\
+or --use-compress-program) with --f_compress_block.\n");
       exit (EX_ARGSBAD);
     }
 }
@@ -715,8 +749,12 @@ Other options:\n\
 -W, --verify		attempt to verify the archive after writing it\n\
 --exclude FILE		exclude file FILE\n\
 -X, --exclude-from FILE	exclude files listed in FILE\n\
--z, -Z, --compress,\n\
+-Z, --compress,\n\
     --uncompress      	filter the archive through compress\n\
+-z, --gzip,\n\
+    --ungzip		filter the archive through gzip\n\
+--use-compress-program PROG\n\
+			filter the archive through PROG (which must accept -d)\n\
 -[0-7][lmh]		specify drive and density\n\
 ", stdout);
 }
