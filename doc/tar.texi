@@ -726,8 +726,10 @@ Performing Backups and Restoring Files
 
 Setting Parameters for Backups and Restoration
 
+* General-Purpose Variables::
+* Magnetic Tape Control::
+* User Hooks::
 * backup-specs example::        An Example Text of @file{Backup-specs}
-* Script Syntax::               Syntax for @file{Backup-specs}
 
 Choosing Files and Names for @command{tar}
 
@@ -780,7 +782,7 @@ Making @command{tar} Archives More Portable
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
 * old::                         Old V7 Archives
-* posix::                       @sc{posix} archives
+* posix::                       @acronym{POSIX} archives
 * Checksumming::                Checksumming Problems
 * Large or Negative Values::    Large files, negative time stamps, etc.
 
@@ -2778,10 +2780,10 @@ Creates archive in GNU tar 1.13 format. Basically it is the same as
 numeric fields.
 
 @item ustar
-Creates a POSIX.1-1988 compatible archive.
+Creates a @acronym{POSIX.1-1988} compatible archive.
 
 @item posix
-Creates a POSIX.1-2001 archive.
+Creates a @acronym{POSIX.1-2001 archive}.
 
 @end table
 
@@ -3043,7 +3045,7 @@ This option does not affect extraction from archives.
 
 @item --pax-option=@var{keyword-list}
 
-This option is meaningful only with POSIX.1-2001 archives
+This option is meaningful only with @acronym{POSIX.1-2001} archives
 (@FIXME-xref{}). It modifies the way @command{tar} handles the
 extended header keywords. @var{Keyword-list} is a comma-separated
 list of keyword options, each keyword option taking one of
@@ -3058,8 +3060,8 @@ that it produces any keywords matching the string @var{pattern}.
 When used in extract or list mode, this option instructs tar
 to ignore any keywords matching the given @var{pattern} in the extended
 header records. In both cases, matching is performed using the pattern
-matching notation described in POSIX 1003.2, 3.13 (@FIXME-xref{}, see
-man 7 glob). For example:
+matching notation described in @acronym{POSIX 1003.2}, 3.13 @FIXME-xref{see
+man 7 glob}. For example:
 
 @smallexample
 --pax-option delete=security.*
@@ -5262,7 +5264,6 @@ placeholder @var{snapshot-file} can be specified, e.g.,
 
 @node Backup Levels
 @section Levels of Backups
-@UNREVISED
 
 An archive containing all the files in the file system is called a
 @dfn{full backup} or @dfn{full dump}.  You could insure your data by
@@ -5271,7 +5272,7 @@ substantial amount of archive media and user time, as unchanged files
 are daily re-archived.
 
 It is more efficient to do a full dump only occasionally.  To back up
-files between full dumps, you can a incremental dump.  A @dfn{level
+files between full dumps, you can use @dfn{incremental dumps}.  A @dfn{level
 one} dump archives all the files that have changed since the last full
 dump.
 
@@ -5285,81 +5286,89 @@ files changed or created since the last daily backup.  (Doing dumps
 more than once a day is usually not worth the trouble).
 
 @GNUTAR{} comes with scripts you can use to do full
-and level-one dumps.  Using scripts (shell programs) to perform
-backups and restoration is a convenient and reliable alternative to
-typing out file name lists and @command{tar} commands by hand.
+and level-one (actually, even level-two and so on) dumps.  Using
+scripts (shell programs) to perform backups and restoration is a
+convenient and reliable alternative to typing out file name lists
+and @command{tar} commands by hand.
 
 Before you use these scripts, you need to edit the file
 @file{backup-specs}, which specifies parameters used by the backup
-scripts and by the restore script.  @FIXME{There is no such restore
-script!}@FIXME-xref{Script Syntax}Once the backup parameters
-are set, you can perform backups or restoration by running the
-appropriate script.
+scripts and by the restore script. This file is usually located
+in @file{/etc/backup} directory. @FIXME-xref{Script Syntax} Once the
+backup parameters are set, you can perform backups or restoration by
+running the appropriate script.
 
-The name of the restore script is @code{restore}.  @FIXME{There is
-no such restore script!}The names of the level one and full backup
-scripts are, respectively, @code{level-1} and @code{level-0}.
-The @code{level-0} script also exists under the name @code{weekly}, and
-the @code{level-1} under the name @code{daily}---these additional names
-can be changed according to your backup schedule.  @FIXME-xref{Scripted
-Restoration, for more information on running the restoration script.}
-@FIXME-xref{Scripted Backups, for more information on running the
-backup scripts.}
+The name of the backup script is @code{backup}. The name of the
+restore script is @code{restore}. The following sections describe
+their use in detail.
 
-@emph{Please Note:} The backup scripts and the restoration scripts are
+@emph{Please Note:} The backup and restoration scripts are
 designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
-it is easier to use the scripts.@FIXME{There is no such restore script!}
-@value{xref-incremental}, and @value{xref-listed-incremental},
-before making such an attempt.
-
-@FIXME{shorten node names}
+it is easier to use the scripts. @value{xref-incremental}, and
+@value{xref-listed-incremental}, before making such an attempt.
 
 @node Backup Parameters
 @section Setting Parameters for Backups and Restoration
-@UNREVISED
 
 The file @file{backup-specs} specifies backup parameters for the
 backup and restoration scripts provided with @command{tar}.  You must
 edit @file{backup-specs} to fit your system configuration and schedule
 before using these scripts.
 
-@FIXME{This about backup scripts needs to be written: BS is a shell
-script ....  thus ... @file{backup-specs} is in shell script syntax.}
+Syntactically, @file{backup-specs} is a shell script, containing
+mainly variable assignments. However, any valid shell construct
+is allowed in this file. Particularly, you may wish to define
+functions within that script (e.g. see @code{RESTORE_BEGIN} below).
+For more information about shell script syntax, please refer to
+@url{http://www.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#ta
+g_02, the definition of the Shell Command Language}. See also
+@ref{Top,,Bash Features,bashref,Bash Reference Manual}.
 
-@FIXME-xref{Script Syntax, for an explanation of this syntax.}
+The shell variables controlling behavior of @code{backup} and
+@code{restore} are described in the following subsections.
 
-@FIXME{Whats a parameter ....  looked at by the backup scripts
-... which will be expecting to find ... now syntax ... value is linked
-to lame ...  @file{backup-specs} specifies the following parameters:}
+@menu
+* General-Purpose Variables::
+* Magnetic Tape Control::
+* User Hooks::
+* backup-specs example::        An Example Text of @file{Backup-specs}
+@end menu
 
-@table @samp
-@item ADMINISTRATOR
-The user name of the backup administrator.
+@node General-Purpose Variables
+@subsection General-Purpose Variables
 
-@item BACKUP_HOUR
-The hour at which the backups are done.  This can be a number from 0
-to 23, or the string @samp{now}.
+@defvr {Backup variable} ADMINISTRATOR
+The user name of the backup administrator. @code{Backup} scripts
+sends a backup report to this address.
+@end defvr
 
-@item TAPE_FILE
+@defvr {Backup variable} BACKUP_HOUR
+The hour at which the backups are done. This can be a number from 0
+to 23, or the time specification in form @var{hours}:@var{minutes},
+or the string @samp{now}.
+
+This variable is used by @code{backup}. Its value may be overridden
+using @option{--time} option (@pxref{Scripted Backups}).
+@end defvr
+
+@defvr {Backup variable} TAPE_FILE
 The device @command{tar} writes the archive to.  This device should be
 attached to the host on which the dump scripts are run.
+@end defvr
 
-@FIXME{examples for all  ...}
+@defvr {Backup variable} BLOCKING
 
-@item TAPE_STATUS
-The command to use to obtain the status of the archive device,
-including error count.  On some tape drives there may not be such a
-command; in that case, simply use @samp{TAPE_STATUS=false}.
-
-@item BLOCKING
 The blocking factor @command{tar} will use when writing the dump archive.
 @value{xref-blocking-factor}.
+@end defvr
 
-@item BACKUP_DIRS
-A list of file systems to be dumped.  You can include any directory
-name in the list---subdirectories on that file system will be
+@defvr {Backup variable} BACKUP_DIRS
+
+A list of file systems to be dumped (for @code{backup}), or restored
+(for @code{restore}). You can include any directory
+name in the list --- subdirectories on that file system will be
 included, regardless of how they may look to other networked machines.
 Subdirectories on other file systems will be ignored.
 
@@ -5373,22 +5382,204 @@ when in that directory on that machine).  If the host that contains
 the file system does not have this capability, you can specify another
 host as long as it can access the file system through NFS.
 
-@item BACKUP_FILES
-A list of individual files to be dumped.  These should be accessible
-from the machine on which the backup script is run.
+If the list of file systems is very long you may wish to put it
+in a separate file. This file is usually named
+@file{/etc/backup/dirs}, but this name may be overridden in
+@file{backup-specs} using @code{DIRLIST} variable.
+@end defvr
 
-@FIXME{Same file name, be specific.  Through NFS ...}
+@defvr {Backup variable} DIRLIST
 
+A path to the file containing the list of the filesystems to backup
+or restore. By default it is @file{/etc/backup/dirs}.
+@end defvr
+
+@defvr {Backup variable} BACKUP_FILES
+
+A list of individual files to be dumped (for @code{backup}), or restored
+(for @code{restore}). These should be accessible from the machine on
+which the backup script is run.
+
+If the list of file systems is very long you may wish to store it
+in a separate file. This file is usually named
+@file{/etc/backup/files}, but this name may be overridden in
+@file{backup-specs} using @code{FILELIST} variable.
+@end defvr
+
+@defvr {Backup variable} FILELIST
+
+A path to the file containing the list of the individual files to backup
+or restore. By default it is @file{/etc/backup/files}.
+@end defvr
+
+@defvr {Backup variable} RSH
+
+Path to @code{rsh} binary or its equivalent. You may wish to
+set it to @code{ssh}, to improve security. In this case you will have
+to use public key authentication.
+@end defvr
+
+@defvr {Backup variable} RSH_COMMAND
+
+Path to rsh binary on remote mashines. This will be passed via
+@option{--rsh-command} option to the remote invocation of @GNUTAR{}.
+@end defvr
+
+@defvr {Backup variable} VOLNO_FILE
+
+Name of temporary file to hold volume numbers.  This needs to be accessible
+by all the machines which have filesystems to be dumped.
+@end defvr
+
+@defvr {Backup variable} XLIST
+
+Name of @dfn{exclude file list}. An @dfn{exclude file list} is a file
+located on the remote machine and containing the list of files to
+be excluded from the backup. Exclude file lists are searched in
+/etc/tar-backup directory. A common use for exclude file lists
+is to exclude files containing security-sensitive information
+(e.g. @file{/etc/shadow} from backups.
+
+This variable affects only @code{backup}.
+@end defvr
+
+@defvr {Backup variable} SLEEP_TIME
+
+Time to sleep between dumps of any two successive filesystems
+
+This variable affects only @code{backup}.
+@end defvr
+
+@defvr {Backup variable} DUMP_REMIND_SCRIPT
+
+Script to be run when it's time to insert a new tape in for the next
+volume. Administrators may want to tailor this script for their site. 
+If this variable isn't set, @GNUTAR{} will display its built-in prompt
+@FIXME-xref{describe it somewhere!}, and will expect confirmation from
+the console.
+@end defvr
+
+@defvr {Backup variable} SLEEP_MESSAGE
+
+Message to display on the terminal while waiting for dump time.  Usually
+this will just be some literal text.
+@end defvr
+
+@defvr {Backup variable} TAR
+
+Pathname of the @GNUTAR{} executable. If this is not set, backup
+scripts will search @command{tar} in the current shell path.
+@end defvr
+
+@node Magnetic Tape Control
+@subsection Magnetic Tape Control
+
+Backup scripts access tape device using special @dfn{hook functions}.
+These functions take a single argument -- the name of the tape
+device. Their names are kept in the following variables:
+
+@defvr {Backup variable} MT_BEGIN
+The name of @dfn{begin} function. This function is called before
+accessing the drive. By default it retensions the tape:
+
+@smallexample
+MT_BEGIN=mt_begin
+
+mt_begin() @{
+    mt -f "$1" retension
+@}
+@end smallexample
+@end defvr
+
+@defvr {Backup variable} MT_REWIND
+THe name of @dfn{rewind} function. The default definition is as
+follows:
+
+@smallexample
+MT_REWIND=mt_rewind
+
+mt_rewind() @{
+    mt -f "$1" rewind
+@}
+@end smallexample
+
+@end defvr
+
+@defvr {Backup variable} MT_OFFLINE
+The name of the function switching the tape off line. By default
+it is defined as follows:
+
+@smallexample
+MT_OFFLINE=mt_offline
+
+mt_offline() @{
+    mt -f "$1" offl
+@}
+@end smallexample
+@end defvr
+
+@defvr {Backup variable} MT_STATUS
+The name of the function used to obtain the status of the archive device,
+including error count. Default definition:
+
+@smallexample
+MT_STATUS=mt_status
+
+mt_status() @{
+    mt -f "$1" status
+@}
+@end smallexample
+@end defvr
+
+@node User Hooks
+@subsection User Hooks
+
+@dfn{User hooks} are shell functions executed before and after
+each @command{tar} invocations. Thus, there are @dfn{backup 
+hooks}, which are executed before and after dumping each file
+system, and @dfn{restore hooks}, executed before and
+after restoring a file system. Each user hook is a shell function
+taking four arguments:
+
+@deffn {User Hook Function} hook @var{level} @var{host} @var{fs} @var{fsname}
+The arguments are:
+
+@table @var
+@item level
+Current backup or restore level.
+
+@item host
+Name or IP address of the host machine being dumped or restored.
+
+@item fs
+Full path name to the filesystem being dumped or restored.
+
+@item fsname
+Filesystem name with directory separators replaced with colons. This
+is useful e.g. for creating unique files.
 @end table
+@end deffn
 
-@menu
-* backup-specs example::        An Example Text of @file{Backup-specs}
-* Script Syntax::               Syntax for @file{Backup-specs}
-@end menu
+Following variables keep the names of user hook functions
+
+@defvr {Backup variable} DUMP_BEGIN
+Dump begin function. It is executed before dumping the filesystem.
+@end defvr
+
+@defvr {Backup variable} DUMP_END
+Executed after dumping the filesystem.
+@end defvr
+
+@defvr {Backup variable} RESTORE_BEGIN
+Executed before restoring the filesystem.
+@end defvr
+
+@defvr {Backup variable} RESTORE_END
+Executed after restoring the filesystem.
+@end defvr
 
 @node backup-specs example
 @subsection An Example Text of @file{Backup-specs}
-@UNREVISED
 
 The following is the text of @file{backup-specs} as it appears at FSF:
 
@@ -5398,7 +5589,20 @@ The following is the text of @file{backup-specs} as it appears at FSF:
 ADMINISTRATOR=friedman
 BACKUP_HOUR=1
 TAPE_FILE=/dev/nrsmt0
-TAPE_STATUS="mts -t $TAPE_FILE"
+
+# Use @code{ssh} instead of the less secure @code{rsh}
+RSH=/usr/bin/ssh
+RSH_COMMAND=/usr/bin/ssh
+
+# Override MT_STATUS function:
+my_status() @{
+      mts -t $TAPE_FILE
+@}
+MT_STATUS=my_status
+
+# Disable MT_OFFLINE function
+MT_OFFLINE=:
+
 BLOCKING=124
 BACKUP_DIRS="
         albert:/fs/fsf
@@ -5420,47 +5624,52 @@ BACKUP_FILES="/com/mailer/aliases /com/mailer/league*[a-z]"
 
 @end smallexample
 
-@node Script Syntax
-@subsection Syntax for @file{Backup-specs}
-@UNREVISED
-
-@file{backup-specs} is in shell script syntax.  The following
-conventions should be considered when editing the script:
-@FIXME{"conventions?"}
-
-A quoted string is considered to be contiguous, even if it is on more
-than one line.  Therefore, you cannot include commented-out lines
-within a multi-line quoted string.  BACKUP_FILES and BACKUP_DIRS are
-the two most likely parameters to be multi-line.
-
-A quoted string typically cannot contain wildcards.  In
-@file{backup-specs}, however, the parameters BACKUP_DIRS and
-BACKUP_FILES can contain wildcards.
-
 @node Scripted Backups
 @section Using the Backup Scripts
-@UNREVISED
 
 The syntax for running a backup script is:
 
 @smallexample
-@file{script-name} [@var{time-to-be-run}]
+backup --level=@var{level} --time=@var{time}
 @end smallexample
 
-where @var{time-to-be-run} can be a specific system time, or can be
-@kbd{now}.  If you do not specify a time, the script runs at the time
-specified in @file{backup-specs}.  @FIXME-pxref{Script Syntax}
+The @option{level} option requests the dump level. Thus, to produce
+a full dump, specify @code{--level=0} (this is the default, so
+@option{--level} may be omitted if its value is @code{0}).
+@footnote{For backward compatibility, the @code{backup} will also
+try to deduce the requested dump level from the name of the
+script itself. If the name consists of a string @samp{level-}
+followed by a single decimal digit, that digit is taken as
+the dump level number. Thus, you may create a link from @code{backup}
+to @code{level-1} and then run @code{level-1} whenever you need to
+create a level one dump.}
+
+The @option{--time} option determines when should the backup be
+run. @var{Time} may take three forms:
+
+@table @asis
+@item @var{hh}:@var{mm}
+
+The dump must be run at @var{hh} hours @var{mm} minutes.
+
+@item @var{hh}
+
+The dump must be run at @var{hh} hours
+
+@item now
+
+The dump must be run immediately.
+@end table
 
 You should start a script with a tape or disk mounted.  Once you
 start a script, it prompts you for new tapes or disks as it
 needs them.  Media volumes don't have to correspond to archive
-files---a multi-volume archive can be started in the middle of a
+files --- a multi-volume archive can be started in the middle of a
 tape that already contains the end of another multi-volume archive.
 The @code{restore} script prompts for media by its archive volume,
 so to avoid an error message you should keep track of which tape
-(or disk) contains which volume of the archive.  @FIXME{There is
-no such restore script!}  @FIXME-xref{Scripted Restoration}
-@FIXME{Have file names changed?}
+(or disk) contains which volume of the archive (@pxref{Scripted
+Restoration}).
 
 The backup scripts write two files on the file system.  The first is a
 record file in @file{/etc/tar-backup/}, which is used by the scripts
@@ -5474,40 +5683,113 @@ and files dumped, what time the backup was made, and any error
 messages that were generated, as well as how much space was left in
 the media volume after the last volume of the archive was written.
 You should check this log file after every backup.  The file name is
-@file{log-@var{mmm-ddd-yyyy}-level-1} or
-@file{log-@var{mmm-ddd-yyyy}-full}.
+@file{log-@var{mmm-ddd-yyyy}-level-@var{n}}, where @var{n} represents
+current dump level number.
 
 The script also prints the name of each system being dumped to the
 standard output.
 
+Following is the full list of options accepted by @code{backup}
+script:
+
+@table @option
+@item -l @var{level}
+@itemx --level=@var{level}
+Do backup level @var{level} (default 0).
+
+@item -f
+@itemx --force
+Force backup even if today's log file already exists.
+
+@item -v@var{level}
+@itemx --verbose[=@var{level}]
+Set verbosity level. The higher the level is, the more debugging
+information will be output during execution. Devault @var{level}
+is 100, which means the highest debugging level.
+
+@item -t @var{start-time}
+@itemx --time=@var{start-time}
+Wait till @var{time}, then do backup.
+
+@item -h
+@itemx --help
+Display short help message and exit.
+
+@item -L
+@itemx --license
+Display program license and exit.
+
+@item -V
+@itemx --version
+Display program version and exit.
+@end table
+
+
 @node Scripted Restoration
 @section Using the Restore Script
-@UNREVISED
-
-@ifset PUBLISH
-
-The @command{tar} distribution does not provide restoring scripts.
-
-@end ifset
-
-@ifclear PUBLISH
-
-@quotation
-@strong{Warning:} The @GNUTAR{} distribution does @emph{not}
-provide any such @code{restore} script yet.  This section is only
-listed here for documentation maintenance purposes.  In any case,
-all contents is subject to change as things develop.
-@end quotation
-
-@FIXME{A section on non-scripted restore may be a good idea.}
 
 To restore files that were archived using a scripted backup, use the
-@code{restore} script.  The syntax for the script is:
+@code{restore} script. Its usage is quite straightforward. In the
+simplest form, invoke @command{restore} without options, it will
+then restore all the filesystems and files specified in
+@file{backup-specs} (@pxref{General-Purpose Variables,BACKUP_DIRS}).
 
-where ***** are the file systems to restore from, and
-***** is a regular expression which specifies which files to
-restore.  If you specify --all, the script restores all the files
-in the file system.
+You may select the filesystems (and/or files) to restore by
+giving @code{restore} list of @dfn{patterns} in its command
+line. For example, running
+
+@smallexample
+restore 'albert:*'
+@end smallexample
+
+@noindent
+will restore all filesystems on the machine @samp{albert}. A more
+complicated example:
+
+@smallexample
+restore 'albert:*' '*:/var'
+@end smallexample
+
+@noindent
+This command will restore all filesystems on the machine @samp{albert}
+as well as @file{/var} filesystem on all machines.
+
+By default @code{restore} will start restoring files from the lowest
+available dump level (usually zero) and will continue through
+all available dump levels. There may be situations where such a
+thorough restore is not necessary. For example, you may wish to
+restore only files from the recent level one backup. To do so,
+use @option{--level} option, as shown in the example below:
+
+@smallexample
+restore --level=1
+@end smallexample
+
+The full list of options accepted by @code{restore} follows:
+
+@table @option
+@item -l @var{level}
+@itemx --level=@var{level}
+Start restoring from the given backup level, instead of the default 0.
+
+@item -v@var{level}
+@itemx --verbose[=@var{level}]
+Set verbosity level. The higher the level is, the more debugging
+information will be output during execution. Devault @var{level}
+is 100, which means the highest debugging level.
+
+@item -h
+@itemx --help
+Display short help message and exit.
+
+@item -L
+@itemx --license
+Display program license and exit.
+
+@item -V
+@itemx --version
+Display program version and exit.
+@end table
 
 You should start the restore script with the media containing the
 first volume of the archive mounted.  The script will prompt for other
@@ -5517,10 +5799,6 @@ positioned past the beginning of the archive, the script will rewind
 the tape as needed.  @FIXME-xref{Media, for a discussion of tape
 positioning.}
 
-If you specify @samp{--all} as the @var{files} argument, the
-@code{restore} script extracts all the files in the archived file
-system into the active file system.
-
 @quotation
 @strong{Warning:} The script will delete files from the active file
 system if they were not in the file system when the archive was made.
@@ -5528,10 +5806,6 @@ system if they were not in the file system when the archive was made.
 
 @value{xref-incremental}, and @value{ref-listed-incremental},
 for an explanation of how the script makes that determination.
-
-@FIXME{this may be an option, not a given}
-
-@end ifclear
 
 @node Choosing
 @chapter Choosing Files and Names for @command{tar}
@@ -6378,7 +6652,7 @@ The most frequently used formats are (in alphabetical order):
 @table @asis
 @item gnu
 Format used by @GNUTAR{} versions up to 1.13.25. This format derived
-from an early POSIX standard, adding some improvements such as
+from an early @acronym{POSIX} standard, adding some improvements such as
 sparse file handling and incremental archives. Unfortunately these
 features were implemented in a way incompatible with other archive
 formats.
@@ -6412,7 +6686,7 @@ characters long will not be able to use @GNUTAR{} @value{VERSION} and
 Automake prior to 1.9.
 
 @item ustar
-Archive format defined by POSIX.1-1988 specification. It stores
+Archive format defined by @acronym{POSIX.1-1988} specification. It stores
 symbolic ownership information. It is also able to store
 special files. However, it imposes several restrictions as well:
 
@@ -6436,7 +6710,7 @@ implementation. @GNUTAR{} is able to read @samp{star} archives but
 currently does not produce them.
 
 @item posix
-Archive format defined by POSIX.1-2001 specification. This is the
+Archive format defined by @acronym{POSIX.1-2001} specification. This is the
 most flexible and feature-rich format. It does not impose any
 restrictions on file sizes or filename lengths. This format is quite
 recent, so not all tar implementations are able to handle it properly.
@@ -6498,8 +6772,9 @@ contiguous files as such.  Let's discuss a few more problems, in turn.
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
 * old::                         Old V7 Archives
+* ustar::                       Ustar Archives
 * gnu::                         GNU and old GNU format archives.
-* posix::                       @sc{posix} archives
+* posix::                       @acronym{POSIX} archives
 * Checksumming::                Checksumming Problems
 * Large or Negative Values::    Large files, negative time stamps, etc.
 @end menu
@@ -6568,7 +6843,7 @@ contiguous files, and device files, and specifies file ownership by
 group and user IDs instead of group and user names.
 
 When updating an archive, do not use @value{op-format-v7}
-unless the archive was created with using this option.
+unless the archive was created using this option.
 
 In most cases, a @emph{new} format archive can be read by an @emph{old}
 @command{tar} program without serious trouble, so this option should
@@ -6576,22 +6851,35 @@ seldom be needed.  On the other hand, most modern @command{tar}s are
 able to read old format archives, so it might be safer for you to
 always use @value{op-format-v7} for your distributions.
 
+@node ustar
+@subsection Ustar Archive Format
+
+Archive format defined by @acronym{POSIX}.1-1988 specification is called
+@code{ustar}. Although it is more flexible than the V7 format, it
+still has many restrictions (@xref{Formats,ustar}, for the detailed
+description of @code{ustar} format). Along with V7 format,
+@code{ustar} format is a good choice for archives intended to be read
+with other implementations of @command{tar}.
+
+To create archive in @code{ustar} format, use @value{op-format-ustar}
+option in conjunction with the @value{op-create}.
+
 @node gnu
 @subsection @acronym{GNU} and old @GNUTAR{} format
 
 @GNUTAR{} was based on an early draft of the
-@sc{posix} 1003.1 @code{ustar} standard.  @acronym{GNU} extensions to
+@acronym{POSIX} 1003.1 @code{ustar} standard.  @acronym{GNU} extensions to
 @command{tar}, such as the support for file names longer than 100
 characters, use portions of the @command{tar} header record which were
-specified in that @sc{posix} draft as unused.  Subsequent changes in
-@sc{posix} have allocated the same parts of the header record for
+specified in that @acronym{POSIX} draft as unused.  Subsequent changes in
+@acronym{POSIX} have allocated the same parts of the header record for
 other purposes.  As a result, @GNUTAR{} format is
-incompatible with the current @sc{posix} specification, and with
+incompatible with the current @acronym{POSIX} specification, and with
 @command{tar} programs that follow it.
 
 In the majority of cases, @command{tar} will be configured to create
-this format by default. This may change in the future, since we plan
-to make @samp{posix} format the default.
+this format by default. This will change in the future releases, since
+we plan to make @samp{posix} format the default.
 
 To force creation a @GNUTAR{} archive, use option
 @value{op-format-gnu}. 
@@ -6604,19 +6892,18 @@ or @samp{oldgnu} archive formats. The list of such options follows:
 @item @value{op-label}, when used with @value{op-create}.
 @item @value{op-incremental}
 @item @value{op-multi-volume}
-@item @value{op-sparse}
 @end itemize
 
 These options will be re-implemented for the @samp{posix} archive
 format in the future.
 
 @node posix
-@subsection @GNUTAR{} and @sc{posix} @command{tar}
+@subsection @GNUTAR{} and @acronym{POSIX} @command{tar}
 
 The version @value{VERSION} of @GNUTAR{} is able
-to read and create archives conforming to @sc{posix.1-2001} standard.
+to read and create archives conforming to @acronym{POSIX.1-2001} standard.
 
-A @sc{posix} conformant archive will be created if @command{tar}
+A @acronym{POSIX} conformant archive will be created if @command{tar}
 was given @value{op-format-posix} option.
 Notice, that currently @acronym{GNU} extensions are not
 allowed with this format. Following is the list of options that
@@ -6626,7 +6913,6 @@ cannot be used with @value{op-format-posix}:
 @item @value{op-label}, when used with @value{op-create}.
 @item @value{op-incremental}
 @item @value{op-multi-volume}
-@item @value{op-sparse}
 @end itemize
 
 This restriction will disappear in the future versions.
@@ -6638,7 +6924,7 @@ SunOS and HP-UX @command{tar} fail to accept archives created using
 @GNUTAR{} and containing non-ASCII file names, that
 is, file names having characters with the eight bit set, because they
 use signed checksums, while @GNUTAR{} uses unsigned
-checksums while creating archives, as per @sc{posix} standards.  On
+checksums while creating archives, as per @acronym{POSIX} standards.  On
 reading, @GNUTAR{} computes both checksums and
 accept any.  It is somewhat worrying that a lot of people may go
 around doing backup of their files using faulty (or at least
@@ -6673,24 +6959,24 @@ a @command{tar} able to read the good archives they receive.
 @cindex future time stamps
 @cindex negative time stamps
 
-@sc{posix} @command{tar} format uses fixed-sized unsigned octal strings
+@acronym{POSIX} @command{tar} format uses fixed-sized unsigned octal strings
 to represent numeric values.  User and group IDs and device major and
 minor numbers have unsigned 21-bit representations, and file sizes and
 times have unsigned 33-bit representations.  @GNUTAR{}
-generates @sc{posix} representations when possible, but for values
-outside the @sc{posix} range it generates two's-complement base-256
+generates @acronym{POSIX} representations when possible, but for values
+outside the @acronym{POSIX} range it generates two's-complement base-256
 strings: uids, gids, and device numbers have signed 57-bit
 representations, and file sizes and times have signed 89-bit
-representations.  These representations are an extension to @sc{posix}
+representations.  These representations are an extension to @acronym{POSIX}
 @command{tar} format, so they are not universally portable.
 
 The most common portability problems with out-of-range numeric values
 are large files and future or negative time stamps.
 
-Portable archives should avoid members of 8 GB or larger, as @sc{posix}
+Portable archives should avoid members of 8 GB or larger, as @acronym{POSIX}
 @command{tar} format cannot represent them.
 
-Portable archives should avoid time stamps from the future.  @sc{posix}
+Portable archives should avoid time stamps from the future. @acronym{POSIX}
 @command{tar} format can represent time stamps in the range 1970-01-01
 00:00:00 through 2242-03-16 12:56:31 @sc{utc}.  However, many current
 hosts use a signed 32-bit @code{time_t}, or internal time stamp format,
@@ -6698,7 +6984,7 @@ and cannot represent time stamps after 2038-01-19 03:14:07 @sc{utc}; so
 portable archives must avoid these time stamps for many years to come.
 
 Portable archives should also avoid time stamps before 1970.  These time
-stamps are a common @sc{posix} extension but their @code{time_t}
+stamps are a common @acronym{POSIX} extension but their @code{time_t}
 representations are negative.  Many traditional @command{tar}
 implementations generate a two's complement representation for negative
 time stamps that assumes a signed 32-bit @code{time_t}; hence they
@@ -7816,7 +8102,7 @@ parameter specified this to the operating system.
 The Unix man page on @command{tar} was totally confused about this.
 When I wrote @code{PD TAR}, I used the historically correct terminology
 (@command{tar} writes data records, which are grouped into blocks).
-It appears that the bogus terminology made it into @sc{posix} (no surprise
+It appears that the bogus terminology made it into @acronym{POSIX} (no surprise
 here), and now Fran@,{c}ois has migrated that terminology back
 into the source code too.
 @end quotation
