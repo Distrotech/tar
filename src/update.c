@@ -106,7 +106,7 @@ void
 update_archive (void)
 {
   enum read_header previous_status = HEADER_STILL_UNREAD;
-  int found_end = 0;
+  bool found_end = false;
 
   name_gather ();
   open_archive (ACCESS_UPDATE);
@@ -126,30 +126,33 @@ update_archive (void)
 	  {
 	    struct name *name;
 
+	    decode_header (current_header, &current_stat_info,
+			   &current_format, 0);
+	    archive_format = current_format;
+	    
 	    if (subcommand_option == UPDATE_SUBCOMMAND
 		&& (name = name_scan (current_stat_info.file_name)) != NULL)
 	      {
 		struct stat s;
-		enum archive_format unused;
 
-		decode_header (current_header, &current_stat_info, &unused, 0);
 		chdir_do (name->change_dir);
 		if (deref_stat (dereference_option,
 				current_stat_info.file_name, &s) == 0
 		    && s.st_mtime <= current_stat_info.stat.st_mtime)
 		  add_avoided_name (current_stat_info.file_name);
 	      }
+
 	    skip_member ();
 	    break;
 	  }
 
 	case HEADER_ZERO_BLOCK:
 	  current_block = current_header;
-	  found_end = 1;
+	  found_end = true;
 	  break;
 
 	case HEADER_END_OF_FILE:
-	  found_end = 1;
+	  found_end = true;
 	  break;
 
 	case HEADER_FAILURE:
@@ -175,6 +178,8 @@ update_archive (void)
 	  break;
 	}
 
+      tar_stat_destroy (&current_stat_info);
+      xheader_destroy (&extended_header);
       previous_status = status;
     }
 
