@@ -1198,7 +1198,8 @@ flush_read (void)
   more = record_start->buffer + status;
   left = record_size - status;
 
-  while (left % BLOCKSIZE != 0)
+  while (left % BLOCKSIZE != 0
+	 || (left && status && read_full_records_option))
     {
       if (status)
 	while ((status = rmtread (archive, more, left)) < 0)
@@ -1206,8 +1207,9 @@ flush_read (void)
 
       if (status == 0)
 	{
-	  ERROR ((0, 0, _("%d garbage bytes ignored at end of archive"),
-		  (int) ((record_size - left) % BLOCKSIZE)));
+	  if (left % BLOCKSIZE != 0)
+	    ERROR ((0, 0, _("%d garbage bytes ignored at end of archive"),
+		    (int) ((record_size - left) % BLOCKSIZE)));
 	  break;
 	}
 
