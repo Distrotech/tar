@@ -191,6 +191,8 @@ struct option long_options[] =
 	{"checkpoint",		0,	&f_checkpoint,		1},
 	{"show-omitted-dirs",	0,	&f_show_omitted_dirs,	1},
 	{"volno-file",		1,	0,			17},
+	{"force-local",		0,	&f_force_local,		1},
+	{"atime-preserve",	0,	&f_atime_preserve,	1},
 
 	{0, 0, 0, 0}
 };
@@ -301,9 +303,10 @@ options(argc, argv)
 
 	/* Set default option values */
 	blocking = DEFBLOCKING;		/* From Makefile */
-	ar_file = getenv("TAPE");	/* From environment, or */
-	if (ar_file == 0)
-		ar_file = DEF_AR_FILE;	/* From Makefile */
+	ar_files = malloc (sizeof (char *) * 10);
+	ar_files_len = 10;
+	n_ar_files = 0;
+	cur_ar_file = 0;
 
 	/* Parse options */
 	while ((c = getoldopt(argc, argv,
@@ -396,7 +399,11 @@ options(argc, argv)
 
 				sprintf(buf,"/dev/rmt%d",add+c-'0');
 #endif
-				ar_file=buf;
+				if (n_ar_files == ar_files_len)
+				  ar_files 
+				    = (sizeof (char *)
+				       * (ar_files_len *= 2));
+				ar_files[n_ar_files++]=buf;
 			}
 			break;
 
@@ -436,7 +443,12 @@ options(argc, argv)
 			break;
 
 		case 'f':	/* Use ar_file for the archive */
-			ar_file = optarg;
+			if (n_ar_files == ar_files_len)
+			  ar_files
+			    = (sizeof (char *)
+			       * (ar_files_len *= 2));
+		
+			ar_files[n_ar_files++] = optarg;
 			break;
 
 		case 'F':
@@ -610,6 +622,18 @@ options(argc, argv)
 	}
 
 	blocksize = blocking * RECORDSIZE;
+	if (n_ar_files == 0)
+	  {
+	    n_ar_files = 1;
+	    ar_files[0] = getenv("TAPE");	/* From environment, or */
+	    if (ar_files[0] == 0)
+	      ar_files[0] = DEF_AR_FILE;	/* From Makefile */
+	  }
+	if (n_ar_files > 1 && !f_multivol)
+	  {
+	    msg ("Multiple archive files requires --multi-volume\n");
+	    exit (EX_ARGSBAD);
+	  }
 }
 
 
@@ -640,6 +664,7 @@ describe()
 
 	fprintf(stdout, "\
 Other options:\n\
+--atime-preserve	don't change access times on dumped files\n\
 -b, --block-size N	block size of Nx512 bytes (default N=%d)\n", DEFBLOCKING);
 	fputs ("\
 -B, --read-full-blocks	reblock as we read (for reading 4.2BSD pipes)\n\
@@ -648,6 +673,7 @@ Other options:\n\
 ", stdout); /* KLUDGE */ fprintf(stdout, "\
 -f, --file [HOSTNAME:]F	use archive file or device F (default %s)\n",
 				 DEF_AR_FILE); fputs("\
+--force-local		archive file is local even if has a colon\n\
 -F, --info-script F	run script at end of each tape (implies -M)\n\
 -G, --incremental	create/list/extract old GNU-format incremental backup\n\
 -g, --listed-incremental F create/list/extract new GNU-format incremental backup\n\
@@ -675,7 +701,7 @@ Other options:\n\
 --remove-files		remove files after adding them to the archive\n\
 -s, --same-order,\n\
     --preserve-order	list of names to extract is sorted to match archive\n\
---same-order		create extracted files with the same ownership \n\
+--same-owner		create extracted files with the same ownership \n\
 -S, --sparse		handle sparse files efficiently\n\
 -T, --files-from F	get names to extract or create from file F\n\
 --null			-T reads null-terminated names, disable -C\n\
