@@ -658,7 +658,7 @@ decode_options (int argc, char *const *argv)
 
       case 'K':
 	starting_file_option = 1;
-	addname (optarg);
+	addname (optarg, NULL);
 	break;
 
       case 'l':
