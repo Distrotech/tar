@@ -26,6 +26,8 @@
 
 #include "common.h"
 
+#define max(a, b) ((a) < (b) ? (b) : (a))
+
 union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
@@ -706,20 +708,34 @@ stringify_uintmax_t_backwards (uintmax_t o, char *buf)
 
 /* Also, see http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html.  */
 
-static char *
-isotime (const time_t *time)
+static char const *
+isotime (time_t time)
 {
-  static char buffer[INT_STRLEN_BOUND (int) + 16];
-  struct tm *tm = localtime (time);
+  static char buffer[max (UINTMAX_STRSIZE_BOUND + 1,
+			  INT_STRLEN_BOUND (int) + 16)];
+  struct tm *tm = localtime (&time);
   if (tm)
-    sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d",
-	     tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-	     tm->tm_hour, tm->tm_min, tm->tm_sec);
+    {
+      sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+	       tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+	       tm->tm_hour, tm->tm_min, tm->tm_sec);
+      return buffer;
+    }
   else
-    /* Interpose %s between ?? and - to avoid ANSI C trigraph brain damage.  */
-    sprintf (buffer, "????%s-??%s-?? ??:??:??", "", "");
-
-  return buffer;
+    {
+      /* The timestamp cannot be broken down, most likely because it
+	 is a huge timestamp.  Convert it as an integer,
+	 right-adjusted in a field with the same width as the usual
+	 19-byte 4-year ISO time format.  */
+      uintmax_t abstime = time < 0 ? - (uintmax_t) time : time;
+      char *p = stringify_uintmax_t_backwards (abstime,
+					       buffer + sizeof buffer);
+      if (time < 0)
+	*--p = '-';
+      while (buffer + sizeof buffer - 19 - 1 < p)
+	*--p = ' ';
+      return p;
+    }
 }
 
 #endif /* not USE_OLD_CTIME */
@@ -886,7 +902,7 @@ print_header (void)
 	  timestamp = "??? ?? ??:?? ????";
       }
 #else
-      timestamp = isotime (&longie);
+      timestamp = isotime (longie);
 #endif
 
       /* User and group names.  */
@@ -913,9 +929,11 @@ print_header (void)
 	{
 	case CHRTYPE:
 	case BLKTYPE:
-	  sprintf (size, "%lu,%lu",
-		   (unsigned long) major (current_stat.st_rdev),
-		   (unsigned long) minor (current_stat.st_rdev));
+	  strcpy (size,
+		  STRINGIFY_BIGINT (major (current_stat.st_rdev), uintbuf));
+	  strcat (size, ",");
+	  strcat (size,
+		  STRINGIFY_BIGINT (minor (current_stat.st_rdev), uintbuf));
 	  break;
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
