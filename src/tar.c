@@ -187,7 +187,6 @@ enum
   CHECKPOINT_OPTION,
   DELETE_OPTION,
   EXCLUDE_OPTION,
-  FIRST_COPY_OPTION,
   FORCE_LOCAL_OPTION,
   FORMAT_OPTION,
   GROUP_OPTION,
@@ -203,6 +202,7 @@ enum
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NULL_OPTION,
   NUMERIC_OWNER_OPTION,
+  OCCURRENCE_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
   POSIX_OPTION,
@@ -226,10 +226,6 @@ static int show_help;
 
 /* If nonzero, print the version on standard output and exit.  */
 static int show_version;
-
-/* If nonzero, stop processing when all the files from the namelist
-   where handled */
-static int first_copy_option;
 
 static struct option long_options[] =
 {
@@ -260,7 +256,6 @@ static struct option long_options[] =
   {"extract", no_argument, 0, 'x'},
   {"file", required_argument, 0, 'f'},
   {"files-from", required_argument, 0, 'T'},
-  {"first-copy", no_argument, &first_copy_option, 1},
   {"force-local", no_argument, 0, FORCE_LOCAL_OPTION},
   {"format", required_argument, 0, FORMAT_OPTION},
   {"get", no_argument, 0, 'x'},
@@ -295,6 +290,7 @@ static struct option long_options[] =
   {"no-same-owner", no_argument, &same_owner_option, -1},
   {"no-same-permissions", no_argument, &same_permissions_option, -1},
   {"numeric-owner", no_argument, 0, NUMERIC_OWNER_OPTION},
+  {"occurrence", optional_argument, 0, OCCURRENCE_OPTION},
   {"old-archive", no_argument, 0, 'o'},
   {"one-file-system", no_argument, 0, 'l'},
   {"overwrite", no_argument, 0, OVERWRITE_OPTION},
@@ -392,8 +388,13 @@ Operation modifiers:\n\
   -g, --listed-incremental=FILE\n\
                              handle new GNU-format incremental backup\n\
       --ignore-failed-read   do not exit with nonzero on unreadable files\n\
-      --first-copy           process only the first copy of each file in the\
-	                     archive\n"),
+      --occurrence[=NUM]     process only the NUMth occurrence of each file in\n\
+                             the archive. This option is valid only in\n\
+                             conjunction with one of the subcommands --delete,\n\
+                             --diff, --extract or --list and when a list of\n\
+                             files is given either on the command line or\n\
+                             via -T option.\n\
+                             NUM defaults to 1.\n"),
 	     stdout);
       fputs (_("\
 \n\
@@ -1038,6 +1039,20 @@ decode_options (int argc, char **argv)
 	numeric_owner_option = true;
 	break;
 
+      case OCCURRENCE_OPTION:
+	if (!optarg)
+	  occurrence_option = 1;
+	else
+	  {
+	    uintmax_t u;
+	    if (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK)
+	      occurrence_option = u;
+	    else
+	      FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			    _("Invalid number")));
+	  }
+	break;
+	
       case OVERWRITE_OPTION:
 	old_files_option = OVERWRITE_OLD_FILES;
 	break;
@@ -1277,17 +1292,17 @@ see the file named COPYING for details."));
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
   
-  if (first_copy_option)
+  if (occurrence_option)
     {
       if (!input_files && !files_from_option)
 	USAGE_ERROR ((0, 0,
-		      _("--first-copy is meaningless without file list")));
+		      _("--occurrence is meaningless without file list")));
       if (subcommand_option != DELETE_SUBCOMMAND
 	  && subcommand_option != DIFF_SUBCOMMAND
 	  && subcommand_option != EXTRACT_SUBCOMMAND
 	  && subcommand_option != LIST_SUBCOMMAND)
 	    USAGE_ERROR ((0, 0,
-			  _("--first-copy cannot be used in the requested operation mode")));
+			  _("--occurrence cannot be used in the requested operation mode")));
     }
   
   if (archive_names == 0)
@@ -1388,12 +1403,6 @@ see the file named COPYING for details."));
 	WARN ((0, 0, _("Treating date `%s' as %s"),
 	       textual_date_option, treated_as));
     }
-}
-
-bool
-all_names_found ()
-{
-  return first_copy_option && names_done ();
 }
 
 
