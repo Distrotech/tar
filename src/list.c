@@ -587,47 +587,47 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 gid_t
 gid_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "gid_t", (uintmax_t) GID_MAX);
+  return from_oct (p, s, "gid_t", (uintmax_t) TYPE_MAXIMUM (gid_t));
 }
 major_t
 major_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "major_t", (uintmax_t) MAJOR_MAX);
+  return from_oct (p, s, "major_t", (uintmax_t) TYPE_MAXIMUM (major_t));
 }
 minor_t
 minor_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "minor_t", (uintmax_t) MINOR_MAX);
+  return from_oct (p, s, "minor_t", (uintmax_t) TYPE_MAXIMUM (minor_t));
 }
 mode_t
 mode_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "mode_t", (uintmax_t) MODE_MAX);
+  return from_oct (p, s, "mode_t", (uintmax_t) TYPE_MAXIMUM (mode_t));
 }
 off_t
 off_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "off_t", (uintmax_t) OFF_MAX);
+  return from_oct (p, s, "off_t", (uintmax_t) TYPE_MAXIMUM (off_t));
 }
 size_t
 size_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "size_t", (uintmax_t) SIZE_MAX);
+  return from_oct (p, s, "size_t", (uintmax_t) TYPE_MAXIMUM (size_t));
 }
 time_t
 time_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "time_t", (uintmax_t) TIME_MAX);
+  return from_oct (p, s, "time_t", (uintmax_t) TYPE_MAXIMUM (time_t));
 }
 uid_t
 uid_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "uid_t", (uintmax_t) UID_MAX);
+  return from_oct (p, s, "uid_t", (uintmax_t) TYPE_MAXIMUM (uid_t));
 }
 uintmax_t
 uintmax_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "uintmax_t", UINTMAX_MAX);
+  return from_oct (p, s, "uintmax_t", TYPE_MAXIMUM (uintmax_t));
 }
 
 
