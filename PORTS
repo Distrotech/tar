@@ -1,9 +1,36 @@
-* Ports of GNU tar and other micro-tars			-*- outline -*-
+* Ports of GNU tar and other tars			-*- outline -*-
 
-  Please write tar-bugs@gnu.ai.mit.edu if you are aware of various ports
-  of GNU tar to non-Unix systems not listed here, or for corrections.
+  Many entries in this file are out of date, unfortunately.
+  Please write bug-tar@gnu.org if you are aware of various ports of GNU tar
+  to non-GNU and non-Unix systems not listed here, or for corrections.
   Please provide the goal system, a complete and stable URL, the maintainer
   name and address, the tar version used as a base, and your comments.
+
+.* Copyright notice
+
+  Copyright (C) 1999, 2001, 2003 Free Software Foundation, Inc.
+
+  This file is part of GNU tar.
+
+  GNU tar is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2, or (at your option)
+  any later version.
+
+  GNU tar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with GNU tar; see the file COPYING.  If not, write to
+  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+  Boston, MA 02111-1307, USA.
+
+.* GNU/Linux and Unix
+
+. + Star is a tape archiver similar to tar.
+    <http://www.fokus.gmd.de/research/cc/glone/employees/joerg.schilling/private/star.html>
 
 .* Amiga
 
@@ -11,7 +38,8 @@
     maintained by Enrico Forestieri <enrico@com.unipr.it>
     Based on tar 1.11.8.
 
-. + ftp://ftp.ninemoons.com/pub/ade/current/amiga-bin/tar-1.11.8-bin.lha
+. + [This link seems to be dead:]
+    ftp://ftp.ninemoons.com/pub/ade/current/amiga-bin/tar-1.11.8-bin.lha
     maintained by the ADE group <fnf@fishpond.ninemoons.com>
     Based on tar 1.11.8, needs ixemul.library.
 
@@ -20,12 +48,14 @@
 
 .* DEC alpha (NT)
 
-. + ftp://ftp.cdrom.com/.20/windows/archiver/tar.zip
+. + [This link seems to be dead:]
+    ftp://ftp.cdrom.com/.20/windows/archiver/tar.zip
     maintained by Drew Bliss & Geoff Voelker
 
 .* DEC VAX (VMS)
 
-. + http://www.lp.se/free/vmstar/
+. + [This link seems to be dead:]
+    http://www.lp.se/free/vmstar/
     maintained by Richard Levitte <levitte@lp.se>
     This is not GNU tar, but a separate implementation.
 
@@ -123,6 +153,10 @@
     Based on GNU tar 1.11.2.
 
 .* Macintosh
+
+. + Paulo Abreu (paulotex at yahoo dot com) did a
+    limited port of GNU tar to Darwin, with support for resource forks
+    and finder info, but this no longer seems to be available.
 
 . + There is a tar in Stuffit Expander which is available many places and
     comes with MacOS.  It creates some spurious files but works on average.
