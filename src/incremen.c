@@ -521,14 +521,14 @@ purge_directory (char const *directory_name)
 	  if (deref_stat (true, p, &st))
 	    {
 	      stat_diag (p);
-	      WARN((0, 0, _("%s: Not purging directory %s: unable to stat"),
+	      WARN((0, 0, _("%s: Not purging directory: unable to stat"),
 		    quotearg_colon (p)));
 	      continue; 
 	    }
 	  else if (one_file_system_option && st.st_dev != root_device)
 	    {
 	      WARN((0, 0,
-		    _("%s: directory %s is on a different device: not purging"),
+		    _("%s: directory is on a different device: not purging"),
 		    quotearg_colon (p)));
 	      continue;
 	    }
