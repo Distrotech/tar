@@ -30,6 +30,7 @@
    MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
 
 #include "system.h"
+#include "safe-read.h"
 
 #include <sys/socket.h>
 
