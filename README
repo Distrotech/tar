@@ -1,16 +1,12 @@
 Hey!  Emacs!  Yo!  This is -*- Text -*- !!!
 
-This GNU tar 1.11.1.  Please send bug reports, etc., to
+This GNU tar 1.11.2.  Please send bug reports, etc., to
 bug-gnu-utils@prep.ai.mit.edu.  This is a beta-test release.  Please
-try it out.  After bug reports are processed for this release, version
-1.12 will be released.  This release includes only bugfixes past
-version 1.11, most of which are fairly important.
+try it out.  There is no manual; the release of version 1.12 will
+contain a manual.
 
 GNU tar is based heavily on John Gilmore's public domain tar, but with
-added features.  The manual is currently being written.  An old
-manual, surely riddled with errors, is in tar.texinfo.  Please don't
-send in bug reports about that manual.  In particular, the mechanism
-for doing incremental dumps has been significantly changed.
+added features.  The manual is currently being written.  
 
 This distribution also includes rmt, the remote tape server (which
 normally must reside in /etc).  The mt tape drive control program is
@@ -32,9 +28,6 @@ importantly, do not use --incremental (-G) or --after-date (-N) or
 --newer-mtime to do incremental dumps.  The only option that works
 correctly for this purpose is --listed-incremental.  (When extracting
 incremental dumps, use --incremental (-G).)
-
-There is no tar manual in this release.  The old manual has too many
-problems to make it usable.  A new manual will appear in version 1.12.
 
 If your system needs to link with -lPW to get alloca, but has
 rename in the C library (so HAVE_RENAME is defined), -lPW might
