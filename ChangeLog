@@ -3,6 +3,7 @@
 	* src/extract.c (extract_archive): Do not report an error
 	when hard-linking X to X when X exists.  Problem reported by
 	Toby Peterson.
+	* lib/.cvsignore: Add fchown-stub.c.
 
 2004-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
