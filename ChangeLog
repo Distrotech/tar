@@ -1,5 +1,11 @@
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/create.c (start_header): Removed debugging hook
+	(dump_file): Fixed handling of linkname field.
+	* doc/tar.texi: Documented --format=ustar
+
+2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* src/tar.h (archive_format): USTAR_FORMAT: New type.
 	* src/create.c: Added POSIX.1-1988 support.
 	* src/names.c (safer_name_suffix): Skip leading ./
