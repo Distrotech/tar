@@ -24,7 +24,7 @@
 
 #include <sys/types.h>
 
-#include "full-write.h"
+#include "safe-read.h"
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
