@@ -27,7 +27,7 @@
    Originally written by Jeff Lee, modified some by Arnold Robbins.  Redone
    as a library that can replace open, read, write, etc., by Fred Fish, with
    some additional work by Arnold Robbins.  Modified to make all rmt* calls
-   into macros for speed by Jay Fenlason.  Use -DHAVE_NETDB_H for rexec
+   into macros for speed by Jay Fenlason.  Use -DWITH_REXEC for rexec
    code, courtesy of Dan Kegel.  */
 
 #include "system.h"
@@ -259,7 +259,7 @@ get_status_off (int handle)
     }
 }
 
-#if HAVE_NETDB_H
+#if WITH_REXEC
 
 /*-------------------------------------------------------------------------.
 | Execute /etc/rmt as user USER on remote system HOST using rexec.  Return |
@@ -307,7 +307,7 @@ _rmt_rexec (char *host, char *user)
   return result;
 }
 
-#endif /* HAVE_NETDB_H */
+#endif /* WITH_REXEC */
 
 /*------------------------------------------------------------------------.
 | Open a file (a magnetic tape device?) on the system specified in PATH,  |
@@ -380,7 +380,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   if (remote_user && *remote_user == '\0')
     remote_user = NULL;
 
-#if HAVE_NETDB_H
+#if WITH_REXEC
 
   /* Execute the remote command using rexec.  */
 
@@ -393,7 +393,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 
   WRITE_SIDE (remote_pipe_number) = READ_SIDE (remote_pipe_number);
 
-#else /* not HAVE_NETDB_H */
+#else /* not WITH_REXEC */
   {
     const char *remote_shell_basename;
     pid_t status;
@@ -469,7 +469,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
     close (from_remote[remote_pipe_number][PWRITE]);
     close (to_remote[remote_pipe_number][PREAD]);
   }
-#endif /* not HAVE_NETDB_H */
+#endif /* not WITH_REXEC */
 
   /* Attempt to open the tape device.  */
 
