@@ -191,6 +191,7 @@ gettime
 hash
 human
 lchown
+localcharset
 memset
 modechange
 obstack
