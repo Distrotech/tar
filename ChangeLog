@@ -1,3 +1,11 @@
+2005-04-04  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/buffer.c (struct zip_magic): Use char arrays, not pointers.
+	The unsigned char * pointer ran afoul of pedantic C compilers, and
+	we didn't need pointers anyway.  Put the size field before the
+	data to avoid unnecessary padding.  All uses changed.
+	(magic) Make it const, since it doesn't change.  All used changed.
+
 2005-04-02  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/xheader.c (decode_record): Don't dump core when given
