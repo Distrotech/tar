@@ -85,7 +85,7 @@
 #define TM_YEAR_BASE 1900
 
 #define HOUR(x) ((x) * 60)
- 
+
 /* An integer value, and the number of digits in its textual
    representation.  */
 typedef struct
@@ -168,7 +168,7 @@ static int yylex ();
 
 /* This grammar has 13 shift/reduce conflicts. */
 %expect 13
- 
+
 %union
 {
   int intval;
