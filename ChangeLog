@@ -1,3 +1,9 @@
+2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/create.c: Support for "linkpath" extended keyword.
+	* src/xheader.c (decode_record): Reversed the return
+	condition.
+
 2003-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Allow to redefine the default output format.
