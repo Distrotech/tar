@@ -127,7 +127,7 @@ scan_path (struct obstack *stk, char *path, dev_t device)
   char *name_buffer;		/* directory, `/', and directory member */
   size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
   size_t name_length;		/* used length in name_buffer */
-  struct directory *directory; /* for checking if already already seen */
+  struct directory *directory;  /* for checking if already seen */
   enum children children;
 
   if (! dirp)
@@ -308,7 +308,7 @@ get_directory_contents (char *path, dev_t device)
   scan_path (&stk, path, device);
   buffer = sort_obstack (&stk);
   obstack_free (&stk, NULL);
-  return buffer;;
+  return buffer;
 }
 
 
