@@ -1,3 +1,10 @@
+2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* directory: Updated for 1.15.1
+	* doc/Makefile.am: Use gendocs.sh to generate web documentation
+	* doc/tar.texi: Updated docs for --[no-]same-permissions
+	* src/tar.c: Reworded docstrings for --[no-]same-permissions
+
 2005-01-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap: Create m4/paxutils.m4
