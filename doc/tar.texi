@@ -428,10 +428,10 @@
 @set xref-starting-file @xref{Scarce}
 @set pxref-starting-file @pxref{Scarce}
 
-@set op-strip-path @kbd{--strip-path} 
-@set ref-strip-path @ref{--strip-path}
-@set xref-strip-path @xref{--strip-path}
-@set pxref-strip-path @pxref{--strip-path}
+@set op-strip-components @kbd{--strip-components} 
+@set ref-strip-components @ref{--strip-components}
+@set xref-strip-components @xref{--strip-components}
+@set pxref-strip-components @pxref{--strip-components}
 
 @set op-suffix @kbd{--suffix=@var{suffix}}
 @set ref-suffix @ref{Backup options}
@@ -3266,13 +3266,13 @@ This option affects extraction only; @command{tar} will skip extracting
 files in the archive until it finds one that matches @var{name}.
 @xref{Scarce}.
 
-@item --strip-path=@var{number}
+@item --strip-components=@var{number}
 Strip given @var{number} of leading components from file names before
 extraction. For example, if archive @file{archive.tar} contained
 @file{/some/file/name}, then running
 
 @smallexample
-tar --extract --file archive.tar --strip-path=2
+tar --extract --file archive.tar --strip-components=2
 @end smallexample
 
 @noindent
