@@ -243,6 +243,14 @@ AC_CHECK_TYPE(iconv_t,:,
 #endif
 ])
 
+AC_SUBST(BACKUP_SED_COND)
+if date +%Y-%m-%d 2>/dev/null >&2; then
+	BACKUP_SED_COND='/^#ELSE_DATE_FORMAT_OK/,/^#ENDIF_DATE_FORMAT_OK/d;/^#IF_DATE_FORMAT_OK/d'
+else
+	BACKUP_SED_COND='/^#IF_DATE_FORMAT_OK/,/^#ELSE_DATE_FORMAT_OK/d;/^#ENDIF_DATE_FORMAT_OK/d'
+fi
+
+
 AC_OUTPUT([Makefile\
            doc/Makefile\
            lib/Makefile\
