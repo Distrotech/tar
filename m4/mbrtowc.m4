@@ -4,7 +4,7 @@ dnl From Paul Eggert
 
 AC_DEFUN(jm_FUNC_MBRTOWC,
 [
-  AC_MSG_CHECKING([whether mbrtowc is declared])
+  AC_MSG_CHECKING([for mbrtowc])
   AC_CACHE_VAL(jm_cv_func_mbrtowc,
     [AC_TRY_LINK(
        [#include <wchar.h>],
