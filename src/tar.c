@@ -1030,7 +1030,7 @@ decode_options (int argc, char *const *argv)
       printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
       fputs (_("\
 \n\
-Copyright (C) 1988, 92, 93, 94, 95, 96, 97 Free Software Foundation, Inc.\n"),
+Copyright (C) 1988, 92,93,94,95,96,97,98, 1999 Free Software Foundation, Inc.\n"),
 	     stdout);
       fputs (_("\
 This is free software; see the source for copying conditions.  There is NO\n\
