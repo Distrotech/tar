@@ -213,7 +213,7 @@ enum
   RSH_COMMAND_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
-  STRIP_PATH_OPTION,
+  STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TOTALS_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
@@ -319,7 +319,7 @@ static struct option long_options[] =
   {"show-omitted-dirs", no_argument, 0, SHOW_OMITTED_DIRS_OPTION},
   {"sparse", no_argument, 0, 'S'},
   {"starting-file", required_argument, 0, 'K'},
-  {"strip-path", required_argument, 0, STRIP_PATH_OPTION },
+  {"strip-components", required_argument, 0, STRIP_COMPONENTS_OPTION },
   {"suffix", required_argument, 0, SUFFIX_OPTION},
   {"tape-length", required_argument, 0, 'L'},
   {"to-stdout", no_argument, 0, 'O'},
@@ -487,7 +487,7 @@ Local file selection:\n\
       --no-recursion           avoid descending automatically in directories\n\
   -l, --one-file-system        stay in local file system when creating archive\n\
   -K, --starting-file=NAME     begin at file NAME in the archive\n\
-      --strip-path=NUM         strip NUM leading components from file names\n\
+      --strip-components=NUM   strip NUM leading components from file names\n\
                                before extraction\n"),
 	     stdout);
 #if !MSDOS
@@ -1149,14 +1149,14 @@ decode_options (int argc, char **argv)
 		DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
 	exit(0);
 
-      case STRIP_PATH_OPTION:
+      case STRIP_COMPONENTS_OPTION:
 	{
 	  uintmax_t u;
 	  if (! (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
 		 && u == (size_t) u))
 	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
 			  _("Invalid number of elements")));
-	  strip_path_elements = u;
+	  strip_name_components = u;
 	}
 	break;
 
@@ -1476,7 +1476,10 @@ see the file named COPYING for details."));
 	 comparison doesn't complain about lost nanoseconds.  */
       char const *treated_as = tartime (newer_mtime_option.tv_sec);
       if (strcmp (textual_date_option, treated_as) != 0)
-	WARN ((0, 0, _("Treating date `%s' as %s + %ld nanoseconds"),
+	WARN ((0, 0,
+	       ngettext ("Treating date `%s' as %s + %ld nanosecond",
+			 "Treating date `%s' as %s + %ld nanoseconds",
+			 newer_mtime_option.tv_nsec),
 	       textual_date_option, treated_as, newer_mtime_option.tv_nsec));
     }
 }
