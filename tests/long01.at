@@ -1,0 +1,62 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for GNU tar.
+# Copyright (C) 2005 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# In GNU format, when extracting or listing a file member with a name 
+# whose length is divisible by block size (512) tar used to read an
+# extra block of data. In consequence the following file was not extracted.
+# Reported by Josef Bauer
+# References: <200501122145.j0CLjGhl006070@uhu.mchp.siemens.de>
+# 
+
+AT_SETUP([long file names divisible by block size])
+AT_KEYWORDS([long512])
+
+dnl Create a directory structure with maximum diractory name length 512-16
+m4_define([NAME],[0123456789abcde])
+m4_define([FULLNAME],NAME)
+m4_for([N],0,29,,[m4_define([FULLNAME],FULLNAME/NAME)])
+
+# Create a directory from [FULLNAME] with a file NAME at the deepest
+# level. The full length of the resulting file name is 512
+# NOTE: It is important to use a *file* in this test, since directory
+# names always receive a trailing slash in tar.
+mkhier() {
+	(for name in `echo FULLNAME | tr '/' ' '`
+	do
+		mkdir $name
+		cd $name
+	done
+	cat /dev/null > NAME)
+}
+
+AT_TAR_CHECK([
+mkhier
+echo test > endfile
+
+tar cf archive FULLNAME/NAME endfile
+tar tf archive],
+[0],
+[FULLNAME/NAME
+endfile
+],
+[],[],[],[gnu,oldgnu])
+
+AT_CLEANUP
+
