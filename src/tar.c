@@ -195,6 +195,7 @@ static struct option long_options[] =
   {"bzip2", no_argument, 0, 'j'},
   {"catenate", no_argument, 0, 'A'},
   {"checkpoint", no_argument, 0, CHECKPOINT_OPTION},
+  {"check-links", no_argument, &check_links_option, 1},
   {"compare", no_argument, 0, 'd'},
   {"compress", no_argument, 0, 'Z'},
   {"concatenate", no_argument, 0, 'A'},
@@ -285,7 +286,7 @@ static struct option long_options[] =
   {"volno-file", required_argument, 0, VOLNO_FILE_OPTION},
   {"wildcards", no_argument, 0, WILDCARDS_OPTION},
   {"wildcards-match-slash", no_argument, 0, WILDCARDS_MATCH_SLASH_OPTION},
-
+  
   {0, 0, 0, 0}
 };
 
@@ -388,7 +389,7 @@ Device blocking:\n\
 Archive format selection:\n\
   -V, --label=NAME                   create archive with volume name NAME\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
-  -o, --old-archive, --portability   write a V7 format archive\n\
+      --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX format archive\n\
   -j, --bzip2                        filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
@@ -435,12 +436,20 @@ Informative output:\n\
       --version         print tar program version number, then exit\n\
   -v, --verbose         verbosely list files processed\n\
       --checkpoint      print directory names while reading the archive\n\
+      --check-links     print a message if not all links are dumped\n\
       --totals          print total bytes written while creating archive\n\
       --index-file=FILE send verbose output to FILE\n\
   -R, --block-number    show block number within archive with each message\n\
   -w, --interactive     ask for confirmation for every action\n\
       --confirmation    same as -w\n"),
 	     stdout);
+      fputs (_("\
+\n\
+Compatibility options:\n\
+  -o                                 when creating, same as --old-archive\n\
+                                     when extracting, same as --no-same-owner\n"),
+             stdout);
+      
       fputs (_("\
 \n\
 The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
@@ -508,7 +517,8 @@ decode_options (int argc, char **argv)
   char const *backup_suffix_string;
   char const *version_control_string = 0;
   int exclude_options = EXCLUDE_WILDCARDS;
-
+  int o_option = 0;
+  
   /* Set some default option values.  */
 
   subcommand_option = UNKNOWN_SUBCOMMAND;
@@ -791,10 +801,7 @@ decode_options (int argc, char **argv)
 #endif /* not MSDOS */
 
       case 'o':
-	if (archive_format == DEFAULT_FORMAT)
-	  archive_format = V7_FORMAT;
-	else if (archive_format != V7_FORMAT)
-	  USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
+	o_option = 1;
 	break;
 
       case 'O':
@@ -1165,6 +1172,32 @@ decode_options (int argc, char **argv)
 #endif /* not DEVICE_PREFIX */
       }
 
+  /* Special handling for 'o' option:
+
+     GNU tar used to say "output old format".
+     UNIX98 tar says don't chown files after extracting (we use
+     "--no-same-owner" for this).
+
+     The old GNU tar semantics is retained when used with --create
+     option, otherwise UNIX98 semantics is assumed */
+
+  if (o_option)
+    {
+      if (subcommand_option == CREATE_SUBCOMMAND)
+	{
+	  /* GNU Tar <= 1.13 compatibility */
+	  if (archive_format == DEFAULT_FORMAT)
+	    archive_format = V7_FORMAT;
+	  else if (archive_format != V7_FORMAT)
+	    USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
+	}
+      else
+	{
+	  /* UNIX98 compatibility */
+	  same_owner_option = 1;
+	}
+    }
+
   /* Handle operands after any "--" argument.  */
   for (; optind < argc; optind++)
     {
@@ -1395,6 +1428,9 @@ main (int argc, char **argv)
       read_and (diff_archive);
       break;
     }
+
+  if (check_links_option)
+      check_links ();
 
   if (volno_file_option)
     closeout_volume_number ();
