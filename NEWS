@@ -1,5 +1,9 @@
 GNU tar NEWS - User visible changes.
 
+version 1.13.21 - Paul Eggert, 2001-08-28
+
+* Porting and copyright notice fixes.
+
 version 1.13.20 - Paul Eggert, 2001-08-27
 
 * Some bugs were fixed:
