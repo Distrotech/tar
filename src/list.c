@@ -1,5 +1,8 @@
 /* List a tar archive, with support routines for reading a tar archive.
-   Copyright 1988,92,93,94,96,97,98,99,2000,2001 Free Software Foundation, Inc.
+
+   Copyright 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
+   2001 Free Software Foundation, Inc.
+
    Written by John Gilmore, on 1985-08-26.
 
    This program is free software; you can redistribute it and/or modify it
@@ -484,7 +487,8 @@ decode_header (union block *header, struct stat *stat_info,
 /* Convert buffer at WHERE0 of size DIGS from external format to
    uintmax_t.  The data is of type TYPE.  The buffer must represent a
    value in the range -MINUS_MINVAL through MAXVAL.  DIGS must be
-   positive.  */
+   positive.  Return -1 on error, diagnosing the error if TYPE is
+   nonzero.  */
 static uintmax_t
 from_header (char const *where0, size_t digs, char const *type,
 	     uintmax_t minus_minval, uintmax_t maxval)
@@ -534,7 +538,7 @@ from_header (char const *where0, size_t digs, char const *type,
          nonzero digit is 1, we can't recover the original value
          reliably; so do this only if the digit is 2 or more.  This
          catches the common case of 32-bit negative time stamps.  */
-      if ((overflow || maxval < value) && '2' <= *where1)
+      if ((overflow || maxval < value) && '2' <= *where1 && type)
 	{
 	  /* Compute the negative of the input value, assuming two's
 	     complement.  */
@@ -566,79 +570,76 @@ from_header (char const *where0, size_t digs, char const *type,
 
       if (overflow)
 	{
-	  ERROR ((0, 0,
-		  _("Archive octal value %.*s is out of %s range"),
-		  (int) (where - where1), where1, type));
+	  if (type)
+	    ERROR ((0, 0,
+		    _("Archive octal value %.*s is out of %s range"),
+		    (int) (where - where1), where1, type));
 	  return -1;
 	}
     }
-  else if (type)
+  else if (*where == '-' || *where == '+')
     {
-      /* The following forms cannot appear as checksums, so we don't
-	 check for them if TYPE is null.  */
-
-      if (*where == '-' || *where == '+')
+      /* Parse base-64 output produced only by tar test versions
+	 1.13.6 (1999-08-11) through 1.13.11 (1999-08-23).
+	 Support for this will be withdrawn in future releases.  */
+      int dig;
+      static int warned_once;
+      if (! warned_once)
 	{
-	  /* Parse base-64 output produced only by tar test versions
-	     1.13.6 (1999-08-11) through 1.13.11 (1999-08-23).
-	     Support for this will be withdrawn in future releases.  */
-	  int dig;
-	  static int warned_once;
-	  if (! warned_once)
+	  warned_once = 1;
+	  WARN ((0, 0,
+		 _("Archive contains obsolescent base-64 headers")));
+	}
+      negative = *where++ == '-';
+      while (where != lim
+	     && (dig = base64_map[(unsigned char) *where]) < 64)
+	{
+	  if (value << LG_64 >> LG_64 != value)
 	    {
-	      warned_once = 1;
-	      WARN ((0, 0,
-		     _("Archive contains obsolescent base-64 headers")));
+	      char *string = alloca (digs + 1);
+	      memcpy (string, where0, digs);
+	      string[digs] = '\0';
+	      if (type)
+		ERROR ((0, 0,
+			_("Archive signed base-64 string %s is out of %s range"),
+			quote (string), type));
+	      return -1;
 	    }
-	  negative = *where++ == '-';
-	  while (where != lim
-		 && (dig = base64_map[(unsigned char) *where]) < 64)
+	  value = (value << LG_64) | dig;
+	  where++;
+	}
+    }
+  else if (*where == '\200' /* positive base-256 */
+	   || *where == '\377' /* negative base-256 */)
+    {
+      /* Parse base-256 output.  A nonnegative number N is
+	 represented as (256**DIGS)/2 + N; a negative number -N is
+	 represented as (256**DIGS) - N, i.e. as two's complement.
+	 The representation guarantees that the leading bit is
+	 always on, so that we don't confuse this format with the
+	 others (assuming ASCII bytes of 8 bits or more).  */
+      int signbit = *where & (1 << (LG_256 - 2));
+      uintmax_t topbits = (((uintmax_t) - signbit)
+			   << (CHAR_BIT * sizeof (uintmax_t)
+			       - LG_256 - (LG_256 - 2)));
+      value = (*where++ & ((1 << (LG_256 - 2)) - 1)) - signbit;
+      for (;;)
+	{
+	  value = (value << LG_256) + (unsigned char) *where++;
+	  if (where == lim)
+	    break;
+	  if (((value << LG_256 >> LG_256) | topbits) != value)
 	    {
-	      if (value << LG_64 >> LG_64 != value)
-		{
-		  char *string = alloca (digs + 1);
-		  memcpy (string, where0, digs);
-		  string[digs] = '\0';
-		  ERROR ((0, 0,
-			  _("Archive signed base-64 string %s is out of %s range"),
-			  quote (string), type));
-		  return -1;
-		}
-	      value = (value << LG_64) | dig;
-	      where++;
+	      if (type)
+		ERROR ((0, 0,
+			_("Archive base-256 value is out of %s range"),
+			type));
+	      return -1;
 	    }
 	}
-      else if (*where == '\200' /* positive base-256 */
-	       || *where == '\377' /* negative base-256 */)
-	{
-	  /* Parse base-256 output.  A nonnegative number N is
-	     represented as (256**DIGS)/2 + N; a negative number -N is
-	     represented as (256**DIGS) - N, i.e. as two's complement.
-	     The representation guarantees that the leading bit is
-	     always on, so that we don't confuse this format with the
-	     others (assuming ASCII bytes of 8 bits or more).  */
-	  int signbit = *where & (1 << (LG_256 - 2));
-	  uintmax_t topbits = (((uintmax_t) - signbit)
-			       << (CHAR_BIT * sizeof (uintmax_t)
-				   - LG_256 - (LG_256 - 2)));
-	  value = (*where++ & ((1 << (LG_256 - 2)) - 1)) - signbit;
-	  for (;;)
-	    {
-	      value = (value << LG_256) + (unsigned char) *where++;
-	      if (where == lim)
-		break;
-	      if (((value << LG_256 >> LG_256) | topbits) != value)
-		{
-		  ERROR ((0, 0,
-			  _("Archive base-256 value is out of %s range"),
-			  type));
-		  return -1;
-		}
-	    }
-	  negative = signbit;
-	  if (negative)
-	    value = -value;
-	}
+      negative = signbit;
+      if (negative)
+	value = -value;
     }
 
   if (where != lim && *where && !ISSPACE ((unsigned char) *where))
@@ -947,17 +948,45 @@ print_header (void)
 	  && !numeric_owner_option)
 	user = current_header->header.uname;
       else
-	user = STRINGIFY_BIGINT (UINTMAX_FROM_HEADER
-				 (current_header->header.uid),
-				 uform);
+	{
+	  /* Try parsing it as an unsigned integer first, and as a
+	     uid_t if that fails.  This method can list positive user
+	     ids that are too large to fit in a uid_t.  */
+	  uintmax_t u = from_header (current_header->header.uid,
+				     sizeof current_header->header.uid, 0,
+				     (uintmax_t) 0,
+				     (uintmax_t) TYPE_MAXIMUM (uintmax_t));
+	  if (u != -1)
+	    user = STRINGIFY_BIGINT (u, uform);
+	  else
+	    {
+	      sprintf (uform, "%ld",
+		       (long) UID_FROM_HEADER (current_header->header.uid));
+	      user = uform;
+	    }
+	}
 
       if (*current_header->header.gname && current_format != V7_FORMAT
 	  && !numeric_owner_option)
 	group = current_header->header.gname;
       else
-	group = STRINGIFY_BIGINT (UINTMAX_FROM_HEADER
-				  (current_header->header.gid),
-				  gform);
+	{
+	  /* Try parsing it as an unsigned integer first, and as a
+	     gid_t if that fails.  This method can list positive group
+	     ids that are too large to fit in a gid_t.  */
+	  uintmax_t g = from_header (current_header->header.gid,
+				     sizeof current_header->header.gid, 0,
+				     (uintmax_t) 0,
+				     (uintmax_t) TYPE_MAXIMUM (uintmax_t));
+	  if (g != -1)
+	    group = STRINGIFY_BIGINT (g, gform);
+	  else
+	    {
+	      sprintf (gform, "%ld",
+		       (long) GID_FROM_HEADER (current_header->header.gid));
+	      group = gform;
+	    }
+	}
 
       /* Format the file size or major/minor device numbers.  */
 
