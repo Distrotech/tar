@@ -1,5 +1,5 @@
 /* full-write.c -- an interface to write that retries after interrupts
-   Copyright (C) 1993, 1994, 1997, 1998 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1998, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -36,15 +36,14 @@ extern int errno;
 /* Write LEN bytes at PTR to descriptor DESC, retrying if interrupted.
    Return LEN upon success, write's (negative) error code otherwise.  */
 
-int
+ssize_t
 full_write (int desc, const char *ptr, size_t len)
 {
-  int total_written;
+  ssize_t total_written = 0;
 
-  total_written = 0;
   while (len > 0)
     {
-      int written = write (desc, ptr, len);
+      ssize_t written = write (desc, ptr, len);
       /* FIXME: write on my slackware Linux 1.2.13 returns zero when
 	 I try to write more data than there is room on a floppy disk.
 	 This puts dd into an infinite loop.  Reproduce with

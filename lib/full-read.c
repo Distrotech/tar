@@ -1,5 +1,5 @@
 /* full-read.c -- an interface to read that retries after interrupts
-   Copyright (C) 1993, 1994, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -35,26 +35,16 @@ extern int errno;
    Return the actual number of bytes read, zero for EOF, or negative
    for an error.  */
 
-int
-full_read (desc, ptr, len)
-     int desc;
-     char *ptr;
-     size_t len;
+ssize_t
+full_read (int desc, char *ptr, size_t len)
 {
-  int n_chars;
-
-  if (len <= 0)
-    return len;
-
-#ifdef EINTR
-  do
+  for (;;)
     {
-      n_chars = read (desc, ptr, len);
-    }
-  while (n_chars < 0 && errno == EINTR);
-#else
-  n_chars = read (desc, ptr, len);
+      ssize_t n = read (desc, ptr, len);
+#ifdef EINTR
+      if (n < 0 && errno == EINTR)
+	continue;
 #endif
-
-  return n_chars;
+      return n;
+    }
 }
