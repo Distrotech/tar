@@ -1,5 +1,5 @@
 /* Diff files from a tar archive.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -586,7 +586,7 @@ diff_sparse_files (filesize)
   /*	int		amt_read = 0;*/
   int size = filesize;
 
-  buf = (char *) malloc (buf_size * sizeof (char));
+  buf = (char *) ck_malloc (buf_size * sizeof (char));
 
   fill_in_sparse_array ();
 
@@ -692,7 +692,7 @@ fill_in_sparse_array ()
 	 * necessary
 	 */
   sp_array_size = 10;
-  sparsearray = (struct sp_array *) malloc (sp_array_size * sizeof (struct sp_array));
+  sparsearray = (struct sp_array *) ck_malloc (sp_array_size * sizeof (struct sp_array));
 
   /*
 	 * there are at most five of these structures in the header
