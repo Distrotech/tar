@@ -1,5 +1,8 @@
 /* A tar (tape archiver) program.
-   Copyright 1988,92,93,94,95,96,97,99,2000,2001 Free Software Foundation, Inc.
+
+   Copyright 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free
+   Software Foundation, Inc.
+
    Written by John Gilmore, starting 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -122,12 +125,18 @@ confirm (const char *message_action, const char *message_name)
 
 enum
 {
-  BACKUP_OPTION = CHAR_MAX + 1,
+  ANCHORED_OPTION = CHAR_MAX + 1,
+  BACKUP_OPTION,
   DELETE_OPTION,
   EXCLUDE_OPTION,
   GROUP_OPTION,
+  IGNORE_CASE_OPTION,
   MODE_OPTION,
   NEWER_MTIME_OPTION,
+  NO_ANCHORED_OPTION,
+  NO_IGNORE_CASE_OPTION,
+  NO_WILDCARDS_OPTION,
+  NO_WILDCARDS_MATCH_SLASH_OPTION,
   NULL_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
@@ -138,6 +147,8 @@ enum
   SUFFIX_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
   VOLNO_FILE_OPTION,
+  WILDCARDS_OPTION,
+  WILDCARDS_MATCH_SLASH_OPTION,
 
   /* Some cleanup is being made in GNU tar long options.  Using old names is
      allowed for a while, but will also send a warning to stderr.  Take old
@@ -163,6 +174,7 @@ static struct option long_options[] =
   {"absolute-names", no_argument, 0, 'P'},
   {"absolute-paths", no_argument, 0, OBSOLETE_ABSOLUTE_NAMES},
   {"after-date", required_argument, 0, 'N'},
+  {"anchored", no_argument, 0, ANCHORED_OPTION},
   {"append", no_argument, 0, 'r'},
   {"atime-preserve", no_argument, &atime_preserve_option, 1},
   {"backup", optional_argument, 0, BACKUP_OPTION},
@@ -194,6 +206,7 @@ static struct option long_options[] =
   {"gunzip", no_argument, 0, 'z'},
   {"gzip", no_argument, 0, 'z'},
   {"help", no_argument, &show_help, 1},
+  {"ignore-case", no_argument, 0, IGNORE_CASE_OPTION},
   {"ignore-failed-read", no_argument, &ignore_failed_read_option, 1},
   {"ignore-zeros", no_argument, 0, 'i'},
   /* FIXME: --ignore-end as a new name for --ignore-zeros?  */
@@ -211,6 +224,10 @@ static struct option long_options[] =
   {"newer", required_argument, 0, 'N'},
   {"newer-mtime", required_argument, 0, NEWER_MTIME_OPTION},
   {"null", no_argument, 0, NULL_OPTION},
+  {"no-anchored", no_argument, 0, NO_ANCHORED_OPTION},
+  {"no-ignore-case", no_argument, 0, NO_IGNORE_CASE_OPTION},
+  {"no-wildcards", no_argument, 0, NO_WILDCARDS_OPTION},
+  {"no-wildcards-match-slash", no_argument, 0, NO_WILDCARDS_MATCH_SLASH_OPTION},
   {"no-recursion", no_argument, &recursion_option, 0},
   {"no-same-owner", no_argument, &same_owner_option, -1},
   {"no-same-permissions", no_argument, &same_permissions_option, -1},
@@ -224,6 +241,7 @@ static struct option long_options[] =
   {"preserve", no_argument, 0, PRESERVE_OPTION},
   {"preserve-order", no_argument, 0, 's'},
   {"preserve-permissions", no_argument, 0, 'p'},
+  {"recursion", no_argument, &recursion_option, FNM_LEADING_DIR},
   {"recursive-unlink", no_argument, &recursive_unlink_option, 1},
   {"read-full-blocks", no_argument, 0, OBSOLETE_READ_FULL_RECORDS},
   {"read-full-records", no_argument, 0, 'B'},
@@ -253,6 +271,8 @@ static struct option long_options[] =
   {"version", no_argument, &show_version, 1},
   {"version-control", required_argument, 0, OBSOLETE_VERSION_CONTROL},
   {"volno-file", required_argument, 0, VOLNO_FILE_OPTION},
+  {"wildcards", no_argument, 0, WILDCARDS_OPTION},
+  {"wildcards-match-slash", no_argument, 0, WILDCARDS_MATCH_SLASH_OPTION},
 
   {0, 0, 0, 0}
 };
@@ -368,8 +388,16 @@ Local file selection:\n\
   -C, --directory=DIR          change to directory DIR\n\
   -T, --files-from=NAME        get names to extract or create from file NAME\n\
       --null                   -T reads null-terminated names, disable -C\n\
-      --exclude=PATTERN        exclude files, given as a globbing PATTERN\n\
-  -X, --exclude-from=FILE      exclude globbing patterns listed in FILE\n\
+      --exclude=PATTERN        exclude files, given as a PATTERN\n\
+  -X, --exclude-from=FILE      exclude patterns listed in FILE\n\
+      --anchored               exclude patterns match file name start (default)\n\
+      --no-anchored            exclude patterns match after any /\n\
+      --ignore-case            exclusion ignores case\n\
+      --no-ignore-case         exclusion is case sensitive (default)\n\
+      --wildcards              exclude patterns use wildcards (default)\n\
+      --no-wildcards           exclude patterns are plain strings\n\
+      --wildcards-match-slash  exclude pattern wildcards match '/' (default)\n\
+      --no-wildcards-match-slash exclude pattern wildcards do not match '/'\n\
   -P, --absolute-names         don't strip leading `/'s from file names\n\
   -h, --dereference            dump instead the files symlinks point to\n\
       --no-recursion           avoid descending automatically in directories\n\
@@ -379,7 +407,7 @@ Local file selection:\n\
 #if !MSDOS
       fputs (_("\
   -N, --newer=DATE             only store files newer than DATE\n\
-      --newer-mtime            compare date and time when data changed only\n\
+      --newer-mtime=DATE       compare date and time when data changed only\n\
       --after-date=DATE        same as -N\n"),
 	     stdout);
 #endif
@@ -413,8 +441,9 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\
 GNU tar cannot read nor produce `--posix' archives.  If POSIXLY_CORRECT\n\
 is set in the environment, GNU extensions are disallowed with `--posix'.\n\
 Support for POSIX is only partially implemented, don't count on it yet.\n\
-ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; and FILE may be a file\n\
-or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
+ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; DATE may be a textual date\n\
+or a file name starting with `/' or `.', in which case the file's date is used.\n\
+*This* `tar' defaults to `-f%s -b%d'.\n"),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
       fputs (_("\nReport bugs to <bug-tar@gnu.org>.\n"), stdout);
     }
@@ -434,7 +463,7 @@ or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hijklmoprstuvwxz"
+  "-01234567ABC:F:GIK:L:MN:OPRST:UV:WX:Zb:cdf:g:hijklmoprstuvwxyz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -456,18 +485,6 @@ set_use_compress_program_option (const char *string)
   use_compress_program_option = string;
 }
 
-/* Ignore DUMMY (which will always be null in practice), and add
-   PATTERN to the proper set of patterns to be excluded -- either
-   patterns with slashes, or patterns without.  */
-static void
-add_filtered_exclude (struct exclude *dummy, char const *pattern)
-{
-  add_exclude ((strchr (pattern, '/')
-		? excluded_with_slash
-		: excluded_without_slash),
-	       pattern);
-}
-
 static void
 decode_options (int argc, char **argv)
 {
@@ -475,6 +492,7 @@ decode_options (int argc, char **argv)
   int input_files;		/* number of input files */
   const char *backup_suffix_string;
   const char *version_control_string = 0;
+  int exclude_options = EXCLUDE_WILDCARDS;
 
   /* Set some default option values.  */
 
@@ -482,8 +500,7 @@ decode_options (int argc, char **argv)
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
-  excluded_with_slash = new_exclude ();
-  excluded_without_slash = new_exclude ();
+  excluded = new_exclude ();
   newer_mtime_option = TYPE_MINIMUM (time_t);
   recursion_option = FNM_LEADING_DIR;
 
@@ -670,6 +687,12 @@ decode_options (int argc, char **argv)
 	ignore_zeros_option = 1;
 	break;
 
+      case 'I':
+	USAGE_ERROR ((0, 0,
+		      _("Warning: the -I option is not supported;"
+			" perhaps you meant -j or -T?")));
+	break;
+
       case 'j':
 	set_use_compress_program_option ("bzip2");
 	break;
@@ -839,11 +862,19 @@ decode_options (int argc, char **argv)
 	break;
 
       case 'X':
-	if (add_exclude_file (add_filtered_exclude, 0, optarg, '\n') != 0)
+	if (add_exclude_file (add_exclude, excluded, optarg,
+			      exclude_options | recursion_option, '\n')
+	    != 0)
 	  {
 	    int e = errno;
 	    FATAL_ERROR ((0, e, "%s", quotearg_colon (optarg)));
 	  }
+	break;
+
+      case 'y':
+	USAGE_ERROR ((0, 0,
+		      _("Warning: the -y option is not supported;"
+			" perhaps you meant -j?")));
 	break;
 
       case 'z':
@@ -858,6 +889,10 @@ decode_options (int argc, char **argv)
 	WARN ((0, 0, _("Obsolete option name replaced by --backup")));
 	/* Fall through.  */
 
+      case ANCHORED_OPTION:
+	exclude_options |= EXCLUDE_ANCHORED;
+	break;
+
       case BACKUP_OPTION:
 	backup_option = 1;
 	if (optarg)
@@ -869,7 +904,11 @@ decode_options (int argc, char **argv)
 	break;
 
       case EXCLUDE_OPTION:
-	add_filtered_exclude (0, optarg);
+	add_exclude (excluded, optarg, exclude_options | recursion_option);
+	break;
+
+      case IGNORE_CASE_OPTION:
+	exclude_options |= FNM_CASEFOLD;
 	break;
 
       case GROUP_OPTION:
@@ -894,6 +933,22 @@ decode_options (int argc, char **argv)
 	  FATAL_ERROR ((0, 0, _("Invalid mode given on option")));
 	if (mode_option == MODE_MEMORY_EXHAUSTED)
 	  xalloc_die ();
+	break;
+
+      case NO_ANCHORED_OPTION:
+	exclude_options &= ~ EXCLUDE_ANCHORED;
+	break;
+
+      case NO_IGNORE_CASE_OPTION:
+	exclude_options &= ~ FNM_CASEFOLD;
+	break;
+
+      case NO_WILDCARDS_OPTION:
+	exclude_options &= ~ EXCLUDE_WILDCARDS;
+	break;
+
+      case NO_WILDCARDS_MATCH_SLASH_OPTION:
+	exclude_options |= FNM_FILE_NAME;
 	break;
 
       case NULL_OPTION:
@@ -961,12 +1016,20 @@ decode_options (int argc, char **argv)
 	backup_suffix_string = optarg;
 	break;
 
+      case USE_COMPRESS_PROGRAM_OPTION:
+	set_use_compress_program_option (optarg);
+	break;
+
       case VOLNO_FILE_OPTION:
 	volno_file_option = optarg;
 	break;
 
-      case USE_COMPRESS_PROGRAM_OPTION:
-	set_use_compress_program_option (optarg);
+      case WILDCARDS_OPTION:
+	exclude_options |= EXCLUDE_WILDCARDS;
+	break;
+
+      case WILDCARDS_MATCH_SLASH_OPTION:
+	exclude_options &= ~ FNM_FILE_NAME;
 	break;
 
       case '0':
