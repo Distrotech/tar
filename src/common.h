@@ -501,7 +501,7 @@ enum remove_option
   WANT_DIRECTORY_REMOVE_OPTION
 };
 int remove_any_file (const char *, enum remove_option);
-int maybe_backup_file (const char *, int);
+bool maybe_backup_file (const char *, int);
 void undo_last_backup (void);
 
 int deref_stat (bool, char const *, struct stat *);

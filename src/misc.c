@@ -329,11 +329,11 @@ remove_any_file (const char *path, enum remove_option option)
 }
 
 /* Check if PATH already exists and make a backup of it right now.
-   Return success (nonzero) only if the backup in either unneeded, or
+   Return success (nonzero) only if the backup is either unneeded, or
    successful.  For now, directories are considered to never need
    backup.  If ARCHIVE is nonzero, this is the archive and so, we do
    not have to backup block or character devices, nor remote entities.  */
-int
+bool
 maybe_backup_file (const char *path, int archive)
 {
   struct stat file_stat;
@@ -341,22 +341,22 @@ maybe_backup_file (const char *path, int archive)
   /* Check if we really need to backup the file.  */
 
   if (archive && _remdev (path))
-    return 1;
+    return true;
 
   if (stat (path, &file_stat))
     {
       if (errno == ENOENT)
-	return 1;
+	return true;
 
       stat_error (path);
-      return 0;
+      return false;
     }
 
   if (S_ISDIR (file_stat.st_mode))
-    return 1;
+    return true;
 
   if (archive && (S_ISBLK (file_stat.st_mode) || S_ISCHR (file_stat.st_mode)))
-    return 1;
+    return true;
 
   assign_string (&before_backup_name, path);
 
@@ -376,7 +376,7 @@ maybe_backup_file (const char *path, int archive)
 	fprintf (stdlis, _("Renaming %s to %s\n"),
 		 quote_n (0, before_backup_name),
 		 quote_n (1, after_backup_name));
-      return 1;
+      return true;
     }
   else
     {
@@ -386,7 +386,7 @@ maybe_backup_file (const char *path, int archive)
 	      quotearg_colon (before_backup_name),
 	      quote_n (1, after_backup_name)));
       assign_string (&after_backup_name, 0);
-      return 0;
+      return false;
     }
 }
 
