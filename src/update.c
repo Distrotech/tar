@@ -80,7 +80,10 @@ append_file (char *path)
 	    read_fatal_details (path, stat_data.st_size - bytes_left,
 				buffer_size);
 	  if (status == 0)
-	    FATAL_ERROR ((0, 0, _("%s: File shrank by %s bytes"),
+	    FATAL_ERROR ((0, 0,
+			  ngettext ("%s: File shrank by %s byte",
+				    "%s: File shrank by %s bytes",
+				    bytes_left),
 			  quotearg_colon (path),
 			  STRINGIFY_BIGINT (bytes_left, buf)));
 

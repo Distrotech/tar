@@ -1497,7 +1497,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		    char buf[UINTMAX_STRSIZE_BOUND];
 		    memset (start->buffer + count, 0, bufsize - count);
 		    WARN ((0, 0,
-			   _("%s: File shrank by %s bytes; padding with zeros"),
+			   ngettext ("%s: File shrank by %s byte; padding with zeros",
+				     "%s: File shrank by %s bytes; padding with zeros",
+				     sizeleft),
 			   quotearg_colon (p),
 			   STRINGIFY_BIGINT (sizeleft, buf)));
 		    if (! ignore_failed_read_option)

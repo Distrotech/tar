@@ -97,7 +97,10 @@ process_rawdata (size_t bytes, char *buffer)
 	}
       else
 	{
-	  sprintf (message, _("Could only read %lu of %lu bytes"),
+	  sprintf (message,
+		   ngettext ("Could only read %lu of %lu byte",
+			     "Could only read %lu of %lu bytes",
+			     bytes),
 		   (unsigned long) status, (unsigned long) bytes);
 	  report_difference (message);
 	}
@@ -236,7 +239,10 @@ diff_sparse_files (void)
 		{
 		  char message[MESSAGE_BUFFER_SIZE];
 
-		  sprintf (message, _("Could only read %lu of %lu bytes"),
+		  sprintf (message,
+			   ngettext ("Could only read %lu of %lu byte",
+				     "Could only read %lu of %lu bytes",
+				     chunk_size),
 			   (unsigned long) status, (unsigned long) chunk_size);
 		  report_difference (message);
 		}
@@ -268,7 +274,10 @@ diff_sparse_files (void)
 	    {
 	      char message[MESSAGE_BUFFER_SIZE];
 
-	      sprintf (message, _("Could only read %lu of %lu bytes"),
+	      sprintf (message,
+		       ngettext ("Could only read %lu of %lu byte",
+				 "Could only read %lu of %lu bytes",
+				 chunk_size),
 		       (unsigned long) status, (unsigned long) chunk_size);
 	      report_difference (message);
 	    }
@@ -714,7 +723,9 @@ verify_volume (void)
 	  while (status == HEADER_FAILURE);
 
 	  ERROR ((0, 0,
-		  _("VERIFY FAILURE: %d invalid header(s) detected"), counter));
+		  ngettext ("VERIFY FAILURE: %d invalid header detected",
+			    "VERIFY FAILURE: %d invalid headers detected",
+			    counter), counter));
 	}
       if (status == HEADER_ZERO_BLOCK || status == HEADER_END_OF_FILE)
 	break;

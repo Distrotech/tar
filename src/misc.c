@@ -660,7 +660,9 @@ read_error_details (char const *name, off_t offset, size_t size)
   char buf[UINTMAX_STRSIZE_BOUND];
   int e = errno;
   ERROR ((0, e,
-	  _("%s: Read error at byte %s, reading %lu bytes"),
+	  ngettext ("%s: Read error at byte %s, reading %lu byte",
+		    "%s: Read error at byte %s, reading %lu bytes",
+		    size),
 	  quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 	  (unsigned long) size));
 }
@@ -671,7 +673,9 @@ read_warn_details (char const *name, off_t offset, size_t size)
   char buf[UINTMAX_STRSIZE_BOUND];
   int e = errno;
   WARN ((0, e,
-	 _("%s: Warning: Read error at byte %s, reading %lu bytes"),
+	 ngettext ("%s: Warning: Read error at byte %s, reading %lu byte",
+		   "%s: Warning: Read error at byte %s, reading %lu bytes",
+		   size),
 	 quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 	 (unsigned long) size));
 }
@@ -688,7 +692,9 @@ read_fatal_details (char const *name, off_t offset, size_t size)
   char buf[UINTMAX_STRSIZE_BOUND];
   int e = errno;
   FATAL_ERROR ((0, e,
-		_("%s: Read error at byte %s, reading %lu bytes"),
+		ngettext ("%s: Read error at byte %s, reading %lu byte",
+			  "%s: Read error at byte %s, reading %lu bytes",
+			  size),
 		quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 		(unsigned long) size));
 }
@@ -811,7 +817,10 @@ write_error_details (char const *name, ssize_t status, size_t size)
   if (status < 0)
     write_error (name);
   else
-    ERROR ((0, 0, _("%s: Wrote only %lu of %lu bytes"),
+    ERROR ((0, 0,
+	    ngettext ("%s: Wrote only %lu of %lu byte",
+		      "%s: Wrote only %lu of %lu bytes",
+		      record_size),
 	    name, (unsigned long) status, (unsigned long) record_size));
 }
 

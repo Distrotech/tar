@@ -1283,7 +1283,9 @@ see the file named COPYING for details."));
 	    : 0));
       if (volume_label_max_len < strlen (volume_label_option))
 	USAGE_ERROR ((0, 0,
-		      _("%s: Volume label is too long (limit is %lu bytes)"),
+		      ngettext ("%s: Volume label is too long (limit is %lu byte)",
+				"%s: Volume label is too long (limit is %lu bytes)",
+				volume_label_max_len),
 		      quotearg_colon (volume_label_option),
 		      (unsigned long) volume_label_max_len));
     }
