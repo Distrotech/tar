@@ -1635,13 +1635,13 @@ $ @kbd{tar --create --file=foo.tar .}
 @end example
 
 @noindent
-@code{tar} will report @samp{tar: foo.tar is the archive; not dumped}.
+@code{tar} will report @samp{tar: ./foo.tar is the archive; not dumped}.
 This happens because @code{tar} creates the archive @file{foo.tar} in
 the current directory before putting any files into it.  Then, when
 @code{tar} attempts to add all the files in the directory @file{.} to
-the archive, it notices that the file @file{foo.tar} is the same as the
-archive, and skips it.  (It makes no sense to put an archive into
-itself.)  GNU @code{tar} will continue in this case, and create the
+the archive, it notices that the file @file{./foo.tar} is the same as the
+archive @file{foo.tar}, and skips it.  (It makes no sense to put an archive
+into itself.)  GNU @code{tar} will continue in this case, and create the
 archive normally, except for the exclusion of that one file.
 (@emph{Please note:} Other versions of @code{tar} are not so clever;
 they will enter an infinite loop when this happens, so you should not
@@ -5348,19 +5348,26 @@ Causes @code{tar} to ignore files that match the @var{pattern}.
 @end table
 
 @findex exclude
-The @value{op-exclude} option will prevent any file or member which
-matches the shell wildcards (@var{pattern}) from being operated on
-(@var{pattern} can be a single file name or a more complex expression).
-For example, if you want to create an archive with all the contents of
-the working directory except for files whose names end in @file{.o}, you
-can use the command @samp{tar -cf arch.tar --exclude='*.o' .}.
+The @value{op-exclude} option prevents any file or member whose name
+matches the shell wildcard (@var{pattern}) from being operated on.
+For example, to create an archive with all the contents of the directory
+@file{src} except for files whose names end in @file{.o}, use the
+command @samp{tar -cf src.tar --exclude='*.o' src}.
 
-A @var{pattern} containing @samp{/} excludes a file if an initial prefix
-of the file name matches @var{pattern}; a @var{pattern} without @samp{/}
-excludes a file if it matches any of its file name components.  For
-example, the pattern @samp{b*/RCS} excludes @file{blob/RCS} and
-@file{blob/RCS/f} but not @file{a/blob/RCS} or @file{blob/sub/RCS},
-whereas the pattern @samp{RCS} excludes all these file names.
+A @var{pattern} containing @samp{/} excludes a name if an initial
+subsequence of the name's components matches @var{pattern}; a
+@var{pattern} without @samp{/} excludes a name if it matches any of its
+name components.  For example, the pattern @samp{*b/RCS} contains
+@samp{/}, so it excludes @file{blob/RCS} and @file{.blob/RCS/f} but not
+@file{blob/RCSit/RCS} or @file{/blob/RCS}, whereas the pattern
+@samp{RCS} excludes all these names.  Conversely, the pattern @samp{*.o}
+lacks @samp{/}, so it excludes @file{.f.o}, @file{d/f.o}, and
+@file{d.o/f}.
+
+Other than optionally stripping leading @samp{/} from names
+(@pxref{absolute}), patterns and candidate names are used as-is.  For
+example, trailing @samp{/} is not trimmed from a user-specified name
+before deciding whether to exclude it.
 
 You may give multiple @samp{--exclude} options.
 
@@ -5781,7 +5788,8 @@ Do not strip leading slashes from file names.
 @end table
 
 By default, GNU @code{tar} drops a leading @samp{/} on input or output.
-This option turns off this behavior; it is equivalent to changing to the
+This option turns off this behavior.
+Tt is roughly equivalent to changing to the
 root directory before running @code{tar} (except it also turns off the
 usual warning message).
 
