@@ -43,6 +43,7 @@ TESTS = \
  longv7.sh\
  multiv01.sh\
  multiv02.sh\
+ multiv03.sh\
  old.sh\
  options.sh\
  same-order01.sh\
