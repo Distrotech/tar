@@ -924,7 +924,7 @@ create_archive (void)
 /* Dump a single file, recursing on directories.  P is the file name
    to dump.  TOP_LEVEL tells whether this is a top-level call; zero
    means no, positive means yes, and negative means an incremental
-   dump where it's irrelevant.  PARENT_DEVICE is the device of P's
+   dump.  PARENT_DEVICE is the device of P's
    parent directory; it is examined only if TOP_LEVEL is zero.
 
    Set global CURRENT_STAT to stat output for this file.  */
@@ -1140,7 +1140,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
       /* Now output all the files in the directory.  */
 
-      errno = 0;		/* FIXME: errno should be read-only */
+      errno = 0;
 
       directory = opendir (p);
       if (!directory)
@@ -1363,9 +1363,16 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      f = open (p, O_RDONLY | O_BINARY);
 	      if (f < 0)
 		{
-		  WARN ((0, errno, _("Cannot add file %s"), p));
-		  if (!ignore_failed_read_option)
-		    exit_status = TAREXIT_FAILURE;
+		  /* Do not diagnose a file that the parent directory
+		     said should be there, but is absent.  It was
+		     probably removed between then and now.  */
+		  if (top_level || errno != ENOENT)
+		    {
+		      WARN ((0, errno, _("Cannot add file %s"), p));
+		      if (! ignore_failed_read_option)
+			exit_status = TAREXIT_FAILURE;
+		    }
+
 		  return;
 		}
 	    }
@@ -1480,7 +1487,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		ERROR ((0, errno, "%s: fstat", p));
 	      else if (final_stat.st_mtime != restore_times.modtime
 		       || final_stat.st_size != restore_size)
-		ERROR ((0, errno, _("%s: file changed as we read it"), p));
+		ERROR ((0, 0, _("%s: file changed as we read it"), p));
 	      if (close (f) != 0)
 		ERROR ((0, errno, _("%s: close"), p));
 	      if (atime_preserve_option)
