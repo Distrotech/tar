@@ -1,3 +1,11 @@
+2005-02-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* gnulib.modules: New file. List of required gnulib
+	modules.
+	* bootstrap: Merge list of required modules from
+	paxutils with that from tar proper.
+	* src/tar.c: Various fixes in help and diagnostic messages.
+
 2005-02-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/common.h (EXTRACT_OVER_PIPE): New macro
