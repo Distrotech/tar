@@ -3,6 +3,10 @@ Current Version: 1.11.2
 
 User-visible changes since 1.11.1:
 
+o Changes in backup scripts
+  - cleaned up considerably; notices error conditions better over rsh
+  - DUMP_REMIND_SCRIPT is now an option in backup-specs
+  - new file dump-remind is an example of a DUMP_REMIND_SCRIPT
 o Superfluous "Reading dirname" was a bug; fixed.
 o Incompatibility problems with a bug on Solaris are fixed.
 o New option --gzip (aliases are --ungzip and -z); calls gzip instead
@@ -17,12 +21,15 @@ o Behave better with broken rmt servers.
 o Dump scripts no longer use --atime-preserve; this causes a nasty probem.
 o Several Makefile cleanups.
 
+
+==============
 Version 1.11.1
 User-visible changes since 1.11:
 
 o Many bug fixes
 
-================
+
+============
 Version 1.11
 User-visible changes since 1.10:
 
@@ -77,7 +84,7 @@ o Longnames support is redone differently--long name info directly
   long names to work.
 
 
-==================
+=============
 Version 1.10:
 User-visible changes since 1.09:
 
