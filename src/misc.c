@@ -599,6 +599,15 @@ close_warn (char const *name)
 }
 
 void
+close_diag (char const *name)
+{
+  if (ignore_failed_read_option)
+    close_warn (name);
+  else
+    close_error (name);
+}
+
+void
 exec_fatal (char const *name)
 {
   call_arg_fatal ("exec", name);
@@ -649,6 +658,15 @@ open_warn (char const *name)
 }
 
 void
+open_diag (char const *name)
+{
+  if (ignore_failed_read_option)
+    open_warn (name);
+  else
+    open_error (name);
+}
+
+void
 read_error (char const *name)
 {
   call_arg_error ("read", name);
@@ -678,6 +696,15 @@ read_warn_details (char const *name, off_t offset, size_t size)
 		   size),
 	 quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 	 (unsigned long) size));
+}
+
+void
+read_diag_details (char const *name, off_t offset, size_t size)
+{
+  if (ignore_failed_read_option)
+    read_warn_details (name, offset, size);
+  else
+    read_error_details (name, offset, size);
 }
 
 void
@@ -712,6 +739,15 @@ readlink_warn (char const *name)
 }
 
 void
+readlink_diag (char const *name)
+{
+  if (ignore_failed_read_option)
+    readlink_warn (name);
+  else
+    readlink_error (name);
+}
+
+void
 savedir_error (char const *name)
 {
   call_arg_error ("savedir", name);
@@ -721,6 +757,15 @@ void
 savedir_warn (char const *name)
 {
   call_arg_warn ("savedir", name);
+}
+
+void
+savedir_diag (char const *name)
+{
+  if (ignore_failed_read_option)
+    savedir_warn (name);
+  else
+    savedir_error (name);
 }
 
 void
@@ -756,6 +801,15 @@ seek_warn_details (char const *name, off_t offset)
 }
 
 void
+seek_diag_details (char const *name, off_t offset)
+{
+  if (ignore_failed_read_option)
+    seek_warn_details (name, offset);
+  else
+    seek_error_details (name, offset);
+}
+
+void
 symlink_error (char const *contents, char const *name)
 {
   int e = errno;
@@ -773,6 +827,15 @@ void
 stat_warn (char const *name)
 {
   call_arg_warn ("stat", name);
+}
+
+void
+stat_diag (char const *name)
+{
+  if (ignore_failed_read_option)
+    stat_warn (name);
+  else
+    stat_error (name);
 }
 
 void
