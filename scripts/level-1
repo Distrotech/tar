@@ -1,4 +1,4 @@
-#!/bin/sh 
+#!/bin/sh
 #
 # Run this script as root on the machine that has the tape drive, to make a
 # level-1 dump containing all files changed since the last full dump.
@@ -9,10 +9,10 @@
 # You must edit the file `backup-specs' to set the parameters for your site.
 
 # Useful for backup-specs, in case things have to be done slightly
-# differently for different dump levels. 
+# differently for different dump levels.
 DUMP_LEVEL=1
 
-# Insure `mail' is in PATH. 
+# Insure `mail' is in PATH.
 PATH="/usr/ucb:${PATH}"
 export PATH
 
@@ -46,7 +46,7 @@ if [ "z${1}" != "znow" ]; then
       if((hr + 0) < (spec + 0))
          print 3600 * (spec - hr) - 60 * mn;
       else
-         print 3600 * (spec + (24 - hr)) - 60 * mn; 
+         print 3600 * (spec + (24 - hr)) - 60 * mn;
      }' spec=\"${spec}\"`"
 
    clear
@@ -59,13 +59,13 @@ fi
 # Put startdate in the subject line of mailed report, since if it happens
 # to run longer than 24 hours (as may be the case if someone forgets to put
 # in the next volume of the tape in adequate time), the backup date won't
-# appear too misleading. 
+# appear too misleading.
 startdate="`date`"
 
 here="`pwd`"
 
 # Logfile name should be in the form  ``log-1993-03-18-level-1''
-# They go in the subdirectory `log' of the current directory. 
+# They go in the subdirectory `log' of the current directory.
 # i.e. year-month-date.  This format is useful for sorting by name, since
 # logfiles are intentionally kept online for future reference.
 LOGFILE="log/log-`date | sed -ne '
@@ -86,7 +86,7 @@ LOGFILE="log/log-`date | sed -ne '
 
 localhost="`hostname | sed -e 's/\..*//'`"
 
-TAR_PART1="${TAR} -c --multi-volume --one-file-system --block-size=${BLOCKING} --sparse --volno-file=${VOLNO_FILE}"
+TAR_PART1="${TAR} -c --multi-volume --one-file-system --blocking=${BLOCKING} --sparse --volno-file=${VOLNO_FILE}"
 
 # Only use --info-script if DUMP_REMIND_SCRIPT was defined in backup-specs
 if [ "x${DUMP_REMIND_SCRIPT}" != "x" ]; then
@@ -105,9 +105,9 @@ fi
 # Most everything below here is run in a subshell for which all output is
 # piped through `tee' to the logfile.  Doing this, instead of having
 # multiple pipelines all over the place, is cleaner and allows access to
-# the exit value from various commands more easily. 
+# the exit value from various commands more easily.
 (
- # Caveat: Some version of `mt' require `-t', not `-f'. 
+ # Caveat: Some version of `mt' require `-t', not `-f'.
  mt -f "${TAPE_FILE}" rewind
  rm -f "${VOLNO_FILE}"
 
@@ -144,7 +144,7 @@ fi
     fi
 
     # `rsh' doesn't exit with the exit status of the remote command.  What
-    # stupid lossage.  TODO: think of a reliable workaround. 
+    # stupid lossage.  TODO: think of a reliable workaround.
     if [ $? -ne 0 ] ; then
        echo "Backup of ${1} failed."
        # I'm assuming that the tar will have written an empty
