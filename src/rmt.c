@@ -254,6 +254,7 @@ top:
 	char position_string[STRING_SIZE];
 	off_t count = 0;
 	int negative;
+	int whence;
 	char *p;
 
 	get_string (count_string);
@@ -288,7 +289,16 @@ top:
 	      }
 	  }
 
-	count = lseek (tape, count, atoi (position_string));
+	switch (atoi (position_string))
+	  {
+	  case 0: whence = SEEK_SET; break;
+	  case 1: whence = SEEK_CUR; break;
+	  case 2: whence = SEEK_END; break;
+	  default:
+	    report_error_message (N_("Seek direction out of range"));
+	    exit (EXIT_FAILURE);
+	  }
+	count = lseek (tape, count, whence);
 	if (count < 0)
 	  goto ioerror;
 
