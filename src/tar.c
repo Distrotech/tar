@@ -1273,8 +1273,7 @@ see the file named COPYING for details."));
 
   if (incremental_option
       || multi_volume_option
-      || sparse_option
-      || subcommand_option == CAT_SUBCOMMAND)
+      || sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
   
