@@ -1268,7 +1268,7 @@ find_argp_option (struct argp_option *options, int letter)
        !(options->name == NULL
 	 && options->key == 0
 	 && options->arg == 0
-	 && options->flags
+	 && options->flags == 0
 	 && options->doc == NULL); options++)
     if (options->key == letter)
       return options;
