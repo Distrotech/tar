@@ -22,12 +22,7 @@
 #include "system.h"
 #include <quotearg.h>
 
-#include <ctype.h>
 #include <time.h>
-
-#define	ISODIGIT(Char) \
-  ((unsigned char) (Char) >= '0' && (unsigned char) (Char) <= '7')
-#define ISSPACE(Char) (ISASCII (Char) && isspace (Char))
 
 #ifndef FNM_LEADING_DIR
 # include <fnmatch.h>
@@ -69,12 +64,6 @@ read_and (void (*do_something) ())
 
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
-
-	  if (ending_file_option &&
-	      fnmatch (ending_file_option, current_file_name,
-		       FNM_LEADING_DIR) == 0) {
-	    goto all_done;
-	  }
 
 	  /* FIXME: This is a quick kludge before 1.12 goes out.  */
 	  current_stat.st_mtime = TIME_FROM_OCT (current_header->header.mtime);
@@ -178,7 +167,6 @@ read_and (void (*do_something) ())
 	}
       break;
     }
- all_done: ;
 
   apply_delayed_set_stat ();
   close_archive ();
@@ -487,7 +475,6 @@ decode_header (union block *header, struct stat *stat_info,
   *format_pointer = format;
 
   stat_info->st_mode = MODE_FROM_OCT (header->header.mode);
-  stat_info->st_mode &= 07777;
   stat_info->st_mtime = TIME_FROM_OCT (header->header.mtime);
 
   if (format == OLDGNU_FORMAT && incremental_option)
@@ -563,7 +550,7 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
 		    type));
 	  return -1;
 	}
-      if (!ISSPACE (*where))
+      if (!ISSPACE ((unsigned char) *where))
 	break;
       where++;
       digs--;
@@ -580,7 +567,7 @@ from_oct (const char *where0, size_t digs0, const char *type, uintmax_t maxval)
       --digs;
     }
 
-  if (digs != 0 && *where && !ISSPACE (*where))
+  if (digs != 0 && *where && !ISSPACE ((unsigned char) *where))
     {
       if (type)
 	{
@@ -629,7 +616,20 @@ minor_from_oct (const char *p, size_t s)
 mode_t
 mode_from_oct (const char *p, size_t s)
 {
-  return from_oct (p, s, "mode_t", (uintmax_t) TYPE_MAXIMUM (mode_t));
+  /* Do not complain about unrecognized mode bits.  */
+  unsigned u = from_oct (p, s, "mode_t", TYPE_MAXIMUM (uintmax_t));
+  return ((u & TSUID ? S_ISUID : 0)
+	  | (u & TSGID ? S_ISGID : 0)
+	  | (u & TSVTX ? S_ISVTX : 0)
+	  | (u & TUREAD ? S_IRUSR : 0)
+	  | (u & TUWRITE ? S_IWUSR : 0)
+	  | (u & TUEXEC ? S_IXUSR : 0)
+	  | (u & TGREAD ? S_IRGRP : 0)
+	  | (u & TGWRITE ? S_IWGRP : 0)
+	  | (u & TGEXEC ? S_IXGRP : 0)
+	  | (u & TOREAD ? S_IROTH : 0)
+	  | (u & TOWRITE ? S_IWOTH : 0)
+	  | (u & TOEXEC ? S_IXOTH : 0));
 }
 off_t
 off_from_oct (const char *p, size_t s)
@@ -704,25 +704,21 @@ isotime (const time_t *time)
 static void
 decode_mode (mode_t mode, char *string)
 {
-  mode_t mask;
-  const char *rwx = "rwxrwxrwx";
-
-  for (mask = 0400; mask != 0; mask >>= 1)
-    if (mode & mask)
-      *string++ = *rwx++;
-    else
-      {
-	*string++ = '-';
-	rwx++;
-      }
-
-  if (mode & S_ISUID)
-    string[-7] = string[-7] == 'x' ? 's' : 'S';
-  if (mode & S_ISGID)
-    string[-4] = string[-4] == 'x' ? 's' : 'S';
-  if (mode & S_ISVTX)
-    string[-1] = string[-1] == 'x' ? 't' : 'T';
-
+  *string++ = mode & S_IRUSR ? 'r' : '-';
+  *string++ = mode & S_IWUSR ? 'w' : '-';
+  *string++ = (mode & S_ISUID
+	       ? (mode & S_IXUSR ? 's' : 'S')
+	       : (mode & S_IXUSR ? 'x' : '-'));
+  *string++ = mode & S_IRGRP ? 'r' : '-';
+  *string++ = mode & S_IWGRP ? 'w' : '-';
+  *string++ = (mode & S_ISGID
+	       ? (mode & S_IXGRP ? 's' : 'S')
+	       : (mode & S_IXGRP ? 'x' : '-'));
+  *string++ = mode & S_IROTH ? 'r' : '-';
+  *string++ = mode & S_IWOTH ? 'w' : '-';
+  *string++ = (mode & S_ISVTX
+	       ? (mode & S_IXOTH ? 't' : 'T')
+	       : (mode & S_IXOTH ? 'x' : '-'));
   *string = '\0';
 }
 
