@@ -371,7 +371,7 @@ tar_copy_str (char *dst, const char *src, size_t len)
 }
 
 /* Write a "private" header */
-static union block *
+union block *
 start_private_header (const char *name, size_t size)
 {
   time_t t;
@@ -534,9 +534,9 @@ write_long_name (struct tar_stat_info *st)
     }
   return write_short_name (st);
 }
-
+		       
 static union block *
-write_extended (struct tar_stat_info *st, union block *old_header, char type)
+write_extended (struct tar_stat_info *st, union block *old_header)
 {
   union block *header, hp;
   size_t size;
@@ -546,36 +546,10 @@ write_extended (struct tar_stat_info *st, union block *old_header, char type)
     return old_header; 
   
   xheader_finish (&extended_header);
-  size = extended_header.size;
-
   memcpy (hp.buffer, old_header, sizeof (hp));
-
-  header = start_private_header (p = xheader_xhdr_name (st), size);
+  p = xheader_xhdr_name (st);
+  xheader_write (XHDTYPE, p, &extended_header);
   free (p);
-  header->header.typeflag = type;
-
-  finish_header (st, header, -1);
-
-  p = extended_header.buffer;
-
-  do
-    {
-      size_t len;
-      
-      header = find_next_block ();
-      len = BLOCKSIZE;
-      if (len > size)
-	len = size;
-      memcpy (header->buffer, p, len);
-      if (len < BLOCKSIZE)
-	memset (header->buffer + len, 0, BLOCKSIZE - len);
-      p += len;
-      size -= len;
-      set_next_block_after (header);
-    }
-  while (size > 0);
-  
-  xheader_destroy (&extended_header);
   header = find_next_block ();
   memcpy (header, &hp.buffer, sizeof (hp.buffer));
   return header;
@@ -743,6 +717,36 @@ start_header (struct tar_stat_info *st)
   return header;
 }
 
+void
+simple_finish_header (union block *header)
+{
+  size_t i;
+  int sum;
+  char *p;
+
+  memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
+
+  sum = 0;
+  p = header->buffer;
+  for (i = sizeof *header; i-- != 0; )
+    /* We can't use unsigned char here because of old compilers, e.g. V7.  */
+    sum += 0xFF & *p++;
+
+  /* Fill in the checksum field.  It's formatted differently from the
+     other fields: it has [6] digits, a null, then a space -- rather than
+     digits, then a null.  We use to_chars.
+     The final space is already there, from
+     checksumming, and to_chars doesn't modify it.
+
+     This is a fast way to do:
+
+     sprintf(header->header.chksum, "%6o", sum);  */
+
+  uintmax_to_chars ((uintmax_t) sum, header->header.chksum, 7);
+
+  set_next_block_after (header);
+}
+
 /* Finish off a filled-in header block and write it out.  We also
    print the file name and/or full info if verbose is on.  If BLOCK_ORDINAL
    is not negative, is the block ordinal of the first record for this
@@ -770,29 +774,8 @@ finish_header (struct tar_stat_info *st,
       print_header (st, block_ordinal);
     }
 
-  header = write_extended (st, header, XHDTYPE);
-  
-  memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
-
-  sum = 0;
-  p = header->buffer;
-  for (i = sizeof *header; i-- != 0; )
-    /* We can't use unsigned char here because of old compilers, e.g. V7.  */
-    sum += 0xFF & *p++;
-
-  /* Fill in the checksum field.  It's formatted differently from the
-     other fields: it has [6] digits, a null, then a space -- rather than
-     digits, then a null.  We use to_chars.
-     The final space is already there, from
-     checksumming, and to_chars doesn't modify it.
-
-     This is a fast way to do:
-
-     sprintf(header->header.chksum, "%6o", sum);  */
-
-  uintmax_to_chars ((uintmax_t) sum, header->header.chksum, 7);
-
-  set_next_block_after (header);
+  header = write_extended (st, header);
+  simple_finish_header (header);
 }
 
 
@@ -1069,7 +1052,8 @@ create_archive (void)
   char *p;
 
   open_archive (ACCESS_WRITE);
-
+  xheader_write_global ();
+  
   if (incremental_option)
     {
       size_t buffer_size = 1000;
