@@ -1622,9 +1622,7 @@ main (int argc, char **argv)
   set_start_time ();
   program_name = argv[0];
 
-#ifdef HAVE_SETLOCALE
   setlocale (LC_ALL, "");
-#endif
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
