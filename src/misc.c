@@ -549,6 +549,10 @@ static void
 call_arg_error (char const *call, char const *name)
 {
   int e = errno;
+  /* TRANSLATORS: %s after `Cannot' is a function name, e.g. `Cannot open'.
+     Directly translating this to another language will not work, first because
+     %s itself is not translated.
+     Translate it as `%s: Function %s failed'. */
   ERROR ((0, e, _("%s: Cannot %s"), quotearg_colon (name), call));
 }
 
@@ -558,6 +562,10 @@ static void
 call_arg_fatal (char const *call, char const *name)
 {
   int e = errno;
+  /* TRANSLATORS: %s after `Cannot' is a function name, e.g. `Cannot open'.
+     Directly translating this to another language will not work, first because
+     %s itself is not translated.
+     Translate it as `%s: Function %s failed'. */
   FATAL_ERROR ((0, e, _("%s: Cannot %s"), quotearg_colon (name),  call));
 }
 
@@ -567,6 +575,10 @@ static void
 call_arg_warn (char const *call, char const *name)
 {
   int e = errno;
+  /* TRANSLATORS: %s after `Cannot' is a function name, e.g. `Cannot open'.
+     Directly translating this to another language will not work, first because
+     %s itself is not translated.
+     Translate it as `%s: Function %s failed'. */
   WARN ((0, e, _("%s: Warning: Cannot %s"), quotearg_colon (name), call));
 }
 
@@ -686,8 +698,8 @@ read_error_details (char const *name, off_t offset, size_t size)
   char buf[UINTMAX_STRSIZE_BOUND];
   int e = errno;
   ERROR ((0, e,
-	  ngettext ("%s: Read error at byte %s, reading %lu byte",
-		    "%s: Read error at byte %s, reading %lu bytes",
+	  ngettext ("%s: Read error at byte %s, while reading %lu byte",
+		    "%s: Read error at byte %s, while reading %lu bytes",
 		    size),
 	  quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 	  (unsigned long) size));
@@ -699,8 +711,8 @@ read_warn_details (char const *name, off_t offset, size_t size)
   char buf[UINTMAX_STRSIZE_BOUND];
   int e = errno;
   WARN ((0, e,
-	 ngettext ("%s: Warning: Read error at byte %s, reading %lu byte",
-		   "%s: Warning: Read error at byte %s, reading %lu bytes",
+	 ngettext ("%s: Warning: Read error at byte %s, while reading %lu byte",
+		   "%s: Warning: Read error at byte %s, while reading %lu bytes",
 		   size),
 	 quotearg_colon (name), STRINGIFY_BIGINT (offset, buf),
 	 (unsigned long) size));
