@@ -25,6 +25,11 @@
 # define SIGCHLD SIGCLD
 #endif
 
+#include <time.h>
+#ifndef time
+time_t time ();
+#endif
+
 /* The following causes "common.h" to produce definitions of all the global
    variables, rather than just "extern" declarations of them.  GNU tar does
    depend on the system loader to preset all GLOBAL variables to neutral (or
@@ -75,6 +80,7 @@ int
 confirm (const char *message_action, const char *message_name)
 {
   static FILE *confirm_file;
+  static int confirm_file_EOF;
 
   if (!confirm_file)
     {
@@ -94,13 +100,19 @@ confirm (const char *message_action, const char *message_name)
   fflush (stdlis);
 
   {
-    int reply = getc (confirm_file);
+    int reply = confirm_file_EOF ? EOF : getc (confirm_file);
     int character;
 
     for (character = reply;
-	 character != '\n' && character != EOF;
+	 character != '\n';
 	 character = getc (confirm_file))
-      continue;
+      if (character == EOF)
+	{
+	  confirm_file_EOF = 1;
+	  fputc ('\n', stdlis);
+	  fflush (stdlis);
+	  break;
+	}
     return reply == 'y' || reply == 'Y';
   }
 }
@@ -206,6 +218,8 @@ struct option long_options[] =
   {"newer-mtime", required_argument, 0, NEWER_MTIME_OPTION},
   {"null", no_argument, 0, NULL_OPTION},
   {"no-recursion", no_argument, 0, NO_RECURSE_OPTION},
+  {"no-same-owner", no_argument, &same_owner_option, -1},
+  {"no-same-permissions", no_argument, &same_permissions_option, -1},
   {"numeric-owner", no_argument, &numeric_owner_option, 1},
   {"old-archive", no_argument, 0, 'o'},
   {"one-file-system", no_argument, 0, 'l'},
@@ -294,7 +308,8 @@ Operation modifiers:\n\
   -S, --sparse               handle sparse files efficiently\n\
   -O, --to-stdout            extract files to standard output\n\
   -G, --incremental          handle old GNU-format incremental backup\n\
-  -g, --listed-incremental   handle new GNU-format incremental backup\n\
+  -g, --listed-incremental=FILE\n\
+                             handle new GNU-format incremental backup\n\
       --ignore-failed-read   do not exit with nonzero on unreadable files\n"),
 	     stdout);
       fputs (_("\
@@ -306,8 +321,10 @@ Handling of file attributes:\n\
       --atime-preserve         don't change access times on dumped files\n\
   -m, --modification-time      don't extract file modified time\n\
       --same-owner             try extracting files with the same ownership\n\
+      --no-same-owner          extract files as yourself\n\
       --numeric-owner          always use numbers for user/group names\n\
-  -p, --same-permissions       extract all protection information\n\
+  -p, --same-permissions       extract permissions information\n\
+      --no-same-permissions    do not extract permissions information\n\
       --preserve-permissions   same as -p\n\
   -s, --same-order             sort names to extract to match archive\n\
       --preserve-order         same as -s\n\
@@ -1137,6 +1154,10 @@ Written by John Gilmore and Jay Fenlason.\n"),
 int
 main (int argc, char *const *argv)
 {
+#if HAVE_CLOCK_GETTIME
+  if (clock_gettime (CLOCK_REALTIME, &start_timespec) != 0)
+#endif
+    start_time = time (0);
   program_name = argv[0];
   setlocale (LC_ALL, "");
   bindtextdomain (PACKAGE, LOCALEDIR);
