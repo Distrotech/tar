@@ -36,7 +36,7 @@ format.
 * pax-big-10g.sh
 
 Requires pax-big-10g.tar.bz2. It tests handling pax (POSIX.1-2001) archves
-containing very large files (in this case -- 1 GB).
+containing very large files (in this case -- 10 GB).
 
 * qucktest.sh
 
