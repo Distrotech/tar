@@ -9,6 +9,7 @@ d-ino.m4 \
 decl.m4 \
 error.m4 \
 fnmatch.m4 \
+getcwd.m4 \
 getline.m4 \
 gettext.m4 \
 glibc21.m4 \
@@ -25,7 +26,6 @@ prereq.m4 \
 progtest.m4 \
 realloc.m4 \
 strerror_r.m4 \
-uintmax_t.m4 \
 ulonglong.m4 \
 utimbuf.m4 \
 utime.m4 \
