@@ -395,9 +395,13 @@ read_header (bool raw_extended_headers)
 
 	      *bp = '\0';
 	    }
-	  else if (header->header.typeflag == XHDTYPE
-		   || header->header.typeflag == XGLTYPE)
+	  else if (header->header.typeflag == XHDTYPE)
 	    xheader_read (header, OFF_FROM_HEADER (header->header.size));
+	  else if (header->header.typeflag == XGLTYPE)
+	    {
+	      xheader_read (header, OFF_FROM_HEADER (header->header.size));
+	      xheader_decode_global ();
+	    }
       
 	  /* Loop!  */
 
