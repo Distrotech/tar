@@ -70,7 +70,7 @@ read_and (void (*do_something) ())
 
 	  if (!name_match (current_file_name)
 	      || current_stat.st_mtime < newer_mtime_option
-	      || (exclude_option && check_exclude (current_file_name)))
+	      || excluded_filename (excluded, base_name (current_file_name)))
 	    {
 	      int isextended = 0;
 
