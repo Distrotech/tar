@@ -1,9 +1,4 @@
 #! /bin/sh
-
-# In previous versions a single -C option did not work with --same-order
-# (see same-order01.sh). However, multiple -C options worked OK. 
-# Test if we did not break the correct behavior.
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -21,6 +16,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+
+# In previous versions a single -C option did not work with --same-order
+# (see same-order01.sh). However, multiple -C options worked OK. 
+# Test if we did not break the correct behavior.
 
 . ./preset
 . $srcdir/before

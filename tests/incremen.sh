@@ -1,7 +1,4 @@
 #! /bin/sh
-
-# A directory older than the listed entry was skipped completely.
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -19,6 +16,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+
+# A directory older than the listed entry was skipped completely.
 
 . ./preset
 TAR_ARCHIVE_FORMATS="gnu oldgnu"

@@ -1,9 +1,4 @@
 #! /bin/sh
-
-# Previous versions of tar were not able to skip a member straddling
-# the multivolume archive boundary. Reported by Mads Martin Joergensen
-# <mmj@suse.de>
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -21,6 +16,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+
+# Previous versions of tar were not able to skip a member straddling
+# the multivolume archive boundary. Reported by Mads Martin Joergensen
+# <mmj@suse.de>
+# 
+# References: <20040402144254.GC4409@suse.de> 
+# http://lists.gnu.org/archive/html/bug-tar/2004-04/msg00002.html
 
 . ./preset
 TAR_ARCHIVE_FORMATS="gnu oldgnu"

@@ -17,14 +17,17 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-# If a member with link count > 2 was stored in the archive twice,
+# Problem: If a member with link count > 2 was stored in the archive twice,
 # previous versions of tar were not able to extract it, since they
 # were trying to link the file to itself, which always failed and
 # lead to removing the already extracted copy. This script tests
 # the workaround by Paul Eggert that leaves the extracted copy
 # untouched.
-
-# The script is based on the report by Toby Peterson <toby@apple.com>
+#
+# Reported by: Toby Peterson <toby@apple.com>
+#
+# References: <2330D503-D20A-11D8-A0CF-00039391EECE@apple.com>
+# http://lists.gnu.org/archive/html/bug-tar/2004-07/msg00009.html
 
 . ./preset
 . $srcdir/before

@@ -1,8 +1,4 @@
 #! /bin/sh
-
-# -C dir did not work with --same-order
-# Bug reported by Karl-Michael Schneider <schneide@phil.uni-passau.de>
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -20,6 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+
+# Problem: -C dir did not work with --same-order
+# Reported by: Karl-Michael Schneider <schneide@phil.uni-passau.de>
+# References: <20040507122613.GB12457@pike.phil.uni-passau.de>
+# http://lists.gnu.org/archive/html/bug-tar/2004-05/msg00008.html
 
 . ./preset
 . $srcdir/before

@@ -1,5 +1,4 @@
 #! /bin/sh
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #

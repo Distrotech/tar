@@ -1,8 +1,4 @@
 #! /bin/sh
-
-# Check if listed-incremental backups work for individual files.
-# Script proposed by Andreas Schuldei <andreas@schuldei.org>
-
 # This file is part of GNU tar testsuite.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -20,6 +16,11 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
+
+# Check if listed-incremental backups work for individual files.
+# Script proposed by Andreas Schuldei <andreas@schuldei.org>
+# References: <20040215014223.GA9699@lukas.schuldei.com>
+# http://lists.gnu.org/archive/html/bug-tar/2004-02/msg00011.html
 
 . ./preset
 TAR_ARCHIVE_FORMATS="gnu oldgnu" 
