@@ -35,6 +35,7 @@ tar tf archive
 
 err="\
 tar: $DIR/$FILE: file name is too long (max 99); not dumped
+tar: Error exit delayed from previous errors
 "
 
 out="\
