@@ -1,3 +1,14 @@
+2003-12-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (decode_header): Discern between pax and ustar
+	formats
+	Initialize current_stat_info.archive_file_size.
+
+	NOTE: Modifications from this date on are temporarily
+	stored on local CVS on mirddin. This repository will
+	be synchronized with Savannah as soon as the latter
+	becomes operational again.
+	
 2003-12-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
@@ -13,7 +24,7 @@
 	(decode_options): Allow --sparse for POSIX_FORMAT archives.
 	* src/xheader.c (struct xhdr_tab.coder; all coder function): Added
 	extra argument
-	Implemeted GNU.sparse.* keywords.
+	Implemented GNU.sparse.* keywords.
 
 2003-11-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
