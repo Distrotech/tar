@@ -62,7 +62,7 @@ diff_init (void)
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
    given MESSAGE is nonzero.  Also set the exit status if not already.  */
 void
-report_difference (const char *fmt, ...)
+report_difference (struct tar_stat_info *st, const char *fmt, ...)
 {
   if (fmt)
     {
@@ -98,11 +98,12 @@ process_rawdata (size_t bytes, char *buffer)
       if (status < 0)
 	{
 	  read_error (current_stat_info.file_name);
-	  report_difference (NULL);
+	  report_difference (&current_stat_info, NULL);
 	}
       else
 	{
-	  report_difference (ngettext ("Could only read %lu of %lu byte",
+	  report_difference (&current_stat_info, 
+			     ngettext ("Could only read %lu of %lu byte",
 				       "Could only read %lu of %lu bytes",
 				       bytes),
 			     (unsigned long) status, (unsigned long) bytes);
@@ -112,7 +113,8 @@ process_rawdata (size_t bytes, char *buffer)
 
   if (memcmp (buffer, diff_buffer, bytes))
     {
-      report_difference (_("Contents differ"));
+      report_difference (&current_stat_info,
+			 _("Contents differ"));
       return 0;
     }
 
@@ -128,7 +130,7 @@ process_dumpdir (size_t bytes, char *buffer)
 {
   if (memcmp (buffer, dumpdir_cursor, bytes))
     {
-      report_difference (_("Contents differ"));
+      report_difference (&current_stat_info, _("Contents differ"));
       return 0;
     }
 
@@ -171,12 +173,6 @@ read_and_process (off_t size, int (*processor) (size_t, char *))
     }
 }
 
-static void
-diff_sparse_files (void)
-{
-  /*FIXME!!*/abort();
-}
-
 /* Call either stat or lstat over STAT_DATA, depending on
    --dereference (-h), for a file which should exist.  Diagnose any
    problem.  Return nonzero for success, zero otherwise.  */
@@ -191,7 +187,7 @@ get_stat_data (char const *file_name, struct stat *stat_data)
 	stat_warn (file_name);
       else
 	stat_error (file_name);
-      report_difference (NULL);
+      report_difference (&current_stat_info, NULL);
       return 0;
     }
 
@@ -244,22 +240,26 @@ diff_archive (void)
 
       if (!S_ISREG (stat_data.st_mode))
 	{
-	  report_difference (_("File type differs"));
+	  report_difference (&current_stat_info, _("File type differs"));
 	  skip_member ();
 	  goto quit;
 	}
 
-      if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
-	report_difference (_("Mode differs"));
+      if ((current_stat_info.stat.st_mode & MODE_ALL) !=
+	  (stat_data.st_mode & MODE_ALL))
+	report_difference (&current_stat_info, _("Mode differs"));
 
-      sys_compare_uid_gid (&stat_data, &current_stat_info.stat);
+      if (!sys_compare_uid (&stat_data, &current_stat_info.stat))
+	report_difference (&current_stat_info, _("Uid differs"));
+      if (!sys_compare_gid (&stat_data, &current_stat_info.stat))
+	report_difference (&current_stat_info, _("Gid differs"));
 
       if (stat_data.st_mtime != current_stat_info.stat.st_mtime)
-	report_difference (_("Mod time differs"));
+	report_difference (&current_stat_info, _("Mod time differs"));
       if (current_header->header.typeflag != GNUTYPE_SPARSE &&
 	  stat_data.st_size != current_stat_info.stat.st_size)
 	{
-	  report_difference (_("Size differs"));
+	  report_difference (&current_stat_info, _("Size differs"));
 	  skip_member ();
 	  goto quit;
 	}
@@ -270,7 +270,7 @@ diff_archive (void)
 	{
 	  open_error (current_stat_info.file_name);
 	  skip_member ();
-	  report_difference (NULL);
+	  report_difference (&current_stat_info, NULL);
 	  goto quit;
 	}
 
@@ -280,7 +280,7 @@ diff_archive (void)
       /* Need to treat sparse files completely differently here.  */
 
       if (current_header->header.typeflag == GNUTYPE_SPARSE)
-	diff_sparse_files ();
+	sparse_diff_file (diff_handle, &current_stat_info);
       else
 	{
 	  if (multi_volume_option)
@@ -314,7 +314,10 @@ diff_archive (void)
 	  break;
 	if (!get_stat_data (current_stat_info.link_name, &link_data))
 	  break;
-	sys_compare_links (&stat_data, &link_data);
+	if (!sys_compare_links (&stat_data, &link_data))
+	  report_difference (&current_stat_info,
+			     _("Not linked to %s"),
+			     quote (current_stat_info.link_name));
       }
       break;
       
@@ -332,11 +335,11 @@ diff_archive (void)
 	      readlink_warn (current_stat_info.file_name);
 	    else
 	      readlink_error (current_stat_info.file_name);
-	    report_difference (NULL);
+	    report_difference (&current_stat_info, NULL);
 	  }
 	else if (status != len
 		 || strncmp (current_stat_info.link_name, linkbuf, len) != 0)
-	  report_difference (_("Symlink differs"));
+	  report_difference (&current_stat_info, _("Symlink differs"));
 
 	break;
       }
@@ -358,7 +361,7 @@ diff_archive (void)
 	  : /* current_header->header.typeflag == FIFOTYPE */
 	  !S_ISFIFO (stat_data.st_mode))
 	{
-	  report_difference (_("File type differs"));
+	  report_difference (&current_stat_info, _("File type differs"));
 	  break;
 	}
 
@@ -366,13 +369,13 @@ diff_archive (void)
 	   || current_header->header.typeflag == BLKTYPE)
 	  && current_stat_info.stat.st_rdev != stat_data.st_rdev)
 	{
-	  report_difference (_("Device number differs"));
+	  report_difference (&current_stat_info, _("Device number differs"));
 	  break;
 	}
 
       if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
 	{
-	  report_difference (_("Mode differs"));
+	  report_difference (&current_stat_info, _("Mode differs"));
 	  break;
 	}
 
@@ -410,13 +413,13 @@ diff_archive (void)
 
       if (!S_ISDIR (stat_data.st_mode))
 	{
-	  report_difference (_("File type differs"));
+	  report_difference (&current_stat_info, _("File type differs"));
 	  break;
 	}
 
       if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
 	{
-	  report_difference (_("Mode differs"));
+	  report_difference (&current_stat_info, _("Mode differs"));
 	  break;
 	}
 
@@ -437,7 +440,7 @@ diff_archive (void)
 
 	if (!S_ISREG (stat_data.st_mode))
 	  {
-	    report_difference (_("File type differs"));
+	    report_difference (&current_stat_info, _("File type differs"));
 	    skip_member ();
 	    break;
 	  }
@@ -445,7 +448,7 @@ diff_archive (void)
 	offset = OFF_FROM_HEADER (current_header->oldgnu_header.offset);
 	if (stat_data.st_size != current_stat_info.stat.st_size + offset)
 	  {
-	    report_difference (_("Size differs"));
+	    report_difference (&current_stat_info, _("Size differs"));
 	    skip_member ();
 	    break;
 	  }
@@ -455,7 +458,7 @@ diff_archive (void)
 	if (diff_handle < 0)
 	  {
 	    open_error (current_stat_info.file_name);
-	    report_difference (NULL);
+	    report_difference (&current_stat_info, NULL);
 	    skip_member ();
 	    break;
 	  }
@@ -463,7 +466,7 @@ diff_archive (void)
 	if (lseek (diff_handle, offset, SEEK_SET) < 0)
 	  {
 	    seek_error_details (current_stat_info.file_name, offset);
-	    report_difference (NULL);
+	    report_difference (&current_stat_info, NULL);
 	    break;
 	  }
 
