@@ -1,5 +1,5 @@
 /* Declarations for tar archives.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -122,8 +122,6 @@ union record {
 					   the names of files that were in
 					   the dir at the time the dump
 					   was made */
-#define LF_LONGNAME	'L'		/* Identifies the NEXT file on the tape
-					   as having a long name. */
 #define LF_MULTIVOL	'M'		/* This is the continuation
 					   of a file that began on another
 					   volume */
@@ -154,6 +152,7 @@ TAR_EXTERN union record	*ar_last;	/* Last+1 record of archive block */
 TAR_EXTERN char		ar_reading;	/* 0 writing, !0 reading archive */
 TAR_EXTERN int		blocking;	/* Size of each block, in records */
 TAR_EXTERN int		blocksize;	/* Size of each block, in bytes */
+TAR_EXTERN char		*ar_file;	/* File containing archive */
 TAR_EXTERN char		*info_script;	/* Script to run at end of each tape change */
 TAR_EXTERN char		*name_file;	/* File containing names to work on */
 TAR_EXTERN char		filename_terminator; /* \n or \0. */
@@ -163,10 +162,6 @@ TAR_EXTERN int		sp_array_size;	/* Initial size of the sparsearray */
 TAR_EXTERN int 		tot_written;    /* Total written to output */
 TAR_EXTERN struct re_pattern_buffer
   			*label_pattern;	/* compiled regex for extract label */
-TAR_EXTERN char    	**ar_files;	/* list of tape drive names */
-TAR_EXTERN int		n_ar_files;	/* number of tape drive names */
-TAR_EXTERN int		cur_ar_file;	/* tape drive currently being used */
-TAR_EXTERN int		ar_files_len;	/* malloced size of ar_files */
 
 /*
  * Flags from the command line
@@ -181,7 +176,7 @@ TAR_EXTERN int cmd_mode;
 #define CMD_UPDATE	6		/* -u */
 #define CMD_EXTRACT	7		/* -x */
 #define CMD_DELETE	8		/* -D */
-#define CMD_VERSION	9		/* --version */
+#define CMD_VERSION	9		/* +version */
 
 					/* -[0-9][lmh] */
 			/* CMD_CAT	   -A */
@@ -223,15 +218,8 @@ TAR_EXTERN int  f_verify;		/* -W */
 TAR_EXTERN int  f_exclude;		/* -X */
 TAR_EXTERN int 	f_compress;		/* -z */
 					/* -Z */
-TAR_EXTERN int	f_do_chown;		/* --do-chown */
-TAR_EXTERN int  f_totals;		/* --totals */
-TAR_EXTERN int	f_remove_files;		/* --remove-files */
-TAR_EXTERN int	f_ignore_failed_read;	/* --ignore-failed-read */
-TAR_EXTERN int	f_checkpoint;		/* --checkpoint */
-TAR_EXTERN int	f_show_omitted_dirs;	/* --show-omitted-dirs */
-TAR_EXTERN char *f_volno_file;		/* --volno-file */
-TAR_EXTERN int	f_force_local;		/* --force-local */
-TAR_EXTERN int	f_atime_preserve;	/* --atime-preserve */
+TAR_EXTERN int	f_do_chown;		/* +do-chown */
+TAR_EXTERN int  f_totals;		/* +totals */
 
 /*
  * We default to Unix Standard format rather than 4.2BSD tar format.
@@ -282,7 +270,7 @@ void userec();
 union record *endofrecs();
 void anno();
 
-#if defined (HAVE_VPRINTF) && __STDC__
+#if !defined (VPRINTF_MISSING) && defined (__STDC__)
 void msg(char *, ...);
 void msg_perror(char *, ...);
 #else
