@@ -267,7 +267,7 @@ get_status_off (int handle)
 /*-------------------------------------------------------------------------.
 | Execute /etc/rmt as user USER on remote system HOST using rexec.  Return |
 | a file descriptor of a bidirectional socket for stdin and stdout.  If	   |
-| USER is NULL, use the current username.				   |
+| USER is zero, use the current username.				   |
 | 									   |
 | By default, this code is not used, since it requires that the user have  |
 | a .netrc file in his/her home directory, or that the application	   |
@@ -290,16 +290,15 @@ _rmt_rexec (char *host, char *user)
      /dev/tty before the rexec and give them back their original value
      after.  */
 
-  if (freopen ("/dev/tty", "r", stdin) == NULL)
+  if (! freopen ("/dev/tty", "r", stdin))
     freopen ("/dev/null", "r", stdin);
-  if (freopen ("/dev/tty", "w", stdout) == NULL)
+  if (! freopen ("/dev/tty", "w", stdout))
     freopen ("/dev/null", "w", stdout);
 
   if (rexecserv = getservbyname ("exec", "tcp"), !rexecserv)
     error (EXIT_ON_EXEC_ERROR, 0, _("exec/tcp: Service not available"));
 
-  result = rexec (&host, rexecserv->s_port, user, NULL,
-		   "/etc/rmt", (int *) NULL);
+  result = rexec (&host, rexecserv->s_port, user, 0, "/etc/rmt", 0);
   if (fclose (stdin) == EOF)
     error (0, errno, _("stdin"));
   fdopen (saved_stdin, "r");
@@ -357,7 +356,7 @@ encode_oflag (char *buf, int oflag)
 | Open a file (a magnetic tape device?) on the system specified in PATH,  |
 | as the given user.  PATH has the form `[USER@]HOST:FILE'.  OPEN_MODE is |
 | O_RDONLY, O_WRONLY, etc.  If successful, return the remote pipe number  |
-| plus BIAS.  REMOTE_SHELL may be overriden.  On error, return -1.	  |
+| plus BIAS.  REMOTE_SHELL may be overridden.  On error, return -1.	  |
 `------------------------------------------------------------------------*/
 
 int
@@ -391,8 +390,8 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 
     path_copy = xstrdup (path);
     remote_host = path_copy;
-    remote_user = NULL;
-    remote_file = NULL;
+    remote_user = 0;
+    remote_file = 0;
 
     for (cursor = path_copy; *cursor; cursor++)
       switch (*cursor)
@@ -429,7 +428,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
   /* FIXME: Should somewhat validate the decoding, here.  */
 
   if (remote_user && *remote_user == '\0')
-    remote_user = NULL;
+    remote_user = 0;
 
 #if WITH_REXEC
 
@@ -690,7 +689,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 	if (((struct mtop *) argument)->mt_count < 0)
 	  *--p = '-';
 
-	/* MTIOCTOP is the easy one.  Nothing is transfered in binary.  */
+	/* MTIOCTOP is the easy one.  Nothing is transferred in binary.  */
 
 	sprintf (command_buffer, "I%d\n%s\n",
 		 ((struct mtop *) argument)->mt_op, p);
@@ -719,8 +718,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 
 	for (; status > 0; status -= counter, argument += counter)
 	  {
-	    counter = safe_read (READ_SIDE (handle),
-				 argument, (size_t) status);
+	    counter = safe_read (READ_SIDE (handle), argument, status);
 	    if (counter <= 0)
 	      {
 		_rmt_shutdown (handle, EIO);
