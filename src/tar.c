@@ -1317,7 +1317,7 @@ see the file named COPYING for details."));
 
   if (archive_names > 1 && !multi_volume_option)
     USAGE_ERROR ((0, 0,
-		  _("Multiple archive files requires `-M' option")));
+		  _("Multiple archive files require `-M' option")));
 
   if (listed_incremental_option
       && newer_mtime_option != TYPE_MINIMUM (time_t))
@@ -1344,6 +1344,22 @@ see the file named COPYING for details."));
 		      (unsigned long) volume_label_max_len));
     }
 
+  if (verify_option)
+    {
+      if (multi_volume_option)
+	USAGE_ERROR ((0, 0, _("Cannot verify multi-volume archives")));
+      if (use_compress_program_option)
+	USAGE_ERROR ((0, 0, _("Cannot verify compressed archives")));
+    }
+
+  if (use_compress_program_option)
+    {
+      if (multi_volume_option)
+	USAGE_ERROR ((0, 0, _("Cannot use multi-volume compressed archives")));
+      if (subcommand_option == UPDATE_SUBCOMMAND)
+	USAGE_ERROR ((0, 0, _("Cannot update compressed archives")));
+    }
+  
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
