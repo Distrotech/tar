@@ -668,7 +668,7 @@ start_header (struct tar_stat_info *st)
       xheader_store ("ctime", st, NULL);
     }
   else if (incremental_option)
-    if (archive_format == OLDGNU_FORMAT)
+    if (archive_format == OLDGNU_FORMAT || archive_format == GNU_FORMAT)
       {
 	TIME_TO_CHARS (st->stat.st_atime, header->oldgnu_header.atime);
 	TIME_TO_CHARS (st->stat.st_ctime, header->oldgnu_header.ctime);
