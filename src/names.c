@@ -1001,7 +1001,22 @@ is_avoided_name (char const *name)
 {
   return hash_string_lookup (avoided_name_table, name);
 }
+
 
+
+static Hash_table *prefix_table[2];
+
+/* Return true if file names of some members in the archive were stripped off
+   their leading components. We could have used
+        return prefix_table[0] || prefix_table[1]
+   but the following seems to be safer: */
+bool
+removed_prefixes_p (void)
+{
+  return (prefix_table[0] && hash_get_n_entries (prefix_table[0]) != 0)
+         || (prefix_table[1] && hash_get_n_entries (prefix_table[1]) != 0);
+}
+
 /* Return a safer suffix of FILE_NAME, or "." if it has no safer
    suffix.  Check for fully specified file names and other atrocities.
    Warn the user if we do not return NAME.  If LINK_TARGET is 1,
@@ -1041,7 +1056,6 @@ safer_name_suffix (char const *file_name, bool link_target)
 
       if (prefix_len)
 	{
-	  static Hash_table *prefix_table[2];
 	  char *prefix = alloca (prefix_len + 1);
 	  memcpy (prefix, file_name, prefix_len);
 	  prefix[prefix_len] = '\0';
