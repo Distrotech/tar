@@ -123,13 +123,13 @@ unquote_string (char *string)
 	  source++;
 	  break;
 
-	case 'n':
-	  *destination++ = '\n';
+	case 'a':
+	  *destination++ = '\a';
 	  source++;
 	  break;
-
-	case 't':
-	  *destination++ = '\t';
+	  
+	case 'b':
+	  *destination++ = '\b';
 	  source++;
 	  break;
 
@@ -138,8 +138,8 @@ unquote_string (char *string)
 	  source++;
 	  break;
 
-	case 'b':
-	  *destination++ = '\b';
+	case 'n':
+	  *destination++ = '\n';
 	  source++;
 	  break;
 
@@ -148,6 +148,16 @@ unquote_string (char *string)
 	  source++;
 	  break;
 
+	case 't':
+	  *destination++ = '\t';
+	  source++;
+	  break;
+
+	case 'v':
+	  *destination++ = '\v';
+	  source++;
+	  break;
+	  
 	case '?':
 	  *destination++ = 0177;
 	  source++;
