@@ -1,5 +1,10 @@
 2003-11-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/tar.h: Support for star sparse format.
+	* src/sparse.c: Likewise.
+
+2003-11-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* src/sparse.c (sparse_diff_file): New function
 	* src/common.h (sys_compare_uid,sys_compare_gid): New functions
 	(sys_compare_uid_gid): Removed.
