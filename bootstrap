@@ -297,6 +297,12 @@ copy_files() {
 }
 
 copy_files ${PAXUTILS_SRCDIR}/m4 m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([tar_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
 
 if [ -d rmt ]; then
    :
