@@ -23,7 +23,7 @@
 #ifdef __MSDOS__
 #include <io.h>
 #else /* !__MSDOS__ */
-extern off_t lseek();
+extern off_t lseek ();
 #endif /* __MSDOS__ */
 #endif /* _POSIX_VERSION */
 
@@ -55,14 +55,16 @@ extern off_t lseek();
 
 extern char *__rmt_path;
 
-#if defined(USG) || defined(STDC_HEADERS)
+#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
 #include <string.h>
+#ifndef index
 #define index strchr
+#endif
 #else
-extern char *index();
+extern char *index ();
 #endif
 
-#define _remdev(path)	((__rmt_path=index(path, ':')) && strncmp(__rmt_path, ":/dev/", 6)==0)
+#define _remdev(path)	(!f_force_local && (__rmt_path=index(path, ':')))
 #define _isrmt(fd)		((fd) >= __REM_BIAS)
 
 #define rmtopen(path,oflag,mode) (_remdev(path) ? __rmt_open(path, oflag, mode, __REM_BIAS) : open(path, oflag, mode))
@@ -91,6 +93,6 @@ int __rmt_open ();
 int __rmt_close ();
 int __rmt_read ();
 int __rmt_write ();
-long __rmt_lseek();
+long __rmt_lseek ();
 int __rmt_ioctl ();
 #endif /* !NO_REMOTE */
