@@ -51,7 +51,7 @@ static int tape = -1;
 
 /* Buffer containing transferred data, and its allocated size.  */
 static char *record_buffer = NULL;
-static int allocated_size = -1;
+static size_t allocated_size = 0;
 
 /* Buffer for constructing the reply.  */
 static char reply_buffer[BUFSIZ];
@@ -142,7 +142,7 @@ get_string (char *string)
 `---*/
 
 static void
-prepare_record_buffer (int size)
+prepare_record_buffer (size_t size)
 {
   if (size <= allocated_size)
     return;
@@ -150,7 +150,7 @@ prepare_record_buffer (int size)
   if (record_buffer)
     free (record_buffer);
 
-  record_buffer = malloc ((size_t) size);
+  record_buffer = malloc (size);
 
   if (record_buffer == NULL)
     {
@@ -180,7 +180,7 @@ int
 main (int argc, char *const *argv)
 {
   char command;
-  int status;
+  long status;
 
   /* FIXME: Localisation is meaningless, unless --help and --version are
      locally used.  Localisation would be best accomplished by the calling
@@ -233,8 +233,8 @@ top:
 	   suspicious if it's right. -- mib.  */
 
 	{
-	  int old_mode = atoi (mode_string);
-	  int new_mode = 0;
+	  mode_t old_mode = atol (mode_string);
+	  mode_t new_mode = 0;
 
 	  if ((old_mode & 3) == 0)
 	    new_mode |= O_RDONLY;
@@ -277,26 +277,69 @@ top:
       {
 	char count_string[STRING_SIZE];
 	char position_string[STRING_SIZE];
+	off_t count = 0;
+	int negative;
+	char *p;
 
 	get_string (count_string);
 	get_string (position_string);
 	DEBUG2 ("rmtd: L %s %s\n", count_string, position_string);
 
-	status
-	  = lseek (tape, (off_t) atol (count_string), atoi (position_string));
-	if (status < 0)
+	/* Parse count_string, taking care to check for overflow.
+	   We can't use standard functions,
+	   since off_t might be longer than long.  */
+
+	for (p = count_string;  *p == ' ' || *p == '\t';  p++)
+	  continue;
+
+	negative = *p == '-';
+	p += negative || *p == '+';
+
+	for (;;)
+	  {
+	    int digit = *p++ - '0';
+	    if (9 < (unsigned) digit)
+	      break;
+	    else
+	      {
+		off_t c10 = 10 * count;
+		off_t nc = negative ? c10 - digit : c10 + digit;
+		if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
+		  {
+		    report_error_message (N_("Seek offset out of range"));
+		    exit (EXIT_FAILURE);
+		  }
+		count = nc;
+	      }
+	  }
+
+	count = lseek (tape, count, atoi (position_string));
+	if (count < 0)
 	  goto ioerror;
-	goto respond;
+
+	/* Convert count back to string for reply.
+	   We can't use sprintf, since off_t might be longer than long.  */
+	p = count_string + sizeof count_string;
+	*--p = '\0';
+	do
+	  *--p = '0' + (int) (count % 10);
+	while ((count /= 10) != 0);
+	
+	DEBUG1 ("rmtd: A %s\n", p);
+
+	sprintf (reply_buffer, "A%s\n", p);
+	write (1, reply_buffer, strlen (reply_buffer));
+	goto top;
       }
 
     case 'W':
       {
 	char count_string[STRING_SIZE];
-	int size;
-	int counter;
+	size_t size;
+	size_t counter;
 
 	get_string (count_string);
-	size = atoi (count_string);
+	size = atol (count_string);
 	DEBUG1 ("rmtd: W %s\n", count_string);
 
 	prepare_record_buffer (size);
@@ -320,19 +363,19 @@ top:
     case 'R':
       {
 	char count_string[STRING_SIZE];
-	int size;
+	size_t size;
 
 	get_string (count_string);
 	DEBUG1 ("rmtd: R %s\n", count_string);
 
-	size = atoi (count_string);
+	size = atol (count_string);
 	prepare_record_buffer (size);
 	status = read (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
-	sprintf (reply_buffer, "A%d\n", status);
+	sprintf (reply_buffer, "A%ld\n", status);
 	write (1, reply_buffer, strlen (reply_buffer));
-	write (1, record_buffer, status);
+	write (1, record_buffer, (size_t) status);
 	goto top;
       }
 
@@ -348,12 +391,43 @@ top:
 #ifdef MTIOCTOP
 	{
 	  struct mtop mtop;
+	  const char *p;
+	  daddr_t count = 0;
+	  int negative;
 
+	  /* Parse count_string, taking care to check for overflow.
+	     We can't use standard functions,
+	     since daddr_t might be longer than long.  */
+	  
+	  for (p = count_string;  *p == ' ' || *p == '\t';  p++)
+	    continue;
+	  
+	  negative = *p == '-';
+	  p += negative || *p == '+';
+	  
+	  for (;;)
+	    {
+	      int digit = *p++ - '0';
+	      if (9 < (unsigned) digit)
+		break;
+	      else
+		{
+		  daddr_t c10 = 10 * count;
+		  daddr_t nc = negative ? c10 - digit : c10 + digit;
+		  if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
+		    {
+		      report_error_message (N_("Seek offset out of range"));
+		      exit (EXIT_FAILURE);
+		    }
+		  count = nc;
+		}
+	    }
+
+	  mtop.mt_count = count;
 	  mtop.mt_op = atoi (operation_string);
-	  mtop.mt_count = atoi (count_string);
+
 	  if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0)
 	    goto ioerror;
-	  status = mtop.mt_count;
 	}
 #endif
 	goto respond;
@@ -370,7 +444,7 @@ top:
 	  if (ioctl (tape, MTIOCGET, (char *) &operation) < 0)
 	    goto ioerror;
 	  status = sizeof (operation);
-	  sprintf (reply_buffer, "A%d\n", status);
+	  sprintf (reply_buffer, "A%ld\n", status);
 	  write (1, reply_buffer, strlen (reply_buffer));
 	  write (1, (char *) &operation, sizeof (operation));
 	}
@@ -386,9 +460,9 @@ top:
     }
 
 respond:
-  DEBUG1 ("rmtd: A %d\n", status);
+  DEBUG1 ("rmtd: A %ld\n", status);
 
-  sprintf (reply_buffer, "A%d\n", status);
+  sprintf (reply_buffer, "A%ld\n", status);
   write (1, reply_buffer, strlen (reply_buffer));
   goto top;
 
