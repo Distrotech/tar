@@ -16,7 +16,6 @@ program is in the GNU `cpio' distribution.
 GNU `tar' is derived from John Gilmore's public domain `tar'.
 
 See file `ABOUT-NLS' for how to customize this program to your language.
-See file `BACKLOG' for a summary of pending mail and articles.
 See file `COPYING' for copying conditions.
 See file `INSTALL' for compilation and installation instructions.
 See file `PORTS' for various ports of GNU tar to non-Unix systems.
@@ -62,6 +61,37 @@ and share your findings by writing at `tar-forum@iro.umontreal.ca'.
 `--------------------'
 
 Here are a few hints which might help installing `tar' on some systems.
+
+* gzip and bzip2.
+
+GNU tar uses the gzip and bzip2 programs to read and write compressed
+archives.  If you don't have these programs already, you need to
+install them.  Their sources can be found at:
+
+ftp://ftp.gnu.org/gnu/gzip/
+http://sourceware.cygnus.com/bzip2/
+
+If you see the following symptoms:
+
+   $ tar -xzf file.tar.gz
+   gzip: stdin: decompression OK, trailing garbage ignored
+   tar: Child returned status 2
+
+then you have encountered a gzip incompatibility that should be fixed
+in gzip 1.3, which is not yet available as of this writing.  You can
+work around the incompatibility by using a shell command like
+`gzip -d <file.tar.gz | tar -xzf -'.
+
+* Solaris issues.
+
+If you are compiling with GCC, you may need to upgrade GCC to 2.95.2
+or later before compiling GNU tar, as GNU tar exercises many features
+that can cause problems with older GCC versions, mostly having to do
+with mutations to Solaris system include files.
+
+Recent versions of Solaris tar sport a new -E option to generate
+extended headers in an undocumented format.  GNU tar does not
+understand these headers.
 
 * Static linking.
 
@@ -137,14 +167,6 @@ archives by default, but there is a long way before we get there.
 
 * What's next?
 
-The emphasis from 1.11.2 to 1.14 has been on solving the main portability,
-execution or usability bugs.  This was accompanied all over with an
-internal cleanup in the sources, and the reassembly of a `tar' manual.
-
-The `BACKLOG' file shows approximate priorities of the many pending
-problems and suggestions.  Besides pending problems and all other matters
-listed above, the cleanup is planned to continue and extend to the general
-organization of the code, preparing a long time in advance for a possible
-merge of the `cpio' and `tar' distributions, into some common `paxutils'.
-We also want to address some long-awaited performance issues (for example:
-double buffering) or enhancements (for example: per-file compression).
+In the future we will try to release tar-1.14 as soon as possible and
+start merging with paxutils afterwards.  We'll also try to rewrite
+some parts of the documentation after paxutils has been merged.
