@@ -22,6 +22,7 @@
 #include "system.h"
 #include <quotearg.h>
 #include <errno.h>
+#include <xgetcwd.h>
 
 #if HAVE_UTIME_H
 # include <utime.h>
@@ -367,7 +368,7 @@ repair_delayed_set_stat (char const *dir,
 static int
 make_directories (char *file_name)
 {
-  char *cursor0 = file_name + FILESYSTEM_PREFIX_LEN (file_name);
+  char *cursor0 = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
   char *cursor;			/* points into the file name */
   int did_something = 0;	/* did we do anything yet? */
   int mode;
@@ -811,8 +812,7 @@ extract_archive (void)
 	break;
 
       if (absolute_names_option
-	  || ! (ISSLASH (current_stat_info.link_name
-			 [FILESYSTEM_PREFIX_LEN (current_stat_info.link_name)])
+	  || ! (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
 		|| contains_dot_dot (current_stat_info.link_name)))
 	{
 	  while (status = symlink (current_stat_info.link_name, file_name),
