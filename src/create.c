@@ -548,7 +548,6 @@ static union block *
 write_extended (struct tar_stat_info *st, union block *old_header)
 {
   union block *header, hp;
-  size_t size;
   char *p;
 
   if (extended_header.buffer || extended_header.stk == NULL)
@@ -771,10 +770,6 @@ void
 finish_header (struct tar_stat_info *st,
 	       union block *header, off_t block_ordinal)
 {
-  size_t i;
-  int sum;
-  char *p;
-
   /* Note: It is important to do this before the call to write_extended(),
      so that the actual ustar header is printed */
   if (verbose_option
