@@ -2967,13 +2967,13 @@ With this option, @command{tar} will not recurse into directories.
 
 When extracting an archive, do not attempt to preserve the owner
 specified in the @command{tar} archive.  This the default behavior
-for ordinary users; this option has an effect only for the superuser.
+for ordinary users.
 
 @item --no-same-permissions
 
 When extracting an archive, subtract the user's umask from files from
 the permissions specified in the archive.  This is the default behavior
-for ordinary users; this option has an effect only for the superuser.
+for ordinary users.
 
 @item --no-wildcards
 Do not use wildcards when excluding files.
@@ -7487,9 +7487,11 @@ gives you a great deal of control already.
 Extract all protection information.
 
 This option causes @command{tar} to set the modes (access permissions) of
-extracted files exactly as recorded in the archive.  If this option
+extracted files exactly as recorded in the archive. If this option
 is not used, the current @code{umask} setting limits the permissions
-on extracted files.
+on extracted files. This option is by default enabled when
+@command{tar} is executed by a superuser.
+
 
 This option is meaningless with @value{op-list}.
 
