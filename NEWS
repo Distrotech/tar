@@ -1,5 +1,15 @@
 GNU tar NEWS - User visible changes.
 
+* New options --index-file, --no-overwrite-dir.  The --overwrite-dir
+  option is now the default; use --no-overwrite-dir if you prefer
+  the previous default behavior.
+
+* New message translations en_GB (British English), fi (Finnish), gl
+  (Galician), hr (Croatian), hu (Hungarian), ms (Malaysian), nb
+  (Norwegian), ro (Romanian), sk (Slovak), zh_CN (Chinese simplified),
+  zh_TW (Chinese traditional).  The code 'no' for Norwegian has been
+  withdrawn; use 'nb' instead.
+
 version 1.13.25 - Paul Eggert, 2001-09-26
 
 * Bug fixes.
@@ -8,6 +18,7 @@ version 1.13.24 - Paul Eggert, 2001-09-22
 
 * New option --overwrite-dir.
 * Fixes for buffer overrun, porting, and copyright notice problems.
+* The message translations for Korean are available again.
 
 version 1.13.23 - Paul Eggert, 2001-09-13
 
@@ -485,8 +496,8 @@ Versions 1.07 back to 1.00 by Jay Fenlason.
 
 
 
-Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001 Free
-Software Foundation, Inc.
+Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
+Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 
