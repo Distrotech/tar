@@ -1039,7 +1039,7 @@ write_error (ssize_t status)
   int saved_errno = errno;
 
   /* It might be useful to know how much was written before the error
-     occured.  Beware that mere printing maybe change errno value.  */
+     occurred.  */
   if (totals_option)
     print_total_written ();
 
