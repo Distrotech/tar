@@ -51,7 +51,7 @@ usage() {
                               the gnulib repository.
  --no-po                      Do not download po files.
  --update-po[=LANG]           Update po file(s) and exit.
- 
+
 Running without arguments will suffice in most cases. It is equivalent
 to
 
@@ -65,7 +65,7 @@ update_po() {
     case $1 in
     *.po)  POFILE=$1;;
     *)     POFILE=${1}.po;;
-    esac	
+    esac
     echo "$0: getting translation for $1..."
     wget -r -C off $TP_URL/$POFILE
   else
@@ -113,7 +113,7 @@ only)	update_po
 	exit 0
 	;;
 no|yes) ;;
-*)	update_po $DOWNLOAD_PO 
+*)	update_po $DOWNLOAD_PO
 	exit 0
 esac
 
@@ -224,7 +224,7 @@ while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
     (echo "$gnulib_modules"
      for gnulib_module in $gnulib_modules; do
        $GNULIB_SRCDIR/gnulib-tool --extract-dependencies $gnulib_module
-     done) | sed 's/alloca-opt/alloca/' | sort -u
+     done) | sort -u
   `
 done
 
@@ -272,13 +272,13 @@ echo "$0: Creating m4/gnulib.m4"
 
 echo "$0: Creating lib/Makefile.am"
 (cat lib/Makefile.tmpl
- 
+
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
     $GNULIB_SRCDIR/gnulib-tool --extract-automake-snippet $gnulib_module
  done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
 
-# Get paxutils files 
+# Get paxutils files
 case ${PAXUTILS_SRCDIR--} in
 -) checkout paxutils
    PAXUTILS_SRCDIR=paxutils
@@ -291,12 +291,12 @@ copy_files() {
     case $file in
     "#*")  continue;;
     esac
-    echo "$0: Copying file $1/$file" 
+    echo "$0: Copying file $1/$file"
     cp -p $1/$file $2/`expr $file : '.*/\(.*\)'`
   done
 }
 
-copy_files ${PAXUTILS_SRCDIR}/m4 m4 
+copy_files ${PAXUTILS_SRCDIR}/m4 m4
 
 if [ -d rmt ]; then
    :
@@ -304,7 +304,7 @@ else
    mkdir rmt
 fi
 
-copy_files ${PAXUTILS_SRCDIR}/rmt rmt 
+copy_files ${PAXUTILS_SRCDIR}/rmt rmt
 
 copy_files ${PAXUTILS_SRCDIR}/lib lib
 
