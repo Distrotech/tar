@@ -1,5 +1,67 @@
-From: Roesinger Eric <ROESINGE@tce.com>
-Date: Sat, 28 Jul 2001 18:43:43 -0500
+Suggestions for improving GNU tar.
 
-It would be useful to be able to use '--remove-files' with '--diff',
-to remove all files that compare successfully, when verifying a backup.
+* Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
+
+* Fix tar so that it can read and write POSIX.1-1990 tar archives.
+
+* Add support for POSIX 1003.1-2001 tar archives
+  (along with technical corrections to the standard since 2001).
+
+* Add support for a 'pax' command that conforms to POSIX 1003.1-2001.
+  This would unify paxutils with tar.
+
+* Remove command-line incompatibilities between GNU tar and UNIX tar
+  as specified by UNIX98.  The main problems are:
+
+     l   GNU tar doesn't cross filesystem boundaries.
+	 UNIX98 tar warns if all links cannot be resolved.
+	   (GNU tar has no similar option.)
+
+     o   GNU tar says output old format.
+	 UNIX98 tar says don't chown files after extracting
+	   (GNU tar uses "--no-same-owner" for this).
+
+  Many people rely on GNU tar's "l" and "o" so we can't abruptly change
+  GNU tar to be compatible with UNIX98 tar.
+
+  However, "o" is relatively easy: we can extend GNU tar so that "o" is
+  a synonym for --no-same-owner when extracting, keeping "o"'s current
+  semantics when creating.  This is a bit of a hack, but it shouldn't
+  break things.
+
+  "l" will be harder, since it's a clear incompatibility.  Perhaps we
+  could announce a phase-in period where "l" changes in semantics.
+  However, the first step should be to support the UNIX98 semantics,
+  using a long option, without changing the meaning of "l" for now.  That
+  will give people a migration strategy.
+
+* Interoperate better with Joerg Schilling's star implementation.
+
+* Add an option to remove files that compare successfully.
+
+  From: Roesinger Eric <ROESINGE@tce.com>
+  Date: Sat, 28 Jul 2001 18:43:43 -0500
+
+  It would be useful to be able to use '--remove-files' with '--diff',
+  to remove all files that compare successfully, when verifying a backup.
+
+* Copyright notice
+
+  Copyright (C) 2003 Free Software Foundation, Inc.
+
+  This file is part of GNU tar.
+
+  GNU tar is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2, or (at your option)
+  any later version.
+
+  GNU tar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with tar; see the file COPYING.  If not, write to
+  the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+  Boston, MA 02111-1307, USA.
