@@ -27,6 +27,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <sys/types.h>		/* Needed for typedefs in tar.h */
 #include "getopt.h"
 #include "regex.h"
+#include "fnmatch.h"
 
 /*
  * The following causes "tar.h" to produce definitions of all the
@@ -103,7 +104,6 @@ void	name_add();
 void	name_init();
 void	options();
 char	*un_quote_string();
-int	wildmat();
 
 #ifndef S_ISLNK
 #define lstat stat
@@ -1062,7 +1062,7 @@ again:
 
 		/* Regular expressions (shell globbing, actually). */
 		if (nlp->regexp) {
-			if (wildmat(p, nlp->name)) {
+			if (fnmatch(nlp->name, p, FNM_TARPATH) == 0) {
 				nlp->found = 1;	/* Remember it matched */
 				if(f_startfile) {
 					free((void *)namelist);
@@ -1172,7 +1172,7 @@ again:
 
 		/* Regular expressions */
 		if (nlp->regexp) {
-			if (wildmat(p, nlp->name))
+			if (fnmatch(nlp->name, p, FNM_TARPATH) == 0)
 				return nlp;	/* We got a match */
 			continue;
 		}
@@ -1383,7 +1383,7 @@ char *name;
 	extern char *strstr();
 
 	for(n=0;n<size_re_exclude;n++) {
-		if(wildmat(name,re_exclude[n]))
+		if(fnmatch(re_exclude[n], name, FNM_TARPATH) == 0)
 			return 1;
 	}
 	for(n=0;n<size_exclude;n++) {
