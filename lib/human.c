@@ -117,10 +117,6 @@ human_readable_inexact (uintmax_t n, char *buf,
   int base;
   int to_block_size;
   int tenths = 0;
-  int multiplier;
-  int divisor;
-  int r2;
-  int r10;
   int power;
   char *p;
 
@@ -151,49 +147,55 @@ human_readable_inexact (uintmax_t n, char *buf,
 
   /* Adjust AMT out of FROM_BLOCK_SIZE units and into TO_BLOCK_SIZE units.  */
 
-  if (to_block_size <= from_block_size
-      ? (from_block_size % to_block_size != 0
-	 || (multiplier = from_block_size / to_block_size,
-	     (amt = n * multiplier) / multiplier != n))
-      : (from_block_size == 0
-	 || to_block_size % from_block_size != 0
-	 || (divisor = to_block_size / from_block_size,
-	     r10 = (n % divisor) * 10,
-	     r2 = (r10 % divisor) * 2,
-	     amt = n / divisor,
-	     tenths = r10 / divisor,
-	     rounding = r2 < divisor ? 0 < r2 : 2 + (divisor < r2),
-	     0)))
-    {
-      /* Either the result cannot be computed easily using uintmax_t,
-	 or from_block_size is zero.  Fall back on floating point.
-	 FIXME: This can yield answers that are slightly off.  */
+  {
+    int multiplier;
+    int divisor;
+    int r2;
+    int r10;
+    if (to_block_size <= from_block_size
+	? (from_block_size % to_block_size != 0
+	   || (multiplier = from_block_size / to_block_size,
+	       (amt = n * multiplier) / multiplier != n))
+	: (from_block_size == 0
+	   || to_block_size % from_block_size != 0
+	   || (divisor = to_block_size / from_block_size,
+	       r10 = (n % divisor) * 10,
+	       r2 = (r10 % divisor) * 2,
+	       amt = n / divisor,
+	       tenths = r10 / divisor,
+	       rounding = r2 < divisor ? 0 < r2 : 2 + (divisor < r2),
+	       0)))
+      {
+	/* Either the result cannot be computed easily using uintmax_t,
+	   or from_block_size is zero.  Fall back on floating point.
+	   FIXME: This can yield answers that are slightly off.  */
 
-      double damt = n * (from_block_size / (double) to_block_size);
+	double damt = n * (from_block_size / (double) to_block_size);
 
-      if (! base)
-	sprintf (buf, "%.0f", damt);
-      else
-	{
-	  double e = 1;
-	  power = 0;
+	if (! base)
+	  sprintf (buf, "%.0f", damt);
+	else
+	  {
+	    double e = 1;
+	    power = 0;
 
-	  do
-	    {
-	      e *= base;
-	      power++;
-	    }
-	  while (e * base <= damt && power < sizeof suffixes - 1);
+	    do
+	      {
+		e *= base;
+		power++;
+	      }
+	    while (e * base <= damt && power < sizeof suffixes - 1);
 
-	  damt /= e;
+	    damt /= e;
 
-	  sprintf (buf, "%.1f%c", damt, suffixes[power]);
-	  if (4 < strlen (buf))
-	    sprintf (buf, "%.0f%c", damt, suffixes[power]);
-	}
+	    sprintf (buf, "%.1f%c", damt, suffixes[power]);
+	    if (4 < strlen (buf))
+	      sprintf (buf, "%.0f%c", damt, suffixes[power]);
+	  }
 
-      return buf;
-    }
+	return buf;
+      }
+  }
 
   /* Use power of BASE notation if adjusted AMT is large enough.  */
 
