@@ -1,5 +1,7 @@
 /* full-write.c -- an interface to write that retries after interrupts
-   Copyright 1993,94,97,98,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright 1993, 1994, 1997, 1998, 1999, 2000, 2001 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,8 +17,7 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-   Copied largely from GNU C's cccp.c.
-   */
+   Written by Paul Eggert.  */
 
 #if HAVE_CONFIG_H
 # include <config.h>
