@@ -548,7 +548,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	}
     }
 
-  if (extended_header.nblocks)
+  if (extended_header.size)
     xheader_decode (stat_info);
 }
 
@@ -1021,9 +1021,9 @@ print_header (off_t block_ordinal)
 
       /* User and group names.  */
 
-      if (*current_header->header.uname && current_format != V7_FORMAT
+      if (current_stat_info.uname && current_format != V7_FORMAT
 	  && !numeric_owner_option)
-	user = current_header->header.uname;
+	user = current_stat_info.uname;
       else
 	{
 	  /* Try parsing it as an unsigned integer first, and as a
@@ -1043,9 +1043,9 @@ print_header (off_t block_ordinal)
 	    }
 	}
 
-      if (*current_header->header.gname && current_format != V7_FORMAT
+      if (current_stat_info.gname && current_format != V7_FORMAT
 	  && !numeric_owner_option)
-	group = current_header->header.gname;
+	group = current_stat_info.gname;
       else
 	{
 	  /* Try parsing it as an unsigned integer first, and as a
