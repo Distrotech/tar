@@ -32,11 +32,11 @@ do
     echo "$0: usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME]"
     exit;;
   --gnulib-srcdir=*)
-    GNULIB_SRCDIR=`expr "$1" : '--gnulib-srcdir=\(.*\)'`;;
+    GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
   --cvs-auth=*)
-    CVS_AUTH=`expr "$1" : '--cvs-auth=\(.*\)'`;;
+    CVS_AUTH=`expr "$option" : '--cvs-auth=\(.*\)'`;;
   --cvs-user=*)
-    CVS_USER=`expr "$1" : '--cvs-user=\(.*\)'`;;
+    CVS_USER=`expr "$option" : '--cvs-user=\(.*\)'`;;
   --no-po)
     DOWNLOAD_PO=no;;
   *)
