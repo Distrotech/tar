@@ -10,6 +10,8 @@ AC_DEFUN(AC_FUNC_FNMATCH,
 [AC_TRY_RUN([#include <fnmatch.h>
 main() {
   exit (fnmatch ("a*", "abc", 0) != 0
+	|| fnmatch("*", "x", FNM_FILE_NAME | FNM_LEADING_DIR) != 0
+	|| fnmatch("x*", "x/y/z", FNM_FILE_NAME | FNM_LEADING_DIR) != 0
 	|| fnmatch("*c*", "c/x", FNM_FILE_NAME | FNM_LEADING_DIR) != 0);
 }],
 ac_cv_func_fnmatch_works=yes, ac_cv_func_fnmatch_works=no,
