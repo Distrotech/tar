@@ -367,6 +367,11 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 	  *sizeleft -= count;
 	  set_next_block_after (data_block);
 	  data_block = find_next_block ();
+	  if (! data_block)
+	    {
+	      ERROR ((0, 0, _("Unexpected EOF on archive file")));
+	      return;
+	    }
 	}
 
       count = full_write (fd, data_block->buffer, written);
@@ -507,6 +512,11 @@ extract_archive (void)
 	  while (1)
 	    {
 	      exhdr = find_next_block ();
+	      if (! exhdr)
+		{
+		  ERROR ((0, 0, _("Unexpected EOF on archive file")));
+		  return;
+		}
 	      for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
 		{
 		  if (counter + ind > sp_array_size - 1)
@@ -519,9 +529,7 @@ extract_archive (void)
 			xrealloc (sparsearray,
 				  sp_array_size * (sizeof (struct sp_array)));
 		    }
-		  /* Compare to 0, or use !(int)..., for Pyramid's dumb
-		     compiler.  */
-		  if (exhdr->sparse_header.sp[counter].numbytes == 0)
+		  if (exhdr->sparse_header.sp[counter].numbytes[0] == 0)
 		    break;
 		  sparsearray[counter + ind].offset =
 		    OFF_FROM_CHARS (exhdr->sparse_header.sp[counter].offset);
