@@ -111,6 +111,7 @@ EOF
 restore_fs()
 {
     fs="`echo \"${1}\" | sed -e 's/^.*://'`"
+    fs=`root_fs $fs`
     fsname="`echo \"${1}\" | sed -e 's/\//:/g'`"
     remotehost="`expr \"${1}\" : '\([^/][^/]*\):.*'`"
     if [ -z "$remotehost" ]; then
@@ -146,7 +147,7 @@ restore_fs()
       backup_host ${remotehost} \
                   "--listed=\"$FILE\"" \
                   "--label=\"$LABEL\"" \
-		  -C ${ROOT_FS-/}$fs
+		  -C $fs
       ${RESTORE_END-:} $level $remotehost $fs $fsname 		  
     done
 }
