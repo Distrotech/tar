@@ -1,5 +1,5 @@
 /* Create a tar archive.
-   Copyright (C) 1985, 1992 Free Software Foundation
+   Copyright (C) 1985, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -170,10 +170,8 @@ create_archive ()
     }
   else
     {
-      p = name_next (1);
-      do
+      while (p = name_next (1))
 	dump_file (p, -1, 1);
-      while (p = name_next (1));
     }
 
   write_eot ();
@@ -345,7 +343,7 @@ dump_file (p, curdev, toplevel)
 	}
 
       /* Not found.  Add it to the list of possible links. */
-      lp = (struct link *) malloc ((unsigned) (sizeof (struct link) + strlen (p)));
+      lp = (struct link *) ck_malloc ((unsigned) (sizeof (struct link) + strlen (p)));
       if (!lp)
 	{
 	  if (!nolinks)
@@ -992,7 +990,7 @@ init_sparsearray ()
   /*
 	 * Make room for our scratch space -- initially is 10 elts long
 	 */
-  sparsearray = (struct sp_array *) malloc (sp_array_size * sizeof (struct sp_array));
+  sparsearray = (struct sp_array *) ck_malloc (sp_array_size * sizeof (struct sp_array));
   for (i = 0; i < sp_array_size; i++)
     {
       sparsearray[i].offset = 0;
