@@ -234,7 +234,7 @@ enum
   WILDCARDS_MATCH_SLASH_OPTION
 };
 
-const char *argp_program_version = "tar (" PACKAGE ") " VERSION;
+const char *argp_program_version = "tar (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char doc[] = N_("GNU `tar' saves many files together into a single tape or disk archive, and can restore individual files from the archive.\n\
 \n\
