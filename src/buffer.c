@@ -403,7 +403,7 @@ child_open ()
 	    }
 	  else			/* This can't happen if (ar_reading==2)
 				archive = rmtopen(ar_files[0], O_RDWR|O_CREAT|O_BINARY, 0666);
-	  			else */ if (ar_reading)
+	  	  			else */ if (ar_reading)
 	    archive = rmtopen (ar_files[0], O_RDONLY | O_BINARY, 0666);
 	  else
 	    archive = rmtcreat (ar_files[0], 0666);
