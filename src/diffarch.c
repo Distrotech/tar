@@ -38,7 +38,7 @@ extern int errno;
 #endif
 #endif
 
-#ifndef NO_MTIO
+#ifdef HAVE_SYS_MTIO_H
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #endif
