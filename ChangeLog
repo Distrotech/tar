@@ -1,3 +1,38 @@
+2004-05-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Apply patches from patch subdirectory
+	* patches: New dir
+	* patches/argp.diff: New file
+	* patches/getopt.diff: New file
+	* configure.ac: Check for _getopt_long_only_r and
+	force using included version of getopt if the function
+	is not available.
+	* src/tar.c: Use argp for command line parsing.
+	* src/system.h: Minor formatting fix
+	* m4/.cvsignore: Updated
+	* lib/.cvsignore: Updated
+	* doc/tar.texi: Minor fix.
+	* src/extract.c: Fix improper use of 'path' term
+	* src/incremen.c: Likewise
+	* src/list.c: Likewise
+	* src/misc.c: Likewise
+	* src/names.c: Likewise
+	* src/rmt.h: Likewise
+	* src/rtapelib.c: Likewise
+	* src/update.c: Likewise
+	* src/xheader.c: Likewise
+	* tests/star/README: Minor fix
+
+2004-05-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Raised version number to 1.14.1
+	* src/tar.c: Renamed --strip-path to --strip-components
+	Changed improper use of _() to ngettext().
+	* src/extract.c: Renamed strip_path_option to strip_components_option
+	* src/common.h: Likewise.
+	* NEWS: Updated.
+	* doc/tar.texi: Updated
+
 2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/system.c (sys_child_open_for_uncompress): Do not
