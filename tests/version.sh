@@ -2,7 +2,6 @@
 # Check if the proper version is being tested.
 
 . ./preset
-PATH=../src:$PATH
 
 if test -n "`$PACKAGE --version | sed -n s/$PACKAGE.*$VERSION/OK/p`"; then
   banner="Regression testing for GNU $PACKAGE, version $VERSION"

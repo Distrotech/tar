@@ -22,8 +22,8 @@
 # 02111-1307, USA.
 
 . ./preset
+TAR_ARCHIVE_FORMATS="gnu oldgnu" 
 . $srcdir/before
-prereq gnu oldgnu 
 
 mkdir directory
 dd if=/dev/zero of=directory/file1 bs=1024 count=10 2>/dev/null

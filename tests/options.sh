@@ -2,6 +2,7 @@
 # Ensure that TAR_OPTIONS works in conjunction with old-style options.
 
 . ./preset
+TAR_ARCHIVE_FORMATS=auto
 . $srcdir/before
 
 set -e

@@ -2,8 +2,8 @@
 # Test multivolume dumps from pipes.
 
 . ./preset
+TAR_ARCHIVE_FORMATS="gnu oldgnu"
 . $srcdir/before
-prereq gnu oldgnu
 
 # Fixme: should be configurable
 #  TRUSS=truss -o /tmp/tr

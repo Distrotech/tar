@@ -2,6 +2,7 @@
 # An old archive was not receiving directories.
 
 . ./preset
+TAR_ARCHIVE_FORMATS=auto
 . $srcdir/before
 
 set -e

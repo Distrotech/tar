@@ -2,8 +2,8 @@
 # A directory older than the listed entry was skipped completely.
 
 . ./preset
+TAR_ARCHIVE_FORMATS="gnu oldgnu"
 . $srcdir/before
-prereq gnu oldgnu
 
 set -e
 mkdir structure

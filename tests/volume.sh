@@ -2,9 +2,10 @@
 # Volume labels are checked on read by fnmatch.
 
 . ./preset
+TAR_ARCHIVE_FORMATS="gnu oldgnu"
 . $srcdir/before
 
-tar -cf archive -V label -T /dev/null --format=gnu || exit 1
+tar -cf archive -V label -T /dev/null || exit 1
 
 tar xfV archive label || exit 1
 tar xfV archive 'la?el' || exit 1

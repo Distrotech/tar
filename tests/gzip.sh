@@ -2,6 +2,7 @@
 # tar should detect that its gzip child failed.
 
 . ./preset
+TAR_ARCHIVE_FORMATS=auto
 . $srcdir/before
 
 tar xfvz /dev/null
