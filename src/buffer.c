@@ -319,6 +319,24 @@ is_regular_file (const char *name)
   return 0;
 }
 
+static ssize_t
+write_archive_buffer (void)
+{
+  ssize_t status;
+  ssize_t written = 0;
+
+  while (0 <= (status = rmtwrite (archive, record_start->buffer + written,
+				  record_size - written)))
+    {
+      written += status;
+      if (written == record_size
+	  || _isrmt (archive) || ! S_ISFIFO (archive_stat.st_mode))
+	break;
+    }
+
+  return written ? written : status;
+}
+
 /*-------------------------------------------------------.
 | Set ARCHIVE for writing, then compressing an archive.	 |
 `-------------------------------------------------------*/
@@ -460,7 +478,7 @@ child_open_for_compress (void)
 	  if (length > 0)
 	    {
 	      memset (record_start->buffer + length, 0, record_size - length);
-	      status = rmtwrite (archive, record_start->buffer, record_size);
+	      status = write_archive_buffer ();
 	      if (status != record_size)
 		write_error (status);
 	    }
@@ -469,7 +487,7 @@ child_open_for_compress (void)
 	  break;
 	}
 
-      status = rmtwrite (archive, record_start->buffer, record_size);
+      status = write_archive_buffer ();
       if (status != record_size)
  	write_error (status);
     }
@@ -784,7 +802,8 @@ open_archive (enum access_mode access)
 	break;
       }
 
-  if (archive < 0)
+  if (archive < 0
+      || (! _isrmt (archive) && fstat (archive, &archive_stat) < 0))
     {
       int saved_errno = errno;
 
@@ -796,15 +815,17 @@ open_archive (enum access_mode access)
 
 #if !MSDOS
 
-  fstat (archive, &archive_stat);
-
   /* Detect if outputting to "/dev/null".  */
   {
+    static char const dev_null[] = "/dev/null";
     struct stat dev_null_stat;
 
-    stat ("/dev/null", &dev_null_stat);
-    dev_null_output = (S_ISCHR (archive_stat.st_mode)
-		       && archive_stat.st_rdev == dev_null_stat.st_rdev);
+    dev_null_output =
+      (strcmp (archive_name_array[0], dev_null) == 0
+       || (! _isrmt (archive)
+	   && stat (dev_null, &dev_null_stat) == 0
+	   && S_ISCHR (archive_stat.st_mode)
+	   && archive_stat.st_rdev == dev_null_stat.st_rdev));
   }
 
   if (!_isrmt (archive) && S_ISREG (archive_stat.st_mode))
@@ -812,6 +833,8 @@ open_archive (enum access_mode access)
       ar_dev = archive_stat.st_dev;
       ar_ino = archive_stat.st_ino;
     }
+  else
+    ar_dev = 0;
 
 #endif /* not MSDOS */
 
@@ -884,7 +907,7 @@ flush_write (void)
   else if (dev_null_output)
     status = record_size;
   else
-    status = rmtwrite (archive, record_start->buffer, record_size);
+    status = write_archive_buffer ();
   if (status != record_size && !multi_volume_option)
     write_error (status);
   else if (totals_option)
@@ -984,7 +1007,7 @@ flush_write (void)
 	record_start--;
     }
 
-  status = rmtwrite (archive, record_start->buffer, record_size);
+  status = write_archive_buffer ();
   if (status != record_size)
     write_error (status);
   else if (totals_option)
@@ -1089,7 +1112,7 @@ flush_read (void)
 
   if (write_archive_to_stdout && record_start_block != 0)
     {
-      status = rmtwrite (1, record_start->buffer, record_size);
+      status = write_archive_buffer ();
       if (status != record_size)
 	write_error (status);
     }
@@ -1375,22 +1398,25 @@ close_archive (void)
      might become clever enough to just stop working, once there is no more
      work to do, we might have to revise this area in such time.  */
 
-  if (access_mode == ACCESS_READ && S_ISFIFO (archive_stat.st_mode) &&
-      !ending_file_option)
+  if (access_mode == ACCESS_READ
+      && ! _isrmt (archive)
+      && S_ISFIFO (archive_stat.st_mode)
+      && ! ending_file_option)
     while (rmtread (archive, record_start->buffer, record_size) > 0)
       continue;
 #endif
 
-  if (subcommand_option == DELETE_SUBCOMMAND)
+  if (! _isrmt (archive) && subcommand_option == DELETE_SUBCOMMAND)
     {
-      off_t pos;
-
-      pos = rmtlseek (archive, (off_t) 0, 1);
 #if MSDOS
-      rmtwrite (archive, "", 0);
+      int status = write (archive, "", 0);
 #else
-      ftruncate (archive, pos);
+      off_t pos = lseek (archive, (off_t) 0, 1);
+      int status = pos == -1 ? -1 : ftruncate (archive, pos);
 #endif
+      if (status != 0)
+	WARN ((0, errno, _("WARNING: Cannot truncate %s"),
+	       *archive_name_cursor));
     }
   if (verify_option)
     verify_volume ();
