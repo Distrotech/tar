@@ -517,7 +517,15 @@ enum remove_option
 {
   ORDINARY_REMOVE_OPTION,
   RECURSIVE_REMOVE_OPTION,
-  WANT_DIRECTORY_REMOVE_OPTION
+
+  /* FIXME: The following value is never used. It seems to be intended
+     as a placeholder for a hypothetical option that should instruct tar
+     to recursively remove subdirectories in purge_directory(),
+     as opposed to the functionality of --recursive-unlink
+     (RECURSIVE_REMOVE_OPTION value), which removes them in
+     prepare_to_extract() phase. However, with the addition of more
+     meta-info to the incremental dumps, this should become unnecessary */
+  WANT_DIRECTORY_REMOVE_OPTION  
 };
 int remove_any_file (const char *, enum remove_option);
 bool maybe_backup_file (const char *, int);
