@@ -205,10 +205,8 @@ sparse_scan_file (struct tar_sparse_file *file)
     }
       
   if (sp.numbytes == 0)
-    {
-      sp.offset = offset - 1;
-      sp.numbytes = 1;
-    }
+    sp.offset = offset;
+
   sparse_add_map (file, &sp);
   file->stat_info->archive_file_size += count;
   return tar_sparse_scan (file, scan_end, NULL);
@@ -256,7 +254,7 @@ sparse_dump_region (struct tar_sparse_file *file, size_t index)
 		       SEEK_SET))
     return false;
 
-  do
+  while (bytes_left > 0)
     {
       size_t bufsize = (bytes_left > BLOCKSIZE) ? BLOCKSIZE : bytes_left;
       off_t bytes_read;
@@ -278,7 +276,7 @@ sparse_dump_region (struct tar_sparse_file *file, size_t index)
       file->dumped_size += bytes_read;
       set_next_block_after (blk);
     }
-  while (bytes_left > 0);
+
   return true;
 }
 
@@ -290,8 +288,16 @@ sparse_extract_region (struct tar_sparse_file *file, size_t index)
   if (!lseek_or_error (file, file->stat_info->sparse_map[index].offset,
 		       SEEK_SET))
     return false;
+
   write_size = file->stat_info->sparse_map[index].numbytes;
-  while (write_size > 0)
+
+  if (write_size == 0)
+    {
+      /* Last block of the file is a hole */
+      if (sys_truncate (file->fd))
+	truncate_warn (file->stat_info->orig_file_name);
+    }
+  else while (write_size > 0)
     {
       size_t count;
       size_t wrbytes = (write_size > BLOCKSIZE) ? BLOCKSIZE : write_size;
