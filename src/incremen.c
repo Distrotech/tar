@@ -188,10 +188,7 @@ get_directory_contents (char *path, dev_t device)
 
     if (! dirp)
       {
-	if (ignore_failed_read_option)
-	  savedir_warn (path);
-	else
-	  savedir_error (path);
+        savedir_error (path);
       }
     errno = 0;
 
@@ -229,10 +226,7 @@ get_directory_contents (char *path, dev_t device)
 
 	      if (deref_stat (dereference_option, name_buffer, &stat_data))
 		{
-		  if (ignore_failed_read_option)
-		    stat_warn (name_buffer);
-		  else
-		    stat_error (name_buffer);
+		  stat_diag (name_buffer);
 		  continue;
 		}
 

@@ -833,10 +833,7 @@ collect_and_sort_names (void)
 
       if (deref_stat (dereference_option, name->name, &statbuf) != 0)
 	{
-	  if (ignore_failed_read_option)
-	    stat_warn (name->name);
-	  else
-	    stat_error (name->name);
+	  stat_diag (name->name);
 	  continue;
 	}
       if (S_ISDIR (statbuf.st_mode))
