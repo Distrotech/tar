@@ -19,7 +19,7 @@
 # 02111-1307, USA.
 
 . ./preset
-. $srcdir/before
+. $srcdir/before gnu oldgnu posix
 
 set -e
 prefix=This_is_a_very_long_file_name_prefix_that_is_designed_to_cause_problems_with_file_names_that_run_into_a_limit_of_the_posix_tar_formatXX
