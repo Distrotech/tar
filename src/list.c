@@ -757,7 +757,8 @@ print_header (void)
 {
   char modes[11];
   char *timestamp;
-  char uform[11], gform[11];	/* these hold formatted ints */
+  /* These hold formatted ints.  */
+  char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
   char *user, *group;
   char size[2 * UINTMAX_STRSIZE_BOUND];
   				/* holds formatted size or major,minor */
