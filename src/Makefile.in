@@ -20,7 +20,7 @@ SHELL = /bin/sh
 #### Start of system configuration section. ####
 
 srcdir = @srcdir@
-@VPATH@
+VPATH = @srcdir@
 
 # If you use gcc, you should either run the fixincludes script that
 # comes with it or else use gcc with the -traditional option.  Otherwise
@@ -64,26 +64,26 @@ INSTALL_DATA = @INSTALL_DATA@
 #			disable the tar -k option instead of emulating open.
 # -DXENIX		If you have sys/inode.h and need it to be included.
 
-DEFS = @DEFS@
+DEF_AR_FILE = @DEF_AR_FILE@
+DEFBLOCKING = 20
+DEFS = @DEFS@ -DDEF_AR_FILE=\"$(DEF_AR_FILE)\" -DDEFBLOCKING=$(DEFBLOCKING)
+
 # Set this to rtapelib.o unless you defined NO_REMOTE, in which case
 # make it empty.
 RTAPELIB = @RTAPELIB@
 LIBS = @LIBS@
-DEF_AR_FILE = @DEF_AR_FILE@
-DEFBLOCKING = 20
 
-CDEBUG = -g
-CFLAGS = $(CDEBUG) -I. -I$(srcdir) $(DEFS) \
-	-DDEF_AR_FILE=\"$(DEF_AR_FILE)\" \
-	-DDEFBLOCKING=$(DEFBLOCKING)
+CFLAGS = -g
 LDFLAGS = -g
 
 prefix = /usr/local
+exec_prefix = $(prefix)
+
 # Prefix for each installed program, normally empty or `g'.
 binprefix = 
 
 # The directory to install tar in.
-bindir = $(prefix)/bin
+bindir = $(exec_prefix)/bin
 
 # The directory to install the info files in.
 infodir = $(prefix)/info
@@ -107,6 +107,9 @@ AUX =   README INSTALL COPYING ChangeLog Makefile.in makefile.pc \
 	level-0 level-1 backup-specs testpad.c
 
 all:	@PROGS@ tar.info
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -I. $<
 
 tar:	$(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
@@ -165,3 +168,6 @@ tar.zoo: $(SRCS) $(AUX)
 	for X in $(SRCS) $(AUX) ; do echo $$X ; sed 's/$$//' $$X > tmp.dir/$$X ; done
 	cd tmp.dir ; zoo aM ../tar.zoo *
 	-rm -rf tmp.dir
+
+# Prevent GNU make v3 from overflowing arg limit on SysV.
+.NOEXPORT:
