@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
-   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000, 2001
-   Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
+   2001, 2003 Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -36,13 +36,11 @@
 #define GLOBAL
 #include "common.h"
 
-#include <print-copyr.h>
+#include <getdate.h>
 #include <localedir.h>
 #include <prepargs.h>
 #include <quotearg.h>
 #include <xstrtol.h>
-
-time_t get_date ();
 
 /* Local declarations.  */
 
@@ -54,7 +52,7 @@ time_t get_date ();
 # define DEFAULT_BLOCKING 20
 #endif
 
-static void usage PARAMS ((int)) __attribute__ ((noreturn));
+static void usage (int) __attribute__ ((noreturn));
 
 /* Miscellaneous.  */
 
@@ -127,26 +125,36 @@ confirm (const char *message_action, const char *message_name)
 enum
 {
   ANCHORED_OPTION = CHAR_MAX + 1,
+  ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
+  CHECKPOINT_OPTION,
   DELETE_OPTION,
   EXCLUDE_OPTION,
+  FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   IGNORE_CASE_OPTION,
+  IGNORE_FAILED_READ_OPTION,
+  INDEX_FILE_OPTION,
   MODE_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
   NO_IGNORE_CASE_OPTION,
+  NO_OVERWRITE_DIR_OPTION,
   NO_WILDCARDS_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NULL_OPTION,
+  NUMERIC_OWNER_OPTION,
   OVERWRITE_OPTION,
-  OVERWRITE_DIR_OPTION,
   OWNER_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
   RECORD_SIZE_OPTION,
+  RECURSIVE_UNLINK_OPTION,
+  REMOVE_FILES_OPTION,
   RSH_COMMAND_OPTION,
+  SHOW_OMITTED_DIRS_OPTION,
   SUFFIX_OPTION,
+  TOTALS_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
   VOLNO_FILE_OPTION,
   WILDCARDS_OPTION,
@@ -178,7 +186,7 @@ static struct option long_options[] =
   {"after-date", required_argument, 0, 'N'},
   {"anchored", no_argument, 0, ANCHORED_OPTION},
   {"append", no_argument, 0, 'r'},
-  {"atime-preserve", no_argument, &atime_preserve_option, 1},
+  {"atime-preserve", no_argument, 0, ATIME_PRESERVE_OPTION},
   {"backup", optional_argument, 0, BACKUP_OPTION},
   {"block-compress", no_argument, 0, OBSOLETE_BLOCK_COMPRESS},
   {"block-number", no_argument, 0, 'R'},
@@ -186,7 +194,7 @@ static struct option long_options[] =
   {"blocking-factor", required_argument, 0, 'b'},
   {"bzip2", no_argument, 0, 'j'},
   {"catenate", no_argument, 0, 'A'},
-  {"checkpoint", no_argument, &checkpoint_option, 1},
+  {"checkpoint", no_argument, 0, CHECKPOINT_OPTION},
   {"compare", no_argument, 0, 'd'},
   {"compress", no_argument, 0, 'Z'},
   {"concatenate", no_argument, 0, 'A'},
@@ -202,17 +210,18 @@ static struct option long_options[] =
   {"extract", no_argument, 0, 'x'},
   {"file", required_argument, 0, 'f'},
   {"files-from", required_argument, 0, 'T'},
-  {"force-local", no_argument, &force_local_option, 1},
+  {"force-local", no_argument, 0, FORCE_LOCAL_OPTION},
   {"get", no_argument, 0, 'x'},
   {"group", required_argument, 0, GROUP_OPTION},
   {"gunzip", no_argument, 0, 'z'},
   {"gzip", no_argument, 0, 'z'},
   {"help", no_argument, &show_help, 1},
   {"ignore-case", no_argument, 0, IGNORE_CASE_OPTION},
-  {"ignore-failed-read", no_argument, &ignore_failed_read_option, 1},
+  {"ignore-failed-read", no_argument, 0, IGNORE_FAILED_READ_OPTION},
   {"ignore-zeros", no_argument, 0, 'i'},
   /* FIXME: --ignore-end as a new name for --ignore-zeros?  */
   {"incremental", no_argument, 0, 'G'},
+  {"index-file", required_argument, 0, INDEX_FILE_OPTION},
   {"info-script", required_argument, 0, 'F'},
   {"interactive", no_argument, 0, 'w'},
   {"keep-old-files", no_argument, 0, 'k'},
@@ -228,16 +237,16 @@ static struct option long_options[] =
   {"null", no_argument, 0, NULL_OPTION},
   {"no-anchored", no_argument, 0, NO_ANCHORED_OPTION},
   {"no-ignore-case", no_argument, 0, NO_IGNORE_CASE_OPTION},
+  {"no-overwrite-dir", no_argument, 0, NO_OVERWRITE_DIR_OPTION},
   {"no-wildcards", no_argument, 0, NO_WILDCARDS_OPTION},
   {"no-wildcards-match-slash", no_argument, 0, NO_WILDCARDS_MATCH_SLASH_OPTION},
   {"no-recursion", no_argument, &recursion_option, 0},
   {"no-same-owner", no_argument, &same_owner_option, -1},
   {"no-same-permissions", no_argument, &same_permissions_option, -1},
-  {"numeric-owner", no_argument, &numeric_owner_option, 1},
+  {"numeric-owner", no_argument, 0, NUMERIC_OWNER_OPTION},
   {"old-archive", no_argument, 0, 'o'},
   {"one-file-system", no_argument, 0, 'l'},
   {"overwrite", no_argument, 0, OVERWRITE_OPTION},
-  {"overwrite-dir", no_argument, 0, OVERWRITE_DIR_OPTION},
   {"owner", required_argument, 0, OWNER_OPTION},
   {"portability", no_argument, 0, 'o'},
   {"posix", no_argument, 0, POSIX_OPTION},
@@ -245,24 +254,24 @@ static struct option long_options[] =
   {"preserve-order", no_argument, 0, 's'},
   {"preserve-permissions", no_argument, 0, 'p'},
   {"recursion", no_argument, &recursion_option, FNM_LEADING_DIR},
-  {"recursive-unlink", no_argument, &recursive_unlink_option, 1},
+  {"recursive-unlink", no_argument, 0, RECURSIVE_UNLINK_OPTION},
   {"read-full-blocks", no_argument, 0, OBSOLETE_READ_FULL_RECORDS},
   {"read-full-records", no_argument, 0, 'B'},
   /* FIXME: --partial-blocks might be a synonym for --read-full-records?  */
   {"record-number", no_argument, 0, OBSOLETE_BLOCK_NUMBER},
   {"record-size", required_argument, 0, RECORD_SIZE_OPTION},
-  {"remove-files", no_argument, &remove_files_option, 1},
+  {"remove-files", no_argument, 0, REMOVE_FILES_OPTION},
   {"rsh-command", required_argument, 0, RSH_COMMAND_OPTION},
   {"same-order", no_argument, 0, 's'},
   {"same-owner", no_argument, &same_owner_option, 1},
   {"same-permissions", no_argument, 0, 'p'},
-  {"show-omitted-dirs", no_argument, &show_omitted_dirs_option, 1},
+  {"show-omitted-dirs", no_argument, 0, SHOW_OMITTED_DIRS_OPTION},
   {"sparse", no_argument, 0, 'S'},
   {"starting-file", required_argument, 0, 'K'},
   {"suffix", required_argument, 0, SUFFIX_OPTION},
   {"tape-length", required_argument, 0, 'L'},
   {"to-stdout", no_argument, 0, 'O'},
-  {"totals", no_argument, &totals_option, 1},
+  {"totals", no_argument, 0, TOTALS_OPTION},
   {"touch", no_argument, 0, 'm'},
   {"uncompress", no_argument, 0, 'Z'},
   {"ungzip", no_argument, 0, 'z'},
@@ -325,7 +334,7 @@ Operation modifiers:\n\
       --remove-files         remove files after adding them to the archive\n\
   -k, --keep-old-files       don't replace existing files when extracting\n\
       --overwrite            overwrite existing files when extracting\n\
-      --overwrite-dir        overwrite directory metadata when extracting\n\
+      --no-overwrite-dir     preserve metadata of existing directories\n\
   -U, --unlink-first         remove each file prior to extracting over it\n\
       --recursive-unlink     empty hierarchies prior to extracting directory\n\
   -S, --sparse               handle sparse files efficiently\n\
@@ -427,6 +436,7 @@ Informative output:\n\
   -v, --verbose         verbosely list files processed\n\
       --checkpoint      print directory names while reading the archive\n\
       --totals          print total bytes written while creating archive\n\
+      --index-file=FILE send verbose output to FILE\n\
   -R, --block-number    show block number within archive with each message\n\
   -w, --interactive     ask for confirmation for every action\n\
       --confirmation    same as -w\n"),
@@ -449,7 +459,7 @@ ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; DATE may be a textual date\n\
 or a file name starting with `/' or `.', in which case the file's date is used.\n\
 *This* `tar' defaults to `-f%s -b%d'.\n"),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
-      fputs (_("\nReport bugs to <bug-tar@gnu.org>.\n"), stdout);
+      printf (_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
     }
   exit (status);
 }
@@ -494,8 +504,9 @@ decode_options (int argc, char **argv)
 {
   int optchar;			/* option letter */
   int input_files;		/* number of input files */
-  const char *backup_suffix_string;
-  const char *version_control_string = 0;
+  char const *textual_date_option = 0;
+  char const *backup_suffix_string;
+  char const *version_control_string = 0;
   int exclude_options = EXCLUDE_WILDCARDS;
 
   /* Set some default option values.  */
@@ -534,7 +545,7 @@ decode_options (int argc, char **argv)
       /* Allocate a new argument array, and copy program name in it.  */
 
       new_argc = argc - 1 + strlen (argv[1]);
-      new_argv = xmalloc (new_argc * sizeof (char *));
+      new_argv = xmalloc ((new_argc + 1) * sizeof (char *));
       in = argv;
       out = new_argv;
       *out++ = *in++;
@@ -561,6 +572,7 @@ decode_options (int argc, char **argv)
 
       while (in < argv + argc)
 	*out++ = *in++;
+      *out = 0;
 
       /* Replace the old option list by the new one.  */
 
@@ -771,6 +783,8 @@ decode_options (int argc, char **argv)
 	    if (newer_mtime_option == (time_t) -1)
 	      WARN ((0, 0, _("Substituting %s for unknown date format %s"),
 		     tartime (newer_mtime_option), quote (optarg)));
+	    else
+	      textual_date_option = optarg;
 	  }
 
 	break;
@@ -897,6 +911,14 @@ decode_options (int argc, char **argv)
 	exclude_options |= EXCLUDE_ANCHORED;
 	break;
 
+      case ATIME_PRESERVE_OPTION:
+	atime_preserve_option = 1;
+	break;
+
+      case CHECKPOINT_OPTION:
+	checkpoint_option = 1;
+	break;
+
       case BACKUP_OPTION:
 	backup_option = 1;
 	if (optarg)
@@ -911,8 +933,20 @@ decode_options (int argc, char **argv)
 	add_exclude (excluded, optarg, exclude_options | recursion_option);
 	break;
 
+      case FORCE_LOCAL_OPTION:
+	force_local_option = 1;
+	break;
+
+      case INDEX_FILE_OPTION:
+	index_file_name = optarg;
+	break;
+
       case IGNORE_CASE_OPTION:
 	exclude_options |= FNM_CASEFOLD;
+	break;
+
+      case IGNORE_FAILED_READ_OPTION:
+	ignore_failed_read_option = 1;
 	break;
 
       case GROUP_OPTION:
@@ -947,6 +981,10 @@ decode_options (int argc, char **argv)
 	exclude_options &= ~ FNM_CASEFOLD;
 	break;
 
+      case NO_OVERWRITE_DIR_OPTION:
+	old_files_option = NO_OVERWRITE_DIR_OLD_FILES;
+	break;
+
       case NO_WILDCARDS_OPTION:
 	exclude_options &= ~ EXCLUDE_WILDCARDS;
 	break;
@@ -959,12 +997,12 @@ decode_options (int argc, char **argv)
 	filename_terminator = '\0';
 	break;
 
-      case OVERWRITE_OPTION:
-	old_files_option = OVERWRITE_OLD_FILES;
+      case NUMERIC_OWNER_OPTION:
+	numeric_owner_option = 1;
 	break;
 
-      case OVERWRITE_DIR_OPTION:
-	old_files_option = OVERWRITE_OLD_DIRS;
+      case OVERWRITE_OPTION:
+	old_files_option = OVERWRITE_OLD_FILES;
 	break;
 
       case OWNER_OPTION:
@@ -1013,6 +1051,14 @@ decode_options (int argc, char **argv)
 			  BLOCKSIZE));
 	  blocking_factor = record_size / BLOCKSIZE;
 	}
+	break;
+
+      case RECURSIVE_UNLINK_OPTION:
+	recursive_unlink_option = 1;
+	break;
+
+      case REMOVE_FILES_OPTION:
+	remove_files_option = 1;
 	break;
 
       case RSH_COMMAND_OPTION:
@@ -1130,8 +1176,8 @@ decode_options (int argc, char **argv)
 
   if (show_version)
     {
-      printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
-      print_copyright ("2001 Free Software Foundation, Inc.");
+      printf ("tar (%s) %s\n", PACKAGE_NAME, PACKAGE_VERSION);
+      printf (_("Copyright (C) %d Free Software Foundation, Inc.\n"), 2003);
       puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
@@ -1253,6 +1299,14 @@ see the file named COPYING for details."));
 
   if (backup_option)
     backup_type = xget_version ("--backup", version_control_string);
+
+  if (verbose_option && textual_date_option)
+    {
+      char const *treated_as = tartime (newer_mtime_option);
+      if (strcmp (textual_date_option, treated_as) != 0)
+	WARN ((0, 0, _("Treating date `%s' as %s"),
+	       textual_date_option, treated_as));
+    }
 }
 
 /* Tar proper.  */
@@ -1325,7 +1379,11 @@ main (int argc, char **argv)
     case EXTRACT_SUBCOMMAND:
       extr_init ();
       read_and (extract_archive);
+
+      /* FIXME: should extract_finish () even if an ordinary signal is
+	 received.  */
       extract_finish ();
+
       break;
 
     case LIST_SUBCOMMAND:
@@ -1346,9 +1404,11 @@ main (int argc, char **argv)
   free (archive_name_array);
   name_term ();
 
-  if (stdlis == stdout && (ferror (stdout) || fclose (stdout) != 0))
+  if (stdlis != stderr && (ferror (stdlis) || fclose (stdlis) != 0))
     FATAL_ERROR ((0, 0, _("Error in writing to standard output")));
   if (exit_status == TAREXIT_FAILURE)
     error (0, 0, _("Error exit delayed from previous errors"));
+  if (ferror (stderr) || fclose (stderr) != 0)
+    exit_status = TAREXIT_FAILURE;
   exit (exit_status);
 }
