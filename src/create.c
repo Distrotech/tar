@@ -318,11 +318,11 @@ badfile:
 				    critical_error = 1;
 				    goto badfile;
 				  }
-  				strncpy(header->header.linkname,
+  				strncpy(header->header.arch_linkname,
 					link_name,NAMSIZ);
 
 				/* Force null truncated */
-				header->header.linkname [NAMSIZ-1] = 0;
+				header->header.arch_linkname [NAMSIZ-1] = 0;
 
 				header->header.linkflag = LF_LINK;
 				finish_header(header);
@@ -621,7 +621,7 @@ badfile:
 		    critical_error = 1;
 		    goto badfile;
 		  }
-		strcpy (header->header.linkname, buf);
+		strcpy (header->header.arch_linkname, buf);
 		header->header.linkflag = LF_SYMLINK;
 		finish_header(header);		/* Nothing more to do to it */
 		if (f_remove_files)
@@ -1199,8 +1199,8 @@ start_header(name, st)
 				msg("Removing leading / from absolute path names in the archive.");
 		}
 	}
-	strncpy(header->header.name, name, NAMSIZ);
-	header->header.name[NAMSIZ-1] = '\0';
+	strncpy(header->header.arch_name, name, NAMSIZ);
+	header->header.arch_name[NAMSIZ-1] = '\0';
 
 	to_oct((long) (st->st_mode & 07777),
 					8,  header->header.mode);
