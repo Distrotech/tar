@@ -1,5 +1,13 @@
 2004-05-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* configure.ac: Fixed prerequisite headers for sys/buf.h
+	(needed on FreeBSD)
+	* src/system.h: Likewise.
+	* tests/after (compare): Fixed argument quoting under eval
+	* tests/before: Quote TAR_ARCHIVE_FORMATS
+
+2004-05-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* NEWS: Updated
 	* README: Updated
 	* PORTS: Updated
