@@ -1,3 +1,36 @@
+2003-08-31  Sergey Poznyakoff 
+
+	Added initial support for POSIX extended and STAR headers
+	(only for listing/extracting).
+	
+	* src/xheader.c: New file.
+	* src/Makefile.am: Added xheader.c
+	* src/tar.h (struct star_header): New datatype
+	(XHDTYPE,XGLTYPE): New defines
+	(enum archive_format:STAR_FORMAT): New member
+	(struct tar_stat_info): New datatype.
+	(union block.star_header): New member.
+	* src/common.h (orig_file_name,current_file_name)
+	(current_trailing_slash,current_link_name): Removed variables.
+	(current_stat_info): New variable
+	(current_stat): Removed
+	(extended_header): New variable
+	(decode_header): Changed prototype.
+	* src/list.c (decode_header): Added initial support for POSIX extended
+	and STAR headers.
+	(skip_member): Check oldgnu_header only if current_format is set
+	to OLDGNU_FORMAT.
+	* src/buffer.c: Use current_stat_info
+	* src/compare.c: Likewise.
+	* src/create.c: Likewise.
+	* src/delete.c: Likewise.
+	* src/incremen.c: Likewise.
+	* src/mangle.c: Likewise.
+	* src/update.c: Likewise.
+	* src/extract.c: Likewise.
+	(make_directories): Improved check for the existence of the directory
+	* src/tar.c (destroy_stat): New function.
+
 2003-08-29  Paul Eggert  <eggert@twinsun.com>
 
 	* NEWS, bootstrap: Drop en_GB locale; it was more trouble than it
