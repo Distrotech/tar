@@ -1276,12 +1276,6 @@ see the file named COPYING for details."));
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
     archive_format = POSIX_FORMAT;
 
-  if (((volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
-       || incremental_option || multi_volume_option || sparse_option)
-      && archive_format != OLDGNU_FORMAT && archive_format != GNU_FORMAT)
-    USAGE_ERROR ((0, 0,
-		  _("GNU features wanted on incompatible archive format")));
-
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
