@@ -746,13 +746,16 @@ stringify_uintmax_t_backwards (uintmax_t o, char *buf)
 static char *
 isotime (const time_t *time)
 {
-  static char buffer[21];
-  struct tm *tm;
+  static char buffer[INT_STRLEN_BOUND (int) + 16];
+  struct tm *tm = localtime (time);
+  if (tm)
+    sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d",
+	     tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
+	     tm->tm_hour, tm->tm_min, tm->tm_sec);
+  else
+    /* Interpose %s between ?? and - to avoid ANSI C trigraph brain damage.  */
+    sprintf (buffer, "????%s-??%s-?? ??:??:??", "", "");
 
-  tm = localtime (time);
-  sprintf (buffer, "%4d-%02d-%02d %02d:%02d:%02d\n",
-	   tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday,
-	   tm->tm_hour, tm->tm_min, tm->tm_sec);
   return buffer;
 }
 
@@ -814,7 +817,7 @@ void
 print_header (void)
 {
   char modes[11];
-  char *timestamp;
+  char const *timestamp;
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
   char *user, *group;
@@ -907,12 +910,20 @@ print_header (void)
 
       longie = current_stat.st_mtime;
 #if USE_OLD_CTIME
-      timestamp = ctime (&longie);
-      timestamp[16] = '\0';
-      timestamp[24] = '\0';
+      {
+	char *ct = ctime (&longie);
+	if (ct)
+	  {
+	    timestamp = ct + 4;
+	    for (ct += 16; ct[4] != '\n'; ct++)
+	      ct[0] = ct[4];
+	    ct[0] = '\0';
+	  }
+	else
+	  timestamp = "??? ?? ??:?? ????";
+      }
 #else
       timestamp = isotime (&longie);
-      timestamp[16] = '\0';
 #endif
 
       /* User and group names.  */
@@ -960,14 +971,8 @@ print_header (void)
       if (pad > ugswidth)
 	ugswidth = pad;
 
-#if USE_OLD_CTIME
-      fprintf (stdlis, "%s %s/%s %*s%s %s %s",
-	       modes, user, group, ugswidth - pad, "",
-	       size, timestamp + 4, timestamp + 20);
-#else
       fprintf (stdlis, "%s %s/%s %*s%s %s",
 	       modes, user, group, ugswidth - pad, "", size, timestamp);
-#endif
 
       name = quote_copy_string (current_file_name);
       if (name)
