@@ -45,7 +45,7 @@ version 1.13.90
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
 ** --block-compress is not needed any longer
-** --block-size superseded by --blocking--factor
+** --block-size superseded by --blocking-factor
 ** --modification-time superseded by --touch
 ** --read-full-blocks superseded by --read-full-records
 ** --record-number superseded by --block-number
