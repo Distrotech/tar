@@ -1,5 +1,10 @@
 GNU tar NEWS - User visible changes.
-Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
+Copyright 1994-1999, 2000 Free Software Foundation, Inc.
+
+version 1.13.17 - Paul Eggert, 2000-01-07.
+
+* `tar --delete -f -' is no longer allowed; it was too buggy.
+* Diagnostic messages have been made more regular and consistent.
 
 version 1.13.16 - Paul Eggert, 1999-12-13.
 
