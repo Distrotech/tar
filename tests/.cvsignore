@@ -2,10 +2,10 @@ Makefile.in
 Makefile
 .deps
 genfile
-tests/atconfig
-tests/atlocal
-tests/testsuite
-tests/genfile.c
-tests/testsuite.dir
-tests/testsuite.log
-tests/package.m4
+atconfig
+atlocal
+testsuite
+genfile.c
+testsuite.dir
+testsuite.log
+package.m4
