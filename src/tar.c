@@ -1340,7 +1340,6 @@ char *file;
 {
 	FILE *fp;
 	char buf[1024];
-	extern char *rindex();
 
 	if(strcmp(file, "-"))
 		fp=fopen(file,"r");
