@@ -39,11 +39,10 @@ time_t time ();
 
 #include <fnmatch.h>
 #include <human.h>
+#include <quotearg.h>
 
 #include "common.h"
 #include "rmt.h"
-
-#define DEBUG_FORK 0		/* if nonzero, childs are born stopped */
 
 #define	PREAD 0			/* read file descriptor from pipe() */
 #define	PWRITE 1		/* write file descriptor from pipe() */
@@ -77,8 +76,8 @@ FILE *stdlis;
 
 static void backspace_output PARAMS ((void));
 static int new_volume PARAMS ((enum access_mode));
-static void write_error PARAMS ((ssize_t));
-static void read_error PARAMS ((void));
+static void archive_write_error PARAMS ((ssize_t));
+static void archive_read_error PARAMS ((void));
 
 #if !MSDOS
 /* Obnoxious test to see if dimwit is trying to dump the archive.  */
@@ -133,22 +132,6 @@ static off_t real_s_totsize;
 static off_t real_s_sizeleft;
 
 /* Functions.  */
-
-#if DEBUG_FORK
-
-static pid_t
-myfork (void)
-{
-  pid_t result = fork ();
-
-  if (result == 0)
-    kill (getpid (), SIGSTOP);
-  return result;
-}
-
-# define fork myfork
-
-#endif /* DEBUG FORK */
 
 void
 print_total_written (void)
@@ -268,7 +251,10 @@ static void
 xclose (int fd)
 {
   if (close (fd) < 0)
-    FATAL_ERROR ((0, errno, _("Cannot close file #%d"), fd));
+    {
+      int e = errno;
+      FATAL_ERROR ((0, e, _("Cannot close file #%d"), fd));
+    }
 }
 
 /*-----------------------------------------------------------------------.
@@ -283,11 +269,17 @@ xdup2 (int from, int into, const char *message)
     {
       int status = close (into);
 
-      if (status < 0 && errno != EBADF)
-	FATAL_ERROR ((0, errno, _("Cannot close descriptor %d"), into));
+      if (status != 0 && errno != EBADF)
+	{
+	  int e = errno;
+	  FATAL_ERROR ((0, e, _("Cannot close file descriptor")));
+	}
       status = dup (from);
       if (status != into)
-	FATAL_ERROR ((0, errno, _("Cannot properly duplicate %s"), message));
+	{
+	  int e = status < 0 ? errno : 0;
+	  FATAL_ERROR ((0, e, _("Cannot properly duplicate %s"), message));
+	}
       xclose (from);
     }
 }
@@ -361,12 +353,8 @@ child_open_for_compress (void)
   int child_pipe[2];
   pid_t grandchild_pid;
 
-  if (pipe (parent_pipe) < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open pipe")));
-
-  child_pid = fork ();
-  if (child_pid < 0)
-    FATAL_ERROR ((0, errno, _("Cannot fork")));
+  xpipe (parent_pipe);
+  child_pid = xfork ();
 
   if (child_pid > 0)
     {
@@ -406,24 +394,19 @@ child_open_for_compress (void)
 
 	  if (backup_option)
 	    undo_last_backup ();
-	  FATAL_ERROR ((0, saved_errno, _("Cannot open archive %s"),
-			archive_name_array[0]));
+	  errno = saved_errno;
+	  open_fatal (archive_name_array[0]);
 	}
       xdup2 (archive, STDOUT_FILENO, _("Archive to stdout"));
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
-      FATAL_ERROR ((0, errno, _("Cannot exec %s"),
-		    use_compress_program_option));
+      exec_fatal (use_compress_program_option);
     }
 
   /* We do need a grandchild tar.  */
 
-  if (pipe (child_pipe) < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open pipe")));
-
-  grandchild_pid = fork ();
-  if (grandchild_pid < 0)
-    FATAL_ERROR ((0, errno, _("Child cannot fork")));
+  xpipe (child_pipe);
+  grandchild_pid = xfork ();
 
   if (grandchild_pid > 0)
     {
@@ -434,8 +417,7 @@ child_open_for_compress (void)
       xclose (child_pipe[PREAD]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
-      FATAL_ERROR ((0, errno, _("Cannot exec %s"),
-		    use_compress_program_option));
+      exec_fatal (use_compress_program_option);
     }
 
   /* The new born grandchild tar is here!  */
@@ -450,10 +432,11 @@ child_open_for_compress (void)
   if (strcmp (archive_name_array[0], "-") == 0)
     archive = STDOUT_FILENO;
   else
-    archive = rmtcreat (archive_name_array[0], MODE_RW, rsh_command_option);
-  if (archive < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
-		  archive_name_array[0]));
+    {
+      archive = rmtcreat (archive_name_array[0], MODE_RW, rsh_command_option);
+      if (archive < 0)
+	open_fatal (archive_name_array[0]);
+    }
 
   /* Let's read out of the stdin pipe and write an archive.  */
 
@@ -479,7 +462,7 @@ child_open_for_compress (void)
 	}
 
       if (status < 0)
-	FATAL_ERROR ((0, errno, _("Cannot read from compression program")));
+	read_fatal (use_compress_program_option);
 
       /* Copy the record.  */
 
@@ -494,7 +477,7 @@ child_open_for_compress (void)
 	      memset (record_start->buffer + length, 0, record_size - length);
 	      status = write_archive_buffer ();
 	      if (status != record_size)
-		write_error (status);
+		archive_write_error (status);
 	    }
 
 	  /* There is nothing else to read, break out.  */
@@ -503,7 +486,7 @@ child_open_for_compress (void)
 
       status = write_archive_buffer ();
       if (status != record_size)
- 	write_error (status);
+ 	archive_write_error (status);
     }
 
 #if 0
@@ -523,12 +506,8 @@ child_open_for_uncompress (void)
   int child_pipe[2];
   pid_t grandchild_pid;
 
-  if (pipe (parent_pipe) < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open pipe")));
-
-  child_pid = fork ();
-  if (child_pid < 0)
-    FATAL_ERROR ((0, errno, _("Cannot fork")));
+  xpipe (parent_pipe);
+  child_pid = xfork ();
 
   if (child_pid > 0)
     {
@@ -561,23 +540,17 @@ child_open_for_uncompress (void)
 
       archive = open (archive_name_array[0], O_RDONLY | O_BINARY, MODE_RW);
       if (archive < 0)
-	FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
-		      archive_name_array[0]));
+	open_fatal (archive_name_array[0]);
       xdup2 (archive, STDIN_FILENO, _("Archive to stdin"));
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
-      FATAL_ERROR ((0, errno, _("Cannot exec %s"),
-		    use_compress_program_option));
+      exec_fatal (use_compress_program_option);
     }
 
   /* We do need a grandchild tar.  */
 
-  if (pipe (child_pipe) < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open pipe")));
-
-  grandchild_pid = fork ();
-  if (grandchild_pid < 0)
-    FATAL_ERROR ((0, errno, _("Child cannot fork")));
+  xpipe (child_pipe);
+  grandchild_pid = xfork ();
 
   if (grandchild_pid > 0)
     {
@@ -587,8 +560,7 @@ child_open_for_uncompress (void)
       xclose (child_pipe[PWRITE]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
-      FATAL_ERROR ((0, errno, _("Cannot exec %s"),
-		    use_compress_program_option));
+      exec_fatal (use_compress_program_option);
     }
 
   /* The new born grandchild tar is here!  */
@@ -606,8 +578,7 @@ child_open_for_uncompress (void)
     archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
 		       MODE_RW, rsh_command_option);
   if (archive < 0)
-    FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
-		  archive_name_array[0]));
+    open_fatal (archive_name_array[0]);
 
   /* Let's read the archive and pipe it into stdout.  */
 
@@ -624,7 +595,7 @@ child_open_for_uncompress (void)
       status = rmtread (archive, record_start->buffer, record_size);
       if (status < 0)
 	{
-	  read_error ();
+	  archive_read_error ();
 	  goto error_loop;
 	}
       if (status == 0)
@@ -636,7 +607,7 @@ child_open_for_uncompress (void)
 	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
 	  status = full_write (STDOUT_FILENO, cursor, count);
 	  if (status < 0)
-	    FATAL_ERROR ((0, errno, _("Cannot write to compression program")));
+	    write_error (use_compress_program_option);
 
 	  if (status != count)
 	    {
@@ -691,7 +662,7 @@ check_label_pattern (union block *label)
 `------------------------------------------------------------------------*/
 
 void
-open_archive (enum access_mode access)
+open_archive (enum access_mode wanted_access)
 {
   int backed_up_flag = 0;
 
@@ -720,6 +691,8 @@ open_archive (enum access_mode access)
 
   if (multi_volume_option)
     {
+      if (verify_option)
+	FATAL_ERROR ((0, 0, _("Cannot verify multi-volume archives")));
       record_start = valloc (record_size + (2 * BLOCKSIZE));
       if (record_start)
 	record_start += 2;
@@ -727,16 +700,13 @@ open_archive (enum access_mode access)
   else
     record_start = valloc (record_size);
   if (!record_start)
-    FATAL_ERROR ((0, 0, _("Could not allocate memory for blocking factor %d"),
+    FATAL_ERROR ((0, 0, _("Cannot allocate memory for blocking factor %d"),
 		  blocking_factor));
 
   current_block = record_start;
   record_end = record_start + blocking_factor;
   /* When updating the archive, we start with reading.  */
-  access_mode = access == ACCESS_UPDATE ? ACCESS_READ : access;
-
-  if (multi_volume_option && verify_option)
-    FATAL_ERROR ((0, 0, _("Cannot verify multi-volume archives")));
+  access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
   if (use_compress_program_option)
     {
@@ -745,7 +715,7 @@ open_archive (enum access_mode access)
       if (verify_option)
 	FATAL_ERROR ((0, 0, _("Cannot verify compressed archives")));
 
-      switch (access)
+      switch (wanted_access)
 	{
 	case ACCESS_READ:
 	  child_open_for_uncompress ();
@@ -760,7 +730,8 @@ open_archive (enum access_mode access)
 	  break;
 	}
 
-      if (access == ACCESS_WRITE && strcmp (archive_name_array[0], "-") == 0)
+      if (wanted_access == ACCESS_WRITE
+	  && strcmp (archive_name_array[0], "-") == 0)
 	stdlis = stderr;
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
@@ -769,7 +740,7 @@ open_archive (enum access_mode access)
       if (verify_option)
 	FATAL_ERROR ((0, 0, _("Cannot verify stdin/stdout archive")));
 
-      switch (access)
+      switch (wanted_access)
 	{
 	case ACCESS_READ:
 	  archive = STDIN_FILENO;
@@ -791,7 +762,7 @@ open_archive (enum access_mode access)
     archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
 		       MODE_RW, rsh_command_option);
   else
-    switch (access)
+    switch (wanted_access)
       {
       case ACCESS_READ:
 	archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
@@ -821,7 +792,8 @@ open_archive (enum access_mode access)
 
       if (backed_up_flag)
 	undo_last_backup ();
-      FATAL_ERROR ((0, saved_errno, "%s", archive_name_array[0]));
+      errno = saved_errno;
+      open_fatal (archive_name_array[0]);
     }
 
 #if !MSDOS
@@ -854,7 +826,7 @@ open_archive (enum access_mode access)
   setmode (archive, O_BINARY);
 #endif
 
-  switch (access)
+  switch (wanted_access)
     {
     case ACCESS_READ:
     case ACCESS_UPDATE:
@@ -866,11 +838,12 @@ open_archive (enum access_mode access)
 	  union block *label = find_next_block ();
 
 	  if (!label)
-	    FATAL_ERROR ((0, 0, _("Archive not labeled to match `%s'"),
-			  volume_label_option));
+	    FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
+			  quote (volume_label_option)));
 	  if (!check_label_pattern (label))
-	    FATAL_ERROR ((0, 0, _("Volume `%s' does not match `%s'"),
-			  label->header.name, volume_label_option));
+	    FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
+			  quote_n (0, label->header.name),
+			  quote_n (1, volume_label_option)));
 	}
       break;
 
@@ -920,7 +893,7 @@ flush_write (void)
   else
     status = write_archive_buffer ();
   if (status != record_size && !multi_volume_option)
-    write_error (status);
+    archive_write_error (status);
 
   if (status > 0)
     bytes_written += status;
@@ -954,7 +927,7 @@ flush_write (void)
 
   /* ENXIO is for the UNIX PC.  */
   if (status < 0 && errno != ENOSPC && errno != EIO && errno != ENXIO)
-    write_error (status);
+    archive_write_error (status);
 
   /* If error indicates a short write, we just move to the next tape.  */
 
@@ -981,7 +954,8 @@ flush_write (void)
   if (volume_label_option)
     {
       memset (record_start, 0, BLOCKSIZE);
-      sprintf (record_start->header.name, "%s Volume %d", volume_label_option, volno);
+      sprintf (record_start->header.name, "%s Volume %d",
+	       volume_label_option, volno);
       TIME_TO_CHARS (start_time, record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
       finish_header (record_start);
@@ -1016,7 +990,7 @@ flush_write (void)
 
   status = write_archive_buffer ();
   if (status != record_size)
-    write_error (status);
+    archive_write_error (status);
 
   bytes_written += status;
 
@@ -1054,7 +1028,7 @@ flush_write (void)
 `---------------------------------------------------------------------*/
 
 static void
-write_error (ssize_t status)
+archive_write_error (ssize_t status)
 {
   int saved_errno = errno;
 
@@ -1064,12 +1038,14 @@ write_error (ssize_t status)
     print_total_written ();
 
   if (status < 0)
-    FATAL_ERROR ((0, saved_errno, _("Cannot write to %s"),
-		  *archive_name_cursor));
+    {
+      errno = saved_errno;
+      write_fatal (*archive_name_cursor);
+    }
   else
     FATAL_ERROR ((0, 0, _("Only wrote %lu of %lu bytes to %s"),
 		  (unsigned long) status, (unsigned long) record_size,
-		  *archive_name_cursor));
+		  quote (*archive_name_cursor)));
 }
 
 /*-------------------------------------------------------------------.
@@ -1078,9 +1054,9 @@ write_error (ssize_t status)
 `-------------------------------------------------------------------*/
 
 static void
-read_error (void)
+archive_read_error (void)
 {
-  ERROR ((0, errno, _("Read error on %s"), *archive_name_cursor));
+  read_error (*archive_name_cursor);
 
   if (record_start_block == 0)
     FATAL_ERROR ((0, 0, _("At beginning of tape, quitting now")));
@@ -1114,9 +1090,11 @@ flush_read (void)
 
   if (write_archive_to_stdout && record_start_block != 0)
     {
+      archive = STDOUT_FILENO;
       status = write_archive_buffer ();
+      archive = STDIN_FILENO;
       if (status != record_size)
-	write_error (status);
+	archive_write_error (status);
     }
   if (multi_volume_option)
     {
@@ -1171,7 +1149,7 @@ flush_read (void)
       status = rmtread (archive, record_start->buffer, record_size);
       if (status < 0)
 	{
-	  read_error ();
+	  archive_read_error ();
 	  goto vol_error;
 	}
       if (status != record_size)
@@ -1185,15 +1163,16 @@ flush_read (void)
 	    {
 	      if (!check_label_pattern (cursor))
 		{
-		  WARN ((0, 0, _("Volume `%s' does not match `%s'"),
-			 cursor->header.name, volume_label_option));
+		  WARN ((0, 0, _("Volume %s does not match %s"),
+			 quote_n (0, cursor->header.name),
+			 quote_n (1, volume_label_option)));
 		  volno--;
 		  global_volno--;
 		  goto try_volume;
 		}
 	    }
 	  if (verbose_option)
-	    fprintf (stdlis, _("Reading %s\n"), cursor->header.name);
+	    fprintf (stdlis, _("Reading %s\n"), quote (cursor->header.name));
 	  cursor++;
 	}
       else if (volume_label_option)
@@ -1206,7 +1185,7 @@ flush_read (void)
 	      || strcmp (cursor->header.name, real_s_name))
 	    {
 	      WARN ((0, 0, _("%s is not continued on this volume"),
-		     real_s_name));
+		     quote (real_s_name)));
 	      volno--;
 	      global_volno--;
 	      goto try_volume;
@@ -1220,7 +1199,7 @@ flush_read (void)
 	      char s2buf[UINTMAX_STRSIZE_BOUND];
 	      
 	      WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
-		     cursor->header.name,
+		     quote (cursor->header.name),
 		     STRINGIFY_BIGINT (save_totsize, totsizebuf),
 		     STRINGIFY_BIGINT (s1, s1buf),
 		     STRINGIFY_BIGINT (s2, s2buf)));
@@ -1243,7 +1222,7 @@ flush_read (void)
     }
   else if (status < 0)
     {
-      read_error ();
+      archive_read_error ();
       goto error_loop;		/* try again */
     }
 
@@ -1254,7 +1233,7 @@ flush_read (void)
   while (left % BLOCKSIZE != 0)
     {
       while ((status = rmtread (archive, more, left)) < 0)
-	read_error ();
+	archive_read_error ();
 
       if (status == 0)
 	{
@@ -1305,8 +1284,11 @@ flush_archive (void)
 	  int status = rmtclose (archive);
 
 	  if (status < 0)
-	    WARN ((0, errno, _("WARNING: Cannot close %s (%d, %d)"),
-		   *archive_name_cursor, archive, status));
+	    {
+	      int e = errno;
+	      WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
+		     quotearg_colon (*archive_name_cursor), archive, status));
+	    }
 
 	  archive = file_to_switch_to;
 	}
@@ -1362,7 +1344,7 @@ backspace_output (void)
 	/* Lseek failed.  Try a different method.  */
 
 	WARN ((0, 0,
-	       _("Could not backspace archive file; it may be unreadable without -i")));
+	       _("Cannot backspace archive file; it may be unreadable without -i")));
 
 	/* Replace the first part of the record with NULs.  */
 
@@ -1406,8 +1388,7 @@ close_archive (void)
       int status = pos < 0 ? -1 : ftruncate (archive, pos);
 #endif
       if (status != 0)
-	WARN ((0, errno, _("WARNING: Cannot truncate %s"),
-	       *archive_name_cursor));
+	truncate_warn (*archive_name_cursor);
     }
   if (verify_option)
     verify_volume ();
@@ -1416,8 +1397,11 @@ close_archive (void)
     int status = rmtclose (archive);
 
     if (status < 0)
-      WARN ((0, errno, _("WARNING: Cannot close %s (%d, %d)"),
-	     *archive_name_cursor, archive, status));
+      {
+	int e = errno;
+	WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
+	       quotearg_colon (*archive_name_cursor), archive, status));
+      }
   }
 
 #if !MSDOS
@@ -1429,7 +1413,7 @@ close_archive (void)
       while (waitpid (child_pid, &wait_status, 0) == -1)
 	if (errno != EINTR)
 	  {
-	    ERROR ((0, errno, _("While waiting for child")));
+	    waitpid_error (use_compress_program_option);
 	    break;
 	  }
 
@@ -1475,11 +1459,13 @@ init_volume_number (void)
   if (file)
     {
       fscanf (file, "%d", &global_volno);
-      if (fclose (file) == EOF)
-	ERROR ((0, errno, "%s", volno_file_option));
+      if (ferror (file))
+	read_error (volno_file_option);
+      if (fclose (file) != 0)
+	close_error (volno_file_option);
     }
   else if (errno != ENOENT)
-    ERROR ((0, errno, "%s", volno_file_option));
+    open_error (volno_file_option);
 }
 
 /*-------------------------------------------------------.
@@ -1494,11 +1480,13 @@ closeout_volume_number (void)
   if (file)
     {
       fprintf (file, "%d\n", global_volno);
-      if (fclose (file) == EOF)
-	ERROR ((0, errno, "%s", volno_file_option));
+      if (ferror (file))
+	write_error (volno_file_option);
+      if (fclose (file) != 0)
+	close_error (volno_file_option);
     }
   else
-    ERROR ((0, errno, "%s", volno_file_option));
+    open_error (volno_file_option);
 }
 
 /*-----------------------------------------------------------------------.
@@ -1524,8 +1512,11 @@ new_volume (enum access_mode access)
     verify_volume ();
 
   if (status = rmtclose (archive), status < 0)
-    WARN ((0, errno, _("WARNING: Cannot close %s (%d, %d)"),
-	   *archive_name_cursor, archive, status));
+    {
+      int e = errno;
+      WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
+	     quotearg_colon (*archive_name_cursor), archive, status));
+    }
 
   global_volno++;
   volno++;
@@ -1555,7 +1546,7 @@ new_volume (enum access_mode access)
 	    fputc ('\007', stderr);
 	    fprintf (stderr,
 		     _("Prepare volume #%d for %s and hit return: "),
-		     global_volno, *archive_name_cursor);
+		     global_volno, quote (*archive_name_cursor));
 	    fflush (stderr);
 
 	    if (fgets (input_buffer, sizeof input_buffer, read_file) == 0)
@@ -1567,8 +1558,7 @@ new_volume (enum access_mode access)
 		    && subcommand_option != DIFF_SUBCOMMAND)
 		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
-		apply_delayed_set_stat ();
-		exit (TAREXIT_FAILURE);
+		fatal_exit ();
 	      }
 	    if (input_buffer[0] == '\n'
 		|| input_buffer[0] == 'y'
@@ -1597,8 +1587,7 @@ new_volume (enum access_mode access)
 		    && subcommand_option != DIFF_SUBCOMMAND)
 		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
-		apply_delayed_set_stat ();
-		exit (TAREXIT_FAILURE);
+		fatal_exit ();
 
 	      case 'n':
 		/* Get new file name.  */
@@ -1624,36 +1613,25 @@ new_volume (enum access_mode access)
 		spawnl (P_WAIT, getenv ("COMSPEC"), "-", 0);
 #else /* not MSDOS */
 		{
-		  pid_t child = fork ();
-		  switch (child)
+		  pid_t child;
+		  const char *shell = getenv ("SHELL");
+		  if (! shell)
+		    shell = "/bin/sh";
+		  child = xfork ();
+		  if (child == 0)
 		    {
-		    case -1:
-		      WARN ((0, errno, _("Cannot fork!")));
-		      break;
-
-		    case 0:
-		      {
-			const char *shell = getenv ("SHELL");
-			
-			if (! shell)
-			  shell = "/bin/sh";
-			execlp (shell, "-sh", "-i", 0);
-			FATAL_ERROR ((0, errno, _("Cannot exec a shell %s"),
-				      shell));
-		      }
-
-		    default:
-		      {
-			int wait_status;
-			while (waitpid (child, &wait_status, 0) == -1)
-			  if (errno != EINTR)
-			    {
-			      ERROR ((0, errno,
-				      _("While waiting for child")));
-			      break;
-			    }
-		      }
-		      break;
+		      execlp (shell, "-sh", "-i", 0);
+		      exec_fatal (shell);
+		    }
+		  else
+		    {
+		      int wait_status;
+		      while (waitpid (child, &wait_status, 0) == -1)
+			if (errno != EINTR)
+			  {
+			    waitpid_error (shell);
+			    break;
+			  }
 		    }
 		}
 #endif /* not MSDOS */
@@ -1688,7 +1666,7 @@ new_volume (enum access_mode access)
 
   if (archive < 0)
     {
-      WARN ((0, errno, _("Cannot open %s"), *archive_name_cursor));
+      open_warn (*archive_name_cursor);
       if (!verify_option && access == ACCESS_WRITE && backup_option)
 	undo_last_backup ();
       goto tryagain;
