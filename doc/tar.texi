@@ -3934,13 +3934,10 @@ is the @samp{--update} operation; you can use this to add newer
 versions of archive members to an existing archive.  To learn how to
 do this with @samp{--update}, @pxref{update}.)
 
-@FIXME{Explain in second paragraph whether you can get to the previous
-version -- explain whole situation somewhat more clearly.}
-
 If you use @value{op-append} to add a file that has the same name as an
 archive member to an archive containing that archive member, then the
 old member is not deleted.  What does happen, however, is somewhat
-complex.  @command{tar} @emph{allows} you to have infinite numbers of files
+complex.  @command{tar} @emph{allows} you to have infinite number of files
 with the same name.  Some operations treat these same-named members no
 differently than any other set of archive members: for example, if you
 view an archive with @value{op-list}, you will see all of those members
@@ -3954,14 +3951,33 @@ other members would end up in the working directory.  This is because
 in the archive; the most recently archived members will be extracted
 last.  Additionally, an extracted member will @emph{replace} a file of
 the same name which existed in the directory already, and @command{tar}
-will not prompt you about this.  Thus, only the most recently archived
+will not prompt you about this@footnote{Unless you give it
+@option{--keep-old-files} option, or the disk copy is newer than the
+the one in the archive and you invoke @command{tar} with
+@option{--keep-newer-files} option}.  Thus, only the most recently archived
 member will end up being extracted, as it will replace the one
 extracted before it, and so on.
 
-@FIXME{ hag -- you might want to incorporate some of the above into the
-MMwtSN node; not sure.  i didn't know how to make it simpler...}
+There exists a special option that allows you to get around this
+behavior and extract (or list) only a particular copy of the file.
+This is @option{--occurrence} option. If you run @command{tar} with
+this option, it will extract only the first copy of the file. You
+may also give this option an argument specifying the number of 
+copy to be extracted. Thus, for example if the archive
+@file{archive.tar} contained three copies of file @file{myfile}, then
+the command
 
-There are a few ways to get around this.  @FIXME-xref{Multiple Members
+@smallexample
+tar --extract --file archive.tar --occurrence=2 myfile
+@end smallexample
+
+@noindent
+would extract only the second copy. @xref{Option Summary,---occurrence}, for the description of @value{op-occurrence} option.
+
+@FIXME{ hag -- you might want to incorporate some of the above into the
+MMwtSN node; not sure.  i didn't know how to make it simpler...
+
+There are a few ways to get around this.  (maybe xref Multiple Members
 with the Same Name.}
 
 @cindex Members, replacing with other members
@@ -4085,10 +4101,20 @@ The newest version of @file{blues} is now at the end of the archive
 (note the different creation dates and file sizes).  If you extract
 the archive, the older version of the file @file{blues} will be
 replaced by the newer version.  You can confirm this by extracting
-the archive and running @samp{ls} on the directory.  @xref{Writing},
-for more information.  (@emph{Please note:} This is the case unless
-you employ the @value{op-backup} option. @FIXME-ref{Multiple Members
-with the Same Name}.)
+the archive and running @samp{ls} on the directory.
+
+If you wish to extract the first occurrence of the file @file{blues}
+from the archive, use @value{op-occurrence} option, as shown in
+the following example:
+
+@smallexample
+$ @kbd{tar --extract -vv --occurrence --file=collection.tar blues}
+-rw-rw-rw- me user     21 1996-09-23 16:44 blues
+@end smallexample
+
+@xref{Writing}, for more information on @value{op-extract} and
+@xref{Option Summary, --occurrence}, for the description of
+@value{op-occurrence} option.
 
 @node update
 @subsection Updating an Archive
