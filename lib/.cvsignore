@@ -17,6 +17,7 @@ error.c
 error.h
 exclude.c
 exclude.h
+exit.h
 exitfail.c
 exitfail.h
 fileblocks.c
@@ -77,6 +78,8 @@ strtoll.c
 strtoul.c
 strtoull.c
 strtoumax.c
+time_r.c
+time_r.h
 unlocked-io.h
 utime.c
 xalloc.h
