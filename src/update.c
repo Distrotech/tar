@@ -135,14 +135,16 @@ update_archive()
 		case 1:
  /* printf("File %s\n",head->header.name); */
 			/* head->header.name[NAMSIZ-1]='\0'; */
-			if(cmd_mode==CMD_UPDATE && (name=name_scan(head->header.name))) {
+			if(cmd_mode==CMD_UPDATE && (name=name_scan(current_file_name)))
+			  {
+			    
 				/* struct stat hstat; */
 				struct stat nstat;
 				int head_standard;
 
 				decode_header(head,&hstat,&head_standard,0);
-				if(stat(head->header.name,&nstat)<0) {
-					msg_perror("can't stat %s:",head->header.name);
+				if(stat(current_file_name,&nstat)<0) {
+					msg_perror("can't stat %s:",current_file_name);
 				} else {
 					if(hstat.st_mtime>=nstat.st_mtime)
 						name->found++;
@@ -314,7 +316,7 @@ junk_archive()
 		case 1:
 			/* head->header.name[NAMSIZ-1] = '\0'; */
  /* fprintf(stderr,"file %s\n",head->header.name); */
-			if((name=name_scan(head->header.name))==(struct name *)0) {
+			if((name=name_scan(current_file_name))==(struct name *)0) {
 				userec(head);
  /* fprintf(stderr,"Skip %ld\n",(long)(hstat.st_size)); */
  				if (head->header.isextended)
@@ -395,7 +397,7 @@ junk_archive()
 		/* Found another header.  Yipee! */
 		/* head->header.name[NAMSIZ-1] = '\0'; */
  /* fprintf(stderr,"File %s ",head->header.name); */
-		if(name=name_scan(head->header.name)) {
+		if(name=name_scan(current_file_name)) {
 			name->found = 1;
  /* fprintf(stderr,"Flush it\n"); */
 		/* flush_file: */
