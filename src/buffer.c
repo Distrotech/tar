@@ -1259,7 +1259,6 @@ int	type;
 	static FILE *read_file = 0;
 	extern int now_verifying;
 	extern char TTY_NAME[];
-	char *getenv();
 	static int looped = 0;
 
 	if(!read_file && !f_run_script_at_end)
