@@ -309,7 +309,7 @@ badfile:
 					link_name++;
 				}
 				if (link_name - lp->name >= NAMSIZ)
-				  write_longlink (link_name);
+				  write_long (link_name, LF_LONGLINK);
 
 				hstat.st_size = 0;
 				header = start_header(p, &hstat);
@@ -320,14 +320,10 @@ badfile:
 				  }
   				strncpy(header->header.linkname,
 					link_name,NAMSIZ);
-				if(header->header.linkname[NAMSIZ-1]) {
-					char *mangled;
-					extern char *find_mangled();
 
-					mangled=find_mangled(link_name);
-					msg("%s: link name too long: mangled to %s",link_name,mangled);
-					strncpy(header->header.linkname,mangled,NAMSIZ);
-				}
+				/* Force null truncated */
+				header->header.linkname [NAMSIZ-1] = 0;
+
 				header->header.linkflag = LF_LINK;
 				finish_header(header);
 		/* FIXME: Maybe remove from list after all links found? */
@@ -606,7 +602,18 @@ badfile:
 	else if(S_ISLNK(hstat.st_mode))
 	{
 		int size;
+		char *buf = alloca (PATH_MAX + 1);
 
+		size = readlink (p, buf, PATH_MAX + 1);
+		if (size < 0) 
+		  goto badperror;
+		buf[size] = '\0';
+		if (size >= NAMSIZ)
+		  write_long (buf, LF_LONGLINK);
+
+		buf[NAMSIZ - 1] = '\0';
+		if (size >= NAMSIZ)
+		  size = NAMSIZ - 1;
 		hstat.st_size = 0;		/* Force 0 size on symlink */
 		header = start_header(p, &hstat);
 		if (header == NULL) 
@@ -614,19 +621,7 @@ badfile:
 		    critical_error = 1;
 		    goto badfile;
 		  }
-		size = readlink(p, header->header.linkname, NAMSIZ);
-		if (size < 0) goto badperror;
-		if (size == NAMSIZ) {
-			char *buf = ck_malloc(PATH_MAX);
-
-			readlink(p,buf,PATH_MAX);
-			/* next_mangle(header->header.linkname); */
-			add_symlink_mangle(buf,p,header->header.linkname);
-			msg("symbolic link %s too long: mangling to %s",p, header->header.linkname);
-			/* size=strlen(header->header.linkname); */
-			free(buf);
-		} else
-			header->header.linkname[size] = '\0';
+		strcpy (header->header.linkname, buf);
 		header->header.linkflag = LF_SYMLINK;
 		finish_header(header);		/* Nothing more to do to it */
 		if (f_remove_files)
@@ -1180,6 +1175,9 @@ start_header(name, st)
 {
 	register union record *header;
 
+	if (strlen (name) >= NAMSIZ)
+	  write_long (name, LF_LONGNAME);
+
 	header = (union record *) findrec();
 	bzero(header->charptr, sizeof(*header)); /* XXX speed up */
 
@@ -1202,13 +1200,7 @@ start_header(name, st)
 		}
 	}
 	strncpy(header->header.name, name, NAMSIZ);
-	if (header->header.name[NAMSIZ-1]) {
-/*		char *mangled;*/
-
-		/* next_mangle(header->header.name); */
-		add_mangle(name,header->header.name);
-		msg("%s: is too long: mangling to %s", name, header->header.name);
-	}
+	header->header.name[NAMSIZE-1] = '\0';
 
 	to_oct((long) (st->st_mode & 07777),
 					8,  header->header.mode);
@@ -1346,11 +1338,35 @@ write_eot()
 
 /* Write a LF_LONGLINK or LF_LONGNAME record. */
 void
-write_long (p)
+write_long (p, type)
+     char *p;
+     char type;
 {
+  int size = strlen (p) + 1;
+  int bufsize;
+  union record *header;
+  
   /* Link name won't fit, so we write
      an LF_LONGLINK record. */
-  hstat.st_size = strlen (link_name) + 1;
+  hstat.st_size = size;
   header = start_header ("././@LongLink", &hstat);
-  header->header.linkflag = LF_NAMES;
+  header->header.linkflag = type;
   finish_header (header);
+
+  header = findrec ();
+  
+  bufsize = endofrecs ()->charptr - header->charptr;
+  
+  while (bufsize < size)
+    {
+      bcopy (p, header->charptr, bufsize);
+      p += bufsize;
+      size -= bufsize;
+      userec (header + (bufsize - 1)/RECORDSIZE);
+      header = findrec ();
+      bufsize = endofrecs ()->charptr - header->charptr;
+    }
+  bcopy (p, header->charptr, size);
+  bzero (header->charptr + size, bufsize - size);
+  userec (header + (size - 1)/RECORDSIZE);
+}
