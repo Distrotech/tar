@@ -35,6 +35,7 @@ exitfail.h
 fchown-stub.c
 fileblocks.c
 fnmatch.c
+fnmatch.h
 fnmatch_.h
 fnmatch_loop.c
 ftruncate.c
@@ -50,6 +51,7 @@ getndelim2.h
 getopt.c
 getopt.h
 getopt1.c
+getopt_.h
 getopt_int.h
 getpagesize.h
 gettext.h
@@ -103,6 +105,7 @@ strtoll.c
 strtoul.c
 strtoull.c
 strtoumax.c
+sysexit.h
 sysexit_.h
 sysexits.h
 time_r.c
@@ -110,6 +113,7 @@ time_r.h
 timespec.h
 unlocked-io.h
 utime.c
+xalloc-die.c
 xalloc.h
 xgetcwd.c
 xgetcwd.h
