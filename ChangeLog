@@ -1,3 +1,21 @@
+2005-03-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (print_header): Print UID/GID in case of
+	empty user/group name. This could occur when dumping
+	files belonging to non-existing users and when listing
+	broken archives.
+	Reported by Igor Lautar.
+
+	* src/create.c: Correctly parse empty uname/gname
+	* src/sparse.c (sparse_scan_file): Bugfix. offset had
+	incorrect type.
+
+	* scripts/backup.in: Use `head -n 1'. Provide missing
+	argument to ${MT_STATUS}. Proposed by Jan Merka.
+	* scripts/backup.sh.in: Likewise. Fixed typo in
+	MT_OFFLINE assignment.
+	* scripts/restore.in (restore_fs): Use root_fs
+	
 2005-02-15  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c: Replace strdup with xstrdup
