@@ -99,9 +99,6 @@ libtar_a_SOURCES += lchown.h
 # modechange
 libtar_a_SOURCES += modechange.h modechange.c
 
-# obstack
-libtar_a_SOURCES += obstack.h obstack.c
-
 # pathmax
 libtar_a_SOURCES += pathmax.h
 
