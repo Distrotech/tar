@@ -784,7 +784,7 @@ Attempting extraction of symbolic links as hard links")));
       current_stat.st_mode |= S_IFBLK;
 #endif
 
-#if defined(S_IFCHR) || defined(S_IFBLK)
+#if S_IFCHR || S_IFBLK
     make_node:
       if (to_stdout_option)
 	break;
