@@ -454,6 +454,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	  return 0;
 
 	case DEFAULT_OLD_FILES:
+	case OVERWRITE_OLD_DIRS:
 	case OVERWRITE_OLD_FILES:
 	  {
 	    int r = remove_any_file (file_name, 0);
