@@ -1,3 +1,15 @@
+2003-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+        * src/create.c (start_header): Store long file names
+        in "path" keyword of an extended header if in POSIX
+        mode.
+        (finish_header): print header before calling write_extended().
+        * src/list.c (list_archive): Always decode the header. This
+        is necessary so the extended header is processed and the correct
+        filename is printed no matter what the state of verbose_option.
+        * src/xheader.c (xhdr_tab): Reserved GNU keywords (commented out
+        for the time being).
+
 2003-09-01  Paul Eggert  <eggert@twinsun.com>
 
 	Update from gnulib, and correct fnmatch to fnmatch-gnu.
