@@ -75,6 +75,8 @@ extern void diff_archive ();
 extern void create_archive ();
 extern void update_archive ();
 extern void junk_archive ();
+extern void init_volume_number ();
+extern void closeout_volume_number ();
 
 /* JF */
 extern time_t get_date ();
