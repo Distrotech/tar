@@ -1,5 +1,7 @@
 /* Remote connection server.
-   Copyright 1994,95,96,97,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -290,12 +292,19 @@ main (int argc, char *const *argv)
       usage (EXIT_SUCCESS);
       
     case 'v':
-      printf ("rmt (GNU %s) %s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 2001 Free Software Foundation, Inc.",
-	      _("\
+      printf ("rmt (GNU %s) %s\n", PACKAGE, VERSION);
+
+      /* Note to translator: Please translate "Copyright " to "©"
+	 (C-in-a-circle) if available in the translation's character
+	 set and encoding.  */
+      printf (_("Copyright %d Free Software Foundation, Inc."), 2001);
+      printf ("\n");
+
+      puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
 see the file named COPYING for details."));
+
       return EXIT_SUCCESS;
 
     case -1:
@@ -569,3 +578,9 @@ ioerror:
   report_numbered_error (errno);
   goto top;
 }
+
+/*
+  Local Variables:
+  coding: iso-latin-1
+  End:
+*/
