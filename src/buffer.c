@@ -597,10 +597,10 @@ open_archive(reading)
 				msg("Archive not labelled to match %s",f_volhdr);
 				exit(EX_BADVOL);
 			}
-			if (re_match (label_pattern, head->header.name,
-				      strlen (head->header.name), 0, 0) < 0) {
+			if (re_match (label_pattern, head->header.arch_name,
+				      strlen (head->header.arch_name), 0, 0) < 0) {
 				msg ("Volume mismatch!  %s!=%s", f_volhdr,
-				     head->header.name);
+				     head->header.arch_name);
 				exit (EX_BADVOL);
 			}
 #if 0			
@@ -615,9 +615,9 @@ open_archive(reading)
 	} else if(f_volhdr) {
 		bzero((void *)ar_block,RECORDSIZE);
 		if(f_multivol)
-			sprintf(ar_block->header.name,"%s Volume 1",f_volhdr);
+			sprintf(ar_block->header.arch_name,"%s Volume 1",f_volhdr);
 		else
-			strcpy(ar_block->header.name,f_volhdr);
+			strcpy(ar_block->header.arch_name,f_volhdr);
 		ar_block->header.linkflag = LF_VOLHDR;
 		to_oct(time(0),	1+12, ar_block->header.mtime);
 		finish_header(ar_block);
@@ -721,7 +721,7 @@ fl_write()
 		copy_back = 0;
 	if(f_volhdr) {
 		bzero((void *)ar_block,RECORDSIZE);
-		sprintf(ar_block->header.name,"%s Volume %d",f_volhdr,volno);
+		sprintf(ar_block->header.arch_name,"%s Volume %d",f_volhdr,volno);
 		to_oct(time(0),	1+12, ar_block->header.mtime);
 		ar_block->header.linkflag = LF_VOLHDR;
 		finish_header(ar_block);
@@ -732,7 +732,7 @@ fl_write()
 		if(f_volhdr)
 			ar_block++;
 		bzero((void *)ar_block,RECORDSIZE);
-		strcpy(ar_block->header.name,real_s_name);
+		strcpy(ar_block->header.arch_name,real_s_name);
 		ar_block->header.linkflag = LF_MULTIVOL;
 		to_oct((long)real_s_sizeleft,1+12,
 		       ar_block->header.size);
@@ -919,11 +919,11 @@ error_loop:
 				ptr=(char *)malloc(strlen(f_volhdr)+20);
 				sprintf(ptr,"%s Volume %d",f_volhdr,volno);
 #endif
-				if (re_match (label_pattern, head->header.name,
-					      strlen (head->header.name),
+				if (re_match (label_pattern, head->header.arch_name,
+					      strlen (head->header.arch_name),
 					      0, 0) < 0) {
 					msg("Volume mismatch! %s!=%s",f_volhdr,
-					    head->header.name);
+					    head->header.arch_name);
 					--volno;
 					--global_volno;
 					goto try_volume;
@@ -941,7 +941,7 @@ error_loop:
 #endif
 			}
 			if(f_verbose)
-				fprintf(msg_file,"Reading %s\n",head->header.name);
+				fprintf(msg_file,"Reading %s\n",head->header.arch_name);
 			head++;
 		} else if(f_volhdr) {
 			msg("Warning:  No volume header!");
@@ -950,7 +950,7 @@ error_loop:
 		if(real_s_name[0]) {
 			long from_oct();
 
-			if(head->header.linkflag!=LF_MULTIVOL || strcmp(head->header.name,real_s_name)) {
+			if(head->header.linkflag!=LF_MULTIVOL || strcmp(head->header.arch_name,real_s_name)) {
 				msg("%s is not continued on this volume!",real_s_name);
 				--volno;
 				--global_volno;
@@ -958,7 +958,7 @@ error_loop:
 			}
 			if(real_s_totsize!=from_oct(1+12,head->header.size)+from_oct(1+12,head->header.offset)) {
 				msg("%s is the wrong size (%ld!=%ld+%ld)",
-				       head->header.name,save_totsize,
+				       head->header.arch_name,save_totsize,
 				       from_oct(1+12,head->header.size),
 				       from_oct(1+12,head->header.offset));
 				--volno;
