@@ -355,6 +355,7 @@
 @set op-format-gnu @kbd{--format=gnu}
 @set op-format-oldgnu @kbd{--format=oldgnu}
 @set op-format-posix @kbd{--format=posix}
+@set op-format-ustar @kbd{--format=ustar}
 
 @set op-posix @kbd{--posix}
 @set ref-posix @ref{posix}
@@ -2753,18 +2754,20 @@ following:
 
 @table @samp
 @item v7
-Tells @command{tar} to create an archive that is compatible with Unix V7
-@command{tar}.
+Creates an archive that is compatible with Unix V7 @command{tar}.
 
 @item oldgnu
-Tells @command{tar} to create an archive that is compatible with GNU
-@command{tar} version 1.12 or earlier.
+Creates an archive that is compatible with GNU @command{tar} version
+1.12 or earlier.
+
+@item ustar
+Creates a POSIX.1-1988 compatible archive.
 
 @item posix
-Tells @command{tar} to create POSIX.1-2001 archive.
+Creates a POSIX.1-2001 archive.
 
 @item gnu
-Tells @command{tar} to create archive in GNU format.
+Creates archive in GNU format.
 @end table
 
 @item --group=@var{group}
