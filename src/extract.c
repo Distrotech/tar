@@ -684,6 +684,15 @@ extract_file (char *file_name, int typeflag)
 
   if (to_stdout_option)
     fd = STDOUT_FILENO;
+  else if (to_command_option)
+    {
+      fd = sys_exec_command (file_name, 'f', &current_stat_info);
+      if (fd < 0)
+	{
+	  skip_member ();
+	  return 0;
+	}
+    }
   else
     {
       do
@@ -726,14 +735,15 @@ extract_file (char *file_name, int typeflag)
 	  written = size;
 	errno = 0;
 	count = full_write (fd, data_block->buffer, written);
-	size -= count;
+	size -= written;
 	
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
 	if (count != written)
 	  {
-	    write_error_details (file_name, count, written); /* FIXME: shouldn't we
-								restore from backup? */
+	    if (!to_command_option)
+	      write_error_details (file_name, count, written);
+	    /* FIXME: shouldn't we restore from backup? */
 	    break;
 	  }
       }
@@ -753,10 +763,13 @@ extract_file (char *file_name, int typeflag)
   if (status < 0)
     close_error (file_name);
 
-  set_stat (file_name, &current_stat_info.stat, 0, 0,
-	    (old_files_option == OVERWRITE_OLD_FILES ?
-	          UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
-	    typeflag);
+  if (to_command_option)
+    sys_wait_command ();
+  else
+    set_stat (file_name, &current_stat_info.stat, 0, 0,
+	      (old_files_option == OVERWRITE_OLD_FILES ?
+	       UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
+	      typeflag);
 
   return status;
 }  
@@ -968,6 +981,8 @@ typedef int (*tar_extractor_t) (char *file_name, int typeflag);
 
 
 
+#define EXTRACT_OVER_PIPE (to_stdout_option || to_command_option)
+
 /* Prepare to extract a file. Find extractor function.
    Return zero if extraction should not proceed.  */
 
@@ -976,7 +991,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
 {
   int rc = 1;
   
-  if (to_stdout_option)
+  if (EXTRACT_OVER_PIPE)
     rc = 0;
 
   /* Select the extractor */
@@ -1134,7 +1149,7 @@ extract_archive (void)
 
   /* Take a safety backup of a previously existing file.  */
 
-  if (backup_option && !to_stdout_option)
+  if (backup_option && ! EXTRACT_OVER_PIPE)
     if (!maybe_backup_file (file_name, 0))
       {
 	int e = errno;
