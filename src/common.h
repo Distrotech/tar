@@ -251,9 +251,9 @@ GLOBAL int same_owner_option;
 /* If positive, preserve permissions when extracting.  */
 GLOBAL int same_permissions_option;
 
-/* When set, strip the given number of path elements from the file name
+/* When set, strip the given number of file name components from the file name
    before extracting */
-GLOBAL size_t strip_path_elements;
+GLOBAL size_t strip_name_components;
 
 GLOBAL bool show_omitted_dirs_option;
 

@@ -618,9 +618,9 @@ extract_archive (void)
     print_header (&current_stat_info, -1);
 
   file_name = safer_name_suffix (current_stat_info.file_name, false);
-  if (strip_path_elements)
+  if (strip_name_components)
     {
-      size_t prefix_len = stripped_prefix_len (file_name, strip_path_elements);
+      size_t prefix_len = stripped_prefix_len (file_name, strip_name_components);
       if (prefix_len == (size_t) -1)
 	{
 	  skip_member ();
