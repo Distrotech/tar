@@ -38,11 +38,8 @@ int time_to_start_writing;
    first part of the record.  */
 char *output_start;
 
-/*------------------------------------------------------------------------.
-| Catenate file PATH to the archive without creating a header for it.  It |
-| had better be a tar file or the archive is screwed.			  |
-`------------------------------------------------------------------------*/
-
+/* Catenate file PATH to the archive without creating a header for it.
+   It had better be a tar file or the archive is screwed.  */
 static void
 append_file (char *path)
 {
@@ -95,12 +92,9 @@ append_file (char *path)
     close_error (path);
 }
 
-/*-----------------------------------------------------------------------.
-| Implement the 'r' (add files to end of archive), and 'u' (add files to |
-| end of archive if they arent there, or are more up to date than the	 |
-| version in the archive.) commands.					 |
-`-----------------------------------------------------------------------*/
-
+/* Implement the 'r' (add files to end of archive), and 'u' (add files
+   to end of archive if they aren't there, or are more up to date than
+   the version in the archive) commands.  */
 void
 update_archive (void)
 {
@@ -135,10 +129,7 @@ update_archive (void)
 		    && s.st_mtime <= current_stat.st_mtime)
 		  add_avoided_name (current_file_name);
 	      }
-	    set_next_block_after (current_header);
-	    if (current_header->oldgnu_header.isextended)
-	      skip_extended_headers ();
-	    skip_file (current_stat.st_size);
+	    skip_member ();
 	    break;
 	  }
 
