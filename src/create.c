@@ -410,7 +410,6 @@ write_extended (union block *old_header, char type)
   union block *header, hp;
   struct tar_stat_info foo;
   size_t size;
-  size_t bufsize;
   char *p;
 
   if (extended_header.buffer || extended_header.stk == NULL)
