@@ -109,7 +109,7 @@ $(PROJECT).pdf: $(PROJECT).dvi
 text: $(PROJECT).text
 
 $(PROJECT).text: Makefile $(PROJECT).info
-	$(INFO) --node=Top --subnodes --out $(PROJECT).text -f $(PROJECT).info
+	$(INFO) --node=Top --subnodes --out $(PROJECT).text -f ./$(PROJECT).info
 
 $(PROJECT).info.tar.gz: Makefile
 	rm -f $(PROJECT).info.tar.gz
