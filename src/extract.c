@@ -972,15 +972,19 @@ extract_archive (void)
 		  && (base_name (CURRENT_FILE_NAME)
 		      == CURRENT_FILE_NAME + h->file_name_len + 1))
 		{
-		  h->after_symlinks = 1;
-
-		  if (stat (h->file_name, &st) != 0)
-		    stat_error (h->file_name);
-		  else
+		  do
 		    {
-		      h->stat_info.st_dev = st.st_dev;
-		      h->stat_info.st_ino = st.st_ino;
+		      h->after_symlinks = 1;
+
+		      if (stat (h->file_name, &st) != 0)
+			stat_error (h->file_name);
+		      else
+			{
+			  h->stat_info.st_dev = st.st_dev;
+			  h->stat_info.st_ino = st.st_ino;
+			}
 		    }
+		  while ((h = h->next) && ! h->after_symlinks);
 		}
 
 	      status = 0;
@@ -1144,7 +1148,9 @@ extract_archive (void)
       if (status != 0)
 	{
 	  if (errno == EEXIST
-	      && (interdir_made || old_files_option == OVERWRITE_OLD_FILES))
+	      && (interdir_made
+		  || old_files_option == OVERWRITE_OLD_DIRS
+		  || old_files_option == OVERWRITE_OLD_FILES))
 	    {
 	      struct stat st;
 	      if (stat (CURRENT_FILE_NAME, &st) == 0)
@@ -1177,6 +1183,7 @@ extract_archive (void)
 
     directory_exists:
       if (status == 0
+	  || old_files_option == OVERWRITE_OLD_DIRS
 	  || old_files_option == OVERWRITE_OLD_FILES)
 	delay_set_stat (CURRENT_FILE_NAME, &current_stat,
 			MODE_RWX & (mode ^ current_stat.st_mode),
