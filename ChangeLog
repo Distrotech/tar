@@ -1,4 +1,18 @@
-2003-10-04  Sergey Poznyakoff  
+2003-10-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* THANKS: Added Wojciech Polak
+	* configure.ac: Added checks for missing functions. Raised
+	version number to indicate alpha release.
+	* lib/Makefile.am: Added missing headers
+	* lib/waitpid.c: Added missing includes.
+	* src/extract.c: Likewise.
+	* src/names.c: Removed spurious includes.
+	* src/xheader.c: Likewise.
+	* src/system.h [MSDOS]: Fixed spelling of EACCES. Added
+	macro overriding broken mkdir prototypes.
+
+2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>  
 
 	* configure.ac: Check for dev_t and ino_t.
 	* m4/Makefile.am: Added missing files.
@@ -13,7 +27,7 @@
 	* src/extract.c: Likewise.
 	* src/rtapelib.c: Likewise.
 	
-2003-10-04  Sergey Poznyakoff 
+2003-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net> 
 
 	Implemented --occurrence option.
 	
@@ -34,13 +48,13 @@
 	(names_done): Removed
 	(all_names_found,names_notfound): Rewritten.
 
-2003-10-02  Sergey Poznyakoff 
+2003-10-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net> 
 
 	* src/tar.c: Removed extra precaution regarding
 	subcommand_option == CAT_SUBCOMMAND
 	* lib/Makefile.am: Updated
 	
-2003-10-02  Sergey Poznyakoff
+2003-10-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/common.h (names_done): New function.
 	* src/names.c: Likewise.
