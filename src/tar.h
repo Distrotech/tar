@@ -1,5 +1,5 @@
 /* Declarations for tar archives.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -222,7 +222,7 @@ TAR_EXTERN char *f_volhdr;	/* -V */
 TAR_EXTERN int f_confirm;	/* -w */
 TAR_EXTERN int f_verify;	/* -W */
 TAR_EXTERN int f_exclude;	/* -X */
-TAR_EXTERN int f_compress;	/* -z */
+TAR_EXTERN char *f_compressprog;	/* -z and -Z */
 TAR_EXTERN int f_do_chown;	/* --do-chown */
 TAR_EXTERN int f_totals;	/* --totals */
 TAR_EXTERN int f_remove_files;	/* --remove-files */
@@ -232,6 +232,7 @@ TAR_EXTERN int f_show_omitted_dirs;	/* --show-omitted-dirs */
 TAR_EXTERN char *f_volno_file;	/* --volno-file */
 TAR_EXTERN int f_force_local;	/* --force-local */
 TAR_EXTERN int f_atime_preserve;/* --atime-preserve */
+TAR_EXTERN int f_compress_block; /* --compress-block */
 
 /*
  * We default to Unix Standard format rather than 4.2BSD tar format.
