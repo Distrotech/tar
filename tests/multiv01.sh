@@ -10,7 +10,7 @@ TAR_ARCHIVE_FORMATS="gnu oldgnu"
 #  TRUSS=strace
 set -e
 
-dd if=/dev/zero bs=1024 count=7 2>/dev/null >file1
+genfile --length 7168 > file1
 
 for block in " 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" \
               " 9" "10" "11" "12" "13" "14" "15" "16" ; do \

@@ -26,7 +26,7 @@ TAR_ARCHIVE_FORMATS="gnu oldgnu"
 . $srcdir/before
 
 mkdir directory
-dd if=/dev/zero of=directory/file1 bs=1024 count=10 2>/dev/null
+genfile --length 10240 --pattern zeros > directory/file1
 # Let the things settle
 sleep 1
 
