@@ -1,5 +1,6 @@
 Makefile.in
 Makefile
+getdate.texi
 header.texi
 tar.info
 version.texi
