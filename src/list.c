@@ -433,8 +433,10 @@ read_header (void)
 	    {
 	      /* Accept file names as specified by POSIX.1-1996
                  section 10.1.1.  */
+	      int is_posix = (strcmp (h->magic, TMAGIC) == 0);
 	      char *np = namebuf;
-	      if (h->prefix[0])
+
+	      if (is_posix && h->prefix[0])
 		{
 		  memcpy (np, h->prefix, sizeof h->prefix);
 		  np[sizeof h->prefix] = '\0';
