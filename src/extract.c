@@ -249,16 +249,6 @@ make_directories (char *file_name)
 
       if (status == 0)
 	{
-	  /* Fix ownership.  */
-
-	  if (we_are_root)
-	    if (chown (file_name, current_stat.st_uid, current_stat.st_gid) < 0)
-	      ERROR ((0, errno,
-		      _("%s: Cannot change owner to uid %lu, gid %lu"),
-		      file_name,
-		      (unsigned long) current_stat.st_uid,
-		      (unsigned long) current_stat.st_gid));
-
 	  print_for_mkdir (file_name, cursor - file_name,
 			   ~newdir_umask & MODE_RWX);
 	  did_something = 1;
@@ -760,8 +750,8 @@ extract_archive (void)
 	if (!warned_once)
 	  {
 	    warned_once = 1;
-	    WARN ((0, 0, _("\
-Attempting extraction of symbolic links as hard links")));
+	    WARN ((0, 0,
+		   _("Attempting extraction of symbolic links as hard links")));
 	  }
       }
       /* Fall through.  */
@@ -981,8 +971,8 @@ Attempting extraction of symbolic links as hard links")));
       break;
 
     case GNUTYPE_MULTIVOL:
-      ERROR ((0, 0, _("\
-Cannot extract `%s' -- file is continued from another volume"),
+      ERROR ((0, 0,
+	      _("Cannot extract `%s' -- file is continued from another volume"),
 	      current_file_name));
       skip_file (current_stat.st_size);
       if (backup_option)
