@@ -370,6 +370,16 @@ tar_copy_str (char *dst, const char *src, size_t len)
   strncpy (dst, src, len);
 }
 
+/* Same as tar_copy_str, but always terminate with NUL if using
+   is OLDGNU format */
+static void
+tar_name_copy_str (char *dst, const char *src, size_t len)
+{
+  tar_copy_str (dst, src, len);
+  if (archive_format == OLDGNU_FORMAT) 
+    dst[len-1] = 0;
+}
+
 /* Write a "private" header */
 union block *
 start_private_header (const char *name, size_t size)
@@ -379,7 +389,7 @@ start_private_header (const char *name, size_t size)
 
   memset (header->buffer, 0, sizeof (union block));
 
-  tar_copy_str (header->header.name, name, NAME_FIELD_SIZE);
+  tar_name_copy_str (header->header.name, name, NAME_FIELD_SIZE);
   OFF_TO_CHARS (size, header->header.size);
 
   time (&t);
@@ -402,7 +412,7 @@ write_short_name (struct tar_stat_info *st)
 {
   union block *header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
-  tar_copy_str (header->header.name, st->file_name, NAME_FIELD_SIZE);
+  tar_name_copy_str (header->header.name, st->file_name, NAME_FIELD_SIZE);
   return header;
 }
 
@@ -590,7 +600,9 @@ write_header_name (struct tar_stat_info *st)
       xheader_store ("path", st, NULL);
       return write_short_name (st);
     }
-  else if (NAME_FIELD_SIZE < strlen (st->file_name))
+  else if ((archive_format == OLDGNU_FORMAT
+	    && OLDGNU_NAME_FIELD_SIZE < strlen (st->file_name))
+	   || NAME_FIELD_SIZE < strlen (st->file_name))
     return write_long_name (st);
   else
     return write_short_name (st);
@@ -1256,7 +1268,9 @@ dump_hard_link (struct tar_stat_info *st)
 
 	  block_ordinal = current_block_ordinal ();
 	  assign_string (&st->link_name, link_name);
-	  if (NAME_FIELD_SIZE < strlen (link_name))
+	  if ((archive_format == OLDGNU_FORMAT
+	       && OLDGNU_NAME_FIELD_SIZE < strlen (link_name))
+	      || NAME_FIELD_SIZE < strlen (link_name))
 	    write_long_link (st);
 
 	  st->stat.st_size = 0;
@@ -1490,7 +1504,8 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	    }
 	  buffer[size] = '\0';
 	  assign_string (&st->link_name, buffer);
-	  if (size > NAME_FIELD_SIZE)
+	  if ((archive_format == OLDGNU_FORMAT && size > OLDGNU_NAME_FIELD_SIZE)
+	      || size > NAME_FIELD_SIZE)
 	    write_long_link (st);
 
 	  block_ordinal = current_block_ordinal ();
