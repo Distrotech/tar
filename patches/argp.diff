@@ -1,0 +1,11 @@
+--- gnulib/lib/argp-help.c	Sun Apr  4 16:32:34 2004
++++ lib/argp-help.c	Sun May 16 13:18:15 2004
+@@ -1690,7 +1690,7 @@ void __argp_help (const struct argp *arg
+ weak_alias (__argp_help, argp_help)
+ #endif
+ 
+-#ifndef _LIBC
++#ifndef __argp_short_program_name
+ char *__argp_basename (char *name)
+ {
+   char *short_name = strrchr (name, '/');
