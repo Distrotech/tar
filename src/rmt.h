@@ -1,5 +1,7 @@
 /* Definitions for communicating with a remote tape drive.
-   Copyright 1988, 1992, 1996, 1997, 2001 Free Software Foundation, Inc.
+
+   Copyright (C) 1988, 1992, 1996, 1997, 2001, 2003 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,12 +19,12 @@
 
 extern char *rmt_path__;
 
-int rmt_open__ PARAMS ((const char *, int, int, const char *));
-int rmt_close__ PARAMS ((int));
-ssize_t rmt_read__ PARAMS ((int, char *, size_t));
-ssize_t rmt_write__ PARAMS ((int, char *, size_t));
-off_t rmt_lseek__ PARAMS ((int, off_t, int));
-int rmt_ioctl__ PARAMS ((int, int, char *));
+int rmt_open__ (const char *, int, int, const char *);
+int rmt_close__ (int);
+ssize_t rmt_read__ (int, char *, size_t);
+ssize_t rmt_write__ (int, char *, size_t);
+off_t rmt_lseek__ (int, off_t, int);
+int rmt_ioctl__ (int, int, char *);
 
 /* A filename is remote if it contains a colon not preceded by a slash,
    to take care of `/:/' which is a shorthand for `/.../<CELL-NAME>/fs'
