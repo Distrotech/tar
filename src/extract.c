@@ -217,7 +217,7 @@ extract_archive ()
 	  */
     case LF_SPARSE:
       sp_array_size = 10;
-      sparsearray = (struct sp_array *) malloc (sp_array_size * sizeof (struct sp_array));
+      sparsearray = (struct sp_array *) ck_malloc (sp_array_size * sizeof (struct sp_array));
       for (i = 0; i < SPARSE_IN_HDR; i++)
 	{
 	  sparsearray[i].offset =
@@ -252,7 +252,7 @@ extract_archive ()
 					  * since we've run out of room --
 					  */
 		      sparsearray = (struct sp_array *)
-			realloc (sparsearray,
+			ck_realloc (sparsearray,
 			    2 * sp_array_size * (sizeof (struct sp_array)));
 		      sp_array_size *= 2;
 		    }
@@ -367,8 +367,8 @@ extract_archive ()
 			  * that happen to contain the filename will look
 			  * REAL interesting unless we do this.
 			  */
-	  namelen = strlen (skipcrud + current_file_name);
-	  name = (char *) malloc ((sizeof (char)) * namelen);
+	  namelen = strlen (skipcrud + current_file_name) + 1;
+	  name = (char *) ck_malloc ((sizeof (char)) * namelen);
 	  bcopy (skipcrud + current_file_name, name, namelen);
 	  size = hstat.st_size;
 	  extract_sparse_file (fd, &size, hstat.st_size, name);
@@ -436,7 +436,7 @@ extract_archive ()
 			  skipcrud + current_file_name);
 	    else
 	      msg ("could only write %d of %d bytes to file %s",
-		   written, check, skipcrud + current_file_name);
+		   check, written, skipcrud + current_file_name);
 	    skip_file ((long) (size - written));
 	    break;		/* Still do the close, mod time, chmod, etc */
 	  }
@@ -634,7 +634,7 @@ extract_archive ()
 
     case LF_DIR:
     case LF_DUMPDIR:
-      namelen = strlen (current_file_name) + skipcrud - 1;
+      namelen = strlen (current_file_name + skipcrud) - 1;
     really_dir:
       /* Check for trailing /, and zap as many as we find. */
       while (namelen
@@ -682,8 +682,8 @@ extract_archive ()
 
       if (f_modified)
 	goto set_filestat;
-      tmp = (struct saved_dir_info *) malloc (sizeof (struct saved_dir_info));
-      tmp->path = malloc (strlen (skipcrud + current_file_name) + 1);
+      tmp = (struct saved_dir_info *) ck_malloc (sizeof (struct saved_dir_info));
+      tmp->path = ck_malloc (strlen (skipcrud + current_file_name) + 1);
       strcpy (tmp->path, skipcrud + current_file_name);
       tmp->mode = hstat.st_mode;
       tmp->atime = hstat.st_atime;
