@@ -383,7 +383,7 @@ child_open_for_compress (void)
       /* We don't need a grandchild tar.  Open the archive and launch the
 	 compressor.  */
 
-      archive = creat (archive_name_array[0], 0666);
+      archive = creat (archive_name_array[0], MODE_RW);
       if (archive < 0)
 	{
 	  int saved_errno = errno;
@@ -434,7 +434,7 @@ child_open_for_compress (void)
   if (strcmp (archive_name_array[0], "-") == 0)
     archive = STDOUT_FILENO;
   else
-    archive = rmtcreat (archive_name_array[0], 0666, rsh_command_option);
+    archive = rmtcreat (archive_name_array[0], MODE_RW, rsh_command_option);
   if (archive < 0)
     FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
 		  archive_name_array[0]));
@@ -543,7 +543,7 @@ child_open_for_uncompress (void)
       /* We don't need a grandchild tar.  Open the archive and lauch the
 	 uncompressor.  */
 
-      archive = open (archive_name_array[0], O_RDONLY | O_BINARY, 0666);
+      archive = open (archive_name_array[0], O_RDONLY | O_BINARY, MODE_RW);
       if (archive < 0)
 	FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
 		      archive_name_array[0]));
@@ -588,7 +588,7 @@ child_open_for_uncompress (void)
     archive = STDIN_FILENO;
   else
     archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-		       0666, rsh_command_option);
+		       MODE_RW, rsh_command_option);
   if (archive < 0)
     FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
 		  archive_name_array[0]));
@@ -776,13 +776,13 @@ open_archive (enum access_mode access)
     }
   else if (verify_option)
     archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
-		       0666, rsh_command_option);
+		       MODE_RW, rsh_command_option);
   else
     switch (access)
       {
       case ACCESS_READ:
-	archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY, 0666,
-			   rsh_command_option);
+	archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
+			   MODE_RW, rsh_command_option);
 	break;
 
       case ACCESS_WRITE:
@@ -791,12 +791,13 @@ open_archive (enum access_mode access)
 	    maybe_backup_file (archive_name_array[0], 1);
 	    backed_up_flag = 1;
 	  }
-	archive = rmtcreat (archive_name_array[0], 0666, rsh_command_option);
+	archive = rmtcreat (archive_name_array[0], MODE_RW,
+			    rsh_command_option);
 	break;
 
       case ACCESS_UPDATE:
 	archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
-			   0666, rsh_command_option);
+			   MODE_RW, rsh_command_option);
 	break;
       }
 
@@ -1358,12 +1359,12 @@ backspace_output (void)
 #endif
 
   {
-    off_t position = rmtlseek (archive, (off_t) 0, 1);
+    off_t position = rmtlseek (archive, (off_t) 0, SEEK_CUR);
 
     /* Seek back to the beginning of this record and start writing there.  */
 
     position -= record_size;
-    if (rmtlseek (archive, position, 0) != position)
+    if (rmtlseek (archive, position, SEEK_SET) != position)
       {
 	/* Lseek failed.  Try a different method.  */
 
@@ -1398,8 +1399,7 @@ close_archive (void)
 
   if (access_mode == ACCESS_READ
       && ! _isrmt (archive)
-      && S_ISFIFO (archive_stat.st_mode)
-      && ! ending_file_option)
+      && S_ISFIFO (archive_stat.st_mode))
     while (rmtread (archive, record_start->buffer, record_size) > 0)
       continue;
 #endif
@@ -1409,8 +1409,8 @@ close_archive (void)
 #if MSDOS
       int status = write (archive, "", 0);
 #else
-      off_t pos = lseek (archive, (off_t) 0, 1);
-      int status = pos == -1 ? -1 : ftruncate (archive, pos);
+      off_t pos = lseek (archive, (off_t) 0, SEEK_CUR);
+      int status = pos < 0 ? -1 : ftruncate (archive, pos);
 #endif
       if (status != 0)
 	WARN ((0, errno, _("WARNING: Cannot truncate %s"),
@@ -1670,24 +1670,25 @@ tryagain:
     }
 
   if (verify_option)
-    archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, 0666,
+    archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
 		       rsh_command_option);
   else
     switch (access)
       {
       case ACCESS_READ:
-	archive = rmtopen (*archive_name_cursor, O_RDONLY, 0666,
+	archive = rmtopen (*archive_name_cursor, O_RDONLY, MODE_RW,
 			   rsh_command_option);
 	break;
 
       case ACCESS_WRITE:
 	if (backup_option)
 	  maybe_backup_file (*archive_name_cursor, 1);
-	archive = rmtcreat (*archive_name_cursor, 0666, rsh_command_option);
+	archive = rmtcreat (*archive_name_cursor, MODE_RW,
+			    rsh_command_option);
 	break;
 
       case ACCESS_UPDATE:
-	archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, 0666,
+	archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
 			   rsh_command_option);
 	break;
       }
