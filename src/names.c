@@ -25,6 +25,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <fnmatch.h>
+#include <quotearg.h>
 
 #include "common.h"
 
@@ -266,7 +267,7 @@ name_init (int argc, char *const *argv)
 	  name_file = stdin;
 	}
       else if (name_file = fopen (files_from_option, "r"), !name_file)
-	FATAL_ERROR ((0, errno, _("Cannot open file %s"), files_from_option));
+	open_fatal (files_from_option);
     }
 }
 
@@ -372,8 +373,7 @@ name_next (int change_dirs)
       if (chdir_flag)
 	{
 	  if (chdir (name_buffer) < 0)
-	    FATAL_ERROR ((0, errno, _("Cannot change to directory %s"),
-			  name_buffer));
+	    chdir_fatal (name_buffer);
 	  chdir_flag = 0;
 	}
       else if (change_dirs && strcmp (name_buffer, "-C") == 0)
@@ -401,8 +401,8 @@ void
 name_close (void)
 {
   if (name_file && name_file != stdin)
-    if (fclose (name_file) == EOF)
-      ERROR ((0, errno, "%s", name_buffer));
+    if (fclose (name_file) != 0)
+      close_error (name_buffer);
 }
 
 /*-------------------------------------------------------------------------.
@@ -617,7 +617,8 @@ names_notfound (void)
     {
       next = cursor->next;
       if (!cursor->found && !cursor->fake)
-	ERROR ((0, 0, _("%s: Not found in archive"), cursor->name));
+	ERROR ((0, 0, _("%s: Not found in archive"),
+		quotearg_colon (cursor->name)));
 
       /* We could free the list, but the process is about to die anyway, so
 	 save some CPU time.  Amigas and other similarly broken software
@@ -636,7 +637,8 @@ names_notfound (void)
       char *name;
 
       while (name = name_next (1), name)
-	ERROR ((0, 0, _("%s: Not found in archive"), name));
+	ERROR ((0, 0, _("%s: Not found in archive"),
+		quotearg_colon (name)));
     }
 }
 
@@ -820,7 +822,7 @@ collect_and_sort_names (void)
 
       if (deref_stat (dereference_option, name->name, &statbuf) != 0)
 	{
-	  ERROR ((0, errno, _("Cannot stat %s"), name->name));
+	  stat_error (name->name);
 	  continue;
 	}
       if (S_ISDIR (statbuf.st_mode))
@@ -956,7 +958,7 @@ excluded_name (char const *name)
     return 1;
 
   for (p = name; *p; p++)
-    if ((p == name || (ISSLASH (p[-1]) && !ISSLASH (p[0])))
+    if (((p == name || ISSLASH (p[-1])) && !ISSLASH (p[0]))
 	&& excluded_filename (excluded_without_slash, p,
 			      FNM_FILE_NAME | FNM_LEADING_DIR))
       return 1;
