@@ -6,7 +6,7 @@ See the end for copying conditions.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.13.94 - Sergey Poznyakoff, 2004-04-04
+version 1.14 - Sergey Poznyakoff, 2004-05-11
 
 * Added support for POSIX.1-2001 and ustar archive formats.
 * New option --format allows to select the output archive format
@@ -54,10 +54,16 @@ option is given to configure.
 * By default tar searches "rmt" utility in "$prefix/libexec/rmt",
 which is consistent with the location where the version of "rmt"
 included in the package is installed. Previous versions of tar
-used "/etc/rmt". The full path name to the "rmt" utility may
-be overridden either while configuring the package, by setting
-DEFAULT_RMT_COMMAND variable, or on runtime, by giving option
---rmt-command to tar. 
+used "/etc/rmt". To install "rmt" to its traditional location,
+run configure with option --libexecdir=/etc. Otherwise, if you
+already have rmt installed and wish to use it, instead of the
+shipped in version, set the variable DEFAULT_RMT_COMMAND to
+the full path name of the utility, e.g. ./configure
+DEFAULT_RMT_COMMAND=/etc/rmt.
+
+Notice also that the full path name of the "rmt" utility to
+use can be set at runtime, by giving option --rmt-command to
+tar. 
       
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
