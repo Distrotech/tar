@@ -798,7 +798,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'X':
-	if (add_exclude_file (NULL, add_filtered_exclude, optarg, '\n') != 0)
+	if (add_exclude_file (add_filtered_exclude, NULL, optarg, '\n') != 0)
 	  FATAL_ERROR ((0, errno, "%s", optarg));
 	break;
 
