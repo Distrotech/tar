@@ -1,5 +1,5 @@
 /* Various processing of names.
-   Copyright (C) 1988, 1992, 1994, 1996, 1997 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 94, 96, 97, 1998 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -66,7 +66,10 @@ uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
 	  strncpy (cached_uname, passwd->pw_name, UNAME_FIELD_SIZE);
 	}
       else
-	*uname = '\0';
+	{
+	  *uname = '\0';
+	  return;
+	}
     }
   strncpy (uname, cached_uname, UNAME_FIELD_SIZE);
 }
@@ -90,7 +93,10 @@ gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
 	  strncpy (cached_gname, group->gr_name, GNAME_FIELD_SIZE);
 	}
       else
-	*gname = '\0';
+	{
+	  *gname = '\0';
+	  return;
+	}
     }
   strncpy (gname, cached_gname, GNAME_FIELD_SIZE);
 }
