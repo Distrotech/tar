@@ -1,6 +1,17 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.10 - Paul Eggert, 1999-08-20.
+
+* `tar' now uses signed base-64 when outputting header values that are
+  out of the range of the standard unsigned base-8 format.  This
+  affects archive members with negative timestamps or uids, and
+  archive members 8 GB or larger.  The new tar archives cannot be read
+  by traditional tar, or by older versions of GNU tar.  Use the
+  --old-archive option to revert to the old behavior, which uses
+  unportable representations for negative values, and which rejects
+  large files.
+
 version 1.13.9 - Paul Eggert, 1999-08-18.
 
 * `tar' now writes two zero blocks at end-of-archive instead of just one.
