@@ -51,7 +51,7 @@ extern int errno;
 #define lstat stat
 #endif
 
-extern char *valloc();
+extern void *valloc();
 
 extern union record *head;		/* Points to current tape header */
 extern struct stat hstat;		/* Stat struct corresponding */
