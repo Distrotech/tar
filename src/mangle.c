@@ -34,7 +34,7 @@ struct mangled
 void
 extract_mangle (void)
 {
-  off_t size = current_stat.st_size;
+  off_t size = current_stat_info.stat.st_size;
   char *buffer = xmalloc ((size_t) (size + 1));
   char *copy = buffer;
   char *cursor = buffer;
