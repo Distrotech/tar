@@ -293,7 +293,7 @@ extract_archive()
 			 fd = 1;
 			 goto extract_file;
 		 }
- #ifdef O_CTG
+#ifdef O_CTG
 		 /*
 		  * Contiguous files (on the Masscomp) have to specify
 		  * the size in the open call that creates them.
@@ -304,9 +304,9 @@ extract_archive()
 				   openflag | O_CTG,
 				   hstat.st_mode, hstat.st_size);
 		 else
- #endif
+#endif
 		 {
- #ifdef NO_OPEN3
+#ifdef NO_OPEN3
 			 /*
 			  * On raw V7 we won't let them specify -k (f_keep), but
 			  * we just bull ahead and create the files.
@@ -315,13 +315,13 @@ extract_archive()
 				     ? longname
 				     : head->header.name) + skipcrud, 
 				    hstat.st_mode);
- #else
+#else
 			 /*
 			  * With 3-arg open(), we can do this up right.
 			  */
 			 fd = open(skipcrud + current_file_name,
 				   openflag, hstat.st_mode);
- #endif
+#endif
 		 }
 
 		 if (fd < 0) {
