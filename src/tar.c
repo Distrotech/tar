@@ -164,6 +164,7 @@ struct option long_options[] =
   {"block-number", no_argument, NULL, 'R'},
   {"block-size", required_argument, NULL, OBSOLETE_BLOCKING_FACTOR},
   {"blocking-factor", required_argument, NULL, 'b'},
+  {"bzip2", no_argument, NULL, 'y'},
   {"catenate", no_argument, NULL, 'A'},
   {"checkpoint", no_argument, &checkpoint_option, 1},
   {"compare", no_argument, NULL, 'd'},
@@ -340,6 +341,7 @@ Archive format selection:\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX conformant archive\n\
+  -y, --bzip2                        filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
@@ -416,7 +418,7 @@ Report bugs to <bug-tar@gnu.org>.\n"),
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
+  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxyz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -438,6 +440,18 @@ set_use_compress_program_option (const char *string)
   use_compress_program_option = string;
 }
 
+/* Ignore DUMMY (which will always be null in practice), and add
+   PATTERN to the proper set of patterns to be excluded -- either
+   patterns with slashes, or patterns without.  */
+static void
+add_filtered_exclude (struct exclude *dummy, char const *pattern)
+{
+  add_exclude ((strchr (pattern, '/')
+		? excluded_with_slash
+		: excluded_without_slash),
+	       pattern);
+}
+
 static void
 decode_options (int argc, char *const *argv)
 {
@@ -452,7 +466,8 @@ decode_options (int argc, char *const *argv)
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
-  excluded = new_exclude ();
+  excluded_with_slash = new_exclude ();
+  excluded_without_slash = new_exclude ();
   newer_mtime_option = TYPE_MINIMUM (time_t);
 
   owner_option = -1;
@@ -683,7 +698,7 @@ decode_options (int argc, char *const *argv)
 	/* Fall through.  */
 
       case NEWER_MTIME_OPTION:
-	if (newer_mtime_option)
+  	if (newer_mtime_option != TYPE_MINIMUM (time_t))
 	  USAGE_ERROR ((0, 0, _("More than one threshold date")));
 
 	newer_mtime_option = get_date (optarg, (voidstar) 0);
@@ -783,8 +798,12 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'X':
-	if (add_exclude_file (excluded, optarg, '\n') != 0)
+	if (add_exclude_file (NULL, add_filtered_exclude, optarg, '\n') != 0)
 	  FATAL_ERROR ((0, errno, "%s", optarg));
+	break;
+
+      case 'y':
+	set_use_compress_program_option ("bzip2");
 	break;
 
       case 'z':
@@ -810,7 +829,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case EXCLUDE_OPTION:
-	add_exclude (excluded, optarg);
+	add_filtered_exclude (NULL, optarg);
 	break;
 
       case GROUP_OPTION:
