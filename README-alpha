@@ -9,8 +9,8 @@ to accommodate older versions of these packages.  If we discover that
 newer versions are needed to bootstrap, we'll update the version
 numbers in this list.
 
-autoconf 2.57
-automake 1.7.5
+autoconf 2.59
+automake 1.8
 bison 1.875
 gettext 0.12.1
 m4 1.4
@@ -22,33 +22,36 @@ This patch is bundled into Debian m4 1.4-17 or later.
 
 Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
-site and prepares the source directory for building.  The exact way
-of invoking bootstrap depends on whether you have the sources for gnulib
-installed somewhere on your system and on the method you use to access
-the CVS at savannah.
+site and prepares the source directory for building.
 
-If you already have gnulib sources on your machine, run:
+When run without arguments, bootstrap will try to obtain gnulib files
+from CVS repository on savannah using anonymous SSH access. Then, it
+will fetch the po files from tar page at Translation Project, and,
+finally, it will start autoconfiguration process. Simply running
+it without arguments should do in most cases. Several options
+allow to control the behavior of bootstrap:
 
-	./bootstrap --gnulib-srcdir=DIRNAME
 
-Otherwise, if you have developer's access to savannah:
+ --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
+                              sources reside. Use this if you already
+                              have gnulib sources on your machine, and
+                              do not want to waste your bandwidth dowloading
+                              them again.
+ --cvs-auth=METHOD            Set the CVS access method used for downloading
+                              gnulib files. METHOD is one of the keywords
+                              accepted by cvs -d option (see info cvs
+                              repository).
+ --cvs-user=USERNAME          Set the CVS username to be used when accessing
+                              the gnulib repository.
+ --no-po                      Do not download po files.
 
-a) if you access CVS via ssh, set the environment variable CVS_RSH
-to ssh and run ./bootstrap without arguments.
-
-b) if you access CVS via Kerberos, run
-
-        ./bootstrap --cvs-auth=gserver
-
-Otherwise, if you are not a member of Savannah, run
-
-        ./bootstrap --cvs-auth=pserver
-
-When prompted for a password for anoncvs, simply press the Enter key.
+Notice also that when using CVS authentication method "ext", bootstrap
+will set the variable CVS_RSH to "ssh", unless it is already set to
+some other value.
 
 
 
-Copyright (C) 2001, 2003 Free Software Foundation, Inc.
+Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 
