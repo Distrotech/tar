@@ -65,7 +65,7 @@ mv tart/c1 tart/c2
 touch tart/c2/ca3
 
 echo Directory contents
-find tart|sort 2>/dev/null
+find tart -print | sort 2>/dev/null
 
 sleep 1
 echo Creating incremental archive
@@ -84,7 +84,7 @@ echo Extracting incremental archive
 tar -x -v --listed-incremental=tart.incr2 -f archive.2 | sort 2>/dev/null 
 
 echo Final files:
-find tart|sort 2>/dev/null
+find tart -print | sort 2>/dev/null
 ],
 [0],
 [Create directories
