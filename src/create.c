@@ -588,8 +588,6 @@ start_header (const char *name, struct tar_stat_info *st)
   union block *header;
 
   name = safer_name_suffix (name, 0);
-  if (name[0] == '.' && name[1] == 0) /*FIXME!!!*/
-    return NULL;
   assign_string (&st->file_name, name);
 
   header = write_header_name (st);
@@ -1087,6 +1085,15 @@ compare_links (void const *entry1, void const *entry2)
   return ((link1->dev ^ link2->dev) | (link1->ino ^ link2->ino)) == 0;
 }
 
+/* Copy at most LEN bytes from SRC to DST. Terminate with NUL unless
+   SRC is LEN characters long */
+static void
+tar_copy_str (char *dst, const char *src, size_t len)
+{
+  dst[len-1] = 0;
+  strncpy (dst, src, len);
+}
+
 /* Table of all non-directories that we've written so far.  Any time
    we see another, we check the table and avoid dumping the data
    again if we've done it once already.  */
@@ -1358,17 +1365,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      
 	      block_ordinal = current_block_ordinal ();
 	      assign_string (&current_stat_info.link_name, link_name);
-	      if (NAME_FIELD_SIZE <= strlen (link_name))
+	      if (NAME_FIELD_SIZE < strlen (link_name))
 		write_long_link (&current_stat_info);
 
 	      current_stat_info.stat.st_size = 0;
 	      header = start_header (p, &current_stat_info);
 	      if (!header)
 		return;
-	      strncpy (header->header.linkname, link_name, NAME_FIELD_SIZE);
-
-	      /* Force null termination.  */
-	      header->header.linkname[NAME_FIELD_SIZE - 1] = 0;
+	      tar_copy_str (header->header.linkname, link_name,
+			    NAME_FIELD_SIZE);
 
 	      header->header.typeflag = LNKTYPE;
 	      finish_header (header, block_ordinal);
@@ -1699,7 +1704,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    }
 	  buffer[size] = '\0';
 	  assign_string (&current_stat_info.link_name, buffer);
-	  if (size >= NAME_FIELD_SIZE)
+	  if (size > NAME_FIELD_SIZE)
 	    write_long_link (&current_stat_info);
 
 	  block_ordinal = current_block_ordinal ();
@@ -1707,8 +1712,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  header = start_header (p, &current_stat_info);
 	  if (!header)
 	    return;
-	  strncpy (header->header.linkname, buffer, NAME_FIELD_SIZE);
-	  header->header.linkname[NAME_FIELD_SIZE - 1] = '\0';
+	  tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
 	  header->header.typeflag = SYMTYPE;
 	  finish_header (header, block_ordinal);
 	  /* nothing more to do to it */
