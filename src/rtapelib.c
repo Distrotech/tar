@@ -52,14 +52,6 @@
 extern int errno;
 #endif
 
-#ifdef HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-#ifdef STDC_HEADERS
-#include <string.h>
-#include <stdlib.h>
-#endif
-
 /* Maximum size of a fully qualified host name.  */
 #define MAXHOSTLEN 257
 
@@ -449,7 +441,7 @@ __rmt_read (fildes, buf, nbyte)
 
   for (i = 0; i < rc; i += nbyte, buf += nbyte)
     {
-      nbyte = read (READ (fildes), buf, rc - i);
+      nbyte = read (READ (fildes), buf, rc);
       if (nbyte <= 0)
 	{
 	  _rmt_shutdown (fildes);
@@ -513,7 +505,6 @@ __rmt_lseek (fildes, offset, whence)
    Return the results of the ioctl, or -1 on error.  */
 
 #ifdef MTIOCTOP
-int
 __rmt_ioctl (fildes, op, arg)
      int fildes, op;
      char *arg;
