@@ -469,10 +469,16 @@ start_header (const char *name, struct tar_stat_info *st)
   union block *header;
 
   name = safer_name_suffix (name, 0);
-
+  assign_string (&st->file_name, name);
+  
   if (sizeof header->header.name <= strlen (name))
-    write_long (name, GNUTYPE_LONGNAME);
-
+    {
+      if (archive_format == POSIX_FORMAT)
+	xheader_store ("path", st);
+      else
+	write_long (name, GNUTYPE_LONGNAME);
+    }
+  
   header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
 
@@ -629,6 +635,22 @@ finish_header (union block *header, off_t block_ordinal)
   int sum;
   char *p;
 
+  /* Note: It is important to do this before the call to write_extended(),
+     so that the actual ustar header is printed */
+  if (verbose_option
+      && header->header.typeflag != GNUTYPE_LONGLINK
+      && header->header.typeflag != GNUTYPE_LONGNAME
+      && header->header.typeflag != XHDTYPE
+      && header->header.typeflag != XGLTYPE)
+    {
+      /* These globals are parameters to print_header, sigh.  */
+
+      current_header = header;
+      /* current_stat_info is already set up.  */
+      current_format = archive_format;
+      print_header (block_ordinal);
+    }
+
   header = write_extended (header, XHDTYPE);
   
   memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
@@ -650,18 +672,6 @@ finish_header (union block *header, off_t block_ordinal)
      sprintf(header->header.chksum, "%6o", sum);  */
 
   uintmax_to_chars ((uintmax_t) sum, header->header.chksum, 7);
-
-  if (verbose_option
-      && header->header.typeflag != GNUTYPE_LONGLINK
-      && header->header.typeflag != GNUTYPE_LONGNAME)
-    {
-      /* These globals are parameters to print_header, sigh.  */
-
-      current_header = header;
-      /* current_stat_info is already set up.  */
-      current_format = archive_format;
-      print_header (block_ordinal);
-    }
 
   set_next_block_after (header);
 }
