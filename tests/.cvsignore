@@ -1,0 +1,8 @@
+Makefile.in
+Makefile
+preset
+.deps
+genfile
+tmp-*
+directory
+archive
