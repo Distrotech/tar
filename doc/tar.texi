@@ -1073,9 +1073,9 @@ change between directories; and how to figure out where you are in the
 filesystem.  You should have some basic understanding of directory
 structure and how files are named according to which directory they are
 in.  You should understand concepts such as standard output and standard
-input, what various definitions of the term ``argument'' mean, the
-differences between relative and absolute path names, and @FIXME{what
-else?}.
+input, what various definitions of the term ``argument'' mean, and the
+differences between relative and absolute path names.  @FIXME{and what
+else?}
 
 @item
 This manual assumes that you are working from your own home directory
@@ -1392,8 +1392,8 @@ working directory with the archive name you intend to use (in this case,
 Whenever you use @samp{create}, @code{tar} will erase the current
 contents of the file named by @value{op-file} if it exists.  @code{tar}
 will not tell you if you are about to overwrite a file unless you
-specify an option which does this @FIXME{xref to the node for
---backup!}.  To add files to an existing archive, you need to use a
+specify an option which does this.  @FIXME{xref to the node for
+--backup!}  To add files to an existing archive, you need to use a
 different option, such as @value{op-append}; see @ref{append} for
 information on how to do this.
 
@@ -1438,10 +1438,10 @@ is the operation which creates the new archive
 (@file{collection.tar}), and @samp{--file} is the option which lets
 you give it the name you chose.  The files, @file{blues}, @file{folk},
 and @file{jazz}, are now members of the archive, @file{collection.tar}
-(they are @dfn{file name arguments} to the @samp{--create} operation)
-@FIXME{xref here to the discussion of file name args?}.  Now that they
+(they are @dfn{file name arguments} to the @samp{--create} operation).
+@FIXME{xref here to the discussion of file name args?}  Now that they
 are are in the archive, they are called @emph{archive members}, not
-files @FIXME{xref to definitions?}.
+files.  @FIXME{xref to definitions?}
 
 When you create an archive, you @emph{must} specify which files you want
 placed in the archive.  If you do not specify any archive members, GNU
@@ -1646,10 +1646,10 @@ archive normally, except for the exclusion of that one file.
 (@emph{Please note:} Other versions of @code{tar} are not so clever;
 they will enter an infinite loop when this happens, so you should not
 depend on this behavior unless you are certain you are running GNU
-@code{tar}.  @FIXME{bob doesn't like this sentence, since he does it
+@code{tar}.)  @FIXME{bob doesn't like this sentence, since he does it
 all the time, and we've been doing it in the editing passes for this
 manual: In general, make sure that the archive is not inside a
-directory being dumped.})
+directory being dumped.}
 
 @node list, extract, create, Tutorial
 @section How to List Archives
@@ -2489,47 +2489,47 @@ exist in the archive.
 @itemx -P
 
 Normally when creating an archive, @code{tar} strips an initial @samp{/} from
-member names.  This option disables that behavior.  @FIXME-xref{}.
+member names.  This option disables that behavior.  @FIXME-xref{}
 
 @item --after-date
 
-(See @samp{--newer}; @FIXME-pxref{}.)
+(See @samp{--newer}.) @FIXME-pxref{}
 
 @item --atime-preserve
 
 Tells @code{tar} to preserve the access time field in a file's inode when
-dumping it.  @FIXME-xref{}.
+dumping it.  @FIXME-xref{}
 
 @item --backup=@var{backup-type}
 
 Rather than deleting files from the file system, @code{tar} will back them up
 using simple or numbered backups, depending upon @var{backup-type}.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 @item --block-number
 @itemx -R
 
 With this option present, @code{tar} prints error messages for read errors
-with the block number in the archive file.  @FIXME-xref{}.
+with the block number in the archive file.  @FIXME-xref{}
 
 @item --blocking-factor=@var{blocking}
 @itemx -b @var{blocking}
 
 Sets the blocking factor @code{tar} uses to @var{blocking} x 512 bytes per
-record.  @FIXME-xref{}.
+record.  @FIXME-xref{}
 
 @item --bzip2
 @itemx -y
 
 This option tells @code{tar} to read or write archives through @code{bzip2}.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 @item --checkpoint
 
 This option directs @code{tar} to print periodic checkpoint messages as it
 reads through the archive.  Its intended for when you want a visual
 indication that @code{tar} is still running, but don't want to see
-@samp{--verbose} output.  @FIXME-xref{}.
+@samp{--verbose} output.  @FIXME-xref{}
 
 @item --compress
 @itemx --uncompress
@@ -2537,67 +2537,67 @@ indication that @code{tar} is still running, but don't want to see
 
 @code{tar} will use the @code{compress} program when reading or writing the
 archive.  This allows you to directly act on archives while saving
-space.  @FIXME-xref{}.
+space.  @FIXME-xref{}
 
 @item --confirmation
 
-(See @samp{--interactive};  @FIXME-pxref{}.)
+(See @samp{--interactive}.)  @FIXME-pxref{}
 
 @item --dereference
 @itemx -h
 
 When creating a @code{tar} archive, @code{tar} will archive the file that a symbolic
-link points to, rather than archiving the symlink.  @FIXME-xref{}.
+link points to, rather than archiving the symlink.  @FIXME-xref{}
 
 @item --directory=@var{dir}
 @itemx -C @var{dir}
 
 When this option is specified, @code{tar} will change its current directory
 to @var{dir} before performing any operations.  When this option is used
-during archive creation, it is order sensitive.  @FIXME-xref{}.
+during archive creation, it is order sensitive.  @FIXME-xref{}
 
 @item --exclude=@var{pattern}
 
 When performing operations, @code{tar} will skip files that match
-@var{pattern}.  @FIXME-xref{}.
+@var{pattern}.  @FIXME-xref{}
 
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 
 Similar to @samp{--exclude}, except @code{tar} will use the list of patterns
-in the file @var{file}.  @FIXME-xref{}.
+in the file @var{file}.  @FIXME-xref{}
 
 @item --file=@var{archive}
 @itemx -f @var{archive}
 
 @code{tar} will use the file @var{archive} as the @code{tar} archive it
 performs operations on, rather than @code{tar}'s compilation dependent
-default.  @FIXME-xref{}.
+default.  @FIXME-xref{}
 
 @item --files-from=@var{file}
 @itemx -T @var{file}
 
 @code{tar} will use the contents of @var{file} as a list of archive members
 or files to operate on, in addition to those specified on the
-command-line.  @FIXME-xref{}.
+command-line.  @FIXME-xref{}
 
 @item --force-local
 
 Forces @code{tar} to interpret the filename given to @samp{--file} as a local
-file, even if it looks like a remote tape drive name.  @FIXME-xref{}.
+file, even if it looks like a remote tape drive name.  @FIXME-xref{}
 
 @item --group=@var{group}
 
 Files added to the @code{tar} archive will have a group id of @var{group},
 rather than the group from the source file.  @var{group} is first decoded
 as a group symbolic name, but if this interpretation fails, it has to be
-a decimal numeric group ID.  @FIXME-xref{}.
+a decimal numeric group ID.  @FIXME-xref{}
 
 Also see the comments for the @value{op-owner} option.
 
 @item --gunzip
 
-(See @samp{--gzip}; @FIXME-pxref{}.)
+(See @samp{--gzip}.) @FIXME-pxref{}
 
 @item --gzip
 @itemx --gunzip
@@ -2606,12 +2606,12 @@ Also see the comments for the @value{op-owner} option.
 
 This option tells @code{tar} to read or write archives through @code{gzip},
 allowing @code{tar} to directly operate on several kinds of compressed
-archives transparently.  @FIXME-xref{}.
+archives transparently.  @FIXME-xref{}
 
 @item --help
 
 @code{tar} will print out a short message summarizing the operations and
-options to @code{tar} and exit.  @FIXME-xref{}.
+options to @code{tar} and exit.  @FIXME-xref{}
 
 @item --ignore-failed-read
 
@@ -2634,14 +2634,14 @@ normally signals EOF.  @xref{Reading}.
 
 Used to inform @code{tar} that it is working with an  old GNU-format
 incremental backup archive.  It is intended primarily for backwards
-compatibility only.  @FIXME-xref{}.
+compatibility only.  @FIXME-xref{}
 
 @item --info-script=@var{script-file}
 @itemx --new-volume-script=@var{script-file}
 @itemx -F @var{script-file}
 
 When @code{tar} is performing multi-tape backups, @var{script-file} is run
-at the end of each tape.  @FIXME-xref{}.
+at the end of each tape.  @FIXME-xref{}
 
 @item --interactive
 @itemx --confirmation
@@ -2649,7 +2649,7 @@ at the end of each tape.  @FIXME-xref{}.
 
 Specifies that @code{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 @item --keep-old-files
 @itemx -k
@@ -2663,7 +2663,7 @@ files if this option is present.  @xref{Writing}.
 When creating an archive, instructs @code{tar} to write @var{name} as a name
 record in the archive.  When extracting or listing archives, @code{tar} will
 only operate on archives that have a label matching the pattern
-specified in @var{name}.  @FIXME-xref{}.
+specified in @var{name}.  @FIXME-xref{}
 
 @item --listed-incremental=@var{snapshot-file}
 @itemx -g @var{snapshot-file}
@@ -2672,7 +2672,7 @@ During a @samp{--create} operation, specifies that the archive that
 @code{tar} creates is a new GNU-format incremental backup, using
 @var{snapshot-file} to determine which files to backup.
 With other operations, informs @code{tar} that the archive is in incremental
-format.  @FIXME-xref{}.
+format.  @FIXME-xref{}
 
 @item --mode=@var{permissions}
 
@@ -2694,7 +2694,7 @@ or on any other file already marked as executable.
 @itemx -M
 
 Informs @code{tar} that it should create or otherwise operate on a
-multi-volume @code{tar} archive.  @FIXME-xref{}.
+multi-volume @code{tar} archive.  @FIXME-xref{}
 
 @item --new-volume-script
 
@@ -2705,7 +2705,7 @@ multi-volume @code{tar} archive.  @FIXME-xref{}.
 @itemx -N
 
 When creating an archive, @code{tar} will only add files that have changed
-since @var{date}.  @FIXME-xref{}.
+since @var{date}.  @FIXME-xref{}
 
 @item --newer-mtime
 
@@ -2716,30 +2716,30 @@ also back up files for which any status information has changed).
 @item --no-recursion
 
 With this option, @code{tar} will not recurse into directories unless a
-directory is explicitly named as an argument to @code{tar}.  @FIXME-xref{}.
+directory is explicitly named as an argument to @code{tar}.  @FIXME-xref{}
 
 @item --null
 
 When @code{tar} is using the @samp{--files-from} option, this option
 instructs @code{tar} to expect filenames terminated with @kbd{NUL}, so
 @code{tar} can correctly work with file names that contain newlines.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 @item --numeric-owner
 
 This option will notify @code{tar} that it should use numeric user and group
-IDs when creating a @code{tar} file, rather than names.  @FIXME-xref{}.
+IDs when creating a @code{tar} file, rather than names.  @FIXME-xref{}
 
 @item --old-archive
 
-(See @samp{--portability}; @FIXME-pxref{}.)
+(See @samp{--portability}.) @FIXME-pxref{}
 
 @item --one-file-system
 @itemx -l
 
 Used when creating an archive.  Prevents @code{tar} from recursing into
 directories that are on different file systems from the current
-directory.  @FIXME-xref{}.
+directory.  @FIXME-xref{}
 
 @item --owner=@var{user}
 
@@ -2747,7 +2747,7 @@ Specifies that @code{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
 file.  @var{user} is first decoded as a user symbolic name, but if
 this interpretation fails, it has to be a decimal numeric user ID.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 There is no value indicating a missing number, and @samp{0} usually means
 @code{root}.  Some people like to force @samp{0} as the value to offer in
@@ -2759,16 +2759,16 @@ anonymous anyway, so that might as well be the owner of anonymous archives.
 @itemx -o
 
 Tells @code{tar} to create an archive that is compatible with Unix V7
-@code{tar}.  @FIXME-xref{}.
+@code{tar}.  @FIXME-xref{}
 
 @item --posix
 
-Instructs @code{tar} to create a POSIX compliant @code{tar} archive.  @FIXME-xref{}.
+Instructs @code{tar} to create a POSIX compliant @code{tar} archive.  @FIXME-xref{}
 
 @item --preserve
 
 Synonymous with specifying both @samp{--preserve-permissions} and
-@samp{--same-order}.  @FIXME-xref{}.
+@samp{--same-order}.  @FIXME-xref{}
 
 @item --preserve-order
 
@@ -2793,7 +2793,7 @@ systems with buggy implementations.  @xref{Reading}.
 @item --record-size=@var{size}
 
 Instructs @code{tar} to use @var{size} bytes per record when accessing the
-archive.  @FIXME-xref{}.
+archive.  @FIXME-xref{}
 
 @item --recursive-unlink
 
@@ -2804,12 +2804,12 @@ from the archive.  @xref{Writing}.
 @item --remove-files
 
 Directs @code{tar} to remove the source file from the file system after
-appending it to an archive.  @FIXME-xref{}.
+appending it to an archive.  @FIXME-xref{}
 
 @item --rsh-command=@var{cmd}
 
 Notifies @code{tar} that is should use @var{cmd} to communicate with remote
-devices.  @FIXME-xref{}.
+devices.  @FIXME-xref{}
 
 @item --same-order
 @itemx --preserve-order
@@ -2823,7 +2823,7 @@ archive.  @xref{Reading}.
 @item --same-owner
 
 When extracting an archive, @code{tar} will attempt to preserve the owner
-specified in the @code{tar} archive with this option present.  @FIXME-xref{}.
+specified in the @code{tar} archive with this option present.  @FIXME-xref{}
 
 @item --same-permissions
 
@@ -2832,13 +2832,13 @@ specified in the @code{tar} archive with this option present.  @FIXME-xref{}.
 @item --show-omitted-dirs
 
 Instructs @code{tar} to mention directories its skipping over when operating
-on a @code{tar} archive.  @FIXME-xref{}.
+on a @code{tar} archive.  @FIXME-xref{}
 
 @item --sparse
 @itemx -S
 
 Invokes a GNU extension when adding files to an archive that handles
-sparse files efficiently.  @FIXME-xref{}.
+sparse files efficiently.  @FIXME-xref{}
 
 @item --starting-file=@var{name}
 @itemx -K @var{name}
@@ -2850,13 +2850,13 @@ files in the archive until it finds one that matches @var{name}.
 @item --suffix=@var{suffix}
 
 Alters the suffix @code{tar} uses when backing up files from the default
-@samp{~}.  @FIXME-xref{}.
+@samp{~}.  @FIXME-xref{}
 
 @item --tape-length=@var{num}
 @itemx -L @var{num}
 
 Specifies the length of tapes that @code{tar} is writing as being
-@w{@var{num} x 1024} bytes long.  @FIXME-xref{}.
+@w{@var{num} x 1024} bytes long.  @FIXME-xref{}
 
 @item --to-stdout
 @itemx -O
@@ -2867,7 +2867,7 @@ file system.  @xref{Writing}.
 @item --totals
 
 Displays the total number of bytes written after creating an archive.
-@FIXME-xref{}.
+@FIXME-xref{}
 
 @item --touch
 @itemx -m
@@ -2878,11 +2878,11 @@ rather than the modification time stored in the archive.
 
 @item --uncompress
 
-(See @samp{--compress}; @FIXME-pxref{}.)
+(See @samp{--compress}.) @FIXME-pxref{}
 
 @item --ungzip
 
-(See @samp{--gzip}; @FIXME-pxref{}.)
+(See @samp{--gzip}.) @FIXME-pxref{}
 
 @item --unlink-first
 @itemx -U
@@ -2893,31 +2893,31 @@ before extracting it from the archive.  @xref{Writing}.
 @item --use-compress-program=@var{prog}
 
 Instructs @code{tar} to access the archive through @var{prog}, which is
-presumed to be a compression program of some sort.  @FIXME-xref{}.
+presumed to be a compression program of some sort.  @FIXME-xref{}
 
 @item --verbose
 @itemx -v
 
 Specifies that @code{tar} should be more verbose about the operations its
 performing.  This option can be specified multiple times for some
-operations to increase the amount of information displayed.  @FIXME-xref{}.
+operations to increase the amount of information displayed.  @FIXME-xref{}
 
 @item --verify
 @itemx -W
 
 Verifies that the archive was correctly written when creating an
-archive.  @FIXME-xref{}.
+archive.  @FIXME-xref{}
 
 @item --version
 
 @code{tar} will print an informational message about what version it is and a
-copyright message, some credits, and then exit.  @FIXME-xref{}.
+copyright message, some credits, and then exit.  @FIXME-xref{}
 
 @item --volno-file=@var{file}
 
 Used in conjunction with @samp{--multi-volume}.  @code{tar} will keep track
 of which volume of a multi-volume archive its working in @var{file}.
-@FIXME-xref{}.
+@FIXME-xref{}
 @end table
 
 @node Short Option Summary,  , Option Summary, All Options
@@ -3262,7 +3262,7 @@ it helps pinpoint the damaged sections.  It can also be used with
 choose among several backup tapes when retrieving a file later, in
 favor of the tape where the file appears earliest (closest to the
 front of the tape).  @FIXME-xref{when the node name is set and the
-backup section written}.
+backup section written.}
 
 @node interactive,  , verbose, tar invocation
 @section Asking for Confirmation During Operations
@@ -3532,7 +3532,7 @@ extracted before it, and so on.
 MMwtSN node; not sure.  i didn't know how to make it simpler...}
 
 There are a few ways to get around this.  @FIXME-xref{Multiple Members
-with the Same Name}.
+with the Same Name.}
 
 @cindex Members, replacing with other members
 @cindex Replacing members with other members
@@ -3657,7 +3657,7 @@ the archive, the older version of the file @file{blues} will be
 overwritten by the newer version.  You can confirm this by extracting
 the archive and running @samp{ls} on the directory.  @xref{Writing},
 for more information.  (@emph{Please note:} This is the case unless
-you employ the @value{op-backup} option; @FIXME-ref{Multiple Members
+you employ the @value{op-backup} option. @FIXME-ref{Multiple Members
 with the Same Name}.)
 
 @node update, concatenate, append, Advanced tar
@@ -3682,8 +3682,8 @@ charles and/or mib/thomas/dave shevett..}
 Both @samp{--update} and @samp{--append} work by adding to the end
 of the archive.  When you extract a file from the archive, only the
 version stored last will wind up in the file system, unless you use
-the @value{op-backup} option (@FIXME-ref{Multiple Members with the
-Same Name}).
+the @value{op-backup} option. @FIXME-ref{Multiple Members with the
+Same Name}
 
 @menu
 * how to update::
@@ -3748,9 +3748,9 @@ To use @samp{--concatenate}, name the archives to be concatenated on the
 command line.  (Nothing happens if you don't list any.)  The members,
 and their member names, will be copied verbatim from those archives.  If
 this causes multiple members to have the same name, it does not delete
-any members; all the members with the same name coexist.  For
-information on how this affects reading the archive, @FIXME-ref{Multiple
-Members with the Same Name}.
+any members; all the members with the same name coexist.  @FIXME-ref{For
+information on how this affects reading the archive, Multiple
+Members with the Same Name.}
 
 To demonstrate how @samp{--concatenate} works, create two small archives
 called @file{bluesrock.tar} and @file{folkjazz.tar}, using the relevant
@@ -3798,7 +3798,7 @@ folk
 
 When you use @samp{--concatenate}, the source and target archives must
 already exist and must have been created using compatable format
-parameters (@FIXME-pxref{Matching Format Parameters}).  The new,
+parameters.  @FIXME-pxref{Matching Format Parameters}  The new,
 concatenated archive will be called by the same name as the first
 archive listed on the command line. @FIXME{is there a way to specify a
 new name?}
@@ -4210,7 +4210,7 @@ archive, instead of current umask settings.  Use in conjunction with
 @value{op-extract}.
 @end table
 
-@FIXME{Following paragraph needs to be rewritten: why doesnt' this cat
+@FIXME{Following paragraph needs to be rewritten: why doesn't this cat
 files together, why is this useful.  is it really useful with
 more than one file?}
 
@@ -4836,25 +4836,25 @@ file name lists and @code{tar} commands by hand.
 Before you use these scripts, you need to edit the file
 @file{backup-specs}, which specifies parameters used by the backup
 scripts and by the restore script.  @FIXME{There is no such restore
-script!}.  @FIXME-xref{Script Syntax}.  Once the backup parameters
+script!}  @FIXME-xref{Script Syntax}  Once the backup parameters
 are set, you can perform backups or restoration by running the
 appropriate script.
 
 The name of the restore script is @code{restore}.  @FIXME{There is
-no such restore script!}.  The names of the level one and full backup
+no such restore script!}  The names of the level one and full backup
 scripts are, respectively, @code{level-1} and @code{level-0}.
 The @code{level-0} script also exists under the name @code{weekly}, and
 the @code{level-1} under the name @code{daily}---these additional names
 can be changed according to your backup schedule.  @FIXME-xref{Scripted
-Restoration}, for more information on running the restoration script.
-@FIXME-xref{Scripted Backups}, for more information on running the
-backup scripts.
+Restoration, for more information on running the restoration script.}
+@FIXME-xref{Scripted Backups, for more information on running the
+backup scripts.}
 
 @emph{Please Note:} The backup scripts and the restoration scripts are
 designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
-it is easier to use the scripts.  @FIXME{There is no such restore script!}.
+it is easier to use the scripts.  @FIXME{There is no such restore script!}
 @value{xref-incremental}, and @value{xref-listed-incremental},
 before making such an attempt.
 
@@ -4872,7 +4872,7 @@ before using these scripts.
 @FIXME{This about backup scripts needs to be written: BS is a shell
 script ....  thus ... @file{backup-specs} is in shell script syntax.}
 
-@FIXME-xref{Script Syntax}, for an explanation of this syntax.
+@FIXME-xref{Script Syntax, for an explanation of this syntax.}
 
 @FIXME{Whats a parameter ....  looked at by the backup scripts
 ... which will be expecting to find ... now syntax ... value is linked
@@ -4993,7 +4993,7 @@ The syntax for running a backup script is:
 
 where @var{time-to-be-run} can be a specific system time, or can be
 @kbd{now}.  If you do not specify a time, the script runs at the time
-specified in @file{backup-specs} (@FIXME-pxref{Script Syntax}).
+specified in @file{backup-specs}.  @FIXME-pxref{Script Syntax}
 
 You should start a script with a tape or disk mounted.  Once you
 start a script, it prompts you for new tapes or disks as it
@@ -5003,15 +5003,15 @@ tape that already contains the end of another multi-volume archive.
 The @code{restore} script prompts for media by its archive volume,
 so to avoid an error message you should keep track of which tape
 (or disk) contains which volume of the archive.  @FIXME{There is
-no such restore script!}.  @FIXME-xref{Scripted Restoration}.
+no such restore script!}  @FIXME-xref{Scripted Restoration}
 @FIXME{Have file names changed?}
 
 The backup scripts write two files on the file system.  The first is a
 record file in @file{/etc/tar-backup/}, which is used by the scripts
 to store and retrieve information about which files were dumped.  This
 file is not meant to be read by humans, and should not be deleted by
-them.  @FIXME-xref{incremental and listed-incremental}, for a more
-detailed explanation of this file.
+them.  @FIXME-xref{incremental and listed-incremental, for a more
+detailed explanation of this file.}
 
 The second file is a log file containing the names of the file systems
 and files dumped, what time the backup was made, and any error
@@ -5058,8 +5058,8 @@ first volume of the archive mounted.  The script will prompt for other
 volumes as they are needed.  If the archive is on tape, you don't need
 to rewind the tape to to its beginning---if the tape head is
 positioned past the beginning of the archive, the script will rewind
-the tape as needed.  @FIXME-xref{Media}, for a discussion of tape
-positioning.
+the tape as needed.  @FIXME-xref{Media, for a discussion of tape
+positioning.}
 
 If you specify @samp{--all} as the @var{files} argument, the
 @code{restore} script extracts all the files in the archived file
@@ -5238,7 +5238,7 @@ archive.  If you specify any operation other than one of these three,
 By default, @code{tar} takes file names from the command line.  However,
 there are other ways to specify file or member names, or to modify the
 manner in which @code{tar} selects the files or members upon which to
-operate; @FIXME{add xref here}.  In general, these methods work both for
+operate. @FIXME{add xref here}  In general, these methods work both for
 specifying the names of files and archive members.
 
 @node files, exclude, Selecting Archive Members, Choosing
@@ -5602,7 +5602,7 @@ $ @kbd{tar -cf @var{archive.tar} --newer="`date -r @var{file}`" /home}
 @end example
 
 @noindent
-which tells @FIXME{need to fill this in!}.
+@FIXME{which tells -- need to fill this in!}
 
 @node recurse, one, after, Choosing
 @section Descending into Directories
@@ -6716,7 +6716,7 @@ Filter the archive through @code{gzip}.
 
 @FIXME{ach; these two bits orig from "compare" (?).  where to put?} Some
 format parameters must be taken into consideration when modifying an
-archive: @FIXME{???}.  Compressed archives cannot be modified.
+archive. @FIXME{???}  Compressed archives cannot be modified.
 
 You can use @samp{--gzip} and @samp{--gunzip} on physical devices
 (tape drives, etc.) and remote files as well as on normal files; data
@@ -7027,8 +7027,8 @@ files are easily and silently lost when files are given away.
 When writing an archive, @code{tar} writes the user id and user name
 separately.  If it can't find a user name (because the user id is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
-and doing a @code{chmod} like when you use @value{op-same-permissions}
-(@FIXME{same-owner?}), it tries to look the name (if one was written)
+and doing a @code{chmod} like when you use @value{op-same-permissions},
+@FIXME{same-owner?} it tries to look the name (if one was written)
 up in @file{/etc/passwd}.  If it fails, then it uses the user id
 stored in the archive instead.
 
@@ -7114,9 +7114,9 @@ information about file types.
 Archives are permitted to have more than one member with the same
 member name.  One way this situation can occur is if more than one
 version of a file has been stored in the archive.  For information
-about adding new versions of a file to an archive, see @ref{update},
-and to learn more about having more than one archive member with the
-same name, see @FIXME-xref{-backup node, when it's written}.
+about adding new versions of a file to an archive, see @ref{update}.
+@FIXME-xref{To learn more about having more than one archive member with the
+same name, see -backup node, when it's written.}
 
 In addition to entries describing archive members, an archive may
 contain entries which @code{tar} itself uses to store information.
@@ -7190,8 +7190,8 @@ ID of the file owners, respectively.  If the operating system does
 not support numeric user or group IDs, these fields should be ignored.
 
 The @code{size} field is the size of the file in bytes; linked files
-are archived with this field specified as zero.  @FIXME-xref{Modifiers}, in
-particular the @value{op-incremental} option.
+are archived with this field specified as zero.  @FIXME-xref{Modifiers, in
+particular the @value{op-incremental} option.}
 
 The @code{mtime} field is the modification time of the file at the time
 it was archived.  It is the ASCII representation of the octal value of
@@ -8281,7 +8281,7 @@ data on the tape will be overwritten (unless it is no longer needed).
 Before reading an archive, you should make sure the tape head is at
 the beginning of the archive you want to read.  (The @code{restore}
 script will find the archive automatically.  @FIXME{There is no such
-restore script!}.  @FIXME-xref{Scripted Restoration}).  @xref{mt}, for
+restore script!}  @FIXME-xref{Scripted Restoration}  @xref{mt}, for
 an explanation of the tape moving utility.
 
 If you want to add new archive file entries to a tape, you should
@@ -8361,7 +8361,7 @@ If you use @value{op-extract} with the @value{op-label} option specified,
 on it) and print an error if the archive label doesn't match the
 @var{archive-name} specified.  @var{archive-name} can be any regular
 expression.  If the labels match, @code{tar} extracts the archive.
-@value{xref-label}.  @FIXME-xref{Matching Format Parameters}.
+@value{xref-label}.  @FIXME-xref{Matching Format Parameters}
 @FIXME{fix cross references} @samp{tar --list --label} will cause
 @code{tar} to print the label.
 
@@ -8567,7 +8567,7 @@ To give the archive a name which will be recorded in it, use the
 @var{volume-label} as the name of the archive to the front of the archive
 which will be displayed when the archive is listed with @value{op-list}.
 If you are creating a multi-volume archive with @value{op-multi-volume}
-(@FIXME-pxref{Using Multiple Tapes}), then the volume label will have
+@FIXME-pxref{Using Multiple Tapes}, then the volume label will have
 @samp{Volume @var{nnn}} appended to the name you give, where @var{nnn} is
 the number of the volume of the archive.  (If you use the @value{op-label}
 option when reading an archive, it checks to make sure the label on the
@@ -8619,8 +8619,8 @@ If you create an archive using both @value{op-label} and
 @value{op-multi-volume}, each volume of the archive will have an
 archive label of the form @samp{@var{archive-label} Volume @var{n}},
 where @var{n} is 1 for the first volume, 2 for the next, and so on.
-@FIXME-xref{Multi-Volume Archives}, for information on creating multiple
-volume archives.
+@FIXME-xref{Multi-Volume Archives, for information on creating multiple
+volume archives.}
 
 If you list or extract an archive using @value{op-label}, @code{tar} will
 print an error if the archive label doesn't match the @var{archive-label}
