@@ -222,7 +222,7 @@ name_init (int argc, char *const *argv)
 	  name_file = stdin;
 	}
       else if (name_file = fopen (files_from_option, "r"), !name_file)
-	FATAL_ERROR ((0, errno, _("Cannot open file %s"), name_file));
+	FATAL_ERROR ((0, errno, _("Cannot open file %s"), files_from_option));
     }
 }
 
@@ -247,7 +247,7 @@ static int
 read_name_from_file (void)
 {
   int character;
-  int counter = 0;
+  size_t counter = 0;
 
   /* FIXME: getc may be called even if character was EOF the last time here.  */
 
@@ -382,7 +382,7 @@ name_gather (void)
 {
   /* Buffer able to hold a single name.  */
   static struct name *buffer;
-  static int allocated_length = 0;
+  static size_t allocated_length = 0;
 
   char *name;
 
@@ -442,7 +442,7 @@ addname (const char *string)
   static char *chdir_name = NULL;
 
   struct name *name;
-  int length;
+  size_t length;
 
   if (strcmp (string, "-C") == 0)
     {
@@ -472,7 +472,7 @@ addname (const char *string)
     }
 
   length = string ? strlen (string) : 0;
-  name = (struct name *) xmalloc ((size_t) (sizeof (struct name) + length));
+  name = (struct name *) xmalloc (sizeof (struct name) + length);
   memset (name, 0, sizeof (struct name) + length);
   name->next = NULL;
 
@@ -481,7 +481,7 @@ addname (const char *string)
       name->fake = 0;
       name->length = length;
       /* FIXME: Possibly truncating a string, here?  Tss, tss, tss!  */
-      strncpy (name->name, string, (size_t) length);
+      strncpy (name->name, string, length);
       name->name[length] = '\0';
     }
   else
@@ -515,7 +515,7 @@ addname (const char *string)
 int
 name_match (const char *path)
 {
-  int length = strlen (path);
+  size_t length = strlen (path);
 
   while (1)
     {
@@ -569,7 +569,7 @@ name_match (const char *path)
 	      && (path[cursor->length] == '\0'
 		  || path[cursor->length] == '/')
 				/* full match on file/dirname */
-	      && strncmp (path, cursor->name, (size_t) cursor->length) == 0)
+	      && strncmp (path, cursor->name, cursor->length) == 0)
 				/* name compare */
 	    {
 	      cursor->found = 1;	/* remember it matched */
@@ -659,7 +659,7 @@ name_expand (void)
 struct name *
 name_scan (const char *path)
 {
-  int length = strlen (path);
+  size_t length = strlen (path);
 
   while (1)
     {
@@ -691,7 +691,7 @@ name_scan (const char *path)
 	      && (path[cursor->length] == '\0'
 		  || path[cursor->length] == '/')
 				/* full match on file/dirname */
-	      && strncmp (path, cursor->name, (size_t) cursor->length) == 0)
+	      && strncmp (path, cursor->name, cursor->length) == 0)
 				/* name compare */
 	    return cursor;	/* we got a match */
 	}
@@ -769,8 +769,8 @@ new_name (const char *path, const char *name)
 /* Excludes names.  */
 
 static char *exclude_pool = NULL;
-static int exclude_pool_size = 0;
-static int allocated_exclude_pool_size = 0;
+static size_t exclude_pool_size = 0;
+static size_t allocated_exclude_pool_size = 0;
 
 static char **simple_exclude_array = NULL;
 static int simple_excludes = 0;
@@ -787,7 +787,7 @@ static int allocated_pattern_excludes = 0;
 void
 add_exclude (char *name)
 {
-  int name_size;
+  size_t name_size;
 
   unquote_string (name);	/* FIXME: unquote in all cases?  If ever? */
   name_size = strlen (name) + 1;
@@ -799,7 +799,7 @@ add_exclude (char *name)
 
       allocated_exclude_pool_size = exclude_pool_size + name_size + 1024;
       exclude_pool = (char *)
-	xrealloc (exclude_pool, (size_t) allocated_exclude_pool_size);
+	xrealloc (exclude_pool, allocated_exclude_pool_size);
 
       for (cursor = simple_exclude_array;
 	   cursor < simple_exclude_array + simple_excludes;
