@@ -1337,9 +1337,9 @@ int	type;
 			    break;
 
 		    case '!':
-    #ifdef __MSDOS__
+#ifdef __MSDOS__
 			    spawnl(P_WAIT,getenv("COMSPEC"),"-",0);
-    #else
+#else
 				    /* JF this needs work! */
 			    switch(fork()) {
 			    case -1:
@@ -1355,7 +1355,7 @@ int	type;
 				    wait(0);
 				    break;
 			    }
-    #endif
+#endif
 			    break;
 		  }
 		  }
