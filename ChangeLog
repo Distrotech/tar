@@ -1,3 +1,11 @@
+2003-10-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* AUTHORS: Updated
+	* NEWS: Updated
+	* src/tar.c (decode_options): Removed superfluous archive format
+	check
+	* doc/tar.texi: Documented new features.
+
 2003-10-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
