@@ -1,3 +1,10 @@
+2003-11-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac (tar_save_LIBS): Bugfix. Thanks Adrian
+	Bunk <bunk@fs.tum.de> for reporting.
+	* doc/tar.texi: Fixed spelling. Thanks Martin Buchholz
+	<martin@xemacs.org> for spotting.
+
 2003-11-04  Paul Eggert  <eggert@twinsun.com>
 
 	* src/xheader.c (xhdr_tab): Make it extern, not static, as C89 and
