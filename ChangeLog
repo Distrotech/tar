@@ -1,5 +1,12 @@
 2004-04-04  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
 
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.13.94
+	* src/system.h: Protect inclusion of <sys/time.h>
+	by ifdef.
+	Declare time() if HAVE_DECL_TIME is 0
+	* tests/.cvsignore: Added mksparse
+
 	* tests/sparse01.sh: New file
 	* tests/multiv02.sh: New file
 	* tests/Makefile.am: Add sparse01.sh and multiv02.sh
