@@ -1,79 +1,110 @@
-<!-- X-URL: %BASE_URL% -->
-<!-- Date: %DATE% -->
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<HTML>
-<HEAD>
- <TITLE>%PACKAGE_NAME% Reference Manual - Table of Contents - GNU Project - Free Software Foundation (FSF)</TITLE>
- <LINK REV="made" HREF="mailto:gray@gnu.org">
- <BASE HREF="%BASE_URL%">
- <META HTTP-EQUIV="Content-Type" CONTENT="text/html; CHARSET=US-ASCII">
- <META NAME="keywords" CONTENT="tar rmt">
-</HEAD>
-<BODY BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#1F00FF" ALINK="#FF0000" VLINK="#9900DD">
-<H1>%PACKAGE_NAME% Reference Manual - Table of Contents</H1>
-<ADDRESS>Free Software Foundation</ADDRESS>
-<ADDRESS>last updated %UPDATED%</ADDRESS>
-<P>
-<A HREF="/graphics/gnu-head-sm.jpg"><IMG SRC="/graphics/gnu-head-sm.jpg"
-   ALT=" [image of the Head of a GNU] "
-   WIDTH="129" HEIGHT="122">&#32;(jpeg 7k)</A>
-<A HREF="/graphics/gnu-head.jpg">(jpeg 21k)</A>
-<A HREF="/philosophy/gif.html">no gifs due to patent problems</A>
-<P>
-<P>
-<P><HR><P>
-<P>
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+ <title>%PACKAGE_NAME% Reference Manual - Table of Contents - GNU Project - Free Software Foundation (FSF)</title>
+ <link rev="made" href="mailto:gray@gnu.org" />
+ <link rel="stylesheet" type="text/css" href="/gnu.css" />
+ <link rel="stylesheet" type="text/css" href="/software/radius/style.css" />
+ <link rel="icon" type="image/png" href="/graphics/gnu-head-icon.png" />
+</head>
+<body>
+<h1>%PACKAGE_NAME% Reference Manual - Table of Contents</h1>
+<address>Free Software Foundation</address>
+<address>last updated %UPDATED%</address>
+
+<p>
+<a href="/graphics/agnuhead.html"><img src="/graphics/gnu-head-sm.jpg"
+   alt=" [image of the Head of a GNU] "
+   width="129" height="122" /></a>
+</p>
+
+<p>The Free Software Foundation publishes
+<a href="http://www.gnu.org/doc/radius.html">GNU Radius Reference
+Manual</a>. You can <a href="http://order.fsf.org">order</a> the manual
+in printed form from the Free Software Foundation.
+</p>
+
+<p>
 This manual is available in the following formats:
-<P>
-<UL>
-  <LI>formatted in <A HREF="html_mono/%PACKAGE%.html">HTML
-      (%HTML_SIZE%K characters)</A> entirely on one web page.</LI>
-  <LI> formatted in <a href="html_chapter/%PACKAGE%_toc.html">HTML</a>
-       with one web page per chapter.</LI>
-  <LI> formatted in <a href="html_node/%PACKAGE%_toc.html">HTML</a>
-       with one web page per node.</LI>
-  <LI>formatted as an
-      <A HREF="other/%PACKAGE%.info.tar.gz">Info document (%INFO_TAR_GZ_SIZE%K characters
-      gzipped tar file)</A>.</LI>
-  <LI>formatted as
-      <A HREF="other/%PACKAGE%.text">ASCII text (%TEXT_SIZE%K characters)</A>.</LI>
-  <LI>formatted as
-      <A HREF="other/%PACKAGE%.dvi.gz">a TeX dvi file (%DVI_GZ_SIZE%K characters
-      gzipped)</A>.</LI>
-  <LI>formatted as
-      <A href="other/%PACKAGE%.ps.gz">a PostScript file (%PS_GZ_SIZE%K characters
-      gzipped)</A>.</LI>
-  <LI>formatted as
-      <A href="other/%PACKAGE%.pdf.gz">a PDF file (%PDF_GZ_SIZE%K characters
-      gzipped)</A>.</LI>
-  <LI>the original
-      <A HREF="other/%PACKAGE%.texi.tar.gz">Texinfo source (%TEXI_TAR_GZ_SIZE%K characters
-      gzipped tar file)</A></LI>
-</UL>
-<P>
+</p>
 
-<HR>
+<ul class="doclist">
+  <li>formatted in <a href="html_mono/%PACKAGE%.html">HTML
+      (%HTML_SIZE%K characters)</a> entirely on one web page.</li>
+      
+  <li>formatted in <a href="html_chapter/%PACKAGE%_toc.html">HTML</a>
+       with one web page per chapter.</li>
 
-Return to <A HREF="/home.html">GNU's home page</A>.
-<P>
-Send FSF &amp; GNU inquiries &amp; questions to
-<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
-Other <A HREF="/home.html#ContactInfo">ways to contact</A> the FSF.
-<P>
-Comments on these web pages to
-<A HREF="mailto:webmasters@www.gnu.org"><EM>webmasters@www.gnu.org</EM></A>,
+  <li>formatted in <a href="html_node/%PACKAGE%_toc.html">HTML</a>
+       with one web page per node.</li>
+
+  <li>formatted as an
+      <a href="other/%PACKAGE%.info.tar.gz">Info document (%INFO_TAR_GZ_SIZE%K characters
+      gzipped tar file)</a>.</li>
+
+  <li>formatted as
+      <a href="other/%PACKAGE%.text">ASCII text (%TEXT_SIZE%K characters)</a>.</li>
+
+  <li>formatted as
+      <a href="other/%PACKAGE%.dvi.gz">a TeX dvi file (%DVI_GZ_SIZE%K characters
+      gzipped)</a>.</li>
+
+  <li>formatted as
+      <a href="other/%PACKAGE%.ps.gz">a PostScript file (%PS_GZ_SIZE%K characters
+      gzipped)</a>.</li>
+
+  <li>formatted as
+      <a href="other/%PACKAGE%.pdf.gz">a PDF file (%PDF_GZ_SIZE%K characters
+      gzipped)</a>.</li>
+
+  <li>the original
+      <a href="other/%PACKAGE%.texi.tar.gz">Texinfo source (%TEXI_TAR_GZ_SIZE%K characters
+      gzipped tar file)</a></li>
+</ul>
+
+<hr />
+
+<p>
+<a href="http://validator.w3.org/check?uri=referer"><img
+          src="http://www.w3.org/Icons/valid-xhtml10"
+          alt="Valid XHTML 1.0!" height="31" width="88" /></a>
+</p>
+
+<div class="copyright">
+<p>Return to <a href="/home.html">GNU's home page</a>.</p>
+
+<p>Please send FSF &amp; GNU inquiries &amp; questions to
+<a href="mailto:gnu@gnu.org"><em>gnu@gnu.org</em></a>.
+There are also <a href="/home.html#ContactInfo">other ways to
+contact</a> the FSF.</p>
+
+<p>Please send comments on these web pages to
+
+<a href="mailto:webmasters@gnu.org"><em>webmasters@gnu.org</em></a>,
+
 send other questions to
-<A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
-<P>
-Copyright (C) 1997, 1998 Free Software Foundation, Inc.,
-59 Temple Place - Suite 330, Boston, MA  02111,  USA
-<P>
-Verbatim copying and distribution of this entire article is
-permitted in any medium, provided this notice is preserved.<HR>
-</BODY>
-</HTML>
-<!--
- Local Variables:
- mode: html
- end:
--->
+<a href="mailto:gnu@gnu.org"><em>gnu@gnu.org</em></a>.</p>
+
+<p>
+Copyright (C) 2001 Free Software Foundation, Inc.,
+59 Temple Place - Suite 330, Boston, MA  02111,  USA</p>
+
+<p>Verbatim copying and distribution of this entire article is
+permitted in any medium, provided this notice is preserved.</p>
+
+<p>
+Updated:
+<!-- hhmts start -->
+$Date: 2004/12/21 13:27:28 $ $Author: gray $
+<!-- hhmts end -->
+</p>
+
+</div>
+</body>
+</html>
+
+<!-- Local Variables: -->
+<!-- mode: html -->
+<!-- end: -->
