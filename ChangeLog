@@ -1,5 +1,89 @@
 2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	Test suite rewritten in autotest.
+	
+	* configure.ac: Updated for autotest
+	* src/tar.c (argp_program_version): Modified.
+	* tests/Makefile.am: Rewritten for autotest.
+
+	* tests/.cvsignore: Updated
+	* tests/append.at: New file
+	* tests/atlocal.in: New file
+	* tests/delete01.at: New file
+	* tests/delete02.at: New file
+	* tests/delete03.at: New file
+	* tests/delete04.at: New file
+	* tests/extrac01.at: New file
+	* tests/extrac02.at: New file
+	* tests/extrac03.at: New file
+	* tests/extrac04.at: New file
+	* tests/extrac05.at: New file
+	* tests/gzip.at: New file
+	* tests/ignfail.at: New file
+	* tests/incremental.at: New file
+	* tests/link01.at: New file
+	* tests/listed01.at: New file
+	* tests/listed02.at: New file
+	* tests/longv7.at: New file
+	* tests/multiv01.at: New file
+	* tests/multiv02.at: New file
+	* tests/multiv03.at: New file
+	* tests/old.at: New file
+	* tests/options.at: New file
+	* tests/recurse.at: New file
+	* tests/same-order01.at: New file
+	* tests/same-order02.at: New file
+	* tests/sparse01.at: New file
+	* tests/testsuite.at: New file
+	* tests/version.at: New file
+	* tests/volume.at: New file
+	* tests/star/gtarfail.at: New file
+	* tests/star/gtarfail2.at: New file
+	* tests/star/multi-fail.at: New file
+	* tests/star/pax-big-10g.at: New file
+	* tests/star/ustar-big-2g.at: New file
+	* tests/star/ustar-big-8g.at: New file
+
+	* tests/preset.in: Removed
+	* tests/before: Removed
+	* tests/after: Removed
+	* tests/version.sh: Removed.
+	* tests/append.sh: Removed.
+	* tests/delete01.sh: Removed.
+	* tests/delete02.sh: Removed.
+	* tests/delete03.sh: Removed.
+	* tests/delete04.sh: Removed.
+	* tests/extrac01.sh: Removed.
+	* tests/extrac02.sh: Removed.
+	* tests/extrac03.sh: Removed.
+	* tests/extrac04.sh: Removed.
+	* tests/extrac05.sh: Removed.
+	* tests/gzip.sh: Removed.
+	* tests/incremen.sh: Removed.
+	* tests/ignfail.sh: Removed.
+	* tests/link01.sh: Removed.
+	* tests/listed01.sh: Removed.
+	* tests/listed02.sh: Removed.
+	* tests/longv7.sh: Removed.
+	* tests/multiv01.sh: Removed.
+	* tests/multiv02.sh: Removed.
+	* tests/multiv03.sh: Removed.
+	* tests/old.sh: Removed.
+	* tests/options.sh: Removed.
+	* tests/same-order01.sh: Removed.
+	* tests/same-order02.sh: Removed.
+	* tests/volume.sh: Removed.
+	* tests/recurse.sh: Removed.
+	* tests/sparse01.sh: Removed.
+	* tests/star/gtarfail.sh: Removed.
+	* tests/star/gtarfail2.sh: Removed.
+	* tests/star/multi-fail.sh: Removed.
+	* tests/star/ustar-big-2g.sh: Removed.
+	* tests/star/ustar-big-8g.sh: Removed.
+	* tests/star/pax-big-10g.sh: Removed.
+
+2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* bootstrap: Install genfile.c from paxutils
 	* tests/genfile.c: Removed. Integrated into
 	paxutils.
