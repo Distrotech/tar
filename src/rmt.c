@@ -21,10 +21,6 @@ char copyright[] =
  All rights reserved.\n";
 #endif /* not lint */
 
-#ifndef lint
-static char sccsid[] = "@(#)rmt.c	5.4 (Berkeley) 6/29/88";
-#endif /* not lint */
-
 /*
  * rmt
  */
@@ -32,15 +28,28 @@ static char sccsid[] = "@(#)rmt.c	5.4 (Berkeley) 6/29/88";
 #include <sgtty.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#ifdef GENTAPE			/* e.g. ISC UNIX */
+#ifdef HAVE_SYS_GENTAPE_H	/* e.g., ISC UNIX */
 #include <sys/gentape.h>
 #else
 #include <sys/mtio.h>
 #endif
 #include <errno.h>
 
-#if defined (i386) && defined (AIX)
+#if defined (_I386) && defined (_AIX)
 #include <fcntl.h>
+#endif
+
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#else
+long	lseek();
+#endif
+
+#ifdef STDC_HEADERS
+#include <string.h>
+#include <stdlib.h>
+#else
+extern char *malloc();
 #endif
 
 int	tape = -1;
@@ -48,6 +57,8 @@ int	tape = -1;
 char	*record;
 int	maxrecsize = -1;
 char	*checkbuf();
+void	getstring();
+void	error();
 
 #define	SSIZE	64
 char	device[SSIZE];
@@ -57,13 +68,12 @@ extern	errno;
 extern char	*sys_errlist[];
 char	resp[BUFSIZ];
 
-long	lseek();
-
 FILE	*debug;
 #define	DEBUG(f)	if (debug) fprintf(debug, f)
 #define	DEBUG1(f,a)	if (debug) fprintf(debug, f, a)
 #define	DEBUG2(f,a1,a2)	if (debug) fprintf(debug, f, a1, a2)
 
+int
 main(argc, argv)
 	int argc;
 	char **argv;
@@ -209,6 +219,7 @@ ioerror:
 	goto top;
 }
 
+void
 getstring(bp)
 	char *bp;
 {
@@ -229,8 +240,6 @@ checkbuf(record, size)
 	char *record;
 	int size;
 {
-	extern char *malloc();
-
 	if (size <= maxrecsize)
 		return (record);
 	if (record != 0)
@@ -251,6 +260,7 @@ checkbuf(record, size)
 	return (record);
 }
 
+void
 error(num)
 	int num;
 {
