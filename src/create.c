@@ -1397,7 +1397,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
       && OLDER_STAT_TIME (st->stat, m)
       && (!after_date_option || OLDER_STAT_TIME (st->stat, c)))
     {
-      if (!incremental_option)
+      if (!incremental_option && verbose_option)
 	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
 	       quotearg_colon (p)));
       return;
