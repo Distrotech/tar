@@ -3,6 +3,7 @@ Makefile
 preset
 .deps
 genfile
+mksparse
 tmp-*
 directory
 archive
