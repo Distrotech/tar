@@ -22,62 +22,10 @@
 #include <hash.h>
 #include <quotearg.h>
 #include "common.h"
-
-/* Variable sized generic character buffers.  */
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+#include <obstack.h>
 
-struct accumulator
-{
-  size_t allocated;
-  size_t length;
-  char *pointer;
-};
-
-/* Amount of space guaranteed just after a reallocation.  */
-#define ACCUMULATOR_SLACK 50
-
-/* Return the accumulated data from an ACCUMULATOR buffer.  */
-static char *
-get_accumulator (struct accumulator *accumulator)
-{
-  return accumulator->pointer;
-}
-
-/* Allocate and return a new accumulator buffer.  */
-static struct accumulator *
-new_accumulator (void)
-{
-  struct accumulator *accumulator
-    = xmalloc (sizeof (struct accumulator));
-
-  accumulator->allocated = ACCUMULATOR_SLACK;
-  accumulator->pointer = xmalloc (ACCUMULATOR_SLACK);
-  accumulator->length = 0;
-  return accumulator;
-}
-
-/* Deallocate an ACCUMULATOR buffer.  */
-static void
-delete_accumulator (struct accumulator *accumulator)
-{
-  free (accumulator->pointer);
-  free (accumulator);
-}
-
-/* At the end of an ACCUMULATOR buffer, add a DATA block of SIZE bytes.  */
-static void
-add_to_accumulator (struct accumulator *accumulator,
-		    const char *data, size_t size)
-{
-  if (accumulator->length + size > accumulator->allocated)
-    {
-      accumulator->allocated = accumulator->length + size + ACCUMULATOR_SLACK;
-      accumulator->pointer =
-	xrealloc (accumulator->pointer, accumulator->allocated);
-    }
-  memcpy (accumulator->pointer + accumulator->length, data, size);
-  accumulator->length += size;
-}
-
 /* Incremental dump specialities.  */
 
 /* Which child files to save under a directory.  */
@@ -169,83 +117,77 @@ compare_dirents (const void *first, const void *second)
 		 (*(char *const *) second) + 1);
 }
 
-char *
-get_directory_contents (char *path, dev_t device)
+/* Recursively scan the given PATH.  */
+static void
+scan_path (struct obstack *stk, char *path, dev_t device)
 {
-  struct accumulator *accumulator;
+  char *dirp = savedir (path);	/* for scanning directory */
+  char const *entry;	/* directory entry being scanned */
+  size_t entrylen;	/* length of directory entry */
+  char *name_buffer;		/* directory, `/', and directory member */
+  size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
+  size_t name_length;		/* used length in name_buffer */
+  struct directory *directory; /* for checking if already already seen */
+  enum children children;
 
-  /* Recursively scan the given PATH.  */
+  if (! dirp)
+    {
+      savedir_error (path);
+    }
+  errno = 0;
 
-  {
-    char *dirp = savedir (path);	/* for scanning directory */
-    char const *entry;	/* directory entry being scanned */
-    size_t entrylen;	/* length of directory entry */
-    char *name_buffer;		/* directory, `/', and directory member */
-    size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
-    size_t name_length;		/* used length in name_buffer */
-    struct directory *directory; /* for checking if already already seen */
-    enum children children;
+  name_buffer_size = strlen (path) + NAME_FIELD_SIZE;
+  name_buffer = xmalloc (name_buffer_size + 2);
+  strcpy (name_buffer, path);
+  if (! ISSLASH (path[strlen (path) - 1]))
+    strcat (name_buffer, "/");
+  name_length = strlen (name_buffer);
 
-    if (! dirp)
+  directory = find_directory (path);
+  children = directory ? directory->children : CHANGED_CHILDREN;
+  
+  if (dirp && children != NO_CHILDREN)
+    for (entry = dirp;
+	 (entrylen = strlen (entry)) != 0;
+	 entry += entrylen + 1)
       {
-        savedir_error (path);
-      }
-    errno = 0;
-
-    name_buffer_size = strlen (path) + NAME_FIELD_SIZE;
-    name_buffer = xmalloc (name_buffer_size + 2);
-    strcpy (name_buffer, path);
-    if (! ISSLASH (path[strlen (path) - 1]))
-      strcat (name_buffer, "/");
-    name_length = strlen (name_buffer);
-
-    directory = find_directory (path);
-    children = directory ? directory->children : CHANGED_CHILDREN;
-
-    accumulator = new_accumulator ();
-
-    if (dirp && children != NO_CHILDREN)
-      for (entry = dirp;
-	   (entrylen = strlen (entry)) != 0;
-	   entry += entrylen + 1)
-	{
-	  if (name_buffer_size <= entrylen + name_length)
-	    {
-	      do
-		name_buffer_size += NAME_FIELD_SIZE;
-	      while (name_buffer_size <= entrylen + name_length);
-	      name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
-	    }
-	  strcpy (name_buffer + name_length, entry);
-
-	  if (excluded_name (name_buffer))
-	    add_to_accumulator (accumulator, "N", 1);
-	  else
-	    {
-	      struct stat stat_data;
-
-	      if (deref_stat (dereference_option, name_buffer, &stat_data))
-		{
-		  stat_diag (name_buffer);
-		  continue;
-		}
-
-	      if (S_ISDIR (stat_data.st_mode))
-		{
-		  bool nfs = NFS_FILE_STAT (stat_data);
-
-		  if (directory = find_directory (name_buffer), directory)
-		    {
-		      /* With NFS, the same file can have two different devices
-			 if an NFS directory is mounted in multiple locations,
-			 which is relatively common when automounting.
-			 To avoid spurious incremental redumping of
-			 directories, consider all NFS devices as equal,
-			 relying on the i-node to establish differences.  */
-
-		      if (! (((directory->nfs & nfs)
-			      || directory->device_number == stat_data.st_dev)
-			     && directory->inode_number == stat_data.st_ino))
+	if (name_buffer_size <= entrylen + name_length)
+	  {
+	    do
+	      name_buffer_size += NAME_FIELD_SIZE;
+	    while (name_buffer_size <= entrylen + name_length);
+	    name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
+	  }
+	strcpy (name_buffer + name_length, entry);
+	
+	if (excluded_name (name_buffer))
+	  obstack_1grow (stk, 'N');
+	else
+	  {
+	    struct stat stat_data;
+	    
+	    if (deref_stat (dereference_option, name_buffer, &stat_data))
+	      {
+		stat_diag (name_buffer);
+		continue;
+	      }
+	    
+	    if (S_ISDIR (stat_data.st_mode))
+	      {
+		bool nfs = NFS_FILE_STAT (stat_data);
+		
+		if (directory = find_directory (name_buffer), directory)
+		  {
+		    /* With NFS, the same file can have two different devices
+		       if an NFS directory is mounted in multiple locations,
+		       which is relatively common when automounting.
+		       To avoid spurious incremental redumping of
+		       directories, consider all NFS devices as equal,
+		       relying on the i-node to establish differences.  */
+		    
+		    if (! (((directory->nfs & nfs)
+			    || directory->device_number == stat_data.st_dev)
+			   && directory->inode_number == stat_data.st_ino))
 			{
 			  if (verbose_option)
 			    WARN ((0, 0, _("%s: Directory has been renamed"),
@@ -255,113 +197,122 @@ get_directory_contents (char *path, dev_t device)
 			  directory->device_number = stat_data.st_dev;
 			  directory->inode_number = stat_data.st_ino;
 			}
-		      directory->found = 1;
-		    }
-		  else
-		    {
-		      if (verbose_option)
-			WARN ((0, 0, _("%s: Directory is new"),
-			       quotearg_colon (name_buffer)));
-		      directory = note_directory (name_buffer,
-						  stat_data.st_dev,
-						  stat_data.st_ino, nfs, 1);
-		      directory->children =
-			((listed_incremental_option
-			  || newer_mtime_option <= stat_data.st_mtime
-			  || (after_date_option &&
-			      newer_ctime_option <= stat_data.st_ctime))
-			 ? ALL_CHILDREN
-			 : CHANGED_CHILDREN);
-		    }
+		    directory->found = 1;
+		  }
+		else
+		  {
+		    if (verbose_option)
+		      WARN ((0, 0, _("%s: Directory is new"),
+			     quotearg_colon (name_buffer)));
+		    directory = note_directory (name_buffer,
+						stat_data.st_dev,
+						stat_data.st_ino, nfs, 1);
+		    directory->children =
+		      ((listed_incremental_option
+			|| newer_mtime_option <= stat_data.st_mtime
+			|| (after_date_option &&
+			    newer_ctime_option <= stat_data.st_ctime))
+		       ? ALL_CHILDREN
+		       : CHANGED_CHILDREN);
+		  }
+		
+		if (one_file_system_option && device != stat_data.st_dev)
+		  directory->children = NO_CHILDREN;
+		else if (children == ALL_CHILDREN)
+		  directory->children = ALL_CHILDREN;
 
-		  if (one_file_system_option && device != stat_data.st_dev)
-		    directory->children = NO_CHILDREN;
-		  else if (children == ALL_CHILDREN)
-		    directory->children = ALL_CHILDREN;
+		obstack_1grow (stk, 'D');
+	      }
 
-		  add_to_accumulator (accumulator, "D", 1);
-		}
-
-	      else if (one_file_system_option && device != stat_data.st_dev)
-		add_to_accumulator (accumulator, "N", 1);
+	    else if (one_file_system_option && device != stat_data.st_dev)
+	      obstack_1grow (stk, 'N');
 
 #ifdef S_ISHIDDEN
-	      else if (S_ISHIDDEN (stat_data.st_mode))
-		{
-		  add_to_accumulator (accumulator, "D", 1);
-		  add_to_accumulator (accumulator, entry, entrylen);
-		  add_to_accumulator (accumulator, "A", 2);
-		  continue;
-		}
+	    else if (S_ISHIDDEN (stat_data.st_mode))
+	      {
+		obstack_1grow (stk, 'D');
+		obstack_grow (stk, entry, entrylen);
+		obstack_grow (stk, "A", 2);
+		continue;
+	      }
 #endif
 
+	    else
+	      if (children == CHANGED_CHILDREN
+		  && stat_data.st_mtime < newer_mtime_option
+		  && (!after_date_option
+		      || stat_data.st_ctime < newer_ctime_option))
+		obstack_1grow (stk, 'N');
 	      else
-		if (children == CHANGED_CHILDREN
-		    && stat_data.st_mtime < newer_mtime_option
-		    && (!after_date_option
-			|| stat_data.st_ctime < newer_ctime_option))
-		  add_to_accumulator (accumulator, "N", 1);
-		else
-		  add_to_accumulator (accumulator, "Y", 1);
-	    }
-
-	  add_to_accumulator (accumulator, entry, entrylen + 1);
-	}
-
-    add_to_accumulator (accumulator, "\000\000", 2);
-
-    free (name_buffer);
-    if (dirp)
-      free (dirp);
-  }
-
-  /* Sort the contents of the directory, now that we have it all.  */
-
-  {
-    char *pointer = get_accumulator (accumulator);
-    size_t counter;
-    char *cursor;
-    char *buffer;
-    char **array;
-    char **array_cursor;
-
-    counter = 0;
-    for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
-      counter++;
-
-    if (! counter)
-      {
-	delete_accumulator (accumulator);
-	return 0;
+		obstack_1grow (stk, 'Y');
+	  }
+	
+	obstack_grow (stk, entry, entrylen + 1);
       }
 
-    array = xmalloc (sizeof (char *) * (counter + 1));
-
-    array_cursor = array;
-    for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
-      *array_cursor++ = cursor;
-    *array_cursor = 0;
-
-    qsort (array, counter, sizeof (char *), compare_dirents);
-
-    buffer = xmalloc (cursor - pointer + 2);
-
-    cursor = buffer;
-    for (array_cursor = array; *array_cursor; array_cursor++)
-      {
-	char *string = *array_cursor;
-
-	while ((*cursor++ = *string++))
-	  continue;
-      }
-    *cursor = '\0';
-
-    delete_accumulator (accumulator);
-    free (array);
-    return buffer;
-  }
+  obstack_grow (stk, "\000\000", 2);
+  
+  free (name_buffer);
+  if (dirp)
+    free (dirp);
 }
+
+/* Sort the contents of the obstack, anr convert it to the char * */
+static char *
+sort_obstack (struct obstack *stk)
+{
+  char *pointer = obstack_finish (stk);
+  size_t counter;
+  char *cursor;
+  char *buffer;
+  char **array;
+  char **array_cursor;
+  
+  counter = 0;
+  for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
+    counter++;
+  
+  if (!counter)
+    return NULL;
+
+  array = obstack_alloc (stk, sizeof (char *) * (counter + 1));
+  
+  array_cursor = array;
+  for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
+    *array_cursor++ = cursor;
+  *array_cursor = 0;
+
+  qsort (array, counter, sizeof (char *), compare_dirents);
+
+  buffer = xmalloc (cursor - pointer + 2);
+
+  cursor = buffer;
+  for (array_cursor = array; *array_cursor; array_cursor++)
+    {
+      char *string = *array_cursor;
+      
+      while ((*cursor++ = *string++))
+	continue;
+    }
+  *cursor = '\0';
+  return buffer;
+}
+
+char *
+get_directory_contents (char *path, dev_t device)
+{
+  struct obstack stk;
+  char *buffer;
+
+  obstack_init (&stk);
+  scan_path (&stk, path, device);
+  buffer = sort_obstack (&stk);
+  obstack_free (&stk, NULL);
+  return buffer;;
+}
+
 
+
 static FILE *listed_incremental_stream;
 
 void
