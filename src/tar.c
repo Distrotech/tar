@@ -322,7 +322,7 @@ static struct argp_option options[] = {
   {"ignore-failed-read", IGNORE_FAILED_READ_OPTION, 0, 0,
    N_("do not exit with nonzero on unreadable files"), 21 },
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
-   N_("process only the NUMth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
+   N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
   {"seek", 'n', NULL, 0,
    N_("Archive is seekable"), 21 },
     
