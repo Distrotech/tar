@@ -44,6 +44,10 @@
 
 /* Local declarations.  */
 
+#ifndef DEFAULT_ARCHIVE_FORMAT
+# define DEFAULT_ARCHIVE_FORMAT GNU_FORMAT
+#endif
+
 #ifndef DEFAULT_ARCHIVE
 # define DEFAULT_ARCHIVE "tar.out"
 #endif
@@ -113,22 +117,23 @@ confirm (const char *message_action, const char *message_name)
   }
 }
 
+static struct fmttab {
+  char const *name;
+  enum archive_format fmt;
+} const fmttab[] = {
+  { "v7",      V7_FORMAT },
+  { "oldgnu",  OLDGNU_FORMAT },	
+  { "posix",   POSIX_FORMAT },
+#if 0 /* not fully supported yet */
+  { "star",    STAR_FORMAT },
+#endif
+  { "gnu",     GNU_FORMAT },
+  { NULL,	 0 }
+};
+
 static void
 set_archive_format (char const *name)
 {
-  static struct fmttab {
-    char const *name;
-    enum archive_format fmt;
-  } const fmttab[] = {
-    { "v7",      V7_FORMAT },
-    { "oldgnu",  OLDGNU_FORMAT },	
-    { "posix",   POSIX_FORMAT },
-#if 0 /* not fully supported yet */
-    { "star",    STAR_FORMAT },
-#endif
-    { "gnu",     GNU_FORMAT },
-    { NULL,	 0 }
-  };
   struct fmttab const *p;
 
   for (p = fmttab; strcmp (p->name, name) != 0; )
@@ -141,6 +146,18 @@ set_archive_format (char const *name)
   
   archive_format = p->fmt;
 }
+
+static const char *
+archive_format_string (enum archive_format fmt)
+{
+  struct fmttab const *p;
+
+  for (p = fmttab; p->name; p++)
+    if (p->fmt == fmt)
+      return p->name;
+  return "unknown?";
+}
+
 
 /* Options.  */
 
@@ -479,12 +496,10 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\
 	     stdout);
       printf (_("\
 \n\
-GNU tar cannot read nor produce `--posix' archives.  If POSIXLY_CORRECT\n\
-is set in the environment, GNU extensions are disallowed with `--posix'.\n\
-Support for POSIX is only partially implemented, don't count on it yet.\n\
 ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; DATE may be a textual date\n\
 or a file name starting with `/' or `.', in which case the file's date is used.\n\
-*This* `tar' defaults to `-f%s -b%d'.\n"),
+*This* `tar' defaults to `--format=%s -f%s -b%d'.\n"),
+	      archive_format_string (DEFAULT_ARCHIVE_FORMAT),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
       printf (_("\nReport bugs to <%s>.\n"), PACKAGE_BUGREPORT);
     }
@@ -1204,7 +1219,7 @@ see the file named COPYING for details."));
   /* Derive option values and check option consistency.  */
 
   if (archive_format == DEFAULT_FORMAT)
-    archive_format = GNU_FORMAT;
+    archive_format = DEFAULT_ARCHIVE_FORMAT;
 
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
     archive_format = POSIX_FORMAT;
