@@ -6171,8 +6171,9 @@ ignores case when excluding @samp{makefile}, but not when excluding
 @table @option
 @item --anchored
 @itemx --no-anchored
-If anchored (the default), a pattern must match an initial subsequence
-of the name's components.  Otherwise, the pattern can match any subsequence.
+If anchored, a pattern must match an initial subsequence
+of the name's components. Otherwise, the pattern can match any
+subsequence. Default is @option{--no-anchored}.
 
 @item --ignore-case
 @itemx --no-ignore-case
