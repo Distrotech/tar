@@ -443,6 +443,8 @@ name_gather (void)
 	  namelist = buffer;
 	  nametail = &namelist->next;
 	}
+      else if (change_dir)
+	addname (0, change_dir);
     }
   else
     {
