@@ -107,7 +107,7 @@ decode_record (char **p, struct tar_stat_info *st)
 void
 xheader_decode (struct tar_stat_info *st)
 {
-  char *p = extended_header.buffer;
+  char *p = extended_header.buffer + BLOCKSIZE;
   char *endp = &extended_header.buffer[extended_header.size-1];
 
   while (p < endp)
@@ -136,29 +136,31 @@ xheader_store (char const *keyword, struct tar_stat_info const *st)
 void
 xheader_read (union block *p, size_t size)
 {
-  size_t i, j;
+  size_t j = 0;
   size_t nblocks;
 
   free (extended_header.buffer);
+  size += BLOCKSIZE;
   extended_header.size = size;
   nblocks = (size + BLOCKSIZE - 1) / BLOCKSIZE;
   extended_header.buffer = xmalloc (size + 1);
 
-  set_next_block_after (p);
-  for (i = j = 0; i < nblocks; i++)
+  do
     {
-      size_t len;
+      size_t len = size;
 
-      p = find_next_block ();
-      len = size;
       if (len > BLOCKSIZE)
 	len = BLOCKSIZE;
+      
       memcpy (&extended_header.buffer[j], p->buffer, len);
       set_next_block_after (p);
+
+      p = find_next_block ();
 
       j += len;
       size -= len;
     }
+  while (size > 0);
 }
 
 static size_t
