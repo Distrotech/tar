@@ -160,7 +160,7 @@ tar_save_LIBS=$LIBS
   AC_CHECK_FUNCS(clock_gettime)
 LIBS=$tar_save_LIBS
 
-AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink)
+AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([valloc])
