@@ -1105,8 +1105,9 @@ thing.}
 For version 1.12, Daniel Hagerty contributed a great deal of technical
 consulting.  In particular, he is the primary author of @ref{Backups}.
 
-In July, 2003 @GNUTAR{} was put on CVS at @url{savannah.gnu.org}, and
-an active development and maintenance work has started
+In July, 2003 @GNUTAR{} was put on CVS at savannah.gnu.org
+(see @url{http://savannah.gnu.org/projects/tar}), and
+active development and maintenance work has started
 again. Currently @GNUTAR{} is being maintained by Paul Eggert, Sergey
 Poznyakoff and Jeff Bailey.
 
@@ -3693,8 +3694,8 @@ The @value{op-totals} option---which is only meaningful when used with
 amount written to the archive, after it has been fully created.
 
 The @value{op-checkpoint} option prints an occasional message
-as @command{tar} reads or writes the archive.  In fact, it print
-directory names while reading the archive.  It is designed for
+as @command{tar} reads or writes the archive. In fact, it prints
+a message each 10 records read or written. It is designed for
 those who don't need the more detailed (and voluminous) output of
 @value{op-block-number}, but do want visual confirmation that @command{tar}
 is actually making forward progress.
