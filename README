@@ -2,8 +2,8 @@ Please glance through *all* sections of this
 `README' file before starting configuration.  Also make sure you read files
 `ABOUT-NLS' and `INSTALL' if you are not familiar with them already.
 
-If you got the `tar' distribution in `shar' format, timestamps ought to be
-properly restored, do not ignore such complaints at `unshar' time.
+If you got the `tar' distribution in `shar' format, time stamps ought to be
+properly restored; do not ignore such complaints at `unshar' time.
 
 GNU `tar' saves many files together into a single tape or disk
 archive, and can restore individual files from the archive.  It includes
@@ -86,8 +86,8 @@ to a value from the table below, before configuration (see `INSTALL').
 
 * Failed `incremen.sh'.
 
-In an NFS environment, lack of synchronisation between machine clocks
-might create difficulties to any tool comparing dates and file timestamps,
+In an NFS environment, lack of synchronization between machine clocks
+might create difficulties to any tool comparing dates and file time stamps,
 like `tar' in incremental dumps.  This has been a recurrent problem in
 GNU Makefiles for the last few years.  We would like a general solution.
 
@@ -140,13 +140,13 @@ matters.  See previous section for such.
 * File attributes.
 
 About *security*, it is probable that future releases of `tar' will have
-some behaviour changed.  There are many pending suggestions to choose from.
+some behavior changed.  There are many pending suggestions to choose from.
 Today, extracting an archive not being `root', `tar' will restore suid/sgid
 bits on files but owned by the extracting user.  `root' automatically gets
-a lot of special priviledges, `-p' might later become required to get them.
+a lot of special privileges, `-p' might later become required to get them.
 
 GNU `tar' does not properly restore symlink attributes.  Various systems
-implement flavours of symbolic links showing different behaviour and
+implement flavors of symbolic links showing different behavior and
 properties.  We did not successfully sorted all these out yet.  Currently,
 the `lchown' call will be used if available, but that's all.
 
@@ -167,10 +167,10 @@ The emphasis from 1.11.2 to 1.12 has been on solving the main portability,
 execution or usability bugs.  This was accompanied all over with an
 internal cleanup in the sources, and the reassembly of a `tar' manual.
 
-The `BACKLOG' file shows an approximative priorisation of the many pending
+The `BACKLOG' file shows approximate priorities of the many pending
 problems and suggestions.  Besides pending problems and all other matters
 listed above, the cleanup is planned to continue and extend to the general
-organisation of the code, preparing a long time in advance for a possible
+organization of the code, preparing a long time in advance for a possible
 merge of the `cpio' and `tar' distributions, into some common `paxutils'.
 We also want to address some long-awaited performance issues (for example:
 double buffering) or enhancements (for example: per-file compression).
