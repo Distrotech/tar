@@ -110,7 +110,7 @@ read_and (void (*do_something) ())
 		}
 	      if (show_omitted_dirs_option
 		  && current_header->header.typeflag == DIRTYPE)
-		WARN ((0, 0, _("Omitting %s"), current_file_name));
+		WARN ((0, 0, _("Omitting %s"), quote (current_file_name)));
 
 	      /* Skip past it in the archive.  */
 
@@ -177,7 +177,7 @@ read_and (void (*do_something) ())
       break;
     }
 
-  apply_delayed_set_stat ();
+  apply_delayed_set_stat ("");
   close_archive ();
   names_notfound ();		/* print names not found */
 }
@@ -229,9 +229,10 @@ list_archive (void)
 				(data_block->buffer + written - 1));
 	  if (check != written)
 	    {
-	      ERROR ((0, errno, _("Only wrote %lu of %lu bytes to file %s"),
+	      int e = errno;
+	      ERROR ((0, e, _("Only wrote %lu of %lu bytes to file %s"),
 		      (unsigned long) check,
-		      (unsigned long) written, current_file_name));
+		      (unsigned long) written, quote (current_file_name)));
 	      skip_file (size - written);
 	      break;
 	    }
@@ -683,14 +684,14 @@ from_header (char const *where0, size_t digs, char const *type,
 	  if (!o)
 	    {
 	      o = clone_quoting_options (0);
-	      set_quoting_style (o, c_quoting_style);
+	      set_quoting_style (o, locale_quoting_style);
 	    }
 
 	  while (where0 != lim && ! lim[-1])
 	    lim--;
 	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
 	  ERROR ((0, 0,
-		  _("Archive contains `%.*s' where numeric %s value expected"),
+		  _("Archive contains %.*s where numeric %s value expected"),
 		  (int) sizeof buf, buf, type));
 	}
 
@@ -931,7 +932,6 @@ print_header (void)
   				/* holds formatted size or major,minor */
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   int pad;
-  char *name;
 
   if (block_number_option)
     {
@@ -943,16 +943,7 @@ print_header (void)
   if (verbose_option <= 1)
     {
       /* Just the fax, mam.  */
-
-      char *quoted_name = quote_copy_string (current_file_name);
-
-      if (quoted_name)
-	{
-	  fprintf (stdlis, "%s\n", quoted_name);
-	  free (quoted_name);
-	}
-      else
-	fprintf (stdlis, "%s\n", current_file_name);
+      fprintf (stdlis, "%s\n", quotearg (current_file_name));
     }
   else
     {
@@ -1066,37 +1057,16 @@ print_header (void)
       fprintf (stdlis, "%s %s/%s %*s%s %s",
 	       modes, user, group, ugswidth - pad, "", size, time_stamp);
 
-      name = quote_copy_string (current_file_name);
-      if (name)
-	{
-	  fprintf (stdlis, " %s", name);
-	  free (name);
-	}
-      else
-	fprintf (stdlis, " %s", current_file_name);
+      fprintf (stdlis, " %s", quotearg (current_file_name));
 
       switch (current_header->header.typeflag)
 	{
 	case SYMTYPE:
-	  name = quote_copy_string (current_link_name);
-	  if (name)
-	    {
-	      fprintf (stdlis, " -> %s\n", name);
-	      free (name);
-	    }
-	  else
-	    fprintf (stdlis, " -> %s\n", current_link_name);
+	  fprintf (stdlis, " -> %s\n", quotearg (current_link_name));
 	  break;
 
 	case LNKTYPE:
-	  name = quote_copy_string (current_link_name);
-	  if (name)
-	    {
-	      fprintf (stdlis, _(" link to %s\n"), name);
-	      free (name);
-	    }
-	  else
-	    fprintf (stdlis, _(" link to %s\n"), current_link_name);
+	  fprintf (stdlis, _(" link to %s\n"), quotearg (current_link_name));
 	  break;
 
 	default:
@@ -1144,7 +1114,6 @@ void
 print_for_mkdir (char *pathname, int length, mode_t mode)
 {
   char modes[11];
-  char *name;
 
   if (verbose_option > 1)
     {
@@ -1159,16 +1128,9 @@ print_for_mkdir (char *pathname, int length, mode_t mode)
 	  fprintf (stdlis, _("block %s: "),
 		   STRINGIFY_BIGINT (current_block_ordinal (), buf));
 	}
-      name = quote_copy_string (pathname);
-      if (name)
-	{
-	  fprintf (stdlis, "%s %*s %.*s\n", modes, ugswidth + DATEWIDTH,
-		   _("Creating directory:"), length, name);
-	  free (name);
-	}
-      else
-	fprintf (stdlis, "%s %*s %.*s\n", modes, ugswidth + DATEWIDTH,
-		 _("Creating directory:"), length, pathname);
+
+      fprintf (stdlis, "%s %*s %.*s\n", modes, ugswidth + DATEWIDTH,
+	       _("Creating directory:"), length, quotearg (pathname));
     }
 }
 
