@@ -132,6 +132,21 @@ write_recent_blocks (union block *h, size_t blocks)
     }
 }
 
+static void
+write_recent_bytes (char *data, size_t bytes)
+{
+  size_t blocks = bytes / BLOCKSIZE;
+  size_t rest = bytes - blocks * BLOCKSIZE;
+
+  write_recent_blocks ((union block *)data, blocks);
+  memcpy (new_record[new_blocks].buffer, data + blocks * BLOCKSIZE, rest);
+  if (rest < BLOCKSIZE)
+    memset (new_record[new_blocks].buffer + rest, 0, BLOCKSIZE - rest);
+  new_blocks++;
+  if (new_blocks == blocking_factor)
+    write_record (1);
+}
+
 void
 delete_archive_members (void)
 {
@@ -240,7 +255,10 @@ delete_archive_members (void)
 	  if (current_block == record_end)
 	    flush_archive ();
 	  status = read_header (false);
-
+	  
+	  if (extended_header.size)
+	    xheader_decode (&current_stat_info);
+	  
 	  if (status == HEADER_ZERO_BLOCK && ignore_zeros_option)
 	    {
 	      set_next_block_after (current_header);
@@ -280,8 +298,16 @@ delete_archive_members (void)
 
 	  /* Copy header.  */
 
-	  write_recent_blocks (recent_long_name, recent_long_name_blocks);
-	  write_recent_blocks (recent_long_link, recent_long_link_blocks);
+	  if (extended_header.size)
+	    {
+	      write_recent_bytes (extended_header.buffer,
+				  extended_header.size);
+	    }
+	  else
+	    {
+	      write_recent_blocks (recent_long_name, recent_long_name_blocks);
+	      write_recent_blocks (recent_long_link, recent_long_link_blocks);
+	    }
 	  new_record[new_blocks] = *current_header;
 	  new_blocks++;
 	  blocks_to_keep
