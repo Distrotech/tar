@@ -470,7 +470,7 @@ int device;
 
 	for(n=namelist;n;n=n->next) {
 		if(!strcmp(n->name,p)) {
-			n->dir_contents = new_buf;
+		  	n->dir_contents = new_buf ? new_buf : "\0\0\0\0";
 			break;
 		}
 	}
