@@ -103,7 +103,7 @@ OBJ1 =	tar.o create.o extract.o buffer.o getoldopt.o update.o gnu.o mangle.o
 OBJ2 =	version.o list.o names.o diffarch.o port.o fnmatch.o getopt.o @MALLOC@
 OBJ3 =  getopt1.o regex.o getdate.o $(RTAPELIB)
 OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
-AUX =   README INSTALL COPYING ChangeLog Makefile.in makefile.pc \
+AUX =   README INSTALL NEWS COPYING ChangeLog Makefile.in makefile.pc \
 	configure configure.in \
 	tar.h fnmatch.h pathmax.h port.h open3.h getopt.h regex.h \
 	rmt.h rmt.c rtapelib.c alloca.c \
@@ -111,7 +111,8 @@ AUX =   README INSTALL COPYING ChangeLog Makefile.in makefile.pc \
 	level-0 level-1 backup-specs testpad.c getpagesize.h
 #	tar.texinfo tar.info* texinfo.tex \
 
-all:	@PROGS@ # tar.info
+all:	@PROGS@ 
+# tar.info
 
 .c.o:
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -I. $<
@@ -120,7 +121,7 @@ tar:	$(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 rmt:	rmt.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(srcdir)/rmt.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(srcdir)/rmt.c $(LIBS)
 
 tar.info: tar.texinfo
 	makeinfo $(srcdir)/tar.texinfo
