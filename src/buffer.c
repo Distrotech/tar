@@ -1349,8 +1349,8 @@ backspace_output (void)
       {
 	/* Lseek failed.  Try a different method.  */
 
-	WARN ((0, 0, _("\
-Could not backspace archive file; it may be unreadable without -i")));
+	WARN ((0, 0,
+	       _("Could not backspace archive file; it may be unreadable without -i")));
 
 	/* Replace the first part of the record with NULs.  */
 
