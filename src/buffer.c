@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright (C) 1988, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92, 93, 94, 96, 97, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -1337,7 +1337,7 @@ backspace_output (void)
 #endif
 
   {
-    off_t position = rmtlseek (archive, 0L, 1);
+    off_t position = rmtlseek (archive, (off_t) 0, 1);
 
     /* Seek back to the beginning of this record and start writing there.  */
 
@@ -1385,7 +1385,7 @@ close_archive (void)
     {
       off_t pos;
 
-      pos = rmtlseek (archive, 0L, 1);
+      pos = rmtlseek (archive, (off_t) 0, 1);
 #if MSDOS
       rmtwrite (archive, "", 0);
 #else
