@@ -717,7 +717,16 @@ extract_archive (void)
     print_header (-1);
 
   file_name = safer_name_suffix (current_stat_info.file_name, 0);
-
+  if (strip_path_elements)
+    {
+      file_name = cut_path_elements (file_name, strip_path_elements);
+      if (!file_name)
+	{
+	  skip_member ();
+	  return;
+	}
+    }
+  
   apply_nonancestor_delayed_set_stat (file_name, 0);
 
   /* Take a safety backup of a previously existing file.  */
