@@ -1276,7 +1276,7 @@ start_header (name, st)
   strncpy (header->header.arch_name, name, NAMSIZ);
   header->header.arch_name[NAMSIZ - 1] = '\0';
 
-  to_oct ((long) (st->st_mode & 07777),
+  to_oct ((long) (f_oldarch ? (st->st_mode & 07777) : st->st_mode),
 	  8, header->header.mode);
   to_oct ((long) st->st_uid, 8, header->header.uid);
   to_oct ((long) st->st_gid, 8, header->header.gid);

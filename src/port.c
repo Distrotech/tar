@@ -1,5 +1,5 @@
 /* Supporting routines which may sometimes be missing.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -66,7 +66,7 @@ valloc (size)
 {
 	return (malloc (size));
 }
-#endif
+#endif /* !HAVE_VALLOC */
 
 #ifndef HAVE_MKDIR
 /*
@@ -124,7 +124,7 @@ mkdir(dpath, dmode)
 		while (cpid != wait(&status)) ;	/* Wait for kid to finish */
 	}
 
-	if (WTERMSIG(status) != 0 || WEXITSTATUS(status) != 0) {
+	if (WIFSIGNALED(status) || WEXITSTATUS(status) != 0) {
 		errno = EIO;		/* We don't know why, but */
 		return -1;		/* /bin/mkdir failed */
 	}
@@ -157,14 +157,14 @@ rmdir(dpath)
 		while (cpid != wait(&status)) ;	/* Wait for kid to finish */
 	}
 
-	if (WTERMSIG(status) != 0 || WEXITSTATUS(status) != 0) {
+	if (WIFSIGNALED(status) || WEXITSTATUS(status) != 0) {
 		errno = EIO;		/* We don't know why, but */
 		return -1;		/* /bin/mkdir failed */
 	}
 
 	return 0;
 }
-#endif
+#endif /* !HAVE_MKDIR */
 
 #ifndef HAVE_RENAME
 /* Rename file FROM to file TO.
@@ -194,9 +194,9 @@ rename (from, to)
 
   return 0;
 }
-#endif
+#endif /* !HAVE_RENAME */
 
-#ifndef HAVE_BZERO
+#ifdef minix
 /* Minix has bcopy but not bzero, and no memset.  Thanks, Andy. */
 void
 bzero (s1, n)
@@ -327,7 +327,7 @@ fail:
 	free(fnbuffer);
 	return -1;
 }
-#endif
+#endif /* minix */
 
 
 #ifdef EMUL_OPEN3
@@ -456,7 +456,7 @@ int flags, mode;
 	 */
 	return open(path, flags & (O_RDONLY|O_WRONLY|O_RDWR|O_BINARY));
 }
-#endif
+#endif /* EMUL_OPEN3 */
 
 #ifndef HAVE_MKNOD
 #ifdef __MSDOS__
@@ -573,7 +573,7 @@ utime (char *filename, struct utimbuf *utb)
   _close (fd);
   return status;
 }
-#endif
+#endif /* __TURBOC__ */
 
 /* Stash argv[0] here so panic will know what the program is called */
 char *myname = 0;
@@ -964,9 +964,9 @@ char *wanted;
 			return (char *)0;
 	return scan;
 }
-#endif
+#endif /* !HAVE_STRSTR */
 
-#infdef HAVE_FTRUNCATE
+#ifndef HAVE_FTRUNCATE
 
 #ifdef F_CHSIZE
 int
@@ -976,7 +976,7 @@ ftruncate (fd, length)
 {
   return fcntl (fd, F_CHSIZE, length);
 }
-#else
+#else /* !F_CHSIZE */
 #ifdef F_FREESP
 /* code courtesy of William Kucharski, kucharsk@Solbourne.com */
 
@@ -1006,7 +1006,7 @@ off_t length;         /* length to set file to */
 	return 0;
 }
 
-#else
+#else /* !F_FREESP */
 
 int
 ftruncate(fd, length)
@@ -1016,9 +1016,9 @@ off_t length;
 	errno = EIO;
 	return -1;
 }
-#endif
-#endif
-#endif
+#endif /* !F_FREESP */
+#endif /* !F_CHSIZE */
+#endif /* !HAVE_FTRUNCATE */
 
 
 extern FILE *msg_file;
