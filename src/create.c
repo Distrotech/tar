@@ -534,7 +534,7 @@ dump_file (p, curdev, toplevel)
 	  /*			sum += i;
 			if (sum < upperbound)
 				goto extend;*/
-	  if (index_offset + i < upperbound)
+	  if (index_offset + i <= upperbound)
 	    {
 	      index_offset += i;
 	      exhdr->ext_hdr.isextended++;
@@ -1055,7 +1055,7 @@ deal_with_sparse (name, header, nulls_at_end)
 		 * realloc the scratch area, since we've run out of room --
 		 */
 	  sparsearray = (struct sp_array *)
-	    realloc (sparsearray,
+	    ck_realloc (sparsearray,
 		     2 * sp_array_size * (sizeof (struct sp_array)));
 	  sp_array_size *= 2;
 	}
@@ -1105,6 +1105,11 @@ deal_with_sparse (name, header, nulls_at_end)
     }
   if (amidst_data)
     sparsearray[sparse_ind++].numbytes = numbytes;
+  else
+    {
+      sparsearray[sparse_ind].offset = offset-1;
+      sparsearray[sparse_ind++].numbytes = 1;
+    }
   close (fd);
 
   return sparse_ind - 1;

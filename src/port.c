@@ -177,14 +177,22 @@ rename (from, to)
 {
   struct stat from_stats;
 
-  if (stat (from, &from_stats) == 0)
+  if (stat (from, &from_stats))
+    return -1;
+
+  if (unlink (to) && errno != ENOENT)
+    return -1;
+
+  if (link (from, to))
+    return -1;
+
+  if (unlink (from) && errno != ENOENT)
     {
-      if (unlink (to) && errno != ENOENT)
-	return -1;
-      if (link (from, to) == 0 && (unlink (from) == 0 || errno == ENOENT))
-	return 0;
+      unlink (to);
+      return -1;
     }
-  return -1;
+
+  return 0;
 }
 #endif
 
