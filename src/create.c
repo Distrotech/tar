@@ -637,16 +637,14 @@ init_sparsearray (void)
 | ?  |
 `---*/
 
-static void
-find_new_file_size (off_t *filesize, int highest_index)
+static off_t
+find_new_file_size (int sparses)
 {
-  int counter;
-
-  *filesize = 0;
-  for (counter = 0;
-       sparsearray[counter].numbytes && counter <= highest_index;
-       counter++)
-    *filesize += sparsearray[counter].numbytes;
+  int i;
+  off_t s = 0;
+  for (i = 0; i < sparses; i++)
+    s += sparsearray[i].numbytes;
+  return s;
 }
 
 /*-----------------------------------------------------------------------.
@@ -668,7 +666,7 @@ deal_with_sparse (char *name, union block *header)
   size_t numbytes = 0;
   off_t offset = 0;
   int file;
-  int sparse_index = 0;
+  int sparses = 0;
   ssize_t count;
   char buffer[BLOCKSIZE];
 
@@ -682,12 +680,12 @@ deal_with_sparse (char *name, union block *header)
   init_sparsearray ();
   clear_buffer (buffer);
 
-  while (count = safe_read (file, buffer, sizeof buffer), count != 0)
+  while (0 < (count = safe_read (file, buffer, sizeof buffer)))
     {
       /* Realloc the scratch area as necessary.  FIXME: should reallocate
 	 only at beginning of a new instance of non-zero data.  */
 
-      if (sparse_index > sp_array_size - 1)
+      if (sp_array_size <= sparses)
 	{
 	  sparsearray =
 	    xrealloc (sparsearray,
@@ -703,14 +701,14 @@ deal_with_sparse (char *name, union block *header)
 	  {
 	    if (numbytes)
 	      {
-		sparsearray[sparse_index++].numbytes = numbytes;
+		sparsearray[sparses++].numbytes = numbytes;
 		numbytes = 0;
 	      }
 	  }
 	else
 	  {
 	    if (!numbytes)
-	      sparsearray[sparse_index].offset = offset;
+	      sparsearray[sparses].offset = offset;
 	    numbytes += count;
 	  }
 
@@ -721,7 +719,7 @@ deal_with_sparse (char *name, union block *header)
 	if (!zero_block_p (buffer))
 	  {
 	    if (!numbytes)
-	      sparsearray[sparse_index].offset = offset;
+	      sparsearray[sparses].offset = offset;
 	    numbytes += count;
 	  }
 	else
@@ -742,15 +740,15 @@ deal_with_sparse (char *name, union block *header)
     }
 
   if (numbytes)
-    sparsearray[sparse_index++].numbytes = numbytes;
+    sparsearray[sparses++].numbytes = numbytes;
   else
     {
-      sparsearray[sparse_index].offset = offset - 1;
-      sparsearray[sparse_index++].numbytes = 1;
+      sparsearray[sparses].offset = offset - 1;
+      sparsearray[sparses++].numbytes = 1;
     }
 
   close (file);
-  return sparse_index - 1;
+  return count < 0 ? 0 : sparses;
 }
 
 /*---.
@@ -762,34 +760,21 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 {
   union block *start;
   size_t bufsize;
-  int sparse_index = 0;
+  int sparses = 0;
   ssize_t count;
 
   while (*sizeleft > 0)
     {
       start = find_next_block ();
       memset (start->buffer, 0, BLOCKSIZE);
-      bufsize = sparsearray[sparse_index].numbytes;
-      if (!bufsize)
-	{
-	  /* We blew it, maybe.  */
-	  char buf1[UINTMAX_STRSIZE_BOUND];
-	  char buf2[UINTMAX_STRSIZE_BOUND];
+      bufsize = sparsearray[sparses].numbytes;
+      if (! bufsize)
+	abort ();
 
-	  ERROR ((0, 0, _("Wrote %s of %s bytes to file %s"),
-		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf1),
-		  STRINGIFY_BIGINT (fullsize, buf2), quote (name)));
-	  break;
-	}
-
-      if (lseek (file, sparsearray[sparse_index++].offset, SEEK_SET) < 0)
+      if (lseek (file, sparsearray[sparses++].offset, SEEK_SET) < 0)
 	{
-	  char buf[UINTMAX_STRSIZE_BOUND];
-	  int e = errno;
-	  ERROR ((0, e, _("lseek error at byte %s in file %s"),
-		  STRINGIFY_BIGINT (sparsearray[sparse_index - 1].offset,
-				    buf),
-		  quote (name)));
+	  (ignore_failed_read_option ? seek_warn_details : seek_error_details)
+	    (name, sparsearray[sparses - 1].offset);
 	  break;
 	}
 
@@ -798,29 +783,13 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 
       while (bufsize > BLOCKSIZE)
 	{
-#if 0
-	  if (amount_read)
-	    {
-	      count = safe_read (file, start->buffer + amount_read,
-				 BLOCKSIZE - amount_read);
-	      bufsize -= BLOCKSIZE - amount_read;
-	      amount_read = 0;
-	      set_next_block_after (start);
-	      start = find_next_block ();
-	      memset (start->buffer, 0, BLOCKSIZE);
-	    }
-#endif
-	  /* Store the data.  */
-
 	  count = safe_read (file, start->buffer, BLOCKSIZE);
 	  if (count < 0)
 	    {
-	      char buf[UINTMAX_STRSIZE_BOUND];
-	      int e = errno;
-	      ERROR ((0, e,
-		      _("Read error at byte %s, reading %lu bytes, in file %s"),
-		      STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
-		      (unsigned long) bufsize, quote (name)));
+	      (ignore_failed_read_option
+	       ? read_warn_details
+	       : read_error_details)
+		(name, fullsize - *sizeleft, bufsize);
 	      return 1;
 	    }
 	  bufsize -= count;
@@ -840,33 +809,15 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 
       if (count < 0)
 	{
-	  char buf[UINTMAX_STRSIZE_BOUND];
-	  int e = errno;
-	  ERROR ((0, e,
-		  _("Read error at byte %s, reading %lu bytes, in file %s"),
-		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
-		  (unsigned long) bufsize, quote (name)));
+	  (ignore_failed_read_option
+	   ? read_warn_details
+	   : read_error_details)
+	    (name, fullsize - *sizeleft, bufsize);
 	  return 1;
 	}
-#if 0
-      if (amount_read >= BLOCKSIZE)
-	{
-	  amount_read = 0;
-	  set_next_block_after (start + (count - 1) / BLOCKSIZE);
-	  if (count != bufsize)
-	    {
-	      ERROR ((0, 0,
-		      _("File %s shrunk, padding with zeros"), quote (name)));
-	      return 1;
-	    }
-	  start = find_next_block ();
-	}
-      else
-	amount_read += bufsize;
-#endif
+
       *sizeleft -= count;
       set_next_block_after (start);
-
     }
   free (sparsearray);
 #if 0
@@ -954,7 +905,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
   time_t original_ctime;
   struct utimbuf restore_times;
 
-  /* FIXME: `header' and `upperbound' might be used uninitialized in this
+  /* FIXME: `header' and `sparses' might be used uninitialized in this
      function.  Reported by Bruno Haible.  */
 
   if (interactive_option && !confirm ("add", p))
@@ -963,9 +914,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
   if (deref_stat (dereference_option, p, &current_stat) != 0)
     {
       if (ignore_failed_read_option)
-	stat_error (p);
-      else
 	stat_warn (p);
+      else
+	stat_error (p);
       return;
     }
 
@@ -995,7 +946,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
       && (!after_date_option || current_stat.st_ctime < newer_ctime_option))
     {
       if (0 < top_level)
-	WARN ((0, 0, _("%s is unchanged; not dumped"), quote (p)));
+	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
+	       quotearg_colon (p)));
       /* FIXME: recheck this return.  */
       return;
     }
@@ -1005,7 +957,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
   if (ar_dev && current_stat.st_dev == ar_dev && current_stat.st_ino == ar_ino)
     {
-      WARN ((0, 0, _("%s is the archive; not dumped"), quote (p)));
+      WARN ((0, 0, _("%s: file is the archive; not dumped"),
+	     quotearg_colon (p)));
       return;
     }
 #endif
@@ -1126,16 +1079,14 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    }
 	  if (multi_volume_option)
 	    assign_string (&save_name, 0);
-	  if (atime_preserve_option)
-	    utime (p, &restore_times);
-	  return;
+	  goto finish_dir;
 	}
 
       /* See if we are about to recurse into a directory, and avoid doing
 	 so if the user wants that we do not descend into directories.  */
 
       if (no_recurse_option)
-	return;
+	goto finish_dir;
 
       /* See if we are crossing from one file system to another, and
 	 avoid doing so if the user only wants to dump one file system.  */
@@ -1144,9 +1095,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  && parent_device != current_stat.st_dev)
 	{
 	  if (verbose_option)
-	    WARN ((0, 0, _("%s is on a different filesystem; not dumped"),
-		   quote (p)));
-	  return;
+	    WARN ((0, 0,
+		   _("%s: file is on a different filesystem; not dumped"),
+		   quotearg_colon (p)));
+	  goto finish_dir;
 	}
 
       /* Now output all the files in the directory.  */
@@ -1178,8 +1130,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    readdir_error (p);
 	}
 
+    finish_dir:
       if (closedir (directory) != 0)
-	closedir_error (p);
+	{
+	  if (ignore_failed_read_option)
+	    closedir_warn (p);
+	  else
+	    closedir_error (p);
+	}
+
       free (namebuf);
       if (atime_preserve_option)
 	utime (p, &restore_times);
@@ -1268,7 +1227,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  union block *start;
 	  int header_moved;
 	  char isextended = 0;
-	  int upperbound;
+	  int sparses;
 
 	  header_moved = 0;
 
@@ -1309,7 +1268,6 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		  < (current_stat.st_size / ST_NBLOCKSIZE
 		     + (current_stat.st_size % ST_NBLOCKSIZE != 0)))
 		{
-		  off_t filesize = current_stat.st_size;
 		  int counter;
 
 		  header = start_header (p, &current_stat);
@@ -1317,15 +1275,15 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		  header_moved = 1;
 
 		  /* Call the routine that figures out the layout of the
-		     sparse file in question.  UPPERBOUND is the index of the
-		     last element of the "sparsearray," i.e., the number of
-		     elements it needed to describe the file.  */
+		     sparse file in question.  SPARSES is the index of the
+		     first unused element of the "sparsearray," i.e.,
+		     the number of elements it needed to describe the file.  */
 
-		  upperbound = deal_with_sparse (p, header);
+		  sparses = deal_with_sparse (p, header);
 
 		  /* See if we'll need an extended header later.  */
 
-		  if (upperbound > SPARSES_IN_OLDGNU_HEADER - 1)
+		  if (SPARSES_IN_OLDGNU_HEADER < sparses)
 		    header->oldgnu_header.isextended = 1;
 
 		  /* We store the "real" file size so we can show that in
@@ -1340,25 +1298,22 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		     of the file minus the blocks of holes that we're
 		     skipping over.  */
 
-		  find_new_file_size (&filesize, upperbound);
-		  current_stat.st_size = filesize;
-		  OFF_TO_CHARS (filesize, header->header.size);
+		  current_stat.st_size = find_new_file_size (sparses);
+		  OFF_TO_CHARS (current_stat.st_size, header->header.size);
 
-		  for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
+		  for (counter = 0;
+		       counter < sparses && counter < SPARSES_IN_OLDGNU_HEADER;
+		       counter++)
 		    {
-		      if (!sparsearray[counter].numbytes)
-			break;
-
 		      OFF_TO_CHARS (sparsearray[counter].offset,
 				    header->oldgnu_header.sp[counter].offset);
 		      SIZE_TO_CHARS (sparsearray[counter].numbytes,
 				     header->oldgnu_header.sp[counter].numbytes);
 		    }
-
 		}
 	    }
 	  else
-	    upperbound = SPARSES_IN_OLDGNU_HEADER - 1;
+	    sparses = SPARSES_IN_OLDGNU_HEADER;
 
 	  sizeleft = current_stat.st_size;
 
@@ -1375,12 +1330,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      if (f < 0)
 		{
 		  if (! top_level && errno == ENOENT)
-		    WARN ((0, 0, _("File %s removed before we read it"),
-			   quote (p)));
-		  else if (ignore_failed_read_option)
-		    open_warn (p);
+		    WARN ((0, 0, _("%s: File removed before we read it"),
+			   quotearg_colon (p)));
 		  else
-		    open_error (p);
+		    (ignore_failed_read_option ? open_warn : open_error) (p);
 		  return;
 		}
 	    }
@@ -1408,7 +1361,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      memset (exhdr->buffer, 0, BLOCKSIZE);
 	      for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
 		{
-		  if (counter + index_offset > upperbound)
+		  if (sparses <= counter + index_offset)
 		    break;
 
 		  SIZE_TO_CHARS (sparsearray[counter + index_offset].numbytes,
@@ -1417,7 +1370,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 				exhdr->sparse_header.sp[counter].offset);
 		}
 	      set_next_block_after (exhdr);
-	      if (index_offset + counter <= upperbound)
+	      if (counter + index_offset < sparses)
 		{
 		  index_offset += counter;
 		  exhdr->sparse_header.isextended = 1;
@@ -1460,13 +1413,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		  count = safe_read (f, start->buffer, bufsize);
 		if (count < 0)
 		  {
-		    char buf[UINTMAX_STRSIZE_BOUND];
-		    int e = errno;
-		    ERROR ((0, e,
-			    _("Read error at byte %s, reading %lu bytes, in file %s"),
-			    STRINGIFY_BIGINT (current_stat.st_size - sizeleft,
-					      buf),
-			    (unsigned long) bufsize, quote (p)));
+		    (ignore_failed_read_option
+		     ? read_warn_details
+		     : read_error_details)
+		      (p, current_stat.st_size - sizeleft, bufsize);
 		    goto padit;
 		  }
 		sizeleft -= count;
@@ -1480,9 +1430,12 @@ dump_file (char *p, int top_level, dev_t parent_device)
 		else
 		  {
 		    char buf[UINTMAX_STRSIZE_BOUND];
-		    ERROR ((0, 0,
-			    _("File %s shrunk by %s bytes, padding with zeros"),
-			    quote (p), STRINGIFY_BIGINT (sizeleft, buf)));
+		    WARN ((0, 0,
+			   _("%s: File shrank by %s bytes; padding with zeros"),
+			   quotearg_colon (p),
+			   STRINGIFY_BIGINT (sizeleft, buf)));
+		    if (! ignore_failed_read_option)
+		      exit_status = TAREXIT_FAILURE;
 		    goto padit;		/* short read */
 		  }
 	      }
@@ -1494,11 +1447,26 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    {
 	      struct stat final_stat;
 	      if (fstat (f, &final_stat) != 0)
-		stat_error (p);
+		{
+		  if (ignore_failed_read_option)
+		    stat_warn (p);
+		  else
+		    stat_error (p);
+		}
 	      else if (final_stat.st_ctime != original_ctime)
-		ERROR ((0, 0, _("File %s changed as we read it"), quote (p)));
+		{
+		  char const *qp = quotearg_colon (p);
+		  WARN ((0, 0, _("%s: file changed as we read it"), qp));
+		  if (! ignore_failed_read_option)
+		    exit_status = TAREXIT_FAILURE;
+		}
 	      if (close (f) != 0)
-		close_error (p);
+		{
+		  if (ignore_failed_read_option)
+		    close_warn (p);
+		  else
+		    close_error (p);
+		}
 	      if (atime_preserve_option)
 		utime (p, &restore_times);
 	    }
@@ -1607,6 +1575,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
   return;
 
 unknown:
-  ERROR ((0, 0, _("%s: Unknown file type; file ignored"),
-	  quotearg_colon (p)));
+  WARN ((0, 0, _("%s: Unknown file type; file ignored"),
+	 quotearg_colon (p)));
+  if (! ignore_failed_read_option)
+    exit_status = TAREXIT_FAILURE;
 }
