@@ -36,7 +36,7 @@
 #define GLOBAL
 #include "common.h"
 
-#include <copysym.h>
+#include <print-copyr.h>
 #include <localedir.h>
 #include <prepargs.h>
 #include <quotearg.h>
@@ -140,6 +140,7 @@ enum
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NULL_OPTION,
   OVERWRITE_OPTION,
+  OVERWRITE_DIR_OPTION,
   OWNER_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
@@ -236,6 +237,7 @@ static struct option long_options[] =
   {"old-archive", no_argument, 0, 'o'},
   {"one-file-system", no_argument, 0, 'l'},
   {"overwrite", no_argument, 0, OVERWRITE_OPTION},
+  {"overwrite-dir", no_argument, 0, OVERWRITE_DIR_OPTION},
   {"owner", required_argument, 0, OWNER_OPTION},
   {"portability", no_argument, 0, 'o'},
   {"posix", no_argument, 0, POSIX_OPTION},
@@ -323,6 +325,7 @@ Operation modifiers:\n\
       --remove-files         remove files after adding them to the archive\n\
   -k, --keep-old-files       don't replace existing files when extracting\n\
       --overwrite            overwrite existing files when extracting\n\
+      --overwrite-dir        overwrite directory metadata when extracting\n\
   -U, --unlink-first         remove each file prior to extracting over it\n\
       --recursive-unlink     empty hierarchies prior to extracting directory\n\
   -S, --sparse               handle sparse files efficiently\n\
@@ -960,6 +963,10 @@ decode_options (int argc, char **argv)
 	old_files_option = OVERWRITE_OLD_FILES;
 	break;
 
+      case OVERWRITE_DIR_OPTION:
+	old_files_option = OVERWRITE_OLD_DIRS;
+	break;
+
       case OWNER_OPTION:
 	if (! (strlen (optarg) < UNAME_FIELD_SIZE
 	       && uname_to_uid (optarg, &owner_option)))
@@ -1123,10 +1130,8 @@ decode_options (int argc, char **argv)
 
   if (show_version)
     {
-      char buf[MB_LEN_MAX + 1];
       printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
-      printf ("Copyright %s 2001 Free Software Foundation, Inc.\n",
-	      copyright_symbol (buf, sizeof buf));
+      print_copyright ("2001 Free Software Foundation, Inc.");
       puts (_("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
