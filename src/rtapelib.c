@@ -605,6 +605,7 @@ rmt_lseek__ (int handle, off_t offset, int whence)
   uintmax_t u = offset < 0 ? - (uintmax_t) offset : (uintmax_t) offset;
   char *p = operand_buffer + sizeof operand_buffer;
 
+  *--p = 0;
   do
     *--p = '0' + (int) (u % 10);
   while ((u /= 10) != 0);
@@ -648,6 +649,7 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 		       : (uintmax_t) ((struct mtop *) argument)->mt_count);
 	char *p = operand_buffer + sizeof operand_buffer;
 	
+        *--p = 0;
 	do
 	  *--p = '0' + (int) (u % 10);
 	while ((u /= 10) != 0);
