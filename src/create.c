@@ -1,5 +1,5 @@
 /* Create a tar archive.
-   Copyright 1985, 92, 93, 94, 96, 97, 99, 2000 Free Software Foundation, Inc.
+   Copyright 1985,92,93,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -390,6 +390,46 @@ write_long (const char *p, char type)
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
 
+/* Return a suffix of the file NAME that is a relative file name.
+   Warn about `..' in file names.  But return NAME if the user wants
+   absolute file names.  */
+static char const *
+relativize (char const *name)
+{
+  if (! absolute_names_option)
+    {
+      {
+	static int warned_once;
+	if (! warned_once && contains_dot_dot (name))
+	  {
+	    warned_once = 1;
+	    WARN ((0, 0, _("Member names contain `..'")));
+	  }
+      }
+
+      {
+	size_t prefix_len = FILESYSTEM_PREFIX_LEN (name);
+
+	while (ISSLASH (name[prefix_len]))
+	  prefix_len++;
+
+	if (prefix_len)
+	  {
+	    static int warned_once;
+	    if (!warned_once)
+	      {
+		warned_once = 1;
+		WARN ((0, 0, _("Removing leading `%.*s' from member names"),
+		       (int) prefix_len, name));
+	      }
+	    name += prefix_len;
+	  }
+      }
+    }
+
+  return name;
+}
+
 /* Header handling.  */
 
 /* Make a header block for the file whose stat info is st,
@@ -400,42 +440,7 @@ start_header (const char *name, struct stat *st)
 {
   union block *header;
 
-  if (!absolute_names_option)
-    {
-      size_t prefix_len = FILESYSTEM_PREFIX_LEN (name);
-
-      if (prefix_len)
-	{
-	  static int warned_once;
-	  if (!warned_once)
-	    {
-	      warned_once = 1;
-	      WARN ((0, 0, _("Removing leading `%.*s' from member names"),
-		     (int) prefix_len, name));
-	    }
-	  name += prefix_len;
-	}
-
-      while (*name == '/')
-	{
-	  static int warned_once;
-	  if (!warned_once)
-	    {
-	      warned_once = 1;
-	      WARN ((0, 0, _("Removing leading `/' from member names")));
-	    }
-	  name++;
-	}
-
-      {
-	static int warned_once;
-	if (! warned_once && contains_dot_dot (name))
-	  {
-	    warned_once = 1;
-	    WARN ((0, 0, _("Member names contain `..'")));
-	  }
-      }
-    }
+  name = relativize (name);
 
   if (sizeof header->header.name <= strlen (name))
     write_long (name, GNUTYPE_LONGNAME);
@@ -595,18 +600,11 @@ zero_block_p (char *buffer)
 static void
 init_sparsearray (void)
 {
-  int counter;
-
   sp_array_size = 10;
 
   /* Make room for our scratch space -- initially is 10 elts long.  */
 
   sparsearray = xmalloc (sp_array_size * sizeof (struct sp_array));
-  for (counter = 0; counter < sp_array_size; counter++)
-    {
-      sparsearray[counter].offset = 0;
-      sparsearray[counter].numbytes = 0;
-    }
 }
 
 static off_t
@@ -651,7 +649,7 @@ deal_with_sparse (char *name, union block *header)
   init_sparsearray ();
   clear_buffer (buffer);
 
-  while (0 < (count = safe_read (file, buffer, sizeof buffer)))
+  for (;;)
     {
       /* Realloc the scratch area as necessary.  FIXME: should reallocate
 	 only at beginning of a new instance of non-zero data.  */
@@ -663,6 +661,10 @@ deal_with_sparse (char *name, union block *header)
 		      2 * sp_array_size * sizeof (struct sp_array));
 	  sp_array_size *= 2;
 	}
+      
+      count = safe_read (file, buffer, sizeof buffer);
+      if (count <= 0)
+	break;
 
       /* Process one block.  */
 
@@ -825,7 +827,7 @@ create_archive (void)
 		buffer = xrealloc (buffer, buffer_size);
 	      }
 	    memcpy (buffer, p, plen);
-	    if (buffer[plen - 1] != '/')
+	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = '/';
 	    q = gnu_list_name->dir_contents;
 	    if (q)
@@ -971,7 +973,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
       errno = 0;
 
-      directory = savedir (p, current_stat.st_size);
+      directory = savedir (p);
       if (! directory)
 	{
 	  if (ignore_failed_read_option)
@@ -987,7 +989,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
       buflen = len + NAME_FIELD_SIZE;
       namebuf = xmalloc (buflen + 1);
       memcpy (namebuf, p, len);
-      while (len >= 1 && namebuf[len - 1] == '/')
+      while (len >= 1 && ISSLASH (namebuf[len - 1]))
 	len--;
       namebuf[len++] = '/';
       namebuf[len] = '\0';
@@ -1155,18 +1157,6 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      char const *link_name = dup->name;
 
 	      free (lp);
-
-	      if (! absolute_names_option)
-		for (; *link_name == '/'; link_name++)
-		  {
-		    static int warned_once;
-		    if (!warned_once)
-		      {
-			warned_once = 1;
-			WARN ((0, 0,
-			       _("Removing leading `/' from link names")));
-		      }
-		  }
 
 	      if (NAME_FIELD_SIZE <= strlen (link_name))
 		write_long (link_name, GNUTYPE_LONGLINK);
