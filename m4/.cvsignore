@@ -105,3 +105,4 @@ strchrnul.m4
 strndup.m4
 strnlen.m4
 sysexits.m4
+rmt.m4
