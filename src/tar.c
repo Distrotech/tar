@@ -113,13 +113,13 @@ confirm (const char *message_action, const char *message_name)
   }
 }
 
-void
-set_archive_format (char *name)
+static void
+set_archive_format (char const *name)
 {
   static struct fmttab {
-    char *name;
+    char const *name;
     enum archive_format fmt;
-  } fmttab[] = {
+  } const fmttab[] = {
     { "v7",      V7_FORMAT },
     { "oldgnu",  OLDGNU_FORMAT },	
     { "posix",   POSIX_FORMAT },
@@ -127,24 +127,19 @@ set_archive_format (char *name)
     { "star",    STAR_FORMAT },
 #endif
     { "gnu",     GNU_FORMAT },
-    NULL
+    { NULL,	 0 }
   };
-  struct fmttab *p;
-  enum archive_format fmt;
-  
-  for (p = fmttab; p->name; p++)
-    {
-      if (strcmp (p->name, name) == 0)
-	{
-	  fmt = p->fmt;
-	  break;
-	}
-    }
+  struct fmttab const *p;
 
-  if (archive_format != DEFAULT_FORMAT && archive_format != fmt)
+  for (p = fmttab; strcmp (p->name, name) != 0; )
+    if (! (++p)->name)
+      USAGE_ERROR ((0, 0, _("%s: Invalid archive format"),
+		    quotearg_colon (name)));
+
+  if (archive_format != DEFAULT_FORMAT && archive_format != p->fmt)
     USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
   
-  archive_format = fmt;
+  archive_format = p->fmt;
 }
 
 /* Options.  */
