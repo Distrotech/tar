@@ -1,3 +1,13 @@
+2004-09-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Install genfile.c from paxutils
+	* tests/genfile.c: Removed. Integrated into
+	paxutils.
+	* tests/mksparse.c: Removed. Integrated into
+	(paxutils) genfile.c
+	* tests/Makefile.am: Removed mksparse
+	* tests/sparse01.sh: Use genfile instead of mksparse
+	
 2004-09-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Started merging with cpio into paxutils. Sources before
