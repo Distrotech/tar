@@ -1,7 +1,7 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
-version 1.12.64015 - Paul Eggert, 1999-06-28.
+version 1.12.64016 - Paul Eggert, 1999-07-01.
 
 * Support for large files, e.g. files larger than 2 GB on many 32-bit hosts.
   Also, support for larger uids, device ids, etc.
