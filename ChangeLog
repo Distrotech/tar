@@ -1,3 +1,17 @@
+2004-08-12  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Merge argp, getopt, xalloc changes from gnulib.
+	* bootstrap (gnulib_modules): Add xalloc-die.
+	Remove code to test for patches; we don't have patches now.
+	* patches/getopt.diff: Remove; gnulib now works unpatched.
+	* configure.ac (_getopt_long_only_r): Remove check.
+	gl_ARGP now does this for us.
+	* lib/.cvsignore: Add fnmatch.h, getopt_.h, sysexit.h,
+	xalloc-die.c.
+	* src/extract.c: Adjust to changes to gnulib xalloc module.
+	(extr_init): Remove assignment to xalloc_fail_func; no longer needed.
+	(xalloc_die): New function.
+
 2004-08-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
