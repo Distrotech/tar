@@ -124,6 +124,7 @@ void to_oct ();
 void dump_file ();
 void write_dir_file ();
 void write_eot ();
+void write_long ();
 int zero_record ();
 
 /* This code moved from tar.h since create.c is the only file that cares
@@ -1435,6 +1436,7 @@ write_eot ()
 }
 
 /* Write a LF_LONGLINK or LF_LONGNAME record. */
+void
 write_long (p, type)
      char *p;
      char type;
