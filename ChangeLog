@@ -5,6 +5,9 @@
 	* NEWS: Entry for 1.15.1
 	* src/buffer.c: Bugfix. Changes introduced 2004-11-26
 	broke extraction from stdin.
+	* src/list.c (from_header, tar_checksum): Changed declaration.
+	All callers updated.
+	* src/common.h: Likewise
 	* src/tar.c (main): Protect invocation of setlocale by
 	ifdef.
 
@@ -23,6 +26,7 @@
 	
 	* doc/index.html.in: Rewritten in xhtml to follow recent
 	GNU site standards.
+	* THANKS: Updated
 	
 2004-12-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
