@@ -123,3 +123,7 @@ xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
+localedir.h
+rmt.h
+rtapelib.c
+system.h
