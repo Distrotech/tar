@@ -3,7 +3,7 @@ dnl FNM_FILE_NAME | FNM_LEADING_DIR works.
 dnl
 undefine([AC_FUNC_FNMATCH])
 AC_DEFUN(AC_FUNC_FNMATCH,
-[AC_CACHE_CHECK(for GNU-style fnmatch, ac_cv_func_fnmatch_works,
+[AC_CACHE_CHECK(for working GNU-style fnmatch, ac_cv_func_fnmatch_works,
 # Some versions of Solaris, SCO, and the GNU C Library
 # have a broken or incompatible fnmatch.
 # So we run a test program.  If we are cross-compiling, take no chance.
