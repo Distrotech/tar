@@ -12,6 +12,7 @@ EXTRA_DIST = \
  error.m4\
  exclude.m4\
  exitfail.m4\
+ extensions.m4\
  fileblocks.m4\
  fnmatch.m4\
  ftruncate.m4\
@@ -44,6 +45,7 @@ EXTRA_DIST = \
  mktime.m4\
  modechange.m4\
  nls.m4\
+ obstack.m4\
  onceonly.m4\
  pathmax.m4\
  po.m4\
@@ -74,6 +76,7 @@ EXTRA_DIST = \
  utimbuf.m4\
  utime.m4\
  utimes.m4\
+ utimes-null.m4\
  xalloc.m4\
  xgetcwd.m4\
  xstrtol.m4\

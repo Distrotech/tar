@@ -8,6 +8,7 @@ dos.m4
 error.m4
 exclude.m4
 exitfail.m4
+extensions.m4
 fileblocks.m4
 fnmatch.m4
 ftruncate.m4
@@ -33,6 +34,7 @@ memset.m4
 mktime.m4
 modechange.m4
 nls.m4
+obstack.m4
 onceonly.m4
 pathmax.m4
 po.m4
