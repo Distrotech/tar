@@ -38,7 +38,7 @@
    posted to comp.sys.ibm.pc in November, 1988.
 
    Major performance enhancements and bug fixes, and source cleanup,
-   by David MacKenzie, djm@ai.mit.edu. */
+   by David MacKenzie, djm@gnu.ai.mit.edu.  */
 
 #include <stdio.h>
 #include <string.h>
@@ -46,10 +46,10 @@
 #include <dos.h>
 #include <dir.h>
 
-/* Number of new arguments to allocate space for at a time. */
+/* Number of new arguments to allocate space for at a time.  */
 #define ARGS_INCREMENT 10
 
-/* The name this program was run with, for error messages. */
+/* The name this program was run with, for error messages.  */
 static char *program_name;
 
 static char **grow_argv (char **new_argv, int new_argc);
@@ -106,7 +106,7 @@ expargs (int *pargc, char **argv)
 	      strlwr (path);
 	      do
 		{
-		  /* Only match "." and ".." explicitly. */
+		  /* Only match "." and ".." explicitly.  */
 		  if (*block.ff_name == '.' && *arg_base != '.')
 		    continue;
 		  path_length = stpcpy (path_base, block.ff_name) - path + 1;
@@ -120,8 +120,7 @@ expargs (int *pargc, char **argv)
 		      strcpy (new_argv[new_argc++], path);
 		      new_argv = grow_argv (new_argv, new_argc);
 		    }
-		}
-	      while (!findnext (&block));
+	      } while (!findnext (&block));
 	    }
 	}
       if (matched == 0)
@@ -153,7 +152,7 @@ grow_argv (char **new_argv, int new_argc)
   if (new_argc % ARGS_INCREMENT == 0)
     {
       new_argv = (char **) realloc
-      (new_argv, sizeof (char *) * (new_argc + ARGS_INCREMENT));
+	(new_argv, sizeof (char *) * (new_argc + ARGS_INCREMENT));
       if (new_argv == NULL)
 	fatal_error ("memory exhausted");
     }
@@ -177,43 +176,43 @@ fatal_error (const char *message)
 /* Shell-style pattern matching for ?, \, [], and * characters.
    I'm putting this replacement in the public domain.
 
-   Written by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986. */
+   Written by Rich $alz, mirror!rs, Wed Nov 26 19:03:17 EST 1986.  */
 
-/* The character that inverts a character class; '!' or '^'. */
+/* The character that inverts a character class; '!' or '^'.  */
 #define INVERT '!'
 
 static int star (char *string, char *pattern);
 
 /* Return nonzero if `string' matches Unix-style wildcard pattern
-   `pattern'; zero if not. */
+   `pattern'; zero if not.  */
 
 int
 wild_match (char *string, char *pattern)
 {
-  int prev;			/* Previous character in character class. */
-  int matched;			/* If 1, character class has been matched. */
-  int reverse;			/* If 1, character class is inverted. */
+  int prev;		/* Previous character in character class.  */
+  int matched;		/* If 1, character class has been matched.  */
+  int reverse;		/* If 1, character class is inverted.  */
 
   for (; *pattern; string++, pattern++)
     switch (*pattern)
       {
       case '\\':
-	/* Literal match with following character; fall through. */
+	/* Literal match with following character; fall through.  */
 	pattern++;
       default:
 	if (*string != *pattern)
 	  return 0;
 	continue;
       case '?':
-	/* Match anything. */
+	/* Match anything.  */
 	if (*string == '\0')
 	  return 0;
 	continue;
       case '*':
-	/* Trailing star matches everything. */
+	/* Trailing star matches everything.  */
 	return *++pattern ? star (string, pattern) : 1;
       case '[':
-	/* Check for inverse character class. */
+	/* Check for inverse character class.  */
 	reverse = pattern[1] == INVERT;
 	if (reverse)
 	  pattern++;

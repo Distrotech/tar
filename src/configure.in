@@ -43,9 +43,9 @@ AC_HAVE_FUNCS(strstr valloc mkdir mknod rename ftruncate ftime)
 AC_VPRINTF
 AC_ALLOCA
 echo checking for BSD
-test -f /vmunix && AC_DEFINE(BSD42)
+( test -f /vmunix || test -f /sdmach || test -f /../../mach ) && AC_DEFINE(BSD42)
 echo checking for HP-UX
-test -f /hp-ux && test -f /vmunix || MALLOC=malloc.o
+test -f /hp-ux && test ! -f /vmunix && MALLOC=malloc.o
 AC_SUBST(MALLOC)
 AC_XENIX_DIR
 AC_OUTPUT(Makefile)
