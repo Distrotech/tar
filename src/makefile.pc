@@ -30,7 +30,7 @@ CFLAGS = -I. $(DEFS) \
 LDFLAGS = -m$(MODEL)
 
 OBJ1 =	tar.obj create.obj extract.obj buffer.obj getoldopt.obj update.obj gnu.obj mangle.obj
-OBJ2 =	version.obj list.obj names.obj diffarch.obj port.obj wildmat.obj getopt.obj
+OBJ2 =	version.obj list.obj names.obj diffarch.obj port.obj fnmatch.obj getopt.obj
 OBJ3 =  getopt1.obj regex.obj getdate.obj alloca.obj tcexparg.obj msd_dir.obj
 OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
 
