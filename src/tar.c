@@ -1464,6 +1464,18 @@ decode_options (int argc, char **argv)
 			  _("--occurrence cannot be used in the requested operation mode")));
     }
 
+  if (seekable_archive && subcommand_option == DELETE_SUBCOMMAND)
+    {
+      /* The current code in delete.c is based on the assumption that
+	 skip_member() reads all data from the archive. So, we should
+	 make sure it won't use seeks. On the other hand, the same code
+	 depends on the ability to backspace a record in the archive,
+	 so setting seekable_archive to false is technically incorrect.
+         However, it is tested only in skip_member(), so it's not a
+	 problem. */
+      seekable_archive = false;
+    }
+  
   if (archive_names == 0)
     {
       /* If no archive file name given, try TAPE from the environment, or
