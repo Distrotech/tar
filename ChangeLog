@@ -1,3 +1,11 @@
+2004-08-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Extended --update-po option to take an
+	optional argument specifying the po file to update.
+	* src/create.c: Improved compatibility with 1.13.25
+	* tests/link01.sh: New file.
+	* tests/Makefile.am: Added link01.sh
+
 2004-08-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Merge from gnulib.
