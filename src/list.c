@@ -171,6 +171,15 @@ read_and (void (*do_something) (void))
 
 	    case HEADER_ZERO_BLOCK:
 	    case HEADER_SUCCESS:
+	      if (block_number_option)
+		{
+		  char buf[UINTMAX_STRSIZE_BOUND];
+		  off_t block_ordinal = current_block_ordinal ();
+		  block_ordinal -= recent_long_name_blocks;
+		  block_ordinal -= recent_long_link_blocks;
+		  fprintf (stdlis, _("block %s: "),
+			   STRINGIFY_BIGINT (block_ordinal, buf));
+		}
 	      ERROR ((0, 0, _("Skipping to next header")));
 	      break;
 
