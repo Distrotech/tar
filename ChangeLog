@@ -1,3 +1,19 @@
+2004-10-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Add localcharset
+	* lib/Makefile.tmpl: Initialize SUFFIXES and CLEANFILES since the
+	makefile snippet from localcharset uses '+=' on them.
+	* src/Makefile.am (LDADD): Add LIBICONV
+	* src/list.c (decode_header): Set uname/gname to NULL if their
+	header counterparts are empty
+	* src/tar.c (options): Use OPTION_NO_TRANS
+	* src/utf8.c: Use locale_charset() from gnulib
+
+	* tests/star/README: Updated
+
+	* NEWS: Updated
+	* TODO: Minor fix
+	
 2004-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* THANKS: Added Bryan Ford
