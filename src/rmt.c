@@ -392,12 +392,12 @@ top:
 	{
 	  struct mtop mtop;
 	  const char *p;
-	  daddr_t count = 0;
+	  off_t count = 0;
 	  int negative;
 
 	  /* Parse count_string, taking care to check for overflow.
 	     We can't use standard functions,
-	     since daddr_t might be longer than long.  */
+	     since off_t might be longer than long.  */
 	  
 	  for (p = count_string;  *p == ' ' || *p == '\t';  p++)
 	    continue;
@@ -412,8 +412,8 @@ top:
 		break;
 	      else
 		{
-		  daddr_t c10 = 10 * count;
-		  daddr_t nc = negative ? c10 - digit : c10 + digit;
+		  off_t c10 = 10 * count;
+		  off_t nc = negative ? c10 - digit : c10 + digit;
 		  if (c10 / 10 != count || (negative ? c10 < nc : nc < c10))
 		    {
 		      report_error_message (N_("Seek offset out of range"));
@@ -424,6 +424,11 @@ top:
 	    }
 
 	  mtop.mt_count = count;
+	  if (mtop.mt_count != count)
+	    {
+	      report_error_message (N_("Seek offset out of range"));
+	      exit (EXIT_FAILURE);
+	    }
 	  mtop.mt_op = atoi (operation_string);
 
 	  if (ioctl (tape, MTIOCTOP, (char *) &mtop) < 0)
