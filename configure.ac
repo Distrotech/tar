@@ -152,8 +152,10 @@ jm_XSTRTOUMAX
 # Solaris 7 prefers the library name -lrt to the obsolescent name -lposix4.
 tar_save_LIBS=$LIBS
   LIB_CLOCK_GETTIME=
-  AC_SEARCH_LIBS(clock_gettime, [rt posix4],
-		 [LIB_CLOCK_GETTIME=$ac_cv_search_clock_gettime])
+  AC_SEARCH_LIBS(clock_gettime, [rt posix4])
+  case "$ac_cv_search_clock_gettime" in
+    -l*) LIB_CLOCK_GETTIME=$ac_cv_search_clock_gettime;;
+  esac
   AC_SUBST(LIB_CLOCK_GETTIME)
   AC_CHECK_FUNCS(clock_gettime)
 LIBS=$tar_save_LIBS
