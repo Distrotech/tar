@@ -1285,10 +1285,10 @@ close_archive ()
 	      if (WEXITSTATUS (status) == (SIGPIPE + 128))
 		{
 		  /*
-			   * /bin/sh returns this if its child
-			   * dies with SIGPIPE.  'Sok.
-			   */
-		  break;
+		   * /bin/sh returns this if its child
+		   * dies with SIGPIPE.  'Sok.
+		   */
+		  /* Do nothing. */
 		}
 	      else if (WEXITSTATUS (status))
 		msg ("child returned status %d",
