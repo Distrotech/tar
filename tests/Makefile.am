@@ -31,10 +31,11 @@ TESTS = version.sh \
   recurse.sh \
   star/gtarfail.sh \
   star/gtarfail2.sh \
+  star/multi-fail.sh \
   star/ustar-big-2g.sh \
   star/ustar-big-8g.sh \
   star/pax-big-10g.sh \
-  star/qucktest.sh
+  star/qucktest.sh 
 
 genfile_SOURCES = genfile.c
 mksparse_SOURCES = mksparse.c
