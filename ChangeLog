@@ -1,3 +1,13 @@
+2003-12-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/names.c (safer_name_suffix): Reverted change made
+	2003-11-14. Reason: Discussion with Paul Eggert and
+	Jean-Louis Martineau. See also ChangeLog entry from
+	1999-08-14.
+	* tests/delete03.sh: Likewise.
+	* tests/extrac04.sh: Likewise.
+	* tests/multiv01.sh: Likewise.
+	
 2003-12-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/incremen.c (write_directory_file): Use sys_truncate
