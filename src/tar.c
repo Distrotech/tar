@@ -481,7 +481,7 @@ Local file selection:\n\
 	     stdout);
 #if !MSDOS
       fputs (_("\
-  -N, --newer=DATE             only store files newer than DATE\n\
+  -N, --newer=DATE-OR-FILE     only store files newer than DATE-OR-FILE\n\
       --newer-mtime=DATE       compare date and time when data changed only\n\
       --after-date=DATE        same as -N\n"),
 	     stdout);
@@ -1286,7 +1286,8 @@ see the file named COPYING for details."));
       || multi_volume_option
       || sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
-		   | FORMAT_MASK (GNU_FORMAT));
+		   | FORMAT_MASK (GNU_FORMAT)
+		   | FORMAT_MASK (POSIX_FORMAT));
   
   if (occurrence_option)
     {
