@@ -93,22 +93,22 @@ infodir = $(prefix)/info
 #### End of system configuration section. ####
 
 SRC1 =	tar.c create.c extract.c buffer.c getoldopt.c update.c gnu.c mangle.c
-SRC2 =  version.c list.c names.c diffarch.c port.c wildmat.c getopt.c
-SRC3 =  getopt1.c regex.c getdate.y
+SRC2 =  version.c list.c names.c diffarch.c port.c wildmat.c getopt.c malloc.c
+SRC3 =  getopt1.c regex.c getdate.y 
 SRCS =	$(SRC1) $(SRC2) $(SRC3)
 OBJ1 =	tar.o create.o extract.o buffer.o getoldopt.o update.o gnu.o mangle.o
-OBJ2 =	version.o list.o names.o diffarch.o port.o wildmat.o getopt.o
+OBJ2 =	version.o list.o names.o diffarch.o port.o wildmat.o getopt.o @MALLOC@
 OBJ3 =  getopt1.o regex.o getdate.o $(RTAPELIB)
 OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
 AUX =   README INSTALL COPYING ChangeLog Makefile.in makefile.pc \
 	configure configure.in \
-	tar.texinfo tar.info* texinfo.tex \
 	tar.h pathmax.h port.h open3.h getopt.h regex.h \
 	rmt.h rmt.c rtapelib.c alloca.c \
 	msd_dir.h msd_dir.c tcexparg.c \
-	level-0 level-1 backup-specs testpad.c
+	level-0 level-1 backup-specs testpad.c getpagesize.h
+#	tar.texinfo tar.info* texinfo.tex \
 
-all:	@PROGS@ tar.info
+all:	@PROGS@ # tar.info
 
 .c.o:
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $(DEFS) -I$(srcdir) -I. $<
