@@ -316,6 +316,11 @@
 @set xref-one-file-system @xref{one}
 @set pxref-one-file-system @pxref{one}
 
+@set op-overwrite @kbd{--overwrite}
+@set ref-overwrite @ref{Writing}
+@set xref-overwrite @xref{Writing}
+@set pxref-overwrite @pxref{Writing}
+
 @set op-owner @kbd{--owner=@var{user}}
 @set ref-owner @ref{Option Summary}
 @set xref-owner @xref{Option Summary}
@@ -670,22 +675,20 @@ Options to Help Read Archives
 * read full records::
 * Ignore Zeros::
 
-Changing How @command{tar} Writes Files
+Changing How @command{tar} Extracts Files Over Preexisting Files
 
-* Prevention Overwriting::
+* Dealing with Old Files::
+* Overwrite Old Files::
 * Keep Old Files::
 * Unlink First::
 * Recursive Unlink::
+
+Changing How @command{tar} Writes Files
+
 * Modification Times::
 * Setting Access Permissions::
 * Writing to Standard Output::
 * remove files::
-
-Options to Prevent Overwriting Files
-
-* Keep Old Files::
-* Unlink First::
-* Recursive Unlink::
 
 Coping with Scarce Resources
 
@@ -1401,7 +1404,7 @@ working directory with the archive name you intend to use (in this case,
 @samp{collection.tar}), or that you don't care about its contents.
 Whenever you use @samp{create}, @command{tar} will erase the current
 contents of the file named by @value{op-file} if it exists.  @command{tar}
-will not tell you if you are about to overwrite a file unless you
+will not tell you if you are about to overwrite an archive unless you
 specify an option which does this.  @FIXME{xref to the node for
 --backup!}To add files to an existing archive, you need to use a
 different option, such as @value{op-append}; see @ref{append} for
@@ -1882,7 +1885,7 @@ the extracted directory has the same name as any directory already in
 the working directory, then files in the extracted directory will be
 placed into the directory of the same name.  Likewise, if there are
 files in the pre-existing directory with the same names as the members
-which you extract, the files from the extracted archive will overwrite
+which you extract, the files from the extracted archive will replace
 the files already in the working directory (and possible
 subdirectories).  This will happen regardless of whether or not the
 files in the working directory were more recent than those extracted.
@@ -2508,7 +2511,9 @@ member names.  This option disables that behavior.  @FIXME-xref{}
 @item --atime-preserve
 
 Tells @command{tar} to preserve the access time field in a file's inode when
-dumping it.  @FIXME-xref{}
+dumping it.  Due to limitations in the @code{utimes} system call, the
+modification time field is also preserved, which may cause problems if
+the file is simultaneously being modified by another program.  @FIXME-xref{}
 
 @item --backup=@var{backup-type}
 
@@ -2659,8 +2664,8 @@ performing potentially destructive options, such as overwriting files.
 @item --keep-old-files
 @itemx -k
 
-When extracting files from an archive, @command{tar} will not overwrite existing
-files if this option is present.  @xref{Writing}.
+Do not overwrite existing files when extracting files from an archive.
+@xref{Writing}.
 
 @item --label=@var{name}
 @itemx -V @var{name}
@@ -2758,6 +2763,11 @@ Used when creating an archive.  Prevents @command{tar} from recursing into
 directories that are on different file systems from the current
 directory.  @FIXME-xref{}
 
+@item --overwrite
+
+Overwrite existing files and directory metadata when extracting files
+from an archive.  @xref{Writing}.
+
 @item --owner=@var{user}
 
 Specifies that @command{tar} should use @var{user} as the owner of members
@@ -2816,7 +2826,7 @@ archive.  @FIXME-xref{}
 
 @item --recursive-unlink
 
-Similar to the @samp{--unlink-first} option, removing existing
+Remove existing
 directory hierarchies before extracting directories of the same name
 from the archive.  @xref{Writing}.
 
@@ -2908,8 +2918,8 @@ rather than the modification time stored in the archive.
 @item --unlink-first
 @itemx -U
 
-Directs @command{tar} to remove the corresponding file from the file system
-before extracting it from the archive.  @xref{Writing}.
+Directs @command{tar} to remove the corresponding file from the file
+system before extracting it from the archive.  @xref{Writing}.
 
 @item --use-compress-program=@var{prog}
 
@@ -3542,10 +3552,10 @@ only the most recently added copy of a member with the same name as four
 other members would end up in the working directory.  This is because
 @samp{--extract} extracts an archive in the order the members appeared
 in the archive; the most recently archived members will be extracted
-last.  Additionally, an extracted member will @emph{overwrite} a file of
+last.  Additionally, an extracted member will @emph{replace} a file of
 the same name which existed in the directory already, and @command{tar}
 will not prompt you about this.  Thus, only the most recently archived
-member will end up being extracted, as it will overwrite the one
+member will end up being extracted, as it will replace the one
 extracted before it, and so on.
 
 @FIXME{ hag -- you might want to incorporate some of the above into the
@@ -3635,7 +3645,7 @@ recommend using something, but i can't see any better way to deal with
 the situation.}When you extract the archive, the older version will be
 effectively lost.  This works because files are extracted from an
 archive in the order in which they were archived.  Thus, when the
-archive is extracted, a file archived later in time will overwrite a
+archive is extracted, a file archived later in time will replace a
 file of the same name which was archived earlier, even though the older
 version of the file will remain in the archive unless you delete all
 versions of the file.
@@ -3645,7 +3655,7 @@ version to @file{collection.tar}.  As you saw above, the original
 @file{blues} is in the archive @file{collection.tar}.  If you change the
 file and append the new version of the file to the archive, there will
 be two copies in the archive.  When you extract the archive, the older
-version of the file will be extracted first, and then overwritten by the
+version of the file will be extracted first, and then replaced by the
 newer version when it is extracted.
 
 You can append the new, changed copy of the file @file{blues} to the
@@ -3674,7 +3684,7 @@ $ @kbd{tar --list --verbose --file=collection.tar}
 The newest version of @file{blues} is now at the end of the archive
 (note the different creation dates and file sizes).  If you extract
 the archive, the older version of the file @file{blues} will be
-overwritten by the newer version.  You can confirm this by extracting
+replaced by the newer version.  You can confirm this by extracting
 the archive and running @samp{ls} on the directory.  @xref{Writing},
 for more information.  (@emph{Please note:} This is the case unless
 you employ the @value{op-backup} option. @FIXME-ref{Multiple Members
@@ -4090,7 +4100,8 @@ encountered while reading an archive.  Use in conjunction with
 @FIXME{need to mention the brand new option, --backup}
 
 @menu
-* Prevention Overwriting::
+* Dealing with Old Files::
+* Overwrite Old Files::
 * Keep Old Files::
 * Unlink First::
 * Recursive Unlink::
@@ -4100,41 +4111,49 @@ encountered while reading an archive.  Use in conjunction with
 * remove files::
 @end menu
 
-@node Prevention Overwriting
-@unnumberedsubsubsec Options to Prevent Overwriting Files
+@node Dealing with Old Files
+@unnumberedsubsubsec Options Controlling the Overwriting of Existing Files
 
-Normally, @command{tar} writes extracted files into the file system without
+When extracting files, if @command{tar} discovers that the extracted
+file already exists, it normally replaces the file by removing it before
+extracting it, to prevent confusion in the presence of hard or symbolic
+links.  However, if a directory cannot be removed because it is
+nonempty, @command{tar} neither removes it nor modifies its ownership,
+permissions, or time stamps.
+
+To be more cautious and prevent existing files from being replaced, use
+the @value{op-keep-old-files} option.  It causes @command{tar} to refuse
+to replace or update a file that already exists, i.e., a file with the
+same name as an archive member prevents extraction of that archive
+member.
+
+To overwrite existing files, use the @value{op-overwrite} option.  This
+causes @command{tar} to write extracted files into the file system without
 regard to the files already on the system; i.e., files with the same
 names as archive members are overwritten when the archive is extracted.
+It also causes @command{tar} to extract the ownership, permissions,
+and time stamps onto any preexisting files or directories.
 If the name of a corresponding file name is a symbolic link, the file
 pointed to by the symbolic link will be overwritten instead of the
 symbolic link itself (if this is possible).  Moreover, special devices,
 empty directories and even symbolic links are automatically removed if
-they are found to be on the way of the proper extraction.
+they are in the way of extraction.
 
-To prevent @command{tar} from extracting an archive member from an archive
-if doing so will overwrite a file in the file system, use
-@value{op-keep-old-files} in conjunction with @samp{--extract}.  When
-this option is specified, @command{tar} will report an error stating the
-name of the files in conflict instead of overwriting the file with the
-corresponding extracted archive member.
+Be careful when using the @value{op-overwrite} option, particularly when
+combined with the @value{op-absolute-names} option, as this combination
+can change the contents, ownership or permissions of any file on your
+system.  Also, many systems do not take kindly to overwriting files that
+are currently being executed.
 
 @FIXME{these two P's have problems.  i don't understand what they're
 trying to talk about well enough to fix them; i may have just made them
 worse (in particular the first of the two).  waiting to talk with hag.}
 
-The @value{op-unlink-first} option removes existing files, symbolic links,
-empty directories, devices, etc., @emph{prior} to extracting over them.
-In particular, using this option will prevent replacing an already existing
-symbolic link by the name of an extracted file, since the link itself
-is removed prior to the extraction, rather than the file it points to.
-On some systems, the backing store for the executable @emph{is} the
-original program text.  You could use the @value{op-unlink-first} option
-to prevent segmentation violations or other woes when extracting arbitrary
-executables over currently running copies.  Note that if something goes
-wrong with the extraction and you @emph{did} use this option, you might
-end up with no file at all.  Without this option, if something goes wrong
-with the extraction, the existing file is not overwritten and preserved.
+The @value{op-unlink-first} option causes @command{tar} to always
+attempt to remove a file unconditionally before attempting to extract
+it.  This can make @command{tar} run a bit faster if you know in advance
+that the extracted files all need to be removed.  Normally this option
+slows @command{tar} tar down slightly, so it is disabled by default.
 
 @FIXME{huh?} If you specify the @value{op-recursive-unlink} option,
 @command{tar} removes @emph{anything} that keeps you from extracting a file
@@ -4144,11 +4163,14 @@ using this feature may be very surprised at the results when extracting
 a directory entry from the archive.  This option can be dangerous; be
 very aware of what you are doing if you choose to use it.
 
-@menu
-* Keep Old Files::
-* Unlink First::
-* Recursive Unlink::
-@end menu
+@node Overwrite Old Files
+@unnumberedsubsubsec Overwrite Old Files
+
+@table @kbd
+@item --overwrite
+Overwrite existing files and directory metadata when extracting files
+from an archive.
+@end table
 
 @node Keep Old Files
 @unnumberedsubsubsec Keep Old Files
@@ -4156,11 +4178,11 @@ very aware of what you are doing if you choose to use it.
 @table @kbd
 @item --keep-old-files
 @itemx -k
-Do not overwrite existing files from archive.  The
-@value{op-keep-old-files} option prevents @command{tar} from over-writing
+Do not replace existing files from archive.  The
+@value{op-keep-old-files} option prevents @command{tar} from replacing
 existing files with files with the same name from the archive.
 The @value{op-keep-old-files} option is meaningless with @value{op-list}.
-Prevents @command{tar} from overwriting files in the file system during
+Prevents @command{tar} from replacing files in the file system during
 extraction.
 @end table
 
@@ -4170,8 +4192,7 @@ extraction.
 @table @kbd
 @item --unlink-first
 @itemx -U
-Try removing files before extracting over them, instead of trying to
-overwrite them.
+Remove files before extracting over them.
 @end table
 
 @node Recursive Unlink
@@ -5775,14 +5796,13 @@ be disabled by using the @value{op-null} option.)
 @table @kbd
 @item -P
 @itemx --absolute-names
-Do not strip leading slashes from file names.
+Do not strip leading slashes from file names, and permit file names
+containing a @file{..} file name component.
 @end table
 
-By default, @sc{gnu} @command{tar} drops a leading @samp{/} on input or output.
+By default, @sc{gnu} @command{tar} drops a leading @samp{/} on input or output,
+and complains about file names containing a @file{..} component.
 This option turns off this behavior.
-Tt is roughly equivalent to changing to the
-root directory before running @command{tar} (except it also turns off the
-usual warning message).
 
 When @command{tar} extracts archive members from an archive, it strips any
 leading slashes (@samp{/}) from the member name.  This causes absolute
@@ -5793,6 +5813,10 @@ in the archive.  For example, if the archive member has the name
 @file{/etc/passwd}, @command{tar} will extract it as if the name were
 really @file{etc/passwd}.
 
+File names containing @file{..} can cause problems when extracting, so
+@command{tar} normally warns you about such files when creating an
+archive, and rejects attempts to extracts such files.
+
 Other @command{tar} programs do not do this.  As a result, if you create an
 archive whose member names start with a slash, they will be difficult
 for other people with a non-@sc{gnu} @command{tar} program to use.  Therefore,
@@ -5802,7 +5826,7 @@ add the file @file{/bin/ls} to an archive, it will do so, but the member
 name will be @file{bin/ls}.
 
 If you use the @value{op-absolute-names} option, @command{tar} will do
-neither of these transformations.
+none of these transformations.
 
 To archive or extract files relative to the root directory, specify
 the @value{op-absolute-names} option.
@@ -6894,18 +6918,22 @@ get it right.
 @section Handling File Attributes
 @UNREVISED
 
-When @command{tar} reads files, this causes them to have the access times
-updated.  To have @command{tar} attempt to set the access times back to
-what they were before they were read, use the @value{op-atime-preserve}
-option.  This doesn't work for files that you don't own, unless
-you're root, and it doesn't interact with incremental dumps nicely
-(@pxref{Backups}), but it is good enough for some purposes.
+When @command{tar} reads files, this causes them to have the access
+times updated.  To have @command{tar} attempt to set the access times
+back to what they were before they were read, use the
+@value{op-atime-preserve} option.  This doesn't work for files that you
+don't own, unless you're root, and it doesn't interact with incremental
+dumps nicely (@pxref{Backups}), and it can set access or modification
+times incorrectly if other programs access the file while @command{tar}
+is running; but it is good enough for some purposes.
 
 Handling of file attributes
 
 @table @kbd
 @item --atime-preserve
-Do not change access times on dumped files.
+Preserve access times on dumped files.  This also preserves modification
+times, which can be unfortunate if other programs are simultaneously
+modifying the dumped files.
 
 @item -m
 @itemx --touch
