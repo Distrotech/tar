@@ -20,6 +20,7 @@ mktime.m4 \
 prereq.m4 \
 progtest.m4 \
 realloc.m4 \
+strerror_r.m4 \
 uintmax_t.m4 \
 ulonglong.m4 \
 utimbuf.m4 \
