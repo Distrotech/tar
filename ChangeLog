@@ -1,3 +1,9 @@
+2004-07-09  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/extract.c (extract_archive): Do not report an error
+	when hard-linking X to X when X exists.  Problem reported by
+	Toby Peterson.
+
 2004-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* NEWS: Updated
@@ -34,11 +40,11 @@
 	(options): New option -n (--seek).
 	* src/update.c: Determine type of the archive before
 	appending to it.
-	
+
 	* TODO: Updated.
 
 2004-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
-	
+
 	* bootstrap: New option --update-po
 	* src/tar.c: New option -H (short alias to --format)
 	* doc/tar.texi: Document -H option
@@ -90,23 +96,23 @@
 	dated 2004-03-22.
 	* src/buffer.c (open_archive): Removed assignment to
 	read_full_records_option.
-	
+
 	* src/names.c (safer_name_suffix): (safer_name_suffix): Use "%s"
 	as the format argument, rather than a possibly-translated variable
 	string. Patch provided by Jim Meyering  <jim@meyering.net>
 	* src/tar.c (decode_options): Fixed typo in the comment.
 	* tests/star/README: Minor correction
-	
+
 2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
-	
+
 	* directory: New file. GNU directory entry for tar.
 	* doc/Makefile.am: Rewritten. Added rules for generating
 	documentation for the project's website.
 	* doc/.cvsignore: Updated
 	* doc/index.html.in: New file.
-	
+
 2004-05-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
-	
+
 	* configure.ac: Raised version number to 1.14
 	* NEWS: Updated.
 	* tests/after: Added copyleft statement
@@ -115,7 +121,7 @@
 
 	Tar 1.14 is released. Sources up to this point are tagged
 	release_1_14
-	
+
 2004-05-10  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed prerequisite headers for sys/buf.h
@@ -146,7 +152,7 @@
 	* src/list.c (read_and): Print block number before
 	issuing 'Skipping to next header' diagnostics, if
 	requested by block_number_option.
-	* src/rtapelib.c: Use rmt_command_option instead of 
+	* src/rtapelib.c: Use rmt_command_option instead of
 	hardcoded "/etc/rmt".
 	* src/tar.c: New option --rmt-command.
 	(decode_options): Handle --rmt-command. Initialize
@@ -204,7 +210,7 @@
 	* tests/star/ustar-big-8g.sh: Likewise
 
 	* doc/.cvsignore: Updated
-	
+
 2004-05-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Check whether date accepts +format argument
@@ -219,7 +225,7 @@
 	* scripts/backup-specs: Updated
 	* scripts/Makefile.am: Updated for new directory contents.
 	* scripts/.cvsignore: Updated
-	
+
 2004-05-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
@@ -241,7 +247,7 @@
 	* lib/.cvsignore: Updated
 	* m4/.cvsignore: Updated
 	* src/xheader.c: Include stpcpy.h
-	
+
 	* src/create.c: Produce an error, not warning, if the
 	filename is too long.
 	* tests/longv7.sh: Synchronized with the recent changes.
@@ -249,7 +255,7 @@
 2004-04-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed test for iconv_t
-	* src/rmt.h: Bugfix by Jürgen Weigert 
+	* src/rmt.h: Bugfix by Jürgen Weigert
 	* THANKS: Add Jürgen Weigert
 	* tests/star/README: Fixed typo
 
