@@ -3,6 +3,10 @@
 	Merge argp, getopt, xalloc changes from gnulib.
 	* bootstrap (gnulib_modules): Add xalloc-die.
 	Remove code to test for patches; we don't have patches now.
+	Set LC_ALL=C so that file names sort consistently.
+	Prefer the gnulib copies of gettext.m4, glibc21.m4,
+	lib-ld.m4, lib-prefix.m4, po.m4 too.
+	
 	* patches/getopt.diff: Remove; gnulib now works unpatched.
 	* configure.ac (_getopt_long_only_r): Remove check.
 	gl_ARGP now does this for us.
