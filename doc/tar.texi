@@ -4,6 +4,7 @@
 @settitle GNU tar
 @finalout
 @smallbook
+@setchapternewpage odd
 @c %**end of header
 
 @c ======================================================================
@@ -196,7 +197,7 @@
 @set xref-file @xref{file}
 @set pxref-file @pxref{file}
 
-@set op-files-from @kbd{--files-from=@var{file-of-names}} (@kbd{-I @var{file-of-names}}, @kbd{-T @var{file-of-names}})
+@set op-files-from @kbd{--files-from=@var{file-of-names}} (@kbd{-T @var{file-of-names}})
 @set ref-files-from @ref{files}
 @set xref-files-from @xref{files}
 @set pxref-files-from @pxref{files}
@@ -462,19 +463,21 @@
 @defindex op
 @syncodeindex op cp
 
-@ifinfo
+@dircategory GNU Packages
 @direntry
-* tar: (tar).			Making tape (or disk) archives.
+Tar: (tar).			Making tape (or disk) archives.
 @end direntry
 
+@dircategory Individual utilities
+@direntry
+* tar: (tar)tar invocation.                     Invoking @sc{gnu} @command{tar}
+@end direntry
+
+@ifinfo
 This file documents @sc{gnu} @command{tar}, which creates and extracts
 files from archives.
 
-Published by the Free Software Foundation,
-59 Temple Place - Suite 330,
-Boston, MA 02111-1307, USA
-
-Copyright 1992, 1994, 1995, 1996, 1997, 1999, 2000 Free Software
+Copyright 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free Software
 Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
@@ -486,8 +489,6 @@ A copy of the license is included in the section entitled ``GNU
 Free Documentation License''.
 
 @end ifinfo
-
-@setchapternewpage odd
 
 @shorttitlepage @sc{gnu} @command{tar}
 
@@ -501,8 +502,8 @@ Free Documentation License''.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000 Free Software
-Foundation, Inc.
+Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001
+Free Software Foundation, Inc.
 
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.1
@@ -2587,7 +2588,6 @@ performs operations on, rather than @command{tar}'s compilation dependent
 default.  @FIXME-xref{}
 
 @item --files-from=@var{file}
-@itemx -I @var{file}
 @itemx -T @var{file}
 
 @command{tar} will use the contents of @var{file} as a list of archive members
@@ -2713,11 +2713,13 @@ multi-volume @command{tar} archive.  @FIXME-xref{}
 @itemx -N
 
 When creating an archive, @command{tar} will only add files that have changed
-since @var{date}.  @FIXME-xref{}
+since @var{date}.  If @var{date} begins with @samp{/} or @samp{.}, it
+is taken to be the name of a file whose last-modified time specifies
+the date.  @FIXME-xref{}
 
-@item --newer-mtime
+@item --newer-mtime=@var{date}
 
-In conjunction with @samp{--newer}, @command{tar} will only add files whose
+Like @samp{--newer}, but add only files whose
 contents have changed (as opposed to just @samp{--newer}, which will
 also back up files for which any status information has changed).
 
@@ -2976,10 +2978,6 @@ them with the equivalent long option.
 @item -G
 
 @samp{--incremental}
-
-@item -I
-
-@samp{--files-from}
 
 @item -K
 
@@ -5281,14 +5279,13 @@ the list of files to archive with the @command{find} utility.
 
 @table @kbd
 @item --files-from=@var{file name}
-@itemx -I @var{file name}
 @itemx -T @var{file name}
 Get names to extract or create from file @var{file name}.
 @end table
 
 If you give a single dash as a file name for @samp{--files-from}, (i.e.,
-you specify either @samp{--files-from=-} or @samp{-I -}) or @samp{-T
--}), then the file names are read from standard input.
+you specify either @samp{--files-from=-} or @samp{-T -}), then the file
+names are read from standard input.
 
 Unless you are running @command{tar} with @samp{--create}, you can not use
 both @samp{--files-from=-} and @samp{--file=-} (@samp{-f -}) in the same
@@ -5547,7 +5544,9 @@ Your opinions on the matter are welcome.
 
 The @value{op-after-date} option causes @command{tar} to only work on files
 whose modification or inode-changed times are newer than the @var{date}
-given.  If you use this option when creating or appending to an archive,
+given.  If @var{date} starts with @samp{/} or @samp{.}, it is taken to
+be a file name; the last-modified time of that file is used as the date.
+If you use this option when creating or appending to an archive,
 the archive will only include new files.  If you use @samp{--after-date}
 when extracting an archive, @command{tar} will only extract files newer
 than the @var{date} you specify.
@@ -5569,6 +5568,9 @@ Only store files newer than @var{date}.
 
 Acts on files only if their modification or inode-changed times are
 later than @var{date}.  Use in conjunction with any operation.
+
+If @var{date} starts with @samp{/} or @samp{.}, it is taken to be a file
+name; the last-modified time of that file is used as the date.
 
 @item --newer-mtime=@var{date}
 Acts like @value{op-after-date}, but only looks at modification times.
@@ -5604,17 +5606,6 @@ should not be used for incremental backups.  Some files (such as those
 in renamed directories) are not selected properly by these options.
 @xref{incremental and listed-incremental}.
 @end quotation
-
-To select files newer than the modification time of a file that already
-exists, you can use the @samp{--reference} (@samp{-r}) option of @sc{gnu}
-@command{date}, available in @sc{gnu} shell utilities 1.13 or later.  It returns
-the time stamp of the already-existing file; this time stamp expands to
-become the referent date which @samp{--newer} uses to determine which
-files to archive.  For example, you could say,
-
-@example
-$ @kbd{tar -cf @var{archive.tar} --newer="`date -r @var{file}`" /home}
-@end example
 
 @noindent
 @FIXME{which tells -- need to fill this in!}
