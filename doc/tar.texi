@@ -131,7 +131,7 @@
 @set xref-blocking-factor @xref{Blocking Factor}
 @set pxref-blocking-factor @pxref{Blocking Factor}
 
-@set op-bzip2 @kbd{--bzip2} (@kbd{--bunzip2}, @kbd{-y})
+@set op-bzip2 @kbd{--bzip2} (@kbd{--bunzip2})
 @set ref-bzip2 @ref{gzip}
 @set xref-bzip2 @xref{gzip}
 @set pxref-bzip2 @pxref{gzip}
@@ -2525,7 +2525,6 @@ record.  @FIXME-xref{}.
 @item --bzip2
 @itemx --bunzip2
 @itemx --unbzip2
-@itemx -y
 
 This option tells @code{tar} to read or write archives through @code{bzip2}.
 @FIXME-xref{}.
@@ -3089,10 +3088,6 @@ them with the equivalent long option.
 @item -x
 
 @samp{--extract}
-
-@item -y
-
-@samp{--bzip2}
 
 @item -z
 
@@ -6772,7 +6767,6 @@ loose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @table @kbd
-@item -y
 @itemx --bzip2
 @itemx --unbzip2
 Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
