@@ -105,6 +105,7 @@ m4_include([same-order01.at])
 m4_include([same-order02.at])
 
 m4_include([sparse01.at])
+m4_include([sparse02.at])
 
 m4_include([volume.at])
 
