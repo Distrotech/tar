@@ -28,12 +28,9 @@ struct mangled
     char normal[1];
   };
 
-/*---------------------------------------------------------------------.
-| Extract a GNUTYPE_NAMES record contents.  It seems that such are not |
-| produced anymore by GNU tar, but we leave the reading code around    |
-| nevertheless, for salvaging old tapes.			       |
-`---------------------------------------------------------------------*/
-
+/* Extract a GNUTYPE_NAMES record contents.  It seems that such are
+   not produced anymore by GNU tar, but we leave the reading code
+   around nevertheless, for salvaging old tapes.  */
 void
 extract_mangle (void)
 {
@@ -110,7 +107,7 @@ extract_mangle (void)
 	  unquote_string (name_end + 4);
 	  if (symlink (name, name_end + 4)
 	      && (unlink (name_end + 4) || symlink (name, name_end + 4)))
-	    ERROR ((0, errno, _("%s: Cannot symlink %s %s"),
+	    ERROR ((0, errno, _("%s: Cannot symlink to %s"),
 		    quotearg_colon (name), quote_n (1, name_end + 4)));
 	  else if (verbose_option)
 	    WARN ((0, 0, _("Symlinked %s to %s"), name, name_end + 4));
