@@ -141,7 +141,29 @@ minor_to_oct (minor_t v, char *p, size_t s)
 void
 mode_to_oct (mode_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "mode_t");
+  /* In the common case where the internal and external mode bits are the same,
+     propagate all unknown bits to the external mode.
+     This matches historical practice.
+     Otherwise, just copy the bits we know about.  */
+  uintmax_t u =
+    ((S_ISUID == TSUID && S_ISGID == TSGID && S_ISVTX == TSVTX
+      && S_IRUSR == TUREAD && S_IWUSR == TUWRITE && S_IXUSR == TUEXEC
+      && S_IRGRP == TGREAD && S_IWGRP == TGWRITE && S_IXGRP == TGEXEC
+      && S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC)
+     ? v
+     : ((v & S_ISUID ? TSUID : 0)
+	| (v & S_ISGID ? TSGID : 0)
+	| (v & S_ISVTX ? TSVTX : 0)
+	| (v & S_IRUSR ? TUREAD : 0)
+	| (v & S_IWUSR ? TUWRITE : 0)
+	| (v & S_IXUSR ? TUEXEC : 0)
+	| (v & S_IRGRP ? TGREAD : 0)
+	| (v & S_IWGRP ? TGWRITE : 0)
+	| (v & S_IXGRP ? TGEXEC : 0)
+	| (v & S_IROTH ? TOREAD : 0)
+	| (v & S_IWOTH ? TOWRITE : 0)
+	| (v & S_IXOTH ? TOEXEC : 0)));
+  to_oct (u, (uintmax_t) 0, p, s, "mode_t");
 }
 void
 off_to_oct (off_t v, char *p, size_t s)
@@ -332,7 +354,7 @@ Removing leading `/' from absolute path names in the archive")));
      acceptor for Paul's test.  */
 
   if (archive_format == V7_FORMAT)
-    MODE_TO_OCT (st->st_mode & 07777, header->header.mode);
+    MODE_TO_OCT (st->st_mode & MODE_ALL, header->header.mode);
   else
     MODE_TO_OCT (st->st_mode, header->header.mode);
 
@@ -404,8 +426,8 @@ finish_header (union block *header)
   /* Fill in the checksum field.  It's formatted differently from the
      other fields: it has [6] digits, a null, then a space -- rather than
      digits, then a null.  We use to_oct.
-     The final space is already there, from checksumming,
-     and to_oct doesn't modify it.
+     The final space is already there, from
+     checksumming, and to_oct doesn't modify it.
 
      This is a fast way to do:
 
@@ -620,7 +642,7 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 	  break;
 	}
 
-      if (lseek (file, sparsearray[sparse_index++].offset, 0) < 0)
+      if (lseek (file, sparsearray[sparse_index++].offset, SEEK_SET) < 0)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
 	  ERROR ((0, errno, _("lseek error at byte %s in file %s"),
@@ -1061,7 +1083,8 @@ Removing leading `/' from absolute links")));
 	 files when archive is meant for /dev/null.  */
 
       if (dev_null_output
-	  || (sizeleft == 0 && 0444 == (0444 & current_stat.st_mode)))
+	  || (sizeleft == 0
+	      && MODE_R == (MODE_R & current_stat.st_mode)))
 	f = -1;
       else
 	{
@@ -1144,7 +1167,8 @@ Removing leading `/' from absolute links")));
 	}
       if (save_typeflag == GNUTYPE_SPARSE)
 	{
-	  if (finish_sparse_file (f, &sizeleft, current_stat.st_size, p))
+	  if (f < 0
+	      || finish_sparse_file (f, &sizeleft, current_stat.st_size, p))
 	    goto padit;
 	}
       else
