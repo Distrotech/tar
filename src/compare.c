@@ -54,9 +54,8 @@ static char *diff_buffer;
 void
 diff_init (void)
 {
-  diff_buffer = valloc (record_size);
-  if (!diff_buffer)
-    xalloc_die ();
+  void *ptr;
+  diff_buffer = page_aligned_alloc (&ptr, record_size);
 }
 
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
