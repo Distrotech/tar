@@ -1,3 +1,10 @@
+2004-06-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* doc/tar.texi: The actual default for exclude patterns
+	is --no-anchored. Fixed.
+	* src/tar.c (options): Likewise.
+	Thanks "Felix Natter" <felix.natter@ldc.de> for noticing.
+
 2004-06-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/tar.texi: Fixed several inconsistencies.
