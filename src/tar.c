@@ -37,8 +37,10 @@ time_t time ();
 #define GLOBAL
 #include "common.h"
 
-#include "quotearg.h"
-#include "xstrtol.h"
+#include <localedir.h>
+#include <prepargs.h>
+#include <quotearg.h>
+#include <xstrtol.h>
 
 time_t get_date ();
 
@@ -56,13 +58,10 @@ static void usage PARAMS ((int)) __attribute__ ((noreturn));
 
 /* Miscellaneous.  */
 
-/*----------------------------------------------.
-| Doesn't return if stdin already requested.    |
-`----------------------------------------------*/
-
 /* Name of option using stdin.  */
 static const char *stdin_used_by;
 
+/* Doesn't return if stdin already requested.  */
 void
 request_stdin (const char *option)
 {
@@ -73,10 +72,7 @@ request_stdin (const char *option)
   stdin_used_by = option;
 }
 
-/*--------------------------------------------------------.
-| Returns true if and only if the user typed 'y' or 'Y'.  |
-`--------------------------------------------------------*/
-
+/* Returns true if and only if the user typed 'y' or 'Y'.  */
 int
 confirm (const char *message_action, const char *message_name)
 {
@@ -167,7 +163,7 @@ static int show_help;
 /* If nonzero, print the version on standard output and exit.  */
 static int show_version;
 
-struct option long_options[] =
+static struct option long_options[] =
 {
   {"absolute-names", no_argument, 0, 'P'},
   {"absolute-paths", no_argument, 0, OBSOLETE_ABSOLUTE_NAMES},
@@ -179,7 +175,7 @@ struct option long_options[] =
   {"block-number", no_argument, 0, 'R'},
   {"block-size", required_argument, 0, OBSOLETE_BLOCKING_FACTOR},
   {"blocking-factor", required_argument, 0, 'b'},
-  {"bzip2", no_argument, 0, 'I'},
+  {"bzip2", no_argument, 0, 'j'},
   {"catenate", no_argument, 0, 'A'},
   {"checkpoint", no_argument, &checkpoint_option, 1},
   {"compare", no_argument, 0, 'd'},
@@ -266,10 +262,7 @@ struct option long_options[] =
   {0, 0, 0, 0}
 };
 
-/*---------------------------------------------.
-| Print a usage message and exit with STATUS.  |
-`---------------------------------------------*/
-
+/* Print a usage message and exit with STATUS.  */
 static void
 usage (int status)
 {
@@ -369,7 +362,7 @@ Archive format selection:\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX format archive\n\
-  -I, --bzip2                        filter the archive through bzip2\n\
+  -j, --bzip2                        filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
@@ -378,7 +371,7 @@ Archive format selection:\n\
 \n\
 Local file selection:\n\
   -C, --directory=DIR          change to directory DIR\n\
-  -T, --files-from=NAME        get names to extract or create from file NAME\n\
+  -T, -I, --files-from=NAME    get names to extract or create from file NAME\n\
       --null                   -T reads null-terminated names, disable -C\n\
       --exclude=PATTERN        exclude files, given as a globbing PATTERN\n\
   -X, --exclude-from=FILE      exclude globbing patterns listed in FILE\n\
@@ -433,17 +426,19 @@ or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
   exit (status);
 }
 
-/*----------------------------.
-| Parse the options for tar.  |
-`----------------------------*/
+/* Parse the options for tar.  */
 
-/* Available option letters are DEHJQY and aejnqy.  Some are reserved:
+/* Available option letters are DEHJQY and aenqy.  Some are reserved:
 
+   e  exit immediately with a nonzero exit status if unexpected errors occur
+   E  use extended headers (draft POSIX headers, that is)
+   n  the archive is quickly seekable, so don't worry about random seeks
+   q  stop after extracting the first occurrence of the named file
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GIK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
+  "-01234567ABC:F:GIK:L:MN:OPRST:UV:WX:Zb:cdf:g:hijklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -478,7 +473,7 @@ add_filtered_exclude (struct exclude *dummy, char const *pattern)
 }
 
 static void
-decode_options (int argc, char *const *argv)
+decode_options (int argc, char **argv)
 {
   int optchar;			/* option letter */
   int input_files;		/* number of input files */
@@ -559,6 +554,8 @@ decode_options (int argc, char *const *argv)
 
   input_files = 0;
 
+  prepend_default_options (getenv ("TAR_OPTIONS"), &argc, &argv);
+
   while (optchar = getopt_long (argc, argv, OPTION_STRING, long_options, 0),
 	 optchar != -1)
     switch (optchar)
@@ -596,7 +593,8 @@ decode_options (int argc, char *const *argv)
 		 && u == (blocking_factor = u)
 		 && 0 < blocking_factor
 		 && u == (record_size = u * BLOCKSIZE) / BLOCKSIZE))
-	    USAGE_ERROR ((0, 0, _("Invalid blocking factor")));
+	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			  _("Invalid blocking factor")));
 	}
 	break;
 
@@ -675,7 +673,7 @@ decode_options (int argc, char *const *argv)
 	ignore_zeros_option = 1;
 	break;
 
-      case 'I':
+      case 'j':
 	set_use_compress_program_option ("bzip2");
 	break;
 
@@ -700,7 +698,8 @@ decode_options (int argc, char *const *argv)
 	{
 	  uintmax_t u;
 	  if (xstrtoumax (optarg, 0, 10, &u, "") != LONGINT_OK)
-	    USAGE_ERROR ((0, 0, _("Invalid tape length")));
+	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			  _("Invalid tape length")));
 	  tape_length_option = 1024 * (tarlong) u;
 	  multi_volume_option = 1;
 	}
@@ -796,6 +795,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'T':
+      case 'I': /* for compatibility with Solaris tar */
 	files_from_option = optarg;
 	break;
 
@@ -870,7 +870,8 @@ decode_options (int argc, char *const *argv)
 		&& g == (gid_t) g)
 	      group_option = g;
 	    else
-	      FATAL_ERROR ((0, 0, _("Invalid group given on option")));
+	      FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			    _("%s: Invalid group")));
 	  }
 	break;
 
@@ -905,7 +906,8 @@ decode_options (int argc, char *const *argv)
 		&& u == (uid_t) u)
 	      owner_option = u;
 	    else
-	      FATAL_ERROR ((0, 0, _("Invalid owner given on option")));
+	      FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			    _("Invalid owner")));
 	  }
 	break;
 
@@ -933,7 +935,8 @@ decode_options (int argc, char *const *argv)
 	  uintmax_t u;
 	  if (! (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
 		 && u == (size_t) u))
-	    USAGE_ERROR ((0, 0, _("Invalid record size")));
+	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			  _("Invalid record size")));
 	  record_size = u;
 	  if (record_size % BLOCKSIZE != 0)
 	    USAGE_ERROR ((0, 0, _("Record size must be a multiple of %d."),
@@ -1132,13 +1135,12 @@ see the file named COPYING for details."),
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
     case APPEND_SUBCOMMAND:
-    case DELETE_SUBCOMMAND:
       for (archive_name_cursor = archive_name_array;
 	   archive_name_cursor < archive_name_array + archive_names;
 	   archive_name_cursor++)
 	if (!strcmp (*archive_name_cursor, "-"))
 	  USAGE_ERROR ((0, 0,
-			_("Options `-Aru' and `--delete' are incompatible with `-f -'")));
+			_("Options `-Aru' are incompatible with `-f -'")));
 
     default:
       break;
@@ -1157,12 +1159,9 @@ see the file named COPYING for details."),
 
 /* Tar proper.  */
 
-/*-----------------------.
-| Main routine for tar.	 |
-`-----------------------*/
-
+/* Main routine for tar.  */
 int
-main (int argc, char *const *argv)
+main (int argc, char **argv)
 {
 #if HAVE_CLOCK_GETTIME
   if (clock_gettime (CLOCK_REALTIME, &start_timespec) != 0)
@@ -1228,6 +1227,7 @@ main (int argc, char *const *argv)
     case EXTRACT_SUBCOMMAND:
       extr_init ();
       read_and (extract_archive);
+      extract_finish ();
       break;
 
     case LIST_SUBCOMMAND:
