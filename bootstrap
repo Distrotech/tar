@@ -24,6 +24,7 @@
 
 # Parse options.
 
+DOWNLOAD_PO=yes
 for option
 do
   case $option in
@@ -36,6 +37,8 @@ do
     CVS_AUTH=`expr "$1" : '--cvs-auth=\(.*\)'`;;
   --cvs-user=*)
     CVS_USER=`expr "$1" : '--cvs-user=\(.*\)'`;;
+  --no-po)
+    DOWNLOAD_PO=no;;
   *)
     echo >&2 "$0: $option: unknown option"
     exit 1;;
@@ -145,6 +148,14 @@ for gnulib_file in $gnulib_files; do
   dest=$gnulib_file
 
   case $gnulib_file in
+  m4/codeset.m4) continue;;
+  m4/glibc21.m4) continue;;
+  m4/intdiv0.m4) continue;;
+  m4/inttypes_h.m4) continue;;
+  m4/inttypes.m4) continue;;
+  m4/inttypes-pri.m4) continue;;
+  m4/isc-posix.m4) continue;;
+  m4/lcmessage.m4) continue;;
   m4/onceonly_2_57.m4) dest=m4/onceonly.m4;;
   esac
 
@@ -156,19 +167,20 @@ done
 
 # Get translations.
 
-echo "$0: getting translations into po..."
-(cd po &&
- rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
- wget -nv -nd -r -l 1 -A .po -C off \
-   http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/ &&
- ls *.po | sed 's/\.po$//' >LINGUAS
-) || exit
-
+if test "$DOWNLOAD_PO" = "yes"; then
+  echo "$0: getting translations into po..."
+  (cd po &&
+   rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
+    wget -nv -nd -r -l 1 -A .po -C off \
+    http://www.iro.umontreal.ca/contrib/po/maint/tar/ &&
+    ls *.po | sed 's/\.po$//' >LINGUAS
+  ) || exit
+fi
 
 # Reconfigure, getting other files.
 
 echo "$0: autoreconf --verbose --install --force ..."
-autoreconf --verbose --install --force || exit
+autoreconf --verbose --install --force
 
 
 echo "$0: done.  Now you can run './configure'."
