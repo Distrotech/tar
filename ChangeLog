@@ -1,3 +1,10 @@
+2004-02-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/incremen.c: Removed accumulator stuff in favor of obstack.
+	(get_directory_contents): Split into two functions
+	* src/update.c: Minor changes
+	* doc/tar.texi: Fixed typo
+	
 2004-02-15  Paul Eggert  <eggert@twinsun.com>
 
 	Fix Debian bug 230872, originally reported by Jeff King in
