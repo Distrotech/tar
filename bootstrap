@@ -139,7 +139,7 @@ done
 
 echo "$0: getting translations into po..."
 (cd po &&
- rm -f dummy `ls | sed -n '/\.gmo$/p; /^en_GB\.po$/d; /\.po/p'` &&
+ rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'` &&
  wget -nv -nd -r -l 1 -A .po -C off \
    http://www.iro.umontreal.ca/contrib/po/maint/tar/ &&
  ls *.po | sed 's/\.po$//' >LINGUAS

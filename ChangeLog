@@ -1,3 +1,10 @@
+2003-08-29  Paul Eggert  <eggert@twinsun.com>
+
+	* NEWS, bootstrap: Drop en_GB locale; it was more trouble than it
+	was worth (e.g., different users in en_GB disagree about -ize
+	versus -ise).
+	* po/en_GB.po: Remove.
+
 2003-07-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated

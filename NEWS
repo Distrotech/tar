@@ -14,11 +14,10 @@ version 1.13.26
   option is now the default; use --no-overwrite-dir if you prefer
   the previous default behavior.
 
-* New message translations en_GB (British English), fi (Finnish), gl
-  (Galician), hr (Croatian), hu (Hungarian), ms (Malaysian), nb
-  (Norwegian), ro (Romanian), sk (Slovak), zh_CN (Chinese simplified),
-  zh_TW (Chinese traditional).  The code 'no' for Norwegian has been
-  withdrawn; use 'nb' instead.
+* New message translations fi (Finnish), gl (Galician), hr (Croatian),
+  hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
+  (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
+  The code 'no' for Norwegian has been withdrawn; use 'nb' instead.
 
 * The semantics of -o option is changed. When extracting, it
 does the same as --no-same-owner GNU tar option. This is compatible
