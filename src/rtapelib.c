@@ -33,7 +33,7 @@
    code, courtesy of Dan Kegel.  */
 
 #include "system.h"
-
+#include "common.h"
 #include <safe-read.h>
 #include <full-write.h>
 
