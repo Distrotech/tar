@@ -20,7 +20,7 @@
 
 AC_INIT([GNU tar], [1.15.2], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
-AC_CONFIG_AUX_DIR([config])
+AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h:config.hin])
 AC_PREREQ([2.59])
 AM_INIT_AUTOMAKE([1.8 gnits dist-bzip2 dist-shar std-options])

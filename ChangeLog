@@ -1,5 +1,10 @@
 2005-04-04  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* configure.ac (AC_CONFIG_AUX_DIR): Rename from config to build-aux,
+	for reasons discussed in the thread beginning at
+	<http://lists.gnu.org/archive/html/bug-gnulib/2005-03/msg00119.html>.
+	* .cvsignore: Remove config; add build-aux.
+
 	* src/buffer.c (struct zip_magic): Use char arrays, not pointers.
 	The unsigned char * pointer ran afoul of pedantic C compilers, and
 	we didn't need pointers anyway.  Put the size field before the
