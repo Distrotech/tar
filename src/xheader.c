@@ -51,6 +51,9 @@ locate_handler (char const *keyword)
   return NULL;
 }
 
+/* Decodes a single extended header record. Advances P to the next
+   record.
+   Returns true on success, false otherwise. */
 static bool
 decode_record (char **p, struct tar_stat_info *st)
 {
@@ -61,13 +64,13 @@ decode_record (char **p, struct tar_stat_info *st)
   struct xhdr_tab const *t;
 
   if (**p == 0)
-    return true;
+    return false;
 
   len = strtoul (*p, p, 10);
   if (**p != ' ')
     {
-      ERROR ((0, 0, _("Malformed extended header")));
-      return true;
+      ERROR ((0, 0, _("Malformed extended header: missing whitespace after the length")));
+      return false;
     }
 
   keyword = ++*p;
@@ -77,8 +80,8 @@ decode_record (char **p, struct tar_stat_info *st)
 
   if (**p != '=')
     {
-      ERROR ((0, 0, _("Malformed extended header")));
-      return true;
+      ERROR ((0, 0, _("Malformed extended header: missing equal sign")));
+      return false;
     }
 
   eqp = *p;
@@ -98,7 +101,7 @@ decode_record (char **p, struct tar_stat_info *st)
     }
   *eqp = '=';
   *p = &start[len];
-  return false;
+  return true;
 }
 
 void
@@ -108,7 +111,7 @@ xheader_decode (struct tar_stat_info *st)
   char *endp = &extended_header.buffer[extended_header.size-1];
 
   while (p < endp)
-    if (decode_record (&p, st))
+    if (!decode_record (&p, st))
       break;
 }
 
