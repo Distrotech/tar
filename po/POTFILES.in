@@ -41,3 +41,4 @@ src/rmt.c
 src/rtapelib.c
 src/tar.c
 src/update.c
+src/xheader.c
