@@ -1,3 +1,15 @@
+2004-09-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/common.h (is_individual_file): New prototype
+	* src/create.c (dump_file0): Fix bug introduced
+	2004-02-21.
+	* src/names.c (register_individual_file)
+	(is_individual_file): New functions.
+	* tests/listed02.sh: New file.
+	* tests/Makefile.am: Added listed02.sh
+
+	* NEWS: Updated
+
 2004-08-31  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c (sparse_add_map): Fixed improper initializations
