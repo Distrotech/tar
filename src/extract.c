@@ -542,7 +542,7 @@ extract_archive ()
 	  if (chmod (skipcrud + current_file_name,
 		     notumask & (int) hstat.st_mode) < 0)
 	    {
-	      msg_perror ("cannot change mode of file %s to %ld",
+	      msg_perror ("cannot change mode of file %s to %lo",
 			  skipcrud + current_file_name,
 			  notumask & (int) hstat.st_mode);
 	    }
@@ -719,7 +719,7 @@ extract_archive ()
 	      if (chmod (skipcrud + current_file_name,
 			 notumask & (int) hstat.st_mode) < 0)
 		{
-		  msg_perror ("cannot change mode of file %s to %ld",
+		  msg_perror ("cannot change mode of file %s to %lo",
 			      skipcrud + current_file_name,
 			      notumask & (int) hstat.st_mode);
 		}
@@ -897,7 +897,7 @@ restore_saved_dir_info ()
 	  if (chmod (saved_dir_info_head->path,
 		     notumask & saved_dir_info_head->mode) < 0)
 	    {
-	      msg_perror ("cannot change mode of file %s to %ld",
+	      msg_perror ("cannot change mode of file %s to %lo",
 			  saved_dir_info_head->path,
 			  notumask & saved_dir_info_head->mode);
 	    }

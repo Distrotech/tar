@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -33,7 +33,7 @@ extern int errno;
 #include <time.h>
 time_t time();
 
-#ifndef NO_MTIO
+#ifdef HAVE_SYS_MTIO_H
 #include <sys/ioctl.h>
 #include <sys/mtio.h>
 #endif
@@ -127,6 +127,9 @@ static int	r_error_count;
  */
 static int	hit_eof;
 
+/* Checkpointing counter */
+static int checkpoint;
+
 /* JF we're reading, but we just read the last record and its time to update */
 extern time_to_start_writing;
 int file_to_switch_to= -1;	/* If remote update, close archive, and use
@@ -134,6 +137,7 @@ int file_to_switch_to= -1;	/* If remote update, close archive, and use
 
 static int volno = 1;		/* JF which volume of a multi-volume tape
 				   we're on */
+static int global_volno = 1;	/* Volume number to print in external messages. */
 
 char *save_name = 0;		/* Name of the file we are currently writing */
 long save_totsize;		/* total size of file we are writing.  Only
@@ -650,6 +654,8 @@ fl_write()
 	int copy_back;
 	static long bytes_written = 0;
 
+	if (f_checkpoint && ! (++checkpoint % 10))
+	  msg ("Write checkpoint %d\n", checkpoint);
 	if(tape_length && bytes_written >= tape_length * 1024) {
 		errno = ENOSPC;
 		err = 0;
@@ -686,8 +692,10 @@ fl_write()
 
 	/* We're multivol  Panic if we didn't get the right kind of response */
 	/* ENXIO is for the UNIX PC */
-	if(err>0 || (err<0 && errno!=ENOSPC && errno!=EIO && errno!=ENXIO))
+	if(err<0 && errno!=ENOSPC && errno!=EIO && errno!=ENXIO)
 		writeerror(err);
+
+	/* If error indicates a short write, we just move to the next tape. */
 
 	if(new_volume(0)<0)
 		return;
@@ -821,6 +829,9 @@ fl_read()
 	int left;		/* Bytes left */
 	char *more;		/* Pointer to next byte to read */
 
+	if (f_checkpoint && ! (++checkpoint % 10))
+	  msg ("Read checkpoint %d\n", checkpoint);
+
 	/*
 	 * Clear the count of errors.  This only applies to a single
 	 * call to fl_read.  We leave read_error_flag alone; it is
@@ -872,7 +883,7 @@ error_loop:
 	if (err == blocksize)
 		return;
 
-	if((err == 0 || (err<0 && errno==ENOSPC)) && f_multivol) {
+	if((err == 0 || (err<0 && errno==ENOSPC) || (err > 0 && !f_reblock)) && f_multivol) {
 		union record *head;
 
 	try_volume:
@@ -903,6 +914,7 @@ error_loop:
 					msg("Volume mismatch! %s!=%s",f_volhdr,
 					    head->header.name);
 					--volno;
+					--global_volno;
 					goto try_volume;
 				      }
 				    
@@ -910,6 +922,7 @@ error_loop:
  				if(strcmp(ptr,head->header.name)) {
 					msg("Volume mismatch! %s!=%s",ptr,head->header.name);
 					--volno;
+					--global_volno;
 					free(ptr);
 					goto try_volume;
 				}
@@ -929,6 +942,7 @@ error_loop:
 			if(head->header.linkflag!=LF_MULTIVOL || strcmp(head->header.name,real_s_name)) {
 				msg("%s is not continued on this volume!",real_s_name);
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			if(real_s_totsize!=from_oct(1+12,head->header.size)+from_oct(1+12,head->header.offset)) {
@@ -937,11 +951,13 @@ error_loop:
 				       from_oct(1+12,head->header.size),
 				       from_oct(1+12,head->header.offset));
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			if(real_s_totsize-real_s_sizeleft!=from_oct(1+12,head->header.offset)) {
 				msg("This volume is out of sequence");
 				--volno;
+				--global_volno;
 				goto try_volume;
 			}
 			head++;
@@ -1187,6 +1203,39 @@ anno(stream, prefix, savedp)
 }
 #endif
 
+/* Called to initialize the global volume number. */
+int
+init_volume_number ()
+{
+  FILE *vf;
+  
+  vf = fopen (f_volno_file, "r");
+  if (!vf && errno != ENOENT)
+    msg_perror ("%s", f_volno_file);
+  
+  if (vf)
+    {
+      fscanf (vf, "%d", &global_volno);
+      fclose (vf);
+    }
+}
+
+/* Called to write out the closing global volume number. */
+int
+closeout_volume_number ()
+{
+  FILE *vf;
+  
+  vf = fopen (f_volno_file, "w");
+  if (!vf)
+    msg_perror ("%s", f_volno_file);
+  else
+    {
+      fprintf (vf, "%d\n", global_volno);
+      fclose (vf);
+    }
+}
+  
 /* We've hit the end of the old volume.  Close it and open the next one */
 /* Values for type:  0: writing  1: reading  2: updating */
 int
@@ -1211,12 +1260,13 @@ int	type;
 	if((c=rmtclose(archive))<0)
 		msg_perror("Warning: can't close %s(%d,%d)",ar_file,archive,c);
 
+	global_volno++;
 	volno++;
  tryagain:
 	if (f_run_script_at_end)
 		system(info_script);
 	else for(;;) {
-		fprintf(msg_file,"\007Prepare volume #%d and hit return: ",volno);
+		fprintf(msg_file,"\007Prepare volume #%d and hit return: ",global_volno);
 		fflush(msg_file);
 		if(fgets(inbuf,sizeof(inbuf),read_file)==0) {
  			fprintf(msg_file,"EOF?  What does that mean?");
