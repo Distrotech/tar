@@ -1,5 +1,5 @@
 /* Buffer management for tar.
-   Copyright (C) 1988, 92, 93, 94, 96, 97, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92, 93, 94, 96, 97, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -25,7 +25,9 @@
 
 #include <signal.h>
 #include <time.h>
+#ifndef time
 time_t time ();
+#endif
 
 #if MSDOS
 # include <process.h>
@@ -136,7 +138,7 @@ static off_t real_s_sizeleft;
 static pid_t
 myfork (void)
 {
-  pid_t result = fork();
+  pid_t result = fork ();
 
   if (result == 0)
     kill (getpid (), SIGSTOP);
@@ -358,8 +360,8 @@ child_open_for_compress (void)
 
   program_name = _("tar (child)");
 
-  xclose (parent_pipe[PWRITE]);
   xdup2 (parent_pipe[PREAD], STDIN_FILENO, _("(child) Pipe to stdin"));
+  xclose (parent_pipe[PWRITE]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
      a) we are writing stdout: to force reblocking;
@@ -613,13 +615,11 @@ child_open_for_uncompress (void)
 	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
 	  status = full_write (STDOUT_FILENO, cursor, count);
 	  if (status < 0)
-	    FATAL_ERROR ((0, errno, _("\
-Cannot write to compression program")));
+	    FATAL_ERROR ((0, errno, _("Cannot write to compression program")));
 
 	  if (status != count)
 	    {
-	      ERROR ((0, 0, _("\
-Write to compression program short %lu bytes"),
+	      ERROR ((0, 0, _("Write to compression program short %lu bytes"),
 		      (unsigned long) (count - status)));
 	      count = status;
 	    }
@@ -1412,40 +1412,32 @@ close_archive (void)
 
   if (child_pid)
     {
-      WAIT_T wait_status;
-      pid_t child;
+      int wait_status;
 
-      /* Loop waiting for the right child to die, or for no more kids.  */
+      while (waitpid (child_pid, &wait_status, 0) == -1)
+	if (errno != EINTR)
+	  {
+	    ERROR ((0, errno, _("While waiting for child")));
+	    break;
+	  }
 
-      while ((child = wait (&wait_status), child != child_pid)
-	     && child != -1)
-	continue;
-
-      if (child != -1)
+      if (WIFSIGNALED (wait_status))
 	{
-	  if (WIFSIGNALED (wait_status)
-#if 0
-	      && !WIFSTOPPED (wait_status)
-#endif
-	      )
-	    {
-	      /* SIGPIPE is OK, everything else is a problem.  */
-
-	      if (WTERMSIG (wait_status) != SIGPIPE)
-		ERROR ((0, 0, _("Child died with signal %d%s"),
-			WTERMSIG (wait_status),
-			WCOREDUMP (wait_status) ? _(" (core dumped)") : ""));
-	    }
-	  else
-	    {
-	      /* Child voluntarily terminated -- but why?  /bin/sh returns
-		 SIGPIPE + 128 if its child, then do nothing.  */
-
-	      if (WEXITSTATUS (wait_status) != (SIGPIPE + 128)
-		  && WEXITSTATUS (wait_status))
-		ERROR ((0, 0, _("Child returned status %d"),
-			WEXITSTATUS (wait_status)));
-	    }
+	  /* SIGPIPE is OK, everything else is a problem.  */
+	  
+	  if (WTERMSIG (wait_status) != SIGPIPE)
+	    ERROR ((0, 0, _("Child died with signal %d"),
+		    WTERMSIG (wait_status)));
+	}
+      else
+	{
+	  /* Child voluntarily terminated -- but why?  /bin/sh returns
+	     SIGPIPE + 128 if its child, then do nothing.  */
+	      
+	  if (WEXITSTATUS (wait_status)
+	      && WEXITSTATUS (wait_status) != (SIGPIPE + 128))
+	    ERROR ((0, 0, _("Child returned status %d"),
+		    WEXITSTATUS (wait_status)));
 	}
     }
 #endif /* !MSDOS */
@@ -1619,35 +1611,39 @@ new_volume (enum access_mode access)
 #if MSDOS
 		spawnl (P_WAIT, getenv ("COMSPEC"), "-", 0);
 #else /* not MSDOS */
-		switch (fork ())
-		  {
-		  case -1:
-		    WARN ((0, errno, _("Cannot fork!")));
-		    break;
-
-		  case 0:
+		{
+		  pid_t child = fork ();
+		  switch (child)
 		    {
-		      const char *shell = getenv ("SHELL");
+		    case -1:
+		      WARN ((0, errno, _("Cannot fork!")));
+		      break;
 
-		      if (shell == NULL)
-			shell = "/bin/sh";
-		      execlp (shell, "-sh", "-i", 0);
-		      FATAL_ERROR ((0, errno, _("Cannot exec a shell %s"),
-				    shell));
+		    case 0:
+		      {
+			const char *shell = getenv ("SHELL");
+			
+			if (shell == NULL)
+			  shell = "/bin/sh";
+			execlp (shell, "-sh", "-i", 0);
+			FATAL_ERROR ((0, errno, _("Cannot exec a shell %s"),
+				      shell));
+		      }
+
+		    default:
+		      {
+			int wait_status;
+			while (waitpid (child, &wait_status, 0) == -1)
+			  if (errno != EINTR)
+			    {
+			      ERROR ((0, errno,
+				      _("While waiting for child")));
+			      break;
+			    }
+		      }
+		      break;
 		    }
-
-		  default:
-		    {
-		      WAIT_T wait_status;
-
-		      wait (&wait_status);
-		    }
-		    break;
-		  }
-
-		/* FIXME: I'm not sure if that's all that has to be done
-		   here.  (jk)  */
-
+		}
 #endif /* not MSDOS */
 		break;
 	      }
