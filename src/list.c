@@ -32,6 +32,10 @@
 union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
+union block *recent_long_name;	/* recent long name header and contents */
+union block *recent_long_link;	/* likewise, for long link */
+size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
+size_t recent_long_link_blocks;	/* likewise, for long link */
 
 static uintmax_t from_header PARAMS ((const char *, size_t, const char *,
 				      uintmax_t, uintmax_t));
@@ -73,7 +77,7 @@ read_and (void (*do_something) ())
   while (1)
     {
       prev_status = status;
-      status = read_header ();
+      status = read_header (0);
       switch (status)
 	{
 	case HEADER_STILL_UNREAD:
@@ -239,6 +243,9 @@ list_archive (void)
    Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a
    block full of zeros (EOF marker).
 
+   If RAW_EXTENDED_HEADERS is nonzero, do not automagically fold the
+   GNU long name and link headers into later headers.
+
    You must always set_next_block_after(current_header) to skip past
    the header which this routine reads.  */
 
@@ -252,7 +259,7 @@ list_archive (void)
    computes two checksums -- signed and unsigned.  */
 
 enum read_header
-read_header (void)
+read_header (bool raw_extended_headers)
 {
   size_t i;
   int unsigned_sum;		/* the POSIX one :-) */
@@ -261,11 +268,14 @@ read_header (void)
   uintmax_t parsed_sum;
   char *p;
   union block *header;
-  char **longp;
+  union block **longp;
   char *bp;
   union block *data_block;
   size_t size, written;
-  static char *next_long_name, *next_long_link;
+  static union block *next_long_name;
+  static union block *next_long_link;
+  static size_t next_long_name_blocks;
+  static size_t next_long_link_blocks;
 
   while (1)
     {
@@ -318,19 +328,35 @@ read_header (void)
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK)
 	{
-	  longp = ((header->header.typeflag == GNUTYPE_LONGNAME)
-		   ? &next_long_name
-		   : &next_long_link);
+	  if (raw_extended_headers)
+	    return HEADER_SUCCESS_EXTENDED;
+	  else
+	    {
+	      size_t name_size = current_stat.st_size;
+	      size = name_size - name_size % BLOCKSIZE + 2 * BLOCKSIZE;
+	      if (name_size != current_stat.st_size || size < name_size)
+		xalloc_die ();
+	    }
+
+	  if (header->header.typeflag == GNUTYPE_LONGNAME)
+	    {
+	      longp = &next_long_name;
+	      next_long_name_blocks = size / BLOCKSIZE;
+	    }
+	  else
+	    {
+	      longp = &next_long_link;
+	      next_long_link_blocks = size / BLOCKSIZE;
+	    }
 
 	  set_next_block_after (header);
 	  if (*longp)
 	    free (*longp);
-	  size = current_stat.st_size;
-	  if (size != current_stat.st_size)
-	    xalloc_die ();
-	  bp = *longp = xmalloc (size);
+	  *longp = xmalloc (size);
+	  **longp = *header;
+	  bp = (*longp)->buffer + BLOCKSIZE;
 
-	  for (; size > 0; size -= written)
+	  for (size -= BLOCKSIZE; size > 0; size -= written)
 	    {
 	      data_block = find_next_block ();
 	      if (! data_block)
@@ -348,6 +374,8 @@ read_header (void)
 				    (data_block->buffer + written - 1));
 	    }
 
+	  *bp = '\0';
+
 	  /* Loop!  */
 
 	}
@@ -357,8 +385,13 @@ read_header (void)
 	  struct posix_header const *h = &current_header->header;
 	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
-	  name = next_long_name;
-	  if (! name)
+	  if (next_long_name)
+	    {
+	      name = next_long_name->buffer + BLOCKSIZE;
+	      recent_long_name = next_long_name;
+	      recent_long_name_blocks = next_long_name_blocks;
+	    }
+	  else
 	    {
 	      /* Accept file names as specified by POSIX.1-1996
                  section 10.1.1.  */
@@ -379,27 +412,24 @@ read_header (void)
 	      memcpy (np, h->name, sizeof h->name);
 	      np[sizeof h->name] = '\0';
 	      name = namebuf;
+	      recent_long_name_blocks = 0;
 	    }
 	  assign_string (&current_file_name, name);
-	  if (next_long_name)
-	    {
-	      free (next_long_name);
-	      next_long_name = 0;
-	    }
 	  
-	  name = next_long_link;
-	  if (! name)
+	  if (next_long_link)
+	    {
+	      name = next_long_link->buffer + BLOCKSIZE;
+	      recent_long_link = next_long_link;
+	      recent_long_link_blocks = next_long_link_blocks;
+	    }
+	  else
 	    {
 	      memcpy (namebuf, h->linkname, sizeof h->linkname);
 	      namebuf[sizeof h->linkname] = '\0';
 	      name = namebuf;
+	      recent_long_link_blocks = 0;
 	    }
 	  assign_string (&current_link_name, name);
-	  if (next_long_link)
-	    {
-	      free (next_long_link);
-	      next_long_link = 0;
-	    }
 
 	  return HEADER_SUCCESS;
 	}
