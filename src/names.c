@@ -43,15 +43,15 @@ struct group *getgrgid ();
    This code should also be modified for non-UNIX systems to do something
    reasonable.  */
 
-static char cached_uname[UNAME_FIELD_SIZE];
-static char cached_gname[GNAME_FIELD_SIZE];
+static char *cached_uname;
+static char *cached_gname;
 
 static uid_t cached_uid;	/* valid only if cached_uname is not empty */
 static gid_t cached_gid;	/* valid only if cached_gname is not empty */
 
 /* These variables are valid only if nonempty.  */
-static char cached_no_such_uname[UNAME_FIELD_SIZE];
-static char cached_no_such_gname[GNAME_FIELD_SIZE];
+static char *cached_no_such_uname;
+static char *cached_no_such_gname;
 
 /* These variables are valid only if nonzero.  It's not worth optimizing
    the case for weird systems where 0 is not a valid uid or gid.  */
@@ -60,87 +60,87 @@ static gid_t cached_no_such_gid;
 
 /* Given UID, find the corresponding UNAME.  */
 void
-uid_to_uname (uid_t uid, char uname[UNAME_FIELD_SIZE])
+uid_to_uname (uid_t uid, char **uname)
 {
   struct passwd *passwd;
 
   if (uid != 0 && uid == cached_no_such_uid)
     {
-      *uname = '\0';
+      *uname = strdup ("");
       return;
     }
 
-  if (!cached_uname[0] || uid != cached_uid)
+  if (!cached_uname || uid != cached_uid)
     {
       passwd = getpwuid (uid);
       if (passwd)
 	{
 	  cached_uid = uid;
-	  strncpy (cached_uname, passwd->pw_name, UNAME_FIELD_SIZE);
+	  assign_string (&cached_uname, passwd->pw_name);
 	}
       else
 	{
 	  cached_no_such_uid = uid;
-	  *uname = '\0';
+	  *uname = strdup ("");
 	  return;
 	}
     }
-  strncpy (uname, cached_uname, UNAME_FIELD_SIZE);
+  *uname = strdup (cached_uname);
 }
 
 /* Given GID, find the corresponding GNAME.  */
 void
-gid_to_gname (gid_t gid, char gname[GNAME_FIELD_SIZE])
+gid_to_gname (gid_t gid, char **gname)
 {
   struct group *group;
 
   if (gid != 0 && gid == cached_no_such_gid)
     {
-      *gname = '\0';
+      *gname = strdup ("");
       return;
     }
 
-  if (!cached_gname[0] || gid != cached_gid)
+  if (!cached_gname || gid != cached_gid)
     {
       group = getgrgid (gid);
       if (group)
 	{
 	  cached_gid = gid;
-	  strncpy (cached_gname, group->gr_name, GNAME_FIELD_SIZE);
+	  assign_string (&cached_gname, group->gr_name);
 	}
       else
 	{
 	  cached_no_such_gid = gid;
-	  *gname = '\0';
+	  *gname = strdup ("");
 	  return;
 	}
     }
-  strncpy (gname, cached_gname, GNAME_FIELD_SIZE);
+  *gname = strdup (cached_gname);
 }
 
 /* Given UNAME, set the corresponding UID and return 1, or else, return 0.  */
 int
-uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
+uname_to_uid (char *uname, uid_t *uidp)
 {
   struct passwd *passwd;
 
-  if (cached_no_such_uname[0]
-      && strncmp (uname, cached_no_such_uname, UNAME_FIELD_SIZE) == 0)
+  if (cached_no_such_uname
+      && strcmp (uname, cached_no_such_uname) == 0)
     return 0;
 
-  if (!cached_uname[0]
+  if (!cached_uname
       || uname[0] != cached_uname[0]
-      || strncmp (uname, cached_uname, UNAME_FIELD_SIZE) != 0)
+      || strcmp (uname, cached_uname) != 0)
     {
       passwd = getpwnam (uname);
       if (passwd)
 	{
 	  cached_uid = passwd->pw_uid;
-	  strncpy (cached_uname, uname, UNAME_FIELD_SIZE);
+	  assign_string (&cached_uname, passwd->pw_name);
 	}
       else
 	{
-	  strncpy (cached_no_such_uname, uname, UNAME_FIELD_SIZE);
+	  assign_string (&cached_no_such_uname, uname);
 	  return 0;
 	}
     }
@@ -150,33 +150,34 @@ uname_to_uid (char uname[UNAME_FIELD_SIZE], uid_t *uidp)
 
 /* Given GNAME, set the corresponding GID and return 1, or else, return 0.  */
 int
-gname_to_gid (char gname[GNAME_FIELD_SIZE], gid_t *gidp)
+gname_to_gid (char *gname, gid_t *gidp)
 {
   struct group *group;
 
-  if (cached_no_such_gname[0]
-      && strncmp (gname, cached_no_such_gname, GNAME_FIELD_SIZE) == 0)
+  if (cached_no_such_gname
+      && strcmp (gname, cached_no_such_gname) == 0)
     return 0;
 
-  if (!cached_gname[0]
+  if (!cached_gname
       || gname[0] != cached_gname[0]
-      || strncmp (gname, cached_gname, GNAME_FIELD_SIZE) != 0)
+      || strcmp (gname, cached_gname) != 0)
     {
       group = getgrnam (gname);
       if (group)
 	{
 	  cached_gid = group->gr_gid;
-	  strncpy (cached_gname, gname, GNAME_FIELD_SIZE);
+	  assign_string (&cached_gname, gname);
 	}
       else
 	{
-	  strncpy (cached_no_such_gname, gname, GNAME_FIELD_SIZE);
+	  assign_string (&cached_no_such_gname, gname);
 	  return 0;
 	}
     }
   *gidp = cached_gid;
   return 1;
 }
+
 
 /* Names from the command call.  */
 
