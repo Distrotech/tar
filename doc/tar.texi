@@ -5764,7 +5764,7 @@ Display program version and exit.
 
 To restore files that were archived using a scripted backup, use the
 @code{restore} script. Its usage is quite straightforward. In the
-simplest form, invoke @command{restore} without options, it will
+simplest form, invoke @code{restore --all}, it will
 then restore all the filesystems and files specified in
 @file{backup-specs} (@pxref{General-Purpose Variables,BACKUP_DIRS}).
 
@@ -5802,6 +5802,10 @@ restore --level=1
 The full list of options accepted by @code{restore} follows:
 
 @table @option
+@item -a
+@itemx --all
+Restore all filesystems and files specified in @file{backup-specs}
+
 @item -l @var{level}
 @itemx --level=@var{level}
 Start restoring from the given backup level, instead of the default 0.
@@ -8647,8 +8651,7 @@ head is on.  Before writing an archive, you should make sure that no
 data on the tape will be overwritten (unless it is no longer needed).
 Before reading an archive, you should make sure the tape head is at
 the beginning of the archive you want to read.  (The @code{restore}
-script will find the archive automatically.  @FIXME{There is no such
-restore script!}@FIXME-xref{Scripted Restoration}@xref{mt}, for
+script will find the archive automatically. @FIXME-xref{Scripted Restoration}@xref{mt}, for
 an explanation of the tape moving utility.
 
 If you want to add new archive file entries to a tape, you should
