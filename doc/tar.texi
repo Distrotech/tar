@@ -636,13 +636,44 @@ members are named) on the command line (or with @samp{--files-from}) the
 a file is created with the contents of the archive member.  The name of
 the file is the same as the member name.
 
+Various options cause @code{tar} to extract more than just file
+contents, such as the owner, the permissions, the modification date, and
+so forth.  
+
+XXX
 The @samp{--same-permissions} (or @samp{--preserve-permissions}, or
 @samp{-p}) options cause @code{tar} to cause the new file to have the
-same permissions, owner, and so forth, as the original file did when it
-was placed in the archive.  
+same permissions as the original file did when it was placed in the
+archive.  Without this option, the current @code{umask} is used to
+affect the permissions.
 
-The @samp{--mo
+When extrating, @code{tar} normally sets the modification time of the
+file to the value recorded in the archive.  The
+@samp{--modification-time} option causes @code{tar} to omit doing this.
+XXX
 
+@section Updating an Archive
+
+The @samp{--update} (or @samp{-u}) option updates a @code{tar} archive
+by comparing the date of the specified archive members against the date
+of the file with the same name.  If the file has been modified more
+recently than the archive member, then the archive member is deleted (as
+with @samp{--delete}) and then the file is added to the archive (as with
+@samp{--append}).  On media where the @samp{--delete} option cannot be
+performed (such as magnetic tapes), the @samp{--update} option similarly
+fails.
+
+If no archive members are named (either on the command line or via
+@samp{--files-from}), then the entire archive is processed in this
+manner. 
+
+@section Comparing Archives Members with Files
+
+The @samp{--compare} (or @samp{--diff}, or @samp{-d}) option compares
+the contents of the specified archive members against the files with the
+same names, and reports its findings.  If no members are named on the
+command line (or through @samp{--files-from}), then the entire archive
+is so compared.
 
 @chapter Specifying Names to @code{tar}
 
@@ -660,7 +691,10 @@ line, you can put the names into a file, and then use the
 @samp{--files-from=@var{file-name-list}} (@samp{-T
 @var{file-name-list}}) option to @code{tar}.  Give the name of the file
 which contains the list as the argument to @samp{--files-from}.  The
-file names should be separated by newlines in the list.
+file names should be separated by newlines in the list.  If you give a
+single dash as a filename for @samp{--files-from} (that is, you specify
+@samp{--files-from=-} or @samp{-T -}), then the filenames are read from
+standard input.
 
 If you want to specify names that might contain newlines, use the
 @samp{--null} option.  Then, the filenames should be separated by NUL
@@ -716,7 +750,7 @@ contents of a single filesystem, because all files named on the command
 line (or through the @samp{--files-from} option) will always be
 archived.  
 
-@chapter Changing the Names of Members when Archiing
+@chapter Changing the Names of Members when Archiving
 
 @section Changing Directory
 
@@ -776,6 +810,125 @@ to the archive naming the target of the link.  In that way, the
 @code{tar} archive is a faithful record of the filesystem contents.
 However, if you want @code{tar} to actually dump the contents of the
 target of the symbolic link, then use the @samp{--dereference} option.
+
+@chapter Making @code{tar} More Verbose
+
+Various options cause @code{tar} to print information as it progresses
+in its job.  
+
+The @samp{--verbose} (or @samp{-v}) option causes @code{tar} to print
+the name of each archive member or file as it is processed.  Since
+@samp{--list} already prints the names of the members, @samp{--verbose}
+used with @samp{--list} causes @code{tar} to print a longer listing
+(reminiscent of @samp{ls -l}) for each member.
+
+To see the progress of @code{tar} through the archive, the
+@samp{--record-number} option prints a message for each record read or
+writted.  (@xref{Archive Structure}.)  
+
+The @samp{--totals} option (which is only meaningful when used with
+@samp{--create}) causes @code{tar} to print the total amount written to
+the archive, after it has been fully created.
+
+The @samp{--checkpoint} option prints an occasional message as
+@code{tar} reads or writes the archive.  It is designed for those who
+don't need the more detailed (and voluminous) output of
+@samp{--record-number}, but do want visual confirmation that @code{tar}
+is actually making forward progress.
+
+@chapter Input and Output
+
+@section Changing the Archive Name
+
+By default, @code{tar} uses an archive file name compiled in when
+@code{tar} was built.  Usually this refers to some physical tape drive
+on the machine.  Often, the installer of @code{tar} didn't set the
+default to anything meaningful at all.
+
+As a result, most uses of @code{tar} need to tell @code{tar} where to
+find (or create) the archive.  The @samp{--file=@var{archive-name}} (or
+@samp{-f @var{archive-name}} option selects another file to use as the
+archive.  
+
+If the archive file name includes a colon (@samp{:}), then it is assumed
+to be a file on another machine.  If the archive file is
+@samp{@var{user}@@@var{host}:@var{file}}, then @var{file} is used on the
+host @var{host}.  The remote host is accessed using the @code{rsh}
+program, with a username of @var{user}.  If the username is omitted
+(along with the @samp{@@} sign), then your user name will be used.
+(This is the normal @code{rsh} behavior.)  It is necessary for the
+remote machine, in addition to permitting your @code{rsh} access, to
+have the @code{/usr/ucb/rmt} program installed.  If you need to use a
+file whose name includes a colon, then the remote tape drive behavior
+can be inhibited by using the @samp{--force-local} option.
+
+If the filename you give to @samp{--file} is a single dash (@samp{-}),
+then @code{tar} will read the archive from (or write it to) standard
+input (or standard output).
+
+@section Extracting Members to Standard Output
+
+An archive member in normally extracted into a file with the same name
+as the archive member.  However, you can use the @samp{--to-stdout} to
+cause @code{tar} to write extracted archive members to standard output.
+If you extract multiple members, they appear on standard output
+concatenated, in the order they are found in the archive.
+
+@chapter Being More Careful
+
+When using @code{tar} with many options, particularly ones with
+complicated or difficult-to-predict behavior, it is possible to make
+serious mistakes.  As a result, @code{tar} provides several options that
+make observing @code{tar} easier.
+
+The @samp{--verbose} option (@pxref{Making @code{tar} More Verbose})
+causes @code{tar} to print the name of each file or archive member as it
+is processed.
+
+If you use @samp{--interactive} (or {@samp--confirm}), then @code{tar}
+will ask you for confirmation before each operation.  For example, when
+extracting, it will prompt you before each archive member is extracted,
+and you can select that member for extraction or pass over to the next.
+
+The @samp{--verify} option, when using @samp{--create}, causes
+@code{tar}, after having finished creating the archive, to go back over
+it and compare its contents against the files that were placed in the
+archive.  
+
+The @samp{--show-omitted-dirs} option, when reading an archive (with
+@samp{--list} or @samp{--extract}, for example), causes a message to be
+printed for each directory in the archive which is skipped.  This
+happens regardless of the reason for skipping: the directory might not
+have been named on the command line (implicitly or explicitly), it might
+be excluded by the use of the @samp{--exclude} option, or some other
+reason.
+
+@chapter Using Real Tape Drives
+
+Many complexities surround the use of @code{tar} on tape drives.  Since
+the creation and manipulation of archives located on magnetic tape was
+the original purpose of @code{tar}, it contains many features making
+such manipulation easier.
+
+@section Blocking
+
+When writing to tapes, @code{tar} writes the contents of the archive in
+chunks known as @dfn{blocks}.  To change the default blocksize, use the
+@samp{--block-size=@var{blocking-factor}} (@samp{-b
+@var{blocking-factor}) option.  Each block will then be composed of
+@var{blocking-factor} records.  (Each @code{tar} record is 512 bytes.
+@xref{Archive Format}.)  Each file written to the archive uses at least
+one full block.  As a result, using a larger block size can result in
+more wasted space for small files.  On the other hand, a larger block
+size can ofter be read and written much more efficiently.  
+
+Further complicating the problem is that some tape drives ignore the
+blocking entirely.  For these, a larger block size can still improve
+performance (because the software layers above the tape drive still
+honor the blocking), but not as dramatically as on tape drives that
+honor blocking.
+
+
 
 
 
