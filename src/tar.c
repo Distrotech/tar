@@ -278,6 +278,7 @@ struct option long_options[] =
   {"totals", no_argument, &totals_option, 1},
   {"touch", no_argument, NULL, 'm'},
   {"uncompress", no_argument, NULL, 'Z'},
+  {"unbzip2", no_argument, NULL, 'y'},
   {"ungzip", no_argument, NULL, 'z'},
   {"unlink-first", no_argument, NULL, 'U'},
   {"update", no_argument, NULL, 'u'},
@@ -384,7 +385,7 @@ Archive format selection:\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX conformant archive\n\
-  -y, --bzip2, --bunzip2             filter the archive through bzip2\n\
+  -y, --bzip2, --unbzip2             filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
