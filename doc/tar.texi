@@ -1027,7 +1027,7 @@ consulting.  In particular, he is the primary author of @ref{Backups}.
 @cindex bug reports
 @cindex reporting bugs
 If you find problems or have suggestions about this program or manual,
-please report them to @file{bug-gnu-utils@@prep.ai.mit.edu}.
+please report them to @file{tar-bugs@@gnu.org}.
 
 @node Tutorial, tar invocation, Introduction, Top
 @chapter Tutorial Introduction to @code{tar}
