@@ -140,6 +140,7 @@ read_and (void (*do_something) (void))
 		break;
 	      WARN ((0, 0, _("A lone zero block at %s"),
 		     STRINGIFY_BIGINT (current_block_ordinal (), buf)));
+	      break;
 	    }
 	  status = prev_status;
 	  continue;
