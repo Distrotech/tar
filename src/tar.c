@@ -191,6 +191,7 @@ enum
   IGNORE_CASE_OPTION,
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
+  KEEP_NEWER_FILES_OPTION,
   MODE_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
@@ -216,6 +217,7 @@ enum
   SUFFIX_OPTION,
   TOTALS_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
+  UTC_OPTION,
   VOLNO_FILE_OPTION,
   WILDCARDS_OPTION,
   WILDCARDS_MATCH_SLASH_OPTION
@@ -271,6 +273,7 @@ static struct option long_options[] =
   {"index-file", required_argument, 0, INDEX_FILE_OPTION},
   {"info-script", required_argument, 0, 'F'},
   {"interactive", no_argument, 0, 'w'},
+  {"keep-newer-files", no_argument, 0, KEEP_NEWER_FILES_OPTION},
   {"keep-old-files", no_argument, 0, 'k'},
   {"label", required_argument, 0, 'V'},
   {"list", no_argument, 0, 't'},
@@ -325,6 +328,7 @@ static struct option long_options[] =
   {"ungzip", no_argument, 0, 'z'},
   {"unlink-first", no_argument, 0, 'U'},
   {"update", no_argument, 0, 'u'},
+  {"utc", no_argument, 0, UTC_OPTION },
   {"use-compress-program", required_argument, 0, USE_COMPRESS_PROGRAM_OPTION},
   {"verbose", no_argument, 0, 'v'},
   {"verify", no_argument, 0, 'W'},
@@ -380,6 +384,8 @@ Operation modifiers:\n\
   -W, --verify               attempt to verify the archive after writing it\n\
       --remove-files         remove files after adding them to the archive\n\
   -k, --keep-old-files       don't replace existing files when extracting\n\
+      --keep-newer-files     don't replace existing files that are newer\n\
+                             than their archive copies\n\
       --overwrite            overwrite existing files when extracting\n\
       --no-overwrite-dir     preserve metadata of existing directories\n\
   -U, --unlink-first         remove each file prior to extracting over it\n\
@@ -503,6 +509,7 @@ Informative output:\n\
       --check-links     print a message if not all links are dumped\n\
       --totals          print total bytes written while creating archive\n\
       --index-file=FILE send verbose output to FILE\n\
+      --utc             print file modification dates in UTC\n\
   -R, --block-number    show block number within archive with each message\n\
   -w, --interactive     ask for confirmation for every action\n\
       --confirmation    same as -w\n"),
@@ -903,6 +910,10 @@ decode_options (int argc, char **argv)
 	old_files_option = UNLINK_FIRST_OLD_FILES;
 	break;
 
+      case UTC_OPTION:
+	utc_option = true;
+	break;
+	
       case 'v':
 	verbose_option++;
 	break;
@@ -993,6 +1004,10 @@ decode_options (int argc, char **argv)
 	ignore_failed_read_option = true;
 	break;
 
+      case KEEP_NEWER_FILES_OPTION:
+	old_files_option = KEEP_NEWER_FILES;
+	break;
+	
       case GROUP_OPTION:
 	if (! (strlen (optarg) < GNAME_FIELD_SIZE
 	       && gname_to_gid (optarg, &group_option)))
@@ -1298,6 +1313,7 @@ see the file named COPYING for details."));
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT));
+
 
   if (incremental_option || multi_volume_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
