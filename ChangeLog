@@ -2,6 +2,9 @@
 
 	* src/create.c (start_header): Removed debugging hook
 	(dump_file): Fixed handling of linkname field.
+	* src/names.c (safer_name_suffix): If the input
+	file name ends with a slash, output one should do so
+	as well.
 	* doc/tar.texi: Documented --format=ustar
 
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
