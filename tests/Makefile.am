@@ -34,6 +34,7 @@ TESTS = \
  extrac02.sh\
  extrac03.sh\
  extrac04.sh\
+ extrac05.sh\
  gzip.sh\
  incremen.sh\
  ignfail.sh\
