@@ -21,7 +21,7 @@ to "specify" a "file".>>>
 @c <<<  @code{tar} is always lower case, in bold. >>>
 
 @c <<< it's "operations of tar", "options to tar" also, it's " @samp{tar
-+foo}" or "the @samp{+foo} operation".  MIB doesn't like using
+--foo}" or "the @samp{--foo} operation".  MIB doesn't like using
 operations and options as separate concepts. I disagree --- would be a
 mess to explain otherwise
 
@@ -54,7 +54,7 @@ Copyright (C) 1992 Free Software Foundation, Inc.  DRAFT!
 @subtitle DRAFT
 @c subtitle   insert month here when ready
 
-@author Amy Gorin and Jay Fenlason
+@author Amy Gorin, Michael I. Bushnell, and Jay Fenlason
 @c <<<best to have hack read this over and see if anything is left he
 @c wrote.  I don't think so.  -ringo>>>>
 
@@ -101,7 +101,7 @@ version 1.12.
 @chapter @code{tar}: The GNU Tape Archiver
 
 You can use @code{tar} to create an @dfn{archive}---a single file
-which contains other file's contents as well as a listing of those
+which contains other files' contents as well as a listing of those
 files' characteristics.  You can also use @code{tar} to read, add to,
 or manipulate already existing archives.  Because an archive created
 by @code{tar} is capable of preserving file information and directory
@@ -109,10 +109,11 @@ structure, @code{tar} is ideal for performing full and incremental
 backups, as well as for transferring groups of files between disks and
 over networks.
 
-Despite the utility's name, which comes from the words @samp{T(ape)}
-@samp{AR(chiver)}, @code{tar}'s output can be directed to any
-available device.  For instance, @code{tar} archives can be stored in
-a file or sent to another program via a pipe.
+The name @code{tar} comes from the words ``Tape ARchiver'', but
+@code{tar} can actually process archives wherever they are stored; on
+tapes and disk files, for example.  In addition, tar can read archives
+from standard input or write them to standard output.  (This is often
+useful if redirected another program with a pipe.)
 
 @c <<< this menu will conflict with menu above in info mode.  -ringo
 @menu
@@ -126,139 +127,129 @@ a file or sent to another program via a pipe.
 @node Invoking @code{tar}, Tutorial, Introduction, Top
 @chapter How To Invoke @code{tar}
 
-You can use @code{tar} to store files in an archive, to extract them
-from an archive, and to do other types of archive manipulation.  The
-primary argument to @code{tar}, which is called the @dfn{operation},
-specifies which action to take.  The other arguments to @code{tar} are
-either @dfn{options}, which change the way @code{tar} performs an
-operation, or @dfn{file-names}, which specify the files @code{tar} is
-to act on.  The typical @code{tar} command line syntax is:
+The usual way to invoke tar is
 
 @example
-@code{tar} @var{operation} [@var{options}...] [@var{file-names}...]
+@code{tar} @var{options}... [@var{file-names}...]
 @end example
 
-Note: You can actually type in arguments in any order.  In this manual
-the operation is always first, the options second and the file-name
-arguments last, to make examples easier to understand.
+All the options start with @samp{-}.  The arguments which do not start
+with @samp{-} are taken to be file-name arguments.  (But
+@xref{Argument Form}.)  You can actually type in arguments in any
+order.  In this manual the options always precede the file-name
+arguments, to make examples easier to understand.
 
 @menu
+* Option Form::               The Forms of Arguments
 * Argument Functions::          The Functions of Arguments
-* Argument Form::               The Forms of Arguments
 * Old Syntax for Commands::     An Old, but Still Supported, Syntax 
                                    for @code{tar} Commands
 @end menu
 
+@node Option Form, Old Syntax for Commands, Argument Functions, Invoking @code{tar}
+@section The Forms of Arguments
+
+Most options of @code{tar} have a single letter form (a single letter
+preceded by @samp{-}), and at least one mnemonic form (a word or
+abbreviation preceded by @samp{--}).  The forms are absolutely
+identical in function.  For example, you can use either @samp{tar -t}
+or @samp{tar --list} to list the contents of an archive.  In addition,
+mnemonic names can be given unique abbreviations.  For example,
+@samp{--cre} can be used in place of @samp{--create} because there is
+no other option which begins with @samp{cre}.  
+
+Some options require an additional argument.  Single letter options
+which require arguments use the immediately following argument.  (This
+is an exception to the rule that @code{tar} arguments which are not
+options are file-name arguments.)  Mnemonic options are separated from
+their arguments by an @samp{=} sign.  For example, to create an an
+archive file named @file{george}, use either @samp{tar --create
+--file=george} or @samp{tar --create -f george}.  Both
+@samp{--file=@var{archive-name}} and @samp{-f @var{archive-name}}
+denote the option to give the archive a non-default name, which in the
+example is @samp{george}.  
+
+You can mix single letter and mnemonic forms in the same command.  You
+could type the above example as @samp{tar -c --file=george} or
+@samp{tar --create -f george}.  However, @code{tar} operations and
+options are case sensitive.  You would not type the above example as
+@samp{tar -C --file=george}, because @samp{-C} is an option that
+causes @code{tar} to change directories, not an operation that creates
+an archive.  In fact, @samp{-C} requires a further argument (the name
+of the directory which to change to).  In this case, tar would think
+it needs to change to a directory named @samp{--file=george}, and
+wouldn't interpret @samp{--file-george} as an option at all!
+
 @node Argument Functions, Argument Form, Invoking @code{tar}, Invoking @code{tar}
 @section The Functions of Arguments
 
-The primary argument to @code{tar} is the @dfn{operation}, which
-specifies what @code{tar} does.  @code{tar} can be used to:
+You must give exactly one option from the following list to tar.  This
+option specifies the basic operation for tar to perform.
 
 @itemize
 @item
-Add files to an existing archive (@samp{+add-file}, @samp+{append} or
+Add files to an existing archive (@samp{--add-file}, @samp{--append} or
 @samp{-r})
 
 @item
 Compare files in an archive with files in the file system
-(@samp{+compare}, @samp{+diff} or @samp{-d})
-@c !!! is diff still working??  --- yes -ringo
+(@samp{--compare}, @samp{--diff} or @samp{-d})
 
 @item
-Add archives to another archive (@samp{+add-archive}, @samp{+catenate}
+Add archives to another archive (@samp{--add-archive}, @samp{--catenate}
 or @samp{-A})
-@c was +concatenate.   -ringo
+@c was --concatenate.   -ringo
 
 @item
-Create an archive (@samp{+create} or @samp{-c})
+Create a new archive (@samp{--create} or @samp{-c})
 
 @item
-Delete files from an archive (@samp{+delete})
-@c -D should have been removed  -ringo
+Delete files from an archive (@samp{--delete})
 
 @item
-Extract files from an archive (@samp{+extract}, @samp{+get} or @samp{-x})
+Extract files from an archive (@samp{--extract}, @samp{--get} or @samp{-x})
 
 @item
-List the files in an archive (@samp{+list} or @samp{-t})
+List the files in an archive (@samp{--list} or @samp{-t})
 
 @item
 Update an archive by appending newer versions of already stored files
-(@samp{+update} or @samp{-u})
+(@samp{--update} or @samp{-u})
 @end itemize
 
 @xref{Reading and Writing}, for more information about these
 operations. 
 
-@dfn{Option} arguments to @code{tar} change details of the operation,
+The remaining options to @code{tar} change details of the operation,
 such as archive format, archive name, or level of user interaction.
-You can specify more than one option.  All options are optional.
+You can specify more than one option.
 
-@dfn{File-name} arguments specify which files (including directory
-files) to archive, extract, delete or otherwise operate on.
+The remaining arguments are file-name arguments.  For --add-file and
+--create these arguments specify the names of files (which must
+already exist) to place in the archive.  For the remaining operation
+types, the file-name arguments specify archive members to compare,
+delete, extract, list, or update.  When naming archive members, you
+must give the exact name of the member in the archive.  When naming
+files, the normal file name rules apply.
 
-If you don't use any file-name arguments, @samp{+add-file},
-@samp{+update} and @samp{+delete} will do nothing.  The other
-operations of @code{tar} will act on defaults.
+If you don't use any file-name arguments, @samp{--add-file},
+@samp{--update} and @samp{--delete} will do nothing.  Naturally,
+@samp{--create} will make an empty archive if given no file-name
+arguments.  The other operations of @code{tar} will act on defaults.
 
-When you use a file-name argument to specify a directory file,
-@code{tar} acts on all the files in that directory, including
-sub-directories.
-
-@node Argument Form, Old Syntax for Commands, Argument Functions, Invoking @code{tar}
-@section The Forms of Arguments
-
-Most operations of @code{tar} have a single letter form (a single
-letter preceded by a @samp{-}), and at least one mnemonic form (a
-word or abbreviation preceded by a @samp{+}).  The forms are
-identical in function.  For example, you can use either @samp{tar -t}
-or @samp{tar +list} to list the contents of an archive
-
-Options, like operations, have both single letter and mnemonic forms.
-Options, however, may also incorporate an argument.  Single letter
-options are separated from their arguments by a space.  Mnemonic
-options are separated from their arguments by an @samp{=} sign.  For
-example, to create an an archive file named @file{george}, use either
-@samp{tar +create +file=george} or @samp{tar +create -f george}.  Both
-@samp{+file=@var{archive-name}} and @samp{-f @var{archive-name}}
-denote the option to give the archive a non-default name, which in the
-example is @samp{george}.
-
-You can mix single letter and mnemonic forms in the same command.  You
-could type the above example as @samp{tar -c +file=george} or
-@samp{tar +create -f george}.  However, @code{tar} operations and
-options are case sensitive.  You would not type the above example as
-@samp{tar -C +file=george}, because @samp{-C} is an option that causes
-@code{tar} to change directories, not an operation that creates an
-archive.
-
-File-name arguments are the names of files (including directories).
-These names can be specified on the command line or read from a text
-file in the file system (using the @samp{+files-from} option).  Files
-stored in an archive are called @dfn{archive members}.  The operations
-@samp{+delete}, @samp{+extract}, @samp{+list}, @samp{+compare} and
-@samp{+update} take the names of archive members as file-name
-arguments.  The other operations take the names of files in the file
-system.
-
-@code{tar} interprets relative file names as being relative to the
-working directory.  @code{tar} will make all file names relative (by
-removing leading @samp{/}s when archiving or restoring files), unless
-you specify otherwise (using the @samp{+absolute-paths} option).
-@xref{File Name Interpretation}, for more information about
-@samp{+absolute-paths}.
-@c >>> yet another node name that is probably wrong.
+Anytime you use a file-name argument to specify a directory file,
+@code{tar} acts recursively on all the files and directories beneath
+that directory.
 
 @node Old Syntax for Commands,  , Argument Form, Invoking @code{tar}
 @section An Old, but Still Supported, Syntax for @code{tar} Commands
 
-For historical reasons, GNU @code{tar}  also accepts a syntax for
-commands which splits options that include arguments into two parts.
-That syntax is of the form:
+For historical reasons, GNU @code{tar} also accepts a syntax for
+commands which splits options that require additional arguments into
+two parts.  That syntax is of the form:
 
 @example
-@code{tar} @var{operation}[@var{option-letters}...] [@var{option-arguments}...] [@var{file-names}...]@refill
+@code{tar} @var{option-letters}... [@var{option-arguments}...] [@var{file-names}...]@refill
 @end example
 
 @noindent
@@ -272,21 +263,22 @@ letter forms of the operation and options as a single argument to
 between letters.  @samp{tar cv} or @samp{tar -cv} are equivalent to
 @samp{tar -c -v}.
 
-This old style syntax makes it difficult to match option letters with
-their corresponding arguments, and is often confusing.  In the command
-@samp{tar cvbf 20 /dev/rmt0}, for example, @samp{20} is the argument
-for @samp{-b}, @samp{/dev/rmt0} is the argument for @samp{-f}, and
-@samp{-v} does not have a corresponding argument.  The modern
-syntax---@samp{tar -c -v -b 20 -f /dev/rmt0}---is clearer.
+On the other hand, this old style syntax makes it difficult to match
+option letters with their corresponding arguments, and is often
+confusing.  In the command @samp{tar cvbf 20 /dev/rmt0}, for example,
+@samp{20} is the argument for @samp{-b}, @samp{/dev/rmt0} is the
+argument for @samp{-f}, and @samp{-v} does not have a corresponding
+argument.  The modern syntax---@samp{tar -c -v -b 20 -f
+/dev/rmt0}---is clearer.
 
 @node Tutorial, Wizardry, Invoking @code{tar}, Top
 @chapter Getting Started With @code{tar}
 
 This chapter guides you through some basic examples of @code{tar}
-operations.  In the examples, the lines you should type are preceded
-by a @samp{%}, which is a typical shell prompt.  We use mnemonic forms
-of operations and options in the examples, and in discussions in the
-text, but short forms produce the same result.
+operations.  If you already know how to use some other version of tar,
+then you probably don't need to read this chapter.  In the examples,
+the lines you should type are preceded by a @samp{%}, which is a
+typical shell prompt.  
 
 @menu
 * Creating Archives::           Creating Archives
@@ -301,13 +293,13 @@ text, but short forms produce the same result.
 @node Creating Archives, Listing Archive Contents, Tutorial, Tutorial
 @section Creating Archives
 
-To create a new archive, use @code{tar +create} (or @code{tar -c}).
+To create a new archive, use @code{tar --create} (or @code{tar -c}).
 You can use options to specify the name and format of the archive (as
 well as other characteristics), and you can use file-name arguments to
 specify which files to put in the archive.  If you don't use any
 options or file-name arguments, @code{tar} will use default values.
-@xref{Creating Example}, for more information about the @samp{+create}
-operation.
+@xref{Creating Example}, for more information about the
+@samp{--create} operation.
 
 @menu
 * Creating Example::            Creating Archives of Files
@@ -363,11 +355,11 @@ blues	folk	jazz
 Then,
 @itemize @bullet
 @item
-Create a new archive (@samp{tar -c} or @samp{tar +create})
+Create a new archive (@samp{tar -c} or @samp{tar --create})
 
 @item
 Explicitly name the archive file being created (@samp{-f
-@var{archive-name}} or @samp{+file=@var{archive-name}}).  If you don't
+@var{archive-name}} or @samp{--file=@var{archive-name}}).  If you don't
 use this option @code{tar} will write the archive to the default
 storage device, which varies from system to system. 
 @c <<< this syntax may change.  OK now---check before printing  -ringo
@@ -386,7 +378,7 @@ working directory.
 @noindent
 Type:
 @example
-% tar +create +file=records blues folk jazz 
+% tar --create --file=records blues folk jazz 
 @end example
 
 @noindent
@@ -409,11 +401,11 @@ blues folk jazz records
 @subsubsection Listing files in an archive
 
 You can list the contents of an archive with another operation of
-@code{tar}---@samp{+list} or @samp{-l}.  To list the contents of the
+@code{tar}---@samp{--list} or @samp{-l}.  To list the contents of the
 archive you just created, type:
 
 @example
-% tar +list +file=records
+% tar --list --file=records
 @end example
 
 @noindent
@@ -424,20 +416,20 @@ blues folk jazz
 @end example
 
 @xref{Listing Archive Contents}, for a more detailed tutorial of the
-@samp{+list} operation.  @xref{Listing Contents}, for more information
-about the @samp{+list} operation.
+@samp{--list} operation.  @xref{Listing Contents}, for more information
+about the @samp{--list} operation.
 
 @node Verbose,  , Listing Files, Creating Example
 @subsubsection Using @code{tar} in Verbose Mode
 
-If you include the @samp{+verbose} or @samp{-v} option on the command
+If you include the @samp{--verbose} or @samp{-v} option on the command
 line, @code{tar} will list the files it is acting on as it is working.
 In verbose mode, the creation example above would appear as:
 @cindex Verbose mode example
 @findex -v (verbose mode example)
 
 @example
-% tar +create +file=records +verbose blues folk jazz
+% tar --create --file=records --verbose blues folk jazz
 blues
 folk
 jazz
@@ -458,7 +450,7 @@ contains.  The names of the directory and the files it contains are
 stored in the archive relative to the current working directory---when
 the directory is extracted they will be written into the file system
 relative to the working directory at that time.
-@c <<< add an xref to +absolute-paths   -ringo
+@c <<< add an xref to --absolute-paths   -ringo
 
 To archive a directory, first move to its superior directory.  If you
 have been following the tutorial, you should type:
@@ -473,7 +465,7 @@ file-name argument.  To store the directory file @file{~/practice} in
 the archive file @file{music}, type:
 
 @example
-% tar +create +verbose +file=music practice
+% tar --create --verbose --file=music practice
 @end example
 
 @noindent
@@ -499,7 +491,7 @@ archived, even an archive file.
 
 Creating an archive is only half the job---there would be no point in
 storing files in an archive if you couldn't retrieve them.  To extract
-files from an archive, use the @samp{+extract} or @samp{-x} operation.
+files from an archive, use the @samp{--extract} or @samp{-x} operation.
 
 To extract specific files, use their names as file-name arguments.  If
 you use a directory name as a file-name argument, @code{tar} extracts
@@ -528,12 +520,12 @@ First, change into the @file{practice} directory.  Then,
 
 @itemize @bullet
 @item
-Invoke @code{tar} and specify the @samp{+extract} operation
-(@samp{+extract}, @samp{+get} or @samp{-x})
+Invoke @code{tar} and specify the @samp{--extract} operation
+(@samp{--extract}, @samp{--get} or @samp{-x})
 
 @item
 Specify the archive that the files will be extracted from
-(@samp{+file=@var{archive-name}} or @samp{-f @var{archive-name}})
+(@samp{--file=@var{archive-name}} or @samp{-f @var{archive-name}})
 
 @item
 Specify the files to extract, using file-name arguments (if you don't
@@ -541,7 +533,7 @@ specify any files, @code{tar} extracts all the archive members)
 @end itemize
 
 @example
-% tar +extract +file=records blues
+% tar --extract --file=records blues
 @end example
 
 If you list the contents of the directory, you will see that
@@ -560,7 +552,7 @@ blues
 
 To extract a directory and all the files it contains, use the
 directory's name as a file-name argument in conjunction with @samp{tar
-+extract}.  Remember---@code{tar} stores and extracts file names
+--extract}.  Remember---@code{tar} stores and extracts file names
 relative to the working directory.
 
 In a previous example you stored the directory @file{~/practice} in
@@ -581,7 +573,7 @@ now see that it is empty:
 them from the archive file @file{~/music}:
 
 @example
-tar +extract +file=~/music practice
+tar --extract --file=~/music practice
 @end example
 
 @noindent Now, list the contents of @file{practice} again:
@@ -607,7 +599,7 @@ directory as the working directory:
 % rm ~/practice/practice/*
 % rmdir practice
 % cd ..
-% tar +extract +file=music practice
+% tar --extract --file=music practice
 @end example
 
 @noindent (@code{tar} will report that it is unable to create the
@@ -617,7 +609,7 @@ effect the extraction of the other archive members.)
 @node Listing Archive Contents, Adding to Archives, Creating Archives, Tutorial
 @section Listing the Contents of an Archive
 
-Use @samp{+list} or @samp{-t} to print the names of files stored in an
+Use @samp{--list} or @samp{-t} to print the names of files stored in an
 archive.  If you use file-name arguments with this operation,
 @code{tar} prints the names of the specified files if they are stored
 in the archive.  If you use a directory name as a file-name argument,
@@ -625,7 +617,7 @@ in the archive.  If you use a directory name as a file-name argument,
 sub-directories.  If you use no file-name arguments, @code{tar} prints
 the names of all the archive members.
 
-You can use @samp{+list} with the @samp{+verbose} option to print
+You can use @samp{--list} with the @samp{--verbose} option to print
 archive members' attributes (owner, size, etc.).
 
 @menu
@@ -638,7 +630,7 @@ archive members' attributes (owner, size, etc.).
 @node Listing names, Additional File Info, Listing Archive Contents, Listing Archive Contents
 @subsection Listing the names of stored files
 
-To list the names of files stored in an archive, use the @samp{+list}
+To list the names of files stored in an archive, use the @samp{--list}
 operation of @code{tar}.  
 
 In a previous example, you created the archive @file{~/music}.  To
@@ -646,17 +638,17 @@ list the contents of @file{music}, while in your home directory:
 
 @itemize @bullet
 @item
-List the contents of an archive (@samp{tar -t} or @samp{tar +list})
+List the contents of an archive (@samp{tar -t} or @samp{tar --list})
 
 @item
 Specify the archive to be listed (@samp{-f @var{archive-name}} or
-@samp{+file=@var{archive-name}}) @refill
+@samp{--file=@var{archive-name}}) @refill
 @end itemize
 
 Thus:
 
 @example
-% tar +list +file=music
+% tar --list --file=music
 practice/
 practice/blues
 practice/folk
@@ -668,14 +660,14 @@ practice/records
 @subsection Listing Additional File Information
 
 To get more information when you list the names of files stored in an
-archive, specify the @samp{+verbose} option in conjunction with
-@samp{tar +list}.  @code{tar} will print archive member's file
+archive, specify the @samp{--verbose} option in conjunction with
+@samp{tar --list}.  @code{tar} will print archive member's file
 protection, owner and group ID, size, and date and time of creation.
 
 For example:
 
 @example
-% tar +list +verbose +file=music
+% tar --list --verbose --file=music
 drwxrwxrwx myself/user 0 May 31 21:49 1990 practice/
 -rw-rw-rw- myself/user 42 May 21 13:29 1990 practice/blues
 -rw-rw-rw- myself/user 62 May 23 10:55 1990 practice/folk
@@ -684,9 +676,9 @@ drwxrwxrwx myself/user 0 May 31 21:49 1990 practice/
 % 
 @end example
 
-Note that when you use @samp{+verbose} with @samp{+list}, @code{tar}
+Note that when you use @samp{--verbose} with @samp{--list}, @code{tar}
 doesn't print the names of files as they are being acted on, though
-the @samp{+verbose} option will have this effect when used with all
+the @samp{--verbose} option will have this effect when used with all
 other operations.
 
 @node Specific File, Comparing Files, Additional File Info, Listing Archive Contents
@@ -694,16 +686,16 @@ other operations.
 
 To to see if a particular file is in an archive, use the name of the
 file in question as a file-name argument while specifying the
-@samp{+list} operation.  For example, to see whether the file
+@samp{--list} operation.  For example, to see whether the file
 @file{folk} is in the archive file @file{music}, do the following:
 
 @itemize @bullet
 @item
-Invoke @code{tar}, and specify the @samp{+list} operation
-(@samp{+list} or @samp{-t}).
+Invoke @code{tar}, and specify the @samp{--list} operation
+(@samp{--list} or @samp{-t}).
 
 @item
-Specify the archive file to be acted on (@samp{+file
+Specify the archive file to be acted on (@samp{--file
 @var{archive-name}} or @samp{-f @var{archive-name}}).
 
 @item
@@ -716,7 +708,7 @@ from which the archive was created).  <<< xref absolute-paths -ringo
 Type:
 
 @example
-% tar +list +file=music practice/folk
+% tar --list --file=music practice/folk
 @end example
 
 @noindent 
@@ -731,16 +723,16 @@ If the file were not stored in the archive (for example, the file
 @file{practice/rock}), the example above would look like:
 
 @example
-% tar +list +file=music practice/rock
+% tar --list --file=music practice/rock
 tar: practice/rock not found in archive
 @end example
 
 @noindent
-If you had used @samp{+verbose} mode, the example above would look
+If you had used @samp{--verbose} mode, the example above would look
 like: 
 
 @example
-% tar +list +file=music practice/folk
+% tar --list --file=music practice/folk
 -rw-rw-rw- myself/user 62 May 23 10:55 1990 practice/folk
 @end example
 
@@ -749,14 +741,14 @@ like:
 
 To get information about the contents of an archived directory, use
 the directory name as a file-name argument in conjunction with
-@samp{+list}.  To find out file attributes, include the
-@samp{+verbose} option.
+@samp{--list}.  To find out file attributes, include the
+@samp{--verbose} option.
 
 For example, to find out about files in the directory @file{practice},
 in the archive file @file{music}, type:
 
 @example
-% tar +list +file=music practice
+% tar --list --file=music practice
 @end example
 
 @noindent @code{tar} responds:
@@ -776,19 +768,19 @@ on all the files (including sub-directories) in that directory.
 @section Comparing Files in an Archive with Files in the File System
 
 To compare the attributes of archive members with the attributes of
-their counterparts in the file system, use the @samp{+compare},
-@samp{+diff}, or @samp{-d}) operation.  While you could use
-@samp{+list +verbose} to manually compare some file attributes, it is
+their counterparts in the file system, use the @samp{--compare},
+@samp{--diff}, or @samp{-d}) operation.  While you could use
+@samp{--list --verbose} to manually compare some file attributes, it is
 simpler to have @code{tar} itself compare file attributes and report
 back on file differences.
 @c <<<"manually"?  suggestions?  -ringo
 
-The @samp{+compare} operation, as its name implies, compares archive
+The @samp{--compare} operation, as its name implies, compares archive
 members with files of the same name in the file system, and reports
 back differences in file size, mode, owner and modification date.
-@samp{tar +compare} acts only on archive members---it ignores files in
+@samp{tar --compare} acts only on archive members---it ignores files in
 the file system that are not stored in the archive.  If you give
-@samp{tar +compare} a file-name argument that does not correspond to
+@samp{tar --compare} a file-name argument that does not correspond to
 the name of an archive member, @code{tar} responds with an error
 message.
 
@@ -798,12 +790,12 @@ files in the @file{~/practice} directory, first change into the
 
 @itemize @bullet
 @item
-Invoke @code{tar} and specify the @samp{+compare} operation.
-(@samp{+compare}, @samp{+diff}, or @samp{-d}).
+Invoke @code{tar} and specify the @samp{--compare} operation.
+(@samp{--compare}, @samp{--diff}, or @samp{-d}).
 
 @item
 Specify the archive where the files to be compared are stored
-(@samp{+file=@var{archive-name}} or @samp{-f @var{archive-name}})
+(@samp{--file=@var{archive-name}} or @samp{-f @var{archive-name}})
 
 @item
 Specify the archive members to be compared.  (In this example you are
@@ -812,7 +804,7 @@ default, you don't need to use any file-name arguments).
 @end itemize
 
 @example
-% tar +compare +file=records
+% tar --compare --file=records
 %
 @end example
 
@@ -820,12 +812,12 @@ default, you don't need to use any file-name arguments).
 While it looks like nothing has happened, @code{tar} has, in fact,
 done the comparison---and found nothing to report.  
 
-Use the @samp{+verbose} option to list the names of archive members as
+Use the @samp{--verbose} option to list the names of archive members as
 they are being compared with their counterparts of the same name in
 the file system:
 
 @example
-% tar +compare +verbose +file=records
+% tar --compare --verbose --file=records
 blues
 folk
 jazz
@@ -842,7 +834,7 @@ to it with an editor such as Emacs), the above example would look
 like:
 
 @example
-% tar +compare +verbose +file=records
+% tar --compare --verbose --file=records
 blues
 blues: mod time differs
 blues: size differs
@@ -852,9 +844,9 @@ jazz: does not exist
 % 
 @end example
 
-Note again that while @samp{tar +compare} reports the names of archive
+Note again that while @samp{tar --compare} reports the names of archive
 members that do not have counterparts in the file system, @samp{tar
-+compare} ignores files in the file system that do not have
+--compare} ignores files in the file system that do not have
 counterparts in the archive.  To demonstrate this, create a file in
 the @file{practice} directory called @file{rock} (using any text
 editor).  The new file appears when you list the directory's contents:
@@ -865,11 +857,11 @@ blues	 folk	  records  rock
 @end example
 
 @noindent
-If you type the @samp{+compare} example again, @code{tar} prints the
+If you type the @samp{--compare} example again, @code{tar} prints the
 following:
 
 @example
-% tar +compare +verbose +file=records
+% tar --compare --verbose --file=records
 blues
 blues: mod time differs
 blues: size differs
@@ -887,7 +879,7 @@ If you specify @file{rock} explicitly (using a file-name argument),
 @code{tar} prints an error message:
 
 @example
-% tar +compare +verbose +file=records rock
+% tar --compare --verbose --file=records rock
 tar: rock not found in archive
 % 
 @end example
@@ -899,8 +891,8 @@ tar: rock not found in archive
 @node Comparing Directories,  ,  ,  
 @subsubsection Using Compare on Directories
 
-In addition to using @samp{+compare} to compare text files, you can
-use @samp{+compare} to compare directories.  To illustrate this,
+In addition to using @samp{--compare} to compare text files, you can
+use @samp{--compare} to compare directories.  To illustrate this,
 re-create the examples above using your home directory as the working
 directory, and using the archive file @file{~/music} instead of the
 archive file @file{~/practice/records}.
@@ -910,7 +902,7 @@ above example using @file{music} as the specified archive file, and
 @file{practice} as a file-name argument.
 
 @example
-% tar +compare +verbose +file=music practice
+% tar --compare --verbose --file=music practice
 @end example
 
 @noindent
@@ -939,9 +931,9 @@ While you can use @code{tar} to create a new archive every time you
 want to store a file, it is more sometimes efficient to add files to
 an existing archive.  
 
-To add new files to an existing archive, use the @samp{+add-file},
-@samp{+append} or @samp{-r} operation.  To add newer versions of
-archive members to an archive, use the @samp{+update} or @samp{-u}
+To add new files to an existing archive, use the @samp{--add-file},
+@samp{--append} or @samp{-r} operation.  To add newer versions of
+archive members to an archive, use the @samp{--update} or @samp{-u}
 operation.
 
 @menu
@@ -953,9 +945,9 @@ operation.
 @subsection Appending Files to an Archive
 
 The simplest method of adding a file to an existing archive is the
-@samp{+add-file}, @samp{-r} or @samp{+append} operation, which writes
+@samp{--add-file}, @samp{-r} or @samp{--append} operation, which writes
 files into the archive without regard to whether or not they are
-already archive members.  When you use @samp{+add-file} you must use
+already archive members.  When you use @samp{--add-file} you must use
 file-name arguments; there is no default.  If you specify a file that
 is already stored in the archive, @code{tar} adds another copy of the
 file to the archive.
@@ -968,12 +960,12 @@ either the archive file @file{~/practice/records}, or the archive file
 
 @itemize @bullet
 @item
-Invoke @code{tar} and specify the @samp{+add-file} operation
-(@samp{+add-file}, @samp{-r} or @samp{+append})
+Invoke @code{tar} and specify the @samp{--add-file} operation
+(@samp{--add-file}, @samp{-r} or @samp{--append})
 
 @item
 Specify the archive to which the file will be added
-(@samp{+file=@var{archive-name}} or @samp{-f @var{archive-name}})
+(@samp{--file=@var{archive-name}} or @samp{-f @var{archive-name}})
 
 @item
 Specify the files to be added to the archive, using file-name
@@ -984,7 +976,7 @@ arguments
 For example:
 
 @example
-% tar +add-file +file=records rock
+% tar --add-file --file=records rock
 @end example
 
 @noindent
@@ -992,7 +984,7 @@ If you list the archive members in @file{records}, you will see that
 @file{rock} has been added to the archive:
 
 @example
-% tar +list +file=records
+% tar --list --file=records
 blues
 folk
 jazz
@@ -1001,24 +993,24 @@ rock
 
 @c <<<  this should be some kind of node.  
 
-You can use @samp{+add-file} to keep archive members current with
-active files.  Because @samp{+add-file} stores a file whether or not
+You can use @samp{--add-file} to keep archive members current with
+active files.  Because @samp{--add-file} stores a file whether or not
 there is already an archive member with the same file name, you can
-use @samp{+add-file} to add newer versions of archive members to an
+use @samp{--add-file} to add newer versions of archive members to an
 archive.  When you extract the file, only the version stored last will
-wind up in the file system.  Because @samp{tar +extract} extracts
+wind up in the file system.  Because @samp{tar --extract} extracts
 files from an archive in sequence, and overwrites files with the same
 name in the file system, if a file name appears more than once in an
 archive the last version of the file will overwrite the previous
 versions which have just been extracted.  
 
-If you recall from the examples using @samp{+compare} above,
+If you recall from the examples using @samp{--compare} above,
 @file{blues} was changed after the archive @file{records} was created.
-It is simple, however, to use @samp{+add-file} to add the new version
+It is simple, however, to use @samp{--add-file} to add the new version
 of @file{blues} to @file{records}:
 
 @example
-% tar +add-file +verbose +file=records blues
+% tar --add-file --verbose --file=records blues
 blues
 @end example
 
@@ -1026,7 +1018,7 @@ blues
 If you now list the contents of the archive, you will obtain the following:
 
 @example
-% tar +list -f records
+% tar --list -f records
 blues
 folk
 jazz
@@ -1038,7 +1030,7 @@ blues
 The newest version of @file{blues} is at the end of the archive.  When
 the files in @file{records} are extracted, the newer version of
 @file{blues} (which has the same name as the older) will overwrite the
-version stored first.  When @samp{tar +extract} is finished, only the
+version stored first.  When @samp{tar --extract} is finished, only the
 newer version of @file{blues} is in the file system.  <<<xref
 keep-old-files>>>
 
@@ -1046,8 +1038,8 @@ keep-old-files>>>
 @subsection Updating Files in an Archive
 
 To keep archive members up to date with their counterparts of the same
-name in the file system, use the @samp{+update} or @samp{-u}
-operation.  @samp{tar +update} adds a specified file to an archive if
+name in the file system, use the @samp{--update} or @samp{-u}
+operation.  @samp{tar --update} adds a specified file to an archive if
 no file of that name is already stored in the archive.  If there is
 already an archive member with the same name, @code{tar} checks the
 modification date of the archive member, and adds the file only if its
@@ -1055,27 +1047,27 @@ modification date is later.  If a file is stored in the archive but no
 longer exists under the same name in the active file system,
 @code{tar} reports an error.
 
-You could use the @samp{+add-file} option to keep an archive current,
-but do so you would either have to use the @samp{+compare} and
-@samp{+list} options to determine what files needed to be re-archived
+You could use the @samp{--add-file} option to keep an archive current,
+but do so you would either have to use the @samp{--compare} and
+@samp{--list} options to determine what files needed to be re-archived
 (which could waste a lot of time), or you would have to be willing to
 add identical copies of already archived files to the archive (which
 could waste a lot of space).
 
-You must use file-name arguments with the @samp{+update}
+You must use file-name arguments with the @samp{--update}
 operation---if you don't specify any files, @code{tar} won't act on
 any files. 
 
-To see the @samp{+update} option at work, create a new file,
+To see the @samp{--update} option at work, create a new file,
 @file{~/practice/classical}, and modify the file
 @file{~/practice/blues} (you can use a text editor, such as Emacs, to
 do both these things).  Then, with @file{practice} as your working
-directory, invoke @samp{tar +update} using the names of all the files
+directory, invoke @samp{tar --update} using the names of all the files
 in the practice directory as file-name arguments, and specifying the
-@samp{+verbose} option:
+@samp{--verbose} option:
 
 @example
-% tar +update +verbose +file=records blues folk rock classical
+% tar --update --verbose --file=records blues folk rock classical
 blues
 classical
 %
@@ -1084,7 +1076,7 @@ classical
 @noindent
 Because you specified verbose mode, @code{tar} printed out the names
 of the files it acted on.  If you now list the archive members of the
-archive, (@samp{tar +list +file=records}), you will see that the file
+archive, (@samp{tar --list --file=records}), you will see that the file
 @file{classical} and another version of the file @file{blues} have
 been added to @file{records}.
 
@@ -1098,7 +1090,7 @@ middle of an archive.
 @comment  node-name,  next,  previous,  up
 @section Concatenating Archives 
 
-To concatenate archive files, use @samp{tar +concatenate} or @samp{tar
+To concatenate archive files, use @samp{tar --concatenate} or @samp{tar
 -A}.  This operation adds other archives to the end of an archive.
 While it may seem intuitive to concatenate archives using @code{cat},
 the utility for adding files together, archive files which have been
@@ -1116,18 +1108,18 @@ directory.  There is a current version of the files in the
 @file{~/practice/records}.
 
 To store current versions of the files in @file{practice} in the
-archive file @file{music}, you can use @samp{tar +concatenate} to add
+archive file @file{music}, you can use @samp{tar --concatenate} to add
 the archive file @file{~/practice/records} to @file{music}.  First,
 make sure you are in your home directory (@samp{cd ~}).  Then:
 
 @itemize @bullet
 @item
-Invoke @code{tar}, and specify the @samp{+concatenate} operation
-(@samp{-A} or @samp{+concatenate})
+Invoke @code{tar}, and specify the @samp{--concatenate} operation
+(@samp{-A} or @samp{--concatenate})
 
 @item
 Specify the archive file to be added to
-(@samp{+file=@var{archive-name}} or @samp{-f @var{archive-name}})
+(@samp{--file=@var{archive-name}} or @samp{-f @var{archive-name}})
 
 @item
 Specify the archives to be added, using file-name arguments.  In this
@@ -1138,14 +1130,14 @@ archive file is not in your working directory.)
 
 @example
 % cd ~
-% tar +concatenate +file=music practice/records
+% tar --concatenate --file=music practice/records
 @end example
 
 If you now list the contents of the @file{music}, you see it now
 contains the archive members of @file{practice/records}:
 
 @example
-%tar +list +file=music
+%tar --list --file=music
 blues
 folk
 jazz
@@ -1172,12 +1164,12 @@ on tape---because of the linear nature of tape storage, doing this is
 likely to scramble the archive.
 @end quotation
 
-To remove archive members from an archive, use the @samp{+delete}
+To remove archive members from an archive, use the @samp{--delete}
 operation.  You must specify the names of files to be removed as
 file-name arguments.  All versions of the named file are removed from
 the archive.  
 
-Execution of the @samp{+delete} operation can be very slow.
+Execution of the @samp{--delete} operation can be very slow.
 
 To delete all versions of the file @file{blues} from the archive
 @file{records} in the @file{practice} directory, make sure you are in
@@ -1190,12 +1182,12 @@ the steps involved) to insure that the file(s) you wish to delete are
 stored in the archive.  (This step is optional)
 
 @item
-Invoke @code{tar} and specify the @samp{+delete} operation
-(@samp{+delete}).
+Invoke @code{tar} and specify the @samp{--delete} operation
+(@samp{--delete}).
 
 @item
 Specify the name of the archive file that the file(s) will be deleted
-from (@samp{+file=@var{archive-name}} or @samp{-f @var{archive-name}})
+from (@samp{--file=@var{archive-name}} or @samp{-f @var{archive-name}})
 
 @item
 Specify the files to be deleted, using file-name arguments.
@@ -1206,12 +1198,12 @@ been removed.  (this step is also optional)
 @end itemize
 
 @example
-% tar +list +file=records
+% tar --list --file=records
 blues
 folk
 jazz
-% tar +delete +file=records blues
-% tar +list +file=records
+% tar --delete --file=records blues
+% tar --list --file=records
 folk
 jazz
 % 
@@ -1242,7 +1234,7 @@ or
 
 <<<  the following using standard input/output correct??
 @example
-cd sourcedirectory; tar +create +file=- . | (cd targetdir; tar +extract +file=-)
+cd sourcedirectory; tar --create --file=- . | (cd targetdir; tar --extract --file=-)
 @end example
 
 @noindent
@@ -1308,25 +1300,25 @@ information.
 Certain old versions of @code{tar} cannot handle additional
 information recorded by newer @code{tar} programs.  To create an
 archive which can be read by these old versions, specify the
-@samp{+old-archive} option in conjunction with the @samp{tar +create}
+@samp{--old-archive} option in conjunction with the @samp{tar --create}
 operation.  When you specify this option, @code{tar} leaves out
 information about directories, pipes, fifos, contiguous files, and
 device files, and specifies file ownership by group and user ids
 instead of names.
 
-The @samp{+old-archive} option is needed only if the archive must be
+The @samp{--old-archive} option is needed only if the archive must be
 readable by an older tape archive program which cannot handle the new format.
 Most @code{tar} programs do not have this limitation, so this option
 is seldom needed.
 
 @table @samp
-@item +old-archive
+@item --old-archive
 @itemx -o
-@itemx +old
-@itemx +portable
+@itemx --old
+@itemx --portable
 @c has portability been changed to portable?
 Creates an archive that can be read by an old @code{tar} program.
-Used in conjunction with the @samp{tar +create} operation.
+Used in conjunction with the @samp{tar --create} operation.
 @end table
 
 @node Archive Label, Format Variations, Old Style File Information, Archive Structure
@@ -1334,22 +1326,22 @@ Used in conjunction with the @samp{tar +create} operation.
 @cindex Labeling an archive
 @cindex Labels on the archive media
 
-@c !! Should the arg to +label be a quoted string??  no - ringo
+@c !! Should the arg to --label be a quoted string??  no - ringo
 To avoid problems caused by misplaced paper labels on the archive
 media, you can include a @dfn{label} entry---an archive member which
 contains the name of the archive---in the archive itself.  Use the
-@samp{+label=@var{archive-label}} option in conjunction with the
-@samp{+create} operation to include a label entry in the archive as it
+@samp{--label=@var{archive-label}} option in conjunction with the
+@samp{--create} operation to include a label entry in the archive as it
 is being created. 
 
-If you create an archive using both @samp{+label=@var{archive-label}}
-and @samp{+multi-volume}, each volume of the archive will have an
+If you create an archive using both @samp{--label=@var{archive-label}}
+and @samp{--multi-volume}, each volume of the archive will have an
 archive label of the form @samp{@var{archive-label} Volume @var{n}},
 where @var{n} is 1 for the first volume, 2 for the next, and so on.
 @xref{Multi-Volume Archives}, for information on creating multiple
 volume archives.
 
-If you extract an archive using @samp{+label=@var{archive-label}},
+If you extract an archive using @samp{--label=@var{archive-label}},
 @code{tar} will print an error if the archive label doesn't match the
 @var{archive-label} specified, and will then not extract the archive.
 You can include a regular expression in @var{archive-label}, in this
@@ -1358,26 +1350,26 @@ case only.
 @c >>>specific group?  ie for multi-volume???  -ringo
 
 To find out an archive's label entry (or to find out if an archive has
-a label at all), use @samp{tar +list +verbose}.  @code{tar} will print the
+a label at all), use @samp{tar --list --verbose}.  @code{tar} will print the
 label first, and then print archive member information, as in the
 example below:
 
 @example
-% tar +verbose +list +file=iamanarchive
+% tar --verbose --list --file=iamanarchive
 V--------- 0/0        0 Mar  7 12:01 1992 iamalabel--Volume Header--
 -rw-rw-rw- ringo/user 40 May 21 13:30 1990 iamafilename
 @end example
 
 @table @samp
-@item +label=@var{archive-label}
+@item --label=@var{archive-label}
 @itemx -V @var{archive-label}
 Includes an @dfn{archive-label} at the beginning of the archive when
 the archive is being created (when used in conjunction with the
-@samp{tar +create} operation).  Checks to make sure the archive label
+@samp{tar --create} operation).  Checks to make sure the archive label
 matches the one specified (when used in conjunction with the @samp{tar
-+extract} operation.
+--extract} operation.
 @end table
-@c was +volume
+@c was --volume
 
 @node Format Variations,  , Archive Label, Archive Structure
 @section Format Variations
@@ -1394,7 +1386,7 @@ To specify format parameters when accessing or creating an archive,
 you can use the options described in the following sections.  If you
 do not specify any format parameters, @code{tar} uses default
 parameters.  You cannot modify a compressed archive.  If you create an
-archive with the @samp{+block-size} option specified (@pxref{Blocking
+archive with the @samp{--block-size} option specified (@pxref{Blocking
 Factor}), you must specify that block-size when operating on the
 archive.  @xref{Matching Format Parameters}, for other examples of
 format parameter considerations.
@@ -1412,13 +1404,13 @@ format parameter considerations.
 @cindex Multi-volume archives
 
 To create an archive that is larger than will fit on a single unit of
-the media, use the @samp{+multi-volume} option in conjunction with the
-@samp{tar +create} operation (@pxref{Creating Archives}).  A
+the media, use the @samp{--multi-volume} option in conjunction with the
+@samp{tar --create} operation (@pxref{Creating Archives}).  A
 @dfn{multi-volume} archive can be manipulated like any other archive
-(provided the @samp{+multi-volume} option is specified), but is stored
+(provided the @samp{--multi-volume} option is specified), but is stored
 on more than one tape or disk.
 
-When you specify @samp{+multi-volume}, @code{tar} does not report an
+When you specify @samp{--multi-volume}, @code{tar} does not report an
 error when it comes to the end of an archive volume (when reading), or
 the end of the media (when writing).  Instead, it prompts you to load
 a new storage volume.  If the archive is on a magnetic tape, you
@@ -1427,20 +1419,20 @@ floppy disk, you should change disks; etc.
 
 You can read each individual volume of a multi-volume archive as if it
 were an archive by itself.  For example, to list the contents of one
-volume, use @samp{tar +list}, without @samp{+multi-volume} specified.
+volume, use @samp{tar --list}, without @samp{--multi-volume} specified.
 To extract an archive member from one volume (assuming it is described
-that volume), use @samp{tar +extract}, again without
-@samp{+multi-volume}.
+that volume), use @samp{tar --extract}, again without
+@samp{--multi-volume}.
 
 If an archive member is split across volumes (ie. its entry begins on
 one volume of the media and ends on another), you need to specify
-@samp{+multi-volume} to extract it successfully.  In this case, you
+@samp{--multi-volume} to extract it successfully.  In this case, you
 should load the volume where the archive member starts, and use
-@samp{tar +extract +multi-volume}---@code{tar} will prompt for later
+@samp{tar --extract --multi-volume}---@code{tar} will prompt for later
 volumes as it needs them.  @xref{Extracting From Archives} for more
 information about extracting archives.
 
-@samp{+info-script=@var{program-file}} is like @samp{+multi-volume},
+@samp{--info-script=@var{program-file}} is like @samp{--multi-volume},
 except that @code{tar} does not prompt you directly to change media
 volumes when a volume is full---instead, @code{tar} runs commands you
 have stored in @var{program-file}.  This option can be used to
@@ -1453,17 +1445,17 @@ when performing unattended backups.  When @var{program-file} is done,
 <<< end.
 
 @table @samp
-@item +multi-volume
+@item --multi-volume
 @itemx -M
 Creates a multi-volume archive, when used in conjunction with
-@samp{tar +create}.  To perform any other operation on a multi-volume
-archive, specify @samp{+multi-volume} in conjunction with that
+@samp{tar --create}.  To perform any other operation on a multi-volume
+archive, specify @samp{--multi-volume} in conjunction with that
 operation.
 
-@item +info-script=@var{program-file}
+@item --info-script=@var{program-file}
 @itemx -F @var{program-file}
 Creates a multi-volume archive via a script. Used in conjunction with
-@samp{tar +create}.
+@samp{tar --create}.
 @end table
 
 @node Sparse Files, Blocking Factor, Multi-Volume Archives, Format Variations
@@ -1472,23 +1464,23 @@ Creates a multi-volume archive via a script. Used in conjunction with
 
 A file is sparse if it contains blocks of zeros whose existance is
 recorded, but that have no space allocated on disk.  When you specify
-the @samp{+sparse} option in conjunction with the @samp{+create}
+the @samp{--sparse} option in conjunction with the @samp{--create}
 operation, @code{tar} tests all files for sparseness while archiving.
 If @code{tar} finds a file to be sparse, it uses a sparse
 representation of the file in the archive.  @xref{Creating Archives},
 for more information about creating archives.
 
-@samp{+sparse} is useful when archiving files, such as dbm files,
+@samp{--sparse} is useful when archiving files, such as dbm files,
 likely to contain many nulls.  This option dramatically
 decreases the amount of space needed to store such an archive.  
 
 @quotation
-@strong{Please Note:} Always use @samp{+sparse} when performing file
+@strong{Please Note:} Always use @samp{--sparse} when performing file
 system backups, to avoid archiving the expanded forms of files stored
 sparsely in the system.@refill
 
 Even if your system has no no sparse files currently, some may be
-created in the future.  If you use @samp{+sparse} while making file
+created in the future.  If you use @samp{--sparse} while making file
 system backups as a matter of course, you can be assured the archive
 will always take no more space on the media than the files take on
 disk (otherwise, archiving a disk filled with sparse files might take
@@ -1496,10 +1488,10 @@ hundreds of tapes).@refill
 <<< xref incremental when node name is set.
 @end quotation
 
-@code{tar} ignores the @samp{+sparse} option when reading an archive.
+@code{tar} ignores the @samp{--sparse} option when reading an archive.
 
 @table @samp
-@item +sparse
+@item --sparse
 @itemx -S
 Files stored sparsely in the file system are represented sparsely in
 the archive.  Use in conjunction with write operations.
@@ -1518,11 +1510,11 @@ The data in an archive is grouped into records, which are 512 bytes.
 Records are read and written in whole number multiples called
 @dfn{blocks}.  The number of records in a block (ie. the size of a
 block in units of 512 bytes) is called the @dfn{blocking factor}.  The
-@samp{+block-size=@var{number}} option specifies the blocking factor
+@samp{--block-size=@var{number}} option specifies the blocking factor
 of an archive.  The default blocking factor is typically 20 (ie.@:
 10240 bytes), but can be specified at installation.  To find out the
-blocking factor of an existing archive, use @samp {tar +list
-+file=@var{archive-name}}.  This may not work on some devices. 
+blocking factor of an existing archive, use @samp {tar --list
+--file=@var{archive-name}}.  This may not work on some devices. 
 
 Blocks are seperated by gaps, which waste space on the archive media. 
 If you are archiving on magnetic tape, using a larger blocking factor
@@ -1548,23 +1540,23 @@ If you use a non-default blocking factor when you create an archive,
 you must specify the same blocking factor when you modify that
 archive.  Some archive devices will also require you to specify the
 blocking factor when reading that archive, however this is not
-typically the case.  Usually, you can use @samp{tar +list} without
+typically the case.  Usually, you can use @samp{tar --list} without
 specifying a blocking factor---@code{tar} reports a non-default block
 size and then lists the archive members as it would normally.  To
 extract files from an archive with a non-standard blocking factor
 (particularly if you're not sure what the blocking factor is), you can
-usually use the {+read-full-blocks} option while specifying a blocking
+usually use the {--read-full-blocks} option while specifying a blocking
 factor larger then the blocking factor of the archive (ie. @samp{tar
-+extract +read-full-blocks +block-size=300}.  @xref{Listing Contents}
-for more information on the @samp{+list} operation.
+--extract --read-full-blocks --block-size=300}.  @xref{Listing Contents}
+for more information on the @samp{--list} operation.
 @xref{read-full-blocks} for a more detailed explanation of that
 option.
 
 @table @samp
-@item +block-size=@var{number}
+@item --block-size=@var{number}
 @itemx -b @var{number}
 Specifies the blocking factor of an archive.  Can be used with any
-operation, but is usually not necessary with @samp{tar +list}.
+operation, but is usually not necessary with @samp{tar --list}.
 @end table
 
 @node Compressed Archives,  , Blocking Factor, Format Variations
@@ -1572,30 +1564,30 @@ operation, but is usually not necessary with @samp{tar +list}.
 @cindex Compressed archives
 @cindex Storing archives in compressed format
 
-@samp{+compress} indicates an archive stored in compressed format.
-The @samp{+compress} option is useful in saving time over networks and
+@samp{--compress} indicates an archive stored in compressed format.
+The @samp{--compress} option is useful in saving time over networks and
 space in pipes, and when storage space is at a premium.
-@samp{+compress} causes @code{tar} to compress when writing the
+@samp{--compress} causes @code{tar} to compress when writing the
 archive, or to uncompress when reading the archive.
 
 To perform compression and uncompression on the archive, @code{tar}
 runs the @code{compress} utility.  @code{tar} uses the default
 compression parameters; if you need to override them, avoid the
-@samp{+compress} option and run the @code{compress} utility
+@samp{--compress} option and run the @code{compress} utility
 explicitly.  It is useful to be able to call the @code{compress}
 utility from within @code{tar} because the @code{compress} utility by
 itself cannot access remote tape drives.
 
-The @samp{+compress} option will not work in conjunction with the
-@samp{+multi-volume} option or the @samp{+add-file}, @samp{+update},
-@samp{+add-file} and @samp{+delete} operations.  @xref{Modifying}, for
+The @samp{--compress} option will not work in conjunction with the
+@samp{--multi-volume} option or the @samp{--add-file}, @samp{--update},
+@samp{--add-file} and @samp{--delete} operations.  @xref{Modifying}, for
 more information on these operations.
 
 If there is no compress utility available, @code{tar} will report an
 error.
 
-@samp{+compress-block} is like @samp{+compress}, but when used in
-conjunction with @samp{+create} also causes @code{tar} to pad the last
+@samp{--compress-block} is like @samp{--compress}, but when used in
+conjunction with @samp{--create} also causes @code{tar} to pad the last
 block of the archive out to the next block boundary as it is written.
 This is useful with certain devices which require all write operations
 be a multiple of a specific size.
@@ -1608,20 +1600,20 @@ this option at that time.
 @end quotation
 
 @table @samp
-@item +compress
-@itemx +uncompress
+@item --compress
+@itemx --uncompress
 @itemx -z
 @itemx -Z
 When this option is specified, @code{tar} will compress (when writing
 an archive), or uncompress (when reading an archive).  Used in
-conjunction with the @samp{+create}, @samp{+extract}, @samp{+list} and
-@samp{+compare} operations.
+conjunction with the @samp{--create}, @samp{--extract}, @samp{--list} and
+@samp{--compare} operations.
 
-@item +compress-block
+@item --compress-block
 @itemx -z -z
-Acts like @samp{+compress}, but pads the archive out to the next block
+Acts like @samp{--compress}, but pads the archive out to the next block
 boundary as it is written when used in conjunction with the
-@samp{+create} operation.
+@samp{--create} operation.
 @end table
 
 @c >>> MIB -- why not use -Z instead of -z -z ?  -ringo
@@ -1629,13 +1621,13 @@ boundary as it is written when used in conjunction with the
 @node Reading and Writing, Insuring Accuracy, Archive Structure, Top
 @chapter Reading and Writing Archives
 
-The @samp{+create} operation writes a new archive, and the
-@samp{+extract} operation reads files from an archive and writes them
+The @samp{--create} operation writes a new archive, and the
+@samp{--extract} operation reads files from an archive and writes them
 into the file system.  You can use other @code{tar} operations to
 write new information into an existing archive (adding files to it,
 adding another archive to it, or deleting files from it), and you can
 read a list of the files in an archive without extracting it using the
-@samp{+list} operation.
+@samp{--list} operation.
 
 @menu
 * Archive Name::                The name of an archive 
@@ -1655,7 +1647,7 @@ read a list of the files in an archive without extracting it using the
 An archive can be saved as a file in the file system, sent through a
 pipe or over a network, or written to an I/O device such as a tape or
 disk drive.  To specify the name of the archive, use the
-@samp{+file=@var{archive-name}} option.
+@samp{--file=@var{archive-name}} option.
 
 An archive name can be the name of an ordinary file or the name of an
 I/O device.  @code{tar} always needs an archive name---if you do not
@@ -1682,20 +1674,20 @@ To specify an archive file on a device attached to a remote machine,
 use the following:
 
 @example
-+file=@var{hostname}:/@var{dev}/@var{file name}
+--file=@var{hostname}:/@var{dev}/@var{file name}
 @end example
 
 @noindent
 @code{tar} will complete the remote connection, if possible, and
 prompt you for a username and password.  If you use
-@samp{+file=@@@var{hostname}:/@var{dev}/@var{file-name}}, @code{tar}
+@samp{--file=@@@var{hostname}:/@var{dev}/@var{file-name}}, @code{tar}
 will complete the remote connection, if possible, using your username
 as the username on the remote machine.  
 
 @c >>>MIB --- is this clear?
 
 @table @samp
-@item +file=@var{archive-name}
+@item --file=@var{archive-name}
 @itemx -f @var{archive-name}
 Names the archive to create or operate on.  Use in conjunction with
 any operation.
@@ -1707,9 +1699,9 @@ any operation.
 @cindex Writing new archives
 @cindex Archive creation
 
-To create an archive, use @samp{tar +create}.  To name the archive,
-use @samp{+file=@var{archive-name}} in conjunction with the
-@samp{+create} operation (@pxref{Archive Name}).  If you do not name
+To create an archive, use @samp{tar --create}.  To name the archive,
+use @samp{--file=@var{archive-name}} in conjunction with the
+@samp{--create} operation (@pxref{Archive Name}).  If you do not name
 the archive, @code{tar} uses the value of the environment variable
 @code{TAPE} as the file name for the archive, or, if that is not
 available, @code{tar} uses a default archive name, usually that for tape
@@ -1720,7 +1712,7 @@ The following example creates an archive named @file{stooges},
 containing the files @file{larry}, @file{moe} and @file{curley}:
 
 @example
-tar +create +file=stooges larry moe curley
+tar --create --file=stooges larry moe curley
 @end example
 
 If you specify a directory name as a file-name argument, @code{tar}
@@ -1729,7 +1721,7 @@ creates an archive named @file{hail/hail/fredonia}, containing the
 contents of the directory @file{marx}:
 
 @example
-tar +create +file=hail/hail/fredonia marx
+tar --create --file=hail/hail/fredonia marx
 @end example
 
 If you don't specify files to put in the archive, @code{tar} archives
@@ -1738,7 +1730,7 @@ an archive named @file{home} containing all the files in the working
 directory:
 
 @example
-tar +create +file=home
+tar --create --file=home
 @end example
 
 @xref{File Name Lists}, for other ways to specify files to archive.
@@ -1758,7 +1750,7 @@ the contents of another archive, add newer versions of members already
 stored, or delete archive members already stored.  
 
 To find out what files are already stored in an archive, use @samp{tar
-+list +file=@var{archive-name}}.  @xref{Listing Contents}.
+--list --file=@var{archive-name}}.  @xref{Listing Contents}.
 
 @menu
 * Adding Files::                
@@ -1772,7 +1764,7 @@ To find out what files are already stored in an archive, use @samp{tar
 @cindex Adding files to an archive
 @cindex Updating an archive
 
-To add files to an archive, use @samp{tar +add-file}.  The archive to
+To add files to an archive, use @samp{tar --add-file}.  The archive to
 be added to must already exist and be in proper archive format (which
 normally means it was created previously using @code{tar}).  If the
 archive was created with a different block size than now specified,
@@ -1786,25 +1778,25 @@ The following example adds the file @file{shemp} to the archive
 @file{stooges} created above:
 
 @example
-tar +add-file +file=stooges shemp
+tar --add-file --file=stooges shemp
 @end example
 
 You must specify the files to be added; there is no default.
 
-@samp{tar +update} acts like @samp{tar +add-file}, but does not add
+@samp{tar --update} acts like @samp{tar --add-file}, but does not add
 files to the archive if there is already a file entry with that name
 in the archive that has the same modification time.  
 
-Both @samp{+update} and @samp{+add-file} work by adding to the end of
+Both @samp{--update} and @samp{--add-file} work by adding to the end of
 the archive.  When you extract a file from the archive, only the
 version stored last will wind up in the file system.  Because
-@samp{tar +extract} extracts files from an archive in sequence, and
+@samp{tar --extract} extracts files from an archive in sequence, and
 overwrites files with the same name in the file system, if a file name
 appears more than once in an archive the last version of the file will
 overwrite the previous versions which have just been extracted.  You
 should avoid storing older versions of a file later in the archive.
 
-Note:  @samp{+update} is not suitable for performing backups, because
+Note:  @samp{--update} is not suitable for performing backups, because
 it doesn't change directory content entries, and because it lengthens
 the archive every time it is used.  
 @c <<< xref to scripted backup, listed incremental, for info on backups.
@@ -1815,19 +1807,19 @@ the archive every time it is used.
 @cindex Concatenating Archives
 
 To append copies of an archive or archives to the end of another
-archive, use @samp{tar +add-archive}.  The source and target archives
+archive, use @samp{tar --add-archive}.  The source and target archives
 must already exist and have been created using compatable format
 parameters (@pxref{Matching Format Parameters}).
 
 @code{tar} will stop reading an archive if it encounters an
 end-of-archive marker.  The @code{cat} utility does not remove
 end-of-archive markers, and is therefore unsuitable for concatenating
-archives.  @samp{tar +add-archive} removes the end-of-archive marker
+archives.  @samp{tar --add-archive} removes the end-of-archive marker
 from the target archive before each new archive is appended.
 @c <<< xref ignore-zeros
 
 You must specify the source archives using
-@samp{+file=@var{archive-name}} (@pxref{Archive Name}).  If you do not
+@samp{--file=@var{archive-name}} (@pxref{Archive Name}).  If you do not
 specify the target archive , @code{tar} uses the value of the
 environment variable @code{TAPE}, or, if this has not been set, the
 default archive name.
@@ -1837,11 +1829,11 @@ The following example adds the contents of the archive
 were created in examples above):
 
 @example
-tar +add-archive +file=stooges hail/hail/fredonia
+tar --add-archive --file=stooges hail/hail/fredonia
 @end example
 
 If you need to retrieve files from an archive that was added to using
-the @code{cat} utility, use the @samp{+ignore-zeros} option
+the @code{cat} utility, use the @samp{--ignore-zeros} option
 (@pxref{Archive Reading Options}).
 
 @node Deleting Archive Files, Matching Format Parameters, Appending Archives, Modifying
@@ -1849,7 +1841,7 @@ the @code{cat} utility, use the @samp{+ignore-zeros} option
 @cindex Deleting files from an archive
 @cindex Removing files from an archive
 
-To delete archive members from an archive, use @samp{tar +delete}.
+To delete archive members from an archive, use @samp{tar --delete}.
 You must specify the file names of the members to be deleted.  All
 archive members with the specified file names will be removed from the
 archive.
@@ -1858,10 +1850,10 @@ The following example removes the file @file{curley} from the archive
 @file{stooges}:
 
 @example
-tar +delete +file=stooges curley
+tar --delete --file=stooges curley
 @end example
 
-You can only use @samp{tar +delete} on an archive if the archive
+You can only use @samp{tar --delete} on an archive if the archive
 device allows you to write to any point on the media.
 
 @quotation
@@ -1873,7 +1865,7 @@ most kinds of magnetic tape.
 
 @c <<< MIB -- how about automatic detection of archive media?  give error
 @c <<< unless the archive device is either an ordinary file or different
-@c <<< input and output (+file=-).
+@c <<< input and output (--file=-).
 
 @node Matching Format Parameters,  , Deleting Archive Files, Modifying
 @subsection Matching the Format Parameters
@@ -1891,12 +1883,12 @@ files to a multi-volume archive, you need to only mount the last
 volume of the archive media (and new volumes, if needed).  For all
 other operations, you need to use the entire archive.  
 
-If a multi-volume archive was labeled using @samp{+label}
+If a multi-volume archive was labeled using @samp{--label}
 (@pxref{Archive Label}) when it was created, @code{tar} will not
 automatically label volumes which are added later.  To label
-subsequent volumes, specify @samp{+label=@var{archive-label}} again in
-conjunction with the @samp{+add-file}, @samp{+update} or
-@samp{+add-archive} operation.
+subsequent volumes, specify @samp{--label=@var{archive-label}} again in
+conjunction with the @samp{--add-file}, @samp{--update} or
+@samp{--add-archive} operation.
 @cindex Labelling multi-volume archives
 @c <<< example
 
@@ -1908,28 +1900,28 @@ conjunction with the @samp{+add-file}, @samp{+update} or
 @cindex Archive contents, list of
 @cindex Archive members, list of
 
-@samp{tar +list} prints a list of the file names of the archive
+@samp{tar --list} prints a list of the file names of the archive
 members on the standard output.  If you specify @var{file-name}
-arguments on the command line (or using the @samp{+files-from} option,
+arguments on the command line (or using the @samp{--files-from} option,
 @pxref{File Name Lists}), only the files you specify will be listed,
 and only if they exist in the archive.  Files not specified will be
 ignored, unless they are under a specific directory.
 
-If you include the @samp{+verbose} option, @code{tar} prints an
+If you include the @samp{--verbose} option, @code{tar} prints an
 @samp{ls -l} type listing for the archive.  @pxref{Additional
-Information}, for a description of the @samp{+verbose} option.
+Information}, for a description of the @samp{--verbose} option.
 
 If the blocking factor of the archive differs from the default,
 @code{tar} reports this.  @xref{Blocking Factor}.
 
 @xref{Archive Reading Options} for a list of options which can be used
-to modify @samp{+list}'s operation.  
+to modify @samp{--list}'s operation.  
 
 This example prints a list of the archive members of the archive
 @file{stooges}:
 
 @example
-tar +list +file=stooges
+tar --list --file=stooges
 @end example
 
 @noindent
@@ -1948,7 +1940,7 @@ This example generates a verbose list of the archive members of the
 archive file @file{dwarves}, which has a blocking factor of two:
 
 @example
-tar +list -v +file=blocks
+tar --list -v --file=blocks
 @end example
 
 @noindent
@@ -1972,7 +1964,7 @@ tar: Blocksize = 2 records
 @cindex Resurrecting files from an archive
 
 To read archive members from the archive and write them into the file
-system, use @samp{tar +extract}.  The archive itself is left
+system, use @samp{tar --extract}.  The archive itself is left
 unchanged.
 
 If you do not specify the files to extract, @code{tar} extracts all
@@ -1988,7 +1980,7 @@ The following example shows the extraction of the archive
 @file{stooges} into an empty directory:
 
 @example
-tar +extract +file=stooges
+tar --extract --file=stooges
 @end example
 
 @noindent
@@ -2007,21 +1999,21 @@ The subdirectory @file{marx} contains the files @file{julius},
 
 If you wanted to just extract the files in the subdirectory
 @file{marx}, you could specify that directory as a file-name argument
-in conjunction with the @samp{+extract} operation:
+in conjunction with the @samp{--extract} operation:
 
 @example
-tar +extract +file=stooges marx
+tar --extract --file=stooges marx
 @end example
 
 @quotation
 @strong{Warning:} Extraction can overwrite files in the file system.
 To avoid losing files in the file system when extracting files from
-the archive with the same name, use the @samp{+keep-old-files} option
+the archive with the same name, use the @samp{--keep-old-files} option
 (@pxref{File Writing Options}).
 @end quotation
 
-If the archive was created using @samp{+block-size}, @samp{+compress}
-or @samp{+multi-volume}, you must specify those format options again
+If the archive was created using @samp{--block-size}, @samp{--compress}
+or @samp{--multi-volume}, you must specify those format options again
 when extracting files from the archive (@pxref{Format Variations}).
 
 @menu
@@ -2049,11 +2041,11 @@ an archive storage device.  If the device cannot return a full block,
 return full blocks, or do not require the last block of an archive to
 be padded out to the next block boundary.  To keep reading until you
 obtain a full block, or to accept an incomplete block if it contains
-an end-of-archive marker, specify the @samp{+read-full-blocks} option
-in conjunction with the @samp{+extract} or @samp{+list} operations.
+an end-of-archive marker, specify the @samp{--read-full-blocks} option
+in conjunction with the @samp{--extract} or @samp{--list} operations.
 @xref{Listing Contents}.
 
-The @samp{+read-full-blocks} option is turned on by default when
+The @samp{--read-full-blocks} option is turned on by default when
 @code{tar} reads an archive from standard input, or from a remote
 machine.  This is because on BSD Unix systems, attempting to read a
 pipe returns however much happens to be in the pipe, even if it is
@@ -2061,67 +2053,67 @@ less than was requested.  If this option were not enabled, @code{tar}
 would fail as soon as it read an incomplete block from the pipe.
 
 If you're not sure of the blocking factor of an archive, you can read
-the archive by specifying @samp{+read-full-blocks} and
-@samp{+block-size=@var{n}}, where @var{n} is a blocking factor larger
+the archive by specifying @samp{--read-full-blocks} and
+@samp{--block-size=@var{n}}, where @var{n} is a blocking factor larger
 than the blocking factor of the archive.  This lets you avoid having
 to determine the blocking factor of an archive.  @xref{Blocking
 Factor}.
 
 @table @samp
-@item +read-full-blocks
+@item --read-full-blocks
 @item -B 
-Use in conjunction with @samp{tar +extract} to read an archive which
+Use in conjunction with @samp{tar --extract} to read an archive which
 contains incomplete blocks, or one which has a blocking factor less
 than the one specified.
 @end table
 
 Normally @code{tar} stops reading when it encounters a block of zeros
 between file entries (which usually indicates the end of the archive).
-@samp{+ignore-zeros} allows @code{tar} to completely read an archive
+@samp{--ignore-zeros} allows @code{tar} to completely read an archive
 which contains a block of zeros before the end (i.e.@: a damaged
 archive, or one which was created by @code{cat}-ing several archives
 together).
 
-The @samp{+ignore-zeros} option is turned off by default because many
+The @samp{--ignore-zeros} option is turned off by default because many
 versions of @code{tar} write garbage after the end of archive entry,
 since that part of the media is never supposed to be read.  GNU
 @code{tar} does not write after the end of an archive, but seeks to
 maintain compatablity among archiving utilities.
 
 @table @samp
-@item +ignore-zeros
+@item --ignore-zeros
 @itemx -i
 To ignore blocks of zeros (ie.@: end-of-archive entries) which may be
 encountered while reading an archive.  Use in conjunction with
-@samp{tar +extract} or @samp{tar +list}.
+@samp{tar --extract} or @samp{tar --list}.
 @end table
 
 If you are using a machine with a small amount of memory, and you need
 to process large list of file-names, you can reduce the amount of
 space @code{tar} needs to process the list.  To do so, specify the
-@samp{+same-order} option and provide an ordered list of file names.
+@samp{--same-order} option and provide an ordered list of file names.
 This option tells @code{tar} that the @file{file-name} arguments
 (provided on the command line, or read from a file using the
-@samp{+files-from} option) are listed in the same order as the files
+@samp{--files-from} option) are listed in the same order as the files
 in the archive.
 
 You can create a file containing an ordered list of files in the
-archive by storing the output produced by @samp{tar +list
-+file=@var{archive-name}}.  @xref{Listing Contents}, for information
-on the @samp{+list} operation.
+archive by storing the output produced by @samp{tar --list
+--file=@var{archive-name}}.  @xref{Listing Contents}, for information
+on the @samp{--list} operation.
 
 This option is probably never needed on modern computer systems.
 
 @table @samp
-@item +same-order
-@itemx +preserve-order
+@item --same-order
+@itemx --preserve-order
 @itemx -s
 To process large lists of file-names on machines with small amounts of
-memory.  Use in conjunction with @samp{tar +compare}, @samp{tar +list}
-or @samp{tar +extract}.
+memory.  Use in conjunction with @samp{tar --compare}, @samp{tar --list}
+or @samp{tar --extract}.
 @end table
 
-@c we don't need/want +preserve to exist any more
+@c we don't need/want --preserve to exist any more
 
 @node File Writing Options, Scarce Disk Space, Archive Reading Options, Extracting From Archives
 @subsection Changing How @code{tar} Writes Files 
@@ -2138,13 +2130,13 @@ Normally, @code{tar} writes extracted files into the file system
 without regard to the files already on the system---files with the
 same name as archive members are overwritten.  To prevent @code{tar}
 from extracting an archive member from an archive, if doing so will
-overwrite a file in the file system, use @samp{+keep-old-files} in
-conjunction with the @samp{+extract} operation.  When this option is
+overwrite a file in the file system, use @samp{--keep-old-files} in
+conjunction with the @samp{--extract} operation.  When this option is
 specified, @code{tar} reports an error stating the name of the files
 in conflict, instead of writing the file from the archive.
 
 @table @samp
-@item +keep-old files
+@item --keep-old files
 @itemx -k 
 Prevents @code{tar} from overwriting files in the file system during
 extraction. 
@@ -2156,47 +2148,47 @@ limits the permissions of extracted files by the current @code{umask}
 setting.
 
 To set the modification times of extracted files to the time when
-the files were extracted, use the @samp{+modification-time} option in
-conjunction with @samp{tar +extract}.
+the files were extracted, use the @samp{--modification-time} option in
+conjunction with @samp{tar --extract}.
 
 @table @samp
-@item +modification-time
+@item --modification-time
 @itemx -m
 Sets the modification time of extracted archive members to the time
 they were extracted, not the time recorded for them in the archive.
-Use in conjunction with @samp{+extract}.
+Use in conjunction with @samp{--extract}.
 @end table
 
 To set the modes (access permissions) of extracted files to those
 recorded for those files in the archive, use the
-@samp{+preserve-permissions} option in conjunction with the
-@samp{+extract} operation.
+@samp{--preserve-permissions} option in conjunction with the
+@samp{--extract} operation.
 @c <<<mib --- should be aliased to ignore-umask.  
 
 @table @samp
-@item +preserve-permission
-@itemx +same-permission
-@itemx +ignore-umask
+@item --preserve-permission
+@itemx --same-permission
+@itemx --ignore-umask
 @itemx -p
 Set modes of extracted archive members to those recorded in the
 archive, instead of current umask settings.  Use in conjunction with
-@samp{+extract}. 
+@samp{--extract}. 
 @end table
 
 @c <<< following paragraph needs to be rewritten:
 @c <<< why doesnt' this cat files together, why is this useful.  is it
 @c <<< really useful with more than one file?
 To write the files extracted to the standard output, instead of
-creating the files on the file system, use @samp{+to-stdout} in
-conjunction with @samp{tar +extract}.  This option is useful if you
+creating the files on the file system, use @samp{--to-stdout} in
+conjunction with @samp{tar --extract}.  This option is useful if you
 are extracting files to send them through a pipe, and do not need to
 preserve them in the file system.
 
 @table @samp
-@item +to-stdout
+@item --to-stdout
 @itemx -O
 Writes files to the standard output.  Used in conjunction with
-@samp{+extract}. 
+@samp{--extract}. 
 @end table
 
 @c <<< why would you want to do such a thing, how are files separated on
@@ -2211,24 +2203,24 @@ Writes files to the standard output.  Used in conjunction with
 @cindex Space on the disk, recovering from lack of
 
 If a previous attempt to extract files failed due to lack of disk
-space, you can use @samp{+starting-file=@var{file-name}} to start
+space, you can use @samp{--starting-file=@var{file-name}} to start
 extracting only after file @var{file-name} when extracting files from
 the archive.  This assumes, of course, that there is now free space,
 or that you are now extracting into a different file system.
 
 @table @samp
-@item +starting-file=@var{file-name}
+@item --starting-file=@var{file-name}
 @itemx -K @var{file-name}
 Starts an operation in the middle of an archive.  Use in conjunction
-with @samp{+extract} or @samp{+list}.
+with @samp{--extract} or @samp{--list}.
 @end table
 
 If you notice you are running out of disk space during an extraction
 operation, you can also suspend @code{tar}, remove unnecessary files
 from the file system, and then restart the same @code{tar} operation.
-In this case, @samp{+starting-file} is not necessary. 
+In this case, @samp{--starting-file} is not necessary. 
 
-@c <<< xref incremental,  xref +interactive,  xref +exclude
+@c <<< xref incremental,  xref --interactive,  xref --exclude
 
 @node Insuring Accuracy, Selecting Archive Members, Reading and Writing, Top
 @chapter Insuring the Accuracy of an Archive
@@ -2250,8 +2242,8 @@ it is up to date.
 @cindex Double-checking a write operation
 
 To check for discrepancies in an archive immediately after it is
-written, use the @samp{+verify} option in conjunction with the
-@samp{tar +create} operation.  When this option is specified,
+written, use the @samp{--verify} option in conjunction with the
+@samp{tar --create} operation.  When this option is specified,
 @code{tar} checks archive members against their counterparts in the file
 system, and reports discrepancies on the standard error.  In
 multi-volume archives, each volume is verified after it is written,
@@ -2263,24 +2255,24 @@ errors on some tapes.  Archives written to pipes, some cartridge tape
 drives, and some other devices cannot be verified.
 
 @table @samp
-@item +verify
+@item --verify
 @itemx -W
 Checks for discrepancies in the archive immediately after it is
-written.  Use in conjunction with @samp{tar +create}.
+written.  Use in conjunction with @samp{tar --create}.
 @end table
 
 @node Comparing,  , Write Verification, Insuring Accuracy
 @section Comparing an Archive with the File System
 @cindex Verifying the currency of an archive
 
-@samp{tar +compare} compares archive members in an existing archive
+@samp{tar --compare} compares archive members in an existing archive
 with their counterparts in the file system, and reports differences in
 file size, mode, owner, modification date and contents.  If a file is
 represented in the archive but does not exist in the file system,
 @code{tar} reports a difference.
 
 If you use @var{file-name} arguments in conjunction with @samp{tar
-+compare}, @code{tar} compares the archived versions of the files
+--compare}, @code{tar} compares the archived versions of the files
 specified with their counterparts in the file system.  If you specify
 a file that is not in the archive, @code{tar} will report an error.  If
 you don't specify any files, @code{tar} compares all the files in the
@@ -2295,7 +2287,7 @@ The following example compares the archive members @file{larry},
 of the same name in the file system.
 
 @example
-tar +compare +file=stooges larry moe curly
+tar --compare --file=stooges larry moe curly
 @end example
 
 @noindent 
@@ -2327,7 +2319,7 @@ in that directory are operated on by @code{tar}.
 
 If you do not specify files when @code{tar} is invoked, @code{tar}
 operates on all the non-directory files in the working directory (if
-the operation is @samp{+create}), all the archive members in the
+the operation is @samp{--create}), all the archive members in the
 archive (if a read operation is specified), or does nothing (if any
 other operation is specified).
 
@@ -2343,15 +2335,15 @@ other operation is specified).
 @cindex File-name arguments, alternatives
 
 To read file names from a file on the file system, instead of from the
-command line, use the @samp{+files-from=@var{file}} option.  If you
+command line, use the @samp{--files-from=@var{file}} option.  If you
 specify @samp{-} as @var{file}, the file names are read from standard
-input.  Note that using both @samp{+files-from=-} and @samp{+file=-}
+input.  Note that using both @samp{--files-from=-} and @samp{--file=-}
 in the same command will not work unless the operation is
-@samp{+create}.  @xref{Archive Name}, for an explanation of the
-@samp{+file} option.
+@samp{--create}.  @xref{Archive Name}, for an explanation of the
+@samp{--file} option.
 
 @table @samp
-@item +files-from=@var{file}
+@item --files-from=@var{file}
 @itemx -T @var{file}
 Reads file-name arguments from a file on the file system, instead of
 from the command line.  Use in conjunction with any operation.
@@ -2373,19 +2365,19 @@ from the command line.  Use in conjunction with any operation.
 @subsection Storing and Extracting Files Relative to Root
 
 @c <<< is this what this does, or does it just preserve the slash?  
-@c <<< is it still called +absolute-paths?
+@c <<< is it still called --absolute-paths?
 
 @c To archive or extract files relative to the root directory, specify
-@c the @samp{+absolute-paths} option.
+@c the @samp{--absolute-paths} option.
 
 @c Normally, @code{tar} acts on files relative to the working
 @c directory---ignoring superior directory names when archiving, and
 @c ignoring leading slashes when extracting.
 
-@c When you specify @samp{+absolute-paths}, @code{tar} stores file names
+@c When you specify @samp{--absolute-paths}, @code{tar} stores file names
 @c including all superior directory names, and preserves leading slashes.
 @c If you only invoked @code{tar} from the root directory you would never
-@c need the @samp{+absolute-paths} option, but using this option may be
+@c need the @samp{--absolute-paths} option, but using this option may be
 @c more convenient than switching to root.
 
 @c >>> should be an example in the tutorial/wizardry section using this
@@ -2394,7 +2386,7 @@ from the command line.  Use in conjunction with any operation.
 @c >>>  is write access an issue?
 
 @table @samp
-@item +absolute-paths
+@item --absolute-paths
 Preserves full file names (inclusing superior dirctory names) when
 archiving files.  Preserves leading slash when extracting files.
 @end table
@@ -2406,12 +2398,12 @@ archiving files.  Preserves leading slash when extracting files.
 
 To change working directory in the middle of a list of file names,
 (either on the command line or in a file specified using
-@samp{+files-from}), use @samp{+directory=@var{directory}}.  This will
+@samp{--files-from}), use @samp{--directory=@var{directory}}.  This will
 change the working directory to the directory @var{directory} after
 that point in the list.  For example,
 
 @example 
-tar +create iggy ziggy +directory=baz melvin
+tar --create iggy ziggy --directory=baz melvin
 @end example
 
 @noindent
@@ -2425,7 +2417,7 @@ Note that the file @file{melvin} is recorded in the archive under the
 precise name @file{melvin}, @emph{not} @file{baz/melvin}.  Thus, the
 archive will contain three files that all appear to have come from the
 same directory; if the archive is extracted with plain @samp{tar
-+extract}, all three files will be written in the current directory.
+--extract}, all three files will be written in the current directory.
 
 Contrast this with the command
 
@@ -2436,11 +2428,11 @@ tar -c iggy ziggy bar/melvin
 @noindent
 which records the third file in the archive under the name
 @file{bar/melvin} so that, if the archive is extracted using @samp{tar
-+extract}, the third file will be written in a subdirectory named
+--extract}, the third file will be written in a subdirectory named
 @file{bar}.
 
 @table @samp
-@item +directory=@file{directory}
+@item --directory=@file{directory}
 @itemx -C @file{directory}
 Changes the working directory.  
 @end table
@@ -2452,7 +2444,7 @@ Changes the working directory.
 @cindex File names, using symbolic links
 @cindex Symbolic link as file name
 
-@samp{+dereference} is used with @samp{tar +create}, and causes
+@samp{--dereference} is used with @samp{tar --create}, and causes
 @code{tar} to archive files which are referenced by a symbolic link,
 using the name of the link as the file name.
 
@@ -2470,7 +2462,7 @@ the same archive, an entire second copy of it will be stored.  This
 could be considered a bug.
 
 @table @samp
-@item +dereference
+@item --dereference
 @itemx -h
 Stores files referenced by a symbolic link, using the name of the link
 as the file name.  Use in conjunction with any write operation.
@@ -2487,7 +2479,7 @@ as the file name.  Use in conjunction with any write operation.
 @cindex Age, excluding files by
 
 To avoid crossing file system boundaries when archiving parts of a
-directory tree, use @samp{+one-file-system}.  This option only affects
+directory tree, use @samp{--one-file-system}.  This option only affects
 files that are archived because they are in a directory that is being
 archived; files explicitly named on the command line are archived
 regardless of where they reside.
@@ -2495,72 +2487,72 @@ regardless of where they reside.
 This option is useful for making full or incremental archival backups
 of a file system.
 
-If this option is used in conjunction with @samp{+verbose}, files that
+If this option is used in conjunction with @samp{--verbose}, files that
 are excluded are mentioned by name on the standard error.
 
 @table @samp
-@item +one-file-system
+@item --one-file-system
 @itemx -l
 Prevents @code{tar} from crossing file system boundaries when
 archiving.  Use in conjunction with any write operation.
 @end table
 
 To avoid operating on files whose names match a particular pattern,
-use the @samp{+exclude=@var{pattern}} or
-@samp{+exclude-from=@var{file}} options.  
+use the @samp{--exclude=@var{pattern}} or
+@samp{--exclude-from=@var{file}} options.  
 
-When you specify the @samp{+exclude=@var{pattern}} option, @code{tar}
+When you specify the @samp{--exclude=@var{pattern}} option, @code{tar}
 ignores files which match the @var{pattern}, which can be a single
 file name or a more complex expression.  Thus, if you invoke
-@code{tar} with @samp{tar +create +exclude=*.o}, no files whose names
+@code{tar} with @samp{tar --create --exclude=*.o}, no files whose names
 end in @file{.o} are included in the archive.  
 @c <<< what other things can you use besides "*"?
 
-@samp{+exclude-from=@var{file}} acts like @samp{+exclude}, but
+@samp{--exclude-from=@var{file}} acts like @samp{--exclude}, but
 specifies a file @var{file} containing a list of patterns.  @code{tar}
 ignores files with names that fit any of these patterns.
 
 You can use either option more than once in a single command.
 
 @table @samp
-@item +exclude=@var{pattern}
+@item --exclude=@var{pattern}
 Causes @code{tar} to ignore files that match the @var{pattern}.
 
-@item +exclude-from=@var{file}
+@item --exclude-from=@var{file}
 Causes @code{tar} to ignore files that match the patterns listed in
 @var{file}.
 @end table
-@c +exclude-from used to be "+exclude", +exclude didn't used to exist.
+@c --exclude-from used to be "--exclude", --exclude didn't used to exist.
 
 To operate only on files with modification or status-change times
-after a particular date, use @samp{+after-date=@var{date}}.  You can
-use this option with @samp{tar +create} or @samp{tar +add-file} to
-insure only new files are archived, or with @samp{tar +extract} to
+after a particular date, use @samp{--after-date=@var{date}}.  You can
+use this option with @samp{tar --create} or @samp{tar --add-file} to
+insure only new files are archived, or with @samp{tar --extract} to
 insure only recent files are resurrected. @refill
-@c +after-date @var{date} or  +newer @var{date}
+@c --after-date @var{date} or  --newer @var{date}
 
-@samp{+newer-mtime=@var{date}} acts like @samp{+after-date=@var{date}},
+@samp{--newer-mtime=@var{date}} acts like @samp{--after-date=@var{date}},
 but tests just the modification times of the files, ignoring
 status-change times.
 
-@c <<<need example of +newer-mtime with quoted argument
+@c <<<need example of --newer-mtime with quoted argument
 Remember that the entire date argument should be quoted if it contains
 any spaces.
 
 
-@strong{Please Note:} @samp{+after-date} and @samp{+newer-mtime}
+@strong{Please Note:} @samp{--after-date} and @samp{--newer-mtime}
 should not be used for incremental backups.  Some files (such as those
 in renamed directories) are not selected up properly by these options.
 @c  xref to incremental backup chapter when node name is decided.
 
 @table @samp
-@item +after-date=@var{date}
-@itemx +newer=@var{date}
+@item --after-date=@var{date}
+@itemx --newer=@var{date}
 @itemx -N @var{date}
 Acts on files only if their modification or inode-changed times are
 later than @var{date}.  Use in conjunction with any operation.
-@item +newer-mtime=@var{date}
-Acts like @samp{+after-date}, but only looks at modification times.
+@item --newer-mtime=@var{date}
+Acts like @samp{--after-date}, but only looks at modification times.
 @end table
 
 @c <<< following is the getdate date format --- needs to be re-written,
@@ -2617,40 +2609,40 @@ encountered a problem when operating on an archive, however, you may
 need more information than just an error message in order to solve the
 problem.  The following options can be helpful diagnostic tools.
 
-When used with most operations, @samp{+verbose} causes @code{tar} to
+When used with most operations, @samp{--verbose} causes @code{tar} to
 print the file names of the files or archive members it is operating
-on.  When used with @samp{tar +list}, the verbose option causes
+on.  When used with @samp{tar --list}, the verbose option causes
 @code{tar} to print out an @samp{ls -l} type listing of the files in
 the archive.
 
 Verbose output appears on the standard output except when an archive
-is being written to the standard output (as with @samp{tar +create
-+file=- +verbose}).  In that case @code{tar} writes verbose output to
+is being written to the standard output (as with @samp{tar --create
+--file=- --verbose}).  In that case @code{tar} writes verbose output to
 the standard error stream.
 
 @table @samp
-@item +verbose
+@item --verbose
 @itemx -v
 Prints the names of files or archive members as they are being
 operated on.  Can be used in conjunction with any operation.   When
-used with @samp{+list}, generates an @samp{ls -l} type listing.
+used with @samp{--list}, generates an @samp{ls -l} type listing.
 @end table
 
 To find out where in an archive a message was triggered, use
-@samp{+record-number}.  @samp{+record-number} causes @code{tar} to
+@samp{--record-number}.  @samp{--record-number} causes @code{tar} to
 print, along with every message it produces, the record number within
 the archive where the message was triggered.
 
 This option is especially useful when reading damaged archives, since
 it helps pinpoint the damaged sections.  It can also be used with
-@samp{tar +list} when listing a file-system backup tape, allowing you
+@samp{tar --list} when listing a file-system backup tape, allowing you
 to choose among several backup tapes when retrieving a file later, in
 favor of the tape where the file appears earliest (closest to the
 front of the tape).
 @c <<< xref when the node name is set and the backup section written
 
 @table @samp
-@item +record-number
+@item --record-number
 @itemx -R 
 Prints the record number whenever a message is generated by
 @code{tar}.  Use in conjunction with any operation.
@@ -2658,11 +2650,11 @@ Prints the record number whenever a message is generated by
 
 @c rewrite below
 To print the version number of the @code{tar} program, use @samp{tar
-+version}.  @code{tar} prints the version number to the standard
+--version}.  @code{tar} prints the version number to the standard
 error.  For example:
 
 @example
-tar +version
+tar --version
 @end example
 
 @noindent
@@ -2682,10 +2674,10 @@ further instructions.  In some situations however, you
 may want to exclude some files and archive members from the operation
 (for instance if disk or storage space is tight).  You can do this by
 excluding certain files automatically (@pxref{File Exclusion}), or by
-performing an operation interactively, using the @samp{+interactive}
+performing an operation interactively, using the @samp{--interactive}
 operation.  
 
-When the @samp{+interactive} option is specified, @code{tar} asks for
+When the @samp{--interactive} option is specified, @code{tar} asks for
 confirmation before reading, writing, or deleting each file it
 encounters while carrying out an operation.  To confirm the action you
 must type a line of input beginning with @samp{y}.  If your input line
@@ -2702,8 +2694,8 @@ communications.
 <<< this aborts if you won't OK the working directory.  this is a bug. -ringo
 
 @table @samp
-@item +interactive
-@itemx +confirmation
+@item --interactive
+@itemx --confirmation
 @itemx -w
 Asks for confirmation before reading, writing or deleting an archive
 member (when listing, comparing or writing an archive or deleting
@@ -2724,8 +2716,8 @@ called @dfn{dumps}.
 * Backup Levels::               Levels of backups
 * Backup Scripts::              Using scripts to perform backups
                                   and restoration
-* incremental and listed-incremental::  The +incremental 
-                                  and +listed-incremental Options
+* incremental and listed-incremental::  The --incremental 
+                                  and --listed-incremental Options
 * Problems::                    Some common problems and their solutions
 @end menu
 
@@ -2958,7 +2950,7 @@ To restore files that were archived using a scripted backup, use the
 
 where ##### are the file systems to restore from, and
 ##### is a regular expression which specifies which files to
-restore.  If you specify +all, the script restores all the files
+restore.  If you specify --all, the script restores all the files
 in the file system.
 
 You should start the restore script with the media containing the
@@ -2969,7 +2961,7 @@ positioned past the beginning of the archive, the script will rewind
 the tape as needed.  @xref{Media}, for a discussion of tape
 positioning.
 
-If you specify @samp{+all} as the @var{files} argument, the
+If you specify @samp{--all} as the @var{files} argument, the
 @code{restore} script extracts all the files in the archived file
 system into the active file system.  
 
@@ -2984,17 +2976,17 @@ the script makes that determination.
 @end ignore
 
 @node incremental and listed-incremental, Problems, Backup Scripts, Backups and Restoration
-@section The @code{+incremental} and @code{+listed-incremental} Options
+@section The @code{--incremental} and @code{--listed-incremental} Options
 
-@samp{+incremental} is used in conjunction with @samp{+create},
-@samp{+extract} or @samp{+list} when backing up and restoring file
+@samp{--incremental} is used in conjunction with @samp{--create},
+@samp{--extract} or @samp{--list} when backing up and restoring file
 systems.  An archive cannot be extracted or listed with the
-@samp{+incremental} option specified unless it was created with the
+@samp{--incremental} option specified unless it was created with the
 option specified.  This option should only be used by a script, not by
 the user, and is usually disregarded in favor of
-@samp{+listed-incremental}, which is described below.
+@samp{--listed-incremental}, which is described below.
 
-@samp{+incremental} in conjunction with @samp{+create} causes
+@samp{--incremental} in conjunction with @samp{--create} causes
 @code{tar} to write, at the beginning of the archive, an entry for
 each of the directories that will be archived.  The entry for a
 directory includes a list of all the files in the directory at the
@@ -3005,7 +2997,7 @@ Note that this option causes @code{tar} to create a non-standard
 archive that may not be readable by non-GNU versions of the @code{tar}
 program.  
 
-@samp{+incremental} in conjunction with @samp{+extract} causes
+@samp{--incremental} in conjunction with @samp{--extract} causes
 @code{tar} to read the lists of directory contents previously stored
 in the archive, @emph{delete} files in the file system that did not
 exist in their directories when the archive was created, and then
@@ -3014,10 +3006,10 @@ extract the files in the archive.
 This behavior is convenient when restoring a damaged file system from
 a succession of incremental backups: it restores the entire state of
 the file system to that which obtained when the backup was made.  If
-@samp{+incremental} isn't specified, the file system will probably
+@samp{--incremental} isn't specified, the file system will probably
 fill up with files that shouldn't exist any more.
 
-@samp{+incremental} in conjunction with @samp{+list}, causes 
+@samp{--incremental} in conjunction with @samp{--list}, causes 
 @code{tar} to print, for each directory in the archive, the list of
 files in that directory at the time the archive was created.  This
 information is put out in a format that is not easy for humans to
@@ -3028,8 +3020,8 @@ if the file is a directory (and is included in the archive).  Each
 file name is terminated by a null character.  The last file is followed
 by an additional null and a newline to indicate the end of the data.
 
-@samp{+listed-incremental}=@var{file} acts like @samp{+incremental},
-but when used in conjunction with @samp{+create} will also cause
+@samp{--listed-incremental}=@var{file} acts like @samp{--incremental},
+but when used in conjunction with @samp{--create} will also cause
 @code{tar} to use the file @var{file}, which contains information
 about the state of the file system at the time of the last backup, to
 decide which files to include in the archive being created.  That file
@@ -3211,8 +3203,8 @@ successful, 1 if the command was unrecognized, and 2 if an operation
 failed.
 
 @c <<< new node on how to find an archive?  -ringo
-If you use @code{tar +extract} with the
-@samp{+label=@var{archive-name}} option specified, @code{tar} will
+If you use @code{tar --extract} with the
+@samp{--label=@var{archive-name}} option specified, @code{tar} will
 read an archive label (the tape head has to be positioned on it) and
 print an error if the archive label doesn't match the
 @var{archive-name} specified.  @var{archive-name} can be any regular
@@ -3220,7 +3212,7 @@ expression.  If the labels match, @code{tar} extracts the archive.
 @xref{Archive Label}.  @xref{Matching Format Parameters}.
 <<< fix cross references
 
-@code{tar +list +label} will cause @code{tar} to print the label.
+@code{tar --list --label} will cause @code{tar} to print the label.
 
 @c <<< MIB -- program to list all the labels on a tape?
 
@@ -3267,57 +3259,57 @@ Adds files to the end of the archive, but only if they are newer than
 their counterparts already in the archive, or if they do not already
 exist in the archive.
 
-@item +add-archive
+@item --add-archive
 Adds copies of an archive or archives to the end of another archive.
 
-@item +add-file
+@item --add-file
 Adds files to the end of the archive.  
 
-@item +append
+@item --append
 Adds files to the end of the archive.  
 
-@item +catenate
+@item --catenate
 Adds copies of an archive or archives to the end of another archive.
 
-@item +compare
+@item --compare
 Compares files in the archive with their counterparts in the file
 system, and reports differences in file size, mode, owner,
 modification date and contents.
 
-@item +concatenate
+@item --concatenate
 Adds copies of an archive or archives to the end of another archive.
 
-@item +create
+@item --create
 Creates a new archive.  
 
-@item +delete
+@item --delete
 Deletes files from the archive.  All versions of the files are deleted.
 
-@item +diff
+@item --diff
 Compares files in the archive with their counterparts in the file
 system, and reports differences in file size, mode, owner,
 modification date and contents.
 
-@item +extract
+@item --extract
 Reads files from the archive and writes them into the active file
 system.
 
-@item +get
+@item --get
 Reads files from the archive and writes them into the active file
 system.
 
-@item +help
+@item --help
 Prints a list of @code{tar} operations and options.
 
-@item +list
+@item --list
 Prints a list of the contents of the archive.
 
-@item +update
+@item --update
 Adds files to the end of the archive, but only if they are newer than
 their counterparts already in the archive, or if they do not already
 exist in the archive.
 
-@item +version
+@item --version
 Prints the version number of the @code{tar} program to the standard
 error.
 @end table
@@ -3328,160 +3320,160 @@ error.
 Options change the way @code{tar} performs an operation.
 
 @table @samp
-@item +absolute-paths   
+@item --absolute-paths   
 WILL BE INPUT WHEN QUESTION IS RESOLVED
 
-@item +after-date=@var{date}
+@item --after-date=@var{date}
 Limit the operation to files changed after the given date.
 @xref{File Exclusion}.
 
-@item +block-size=@var{number}
+@item --block-size=@var{number}
 Specify the blocking factor of an archive.  @xref{Blocking Factor}.
 
-@item +compress
+@item --compress
 Specify a compressed archive.  @xref{Compressed Archives}.
 
-@item +compress-block. 
+@item --compress-block. 
 Create a whole block sized compressed archive.  @xref{Compressed Archives}.
 
-@item +confirmation
+@item --confirmation
 Solicit confirmation for each file.  @xref{Interactive Operation}
-<<< +selective should be a synonym. 
+<<< --selective should be a synonym. 
 
-@item +dereference
+@item --dereference
 Treat a symbolic link as an alternate name for the file the link
 points to.  @xref{Symbolic Links}.
 
-@item +directory=@file{directory}
+@item --directory=@file{directory}
 Change the working directory.  @xref{Changing Working Directory}.
 
-@item +exclude=@var{pattern}
+@item --exclude=@var{pattern}
 Exclude files which match the regular expression @var{pattern}.
 @xref{File Exclusion}.
 
-@item +exclude-from=@file{file}
+@item --exclude-from=@file{file}
 Exclude files which match any of the regular expressions listed in
 the file @file{file}.  @xref{File Exclusion}.
 
-@item +file=@var{archive-name}
+@item --file=@var{archive-name}
 Name the archive.  @xref{Archive Name}).
 
-@item +files-from=@file{file}
+@item --files-from=@file{file}
 Read file-name arguments from a file on the file system.
 @xref{File Name Lists}. 
 
-@item +ignore-umask
+@item --ignore-umask
 Set modes of extracted files to those recorded in the archive.
 @xref{File Writing Options}.
 
-@item +ignore-zeros
+@item --ignore-zeros
 Ignore end-of-archive entries.  @xref{Archive Reading Options}.
-<<< this should be changed to +ignore-end 
+<<< this should be changed to --ignore-end 
 
-@item +listed-incremental=@var{file-name}   (-g)
+@item --listed-incremental=@var{file-name}   (-g)
 Take a file name argument always.  If the file doesn't exist, run a level
 zero dump, creating the file.  If the file exists, uses that file to see
 what has changed.
 
-@item +incremental (-G)
+@item --incremental (-G)
 @c <<<look it up>>>
 
-@item +tape-length=@var{n}  (-L)
+@item --tape-length=@var{n}  (-L)
 @c <<<alternate way of doing multi archive, will go to that length and
 @c prompts for new tape, automatically turns on multi-volume. >>>
 @c <<< this needs to be written into main body as well -ringo
 
-@item +info-script=@var{program-file}
+@item --info-script=@var{program-file}
 Create a multi-volume archive via a script.  @xref{Multi-Volume Archives}.
 
-@item +interactive
+@item --interactive
 Ask for confirmation before performing any operation on a file or
 archive member.
 
-@item +keep-old-files
+@item --keep-old-files
 Prevent overwriting during extraction.  @xref{File Writing Options}.
 
-@item +label=@var{archive-label}
+@item --label=@var{archive-label}
 Include an archive-label in the archive being created.  @xref{Archive
 Label}.
 
-@item +modification-time
+@item --modification-time
 Set the modification time of extracted files to the time they were
 extracted.  @xref{File Writing Options}.
 
-@item +multi-volume
+@item --multi-volume
 Specify a multi-volume archive.  @xref{Multi-Volume Archives}.
 
-@item +newer=@var{date}
+@item --newer=@var{date}
 Limit the operation to files changed after the given date.
 @xref{File Exclusion}.
 
-@item +newer-mtime=@var{date}
+@item --newer-mtime=@var{date}
 Limit the operation to files modified after the given date.  @xref{File
 Exclusion}.
 
-@item +old
+@item --old
 Create an old format archive.  @xref{Old Style File Information}.
 @c <<< did we agree this should go away as a synonym?
 
-@item +old-archive
+@item --old-archive
 Create an old format archive.  @xref{Old Style File Information}.
 
-@item +one-file-system
+@item --one-file-system
 Prevent @code{tar} from crossing file system boundaries when
 archiving.  @xref{File Exclusion}.
 
-@item +portable
+@item --portable
 Create an old format archive.  @xref{Old Style File Information}.
 @c <<< was portability, may still need to be changed
 
-@item +preserve-order
+@item --preserve-order
 Help process large lists of file-names on machines with small amounts of
 memory.  @xref{Archive Reading Options}.
 
-@item +preserve-permission
+@item --preserve-permission
 Set modes of extracted files to those recorded in the archive.
 @xref{File Writing Options}.
 
-@item +read-full-blocks
+@item --read-full-blocks
 Read an archive with a smaller than specified block size or which
 contains incomplete blocks.  @xref{Archive Reading Options}).
-@c should be +partial-blocks (!!!)
+@c should be --partial-blocks (!!!)
  
-@item +record-number
+@item --record-number
 Print the record number where a message is generated.
 @xref{Additional Information}.
 
-@item +same-order
+@item --same-order
 Help process large lists of file-names on machines with small amounts of
 memory.  @xref{Archive Reading Options}.
 
-@item +same-permission
+@item --same-permission
 Set the modes of extracted files to those recorded in the archive.
 @xref{File Writing Options}.
 
-@item +sparse
+@item --sparse
 Archive sparse files sparsely.  @xref{Sparse Files}.
 
-@item +starting-file=@var{file-name}
+@item --starting-file=@var{file-name}
 Begin reading in the middle of an archive.  @xref{Scarce Disk Space}.
 
-@item +to-stdout
+@item --to-stdout
 Write files to the standard output.  @xref{File Writing Options}.
 
-@item +uncompress
+@item --uncompress
 Specifdo  a compressed archive.  @xref{Compressed Archives}.
 
 @item -V @var{archive-label}
 Include an archive-label in the archive being created.  @xref{Archive
 Label}.
-@c was +volume
+@c was --volume
 
-@item +verbose
+@item --verbose
 Print the names of files or archive members as they are being
 operated on.  @xref{Additional Information}.
 
-@item +verify
+@item --verify
 Check for discrepancies in the archive immediately after it is
 written.  @xref{Write Verification}.
 
@@ -3561,7 +3553,7 @@ Print the names of files or archive members they are being operated
 on.  @xref{Additional Information}.
 
 @item -w
-@c <<<see +interactive.  WILL BE INPUT WHEN QUESTIONS ARE RESOLVED.>>>
+@c <<<see --interactive.  WILL BE INPUT WHEN QUESTIONS ARE RESOLVED.>>>
 
 @item -z
 Specify a compressed archive.  @xref{Compressed Archives}.
@@ -3600,7 +3592,7 @@ reading an archive.
 
 Records may be grouped into @dfn{blocks} for I/O operations.  A block
 of records is written with a single @code{write()} operation.  The
-number of records in a block is specified using the @samp{+block-size}
+number of records in a block is specified using the @samp{--block-size}
 option.  @xref{Blocking Factor}, for more information about specifying
 block size.  
 
@@ -3887,7 +3879,7 @@ files in an archive.  These are listed below.
 @item LF_DUMPDIR
 @itemx 'D'
 Indicates a directory and a list of files created by the
-@samp{+incremental} option.  The @code{size} field gives the total
+@samp{--incremental} option.  The @code{size} field gives the total
 size of the associated list of files.  Each file name is preceded by
 either a @code{'Y'} (the file should be in this archive) or an
 @code{'N'} (the file is a directory, or is not stored in the archive).
@@ -3912,7 +3904,7 @@ Handling}.
 
 @item LF_VOLHDR
 @itemx 'V'
-Marks an archive label that was created using the @samp{+label} option
+Marks an archive label that was created using the @samp{--label} option
 when the archive was created (@pxref{Archive Label}.  The @code{name}
 field contains the argument to the option.  The @code{size} field is
 zero.  Only the first file in each volume of an archive should have
