@@ -5,6 +5,12 @@ See the end for copying conditions.
 
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
+version 1.15.1 - Sergey Poznyakoff, 2004-12-21
+
+This version fixes a bug introduced in 1.15 which caused 
+tar to refuse to extract files from standard input.
+
+
 version 1.15 - Sergey Poznyakoff, 2004-12-20
 
 * Compressed archives are recognised automatically, it is no longer
