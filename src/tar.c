@@ -1401,7 +1401,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	      xrealloc (archive_name_array,
 			sizeof (const char *) * allocated_archive_names);
 	  }
-	archive_name_array[archive_names++] = strdup (buf);
+	archive_name_array[archive_names++] = xstrdup (buf);
       }
       break;
 

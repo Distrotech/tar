@@ -1078,7 +1078,7 @@ dump_dir0 (char *directory,
   {
     char const *entry;
     size_t entry_len;
-    char *name_buf = strdup (st->orig_file_name);
+    char *name_buf = xstrdup (st->orig_file_name);
     size_t name_size = strlen (name_buf);
     size_t name_len = name_size;
 

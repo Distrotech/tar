@@ -66,7 +66,7 @@ uid_to_uname (uid_t uid, char **uname)
 
   if (uid != 0 && uid == cached_no_such_uid)
     {
-      *uname = strdup ("");
+      *uname = xstrdup ("");
       return;
     }
 
@@ -81,11 +81,11 @@ uid_to_uname (uid_t uid, char **uname)
       else
 	{
 	  cached_no_such_uid = uid;
-	  *uname = strdup ("");
+	  *uname = xstrdup ("");
 	  return;
 	}
     }
-  *uname = strdup (cached_uname);
+  *uname = xstrdup (cached_uname);
 }
 
 /* Given GID, find the corresponding GNAME.  */
@@ -96,7 +96,7 @@ gid_to_gname (gid_t gid, char **gname)
 
   if (gid != 0 && gid == cached_no_such_gid)
     {
-      *gname = strdup ("");
+      *gname = xstrdup ("");
       return;
     }
 
@@ -111,11 +111,11 @@ gid_to_gname (gid_t gid, char **gname)
       else
 	{
 	  cached_no_such_gid = gid;
-	  *gname = strdup ("");
+	  *gname = xstrdup ("");
 	  return;
 	}
     }
-  *gname = strdup (cached_gname);
+  *gname = xstrdup (cached_gname);
 }
 
 /* Given UNAME, set the corresponding UID and return 1, or else, return 0.  */
