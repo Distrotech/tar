@@ -1,3 +1,13 @@
+2005-03-21  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap (TP_URL): Change from
+	<http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/> to
+	<http://www.iro.umontreal.ca/translation/maint/tar/> to avoid
+	some redirection glitches.
+	Use "trap - 0" rather than "trap 0" to fix a POSIX-conformance bug.
+	* doc/.cvsignore: Change "tar.info" to "tar.info*".  Sort.
+	* lib/.cvsignore: Add intprops.h (new gnulib file).
+
 2005-03-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (print_header): Print UID/GID in case of
@@ -15,16 +25,16 @@
 	* scripts/backup.sh.in: Likewise. Fixed typo in
 	MT_OFFLINE assignment.
 	* scripts/restore.in (restore_fs): Use root_fs
-	
+
 2005-02-15  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c: Replace strdup with xstrdup
 	* src/names.c: Likewise
 	* src/tar.c: Likewise
-	
+
 	* tests/append01.at: Added reference to bug-tar archive
 	* tests/listed02.at: Use -print with find.
-	
+
 2005-02-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* THANKS: Added Tim Adye. Fixed UTF.
@@ -55,12 +65,12 @@
 	xfork, xdup2 and exec_fatal.
 	* src/tar.c (options): Improved sorting. Document --backup=off.
 	(decode_options): Clear backup_option if necessary.
-	
+
 2005-02-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Initial implementation of --to-command option proposed
 	by Hansjoerg Lipp.
-	
+
 	* bootstrap: Get setenv module from gnulib
 	* src/buffer.c: Do not use 8-bit chars in comments
 	* src/common.h (to_command_option)
@@ -73,7 +83,7 @@
 	is set, since the command may have exited prematurely.
 	It would be better to check for sigpipe, though.
 	(prepare_to_extract): Handle to_command_option
-	* src/misc.c (exec_error, fork_error, dup_error) 
+	* src/misc.c (exec_error, fork_error, dup_error)
 	(pipe_error): New functions
 	* src/system.c (sys_exec_command)
 	(sys_wait_command): New functions

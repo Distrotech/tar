@@ -22,7 +22,7 @@
 # Written by Paul Eggert and Sergey Poznyakoff.
 
 # URL of our text domain page in Translation Project
-TP_URL="http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/"
+TP_URL="http://www.iro.umontreal.ca/translation/maint/tar/"
 
 # Ensure file names are sorted consistently across platforms;
 # e.g., m4/ulonglong_gl.m4 should follow m4/ulonglong.m4.
@@ -158,7 +158,7 @@ checkout() {
     fi
     cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/$1 co $1 || exit
 
-    trap 0
+    trap - 0
   fi
 }
 

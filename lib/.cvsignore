@@ -71,6 +71,7 @@ hash.c
 hash.h
 human.c
 human.h
+intprops.h
 lchown.c
 lchown.h
 localcharset.c
