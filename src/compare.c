@@ -112,8 +112,7 @@ process_rawdata (size_t bytes, char *buffer)
 
   if (memcmp (buffer, diff_buffer, bytes))
     {
-      report_difference (&current_stat_info,
-			 _("Contents differ"));
+      report_difference (&current_stat_info, _("Contents differ"));
       return 0;
     }
 
@@ -193,13 +192,266 @@ get_stat_data (char const *file_name, struct stat *stat_data)
   return 1;
 }
 
+
+static void
+diff_dir ()
+{
+  struct stat stat_data;
+
+  if (!get_stat_data (current_stat_info.file_name, &stat_data))
+    return;
+
+  if (!S_ISDIR (stat_data.st_mode))
+    report_difference (&current_stat_info, _("File type differs"));
+  else if ((current_stat_info.stat.st_mode & MODE_ALL) !=
+	   (stat_data.st_mode & MODE_ALL))
+    report_difference (&current_stat_info, _("Mode differs"));
+}
+
+static void
+diff_file ()
+{
+  struct stat stat_data;
+
+  if (!get_stat_data (current_stat_info.file_name, &stat_data))
+    skip_member ();
+  else if (!S_ISREG (stat_data.st_mode))
+    {
+      report_difference (&current_stat_info, _("File type differs"));
+      skip_member ();
+    }
+  else
+    {
+      if ((current_stat_info.stat.st_mode & MODE_ALL) !=
+	  (stat_data.st_mode & MODE_ALL))
+	report_difference (&current_stat_info, _("Mode differs"));
+
+      if (!sys_compare_uid (&stat_data, &current_stat_info.stat))
+	report_difference (&current_stat_info, _("Uid differs"));
+      if (!sys_compare_gid (&stat_data, &current_stat_info.stat))
+	report_difference (&current_stat_info, _("Gid differs"));
+
+      if (stat_data.st_mtime != current_stat_info.stat.st_mtime)
+	report_difference (&current_stat_info, _("Mod time differs"));
+      if (current_header->header.typeflag != GNUTYPE_SPARSE &&
+	  stat_data.st_size != current_stat_info.stat.st_size)
+	{
+	  report_difference (&current_stat_info, _("Size differs"));
+	  skip_member ();
+	}
+      else
+	{
+	  int fd = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
+
+	  if (fd < 0)
+	    {
+	      open_error (current_stat_info.file_name);
+	      skip_member ();
+	      report_difference (&current_stat_info, NULL);
+	    }
+	  else
+	    {
+	      int status;
+	      struct utimbuf restore_times;
+	      
+	      restore_times.actime = stat_data.st_atime;
+	      restore_times.modtime = stat_data.st_mtime;
+
+	      if (current_stat_info.is_sparse)
+		sparse_diff_file (diff_handle, &current_stat_info);
+	      else
+		{
+		  if (multi_volume_option)
+		    {
+		      assign_string (&save_name, current_stat_info.file_name);
+		      save_totsize = current_stat_info.stat.st_size;
+		      /* save_sizeleft is set in read_and_process.  */
+		    }
+
+		  read_and_process (current_stat_info.stat.st_size,
+				    process_rawdata);
+
+		  if (multi_volume_option)
+		    assign_string (&save_name, 0);
+		}
+
+	      status = close (fd);
+	      if (status != 0)
+		close_error (current_stat_info.file_name);
+
+	      if (atime_preserve_option)
+		utime (current_stat_info.file_name, &restore_times);
+	    }
+	}
+    }
+}
+
+static void
+diff_link ()
+{
+  struct stat file_data;
+  struct stat link_data;
+
+  if (get_stat_data (current_stat_info.file_name, &file_data)
+      && get_stat_data (current_stat_info.link_name, &link_data)
+      && !sys_compare_links (&file_data, &link_data))
+    report_difference (&current_stat_info,
+		       _("Not linked to %s"),
+		       quote (current_stat_info.link_name));
+}
+
+#ifdef HAVE_READLINK
+static void
+diff_symlink ()
+{
+  size_t len = strlen (current_stat_info.link_name);
+  char *linkbuf = alloca (len + 1);
+
+  int status = readlink (current_stat_info.file_name, linkbuf, len + 1);
+
+  if (status < 0)
+    {
+      if (errno == ENOENT)
+	readlink_warn (current_stat_info.file_name);
+      else
+	readlink_error (current_stat_info.file_name);
+      report_difference (&current_stat_info, NULL);
+    }
+  else if (status != len
+	   || strncmp (current_stat_info.link_name, linkbuf, len) != 0)
+    report_difference (&current_stat_info, _("Symlink differs"));
+}
+#endif
+
+static void
+diff_special ()
+{
+  struct stat stat_data;
+
+  /* FIXME: deal with umask.  */
+
+  if (!get_stat_data (current_stat_info.file_name, &stat_data))
+    return;
+
+  if (current_header->header.typeflag == CHRTYPE
+      ? !S_ISCHR (stat_data.st_mode)
+      : current_header->header.typeflag == BLKTYPE
+      ? !S_ISBLK (stat_data.st_mode)
+      : /* current_header->header.typeflag == FIFOTYPE */
+      !S_ISFIFO (stat_data.st_mode))
+    {
+      report_difference (&current_stat_info, _("File type differs"));
+      return;
+    }
+
+  if ((current_header->header.typeflag == CHRTYPE
+       || current_header->header.typeflag == BLKTYPE)
+      && current_stat_info.stat.st_rdev != stat_data.st_rdev)
+    {
+      report_difference (&current_stat_info, _("Device number differs"));
+      return;
+    }
+
+  if ((current_stat_info.stat.st_mode & MODE_ALL) !=
+      (stat_data.st_mode & MODE_ALL))
+    report_difference (&current_stat_info, _("Mode differs"));
+}
+
+static void
+diff_dumpdir ()
+{
+  char *dumpdir_buffer = get_directory_contents (current_stat_info.file_name,
+						 0);
+
+  if (multi_volume_option)
+    {
+      assign_string (&save_name, current_stat_info.file_name);
+      save_totsize = current_stat_info.stat.st_size;
+      /* save_sizeleft is set in read_and_process.  */
+    }
+
+  if (dumpdir_buffer)
+    {
+      dumpdir_cursor = dumpdir_buffer;
+      read_and_process (current_stat_info.stat.st_size, process_dumpdir);
+      free (dumpdir_buffer);
+    }
+  else
+    read_and_process (current_stat_info.stat.st_size, process_noop);
+
+  if (multi_volume_option)
+    assign_string (&save_name, 0);
+}
+
+static void
+diff_multivol ()
+{
+  struct stat stat_data;
+  int fd, status;
+  off_t offset;
+
+  if (current_stat_info.had_trailing_slash)
+    {
+      diff_dir ();
+      return;
+    }
+  
+  if (!get_stat_data (current_stat_info.file_name, &stat_data))
+    return;
+
+  if (!S_ISREG (stat_data.st_mode))
+    {
+      report_difference (&current_stat_info, _("File type differs"));
+      skip_member ();
+      return;
+    }
+
+  offset = OFF_FROM_HEADER (current_header->oldgnu_header.offset);
+  if (stat_data.st_size != current_stat_info.stat.st_size + offset)
+    {
+      report_difference (&current_stat_info, _("Size differs"));
+      skip_member ();
+      return;
+    }
+
+  fd = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
+  
+  if (fd < 0)
+    {
+      open_error (current_stat_info.file_name);
+      report_difference (&current_stat_info, NULL);
+      skip_member ();
+      return;
+    }
+
+  if (lseek (fd, offset, SEEK_SET) < 0)
+    {
+      seek_error_details (current_stat_info.file_name, offset);
+      report_difference (&current_stat_info, NULL);
+      return;
+    }
+
+  if (multi_volume_option)
+    {
+      assign_string (&save_name, current_stat_info.file_name);
+      save_totsize = stat_data.st_size;
+      /* save_sizeleft is set in read_and_process.  */
+    }
+
+  read_and_process (current_stat_info.stat.st_size, process_rawdata);
+
+  if (multi_volume_option)
+    assign_string (&save_name, 0);
+  
+  status = close (fd);
+  if (status != 0)
+    close_error (current_stat_info.file_name);
+}
+
 /* Diff a file against the archive.  */
 void
 diff_archive (void)
 {
-  struct stat stat_data;
-  int status;
-  struct utimbuf restore_times;
 
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat_info, &current_format, 1);
@@ -229,265 +481,40 @@ diff_archive (void)
       /* Appears to be a file.  See if it's really a directory.  */
 
       if (current_stat_info.had_trailing_slash)
-	goto really_dir;
-
-      if (!get_stat_data (current_stat_info.file_name, &stat_data))
-	{
-	  skip_member ();
-	  goto quit;
-	}
-
-      if (!S_ISREG (stat_data.st_mode))
-	{
-	  report_difference (&current_stat_info, _("File type differs"));
-	  skip_member ();
-	  goto quit;
-	}
-
-      if ((current_stat_info.stat.st_mode & MODE_ALL) !=
-	  (stat_data.st_mode & MODE_ALL))
-	report_difference (&current_stat_info, _("Mode differs"));
-
-      if (!sys_compare_uid (&stat_data, &current_stat_info.stat))
-	report_difference (&current_stat_info, _("Uid differs"));
-      if (!sys_compare_gid (&stat_data, &current_stat_info.stat))
-	report_difference (&current_stat_info, _("Gid differs"));
-
-      if (stat_data.st_mtime != current_stat_info.stat.st_mtime)
-	report_difference (&current_stat_info, _("Mod time differs"));
-      if (current_header->header.typeflag != GNUTYPE_SPARSE &&
-	  stat_data.st_size != current_stat_info.stat.st_size)
-	{
-	  report_difference (&current_stat_info, _("Size differs"));
-	  skip_member ();
-	  goto quit;
-	}
-
-      diff_handle = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
-
-      if (diff_handle < 0)
-	{
-	  open_error (current_stat_info.file_name);
-	  skip_member ();
-	  report_difference (&current_stat_info, NULL);
-	  goto quit;
-	}
-
-      restore_times.actime = stat_data.st_atime;
-      restore_times.modtime = stat_data.st_mtime;
-
-      /* Need to treat sparse files completely differently here.  */
-
-      if (current_stat_info.is_sparse)
-	sparse_diff_file (diff_handle, &current_stat_info);
+	diff_dir ();
       else
-	{
-	  if (multi_volume_option)
-	    {
-	      assign_string (&save_name, current_stat_info.file_name);
-	      save_totsize = current_stat_info.stat.st_size;
-	      /* save_sizeleft is set in read_and_process.  */
-	    }
-
-	  read_and_process (current_stat_info.stat.st_size, process_rawdata);
-
-	  if (multi_volume_option)
-	    assign_string (&save_name, 0);
-	}
-
-      status = close (diff_handle);
-      if (status != 0)
-	close_error (current_stat_info.file_name);
-
-      if (atime_preserve_option)
-	utime (current_stat_info.file_name, &restore_times);
-
-    quit:
+	diff_file ();
       break;
 
     case LNKTYPE:
-      {
-	struct stat file_data;
-	struct stat link_data;
-
-	if (!get_stat_data (current_stat_info.file_name, &file_data))
-	  break;
-	if (!get_stat_data (current_stat_info.link_name, &link_data))
-	  break;
-	if (!sys_compare_links (&file_data, &link_data))
-	  report_difference (&current_stat_info,
-			     _("Not linked to %s"),
-			     quote (current_stat_info.link_name));
-      }
+      diff_link ();
       break;
 
 #ifdef HAVE_READLINK
     case SYMTYPE:
-      {
-	size_t len = strlen (current_stat_info.link_name);
-	char *linkbuf = alloca (len + 1);
-
-	status = readlink (current_stat_info.file_name, linkbuf, len + 1);
-
-	if (status < 0)
-	  {
-	    if (errno == ENOENT)
-	      readlink_warn (current_stat_info.file_name);
-	    else
-	      readlink_error (current_stat_info.file_name);
-	    report_difference (&current_stat_info, NULL);
-	  }
-	else if (status != len
-		 || strncmp (current_stat_info.link_name, linkbuf, len) != 0)
-	  report_difference (&current_stat_info, _("Symlink differs"));
-
-	break;
-      }
+      diff_symlink ();
+      break;
 #endif
-
+      
     case CHRTYPE:
     case BLKTYPE:
     case FIFOTYPE:
-
-      /* FIXME: deal with umask.  */
-
-      if (!get_stat_data (current_stat_info.file_name, &stat_data))
-	break;
-
-      if (current_header->header.typeflag == CHRTYPE
-	  ? !S_ISCHR (stat_data.st_mode)
-	  : current_header->header.typeflag == BLKTYPE
-	  ? !S_ISBLK (stat_data.st_mode)
-	  : /* current_header->header.typeflag == FIFOTYPE */
-	  !S_ISFIFO (stat_data.st_mode))
-	{
-	  report_difference (&current_stat_info, _("File type differs"));
-	  break;
-	}
-
-      if ((current_header->header.typeflag == CHRTYPE
-	   || current_header->header.typeflag == BLKTYPE)
-	  && current_stat_info.stat.st_rdev != stat_data.st_rdev)
-	{
-	  report_difference (&current_stat_info, _("Device number differs"));
-	  break;
-	}
-
-      if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
-	{
-	  report_difference (&current_stat_info, _("Mode differs"));
-	  break;
-	}
-
+      diff_special ();
       break;
 
     case GNUTYPE_DUMPDIR:
-      {
-	char *dumpdir_buffer = get_directory_contents (current_stat_info.file_name, 0);
-
-	if (multi_volume_option)
-	  {
-	    assign_string (&save_name, current_stat_info.file_name);
-	    save_totsize = current_stat_info.stat.st_size;
-	    /* save_sizeleft is set in read_and_process.  */
-	  }
-
-	if (dumpdir_buffer)
-	  {
-	    dumpdir_cursor = dumpdir_buffer;
-	    read_and_process (current_stat_info.stat.st_size, process_dumpdir);
-	    free (dumpdir_buffer);
-	  }
-	else
-	  read_and_process (current_stat_info.stat.st_size, process_noop);
-
-	if (multi_volume_option)
-	  assign_string (&save_name, 0);
-	/* Fall through.  */
-      }
-
+      diff_dumpdir ();
+      /* Fall through.  */
+      
     case DIRTYPE:
-    really_dir:
-      if (!get_stat_data (current_stat_info.file_name, &stat_data))
-	break;
-
-      if (!S_ISDIR (stat_data.st_mode))
-	{
-	  report_difference (&current_stat_info, _("File type differs"));
-	  break;
-	}
-
-      if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
-	{
-	  report_difference (&current_stat_info, _("Mode differs"));
-	  break;
-	}
-
+      diff_dir ();
       break;
 
     case GNUTYPE_VOLHDR:
       break;
 
     case GNUTYPE_MULTIVOL:
-      {
-	off_t offset;
-
-	if (current_stat_info.had_trailing_slash)
-	  goto really_dir;
-
-	if (!get_stat_data (current_stat_info.file_name, &stat_data))
-	  break;
-
-	if (!S_ISREG (stat_data.st_mode))
-	  {
-	    report_difference (&current_stat_info, _("File type differs"));
-	    skip_member ();
-	    break;
-	  }
-
-	offset = OFF_FROM_HEADER (current_header->oldgnu_header.offset);
-	if (stat_data.st_size != current_stat_info.stat.st_size + offset)
-	  {
-	    report_difference (&current_stat_info, _("Size differs"));
-	    skip_member ();
-	    break;
-	  }
-
-	diff_handle = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
-
-	if (diff_handle < 0)
-	  {
-	    open_error (current_stat_info.file_name);
-	    report_difference (&current_stat_info, NULL);
-	    skip_member ();
-	    break;
-	  }
-
-	if (lseek (diff_handle, offset, SEEK_SET) < 0)
-	  {
-	    seek_error_details (current_stat_info.file_name, offset);
-	    report_difference (&current_stat_info, NULL);
-	    break;
-	  }
-
-	if (multi_volume_option)
-	  {
-	    assign_string (&save_name, current_stat_info.file_name);
-	    save_totsize = stat_data.st_size;
-	    /* save_sizeleft is set in read_and_process.  */
-	  }
-
-	read_and_process (current_stat_info.stat.st_size, process_rawdata);
-
-	if (multi_volume_option)
-	  assign_string (&save_name, 0);
-
-	status = close (diff_handle);
-	if (status != 0)
-	  close_error (current_stat_info.file_name);
-
-	break;
-      }
+      diff_multivol ();
     }
 }
 
