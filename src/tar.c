@@ -494,6 +494,10 @@ options(argc, argv)
 		get_newer:
 			f_new_files++;
 			new_time=get_date(optarg, (PTR) 0);
+			if (new_time == (time_t) -1) {
+			  msg("invalid date format `%s'", optarg);
+			  exit(EX_ARGSBAD);
+			}
 			break;
 
 		case 'o':	/* Generate old archive */
