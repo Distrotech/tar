@@ -1,3 +1,24 @@
+2003-07-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* .cvsignore: Added to the repository.
+	* doc/.cvsignore: Likewise.
+	* lib/.cvsignore: Likewise.
+	* m4/.cvsignore: Likewise.
+	* po/.cvsignore: Likewise.
+	* scripts/.cvsignore: Likewise.
+	* src/.cvsignore: Likewise.
+	* tests/.cvsignore: Likewise.
+
+	* lib/Makefile.am: Added exitfail.[hc]
+	* src/misc.c (chdir_do): Fixed call to restore_cwd
+	* src/buffer.c (flush_read): Fixed behavior on short
+	reads right after opening the new archive (multiv01.sh test).
+	(new_volume): Special handling for "-".
+	* src/list.c (print_header): Print trailing slash if
+	current_trailing_slash was set (extrac03.sh,extrac04.sh tests).
+	* tests/multiv01.sh: Minor changes.
+	* m4/Makefile.am: Added missing files.
+	
 2003-07-05  Paul Eggert  <eggert@twinsun.com>
 
 	Finish the checkin begin yesterday.
