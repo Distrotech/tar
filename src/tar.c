@@ -122,7 +122,8 @@ static struct fmttab {
   enum archive_format fmt;
 } const fmttab[] = {
   { "v7",      V7_FORMAT },
-  { "oldgnu",  OLDGNU_FORMAT },	
+  { "oldgnu",  OLDGNU_FORMAT },
+  { "ustar",   USTAR_FORMAT },
   { "posix",   POSIX_FORMAT },
 #if 0 /* not fully supported yet */
   { "star",    STAR_FORMAT },
@@ -442,7 +443,8 @@ Archive format selection:\n\
                                      FMTNAME is one of the following:\n\
                                      v7        old V7 tar format\n\
                                      oldgnu    GNU format as per tar <= 1.12\n\
-                                     posix     POSIX 1003.1-2001 tar format\n\
+                                     ustar     POSIX 1003.1-1988 (ustar) format\n\
+                                     posix     POSIX 1003.1-2001 (pax) format\n\
                                      gnu       GNU format\n\
       --old-archive, --portability   same as --format=v7\n\
       --posix                        same as --format=posix\n\
@@ -1274,7 +1276,7 @@ see the file named COPYING for details."));
     archive_format = DEFAULT_ARCHIVE_FORMAT;
 
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
-    archive_format = POSIX_FORMAT;
+    archive_format = POSIX_FORMAT; /*FIXME?*/
 
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
