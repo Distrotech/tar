@@ -489,8 +489,10 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	  && ISOCTAL (header->star_header.ctime[0])
 	  && header->star_header.ctime[11] == ' ')
 	format = STAR_FORMAT;
-      else
+      else if (extended_header.size)
 	format = POSIX_FORMAT;
+      else
+	format = USTAR_FORMAT;
     }
   else if (strcmp (header->header.magic, OLDGNU_MAGIC) == 0)
     format = OLDGNU_FORMAT;
@@ -556,6 +558,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	}
     }
 
+  current_stat_info.archive_file_size = current_stat_info.stat.st_size;
   if (extended_header.size)
     xheader_decode (stat_info);
 }
