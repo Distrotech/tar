@@ -130,10 +130,19 @@ read_and (void (*do_something) (void))
 	    }
 
 	  set_next_block_after (current_header);
+
+	  if (!ignore_zeros_option)
+	    {
+	      char buf[UINTMAX_STRSIZE_BOUND];
+
+	      status = read_header (false);
+	      if (status == HEADER_ZERO_BLOCK)
+		break;
+	      WARN ((0, 0, _("A lone zero block at %s"),
+		     STRINGIFY_BIGINT (current_block_ordinal (), buf)));
+	    }
 	  status = prev_status;
-	  if (ignore_zeros_option)
-	    continue;
-	  break;
+	  continue;
 
 	case HEADER_END_OF_FILE:
 	  if (block_number_option)
