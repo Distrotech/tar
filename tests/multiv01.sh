@@ -4,6 +4,9 @@
 . ./preset
 . $srcdir/before
 
+# Fixme: should be configurable
+#  TRUSS=truss -o /tmp/tr
+#  TRUSS=strace
 set -e
 
 dd if=/dev/zero bs=1024 count=7 >file1
@@ -21,9 +24,10 @@ tar -c --multi-volume --tape-length=10 \
   -f t1-pipe.tar -f t2-pipe.tar ./file1 ./file2
 
 mkdir extract-dir-pipe
-dd bs=4096 count=10 <t2-pipe.tar |
-PATH=$PATH truss -o /tmp/tr tar -f t1-pipe.tar -f - -C extract-dir-pipe -x --multi-volume \
-  --tape-length=10 --read-full-records
+dd bs=4096 count=10 if=t2-pipe.tar |
+PATH=$PATH ${TRUSS} tar -f t1-pipe.tar -f - \
+      -C extract-dir-pipe -x --multi-volume \
+      --tape-length=10 --read-full-records
 
 cmp file1 extract-dir-pipe/file1
 cmp file2 extract-dir-pipe/file2
@@ -33,6 +37,8 @@ out="\
 err="\
 7+0 records in
 7+0 records out
+2+1 records in
+2+1 records out
 "
 
 . $srcdir/after
