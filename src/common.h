@@ -560,6 +560,7 @@ void name_close (void);
 void name_gather (void);
 struct name *addname (char const *, int);
 int name_match (const char *);
+bool names_done (void);
 void names_notfound (void);
 void collect_and_sort_names (void);
 struct name *name_scan (const char *);
@@ -581,6 +582,7 @@ bool contains_dot_dot (char const *);
 int confirm (const char *, const char *);
 void request_stdin (const char *);
 void destroy_stat (struct tar_stat_info *);
+bool all_names_found (void);
 
 /* Module update.c.  */
 

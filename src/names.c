@@ -595,6 +595,17 @@ name_match (const char *path)
     }
 }
 
+/* Returns true if all names from the namelist were processed */
+bool
+names_done ()
+{
+  struct name const *cursor;
+  for (cursor = namelist; cursor; cursor = cursor->next)
+    if (!cursor->found && !cursor->fake)
+      return false;
+  return true;
+}
+
 /* Print the names of things in the namelist that were not matched.  */
 void
 names_notfound (void)
