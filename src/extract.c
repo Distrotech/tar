@@ -115,6 +115,19 @@ extr_init (void)
   same_owner_option += we_are_root;
   xalloc_fail_func = extract_finish;
 
+  /* Save 'root device' to avoid purging mount points.
+     FIXME: Should the same be done after handling -C option ? */
+  if (one_file_system_option)
+    {
+      struct stat st;      
+      char *dir = xgetcwd ();
+
+      if (deref_stat (true, dir, &st))
+	stat_diag (dir);
+      else
+	root_device = st.st_dev;
+    }
+  
   /* Option -p clears the kernel umask, so it does not affect proper
      restoration of file permissions.  New intermediate directories will
      comply with umask at start of program.  */
@@ -1012,7 +1025,7 @@ extract_archive (void)
 	  /* Read the entry and delete files that aren't listed in the
 	     archive.  */
 
-	  gnu_restore (file_name);
+	  purge_directory (file_name);
 	}
       else if (typeflag == GNUTYPE_DUMPDIR)
 	skip_member ();
