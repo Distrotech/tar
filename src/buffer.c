@@ -16,6 +16,11 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* Enable GNU extensions in fnmatch.h.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+
 #include "system.h"
 
 #include <signal.h>
@@ -30,9 +35,7 @@ time_t time ();
 # include <sys/inode.h>
 #endif
 
-#ifndef FNM_LEADING_DIR
-# include <fnmatch.h>
-#endif
+#include <fnmatch.h>
 
 #include "common.h"
 #include "rmt.h"
@@ -355,8 +358,8 @@ child_open_for_compress (void)
 
   program_name = _("tar (child)");
 
-  xdup2 (parent_pipe[PREAD], STDIN_FILENO, _("(child) Pipe to stdin"));
   xclose (parent_pipe[PWRITE]);
+  xdup2 (parent_pipe[PREAD], STDIN_FILENO, _("(child) Pipe to stdin"));
 
   /* Check if we need a grandchild tar.  This happens only if either:
      a) we are writing stdout: to force reblocking;
@@ -864,7 +867,7 @@ open_archive (enum access_mode access)
 	  assign_string (&current_file_name, record_start->header.name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
-	  TIME_TO_OCT (time (0), record_start->header.mtime);
+	  TIME_TO_CHARS (time (0), record_start->header.mtime);
 	  finish_header (record_start);
 #if 0
 	  current_block++;
@@ -916,11 +919,7 @@ flush_write (void)
 	      return;
 	    }
 
-	  cursor = save_name;
-#if MSDOS
-	  if (cursor[1] == ':')
-	    cursor += 2;
-#endif
+	  cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
 	  while (*cursor == '/')
 	    cursor++;
 
@@ -963,7 +962,7 @@ flush_write (void)
     {
       memset ((void *) record_start, 0, BLOCKSIZE);
       sprintf (record_start->header.name, "%s Volume %d", volume_label_option, volno);
-      TIME_TO_OCT (time (0), record_start->header.mtime);
+      TIME_TO_CHARS (time (0), record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
       finish_header (record_start);
     }
@@ -983,9 +982,9 @@ flush_write (void)
 
       strcpy (record_start->header.name, real_s_name);
       record_start->header.typeflag = GNUTYPE_MULTIVOL;
-      OFF_TO_OCT (real_s_sizeleft, record_start->header.size);
-      OFF_TO_OCT (real_s_totsize - real_s_sizeleft, 
-		  record_start->oldgnu_header.offset);
+      OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
+      OFF_TO_CHARS (real_s_totsize - real_s_sizeleft, 
+		    record_start->oldgnu_header.offset);
       tmp = verbose_option;
       verbose_option = 0;
       finish_header (record_start);
@@ -1015,12 +1014,8 @@ flush_write (void)
 	real_s_name[0] = '\0';
       else
 	{
-	  char *cursor = save_name;
+	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
 
-#if MSDOS
-	  if (cursor[1] == ':')
-	    cursor += 2;
-#endif
 	  while (*cursor == '/')
 	    cursor++;
 
@@ -1107,12 +1102,8 @@ flush_read (void)
     {
       if (save_name)
 	{
-	  char *cursor = save_name;
+	  char *cursor = save_name + FILESYSTEM_PREFIX_LEN (save_name);
 
-#if MSDOS
-	  if (cursor[1] == ':')
-	    cursor += 2;
-#endif
 	  while (*cursor == '/')
 	    cursor++;
 
@@ -1200,8 +1191,8 @@ error_loop:
 	      global_volno--;
 	      goto try_volume;
 	    }
-	  s1 = UINTMAX_FROM_OCT (cursor->header.size);
-	  s2 = UINTMAX_FROM_OCT (cursor->oldgnu_header.offset);
+	  s1 = UINTMAX_FROM_CHARS (cursor->header.size);
+	  s2 = UINTMAX_FROM_CHARS (cursor->oldgnu_header.offset);
 	  if (real_s_totsize != s1 + s2 || s1 + s2 < s2)
 	    {
 	      char totsizebuf[UINTMAX_STRSIZE_BOUND];
@@ -1218,7 +1209,7 @@ error_loop:
 	      goto try_volume;
 	    }
 	  if (real_s_totsize - real_s_sizeleft
-	      != OFF_FROM_OCT (cursor->oldgnu_header.offset))
+	      != OFF_FROM_CHARS (cursor->oldgnu_header.offset))
 	    {
 	      WARN ((0, 0, _("This volume is out of sequence")));
 	      volno--;
