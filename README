@@ -43,7 +43,7 @@ and only then, Autoconf 2.13 or later.  Install Perl, then Automake
 All are available on GNU archive sites, like in
 ftp://ftp.gnu.org/pub/gnu/.
 
-Send bug reports to `tar-bugs@gnu.org'.  (Beware, old-timers: it is
+Send bug reports to `bug-tar@gnu.org'.  (Beware, old-timers: it is
 `@gnu', not `@prep'; and not `bug-gnu-utils' anymore.)  A bug report is
 an adequate description of the problem: your input, what you expected,
 what you got, and why this is wrong.  Diffs are welcome, but they only
