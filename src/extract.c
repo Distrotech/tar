@@ -1,7 +1,7 @@
 /* Extract files from a tar archive.
 
-   Copyright 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
+   2001, 2003 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -34,7 +34,7 @@ struct utimbuf
 
 #include "common.h"
 
-int we_are_root;		/* true if our effective uid == 0 */
+bool we_are_root;		/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 
@@ -189,7 +189,10 @@ static void
 check_time (char const *file_name, time_t t)
 {
   time_t now;
-  if (start_time < t && (now = time (0)) < t)
+  if (t <= 0)
+    WARN ((0, 0, _("%s: implausibly old time stamp %s"),
+	   file_name, tartime (t)));
+  else if (start_time < t && (now = time (0)) < t)
     WARN ((0, 0, _("%s: time stamp %s is %lu s in the future"),
 	   file_name, tartime (t), (unsigned long) (t - now)));
 }
@@ -240,8 +243,8 @@ set_stat (char const *file_name, struct stat const *stat_info,
 	    utime_error (file_name);
 	  else
 	    {
-	      check_time (file_name, stat_info->st_atime);
-	      check_time (file_name, stat_info->st_mtime);
+	      check_time (file_name, utimbuf.actime);
+	      check_time (file_name, utimbuf.modtime);
 	    }
 	}
 
@@ -417,7 +420,7 @@ make_directories (char *file_name)
    Return zero if extraction should not proceed.  */
 
 static int
-prepare_to_extract (char const *file_name)
+prepare_to_extract (char const *file_name, bool directory)
 {
   if (to_stdout_option)
     return 0;
@@ -454,7 +457,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	  return 0;
 
 	case DEFAULT_OLD_FILES:
-	case OVERWRITE_OLD_DIRS:
+	case NO_OVERWRITE_DIR_OLD_FILES:
 	case OVERWRITE_OLD_FILES:
 	  {
 	    int r = remove_any_file (file_name, 0);
@@ -480,14 +483,95 @@ maybe_recoverable (char *file_name, int *interdir_made)
     }
 }
 
-static void
-extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
+/* Translate the sparse information on the header, and in any
+   subsequent extended headers, into an array of structures with true
+   numbers, as opposed to character strings.  Return nonzero if
+   successful.
+
+   This function invalidates current_header.  */
+
+bool
+fill_in_sparse_array (void)
+{
+  off_t sparse_data_size = current_stat.st_size;
+  off_t file_size = OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
+  int sparses;
+  int counter;
+  union block *h = current_header;
+
+  init_sparsearray ();
+
+  for (sparses = 0; sparses < SPARSES_IN_OLDGNU_HEADER; sparses++)
+    {
+      struct sparse const *s = &h->oldgnu_header.sp[sparses];
+      off_t offset;
+      size_t numbytes;
+      if (s->numbytes[0] == '\0')
+	break;
+      sparsearray[sparses].offset = offset = OFF_FROM_HEADER (s->offset);
+      sparsearray[sparses].numbytes = numbytes =
+	SIZE_FROM_HEADER (s->numbytes);
+      sparse_data_size -= numbytes;
+      if (offset < 0 || file_size < offset + numbytes || sparse_data_size < 0)
+	goto invalid_member;
+    }
+
+  if (h->oldgnu_header.isextended)
+    do
+      {
+	h = find_next_block ();
+	if (! h)
+	  {
+	    ERROR ((0, 0, _("Unexpected EOF in archive")));
+	    return 0;
+	  }
+
+	for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
+	  {
+	    struct sparse const *s = &h->sparse_header.sp[counter];
+	    off_t offset;
+	    size_t numbytes;
+	    if (s->numbytes[0] == '\0')
+	      break;
+
+	    if (sparses == sp_array_size)
+	      {
+		sp_array_size *= 2;
+		sparsearray =
+		  xrealloc (sparsearray,
+			    sp_array_size * sizeof *sparsearray);
+	      }
+
+	    sparsearray[sparses].offset = offset =
+	      OFF_FROM_HEADER (s->offset);
+	    sparsearray[sparses].numbytes = numbytes =
+	      SIZE_FROM_HEADER (s->numbytes);
+	    sparse_data_size -= numbytes;
+	    if (offset < 0 || file_size < offset + numbytes
+		|| sparse_data_size < 0)
+	      goto invalid_member;
+	    sparses++;
+	  }
+	
+	set_next_block_after (h);
+	
+      } while (h->sparse_header.isextended);
+
+  return 1;
+
+ invalid_member:
+  ERROR ((0, 0, "%s: invalid sparse archive member", current_file_name));
+  return 0;
+}
+
+
+static off_t
+extract_sparse_file (int fd, char const *name,
+		     off_t sizeleft, off_t file_size)
 {
   int sparse_ind = 0;
 
-  /* assuming sizeleft is initially totalsize */
-
-  while (*sizeleft > 0)
+  while (sizeleft != 0)
     {
       size_t written;
       size_t count;
@@ -495,44 +579,49 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
       if (! data_block)
 	{
 	  ERROR ((0, 0, _("Unexpected EOF in archive")));
-	  return;
+	  return sizeleft;
 	}
       if (lseek (fd, sparsearray[sparse_ind].offset, SEEK_SET) < 0)
 	{
 	  seek_error_details (name, sparsearray[sparse_ind].offset);
-	  return;
+	  return sizeleft;
 	}
       written = sparsearray[sparse_ind++].numbytes;
       while (written > BLOCKSIZE)
 	{
 	  count = full_write (fd, data_block->buffer, BLOCKSIZE);
 	  written -= count;
-	  *sizeleft -= count;
+	  sizeleft -= count;
 	  if (count != BLOCKSIZE)
 	    {
 	      write_error_details (name, count, BLOCKSIZE);
-	      return;
+	      return sizeleft;
 	    }
 	  set_next_block_after (data_block);
 	  data_block = find_next_block ();
 	  if (! data_block)
 	    {
 	      ERROR ((0, 0, _("Unexpected EOF in archive")));
-	      return;
+	      return sizeleft;
 	    }
 	}
 
       count = full_write (fd, data_block->buffer, written);
-      *sizeleft -= count;
+      sizeleft -= count;
 
       if (count != written)
 	{
 	  write_error_details (name, count, written);
-	  return;
+	  return sizeleft;
 	}
 
       set_next_block_after (data_block);
     }
+
+  if (ftruncate (fd, file_size) != 0)
+    truncate_error (name);
+
+  return 0;
 }
 
 /* Fix the statuses of all directories whose statuses need fixing, and
@@ -598,18 +687,15 @@ extract_archive (void)
   int fd;
   int status;
   size_t count;
-  size_t name_length;
   size_t written;
   int openflag;
   mode_t mode;
   off_t size;
-  size_t skipcrud;
-  int counter;
+  off_t file_size;
   int interdir_made = 0;
   char typeflag;
   union block *exhdr;
-
-#define CURRENT_FILE_NAME (skipcrud + current_file_name)
+  char *file_name;
 
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat, &current_format, 1);
@@ -623,48 +709,20 @@ extract_archive (void)
   /* Print the block from current_header and current_stat.  */
 
   if (verbose_option)
-    print_header ();
+    print_header (-1);
 
-  /* Check for fully specified file names and other atrocities.  */
+  file_name = safer_name_suffix (current_file_name, 0);
 
-  skipcrud = 0;
-  if (! absolute_names_option)
-    {
-      if (contains_dot_dot (CURRENT_FILE_NAME))
-	{
-	  ERROR ((0, 0, _("%s: Member name contains `..'"),
-		  quotearg_colon (CURRENT_FILE_NAME)));
-	  skip_member ();
-	  return;
-	}
-
-      skipcrud = FILESYSTEM_PREFIX_LEN (current_file_name);
-      while (ISSLASH (CURRENT_FILE_NAME[0]))
-	skipcrud++;
-
-      if (skipcrud)
-	{
-	  static int warned_once;
-	  
-	  if (!warned_once)
-	    {
-	      warned_once = 1;
-	      WARN ((0, 0, _("Removing leading `%.*s' from member names"),
-		     (int) skipcrud, current_file_name));
-	    }
-	}
-    }
-
-  apply_nonancestor_delayed_set_stat (CURRENT_FILE_NAME, 0);
+  apply_nonancestor_delayed_set_stat (file_name, 0);
 
   /* Take a safety backup of a previously existing file.  */
 
   if (backup_option && !to_stdout_option)
-    if (!maybe_backup_file (CURRENT_FILE_NAME, 0))
+    if (!maybe_backup_file (file_name, 0))
       {
 	int e = errno;
 	ERROR ((0, e, _("%s: Was unable to backup this file"),
-		quotearg_colon (CURRENT_FILE_NAME)));
+		quotearg_colon (file_name)));
 	skip_member ();
 	return;
       }
@@ -674,80 +732,10 @@ extract_archive (void)
   typeflag = current_header->header.typeflag;
   switch (typeflag)
     {
-      /* JK - What we want to do if the file is sparse is loop through
-	 the array of sparse structures in the header and read in and
-	 translate the character strings representing 1) the offset at
-	 which to write and 2) how many bytes to write into numbers,
-	 which we store into the scratch array, "sparsearray".  This
-	 array makes our life easier the same way it did in creating the
-	 tar file that had to deal with a sparse file.
-
-	 After we read in the first five (at most) sparse structures, we
-	 check to see if the file has an extended header, i.e., if more
-	 sparse structures are needed to describe the contents of the new
-	 file.  If so, we read in the extended headers and continue to
-	 store their contents into the sparsearray.  */
-
     case GNUTYPE_SPARSE:
-      sp_array_size = 10;
-      sparsearray =
-	xmalloc (sp_array_size * sizeof (struct sp_array));
-
-      for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
-	{
-	  struct sparse const *s = &current_header->oldgnu_header.sp[counter];
-	  sparsearray[counter].offset = OFF_FROM_HEADER (s->offset);
-	  sparsearray[counter].numbytes = SIZE_FROM_HEADER (s->numbytes);
-	  if (!sparsearray[counter].numbytes)
-	    break;
-	}
-
-      if (current_header->oldgnu_header.isextended)
-	{
-	  /* Read in the list of extended headers and translate them
-	     into the sparsearray as before.  Note that this
-	     invalidates current_header.  */
-
-	  /* static */ int ind = SPARSES_IN_OLDGNU_HEADER;
-
-	  while (1)
-	    {
-	      exhdr = find_next_block ();
-	      if (! exhdr)
-		{
-		  ERROR ((0, 0, _("Unexpected EOF in archive")));
-		  return;
-		}
-	      for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
-		{
-		  struct sparse const *s = &exhdr->sparse_header.sp[counter];
-		  if (counter + ind > sp_array_size - 1)
-		    {
-		      /* Realloc the scratch area since we've run out of
-			 room.  */
-
-		      sp_array_size *= 2;
-		      sparsearray =
-			xrealloc (sparsearray,
-				  sp_array_size * sizeof (struct sp_array));
-		    }
-		  if (s->numbytes[0] == 0)
-		    break;
-		  sparsearray[counter + ind].offset =
-		    OFF_FROM_HEADER (s->offset);
-		  sparsearray[counter + ind].numbytes =
-		    SIZE_FROM_HEADER (s->numbytes);
-		}
-	      if (!exhdr->sparse_header.isextended)
-		break;
-	      else
-		{
-		  ind += SPARSES_IN_SPARSE_HEADER;
-		  set_next_block_after (exhdr);
-		}
-	    }
-	  set_next_block_after (exhdr);
-	}
+      file_size = OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
+      if (! fill_in_sparse_array ())
+	return;
       /* Fall through.  */
 
     case AREGTYPE:
@@ -757,9 +745,7 @@ extract_archive (void)
       /* Appears to be a file.  But BSD tar uses the convention that a slash
 	 suffix means a directory.  */
 
-      name_length = strlen (CURRENT_FILE_NAME);
-      if (FILESYSTEM_PREFIX_LEN (CURRENT_FILE_NAME) < name_length
-	  && CURRENT_FILE_NAME[name_length - 1] == '/')
+      if (current_trailing_slash)
 	goto really_dir;
 
       /* FIXME: deal with protection issues.  */
@@ -777,7 +763,7 @@ extract_archive (void)
 	  goto extract_file;
 	}
 
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
+      if (! prepare_to_extract (file_name, 0))
 	{
 	  skip_member ();
 	  if (backup_option)
@@ -790,10 +776,9 @@ extract_archive (void)
 	 the open call that creates them.  */
 
       if (typeflag == CONTTYPE)
-	fd = open (CURRENT_FILE_NAME, openflag | O_CTG,
-		   mode, current_stat.st_size);
+	fd = open (file_name, openflag | O_CTG, mode, current_stat.st_size);
       else
-	fd = open (CURRENT_FILE_NAME, openflag, mode);
+	fd = open (file_name, openflag, mode);
 
 #else /* not O_CTG */
       if (typeflag == CONTTYPE)
@@ -806,16 +791,16 @@ extract_archive (void)
 	      WARN ((0, 0, _("Extracting contiguous files as regular files")));
 	    }
 	}
-      fd = open (CURRENT_FILE_NAME, openflag, mode);
+      fd = open (file_name, openflag, mode);
 
 #endif /* not O_CTG */
 
       if (fd < 0)
 	{
-	  if (maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	  if (maybe_recoverable (file_name, &interdir_made))
 	    goto again_file;
 
-	  open_error (CURRENT_FILE_NAME);
+	  open_error (file_name);
 	  skip_member ();
 	  if (backup_option)
 	    undo_last_backup ();
@@ -834,11 +819,11 @@ extract_archive (void)
 	     error messages that happen to contain the filename will look
 	     REAL interesting unless we do this.  */
 
-	  name_length_bis = strlen (CURRENT_FILE_NAME) + 1;
+	  name_length_bis = strlen (file_name) + 1;
 	  name = xmalloc (name_length_bis);
-	  memcpy (name, CURRENT_FILE_NAME, name_length_bis);
-	  size = current_stat.st_size;
-	  extract_sparse_file (fd, &size, current_stat.st_size, name);
+	  memcpy (name, file_name, name_length_bis);
+	  size = extract_sparse_file (fd, name,
+				      current_stat.st_size, file_size);
 	  free (sparsearray);
 	}
       else
@@ -874,7 +859,7 @@ extract_archive (void)
 				  (data_block->buffer + written - 1));
 	    if (count != written)
 	      {
-		write_error_details (CURRENT_FILE_NAME, count, written);
+		write_error_details (file_name, count, written);
 		break;
 	      }
 	  }
@@ -893,12 +878,12 @@ extract_archive (void)
       status = close (fd);
       if (status < 0)
 	{
-	  close_error (CURRENT_FILE_NAME);
+	  close_error (file_name);
 	  if (backup_option)
 	    undo_last_backup ();
 	}
 
-      set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
+      set_stat (file_name, &current_stat, 0, 0,
 		(old_files_option == OVERWRITE_OLD_FILES
 		 ? UNKNOWN_PERMSTATUS
 		 : ARCHIVED_PERMSTATUS),
@@ -907,7 +892,7 @@ extract_archive (void)
 
     case SYMTYPE:
 #ifdef HAVE_SYMLINK
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
+      if (! prepare_to_extract (file_name, 0))
 	break;
 
       if (absolute_names_option
@@ -915,15 +900,15 @@ extract_archive (void)
 			 [FILESYSTEM_PREFIX_LEN (current_link_name)])
 		|| contains_dot_dot (current_link_name)))
 	{
-	  while (status = symlink (current_link_name, CURRENT_FILE_NAME),
+	  while (status = symlink (current_link_name, file_name),
 		 status != 0)
-	    if (!maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	    if (!maybe_recoverable (file_name, &interdir_made))
 	      break;
 
 	  if (status == 0)
-	    set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0, 0, SYMTYPE);
+	    set_stat (file_name, &current_stat, 0, 0, 0, SYMTYPE);
 	  else
-	    symlink_error (current_link_name, CURRENT_FILE_NAME);
+	    symlink_error (current_link_name, file_name);
 	}
       else
 	{
@@ -932,21 +917,21 @@ extract_archive (void)
 	     will be replaced after other extraction is done.  */
 	  struct stat st;
 
-	  while (fd = open (CURRENT_FILE_NAME, O_WRONLY | O_CREAT | O_EXCL, 0),
+	  while (fd = open (file_name, O_WRONLY | O_CREAT | O_EXCL, 0),
 		 fd < 0)
-	    if (! maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	    if (! maybe_recoverable (file_name, &interdir_made))
 	      break;
 
 	  status = -1;
 	  if (fd < 0)
-	    open_error (CURRENT_FILE_NAME);
+	    open_error (file_name);
 	  else if (fstat (fd, &st) != 0)
 	    {
-	      stat_error (CURRENT_FILE_NAME);
+	      stat_error (file_name);
 	      close (fd);
 	    }
 	  else if (close (fd) != 0)
-	    close_error (CURRENT_FILE_NAME);
+	    close_error (file_name);
 	  else
 	    {
 	      struct delayed_set_stat *h;
@@ -961,17 +946,17 @@ extract_archive (void)
 	      p->uid = current_stat.st_uid;
 	      p->gid = current_stat.st_gid;
 	      p->sources = xmalloc (offsetof (struct string_list, string)
-				    + strlen (CURRENT_FILE_NAME) + 1);
+				    + strlen (file_name) + 1);
 	      p->sources->next = 0;
-	      strcpy (p->sources->string, CURRENT_FILE_NAME);
+	      strcpy (p->sources->string, file_name);
 	      strcpy (p->target, current_link_name);
 
 	      h = delayed_set_stat_head;
 	      if (h && ! h->after_symlinks
-		  && strncmp (CURRENT_FILE_NAME, h->file_name, h->file_name_len) == 0
-		  && ISSLASH (CURRENT_FILE_NAME[h->file_name_len])
-		  && (base_name (CURRENT_FILE_NAME)
-		      == CURRENT_FILE_NAME + h->file_name_len + 1))
+		  && strncmp (file_name, h->file_name, h->file_name_len) == 0
+		  && ISSLASH (file_name[h->file_name_len])
+		  && (base_name (file_name)
+		      == file_name + h->file_name_len + 1))
 		{
 		  do
 		    {
@@ -1012,22 +997,23 @@ extract_archive (void)
 #endif
 
     case LNKTYPE:
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
+      if (! prepare_to_extract (file_name, 0))
 	break;
 
     again_link:
       {
+	char const *link_name = safer_name_suffix (current_link_name, 1);
 	struct stat st1, st2;
 	int e;
 
 	/* MSDOS does not implement links.  However, djgpp's link() actually
 	   copies the file.  */
-	status = link (current_link_name, CURRENT_FILE_NAME);
+	status = link (link_name, file_name);
 
 	if (status == 0)
 	  {
 	    struct delayed_symlink *ds = delayed_symlink_head;
-	    if (ds && stat (current_link_name, &st1) == 0)
+	    if (ds && stat (link_name, &st1) == 0)
 	      for (; ds; ds = ds->next)
 		if (ds->dev == st1.st_dev
 		    && ds->ino == st1.st_ino
@@ -1035,27 +1021,27 @@ extract_archive (void)
 		  {
 		    struct string_list *p = 
 		      xmalloc (offsetof (struct string_list, string)
-			       + strlen (CURRENT_FILE_NAME) + 1);
-		    strcpy (p->string, CURRENT_FILE_NAME);
+			       + strlen (file_name) + 1);
+		    strcpy (p->string, file_name);
 		    p->next = ds->sources;
 		    ds->sources = p;
 		    break;
 		  }
 	    break;
 	  }
-	if (maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	if (maybe_recoverable (file_name, &interdir_made))
 	  goto again_link;
 
 	if (incremental_option && errno == EEXIST)
 	  break;
 	e = errno;
-	if (stat (current_link_name, &st1) == 0
-	    && stat (CURRENT_FILE_NAME, &st2) == 0
+	if (stat (link_name, &st1) == 0
+	    && stat (file_name, &st2) == 0
 	    && st1.st_dev == st2.st_dev
 	    && st1.st_ino == st2.st_ino)
 	  break;
 
-	link_error (current_link_name, CURRENT_FILE_NAME);
+	link_error (link_name, file_name);
 	if (backup_option)
 	  undo_last_backup ();
       }
@@ -1074,41 +1060,41 @@ extract_archive (void)
 
 #if S_IFCHR || S_IFBLK
     make_node:
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
+      if (! prepare_to_extract (file_name, 0))
 	break;
 
-      status = mknod (CURRENT_FILE_NAME, current_stat.st_mode,
+      status = mknod (file_name, current_stat.st_mode,
 		      current_stat.st_rdev);
       if (status != 0)
 	{
-	  if (maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	  if (maybe_recoverable (file_name, &interdir_made))
 	    goto make_node;
-	  mknod_error (CURRENT_FILE_NAME);
+	  mknod_error (file_name);
 	  if (backup_option)
 	    undo_last_backup ();
 	  break;
 	};
-      set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
+      set_stat (file_name, &current_stat, 0, 0,
 		ARCHIVED_PERMSTATUS, typeflag);
       break;
 #endif
 
 #if HAVE_MKFIFO || defined mkfifo
     case FIFOTYPE:
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
+      if (! prepare_to_extract (file_name, 0))
 	break;
 
-      while (status = mkfifo (CURRENT_FILE_NAME, current_stat.st_mode),
+      while (status = mkfifo (file_name, current_stat.st_mode),
 	     status != 0)
-	if (!maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	if (!maybe_recoverable (file_name, &interdir_made))
 	  break;
 
       if (status == 0)
-	set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
+	set_stat (file_name, &current_stat, 0, 0,
 		  ARCHIVED_PERMSTATUS, typeflag);
       else
 	{
-	  mkfifo_error (CURRENT_FILE_NAME);
+	  mkfifo_error (file_name);
 	  if (backup_option)
 	    undo_last_backup ();
 	}
@@ -1117,48 +1103,43 @@ extract_archive (void)
 
     case DIRTYPE:
     case GNUTYPE_DUMPDIR:
-      name_length = strlen (CURRENT_FILE_NAME);
-
     really_dir:
-      /* Remove any redundant trailing "/"s.  */
-      while (FILESYSTEM_PREFIX_LEN (CURRENT_FILE_NAME) < name_length
-	     && CURRENT_FILE_NAME[name_length - 1] == '/')
-	name_length--;
-      CURRENT_FILE_NAME[name_length] = '\0';
-
       if (incremental_option)
 	{
 	  /* Read the entry and delete files that aren't listed in the
 	     archive.  */
 
-	  gnu_restore (skipcrud);
+	  gnu_restore (file_name);
 	}
       else if (typeflag == GNUTYPE_DUMPDIR)
 	skip_member ();
-
-      if (! prepare_to_extract (CURRENT_FILE_NAME))
-	break;
 
       mode = ((current_stat.st_mode
 	       | (we_are_root ? 0 : MODE_WXUSR))
 	      & MODE_RWX);
 
+      status = prepare_to_extract (file_name, 1);
+      if (status == 0)
+	break;
+      if (status < 0)
+	goto directory_exists;
+
     again_dir:
-      status = mkdir (CURRENT_FILE_NAME, mode);
+      status = mkdir (file_name, mode);
 
       if (status != 0)
 	{
 	  if (errno == EEXIST
 	      && (interdir_made
-		  || old_files_option == OVERWRITE_OLD_DIRS
+		  || old_files_option == DEFAULT_OLD_FILES
 		  || old_files_option == OVERWRITE_OLD_FILES))
 	    {
 	      struct stat st;
-	      if (stat (CURRENT_FILE_NAME, &st) == 0)
+	      if (stat (file_name, &st) == 0)
 		{
 		  if (interdir_made)
 		    {
-		      repair_delayed_set_stat (CURRENT_FILE_NAME, &st);
+		      repair_delayed_set_stat (file_name, &st);
 		      break;
 		    }
 		  if (S_ISDIR (st.st_mode))
@@ -1170,12 +1151,12 @@ extract_archive (void)
 	      errno = EEXIST;
 	    }
 	
-	  if (maybe_recoverable (CURRENT_FILE_NAME, &interdir_made))
+	  if (maybe_recoverable (file_name, &interdir_made))
 	    goto again_dir;
 
 	  if (errno != EEXIST)
 	    {
-	      mkdir_error (CURRENT_FILE_NAME);
+	      mkdir_error (file_name);
 	      if (backup_option)
 		undo_last_backup ();
 	      break;
@@ -1184,9 +1165,9 @@ extract_archive (void)
 
     directory_exists:
       if (status == 0
-	  || old_files_option == OVERWRITE_OLD_DIRS
+	  || old_files_option == DEFAULT_OLD_FILES
 	  || old_files_option == OVERWRITE_OLD_FILES)
-	delay_set_stat (CURRENT_FILE_NAME, &current_stat,
+	delay_set_stat (file_name, &current_stat,
 			MODE_RWX & (mode ^ current_stat.st_mode),
 			(status == 0
 			 ? ARCHIVED_PERMSTATUS
@@ -1222,11 +1203,9 @@ extract_archive (void)
     default:
       WARN ((0, 0,
 	     _("%s: Unknown file type '%c', extracted as normal file"),
-	     quotearg_colon (CURRENT_FILE_NAME), typeflag));
+	     quotearg_colon (file_name), typeflag));
       goto again_file;
     }
-
-#undef CURRENT_FILE_NAME
 }
 
 /* Extract the symbolic links whose final extraction were delayed.  */
