@@ -1283,7 +1283,7 @@ dump_file0 (struct tar_stat_info *stat, char *p,
       return;
     }
   stat->archive_file_size = stat->stat.st_size;
-  
+  sys_stat_nanoseconds(stat);
   original_ctime = stat->stat.st_ctime;
   restore_times.actime = stat->stat.st_atime;
   restore_times.modtime = stat->stat.st_mtime;
