@@ -1,3 +1,68 @@
+2003-09-02  Paul Eggert  <eggert@twinsun.com>
+
+	* src/common.h (destroy_stat, xheader_decode, xheader_store,
+	xheader_read, xheader_finish, xheader_destroy): Add decls;
+	C99 requires this.
+
+	* src/create.c (write_extended): Remove unused local 'bufsize'.
+
+	* src/delete.c (delete_archive_members): Handle case of
+	HEADER_SUCCESS_EXTENDED followed by HEADER_FAILURE.
+	* src/list.c (read_and): Abort if HEADER_SUCCESS_EXTENDED
+	occurs, as it's not possible.
+	* src/update.c (update_archive): Likewise.
+	
+	Use "const" when possible in new code.
+	* src/tar.c (struct fmttab.name): Now char const *.  All uses changed.
+	(fmttab): Now const.  All uses changed.
+	* src/xheader.c (struct xhdr_tab.keyword): Now pointer to const.
+	(struct xhdr_tab.coder, struct xhdr_tab.decoder, locate_handler,
+	decode_record, xheader_store, xheader_print, code_string, code_time,
+	code_num, dummy_coder, dummy_decoder, atime_coder, atime_decoder,
+	gid_coder, gid_decoder, gname_coder, gname_decoder, linkpath_coder,
+	linkpath_decoder, ctime_coder, ctime_decoder, mtime_coder,
+	mtime_decoder, path_coder, path_decoder, size_coder, size_decoder,
+	uid_coder, uid_decoder, uname_coder, uname_decoder):
+	Use pointers to const when possible.
+	(xhdr_tab): Now const.
+
+	* src/tar.c (fmttab): Avoid GCC warning by not eliding initializers.
+	(set_archive_format): Report an error if no format name matches,
+	instead of returning an undefined value.
+
+	* src/xheader.c (struct xhdr_tab.decoder, dummy_decoder,
+	atime_decoder, gid_decoder, gname_decoder, linkpath_decoder,
+	ctime_decoder, mtime_decoder, path_decoder, size_decoder,
+	uid_decoder, uname_decoder): Remove unused keyword arg.
+	All uses changed.
+
+	* src/tar.c (set_archive_format): Now static.
+	* src/xheader.c (xhdr_tab, format_uintmax): Now static.
+	
+	* src/xheader.c (dummy_coder, dummy_decoder, atime_coder,
+	atime_decoder, gid_coder, gid_decoder, gname_coder, gname_decoder,
+	linkpath_coder, linkpath_decoder, mtime_coder, mtime_decoder,
+	ctime_coder, ctime_decoder, path_coder, path_decoder, size_coder,
+	size_decoder, uid_coder, uid_decoder, uname_coder, uname_decoder):
+	Remove forward decls; no longer needed.
+	(xhdr_tab): Move to end, so that the forward decls aren't needed.
+	Add a forward declaration.
+	
+	Use 'bool' in new code, when appropriate.
+	* src/xheader.c (decode_record): Return bool, not int.
+	* src/common.h (read_header): Since it accepts bool, change
+	all callers to use false and true rather than 0 and 1.
+
+	* src/xheader.c (decode_record): Fix misspelling in diagnostic
+	"extended headed" -> "extended header".
+
+	GNU coding style fixes.
+	* src/xheader.c (decode_record, xheader_decode):
+	Do not use decls like "char *p, *q;".
+
+	Minor style fixes.
+	(xheader_store): Avoid parentheses around object operand of sizeof.
+	
 2003-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
         * src/create.c (start_header): Store long file names
