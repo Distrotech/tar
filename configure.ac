@@ -18,7 +18,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-AC_INIT([GNU tar], [1.13.93], [bug-tar@gnu.org])
+AC_INIT([GNU tar], [1.13.94], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h:config.hin])
@@ -37,7 +37,7 @@ AC_CHECK_HEADERS(fcntl.h linux/fd.h memory.h net/errno.h \
   sgtty.h string.h \
   sys/buf.h sys/device.h sys/gentape.h \
   sys/inet.h sys/io/trioctl.h \
-  sys/mtio.h sys/tprintf.h sys/tape.h \
+  sys/mtio.h sys/time.h sys/tprintf.h sys/tape.h \
   unistd.h)
 
 AC_HEADER_SYS_WAIT
@@ -171,6 +171,7 @@ AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale utimes)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([valloc])
+AC_CHECK_DECLS([time],,, [#include <time.h>])
 
 # Set LIB_SETSOCKOPT to -lnsl -lsocket if necessary.
 tar_save_LIBS=$LIBS
