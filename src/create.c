@@ -114,25 +114,38 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 {
   uintmax_t v = negative ? -value : value;
 
+  /* Generate the POSIX octal representation if the number fits.  */
   if (! negative && v <= MAX_VAL_WITH_DIGITS (size - 1, LG_8))
     {
       where[size - 1] = '\0';
       to_base (v, LG_8, base_8_digits, where, size - 1);
     }
+
+  /* Otherwise, generate the GNU base-64 representation if we are
+     generating an old or new GNU format and if the number fits.  */
   else if (v <= MAX_VAL_WITH_DIGITS (size - 1, LG_64)
-	   && archive_format == GNU_FORMAT)
+	   && (archive_format == GNU_FORMAT
+	       || archive_format == OLDGNU_FORMAT))
     {
       where[0] = negative ? '-' : '+';
       to_base (v, LG_64, base_64_digits, where + 1, size - 1);
     }
-  else if (negative
-	   && archive_format != GNU_FORMAT
-	   && valsize * CHAR_BIT <= (size - 1) * LG_8)
+
+  /* Otherwise, if the number is negative, and if it would not cause
+     ambiguity on this host by confusing positive with negative
+     values, then generate the POSIX octal representation of the value
+     modulo 2**(field bits).  The resulting tar file is
+     machine-dependent, since it depends on the host word size.  Yuck!
+     But this is the traditional behavior.  */
+  else if (negative && valsize * CHAR_BIT <= (size - 1) * LG_8)
     {
       where[size - 1] = '\0';
       to_base (value & MAX_VAL_WITH_DIGITS (valsize * CHAR_BIT, 1),
 	       LG_8, base_8_digits, where, size - 1);
     }
+
+  /* Otherwise, output a substitute value if possible (with a
+     warning), and an error message if not.  */
   else
     {
       uintmax_t maxval = (archive_format == GNU_FORMAT
