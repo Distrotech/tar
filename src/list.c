@@ -386,7 +386,6 @@ read_header (void)
       else
 	current_stat.st_size = OFF_FROM_CHARS (header->header.size);
 
-      header->header.name[NAME_FIELD_SIZE - 1] = '\0';
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK)
 	{
@@ -425,18 +424,19 @@ read_header (void)
 	}
       else
 	{
-	  char *name = next_long_name;
+	  char *name;
 	  struct posix_header *h = &current_header->header;
-	  char namebuf[sizeof h->prefix + 1 + sizeof h->name + 1];
+	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
+	  name = next_long_name;
 	  if (! name)
 	    {
 	      /* Accept file names as specified by POSIX.1-1996
                  section 10.1.1.  */
-	      int is_posix = (strcmp (h->magic, TMAGIC) == 0);
+	      int posix_header = strcmp (h->magic, TMAGIC) == 0;
 	      char *np = namebuf;
 
-	      if (is_posix && h->prefix[0])
+	      if (posix_header && h->prefix[0])
 		{
 		  memcpy (np, h->prefix, sizeof h->prefix);
 		  np[sizeof h->prefix] = '\0';
@@ -447,11 +447,17 @@ read_header (void)
 	      np[sizeof h->name] = '\0';
 	      name = namebuf;
 	    }
-
 	  assign_string (&current_file_name, name);
-	  assign_string (&current_link_name,
-			 (next_long_link ? next_long_link
-			  : current_header->header.linkname));
+	  
+	  name = next_long_link;
+	  if (! name)
+	    {
+	      memcpy (namebuf, h->linkname, sizeof h->linkname);
+	      namebuf[sizeof h->linkname] = '\0';
+	      name = namebuf;
+	    }
+	  assign_string (&current_link_name, name);
+
 	  next_long_link = next_long_name = 0;
 	  return HEADER_SUCCESS;
 	}
