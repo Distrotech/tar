@@ -205,6 +205,8 @@ struct option long_options[] =
   {"block-number", no_argument, NULL, 'R'},
   {"block-size", required_argument, NULL, OBSOLETE_BLOCKING_FACTOR},
   {"blocking-factor", required_argument, NULL, 'b'},
+  {"bunzip2", no_argument, NULL, 'y'},
+  {"bzip2", no_argument, NULL, 'y'},
   {"catenate", no_argument, NULL, 'A'},
   {"checkpoint", no_argument, &checkpoint_option, 1},
   {"compare", no_argument, NULL, 'd'},
@@ -382,6 +384,7 @@ Archive format selection:\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
   -o, --old-archive, --portability   write a V7 format archive\n\
       --posix                        write a POSIX conformant archive\n\
+  -y, --bzip2, --bunzip2             filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
       --use-compress-program=PROG    filter through PROG (must accept -d)\n"),
@@ -459,7 +462,7 @@ Report bugs to <tar-bugs@gnu.ai.mit.edu>.\n"),
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxz"
+  "-01234567ABC:E:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hiklmoprstuvwxyz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -822,6 +825,10 @@ decode_options (int argc, char *const *argv)
       case 'X':
 	exclude_option = 1;
 	add_exclude_file (optarg);
+	break;
+
+      case 'y':
+	set_use_compress_program_option ("bzip2");
 	break;
 
       case 'z':
