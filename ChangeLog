@@ -1,5 +1,16 @@
 2003-12-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/incremen.c (write_directory_file): Use sys_truncate
+	* src/list.c (print_header): Use archive_file_size member
+	when printing real file size.
+	* src/sparse.c (sparse_scan_file): Correctly handle files with
+	a hole at the end.
+	(sparse_dump_region,sparse_extract_region): Allow for zero size
+	trailing blocks
+
+2003-12-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Raised version number to 1.13.92
 	* src/list.c (decode_header): Discern between pax and ustar
 	formats
 	Initialize current_stat_info.archive_file_size.
