@@ -25,7 +25,7 @@ TAR_ARCHIVE_FORMATS="gnu oldgnu posix"
 
 genfile --length 1000 > begin
 genfile --length 1000 > end
-mksparse sparsefile 512 0 ABCD 1M EFGH 2000K IJKL
+genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL
 tar -c -f archive --sparse begin sparsefile end
 echo separator
 
