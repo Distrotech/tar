@@ -89,43 +89,45 @@ read_and (void (*do_something) ())
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
 
-	  if (!name_match (current_file_name)
+	  if (! name_match (current_file_name)
 	      || (newer_mtime_option != TYPE_MINIMUM (time_t)
-		  /* FIXME: We get mtime now, and again later; this
-		     causes duplicate diagnostics if header.mtime is
-		     bogus.  */
+		  /* FIXME: We get mtime now, and again later; this causes
+		     duplicate diagnostics if header.mtime is bogus.  */
 		  && ((current_stat.st_mtime
 		       = TIME_FROM_HEADER (current_header->header.mtime))
 		      < newer_mtime_option))
 	      || excluded_name (current_file_name))
 	    {
-	      char save_typeflag;
-
-	      if (current_header->header.typeflag == GNUTYPE_VOLHDR
-		  || current_header->header.typeflag == GNUTYPE_MULTIVOL
-		  || current_header->header.typeflag == GNUTYPE_NAMES)
+	      char save_typeflag = current_header->header.typeflag;
+	      switch (save_typeflag)
 		{
-		  (*do_something) ();
+		case GNUTYPE_VOLHDR:
+		case GNUTYPE_MULTIVOL:
+		case GNUTYPE_NAMES:
+		  break;
+		
+		case DIRTYPE:
+		  if (show_omitted_dirs_option)
+		    WARN ((0, 0, _("%s: Omitting"),
+			   quotearg_colon (current_file_name)));
+		  /* Fall through.  */
+		default:
+
+		  /* Skip past it in the archive.  */
+
+		  set_next_block_after (current_header);
+		  if (current_header->oldgnu_header.isextended)
+		    skip_extended_headers ();
+
+		  /* Skip to the next header on the archive.  */
+
+		  if (save_typeflag != DIRTYPE)
+		    skip_file (current_stat.st_size);
 		  continue;
 		}
-	      if (show_omitted_dirs_option
-		  && current_header->header.typeflag == DIRTYPE)
-		WARN ((0, 0, _("Omitting %s"), quote (current_file_name)));
+	      }
 
-	      /* Skip past it in the archive.  */
-
-	      save_typeflag = current_header->header.typeflag;
-	      set_next_block_after (current_header);
-	      if (current_header->oldgnu_header.isextended)
-		skip_extended_headers ();
-
-	      /* Skip to the next header on the archive.  */
-
-	      if (save_typeflag != DIRTYPE)
-		skip_file (current_stat.st_size);
-	      continue;
-	    }
-
+	  apply_nonancestor_delayed_set_stat (current_file_name);
 	  (*do_something) ();
 	  continue;
 
@@ -177,7 +179,7 @@ read_and (void (*do_something) ())
       break;
     }
 
-  apply_delayed_set_stat ("");
+  apply_delayed_set_stat ();
   close_archive ();
   names_notfound ();		/* print names not found */
 }
@@ -217,7 +219,7 @@ list_archive (void)
 	  data_block = find_next_block ();
 	  if (!data_block)
 	    {
-	      ERROR ((0, 0, _("EOF in archive file")));
+	      ERROR ((0, 0, _("Unexpected EOF in archive")));
 	      break;		/* FIXME: What happens, then?  */
 	    }
 	  written = available_space_after (data_block);
@@ -229,10 +231,7 @@ list_archive (void)
 				(data_block->buffer + written - 1));
 	  if (check != written)
 	    {
-	      int e = errno;
-	      ERROR ((0, e, _("Only wrote %lu of %lu bytes to file %s"),
-		      (unsigned long) check,
-		      (unsigned long) written, quote (current_file_name)));
+	      write_error_details (current_file_name, check, written);
 	      skip_file (size - written);
 	      break;
 	    }
@@ -359,7 +358,7 @@ read_header (void)
 	    free (*longp);
 	  size = current_stat.st_size;
 	  if (size != current_stat.st_size)
-	    FATAL_ERROR ((0, 0, _("Memory exhausted")));
+	    xalloc_die ();
 	  bp = *longp = xmalloc (size);
 
 	  for (; size > 0; size -= written)
@@ -367,7 +366,7 @@ read_header (void)
 	      data_block = find_next_block ();
 	      if (! data_block)
 		{
-		  ERROR ((0, 0, _("Unexpected EOF on archive file")));
+		  ERROR ((0, 0, _("Unexpected EOF in archive")));
 		  break;
 		}
 	      written = available_space_after (data_block);
@@ -869,32 +868,6 @@ tartime (time_t t)
 }
 
 /*-------------------------------------------------------------------------.
-| Decode MODE from its binary form in a stat structure, and encode it into |
-| a 9 characters string STRING, terminated with a NUL.                     |
-`-------------------------------------------------------------------------*/
-
-static void
-decode_mode (mode_t mode, char *string)
-{
-  *string++ = mode & S_IRUSR ? 'r' : '-';
-  *string++ = mode & S_IWUSR ? 'w' : '-';
-  *string++ = (mode & S_ISUID
-	       ? (mode & S_IXUSR ? 's' : 'S')
-	       : (mode & S_IXUSR ? 'x' : '-'));
-  *string++ = mode & S_IRGRP ? 'r' : '-';
-  *string++ = mode & S_IWGRP ? 'w' : '-';
-  *string++ = (mode & S_ISGID
-	       ? (mode & S_IXGRP ? 's' : 'S')
-	       : (mode & S_IXGRP ? 'x' : '-'));
-  *string++ = mode & S_IROTH ? 'r' : '-';
-  *string++ = mode & S_IWOTH ? 'w' : '-';
-  *string++ = (mode & S_ISVTX
-	       ? (mode & S_IXOTH ? 't' : 'T')
-	       : (mode & S_IXOTH ? 'x' : '-'));
-  *string = '\0';
-}
-
-/*-------------------------------------------------------------------------.
 | Actually print it.							   |
 | 									   |
 | Plain and fancy file header block logging.  Non-verbose just prints the  |
@@ -1153,7 +1126,7 @@ skip_file (off_t size)
     {
       x = find_next_block ();
       if (! x)
-	FATAL_ERROR ((0, 0, _("Unexpected EOF on archive file")));
+	FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
 
       set_next_block_after (x);
       size -= BLOCKSIZE;
@@ -1175,7 +1148,7 @@ skip_extended_headers (void)
     {
       exhdr = find_next_block ();
       if (!exhdr)
-	FATAL_ERROR ((0, 0, _("Unexpected EOF on archive file")));
+	FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
       set_next_block_after (exhdr);
     }
   while (exhdr->sparse_header.isextended);
