@@ -15,8 +15,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-SHELL = /bin/sh
-
 #### Start of system configuration section. ####
 
 srcdir = @srcdir@
@@ -87,10 +85,15 @@ binprefix =
 # The directory to install tar in.
 bindir = $(exec_prefix)/bin
 
+# Where to put the rmt executable.
+libdir = /etc
+
 # The directory to install the info files in.
 infodir = $(prefix)/info
 
 #### End of system configuration section. ####
+
+SHELL = /bin/sh
 
 SRC1 =	tar.c create.c extract.c buffer.c getoldopt.c update.c gnu.c mangle.c
 SRC2 =  version.c list.c names.c diffarch.c port.c wildmat.c getopt.c malloc.c
@@ -124,8 +127,14 @@ tar.info: tar.texinfo
 
 install: all
 	$(INSTALL_PROGRAM) tar $(bindir)/$(binprefix)tar
-	-test ! -f rmt || $(INSTALL_PROGRAM) rmt /etc/rmt
-	$(INSTALL_DATA) $(srcdir)/tar.info* $(infodir)
+	-test ! -f rmt || $(INSTALL_PROGRAM) rmt $(libdir)/rmt
+	for file in $(srcdir)/tar.info*; \
+	do $(INSTALL_DATA) $$file $(infodir)/$$file; \
+	done
+
+uninstall:
+	rm -f $(bindir)/$(binprefix)tar	$(infodir)/tar.info*
+	-rm -f $(libdir)/rmt
 
 $(OBJS): tar.h pathmax.h port.h testpad.h
 regex.o buffer.o tar.o: regex.h
