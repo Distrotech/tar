@@ -231,7 +231,7 @@ make_directories (char *file_name)
   int status;
 
   for (cursor = strchr (file_name, '/');
-       cursor != NULL;
+       cursor;
        cursor = strchr (cursor + 1, '/'))
     {
       /* Avoid mkdir of empty string, if leading or double '/'.  */
@@ -344,7 +344,7 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
   while (*sizeleft > 0)
     {
       union block *data_block = find_next_block ();
-      if (data_block == NULL)
+      if (! data_block)
 	{
 	  ERROR ((0, 0, _("Unexpected EOF on archive file")));
 	  return;
@@ -488,7 +488,7 @@ extract_archive (void)
 
     case GNUTYPE_SPARSE:
       sp_array_size = 10;
-      sparsearray = (struct sp_array *)
+      sparsearray =
 	xmalloc (sp_array_size * sizeof (struct sp_array));
 
       for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
@@ -525,9 +525,9 @@ extract_archive (void)
 			 room.  */
 
 		      sp_array_size *= 2;
-		      sparsearray = (struct sp_array *)
+		      sparsearray =
 			xrealloc (sparsearray,
-				  sp_array_size * (sizeof (struct sp_array)));
+				  sp_array_size * sizeof (struct sp_array));
 		    }
 		  if (exhdr->sparse_header.sp[counter].numbytes[0] == 0)
 		    break;
@@ -605,7 +605,7 @@ extract_archive (void)
 #else /* not O_CTG */
       if (typeflag == CONTTYPE)
 	{
-	  static int conttype_diagnosed = 0;
+	  static int conttype_diagnosed;
 
 	  if (!conttype_diagnosed)
 	    {
@@ -645,7 +645,7 @@ extract_archive (void)
 	     REAL interesting unless we do this.  */
 
 	  name_length_bis = strlen (CURRENT_FILE_NAME) + 1;
-	  name = (char *) xmalloc (name_length_bis);
+	  name = xmalloc (name_length_bis);
 	  memcpy (name, CURRENT_FILE_NAME, name_length_bis);
 	  size = current_stat.st_size;
 	  extract_sparse_file (fd, &size, current_stat.st_size, name);
@@ -667,7 +667,7 @@ extract_archive (void)
 	       worked.  */
 
 	    data_block = find_next_block ();
-	    if (data_block == NULL)
+	    if (! data_block)
 	      {
 		ERROR ((0, 0, _("Unexpected EOF on archive file")));
 		break;		/* FIXME: What happens, then?  */
@@ -701,7 +701,7 @@ extract_archive (void)
 	  }
 
       if (multi_volume_option)
-	assign_string (&save_name, NULL);
+	assign_string (&save_name, 0);
 
       /* If writing to stdout, don't try to do anything to the filename;
 	 it doesn't exist, or we don't want to touch it anyway.  */
@@ -753,7 +753,7 @@ extract_archive (void)
 
 #else
       {
-	static int warned_once = 0;
+	static int warned_once;
 
 	if (!warned_once)
 	  {
@@ -946,7 +946,7 @@ extract_archive (void)
 	}
 
 #if !MSDOS
-      /* MSDOS does not associate timestamps with directories.   In this
+      /* MSDOS does not associate time stamps with directories.   In this
 	 case, no need to try delaying their restoration.  */
 
       if (touch_option)
@@ -959,8 +959,7 @@ extract_archive (void)
 
       else
 	{
-	  data = ((struct delayed_set_stat *)
-		      xmalloc (sizeof (struct delayed_set_stat)));
+	  data = xmalloc (sizeof (struct delayed_set_stat));
 	  data->file_name = xstrdup (CURRENT_FILE_NAME);
 	  data->stat_info = current_stat;
 	  data->next = delayed_set_stat_head;
@@ -1014,7 +1013,7 @@ apply_delayed_set_stat (void)
 {
   struct delayed_set_stat *data;
 
-  while (delayed_set_stat_head != NULL)
+  while (delayed_set_stat_head)
     {
       data = delayed_set_stat_head;
       delayed_set_stat_head = delayed_set_stat_head->next;
