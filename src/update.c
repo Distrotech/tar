@@ -73,7 +73,7 @@ append_file (char *path)
 		    (size_t) (BLOCKSIZE - status));
 	}
 
-      status = read (handle, start->buffer, buffer_size);
+      status = full_read (handle, start->buffer, buffer_size);
       if (status < 0)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];

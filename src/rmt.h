@@ -65,11 +65,11 @@ int rmt_ioctl__ PARAMS ((int, int, char *));
 
 #define rmtread(Fd, Buffer, Length) \
   (_isrmt (Fd) ? rmt_read__ (Fd - __REM_BIAS, Buffer, Length) \
-   : read (Fd, Buffer, Length))
+   : full_read (Fd, Buffer, Length))
 
 #define rmtwrite(Fd, Buffer, Length) \
   (_isrmt (Fd) ? rmt_write__ (Fd - __REM_BIAS, Buffer, Length) \
-   : write (Fd, Buffer, Length))
+   : full_write (Fd, Buffer, Length))
 
 #define rmtlseek(Fd, Offset, Where) \
   (_isrmt (Fd) ? rmt_lseek__ (Fd - __REM_BIAS, Offset, Where) \

@@ -343,7 +343,7 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
       written = sparsearray[sparse_ind++].numbytes;
       while (written > BLOCKSIZE)
 	{
-	  count = write (fd, data_block->buffer, BLOCKSIZE);
+	  count = full_write (fd, data_block->buffer, BLOCKSIZE);
 	  if (count < 0)
 	    ERROR ((0, errno, _("%s: Could not write to file"), name));
 	  written -= count;
@@ -352,7 +352,7 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 	  data_block = find_next_block ();
 	}
 
-      count = write (fd, data_block->buffer, written);
+      count = full_write (fd, data_block->buffer, written);
 
       if (count < 0)
 	ERROR ((0, errno, _("%s: Could not write to file"), name));
@@ -659,7 +659,7 @@ Removing leading `/' from absolute path names in the archive")));
 	    if (written > size)
 	      written = size;
 	    errno = 0;		/* FIXME: errno should be read-only */
-	    sstatus = write (fd, data_block->buffer, written);
+	    sstatus = full_write (fd, data_block->buffer, written);
 
 	    set_next_block_after ((union block *)
 				  (data_block->buffer + written - 1));
@@ -706,7 +706,7 @@ Removing leading `/' from absolute path names in the archive")));
 	      written
 		= SIZE_FROM_OCT (exhdr->sparse_header.sp[counter].numbytes);
 	      lseek (fd, offset, 0);
-	      sstatus = write (fd, data_block->buffer, written);
+	      sstatus = full_write (fd, data_block->buffer, written);
 	      if (sstatus == written)
 		continue;
 	    }

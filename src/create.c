@@ -518,7 +518,7 @@ deal_with_sparse (char *name, union block *header)
   init_sparsearray ();
   clear_buffer (buffer);
 
-  while (count = read (file, buffer, sizeof buffer), count != 0)
+  while (count = full_read (file, buffer, sizeof buffer), count != 0)
     {
       /* Realloc the scratch area as necessary.  FIXME: should reallocate
 	 only at beginning of a new instance of non-zero data.  */
@@ -637,8 +637,8 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 #if 0
 	  if (amount_read)
 	    {
-	      count = read (file, start->buffer + amount_read,
-			    BLOCKSIZE - amount_read);
+	      count = full_read (file, start->buffer + amount_read,
+				 BLOCKSIZE - amount_read);
 	      bufsize -= BLOCKSIZE - amount_read;
 	      amount_read = 0;
 	      set_next_block_after (start);
@@ -648,7 +648,7 @@ finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 #endif
 	  /* Store the data.  */
 
-	  count = read (file, start->buffer, BLOCKSIZE);
+	  count = full_read (file, start->buffer, BLOCKSIZE);
 	  if (count < 0)
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
@@ -669,7 +669,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 	char buffer[BLOCKSIZE];
 
 	clear_buffer (buffer);
-	count = read (file, buffer, bufsize);
+	count = full_read (file, buffer, bufsize);
 	memcpy (start->buffer, buffer, BLOCKSIZE);
       }
 
@@ -1173,7 +1173,7 @@ Removing leading `/' from absolute links")));
 	    if (f < 0)
 	      count = bufsize;
 	    else
-	      count = read (f, start->buffer, bufsize);
+	      count = full_read (f, start->buffer, bufsize);
 	    if (count < 0)
 	      {
 		char buf[UINTMAX_STRSIZE_BOUND];

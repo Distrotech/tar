@@ -119,7 +119,7 @@ do_command (int handle, const char *buffer)
 
   pipe_handler = signal (SIGPIPE, SIG_IGN);
   length = strlen (buffer);
-  if (write (WRITE_SIDE (handle), buffer, length) == length)
+  if (full_write (WRITE_SIDE (handle), buffer, length) == length)
     {
       signal (SIGPIPE, pipe_handler);
       return 0;
@@ -144,7 +144,7 @@ get_status_string (int handle, char *command_buffer)
        counter < COMMAND_BUFFER_SIZE;
        counter++, cursor++)
     {
-      if (read (READ_SIDE (handle), cursor, 1) != 1)
+      if (full_read (READ_SIDE (handle), cursor, 1) != 1)
 	{
 	  _rmt_shutdown (handle, EIO);
 	  return 0;
@@ -180,7 +180,7 @@ get_status_string (int handle, char *command_buffer)
       {
 	char character;
 
-	while (read (READ_SIDE (handle), &character, 1) == 1)
+	while (full_read (READ_SIDE (handle), &character, 1) == 1)
 	  if (character == '\n')
 	    break;
       }
@@ -276,8 +276,8 @@ get_status_off (int handle)
 static int
 _rmt_rexec (char *host, char *user)
 {
-  int saved_stdin = dup (fileno (stdin));
-  int saved_stdout = dup (fileno (stdout));
+  int saved_stdin = dup (STDIN_FILENO);
+  int saved_stdout = dup (STDOUT_FILENO);
   struct servent *rexecserv;
   int result;
 
@@ -436,12 +436,12 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
       {
 	/* Child.  */
 
-	close (0);
+	close (STDIN_FILENO);
 	dup (to_remote[remote_pipe_number][PREAD]);
 	close (to_remote[remote_pipe_number][PREAD]);
 	close (to_remote[remote_pipe_number][PWRITE]);
 
-	close (1);
+	close (STDOUT_FILENO);
 	dup (from_remote[remote_pipe_number][PWRITE]);
 	close (from_remote[remote_pipe_number][PREAD]);
 	close (from_remote[remote_pipe_number][PWRITE]);
@@ -527,7 +527,7 @@ rmt_read__ (int handle, char *buffer, size_t length)
 
   for (counter = 0; counter < status; counter += rlen, buffer += rlen)
     {
-      rlen = read (READ_SIDE (handle), buffer, status - counter);
+      rlen = full_read (READ_SIDE (handle), buffer, status - counter);
       if (rlen <= 0)
 	{
 	  _rmt_shutdown (handle, EIO);
@@ -554,7 +554,7 @@ rmt_write__ (int handle, char *buffer, size_t length)
     return -1;
 
   pipe_handler = signal (SIGPIPE, SIG_IGN);
-  if (write (WRITE_SIDE (handle), buffer, length) == length)
+  if (full_write (WRITE_SIDE (handle), buffer, length) == length)
     {
       signal (SIGPIPE, pipe_handler);
       return get_status (handle);
@@ -653,7 +653,8 @@ rmt_ioctl__ (int handle, int operation, char *argument)
 
 	for (; status > 0; status -= counter, argument += counter)
 	  {
-	    counter = read (READ_SIDE (handle), argument, (size_t) status);
+	    counter = full_read (READ_SIDE (handle),
+				 argument, (size_t) status);
 	    if (counter <= 0)
 	      {
 		_rmt_shutdown (handle, EIO);

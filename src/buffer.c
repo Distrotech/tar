@@ -39,9 +39,6 @@ time_t time ();
 
 #define DEBUG_FORK 0		/* if nonzero, childs are born stopped */
 
-#define	STDIN 0			/* standard input  file descriptor */
-#define	STDOUT 1		/* standard output file descriptor */
-
 #define	PREAD 0			/* read file descriptor from pipe() */
 #define	PWRITE 1		/* write file descriptor from pipe() */
 
@@ -368,7 +365,7 @@ child_open_for_compress (void)
 
   program_name = _("tar (child)");
 
-  xdup2 (parent_pipe[PREAD], STDIN, _("(child) Pipe to stdin"));
+  xdup2 (parent_pipe[PREAD], STDIN_FILENO, _("(child) Pipe to stdin"));
   xclose (parent_pipe[PWRITE]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
@@ -396,7 +393,7 @@ child_open_for_compress (void)
 	  FATAL_ERROR ((0, saved_errno, _("Cannot open archive %s"),
 			archive_name_array[0]));
 	}
-      xdup2 (archive, STDOUT, _("Archive to stdout"));
+      xdup2 (archive, STDOUT_FILENO, _("Archive to stdout"));
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
       FATAL_ERROR ((0, errno, _("Cannot exec %s"),
@@ -416,7 +413,8 @@ child_open_for_compress (void)
     {
       /* The child tar is still here!  Launch the compressor.  */
 
-      xdup2 (child_pipe[PWRITE], STDOUT, _("((child)) Pipe to stdout"));
+      xdup2 (child_pipe[PWRITE], STDOUT_FILENO,
+	     _("((child)) Pipe to stdout"));
       xclose (child_pipe[PREAD]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
@@ -430,11 +428,11 @@ child_open_for_compress (void)
 
   /* Prepare for reblocking the data from the compressor into the archive.  */
 
-  xdup2 (child_pipe[PREAD], STDIN, _("(grandchild) Pipe to stdin"));
+  xdup2 (child_pipe[PREAD], STDIN_FILENO, _("(grandchild) Pipe to stdin"));
   xclose (child_pipe[PWRITE]);
 
   if (strcmp (archive_name_array[0], "-") == 0)
-    archive = STDOUT;
+    archive = STDOUT_FILENO;
   else
     archive = rmtcreat (archive_name_array[0], 0666, rsh_command_option);
   if (archive < 0)
@@ -459,7 +457,7 @@ child_open_for_compress (void)
 
 	  if (size < BLOCKSIZE)
 	    size = BLOCKSIZE;
-	  status = read (STDIN, cursor, size);
+	  status = full_read (STDIN_FILENO, cursor, size);
 	  if (status <= 0)
 	    break;
 	}
@@ -530,7 +528,7 @@ child_open_for_uncompress (void)
 
   program_name = _("tar (child)");
 
-  xdup2 (parent_pipe[PWRITE], STDOUT, _("(child) Pipe to stdout"));
+  xdup2 (parent_pipe[PWRITE], STDOUT_FILENO, _("(child) Pipe to stdout"));
   xclose (parent_pipe[PREAD]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
@@ -549,7 +547,7 @@ child_open_for_uncompress (void)
       if (archive < 0)
 	FATAL_ERROR ((0, errno, _("Cannot open archive %s"),
 		      archive_name_array[0]));
-      xdup2 (archive, STDIN, _("Archive to stdin"));
+      xdup2 (archive, STDIN_FILENO, _("Archive to stdin"));
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
       FATAL_ERROR ((0, errno, _("Cannot exec %s"),
@@ -569,7 +567,7 @@ child_open_for_uncompress (void)
     {
       /* The child tar is still here!  Launch the uncompressor.  */
 
-      xdup2 (child_pipe[PREAD], STDIN, _("((child)) Pipe to stdin"));
+      xdup2 (child_pipe[PREAD], STDIN_FILENO, _("((child)) Pipe to stdin"));
       xclose (child_pipe[PWRITE]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
@@ -583,11 +581,11 @@ child_open_for_uncompress (void)
 
   /* Prepare for unblocking the data from the archive into the uncompressor.  */
 
-  xdup2 (child_pipe[PWRITE], STDOUT, _("(grandchild) Pipe to stdout"));
+  xdup2 (child_pipe[PWRITE], STDOUT_FILENO, _("(grandchild) Pipe to stdout"));
   xclose (child_pipe[PREAD]);
 
   if (strcmp (archive_name_array[0], "-") == 0)
-    archive = STDIN;
+    archive = STDIN_FILENO;
   else
     archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
 		       0666, rsh_command_option);
@@ -620,7 +618,7 @@ child_open_for_uncompress (void)
       while (maximum)
 	{
 	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
-	  status = write (STDOUT, cursor, count);
+	  status = full_write (STDOUT_FILENO, cursor, count);
 	  if (status < 0)
 	    FATAL_ERROR ((0, errno, _("\
 Cannot write to compression program")));
@@ -761,16 +759,16 @@ open_archive (enum access_mode access)
       switch (access)
 	{
 	case ACCESS_READ:
-	  archive = STDIN;
+	  archive = STDIN_FILENO;
 	  break;
 
 	case ACCESS_WRITE:
-	  archive = STDOUT;
+	  archive = STDOUT_FILENO;
 	  stdlis = stderr;
 	  break;
 
 	case ACCESS_UPDATE:
-	  archive = STDIN;
+	  archive = STDIN_FILENO;
 	  stdlis = stderr;
 	  write_archive_to_stdout = 1;
 	  break;
@@ -1531,7 +1529,7 @@ new_volume (enum access_mode access)
 
   if (!read_file && !info_script_option)
     /* FIXME: if fopen is used, it will never be closed.  */
-    read_file = archive == STDIN ? fopen (TTY_NAME, "r") : stdin;
+    read_file = archive == STDIN_FILENO ? fopen (TTY_NAME, "r") : stdin;
 
   if (now_verifying)
     return 0;

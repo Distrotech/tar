@@ -1,5 +1,5 @@
 /* Remote connection server.
-   Copyright (C) 1994, 1995, 1996 Free Software Foundation, Inc.
+   Copyright 1994, 1995, 1996, 1997, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -81,12 +81,12 @@ char *strerror ();
 static char *
 private_strerror (int errnum)
 {
-  extern const char *const sys_errlist[];
+  extern char *sys_errlist[];
   extern int sys_nerr;
 
   if (errnum > 0 && errnum <= sys_nerr)
-    return sys_errlist[errnum];
-  return N_("Unknown system error");
+    return _(sys_errlist[errnum]);
+  return _("Unknown system error");
 }
 # define strerror private_strerror
 #endif
@@ -101,7 +101,7 @@ report_error_message (const char *string)
   DEBUG1 ("rmtd: E 0 (%s)\n", string);
 
   sprintf (reply_buffer, "E0\n%s\n", string);
-  write (1, reply_buffer, strlen (reply_buffer));
+  full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 }
 
 /*---.
@@ -114,7 +114,7 @@ report_numbered_error (int num)
   DEBUG2 ("rmtd: E %d (%s)\n", num, strerror (num));
 
   sprintf (reply_buffer, "E%d\n%s\n", num, strerror (num));
-  write (1, reply_buffer, strlen (reply_buffer));
+  full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 }
 
 /*---.
@@ -128,7 +128,7 @@ get_string (char *string)
 
   for (counter = 0; counter < STRING_SIZE; counter++)
     {
-      if (read (0, string + counter, 1) != 1)
+      if (full_read (STDIN_FILENO, string + counter, 1) != 1)
 	exit (EXIT_SUCCESS);
 
       if (string[counter] == '\n')
@@ -164,7 +164,9 @@ prepare_record_buffer (size_t size)
 
 #ifdef SO_RCVBUF
   while (size > 1024 &&
-   setsockopt (0, SOL_SOCKET, SO_RCVBUF, (char *) &size, sizeof (size)) < 0)
+	 (setsockopt (STDIN_FILENO, SOL_SOCKET, SO_RCVBUF,
+		      (char *) &size, sizeof size)
+	  < 0))
     size -= 1024;
 #else
   /* FIXME: I do not see any purpose to the following line...  Sigh! */
@@ -208,7 +210,7 @@ main (int argc, char *const *argv)
 top:
   errno = 0;			/* FIXME: errno should be read-only */
   status = 0;
-  if (read (0, &command, 1) != 1)
+  if (full_read (STDIN_FILENO, &command, 1) != 1)
     exit (EXIT_SUCCESS);
 
   switch (command)
@@ -301,7 +303,7 @@ top:
 	DEBUG1 ("rmtd: A %s\n", p);
 
 	sprintf (reply_buffer, "A%s\n", p);
-	write (1, reply_buffer, strlen (reply_buffer));
+	full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
 	goto top;
       }
 
@@ -318,7 +320,8 @@ top:
 	prepare_record_buffer (size);
 	for (counter = 0; counter < size; counter += status)
 	  {
-	    status = read (0, &record_buffer[counter], size - counter);
+	    status = full_read (STDIN_FILENO, &record_buffer[counter],
+			   size - counter);
 	    if (status <= 0)
 	      {
 		DEBUG (_("rmtd: Premature eof\n"));
@@ -327,7 +330,7 @@ top:
 		exit (EXIT_FAILURE); /* exit status used to be 2 */
 	      }
 	  }
-	status = write (tape, record_buffer, size);
+	status = full_write (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
 	goto respond;
@@ -343,12 +346,12 @@ top:
 
 	size = atol (count_string);
 	prepare_record_buffer (size);
-	status = read (tape, record_buffer, size);
+	status = full_read (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
 	sprintf (reply_buffer, "A%ld\n", status);
-	write (1, reply_buffer, strlen (reply_buffer));
-	write (1, record_buffer, (size_t) status);
+	full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
+	full_write (STDOUT_FILENO, record_buffer, (size_t) status);
 	goto top;
       }
 
@@ -423,8 +426,8 @@ top:
 	    goto ioerror;
 	  status = sizeof (operation);
 	  sprintf (reply_buffer, "A%ld\n", status);
-	  write (1, reply_buffer, strlen (reply_buffer));
-	  write (1, (char *) &operation, sizeof (operation));
+	  full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
+	  full_write (STDOUT_FILENO, (char *) &operation, sizeof (operation));
 	}
 #endif
 	goto top;
@@ -441,7 +444,7 @@ respond:
   DEBUG1 ("rmtd: A %ld\n", status);
 
   sprintf (reply_buffer, "A%ld\n", status);
-  write (1, reply_buffer, strlen (reply_buffer));
+  full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
   goto top;
 
 ioerror:
