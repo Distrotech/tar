@@ -251,8 +251,6 @@ get_status_off (int handle)
 
 #if WITH_REXEC
 
-int rexec ();
-
 /* Execute /etc/rmt as user USER on remote system HOST using rexec.
    Return a file descriptor of a bidirectional socket for stdin and
    stdout.  If USER is zero, use the current username.
