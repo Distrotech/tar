@@ -73,7 +73,7 @@ FILE *msg_file = stdout;
 				   it can't exec.  We hope compress/sh
 				   never return this status! */
 
-char *valloc();
+void *valloc();
 
 void writeerror();
 void readerror();
