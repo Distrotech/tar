@@ -128,6 +128,7 @@ static struct fmttab {
   { "star",    STAR_FORMAT },
 #endif
   { "gnu",     GNU_FORMAT },
+  { "pax",     POSIX_FORMAT }, /* An alias for posix */
   { NULL,	 0 }
 };
 
@@ -249,14 +250,13 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
 
 /* NOTE:
 
-   Available option letters are DEIJQY and aenqy. Consider the following
+   Available option letters are DEIJQY and aeqy. Consider the following
    assignments:
 
    [For Solaris tar compatibility]
    e  exit immediately with a nonzero exit status if unexpected errors occur
    E  use extended headers (--format=posix)
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
-   n  the archive is quickly seekable, so don't worry about random seeks
    [I  same as T =/= will harm star compatibility]
    
    y  per-file gzip compression
@@ -317,7 +317,9 @@ static struct argp_option options[] = {
    N_("do not exit with nonzero on unreadable files"), 21 },
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("process only the NUMth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
-
+  {"seek", 'n', NULL, 0,
+   N_("Archive is seekable"), 21 },
+    
   {NULL, 0, NULL, 0,
    N_("Handling of file attributes:"), 30 },
 
@@ -737,6 +739,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
 	 the archive, re-open it, and continue writing.  */
       
       multi_volume_option = true;
+      break;
+
+    case 'n':
+      seekable_archive = true;
       break;
       
 #if !MSDOS
