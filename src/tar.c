@@ -670,7 +670,7 @@ describe ()
 -c, --create		create a new archive\n\
 -d, --diff,\n\
     --compare		find differences between archive and file system\n\
---delete			delete from the archive (not for use on mag tapes!)\n\
+--delete		delete from the archive (not for use on mag tapes!)\n\
 -r, --append		append files to the end of an archive\n\
 -t, --list		list the contents of an archive\n\
 -u, --update		only append files that are newer than copy in archive\n\
@@ -698,7 +698,7 @@ Other options:\n\
 -i, --ignore-zeros	ignore blocks of zeros in archive (normally mean EOF)\n\
 --ignore-failed-read	don't exit with non-zero status on unreadable files\n\
 -k, --keep-old-files	keep existing files; don't overwrite them from archive\n\
--K, --starting-file FILE	begin at FILE in the archive\n\
+-K, --starting-file F	begin at file F in the archive\n\
 -l, --one-file-system	stay in local file system when creating an archive\n\
 -L, --tape-length LENGTH change tapes after writing LENGTH\n\
 ", stdout);			/* KLUDGE */
@@ -706,7 +706,7 @@ Other options:\n\
 -m, --modification-time	don't extract file modified time\n\
 -M, --multi-volume	create/list/extract multi-volume archive\n\
 -N, --after-date DATE,\n\
-    --newer DATE		only store files newer than DATE\n\
+    --newer DATE	only store files newer than DATE\n\
 -o, --old-archive,\n\
     --portability	write a V7 format archive, rather than ANSI format\n\
 -O, --to-stdout		extract files to standard output\n\
@@ -724,9 +724,9 @@ Other options:\n\
 -S, --sparse		handle sparse files efficiently\n\
 -T, --files-from F	get names to extract or create from file F\n\
 --null			-T reads null-terminated names, disable -C\n\
---totals			print total bytes written with --create\n\
+--totals		print total bytes written with --create\n\
 -v, --verbose		verbosely list files processed\n\
--V, --label NAME		create archive with volume name NAME\n\
+-V, --label NAME	create archive with volume name NAME\n\
 --version		print tar program version number\n\
 -w, --interactive,\n\
     --confirmation	ask for confirmation for every action\n\
