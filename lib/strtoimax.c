@@ -1,5 +1,5 @@
-/* Convert string representation of a number into an uintmax_t value.
-   Copyright 2001 Free Software Foundation, Inc.
+/* Convert string representation of a number into an intmax_t value.
+   Copyright 1999, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -37,7 +37,10 @@
 # endif
 #endif
 
-#ifdef STRTOUXMAX_UNSIGNED
+/* Verify a requirement at compile-time (unlike assert, which is runtime).  */
+#define verify(name, assertion) struct name { char a[(assertion) ? 1 : -1]; }
+
+#ifdef UNSIGNED
 # ifndef HAVE_DECL_STRTOUL
 "this configure-time declaration test was not run"
 # endif
@@ -67,38 +70,29 @@ long long strtoll PARAMS ((char const *, char **, int));
 # endif
 #endif
 
-#ifndef STRTOUXMAX_UNSIGNED
-# define strtoumax strtoimax
-# define uintmax_t intmax_t
-# define strtoull strtoll
-# define strtoul strtol
+#ifdef UNSIGNED
+# define INT uintmax_t
+# define strtoimax strtoumax
+# define strtol strtoul
+# define strtoll strtoull
+#else
+# define INT intmax_t
 #endif
 
-uintmax_t
-strtoumax (char const *ptr, char **endptr, int base)
+INT
+strtoimax (char const *ptr, char **endptr, int base)
 {
-#define USE_IF_EQUIVALENT(function) \
-    if (sizeof (uintmax_t) == sizeof function (ptr, endptr, base)) \
-      return function (ptr, endptr, base);
-
 #if HAVE_UNSIGNED_LONG_LONG
-    USE_IF_EQUIVALENT (strtoull)
+  verify (size_is_that_of_long_or_long_long,
+	  (sizeof (INT) == sizeof strtol (ptr, endptr, base)
+	   || sizeof (INT) == sizeof strtoll (ptr, endptr, base)));
+
+  if (sizeof (INT) != sizeof strtol (ptr, endptr, base))
+    return strtoll (ptr, endptr, base);
+#else
+  verify (size_is_that_of_long,
+	  sizeof (INT) == sizeof strtol (ptr, endptr, base));
 #endif
 
-  USE_IF_EQUIVALENT (strtoul)
-
-  abort ();
+  return strtol (ptr, endptr, base);
 }
-
-#ifdef TESTING
-# include <stdio.h>
-int
-main ()
-{
-  char *p, *endptr;
-  printf ("sizeof xintmax_t: %d\n", sizeof (uintmax_t));
-  printf ("sizeof strtoxll(): %d\n", sizeof strtoull(p, &endptr, 10));
-  printf ("sizeof strtoxl(): %d\n", sizeof strtoul(p, &endptr, 10));
-  exit (0);
-}
-#endif
