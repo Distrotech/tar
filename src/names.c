@@ -601,7 +601,7 @@ names_done ()
 {
   struct name const *cursor;
   for (cursor = namelist; cursor; cursor = cursor->next)
-    if (!cursor->found && !cursor->fake)
+    if (cursor->regexp || (!cursor->found && !cursor->fake))
       return false;
   return true;
 }
