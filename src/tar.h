@@ -17,17 +17,6 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* If OLDGNU_COMPATIBILITY is not zero, tar produces archives which, by
-   default, are readable by older versions of GNU tar.  This can be
-   overriden by using --posix; in this case, POSIXLY_CORRECT in environment
-   may be set for enforcing stricter conformance.  If OLDGNU_COMPATIBILITY
-   is zero or undefined, tar will eventually produces archives which, by
-   default, POSIX compatible; then either using --posix or defining
-   POSIXLY_CORRECT enforces stricter conformance.
-
-   This #define will disappear in a few years.  FP, June 1995.  */
-#define OLDGNU_COMPATIBILITY 1
-
 /* tar Header Block, from POSIX 1003.1-1990.  */
 
 /* POSIX header.  */
@@ -149,26 +138,6 @@ struct sparse
 #define SPARSES_IN_OLDGNU_HEADER 4
 #define SPARSES_IN_SPARSE_HEADER 21
 
-/* The GNU extra header contains some information GNU tar needs, but not
-   foreseen in POSIX header format.  It is only used after a POSIX header
-   (and never with old GNU headers), and immediately follows this POSIX
-   header, when typeflag is a letter rather than a digit, so signaling a GNU
-   extension.  */
-
-struct extra_header
-{				/* byte offset */
-  char atime[12];		/*   0 */
-  char ctime[12];		/*  12 */
-  char offset[12];		/*  24 */
-  char realsize[12];		/*  36 */
-  char longnames[4];		/*  48 */
-  char unused_pad1[68];		/*  52 */
-  struct sparse sp[SPARSES_IN_EXTRA_HEADER];
-				/* 120 */
-  char isextended;		/* 504 */
-				/* 505 */
-};
-
 /* Extension header for sparse files, used immediately after the GNU extra
    header, and used only if all sparse information cannot fit into that
    extra header.  There might even be many such extension headers, one after
@@ -277,7 +246,6 @@ union block
   char buffer[BLOCKSIZE];
   struct posix_header header;
   struct star_header star_header;
-  struct extra_header extra_header;
   struct oldgnu_header oldgnu_header;
   struct sparse_header sparse_header;
 };
