@@ -180,30 +180,36 @@ static struct zip_magic magic[] = {
 /* Check if the file FD is a compressed archive. FD is guaranteed to
    represent a local file */
 enum compress_type 
-check_compressed_archive (int fd)
+check_compressed_archive ()
 {
   struct zip_magic *p;
   size_t status;
-  union block buf;
-  
-  status = read (fd, &buf, sizeof buf);
-  if (status != sizeof buf)
-    {
-      archive_read_error ();
-      FATAL_ERROR ((0, 0, _("Quitting now.")));
-    }
+  bool sfr, srp;
 
-  lseek (fd, 0, SEEK_SET); /* This will fail if fd==0, but that does not
-			      matter, since we do not handle compressed
-			      stdin anyway */
-  
-  if (tar_checksum (&buf) == HEADER_SUCCESS)
+  /* Prepare global data needed for find_next_block: */
+  record_end = record_start; /* set up for 1st record = # 0 */
+  sfr = read_full_records;
+  read_full_records = true; /* Suppress fatal error on reading a partial
+			       record */
+  srp = reading_from_pipe;
+  reading_from_pipe = true; /* Suppress warning message on reading a partial
+			       record */
+  find_next_block ();
+
+  /* Restore global values */
+  read_full_records = sfr;
+  reading_from_pipe = srp;
+
+  if (tar_checksum (record_start) == HEADER_SUCCESS)
     /* Probably a valid header */
     return ct_none;
 
   for (p = magic + 1; p < magic + NMAGIC; p++)
-    if (memcmp (buf.buffer, p->magic, p->length) == 0)
-      return p->type;
+    if (memcmp (record_start->buffer, p->magic, p->length) == 0)
+      {
+	hit_eof = false; /* It might have been set by find_next_block */
+	return p->type;
+      }
   
   return ct_none;
 }
@@ -215,24 +221,17 @@ int
 open_compressed_archive ()
 {
   enum compress_type type;
+
   int fd = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
 		    MODE_RW, rsh_command_option);
   if (fd == -1 || _isrmt (fd))
     return fd;
-  
-  type = check_compressed_archive (fd);
+
+  archive = fd;
+  type = check_compressed_archive ();
   
   if (type == ct_none)
-    {
-      if (rmtlseek (fd, (off_t) 0, SEEK_CUR) != 0)
-	{
-	  /* Archive may be not seekable. Reopen it. */
-	  rmtclose (fd);
-	  fd = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-			MODE_RW, rsh_command_option);
-	}
-      return fd;
-    }
+    return fd;
 
   /* FD is not needed any more */
   rmtclose (fd);
@@ -241,7 +240,10 @@ open_compressed_archive ()
   use_compress_program_option = compress_program (type);
   child_pid = sys_child_open_for_uncompress ();
   read_full_records = reading_from_pipe = true;
-
+  
+  records_read = 0;
+  record_end = record_start; /* set up for 1st record = # 0 */
+  
   return archive;
 }
 
@@ -408,6 +410,8 @@ open_archive (enum access_mode wanted_access)
   read_full_records = read_full_records_option;
   reading_from_pipe = false;
   
+  records_read = 0;
+  
   if (use_compress_program_option)
     {
       switch (wanted_access)
@@ -415,6 +419,7 @@ open_archive (enum access_mode wanted_access)
 	case ACCESS_READ:
 	  child_pid = sys_child_open_for_uncompress ();
 	  read_full_records = reading_from_pipe = true;
+	  record_end = record_start; /* set up for 1st record = # 0 */
 	  break;
 
 	case ACCESS_WRITE:
@@ -509,9 +514,9 @@ open_archive (enum access_mode wanted_access)
     {
     case ACCESS_UPDATE:
       records_written = 0;
-    case ACCESS_READ:
-      records_read = 0;
       record_end = record_start; /* set up for 1st record = # 0 */
+
+    case ACCESS_READ:
       find_next_block ();	/* read it in, check for EOF */
 
       if (volume_label_option)
