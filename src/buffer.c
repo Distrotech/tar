@@ -67,10 +67,13 @@ static pid_t child_pid;
 static int read_error_count;
 
 /* Have we hit EOF yet?  */
-static int hit_eof;
+static bool hit_eof;
 
 /* Checkpointing counter */
 static int checkpoint;
+
+static bool read_full_records = false;
+static bool reading_from_pipe = false;
 
 /* We're reading, but we just read the last block and it's time to update.
    Declared in update.c
@@ -144,6 +147,104 @@ compute_duration ()
 }
 
 
+/* Compression detection */
+
+enum compress_type {
+  ct_none,
+  ct_compress,
+  ct_gzip,
+  ct_bzip2
+};
+
+struct zip_magic
+{
+  enum compress_type type;
+  unsigned char *magic;
+  size_t length;
+  char *program;
+  char *option;
+};
+
+static struct zip_magic magic[] = {
+  { ct_none, },
+  { ct_compress, "\037\235", 2, "compress", "-Z" },
+  { ct_gzip,     "\037\213", 2, "gzip", "-z"  },
+  { ct_bzip2,    "BZh",      3, "bzip2", "-j" },
+};
+
+#define NMAGIC (sizeof(magic)/sizeof(magic[0]))
+
+#define compress_option(t) magic[t].option
+#define compress_program(t) magic[t].program
+
+/* Check if the file FD is a compressed archive. FD is guaranteed to
+   represent a local file */
+enum compress_type 
+check_compressed_archive (int fd)
+{
+  struct zip_magic *p;
+  size_t status;
+  union block buf;
+  
+  status = read (fd, &buf, sizeof buf);
+  if (status != sizeof buf)
+    {
+      archive_read_error ();
+      FATAL_ERROR ((0, 0, _("Quitting now.")));
+    }
+
+  lseek (fd, 0, SEEK_SET); /* This will fail if fd==0, but that does not
+			      matter, since we do not handle compressed
+			      stdin anyway */
+  
+  if (tar_checksum (&buf) == HEADER_SUCCESS)
+    /* Probably a valid header */
+    return ct_none;
+
+  for (p = magic + 1; p < magic + NMAGIC; p++)
+    if (memcmp (buf.buffer, p->magic, p->length) == 0)
+      return p->type;
+  
+  return ct_none;
+}
+
+/* Open an archive named archive_name_array[0]. Detect if it is
+   a compressed archive of known type and use corresponding decompression
+   program if so */
+int
+open_compressed_archive ()
+{
+  enum compress_type type;
+  int fd = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
+		    MODE_RW, rsh_command_option);
+  if (fd == -1 || _isrmt (fd))
+    return fd;
+  
+  type = check_compressed_archive (fd);
+  
+  if (type == ct_none)
+    {
+      if (rmtlseek (fd, (off_t) 0, SEEK_CUR) != 0)
+	{
+	  /* Archive may be not seekable. Reopen it. */
+	  rmtclose (fd);
+	  fd = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
+			MODE_RW, rsh_command_option);
+	}
+      return fd;
+    }
+
+  /* FD is not needed any more */
+  rmtclose (fd);
+
+  /* Open compressed archive */
+  use_compress_program_option = compress_program (type);
+  child_pid = sys_child_open_for_uncompress ();
+  read_full_records = reading_from_pipe = true;
+
+  return archive;
+}
+
 
 void
 print_total_written (void)
@@ -178,7 +279,7 @@ reset_eof (void)
 {
   if (hit_eof)
     {
-      hit_eof = 0;
+      hit_eof = false;
       current_block = record_start;
       record_end = record_start + blocking_factor;
       access_mode = ACCESS_WRITE;
@@ -198,7 +299,7 @@ find_next_block (void)
       flush_archive ();
       if (current_block == record_end)
 	{
-	  hit_eof = 1;
+	  hit_eof = true;
 	  return 0;
 	}
     }
@@ -304,12 +405,16 @@ open_archive (enum access_mode wanted_access)
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
+  read_full_records = read_full_records_option;
+  reading_from_pipe = false;
+  
   if (use_compress_program_option)
     {
       switch (wanted_access)
 	{
 	case ACCESS_READ:
 	  child_pid = sys_child_open_for_uncompress ();
+	  read_full_records = reading_from_pipe = true;
 	  break;
 
 	case ACCESS_WRITE:
@@ -327,14 +432,24 @@ open_archive (enum access_mode wanted_access)
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
     {
-      read_full_records_option = true; /* could be a pipe, be safe */
+      read_full_records = true; /* could be a pipe, be safe */
       if (verify_option)
 	FATAL_ERROR ((0, 0, _("Cannot verify stdin/stdout archive")));
 
       switch (wanted_access)
 	{
 	case ACCESS_READ:
-	  archive = STDIN_FILENO;
+	  {
+	    enum compress_type type;
+	    
+	    archive = STDIN_FILENO;
+
+	    type = check_compressed_archive (archive);
+	    if (type != ct_none)
+	      FATAL_ERROR ((0, 0,
+			    _("Archive is compressed. Use %s option"),
+			    compress_option (type)));
+	  }
 	  break;
 
 	case ACCESS_WRITE:
@@ -356,8 +471,7 @@ open_archive (enum access_mode wanted_access)
     switch (wanted_access)
       {
       case ACCESS_READ:
-	archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-			   MODE_RW, rsh_command_option);
+	archive = open_compressed_archive ();
 	break;
 
       case ACCESS_WRITE:
@@ -544,9 +658,11 @@ flush_write (void)
 
       strncpy (record_start->header.name, real_s_name, NAME_FIELD_SIZE);
       record_start->header.typeflag = GNUTYPE_MULTIVOL;
+
       OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
       OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
 		    record_start->oldgnu_header.offset);
+      
       tmp = verbose_option;
       verbose_option = 0;
       finish_header (&current_stat_info, record_start, -1);
@@ -630,7 +746,7 @@ short_read (size_t status)
   left = record_size - status;
 
   while (left % BLOCKSIZE != 0
-	 || (left && status && read_full_records_option))
+	 || (left && status && read_full_records))
     {
       if (status)
 	while ((status = rmtread (archive, more, left)) == SAFE_READ_ERROR)
@@ -638,15 +754,18 @@ short_read (size_t status)
 
       if (status == 0)
 	{
-	  char buf[UINTMAX_STRSIZE_BOUND];
+	  if (!reading_from_pipe)
+	    {
+	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	  WARN((0, 0, _("Read %s bytes from %s"),
-		STRINGIFY_BIGINT (record_size - left, buf),
-		*archive_name_cursor));
+	      WARN((0, 0, _("Read %s bytes from %s"),
+		    STRINGIFY_BIGINT (record_size - left, buf),
+		    *archive_name_cursor));
+	    }
 	  break;
 	}
 
-      if (! read_full_records_option)
+      if (! read_full_records)
 	{
 	  unsigned long rest = record_size - left;
 
@@ -666,7 +785,7 @@ short_read (size_t status)
   /* FIXME: for size=0, multi-volume support.  On the first record, warn
      about the problem.  */
 
-  if (!read_full_records_option && verbose_option > 1
+  if (!read_full_records && verbose_option > 1
       && record_start_block == 0 && status != 0)
     {
       unsigned long rsize = (record_size - left) / BLOCKSIZE;
@@ -728,7 +847,7 @@ flush_read (void)
     }
 
   /* The condition below used to include
-	      || (status > 0 && !read_full_records_option)
+	      || (status > 0 && !read_full_records)
      This is incorrect since even if new_volume() succeeds, the
      subsequent call to rmtread will overwrite the chunk of data
      already read in the buffer, so the processing will fail */
@@ -1137,7 +1256,7 @@ new_volume (enum access_mode mode)
 
   if (strcmp (archive_name_cursor[0], "-") == 0)
     {
-      read_full_records_option = true;
+      read_full_records = true;
       archive = STDIN_FILENO;
     }
   else if (verify_option)
