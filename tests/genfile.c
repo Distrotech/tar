@@ -1,6 +1,9 @@
 /* Generate a file containing some preset patterns.
-   Copyright © 1995, 1996, 1997 Free Software Foundation, Inc.
-   François Pinard <pinard@iro.umontreal.ca>, 1995.
+
+   Copyright (C) 1995, 1996, 1997, 2001, 2003 Free Software
+   Foundation, Inc.
+
+   FranÃ§ois Pinard <pinard@iro.umontreal.ca>, 1995.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,6 +22,7 @@
 
 #include "system.h"
 
+#include <argmatch.h>
 #include <getopt.h>
 
 #ifndef EXIT_SUCCESS
@@ -30,8 +34,8 @@
 
 enum pattern
 {
-  DEFAULT,
-  ZEROS
+  DEFAULT_PATTERN,
+  ZEROS_PATTERN
 };
 
 /* The name this program was run with. */
@@ -47,12 +51,9 @@ static int show_version = 0;
 static int file_length = 0;
 
 /* Pattern to generate.  */
-static enum pattern pattern = DEFAULT;
+static enum pattern pattern = DEFAULT_PATTERN;
 
-/*-----------------------------------------------.
-| Explain how to use the program, then get out.	 |
-`-----------------------------------------------*/
-
+/* Explain how to use the program, then get out.  */
 void
 usage (int status)
 {
@@ -78,10 +79,8 @@ for the equivalent short option also.\n\
   exit (status);
 }
 
-/*----------------------------------------------------------------------.
-| Main program.  Decode ARGC arguments passed through the ARGV array of |
-| strings, then launch execution.				        |
-`----------------------------------------------------------------------*/
+/* Main program.  Decode ARGC arguments passed through the ARGV array
+   of strings, then launch execution.  */
 
 /* Long options equivalences.  */
 static const struct option long_options[] =
@@ -93,13 +92,8 @@ static const struct option long_options[] =
   {0, 0, 0, 0},
 };
 
-
-const char *pattern_strings[] =
-{
-  "default",			/* 0 */
-  "zeros",			/* 1 */
-  NULL
-};
+static char const * const pattern_args[] = { "default", "zeros", 0 };
+static enum pattern const pattern_types[] = {DEFAULT_PATTERN, ZEROS_PATTERN};
 
 int
 main (int argc, char *const *argv)
@@ -127,25 +121,8 @@ main (int argc, char *const *argv)
 	break;
 
       case 'p':
-	switch (argmatch (optarg, pattern_strings))
-	  {
-
-	  case -2:
-	    error (0, 0, _("Ambiguous pattern `%s'"), optarg);
-	    usage (EXIT_FAILURE);
-
-	  case -1:
-	    error (0, 0, _("Unknown pattern `%s'"), optarg);
-	    usage (EXIT_FAILURE);
-
-	  case 0:
-	    pattern = DEFAULT;
-	    break;
-
-	  case 1:
-	    pattern = ZEROS;
-	    break;
-	  }
+	pattern = XARGMATCH ("--pattern", optarg,
+			     pattern_args, pattern_types);
 	break;
       }
 
@@ -154,18 +131,17 @@ main (int argc, char *const *argv)
   if (show_version)
     {
       printf ("genfile (GNU %s) %s\n", PACKAGE, VERSION);
-      fputs (_("\
-\n\
-Copyright (C) 1995, 1996, 1997 Free Software Foundation, Inc.\n"),
-	     stdout);
-      fputs (_("\
-This is free software; see the source for copying conditions.  There is NO\n\
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n"),
-	     stdout);
-      fputs (_("\
-\n\
-Written by François Pinard <pinard@iro.umontreal.ca>.\n"),
-	     stdout);
+      printf (_("Copyright (C) %d Free Software Foundation, Inc.\n"), 2003);
+      puts (_("\
+This program comes with NO WARRANTY, to the extent permitted by law.\n\
+You may redistribute it under the terms of the GNU General Public License;\n\
+see the file named COPYING for details."));
+
+      /* Note to translator: Please translate "F. Pinard" to "FranÃ§ois
+	 Pinard" if "Ã§" (c-with-cedilla) is available in the
+	 translation's character set and encoding.  */
+      puts (_("Written by F. Pinard."));
+
       exit (EXIT_SUCCESS);
     }
 
@@ -179,12 +155,12 @@ Written by François Pinard <pinard@iro.umontreal.ca>.\n"),
 
   switch (pattern)
     {
-    case DEFAULT:
+    case DEFAULT_PATTERN:
       for (counter = 0; counter < file_length; counter++)
 	putchar (counter & 255);
       break;
 
-    case ZEROS:
+    case ZEROS_PATTERN:
       for (counter = 0; counter < file_length; counter++)
 	putchar (0);
       break;
