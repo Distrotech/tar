@@ -200,6 +200,7 @@ enum
   REMOVE_FILES_OPTION,
   RSH_COMMAND_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
+  STRIP_PATH_OPTION,
   SUFFIX_OPTION,
   TOTALS_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
@@ -299,6 +300,7 @@ static struct option long_options[] =
   {"show-omitted-dirs", no_argument, 0, SHOW_OMITTED_DIRS_OPTION},
   {"sparse", no_argument, 0, 'S'},
   {"starting-file", required_argument, 0, 'K'},
+  {"strip-path", required_argument, 0, STRIP_PATH_OPTION },
   {"suffix", required_argument, 0, SUFFIX_OPTION},
   {"tape-length", required_argument, 0, 'L'},
   {"to-stdout", no_argument, 0, 'O'},
@@ -451,7 +453,9 @@ Local file selection:\n\
   -h, --dereference            dump instead the files symlinks point to\n\
       --no-recursion           avoid descending automatically in directories\n\
   -l, --one-file-system        stay in local file system when creating archive\n\
-  -K, --starting-file=NAME     begin at file NAME in the archive\n"),
+  -K, --starting-file=NAME     begin at file NAME in the archive\n\
+      --strip-path=NUM         strip NUM leading components from file names\n\
+                               before extraction\n"),
 	     stdout);
 #if !MSDOS
       fputs (_("\
@@ -550,7 +554,7 @@ decode_options (int argc, char **argv)
   char const *backup_suffix_string;
   char const *version_control_string = 0;
   int exclude_options = EXCLUDE_WILDCARDS;
-  int o_option = 0;
+  bool o_option = 0;
   
   /* Set some default option values.  */
 
@@ -671,7 +675,7 @@ decode_options (int argc, char **argv)
 	   BSD-derived systems.  This is a consequence of the block/record
 	   terminology confusion.  */
 
-	read_full_records_option = 1;
+	read_full_records_option = true;
 	break;
 
       case 'c':
@@ -703,12 +707,12 @@ decode_options (int argc, char **argv)
 	   script at the end of each tape.  */
 
 	info_script_option = optarg;
-	multi_volume_option = 1;
+	multi_volume_option = true;
 	break;
 
       case 'g':
 	listed_incremental_option = optarg;
-	after_date_option = 1;
+	after_date_option = true;
 	/* Fall through.  */
 
       case 'G':
@@ -716,13 +720,12 @@ decode_options (int argc, char **argv)
 	   directories at the beginning of the archive, and include in each
 	   directory its contents.  */
 
-	incremental_option = 1;
+	incremental_option = true;
 	break;
 
       case 'h':
 	/* Follow symbolic links.  */
-
-	dereference_option = 1;
+	dereference_option = true;
 	break;
 
       case 'i':
@@ -730,7 +733,7 @@ decode_options (int argc, char **argv)
 	   because Unix tar writes two blocks of zeros, then pads out
 	   the record with garbage.  */
 
-	ignore_zeros_option = 1;
+	ignore_zeros_option = true;
 	break;
 
       case 'I':
@@ -749,7 +752,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case 'K':
-	starting_file_option = 1;
+	starting_file_option = true;
 	addname (optarg, 0);
 	break;
 
@@ -757,7 +760,7 @@ decode_options (int argc, char **argv)
 	/* When dumping directories, don't dump files/subdirectories
 	   that are on other filesystems.  */
 
-	one_file_system_option = 1;
+	one_file_system_option = true;
 	break;
 
       case 'L':
@@ -767,24 +770,24 @@ decode_options (int argc, char **argv)
 	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
 			  _("Invalid tape length")));
 	  tape_length_option = 1024 * (tarlong) u;
-	  multi_volume_option = 1;
+	  multi_volume_option = true;
 	}
 	break;
 
       case 'm':
-	touch_option = 1;
+	touch_option = true;
 	break;
 
       case 'M':
 	/* Make multivolume archive: when we can't write any more into
 	   the archive, re-open it, and continue writing.  */
 
-	multi_volume_option = 1;
+	multi_volume_option = true;
 	break;
 
 #if !MSDOS
       case 'N':
-	after_date_option = 1;
+	after_date_option = true;
 	/* Fall through.  */
 
       case NEWER_MTIME_OPTION:
@@ -817,19 +820,19 @@ decode_options (int argc, char **argv)
 #endif /* not MSDOS */
 
       case 'o':
-	o_option = 1;
+	o_option = true;
 	break;
 
       case 'O':
-	to_stdout_option = 1;
+	to_stdout_option = true;
 	break;
 
       case 'p':
-	same_permissions_option = 1;
+	same_permissions_option = true;
 	break;
 
       case 'P':
-	absolute_names_option = 1;
+	absolute_names_option = true;
 	break;
 
       case 'r':
@@ -844,17 +847,17 @@ decode_options (int argc, char **argv)
 	   BSD-derived systems.  This is a consequence of the block/record
 	   terminology confusion.  */
 
-	block_number_option = 1;
+	block_number_option = true;
 	break;
 
       case 's':
 	/* Names to extr are sorted.  */
 
-	same_order_option = 1;
+	same_order_option = true;
 	break;
 
       case 'S':
-	sparse_option = 1;
+	sparse_option = true;
 	break;
 
       case 't':
@@ -883,11 +886,11 @@ decode_options (int argc, char **argv)
 	break;
 
       case 'w':
-	interactive_option = 1;
+	interactive_option = true;
 	break;
 
       case 'W':
-	verify_option = 1;
+	verify_option = true;
 	break;
 
       case 'x':
@@ -923,15 +926,15 @@ decode_options (int argc, char **argv)
 	break;
 
       case ATIME_PRESERVE_OPTION:
-	atime_preserve_option = 1;
+	atime_preserve_option = true;
 	break;
 
       case CHECKPOINT_OPTION:
-	checkpoint_option = 1;
+	checkpoint_option = true;
 	break;
 
       case BACKUP_OPTION:
-	backup_option = 1;
+	backup_option = true;
 	if (optarg)
 	  version_control_string = optarg;
 	break;
@@ -945,7 +948,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case FORCE_LOCAL_OPTION:
-	force_local_option = 1;
+	force_local_option = true;
 	break;
 
       case FORMAT_OPTION:
@@ -961,7 +964,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case IGNORE_FAILED_READ_OPTION:
-	ignore_failed_read_option = 1;
+	ignore_failed_read_option = true;
 	break;
 
       case GROUP_OPTION:
@@ -1013,7 +1016,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case NUMERIC_OWNER_OPTION:
-	numeric_owner_option = 1;
+	numeric_owner_option = true;
 	break;
 
       case OVERWRITE_OPTION:
@@ -1039,8 +1042,8 @@ decode_options (int argc, char **argv)
 	break;
 
       case PRESERVE_OPTION:
-	same_permissions_option = 1;
-	same_order_option = 1;
+	same_permissions_option = true;
+	same_order_option = true;
 	break;
 
       case RECORD_SIZE_OPTION:
@@ -1059,22 +1062,37 @@ decode_options (int argc, char **argv)
 	break;
 
       case RECURSIVE_UNLINK_OPTION:
-	recursive_unlink_option = 1;
+	recursive_unlink_option = true;
 	break;
 
       case REMOVE_FILES_OPTION:
-	remove_files_option = 1;
+	remove_files_option = true;
 	break;
 
       case RSH_COMMAND_OPTION:
 	rsh_command_option = optarg;
 	break;
 
+      case STRIP_PATH_OPTION:
+	{
+	  uintmax_t u;
+	  if (! (xstrtoumax (optarg, 0, 10, &u, "") == LONGINT_OK
+		 && u == (size_t) u))
+	    USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (optarg),
+			  _("Invalid number of elements")));
+	  strip_path_elements = u;
+	}
+	break;
+	
       case SUFFIX_OPTION:
-	backup_option = 1;
+	backup_option = true;
 	backup_suffix_string = optarg;
 	break;
 
+      case TOTALS_OPTION:
+	totals_option = true;
+	break;
+	
       case USE_COMPRESS_PROGRAM_OPTION:
 	set_use_compress_program_option (optarg);
 	break;
