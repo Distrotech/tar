@@ -1,6 +1,12 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.3 - Paul Eggert, 1999-07-16.
+
+* A path name is excluded if any of its file name components matches an
+  excluded pattern, even if the path name was specified on the command line.
+* Bug fixes.
+
 version 1.13.2 - Paul Eggert, 1999-07-14.
 
 * Bug reporting address changed to <bug-tar@gnu.org>.
