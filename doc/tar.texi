@@ -542,6 +542,7 @@ document.  The rest of the menu lists all the lower level nodes.
 * Date input formats::
 * Formats::
 * Media::
+* Free Software Needs Free Documentation::
 * Copying This Manual::
 * Index::
 
@@ -6814,7 +6815,7 @@ does not distinguish text files from binary files, and no translation
 of file contents is performed.
 
 The @code{name}, @code{linkname}, @code{magic}, @code{uname}, and
-@code{gname} are null-terminated character strings.  All other fileds
+@code{gname} are null-terminated character strings.  All other fields
 are zero-filled octal numbers in ASCII.  Each numeric field of width
 @var{w} contains @var{w} minus 2 digits, a space, and a null, except
 @code{size}, and @code{mtime}, which do not contain the trailing null.
@@ -8420,6 +8421,10 @@ physical media, and can be a two position (write enabled/write
 disabled) switch, a notch which can be popped out or covered, a ring
 which can be removed from the center of a tape reel, or some other
 changeable feature.
+
+@node Free Software Needs Free Documentation
+@appendix Free Software Needs Free Documentation
+@include freemanuals.texi
 
 @node Copying This Manual
 @appendix Copying This Manual
