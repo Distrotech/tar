@@ -1,3 +1,8 @@
+2004-01-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap: Bugfix by Marco Gerards <metgerards@student.han.nl>:
+	Use $option instead of $1 so all options will be parsed.
+
 2004-01-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Started rewriting buffer.c ...
