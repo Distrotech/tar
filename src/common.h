@@ -575,9 +575,18 @@ bool contains_dot_dot (char const *);
 
 int confirm (const char *, const char *);
 void request_stdin (const char *);
+void destroy_stat (struct tar_stat_info *);
 
 /* Module update.c.  */
 
 extern char *output_start;
 
 void update_archive (void);
+
+/* Module xheader.c.  */
+
+void xheader_decode (struct tar_stat_info *);
+void xheader_store (char const *, struct tar_stat_info const *);
+void xheader_read (union block *, size_t);
+void xheader_finish (struct xheader *);
+void xheader_destroy (struct xheader *);
