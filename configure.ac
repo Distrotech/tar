@@ -91,6 +91,9 @@ AC_CHECK_TYPE(major_t, , AC_DEFINE(major_t, int,
 				   [Type of major device numbers.]))
 AC_CHECK_TYPE(minor_t, , AC_DEFINE(minor_t, int,
 				   [Type of minor device numbers.]))
+AC_CHECK_TYPE(dev_t, unsigned)
+AC_CHECK_TYPE(ino_t, unsigned)
+
 gt_TYPE_SSIZE_T
 jm_AC_TYPE_UINTMAX_T
 
