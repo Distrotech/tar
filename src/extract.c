@@ -510,6 +510,9 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	    errno = EEXIST;
 	    return r;
 	  }
+
+	case UNLINK_FIRST_OLD_FILES:
+	  break;
 	}
 
     case ENOENT:
@@ -596,7 +599,6 @@ extract_archive (void)
   int openflag;
   mode_t mode;
   off_t size;
-  off_t file_size;
   int interdir_made = 0;
   char typeflag;
   char *file_name;
@@ -643,11 +645,9 @@ extract_archive (void)
 
   /* Extract the archive entry according to its type.  */
 
-  typeflag = current_header->header.typeflag;
-  /*KLUDGE */
-  if (current_format == POSIX_FORMAT
-      && current_stat_info.archive_file_size != current_stat_info.stat.st_size)
-	  typeflag = GNUTYPE_SPARSE;
+  /* KLUDGE */
+  typeflag = sparse_member_p (&current_stat_info) ?
+                  GNUTYPE_SPARSE : current_header->header.typeflag;
   
   switch (typeflag)
     {
@@ -724,7 +724,7 @@ extract_archive (void)
 	}
 
     extract_file:
-      if (typeflag == GNUTYPE_SPARSE)
+      if (current_stat_info.is_sparse)
 	{
 	  sparse_extract_file (fd, &current_stat_info, &size);
 	}
