@@ -21,6 +21,7 @@
 
 #include "system.h"
 #include <quotearg.h>
+#include <errno.h>
 
 #if HAVE_UTIME_H
 # include <utime.h>
@@ -407,7 +408,7 @@ make_directories (char *file_name)
       else if ((errno == ENOSYS /* Automounted dirs on Solaris return
 				   this. Reported by Warren Hyde
 				   <Warren.Hyde@motorola.com> */
-	       || ERRNO_IS_EACCESS)  /* Turbo C mkdir gives a funny errno.  */
+	       || ERRNO_IS_EACCES)  /* Turbo C mkdir gives a funny errno.  */
 	       && access (file_name, W_OK) == 0)
 	continue;
 
