@@ -9,6 +9,13 @@
 #  include <inttypes.h>
 # endif
 
+# if HAVE_LIMITS_H
+#  include <limits.h>
+# endif
+# ifndef CHAR_BIT
+#  define CHAR_BIT 8
+# endif
+
 /* A conservative bound on the maximum length of a human-readable string.
    The output can be the product of the largest uintmax_t and the largest int,
    so add their sizes before converting to a bound on digits.  */
