@@ -46,7 +46,7 @@ extern off_t lseek();
 #define rmtfcntl	fcntl
 #define rmtisatty	isatty
 
-#else
+#else /* !NO_REMOTE */
 
 #define __REM_BIAS	128
 #define RMTIOCTL
@@ -88,4 +88,4 @@ extern char *strchr();
 #define rmtisatty(fd)		(_isrmt(fd) ? 0 : isatty(fd))
 
 #undef RMTIOCTL
-#endif
+#endif /* !NO_REMOTE */
