@@ -38,28 +38,6 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "port.h"
 
-#if defined(_POSIX_VERSION) || defined(DIRENT)
-#include <dirent.h>
-#ifdef direct
-#undef direct
-#endif /* direct */
-#define direct dirent
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* _POSIX_VERSION or DIRENT */
-#if !defined(_POSIX_VERSION) && !defined(DIRENT) && defined(BSD42)
-#include <sys/dir.h>
-#define DP_NAMELEN(x)	(x)->d_namlen
-#endif /* not _POSIX_VERSION and BSD42 */
-#ifdef __MSDOS__
-#include "msd_dir.h"
-#define DP_NAMELEN(x)	(x)->d_namlen
-#define direct dirent
-#endif
-#if defined(USG) && !defined(_POSIX_VERSION) && !defined(DIRENT)
-#include <ndir.h>
-#define DP_NAMELEN(x) strlen((x)->d_name)
-#endif /* USG and not _POSIX_VERSION and not DIRENT */
-
 /*
  * We should use a conversion routine that does reasonable error
  * checking -- atoi doesn't.  For now, punt.  FIXME.
@@ -1018,7 +996,7 @@ addname (name)
       if (chdir_name[0] != '/')
 	{
 	  char *path = ck_malloc (PATH_MAX);
-#if defined(__MSDOS__) || defined(USG) || defined(_POSIX_VERSION)
+#if defined(__MSDOS__) || defined(HAVE_GETCWD) || defined(_POSIX_VERSION)
 	  if (!getcwd (path, PATH_MAX))
 	    {
 	      msg ("Couldn't get current directory.");
