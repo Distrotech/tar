@@ -493,6 +493,11 @@
 @set xref-volno-file @xref{Using Multiple Tapes}
 @set pxref-volno-file @pxref{Using Multiple Tapes}
 
+@set op-seek @kbd{--seek}
+@set ref-seek @ref{seek}
+@set xref-seek @xref{seek}
+@set pxref-seek @pxref{seek}
+
 @c Put everything in one index (arbitrarily chosen to be the concept index).
 @syncodeindex fn cp
 @syncodeindex ky cp
@@ -2910,6 +2915,14 @@ multi-volume @command{tar} archive.  @FIXME-xref{}
 @item --new-volume-script
 
 (see --info-script)
+
+@item -n
+@itemx --seek
+
+Assume that the archive media supports seeks to arbitrary
+locations. Usually @command{tar} determines automatically whether
+the archive can be seeked or not. This option is intended for use
+in cases when such recognition fails.
 
 @item --newer=@var{date}
 @itemx --after-date=@var{date}
@@ -6580,14 +6593,35 @@ relative to the then current directory, which might not be the same as
 the original current working directory of @command{tar}, due to a previous
 @samp{--directory} option.
 
-@FIXME{dan: does this mean that you *can* use the short option form, but
-you can *not* use the long option form with --files-from?  or is this
-totally screwed?}
-
 When using @samp{--files-from} (@pxref{files}), you can put @samp{-C}
-options in the file list.  Unfortunately, you cannot put
-@samp{--directory} options in the file list.  (This interpretation can
-be disabled by using the @value{op-null} option.)
+options in the file list. Notice, however, that in this case the
+option and its argument must occupy two consecutive lines. For 
+instance, the file list for the above example will be:
+
+@smallexample
+@group
+-C
+/etc
+passwd
+hosts
+-C
+/lib
+libc.a
+@end group
+@end smallexample
+
+@noindent
+To use it, you would invoke @command{tar} as follows:
+
+@smallexample
+$ @kbd{tar -c -f foo.tar --files-from list}
+@end smallexample
+
+Notice also that you can only use the short option variant in the file
+list, i.e. always use @option{-C}, not @option{--directory}.
+
+The interpretation of @value{op-directory} is disabled by
+@value{op-null} option.
 
 @node absolute
 @subsection Absolute File Names
