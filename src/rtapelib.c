@@ -482,10 +482,7 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 	close (from_remote[remote_pipe_number][PREAD]);
 	close (from_remote[remote_pipe_number][PWRITE]);
 
-#if !MSDOS
-	setuid (getuid ());
-	setgid (getgid ());
-#endif
+	sys_reset_uid_gid ();
 
 	if (remote_user)
 	  execl (remote_shell, remote_shell_basename, remote_host,
