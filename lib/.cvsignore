@@ -81,7 +81,6 @@ modechange.c
 modechange.h
 obstack.c
 obstack.h
-pathmax.h
 quote.c
 quote.h
 quotearg.c
@@ -138,7 +137,6 @@ xalloc.h
 xgetcwd.c
 xgetcwd.h
 xmalloc.c
-xstrdup.c
 xstrtol.c
 xstrtol.h
 xstrtoul.c
