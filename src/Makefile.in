@@ -168,14 +168,15 @@ realclean: distclean
 	rm -f TAGS *.info* getdate.c y.tab.c
 
 shar: $(SRCS) $(AUX)
-	shar $(SRCS) $(AUX) | compress > tar-`sed -e '/version_string/!d' -e 's/[^0-9.]*\([0-9.]*\).*/\1/' -e q version.c`.shar.Z
+	shar $(SRCS) $(AUX) | gzip > tar-`sed -e '/version_string/!d' -e 's/[^0-9.]*\([0-9.]*\).*/\1/' -e q version.c`.shar.z
 
 dist: $(SRCS) $(AUX)
 	echo tar-`sed -e '/version_string/!d' -e 's/[^0-9.]*\([0-9.]*\).*/\1/' -e q version.c` > .fname
 	-rm -rf `cat .fname`
 	mkdir `cat .fname`
-	ln $(SRCS) $(AUX) `cat .fname`
-	tar chZf `cat .fname`.tar.Z `cat .fname`
+	for file in $(SRCS) $(AUX); do \
+          ln $$file `cat .fname` || cp $$file `cat .fname`; done
+	tar chzf `cat .fname`.tar.z `cat .fname`
 	-rm -rf `cat .fname` .fname
 
 tar.zoo: $(SRCS) $(AUX)
