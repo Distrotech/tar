@@ -21,11 +21,6 @@
 
 #include "system.h"
 
-#if !MSDOS
-# include <pwd.h>
-# include <grp.h>
-#endif
-
 #if HAVE_UTIME_H
 # include <utime.h>
 #else
@@ -40,11 +35,6 @@ struct utimbuf
 
 #include "common.h"
 #include <hash.h>
-
-#ifndef MSDOS
-extern dev_t ar_dev;
-extern ino_t ar_ino;
-#endif
 
 struct link
   {
@@ -1058,16 +1048,13 @@ dump_file (char *p, int top_level, dev_t parent_device)
       return;
     }
 
-#if !MSDOS
   /* See if we are trying to dump the archive.  */
-
-  if (ar_dev && current_stat_info.stat.st_dev == ar_dev && current_stat_info.stat.st_ino == ar_ino)
+  if (sys_file_is_archive (&current_stat_info))
     {
       WARN ((0, 0, _("%s: file is the archive; not dumped"),
 	     quotearg_colon (p)));
       return;
     }
-#endif
 
   if (S_ISDIR (current_stat_info.stat.st_mode))
     {

@@ -39,9 +39,7 @@ struct utimbuf
 
 #include "common.h"
 #include "rmt.h"
-
-/* Spare space for messages, hopefully safe even after gettext.  */
-#define MESSAGE_BUFFER_SIZE 100
+#include <stdarg.h>
 
 /* Nonzero if we are verifying at the moment.  */
 bool now_verifying;
@@ -63,12 +61,20 @@ diff_init (void)
 
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
    given MESSAGE is nonzero.  Also set the exit status if not already.  */
-static void
-report_difference (const char *message)
+void
+report_difference (const char *fmt, ...)
 {
-  if (message)
-    fprintf (stdlis, "%s: %s\n", quotearg_colon (current_stat_info.file_name), message);
+  if (fmt)
+    {
+      va_list ap;
 
+      fprintf (stdlis, "%s: ", quotearg_colon (current_stat_info.file_name));
+      va_start (ap, fmt);
+      vfprintf (stdlis, fmt, ap);
+      va_end (ap);
+      fprintf (stdlis, "\n");
+    }
+  
   if (exit_status == TAREXIT_SUCCESS)
     exit_status = TAREXIT_DIFFERS;
 }
@@ -86,23 +92,20 @@ static int
 process_rawdata (size_t bytes, char *buffer)
 {
   ssize_t status = safe_read (diff_handle, diff_buffer, bytes);
-  char message[MESSAGE_BUFFER_SIZE];
 
   if (status != bytes)
     {
       if (status < 0)
 	{
 	  read_error (current_stat_info.file_name);
-	  report_difference (0);
+	  report_difference (NULL);
 	}
       else
 	{
-	  sprintf (message,
-		   ngettext ("Could only read %lu of %lu byte",
-			     "Could only read %lu of %lu bytes",
-			     bytes),
-		   (unsigned long) status, (unsigned long) bytes);
-	  report_difference (message);
+	  report_difference (ngettext ("Could only read %lu of %lu byte",
+				       "Could only read %lu of %lu bytes",
+				       bytes),
+			     (unsigned long) status, (unsigned long) bytes);
 	}
       return 0;
     }
@@ -212,7 +215,7 @@ diff_sparse_files (void)
       if (lseek (diff_handle, offset, SEEK_SET) < 0)
 	{
 	  seek_error_details (current_stat_info.file_name, offset);
-	  report_difference (0);
+	  report_difference (NULL);
 	}
 
       /* Take care to not run out of room in our buffer.  */
@@ -233,18 +236,15 @@ diff_sparse_files (void)
 	      if (status < 0)
 		{
 		  read_error (current_stat_info.file_name);
-		  report_difference (0);
+		  report_difference (NULL);
 		}
 	      else
 		{
-		  char message[MESSAGE_BUFFER_SIZE];
-
-		  sprintf (message,
-			   ngettext ("Could only read %lu of %lu byte",
+		  report_difference (ngettext ("Could only read %lu of %lu byte",
 				     "Could only read %lu of %lu bytes",
 				     chunk_size),
-			   (unsigned long) status, (unsigned long) chunk_size);
-		  report_difference (message);
+				     (unsigned long) status,
+				     (unsigned long) chunk_size);
 		}
 	      break;
 	    }
@@ -268,18 +268,15 @@ diff_sparse_files (void)
 	  if (status < 0)
 	    {
 	      read_error (current_stat_info.file_name);
-	      report_difference (0);
+	      report_difference (NULL);
 	    }
 	  else
 	    {
-	      char message[MESSAGE_BUFFER_SIZE];
-
-	      sprintf (message,
-		       ngettext ("Could only read %lu of %lu byte",
+	      report_difference (ngettext ("Could only read %lu of %lu byte",
 				 "Could only read %lu of %lu bytes",
 				 chunk_size),
-		       (unsigned long) status, (unsigned long) chunk_size);
-	      report_difference (message);
+				 (unsigned long) status,
+				 (unsigned long) chunk_size);
 	    }
 	  break;
 	}
@@ -334,7 +331,7 @@ get_stat_data (char const *file_name, struct stat *stat_data)
 	stat_warn (file_name);
       else
 	stat_error (file_name);
-      report_difference (0);
+      report_difference (NULL);
       return 0;
     }
 
@@ -395,15 +392,7 @@ diff_archive (void)
       if ((current_stat_info.stat.st_mode & MODE_ALL) != (stat_data.st_mode & MODE_ALL))
 	report_difference (_("Mode differs"));
 
-#if !MSDOS
-      /* stat() in djgpp's C library gives a constant number of 42 as the
-	 uid and gid of a file.  So, comparing an FTP'ed archive just after
-	 unpack would fail on MSDOS.  */
-      if (stat_data.st_uid != current_stat_info.stat.st_uid)
-	report_difference (_("Uid differs"));
-      if (stat_data.st_gid != current_stat_info.stat.st_gid)
-	report_difference (_("Gid differs"));
-#endif
+      sys_compare_uid_gid (&stat_data, &current_stat_info.stat);
 
       if (stat_data.st_mtime != current_stat_info.stat.st_mtime)
 	report_difference (_("Mod time differs"));
@@ -421,7 +410,7 @@ diff_archive (void)
 	{
 	  open_error (current_stat_info.file_name);
 	  skip_member ();
-	  report_difference (0);
+	  report_difference (NULL);
 	  goto quit;
 	}
 
@@ -457,33 +446,18 @@ diff_archive (void)
     quit:
       break;
 
-#if !MSDOS
     case LNKTYPE:
       {
-	struct stat link_data;
+	struct stat link_data, stat_data;
 
 	if (!get_stat_data (current_stat_info.file_name, &stat_data))
 	  break;
 	if (!get_stat_data (current_stat_info.link_name, &link_data))
 	  break;
-
-	if (stat_data.st_dev != link_data.st_dev
-	    || stat_data.st_ino != link_data.st_ino)
-	  {
-	    char *message =
-	      xmalloc (MESSAGE_BUFFER_SIZE + 4 * strlen (current_stat_info.link_name));
-
-	    sprintf (message, _("Not linked to %s"),
-		     quote (current_stat_info.link_name));
-	    report_difference (message);
-	    free (message);
-	    break;
-	  }
-
-	break;
+	sys_compare_links (&stat_data, &link_data);
       }
-#endif /* not MSDOS */
-
+      break;
+      
 #ifdef HAVE_READLINK
     case SYMTYPE:
       {
@@ -498,7 +472,7 @@ diff_archive (void)
 	      readlink_warn (current_stat_info.file_name);
 	    else
 	      readlink_error (current_stat_info.file_name);
-	    report_difference (0);
+	    report_difference (NULL);
 	  }
 	else if (status != len
 		 || strncmp (current_stat_info.link_name, linkbuf, len) != 0)
@@ -621,7 +595,7 @@ diff_archive (void)
 	if (diff_handle < 0)
 	  {
 	    open_error (current_stat_info.file_name);
-	    report_difference (0);
+	    report_difference (NULL);
 	    skip_member ();
 	    break;
 	  }
@@ -629,7 +603,7 @@ diff_archive (void)
 	if (lseek (diff_handle, offset, SEEK_SET) < 0)
 	  {
 	    seek_error_details (current_stat_info.file_name, offset);
-	    report_difference (0);
+	    report_difference (NULL);
 	    break;
 	  }
 

@@ -383,13 +383,7 @@ delete_archive_members (void)
 
   if (! acting_as_filter && ! _isrmt (archive))
     {
-#if MSDOS
-      int status = write (archive, "", 0);
-#else
-      off_t pos = lseek (archive, (off_t) 0, SEEK_CUR);
-      int status = pos < 0 ? -1 : ftruncate (archive, pos);
-#endif
-      if (status != 0)
+      if (sys_truncate (archive))
 	truncate_warn (archive_name_array[0]);
     }
 

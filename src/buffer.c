@@ -23,23 +23,12 @@
 
 #include <signal.h>
 
-#if MSDOS
-# include <process.h>
-#endif
-
-#if XENIX
-# include <sys/inode.h>
-#endif
-
 #include <fnmatch.h>
 #include <human.h>
 #include <quotearg.h>
 
 #include "common.h"
 #include "rmt.h"
-
-#define	PREAD 0			/* read file descriptor from pipe() */
-#define	PWRITE 1		/* write file descriptor from pipe() */
 
 /* Number of retries before giving up on read.  */
 #define	READ_ERROR_MAX 10
@@ -62,8 +51,6 @@ enum access_mode access_mode;	/* how do we handle the archive */
 off_t records_read;		/* number of records read from this archive */
 off_t records_written;		/* likewise, for records written */
 
-static struct stat archive_stat; /* stat block for archive file */
-
 static off_t record_start_block; /* block ordinal at record_start */
 
 /* Where we write list messages (not errors, not interactions) to.  */
@@ -71,14 +58,6 @@ FILE *stdlis;
 
 static void backspace_output (void);
 static int new_volume (enum access_mode);
-static void archive_write_error (ssize_t) __attribute__ ((noreturn));
-static void archive_read_error (void);
-
-#if !MSDOS
-/* Obnoxious test to see if dimwit is trying to dump the archive.  */
-dev_t ar_dev;
-ino_t ar_ino;
-#endif
 
 /* PID of child program, if compress_option or remote archive access.  */
 static pid_t child_pid;
@@ -127,6 +106,12 @@ static off_t real_s_totsize;
 static off_t real_s_sizeleft;
 
 /* Functions.  */
+
+void
+clear_read_error_count ()
+{
+  read_error_count = 0;
+}
 
 void
 print_total_written (void)
@@ -224,400 +209,12 @@ available_space_after (union block *pointer)
 }
 
 /* Close file having descriptor FD, and abort if close unsuccessful.  */
-static void
+void
 xclose (int fd)
 {
   if (close (fd) != 0)
     close_error (_("(pipe)"));
 }
-
-/* Duplicate file descriptor FROM into becoming INTO.
-   INTO is closed first and has to be the next available slot.  */
-static void
-xdup2 (int from, int into)
-{
-  if (from != into)
-    {
-      int status = close (into);
-
-      if (status != 0 && errno != EBADF)
-	{
-	  int e = errno;
-	  FATAL_ERROR ((0, e, _("Cannot close")));
-	}
-      status = dup (from);
-      if (status != into)
-	{
-	  if (status < 0)
-	    {
-	      int e = errno;
-	      FATAL_ERROR ((0, e, _("Cannot dup")));
-	    }
-	  abort ();
-	}
-      xclose (from);
-    }
-}
-
-#if MSDOS
-
-/* Set ARCHIVE for writing, then compressing an archive.  */
-static void
-child_open_for_compress (void)
-{
-  FATAL_ERROR ((0, 0, _("Cannot use compressed or remote archives")));
-}
-
-/* Set ARCHIVE for uncompressing, then reading an archive.  */
-static void
-child_open_for_uncompress (void)
-{
-  FATAL_ERROR ((0, 0, _("Cannot use compressed or remote archives")));
-}
-
-#else /* not MSDOS */
-
-/* Return nonzero if NAME is the name of a regular file, or if the file
-   does not exist (so it would be created as a regular file).  */
-static int
-is_regular_file (const char *name)
-{
-  struct stat stbuf;
-
-  if (stat (name, &stbuf) == 0)
-    return S_ISREG (stbuf.st_mode);
-  else
-    return errno == ENOENT;
-}
-
-static ssize_t
-write_archive_buffer (void)
-{
-  ssize_t status;
-  ssize_t written = 0;
-
-  while (0 <= (status = rmtwrite (archive, record_start->buffer + written,
-				  record_size - written)))
-    {
-      written += status;
-      if (written == record_size
-	  || _isrmt (archive)
-	  || ! (S_ISFIFO (archive_stat.st_mode)
-		|| S_ISSOCK (archive_stat.st_mode)))
-	break;
-    }
-
-  return written ? written : status;
-}
-
-/* Set ARCHIVE for writing, then compressing an archive.  */
-static void
-child_open_for_compress (void)
-{
-  int parent_pipe[2];
-  int child_pipe[2];
-  pid_t grandchild_pid;
-  int wait_status;
-
-  xpipe (parent_pipe);
-  child_pid = xfork ();
-
-  if (child_pid > 0)
-    {
-      /* The parent tar is still here!  Just clean up.  */
-
-      archive = parent_pipe[PWRITE];
-      xclose (parent_pipe[PREAD]);
-      return;
-    }
-
-  /* The new born child tar is here!  */
-
-  program_name = _("tar (child)");
-
-  xdup2 (parent_pipe[PREAD], STDIN_FILENO);
-  xclose (parent_pipe[PWRITE]);
-
-  /* Check if we need a grandchild tar.  This happens only if either:
-     a) we are writing stdout: to force reblocking;
-     b) the file is to be accessed by rmt: compressor doesn't know how;
-     c) the file is not a plain file.  */
-
-  if (strcmp (archive_name_array[0], "-") != 0
-      && !_remdev (archive_name_array[0])
-      && is_regular_file (archive_name_array[0]))
-    {
-      if (backup_option)
-	maybe_backup_file (archive_name_array[0], 1);
-
-      /* We don't need a grandchild tar.  Open the archive and launch the
-	 compressor.  */
-
-      archive = creat (archive_name_array[0], MODE_RW);
-      if (archive < 0)
-	{
-	  int saved_errno = errno;
-
-	  if (backup_option)
-	    undo_last_backup ();
-	  errno = saved_errno;
-	  open_fatal (archive_name_array[0]);
-	}
-      xdup2 (archive, STDOUT_FILENO);
-      execlp (use_compress_program_option, use_compress_program_option,
-	      (char *) 0);
-      exec_fatal (use_compress_program_option);
-    }
-
-  /* We do need a grandchild tar.  */
-
-  xpipe (child_pipe);
-  grandchild_pid = xfork ();
-
-  if (grandchild_pid == 0)
-    {
-      /* The newborn grandchild tar is here!  Launch the compressor.  */
-
-      program_name = _("tar (grandchild)");
-
-      xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
-      xclose (child_pipe[PREAD]);
-      execlp (use_compress_program_option, use_compress_program_option,
-	      (char *) 0);
-      exec_fatal (use_compress_program_option);
-    }
-
-  /* The child tar is still here!  */
-
-  /* Prepare for reblocking the data from the compressor into the archive.  */
-
-  xdup2 (child_pipe[PREAD], STDIN_FILENO);
-  xclose (child_pipe[PWRITE]);
-
-  if (strcmp (archive_name_array[0], "-") == 0)
-    archive = STDOUT_FILENO;
-  else
-    {
-      archive = rmtcreat (archive_name_array[0], MODE_RW, rsh_command_option);
-      if (archive < 0)
-	open_fatal (archive_name_array[0]);
-    }
-
-  /* Let's read out of the stdin pipe and write an archive.  */
-
-  while (1)
-    {
-      ssize_t status = 0;
-      char *cursor;
-      size_t length;
-
-      /* Assemble a record.  */
-
-      for (length = 0, cursor = record_start->buffer;
-	   length < record_size;
-	   length += status, cursor += status)
-	{
-	  size_t size = record_size - length;
-
-	  status = safe_read (STDIN_FILENO, cursor, size);
-	  if (status <= 0)
-	    break;
-	}
-
-      if (status < 0)
-	read_fatal (use_compress_program_option);
-
-      /* Copy the record.  */
-
-      if (status == 0)
-	{
-	  /* We hit the end of the file.  Write last record at
-	     full length, as the only role of the grandchild is
-	     doing proper reblocking.  */
-
-	  if (length > 0)
-	    {
-	      memset (record_start->buffer + length, 0, record_size - length);
-	      status = write_archive_buffer ();
-	      if (status != record_size)
-		archive_write_error (status);
-	    }
-
-	  /* There is nothing else to read, break out.  */
-	  break;
-	}
-
-      status = write_archive_buffer ();
-      if (status != record_size)
-	archive_write_error (status);
-    }
-
-#if 0
-  close_archive ();
-#endif
-
-  /* Propagate any failure of the grandchild back to the parent.  */
-
-  while (waitpid (grandchild_pid, &wait_status, 0) == -1)
-    if (errno != EINTR)
-      {
-	waitpid_error (use_compress_program_option);
-	break;
-      }
-
-  if (WIFSIGNALED (wait_status))
-    {
-      kill (child_pid, WTERMSIG (wait_status));
-      exit_status = TAREXIT_FAILURE;
-    }
-  else if (WEXITSTATUS (wait_status) != 0)
-    exit_status = WEXITSTATUS (wait_status);
-
-  exit (exit_status);
-}
-
-/* Set ARCHIVE for uncompressing, then reading an archive.  */
-static void
-child_open_for_uncompress (void)
-{
-  int parent_pipe[2];
-  int child_pipe[2];
-  pid_t grandchild_pid;
-  int wait_status;
-
-  xpipe (parent_pipe);
-  child_pid = xfork ();
-
-  if (child_pid > 0)
-    {
-      /* The parent tar is still here!  Just clean up.  */
-
-      read_full_records_option = 1;
-      archive = parent_pipe[PREAD];
-      xclose (parent_pipe[PWRITE]);
-      return;
-    }
-
-  /* The newborn child tar is here!  */
-
-  program_name = _("tar (child)");
-
-  xdup2 (parent_pipe[PWRITE], STDOUT_FILENO);
-  xclose (parent_pipe[PREAD]);
-
-  /* Check if we need a grandchild tar.  This happens only if either:
-     a) we're reading stdin: to force unblocking;
-     b) the file is to be accessed by rmt: compressor doesn't know how;
-     c) the file is not a plain file.  */
-
-  if (strcmp (archive_name_array[0], "-") != 0
-      && !_remdev (archive_name_array[0])
-      && is_regular_file (archive_name_array[0]))
-    {
-      /* We don't need a grandchild tar.  Open the archive and lauch the
-	 uncompressor.  */
-
-      archive = open (archive_name_array[0], O_RDONLY | O_BINARY, MODE_RW);
-      if (archive < 0)
-	open_fatal (archive_name_array[0]);
-      xdup2 (archive, STDIN_FILENO);
-      execlp (use_compress_program_option, use_compress_program_option,
-	      "-d", (char *) 0);
-      exec_fatal (use_compress_program_option);
-    }
-
-  /* We do need a grandchild tar.  */
-
-  xpipe (child_pipe);
-  grandchild_pid = xfork ();
-
-  if (grandchild_pid == 0)
-    {
-      /* The newborn grandchild tar is here!  Launch the uncompressor.  */
-
-      program_name = _("tar (grandchild)");
-
-      xdup2 (child_pipe[PREAD], STDIN_FILENO);
-      xclose (child_pipe[PWRITE]);
-      execlp (use_compress_program_option, use_compress_program_option,
-	      "-d", (char *) 0);
-      exec_fatal (use_compress_program_option);
-    }
-
-  /* The child tar is still here!  */
-
-  /* Prepare for unblocking the data from the archive into the
-     uncompressor.  */
-
-  xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
-  xclose (child_pipe[PREAD]);
-
-  if (strcmp (archive_name_array[0], "-") == 0)
-    archive = STDIN_FILENO;
-  else
-    archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-		       MODE_RW, rsh_command_option);
-  if (archive < 0)
-    open_fatal (archive_name_array[0]);
-
-  /* Let's read the archive and pipe it into stdout.  */
-
-  while (1)
-    {
-      char *cursor;
-      size_t maximum;
-      size_t count;
-      ssize_t status;
-
-      read_error_count = 0;
-
-    error_loop:
-      status = rmtread (archive, record_start->buffer, record_size);
-      if (status < 0)
-	{
-	  archive_read_error ();
-	  goto error_loop;
-	}
-      if (status == 0)
-	break;
-      cursor = record_start->buffer;
-      maximum = status;
-      while (maximum)
-	{
-	  count = maximum < BLOCKSIZE ? maximum : BLOCKSIZE;
-	  if (full_write (STDOUT_FILENO, cursor, count) != count)
-	    write_error (use_compress_program_option);
-	  cursor += count;
-	  maximum -= count;
-	}
-    }
-
-  xclose (STDOUT_FILENO);
-#if 0
-  close_archive ();
-#endif
-
-  /* Propagate any failure of the grandchild back to the parent.  */
-
-  while (waitpid (grandchild_pid, &wait_status, 0) == -1)
-    if (errno != EINTR)
-      {
-	waitpid_error (use_compress_program_option);
-	break;
-      }
-
-  if (WIFSIGNALED (wait_status))
-    {
-      kill (child_pid, WTERMSIG (wait_status));
-      exit_status = TAREXIT_FAILURE;
-    }
-  else if (WEXITSTATUS (wait_status) != 0)
-    exit_status = WEXITSTATUS (wait_status);
-
-  exit (exit_status);
-}
-
-#endif /* not MSDOS */
 
 /* Check the LABEL block against the volume label, seen as a globbing
    pattern.  Return true if the pattern matches.  In case of failure,
@@ -702,11 +299,11 @@ open_archive (enum access_mode wanted_access)
       switch (wanted_access)
 	{
 	case ACCESS_READ:
-	  child_open_for_uncompress ();
+	  child_pid = sys_child_open_for_uncompress ();
 	  break;
 
 	case ACCESS_WRITE:
-	  child_open_for_compress ();
+	  child_pid = sys_child_open_for_compress ();
 	  break;
 
 	case ACCESS_UPDATE:
@@ -770,7 +367,7 @@ open_archive (enum access_mode wanted_access)
       }
 
   if (archive < 0
-      || (! _isrmt (archive) && fstat (archive, &archive_stat) < 0))
+      || (! _isrmt (archive) && !sys_get_archive_stat ()))
     {
       int saved_errno = errno;
 
@@ -780,35 +377,9 @@ open_archive (enum access_mode wanted_access)
       open_fatal (archive_name_array[0]);
     }
 
-#if !MSDOS
-
-  /* Detect if outputting to "/dev/null".  */
-  {
-    static char const dev_null[] = "/dev/null";
-    struct stat dev_null_stat;
-
-    dev_null_output =
-      (strcmp (archive_name_array[0], dev_null) == 0
-       || (! _isrmt (archive)
-	   && S_ISCHR (archive_stat.st_mode)
-	   && stat (dev_null, &dev_null_stat) == 0
-	   && archive_stat.st_dev == dev_null_stat.st_dev
-	   && archive_stat.st_ino == dev_null_stat.st_ino));
-  }
-
-  if (!_isrmt (archive) && S_ISREG (archive_stat.st_mode))
-    {
-      ar_dev = archive_stat.st_dev;
-      ar_ino = archive_stat.st_ino;
-    }
-  else
-    ar_dev = 0;
-
-#endif /* not MSDOS */
-
-#if MSDOS
-  setmode (archive, O_BINARY);
-#endif
+  sys_detect_dev_null_output ();
+  sys_save_archive_dev_ino ();
+  SET_BINARY_MODE (archive);
 
   switch (wanted_access)
     {
@@ -876,7 +447,7 @@ flush_write (void)
   else if (dev_null_output)
     status = record_size;
   else
-    status = write_archive_buffer ();
+    status = sys_write_archive_buffer ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
 
@@ -971,7 +542,7 @@ flush_write (void)
 	record_start--;
     }
 
-  status = write_archive_buffer ();
+  status = sys_write_archive_buffer ();
   if (status != record_size)
     archive_write_error (status);
 
@@ -1002,7 +573,7 @@ flush_write (void)
 /* Handle write errors on the archive.  Write errors are always fatal.
    Hitting the end of a volume does not cause a write error unless the
    write was the first record of the volume.  */
-static void
+void
 archive_write_error (ssize_t status)
 {
   /* It might be useful to know how much was written before the error
@@ -1019,7 +590,7 @@ archive_write_error (ssize_t status)
 
 /* Handle read errors on the archive.  If the read should be retried,
    return to the caller.  */
-static void
+void
 archive_read_error (void)
 {
   read_error (*archive_name_cursor);
@@ -1106,7 +677,7 @@ flush_read (void)
   if (write_archive_to_stdout && record_start_block != 0)
     {
       archive = STDOUT_FILENO;
-      status = write_archive_buffer ();
+      status = sys_write_archive_buffer ();
       archive = STDIN_FILENO;
       if (status != record_size)
 	archive_write_error (status);
@@ -1332,48 +903,16 @@ close_archive (void)
   if (time_to_start_writing || access_mode == ACCESS_WRITE)
     flush_archive ();
 
-#if !MSDOS
-
-  /* Manage to fully drain a pipe we might be reading, so to not break it on
-     the producer after the EOF block.  FIXME: one of these days, GNU tar
-     might become clever enough to just stop working, once there is no more
-     work to do, we might have to revise this area in such time.  */
-
-  if (access_mode == ACCESS_READ
-      && ! _isrmt (archive)
-      && (S_ISFIFO (archive_stat.st_mode) || S_ISSOCK (archive_stat.st_mode)))
-    while (rmtread (archive, record_start->buffer, record_size) > 0)
-      continue;
-#endif
-
+  sys_drain_input_pipe ();
+  
   if (verify_option)
     verify_volume ();
 
   if (rmtclose (archive) != 0)
     close_warn (*archive_name_cursor);
 
-#if !MSDOS
-
-  if (child_pid)
-    {
-      int wait_status;
-
-      while (waitpid (child_pid, &wait_status, 0) == -1)
-	if (errno != EINTR)
-	  {
-	    waitpid_error (use_compress_program_option);
-	    break;
-	  }
-
-      if (WIFSIGNALED (wait_status))
-	ERROR ((0, 0, _("Child died with signal %d"),
-		WTERMSIG (wait_status)));
-      else if (WEXITSTATUS (wait_status) != 0)
-	ERROR ((0, 0, _("Child returned status %d"),
-		WEXITSTATUS (wait_status)));
-    }
-#endif /* !MSDOS */
-
+  sys_wait_for_child (child_pid);
+  
   destroy_stat (&current_stat_info);
   if (save_name)
     free (save_name);
@@ -1535,32 +1074,7 @@ new_volume (enum access_mode access)
 		break;
 
 	      case '!':
-#if MSDOS
-		spawnl (P_WAIT, getenv ("COMSPEC"), "-", 0);
-#else /* not MSDOS */
-		{
-		  pid_t child;
-		  const char *shell = getenv ("SHELL");
-		  if (! shell)
-		    shell = "/bin/sh";
-		  child = xfork ();
-		  if (child == 0)
-		    {
-		      execlp (shell, "-sh", "-i", 0);
-		      exec_fatal (shell);
-		    }
-		  else
-		    {
-		      int wait_status;
-		      while (waitpid (child, &wait_status, 0) == -1)
-			if (errno != EINTR)
-			  {
-			    waitpid_error (shell);
-			    break;
-			  }
-		    }
-		}
-#endif /* not MSDOS */
+		sys_spawn_shell ();
 		break;
 	      }
 	  }
@@ -1603,9 +1117,7 @@ new_volume (enum access_mode access)
       goto tryagain;
     }
 
-#if MSDOS
-  setmode (archive, O_BINARY);
-#endif
+  SET_BINARY_MODE (archive);
 
   return 1;
 }

@@ -407,10 +407,7 @@ make_directories (char *file_name)
       else if ((errno == ENOSYS /* Automounted dirs on Solaris return
 				   this. Reported by Warren Hyde
 				   <Warren.Hyde@motorola.com> */
-#if MSDOS
-	       || errno == EACCES  /* Turbo C mkdir gives a funny errno.  */
-#endif
-	       )
+	       || ERRNO_IS_EACCESS)  /* Turbo C mkdir gives a funny errno.  */
 	       && access (file_name, W_OK) == 0)
 	continue;
 
