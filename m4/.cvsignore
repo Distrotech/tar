@@ -95,3 +95,6 @@ xsize.m4
 xstrtol.m4
 xstrtoumax.m4
 *_gl.m4
+gnulib.m4
+malloc.m4
+realloc.m4
