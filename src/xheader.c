@@ -33,7 +33,8 @@
 struct xhdr_tab
 {
   char const *keyword;
-  void (*coder) (struct tar_stat_info const *, char const *, struct xheader *);
+  void (*coder) (struct tar_stat_info const *, char const *,
+		 struct xheader *, void *data);
   void (*decoder) (struct tar_stat_info *, char const *);
 };
 
@@ -121,7 +122,7 @@ xheader_decode (struct tar_stat_info *st)
 }
 
 void
-xheader_store (char const *keyword, struct tar_stat_info const *st)
+xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
 {
   struct xhdr_tab const *t;
 
@@ -135,7 +136,7 @@ xheader_store (char const *keyword, struct tar_stat_info const *st)
       extended_header.stk = xmalloc (sizeof *extended_header.stk);
       obstack_init (extended_header.stk);
     }
-  t->coder (st, keyword, &extended_header);
+  t->coder (st, keyword, &extended_header, data);
 }
 
 void
@@ -272,7 +273,7 @@ code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
 
 static void
 dummy_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
 }
 
@@ -283,7 +284,7 @@ dummy_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 atime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
   code_time (st->stat.st_atime, keyword, xhdr);
 }
@@ -298,7 +299,7 @@ atime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 gid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr)
+	   struct xheader *xhdr, void *data)
 {
   code_num (st->stat.st_gid, keyword, xhdr);
 }
@@ -313,7 +314,7 @@ gid_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 gname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
   code_string (st->gname, keyword, xhdr);
 }
@@ -326,7 +327,7 @@ gname_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 linkpath_coder (struct tar_stat_info const *st, char const *keyword,
-		struct xheader *xhdr)
+		struct xheader *xhdr, void *data)
 {
   code_string (st->link_name, keyword, xhdr);
 }
@@ -339,7 +340,7 @@ linkpath_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 ctime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
   code_time (st->stat.st_ctime, keyword, xhdr);
 }
@@ -354,7 +355,7 @@ ctime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
   code_time (st->stat.st_mtime, keyword, xhdr);
 }
@@ -369,7 +370,7 @@ mtime_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 path_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr)
+	    struct xheader *xhdr, void *data)
 {
   code_string (st->file_name, keyword, xhdr);
 }
@@ -384,7 +385,7 @@ path_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 size_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr)
+	    struct xheader *xhdr, void *data)
 {
   code_num (st->stat.st_size, keyword, xhdr);
 }
@@ -399,7 +400,7 @@ size_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 uid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr)
+	   struct xheader *xhdr, void *data)
 {
   code_num (st->stat.st_uid, keyword, xhdr);
 }
@@ -414,7 +415,7 @@ uid_decoder (struct tar_stat_info *st, char const *arg)
 
 static void
 uname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr)
+	     struct xheader *xhdr, void *data)
 {
   code_string (st->uname, keyword, xhdr);
 }
@@ -423,6 +424,81 @@ static void
 uname_decoder (struct tar_stat_info *st, char const *arg)
 {
   assign_string (&st->uname, arg);
+}
+
+static void
+sparse_size_coder (struct tar_stat_info const *st, char const *keyword,
+	     struct xheader *xhdr, void *data)
+{
+  size_coder (st, keyword, xhdr, data);
+}
+
+static void
+sparse_size_decoder (struct tar_stat_info *st, char const *arg)
+{
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->archive_file_size = u;
+}
+
+static void
+sparse_numblocks_coder (struct tar_stat_info const *st, char const *keyword,
+			struct xheader *xhdr, void *data)
+{
+  code_num (st->sparse_map_avail, keyword, xhdr);
+}
+
+static void
+sparse_numblocks_decoder (struct tar_stat_info *st, char const *arg)
+{
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    {
+      st->sparse_map_size = u;
+      st->sparse_map = calloc(st->sparse_map_size, sizeof(st->sparse_map[0]));
+      st->sparse_map_avail = 0;
+    }
+}
+
+static void
+sparse_offset_coder (struct tar_stat_info const *st, char const *keyword,
+		     struct xheader *xhdr, void *data)
+{
+  size_t i = *(size_t*)data;
+  code_num (st->sparse_map[i].offset, keyword, xhdr);
+}
+
+static void
+sparse_offset_decoder (struct tar_stat_info *st, char const *arg)
+{
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->sparse_map[st->sparse_map_avail].offset = u;
+}
+
+static void
+sparse_numbytes_coder (struct tar_stat_info const *st, char const *keyword,
+		     struct xheader *xhdr, void *data)
+{
+  size_t i = *(size_t*)data;
+  code_num (st->sparse_map[i].numbytes, keyword, xhdr);
+}
+
+static void
+sparse_numbytes_decoder (struct tar_stat_info *st, char const *arg)
+{
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    {
+      if (st->sparse_map_avail == st->sparse_map_size)
+	{
+	  size_t newsize = st->sparse_map_size *= 2;
+	  st->sparse_map = xrealloc (st->sparse_map,
+				     st->sparse_map_size
+				     * sizeof st->sparse_map[0]);
+	}
+      st->sparse_map[st->sparse_map_avail++].numbytes = u;
+    }
 }
 
 struct xhdr_tab const xhdr_tab[] = {
@@ -439,13 +515,13 @@ struct xhdr_tab const xhdr_tab[] = {
   { "uid",	uid_coder,	uid_decoder	},
   { "uname",	uname_coder,	uname_decoder	},
 
-  /* The number of entries in xhdr_tab must agree with the array
-     bounds in xhdr_tab's forward declaration.  */
-
-#if 0 /* GNU private keywords (not yet implemented) */
   /* Sparse file handling */
+  { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder },
+  { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder },
   { "GNU.sparse.offset",     sparse_offset_coder, sparse_offset_decoder },
   { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder },
+
+#if 0 /* GNU private keywords (not yet implemented) */
 
   /* The next directory entry actually contains the names of files
      that were in the directory at the time the dump was made.
