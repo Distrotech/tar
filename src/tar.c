@@ -31,8 +31,8 @@
 enum backup_type get_version ();
 
 /* FIXME: We should use a conversion routine that does reasonable error
-   checking -- atoi doesn't.  For now, punt.  */
-#define intconv	atoi
+   checking -- atol doesn't.  For now, punt.  */
+#define intconv	atol
 
 time_t get_date ();
 
@@ -51,16 +51,17 @@ static void usage PARAMS ((int));
 /* Miscellaneous.  */
 
 /*------------------------------------------------------------------------.
-| Check if STRING is the decimal representation of number, and return its |
-| value.  If not a decimal number, return -1.				  |
+| Check if STRING0 is the decimal representation of number, and store its |
+| value.  If not a decimal number, return 0.				  |
 `------------------------------------------------------------------------*/
 
 static int
-check_decimal (const char *string)
+check_decimal (const char *string0, uintmax_t *result)
 {
-  int value = -1;
+  const char *string = string0;
+  uintmax_t value = 0;
 
-  while (*string)
+  do
     switch (*string)
       {
       case '0':
@@ -73,14 +74,22 @@ check_decimal (const char *string)
       case '7':
       case '8':
       case '9':
-	value = value < 0 ? *string - '0' : 10 * value + *string - '0';
-	string++;
+	{
+	  uintmax_t v10 = value * 10;
+	  uintmax_t v10d = v10 + (*string - '0');
+	  if (v10 / 10 != value || v10d < v10)
+	    return 0;
+	  value = v10d;
+	}
 	break;
 
       default:
-	return -1;
+	return 0;
       }
-    return value;
+  while (*++string);
+
+  *result = value;
+  return 1;
 }
 
 /*----------------------------------------------.
@@ -580,7 +589,7 @@ decode_options (int argc, char *const *argv)
 
       case 'b':
 	blocking_factor = intconv (optarg);
-	record_size = blocking_factor * BLOCKSIZE;
+	record_size = blocking_factor * (size_t) BLOCKSIZE;
 	break;
 
       case OBSOLETE_READ_FULL_RECORDS:
@@ -836,10 +845,13 @@ decode_options (int argc, char *const *argv)
 
       case GROUP_OPTION:
 	if (!gname_to_gid (optarg, &group_option))
-	  if (!check_decimal (optarg) >= 0)
-	    ERROR ((TAREXIT_FAILURE, 0, _("Invalid group given on option")));
-	  else
-	    group_option = check_decimal (optarg);
+	  {
+	    uintmax_t g;
+	    if (!check_decimal (optarg, &g) || g != (gid_t) g)
+	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid group given on option")));
+	    else
+	      group_option = g;
+	  }
 	break;
 
       case MODE_OPTION:
@@ -862,10 +874,13 @@ decode_options (int argc, char *const *argv)
 
       case OWNER_OPTION:
 	if (!uname_to_uid (optarg, &owner_option))
-	  if (!check_decimal (optarg) >= 0)
-	    ERROR ((TAREXIT_FAILURE, 0, _("Invalid owner given on option")));
-	  else
-	    owner_option = check_decimal (optarg);
+	  {
+	    uintmax_t u;
+	    if (!check_decimal (optarg, &u) || u != (uid_t) u)
+	      ERROR ((TAREXIT_FAILURE, 0, _("Invalid owner given on option")));
+	    else
+	      owner_option = u;
+	  }
 	break;
 
       case POSIX_OPTION:
