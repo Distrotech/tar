@@ -10,6 +10,10 @@ GNU tar NEWS - User visible changes.
   zh_TW (Chinese traditional).  The code 'no' for Norwegian has been
   withdrawn; use 'nb' instead.
 
+version 1.13.26
+
+* Bug fixes.
+
 version 1.13.25 - Paul Eggert, 2001-09-26
 
 * Bug fixes.
