@@ -94,16 +94,14 @@ static int notumask = ~0;		/* Masks out bits user doesn't want */
 /* number of elts storable in the sparsearray */
 /*int	sp_array_size = 10;*/
 
-struct saved_dir_info
+struct saved_info
 {
   char *path;
   int mode;
   int atime;
   int mtime;
-  struct saved_dir_info *next;
+  saved_info *next;
 };
-  
-struct saved_dir_info *saved_dir_info_head;
 
 /*
  * Set up to extract files.
@@ -143,13 +141,7 @@ extract_archive()
 	register int i;
 /*	int sparse_ind = 0;*/
 	union record *exhdr;	
-	struct saved_dir_info *tmp;
 /*	int end_nulls; */
-	char **longp;
-	char *bp;
-	static char *longname;
-	static char *longlink;
-	int bumplongs;
 	
 	saverec(&head);			/* Make sure it sticks around */
 	userec(head);			/* And go past it in the archive */
@@ -176,344 +168,311 @@ extract_archive()
 	 * the header record.
 	 */
 	skipcrud = 0;
-	while (!f_absolute_paths
-	       && '/' == (longname ? longname : head->header.name)[skipcrud]) {
+	while (!f_absolute_paths && '/' == head->header.name[skipcrud]) {
 		static int warned_once = 0;
 
 		skipcrud++;	/* Force relative path */
 		if (!warned_once++) {
 			msg("Removing leading / from absolute path names in the archive.");
-		 }
-	 }
+		}
+	}
 
-	 bumplongs = (head->header.linkflag != LF_LONGNAME
-		      && head->header.linkflag != LF_LONGLINK);
-	
-	 switch (head->header.linkflag) {
+	switch (head->header.linkflag) {
 
-	 default:
-		 msg("Unknown file type '%c' for %s, extracted as normal file",
-			 head->header.linkflag, skipcrud+head->header.name);
-		 /* FALL THRU */
+	default:
+		msg("Unknown file type '%c' for %s, extracted as normal file",
+			head->header.linkflag, skipcrud+head->header.name);
+		/* FALL THRU */
 
-	 /* 
-	  * JK - What we want to do if the file is sparse is loop through
-	  * the array of sparse structures in the header and read in
-	  * and translate the character strings representing  1) the offset
-	  * at which to write and 2) how many bytes to write into numbers,
-	  * which we store into the scratch array, "sparsearray".  This
-	  * array makes our life easier the same way it did in creating
-	  * the tar file that had to deal with a sparse file.
-	  *
-	  * After we read in the first five (at most) sparse structures,
-	  * we check to see if the file has an extended header, i.e., 
-	  * if more sparse structures are needed to describe the contents
-	  * of the new file.  If so, we read in the extended headers
-	  * and continue to store their contents into the sparsearray.
-	  */
-	 case LF_SPARSE:
-		 sp_array_size = 10;
-		 sparsearray = (struct sp_array *) malloc(sp_array_size * sizeof(struct sp_array));
-		 for (i = 0; i < SPARSE_IN_HDR; i++) {
-			 sparsearray[i].offset = 
-				 from_oct(1+12, head->header.sp[i].offset);
-			 sparsearray[i].numbytes = 
-				 from_oct(1+12, head->header.sp[i].numbytes);
-			 if (!sparsearray[i].numbytes)
-				 break;
-		 }
+	/* 
+	 * JK - What we want to do if the file is sparse is loop through
+	 * the array of sparse structures in the header and read in
+	 * and translate the character strings representing  1) the offset
+	 * at which to write and 2) how many bytes to write into numbers,
+	 * which we store into the scratch array, "sparsearray".  This
+	 * array makes our life easier the same way it did in creating
+	 * the tar file that had to deal with a sparse file.
+	 *
+	 * After we read in the first five (at most) sparse structures,
+	 * we check to see if the file has an extended header, i.e., 
+	 * if more sparse structures are needed to describe the contents
+	 * of the new file.  If so, we read in the extended headers
+	 * and continue to store their contents into the sparsearray.
+	 */
+	case LF_SPARSE:
+		sp_array_size = 10;
+		sparsearray = (struct sp_array *) malloc(sp_array_size * sizeof(struct sp_array));
+		for (i = 0; i < SPARSE_IN_HDR; i++) {
+			sparsearray[i].offset = 
+				from_oct(1+12, head->header.sp[i].offset);
+			sparsearray[i].numbytes = 
+				from_oct(1+12, head->header.sp[i].numbytes);
+			if (!sparsearray[i].numbytes)
+				break;
+		}
+		
+/*		end_nulls = from_oct(1+12, head->header.ending_blanks);*/
+		
+		if (head->header.isextended) {
+			/* read in the list of extended headers
+			   and translate them into the sparsearray 
+			   as before */
 
- /*		end_nulls = from_oct(1+12, head->header.ending_blanks);*/
+			/* static */ int ind = SPARSE_IN_HDR;
+			
+			for (;;) {
+				
+				exhdr = findrec();
+				for (i = 0; i < SPARSE_EXT_HDR; i++) {
+					
+					if (i+ind > sp_array_size-1) {
+					/*
+					 * realloc the scratch area
+					 * since we've run out of room --
+		 			 */
+						sparsearray = (struct sp_array *) 
+								realloc(sparsearray,
+ 								2 * sp_array_size * (sizeof(struct sp_array)));
+						sp_array_size *= 2;
+					}
+					if (!exhdr->ext_hdr.sp[i].numbytes)
+						break;
+					sparsearray[i+ind].offset = 
+						from_oct(1+12, exhdr->ext_hdr.sp[i].offset);
+					sparsearray[i+ind].numbytes = 
+						from_oct(1+12, exhdr->ext_hdr.sp[i].numbytes);
+				}
+				if (!exhdr->ext_hdr.isextended) 
+					break;
+				else {
+					ind += SPARSE_EXT_HDR;
+					userec(exhdr);
+				}
+			}
+			userec(exhdr);
+		}
+		
+		/* FALL THRU */
+	case LF_OLDNORMAL:
+	case LF_NORMAL:
+	case LF_CONTIG:
+		/*
+		 * Appears to be a file.
+		 * See if it's really a directory.
+		 */
+		namelen = strlen(skipcrud+head->header.name)-1;
+		if (head->header.name[skipcrud+namelen] == '/')
+			goto really_dir;
 
-		 if (head->header.isextended) {
-			 /* read in the list of extended headers
-			    and translate them into the sparsearray 
-			    as before */
+		/* FIXME, deal with protection issues */
+	again_file:
+		openflag = (f_keep?
+			O_BINARY|O_NDELAY|O_WRONLY|O_CREAT|O_EXCL:
+			O_BINARY|O_NDELAY|O_WRONLY|O_CREAT|O_TRUNC)
+			| ((head->header.linkflag == LF_SPARSE) ? 0 : O_APPEND);			
+			/*
+			 * JK - The last | is a kludge to solve the problem
+			 * the O_APPEND flag  causes with files we are
+			 * trying to make sparse:  when a file is opened
+			 * with O_APPEND, it writes  to the last place
+			 * that something was written, thereby ignoring
+			 * any lseeks that we have done.  We add this
+			 * extra condition to make it able to lseek when
+			 * a file is sparse, i.e., we don't open the new
+			 * file with this flag.  (Grump -- this bug caused
+			 * me to waste a good deal of time, I might add)
+  			 */
 
-			 /* static */ int ind = SPARSE_IN_HDR;
+		if(f_exstdout) {
+			fd = 1;
+			goto extract_file;
+		}
+#ifdef O_CTG
+		/*
+		 * Contiguous files (on the Masscomp) have to specify
+		 * the size in the open call that creates them.
+		 */
+		if (head->header.linkflag == LF_CONTIG)
+			fd = open(skipcrud+head->header.name, openflag | O_CTG,
+				hstat.st_mode, hstat.st_size);
+		else
+#endif
+		{
+#ifdef NO_OPEN3
+			/*
+			 * On raw V7 we won't let them specify -k (f_keep), but
+			 * we just bull ahead and create the files.
+			 */
+			fd = creat(skipcrud+head->header.name, 
+				hstat.st_mode);
+#else
+			/*
+			 * With 3-arg open(), we can do this up right.
+			 */
+			fd = open(skipcrud+head->header.name, openflag,
+				hstat.st_mode);
+#endif
+		}
 
-			 for (;;) {
+		if (fd < 0) {
+			if (make_dirs(skipcrud+head->header.name))
+				goto again_file;
+			msg_perror("Could not create file %s",skipcrud+head->header.name);
+			if (head->header.isextended)
+				skip_extended_headers();
+			skip_file((long)hstat.st_size);
+			goto quit;
+		}
 
-				 exhdr = findrec();
-				 for (i = 0; i < SPARSE_EXT_HDR; i++) {
+	extract_file:
+		if (head->header.linkflag == LF_SPARSE) {
+			char	*name;
+			int	namelen;
 
-					 if (i+ind > sp_array_size-1) {
-					 /*
-					  * realloc the scratch area
-					  * since we've run out of room --
-					  */
-						 sparsearray = (struct sp_array *) 
-								 realloc(sparsearray,
-								 2 * sp_array_size * (sizeof(struct sp_array)));
-						 sp_array_size *= 2;
-					 }
-					 if (!exhdr->ext_hdr.sp[i].numbytes)
-						 break;
-					 sparsearray[i+ind].offset = 
-						 from_oct(1+12, exhdr->ext_hdr.sp[i].offset);
-					 sparsearray[i+ind].numbytes = 
-						 from_oct(1+12, exhdr->ext_hdr.sp[i].numbytes);
-				 }
-				 if (!exhdr->ext_hdr.isextended) 
-					 break;
-				 else {
-					 ind += SPARSE_EXT_HDR;
-					 userec(exhdr);
-				 }
-			 }
-			 userec(exhdr);
-		 }
+			/*
+			 * Kludge alert.  NAME is assigned to header.name
+			 * because during the extraction, the space that
+			 * contains the header will get scribbled on, and
+			 * the name will get munged, so any error messages
+			 * that happen to contain the filename will look
+			 * REAL interesting unless we do this.
+			 */
+			namelen = strlen(skipcrud+head->header.name);
+			name = (char *) malloc((sizeof(char)) * namelen);
+			bcopy(skipcrud+head->header.name, name, namelen);
+			size = hstat.st_size;
+			extract_sparse_file(fd, &size, hstat.st_size,
+ 						name);
+		}			
+		else 		
+		  for (size = hstat.st_size;
+		       size > 0;
+		       size -= written) {
 
-		 /* FALL THRU */
-	 case LF_OLDNORMAL:
-	 case LF_NORMAL:
-	 case LF_CONTIG:
-		 /*
-		  * Appears to be a file.
-		  * See if it's really a directory.
-		  */
-		 namelen = strlen(skipcrud+head->header.name)-1;
-		 if (head->header.name[skipcrud+namelen] == '/')
-			 goto really_dir;
+/*			long	offset,
+ 				numbytes;*/
 
-		 /* FIXME, deal with protection issues */
-	 again_file:
-		 openflag = (f_keep?
-			 O_BINARY|O_NDELAY|O_WRONLY|O_CREAT|O_EXCL:
-			 O_BINARY|O_NDELAY|O_WRONLY|O_CREAT|O_TRUNC)
-			 | ((head->header.linkflag == LF_SPARSE) ? 0 : O_APPEND);			
-			 /*
-			  * JK - The last | is a kludge to solve the problem
-			  * the O_APPEND flag  causes with files we are
-			  * trying to make sparse:  when a file is opened
-			  * with O_APPEND, it writes  to the last place
-			  * that something was written, thereby ignoring
-			  * any lseeks that we have done.  We add this
-			  * extra condition to make it able to lseek when
-			  * a file is sparse, i.e., we don't open the new
-			  * file with this flag.  (Grump -- this bug caused
-			  * me to waste a good deal of time, I might add)
-			  */
+			if(f_multivol) {
+				save_name=head->header.name;
+				save_totsize=hstat.st_size;
+				save_sizeleft=size;
+			}
+			
+			/*
+			 * Locate data, determine max length
+			 * writeable, write it, record that
+			 * we have used the data, then check
+			 * if the write worked.
+			 */
+			data = findrec()->charptr;
+			if (data == NULL) {	/* Check it... */
+				msg("Unexpected EOF on archive file");
+				break;
+			}
+			/*
+			 * JK - If the file is sparse, use the sparsearray
+			 * that we created before to lseek into the new
+			 * file the proper amount, and to see how many
+			 * bytes we want to write at that position.
+			 */
+/*			if (head->header.linkflag == LF_SPARSE) {
+				off_t pos;
+				
+				pos = lseek(fd, (off_t) sparsearray[sparse_ind].offset, 0);
+				printf("%d at %d\n", (int) pos, sparse_ind);
+				written = sparsearray[sparse_ind++].numbytes;
+			} else*/
+			written = endofrecs()->charptr - data;
+			if (written > size)
+				written = size;
+			errno = 0;
+			check = write(fd, data, written);
+			/*
+			 * The following is in violation of strict
+			 * typing, since the arg to userec
+			 * should be a struct rec *.  FIXME.
+			 */
+			userec((union record *)(data + written - 1));
+			if (check == written) continue;
+			/*
+			 * Error in writing to file.
+			 * Print it, skip to next file in archive.
+			 */
+			if(check<0)
+				msg_perror("couldn't write to file %s",skipcrud+head->header.name);
+			else
+				msg("could only write %d of %d bytes to file %s",written,check,skipcrud+head->header.name);
+			skip_file((long)(size - written));
+			break;	/* Still do the close, mod time, chmod, etc */
+		}
 
-		 if(f_exstdout) {
-			 fd = 1;
-			 goto extract_file;
-		 }
- #ifdef O_CTG
-		 /*
-		  * Contiguous files (on the Masscomp) have to specify
-		  * the size in the open call that creates them.
-		  */
-		 if (head->header.linkflag == LF_CONTIG)
-			 fd = open((longname ? longname : head->header.name)
-				   + skipcrud,
-				   openflag | O_CTG,
-				   hstat.st_mode, hstat.st_size);
-		 else
- #endif
-		 {
- #ifdef NO_OPEN3
-			 /*
-			  * On raw V7 we won't let them specify -k (f_keep), but
-			  * we just bull ahead and create the files.
-			  */
-			 fd = creat((longname
-				     ? longname
-				     : head->header.name) + skipcrud, 
-				    hstat.st_mode);
- #else
-			 /*
-			  * With 3-arg open(), we can do this up right.
-			  */
-			 fd = open((longname
-				    ? longname
-				    : head->header.name) + skipcrud,
-				   openflag, hstat.st_mode);
- #endif
-		 }
+		if(f_multivol)
+			save_name = 0;
 
-		 if (fd < 0) {
-			 if (make_dirs(longname
-				       ? longname
-				       : head->header.name) + skipcrud)
-				 goto again_file;
-			 msg_perror("Could not create file %s",
-				    skipcrud
-				    +(longname ? longname : head->header.name));
-			 if (head->header.isextended)
-				 skip_extended_headers();
-			 skip_file((long)hstat.st_size);
-			 goto quit;
-		 }
+			/* If writing to stdout, don't try to do anything
+			   to the filename; it doesn't exist, or we don't
+			   want to touch it anyway */
+		if(f_exstdout)
+			break;
+			
+/*		if (head->header.isextended) {
+			register union record *exhdr;
+			register int i;
+			
+			for (i = 0; i < 21; i++) {
+				long offset;
+				
+				if (!exhdr->ext_hdr.sp[i].numbytes)
+					break;
+				offset = from_oct(1+12,
+ 						exhdr->ext_hdr.sp[i].offset);
+				written = from_oct(1+12,
+ 						exhdr->ext_hdr.sp[i].numbytes);
+				lseek(fd, offset, 0);
+				check = write(fd, data, written);
+				if (check == written) continue;
 
-	 extract_file:
-		 if (head->header.linkflag == LF_SPARSE) {
-			 char	*name;
-			 int	namelen;
+			}
+			
 
-			 /*
-			  * Kludge alert.  NAME is assigned to header.name
-			  * because during the extraction, the space that
-			  * contains the header will get scribbled on, and
-			  * the name will get munged, so any error messages
-			  * that happen to contain the filename will look
-			  * REAL interesting unless we do this.
-			  */
-			 namelen = strlen(skipcrud+head->header.name);
-			 name = (char *) malloc((sizeof(char)) * namelen);
-			 bcopy(skipcrud+head->header.name, name, namelen);
-			 size = hstat.st_size;
-			 extract_sparse_file(fd, &size, hstat.st_size,
-					     longname ? longname : name);
-		 }			
-		 else 		
-		   for (size = hstat.st_size;
-			size > 0;
-			size -= written) {
+		}*/
+ 		check = close(fd);
+		if (check < 0) {
+			msg_perror("Error while closing %s",skipcrud+head->header.name);
+		}
 
- /*			long	offset,
-				 numbytes;*/
+		
+	set_filestat:
 
-			 if(f_multivol) {
-				 save_name=(longname
-					    ? longname
-					    : head->header.name);
-				 save_totsize=hstat.st_size;
-				 save_sizeleft=size;
-			 }
+		/*
+		 * If we are root, set the owner and group of the extracted
+		 * file.  This does what is wanted both on real Unix and on
+		 * System V.  If we are running as a user, we extract as that
+		 * user; if running as root, we extract as the original owner.
+		 */
+		if (we_are_root || f_do_chown) {
+			if (chown(skipcrud+head->header.name, hstat.st_uid,
+				  hstat.st_gid) < 0) {
+				msg_perror("cannot chown file %s to uid %d gid %d",skipcrud+head->header.name,hstat.st_uid,hstat.st_gid);
+			}
+		}
 
-			 /*
-			  * Locate data, determine max length
-			  * writeable, write it, record that
-			  * we have used the data, then check
-			  * if the write worked.
-			  */
-			 data = findrec()->charptr;
-			 if (data == NULL) {	/* Check it... */
-				 msg("Unexpected EOF on archive file");
-				 break;
-			 }
-			 /*
-			  * JK - If the file is sparse, use the sparsearray
-			  * that we created before to lseek into the new
-			  * file the proper amount, and to see how many
-			  * bytes we want to write at that position.
-			  */
- /*			if (head->header.linkflag == LF_SPARSE) {
-				 off_t pos;
-
-				 pos = lseek(fd, (off_t) sparsearray[sparse_ind].offset, 0);
-				 printf("%d at %d\n", (int) pos, sparse_ind);
-				 written = sparsearray[sparse_ind++].numbytes;
-			 } else*/
-			 written = endofrecs()->charptr - data;
-			 if (written > size)
-				 written = size;
-			 errno = 0;
-			 check = write(fd, data, written);
-			 /*
-			  * The following is in violation of strict
-			  * typing, since the arg to userec
-			  * should be a struct rec *.  FIXME.
-			  */
-			 userec((union record *)(data + written - 1));
-			 if (check == written) continue;
-			 /*
-			  * Error in writing to file.
-			  * Print it, skip to next file in archive.
-			  */
-			 if(check<0)
-				 msg_perror("couldn't write to file %s",
-					    (longname
-					     ? longname
-					     : head->header.name) + skipcrud);
-			 else
-			   msg("could only write %d of %d bytes to file %s",
-			       written,check,(longname
-					      ? longname
-					      : head->header.name) + skipcrud);
-			 skip_file((long)(size - written));
-			 break;	/* Still do the close, mod time, chmod, etc */
-		 }
-
-		 if(f_multivol)
-			 save_name = 0;
-
-			 /* If writing to stdout, don't try to do anything
-			    to the filename; it doesn't exist, or we don't
-			    want to touch it anyway */
-		 if(f_exstdout)
-			 break;
-
- /*		if (head->header.isextended) {
-			 register union record *exhdr;
-			 register int i;
-
-			 for (i = 0; i < 21; i++) {
-				 long offset;
-
-				 if (!exhdr->ext_hdr.sp[i].numbytes)
-					 break;
-				 offset = from_oct(1+12,
-						 exhdr->ext_hdr.sp[i].offset);
-				 written = from_oct(1+12,
-						 exhdr->ext_hdr.sp[i].numbytes);
-				 lseek(fd, offset, 0);
-				 check = write(fd, data, written);
-				 if (check == written) continue;
-
-			 }
-
-
-		 }*/
-		 check = close(fd);
-		 if (check < 0) {
-			 msg_perror("Error while closing %s",
-				    (longname
-				     ? longname
-				     : head->header.name) + skipcrud);
-		 }
-
-
-	 set_filestat:
-
-		 /*
-		  * If we are root, set the owner and group of the extracted
-		  * file.  This does what is wanted both on real Unix and on
-		  * System V.  If we are running as a user, we extract as that
-		  * user; if running as root, we extract as the original owner.
-		  */
-		 if (we_are_root || f_do_chown) {
-			 if (chown((longname
-				    ? longname
-				    : head->header.name) + skipcrud,
-				   hstat.st_uid, hstat.st_gid) < 0) {
-			   msg_perror("cannot chown file %s to uid %d gid %d",
-				      (longname
-				       ? longname
-				       : head->header.name) + skipcrud,
-				      hstat.st_uid,hstat.st_gid);
-			 }
-		 }
-
-		 /*
-		  * Set the modified time of the file.
-		  * 
-		  * Note that we set the accessed time to "now", which
-		  * is really "the time we started extracting files".
-		  * unless f_gnudump is used, in which case .st_atime is used
-		  */
-		 if (!f_modified) {
-			 /* fixme if f_gnudump should set ctime too, but how? */
+		/*
+		 * Set the modified time of the file.
+		 * 
+		 * Note that we set the accessed time to "now", which
+		 * is really "the time we started extracting files".
+		 * unless f_gnudump is used, in which case .st_atime is used
+		 */
+		if (!f_modified) {
+			/* fixme if f_gnudump should set ctime too, but how? */
 			if(f_gnudump)
 				acc_upd_times[0]=hstat.st_atime;
 			else acc_upd_times[0] = now;	         /* Accessed now */
 			acc_upd_times[1] = hstat.st_mtime; /* Mod'd */
-			if (utime((longname
-				   ? longname
-				   : head->header.name) + skipcrud,
-				  acc_upd_times) < 0) {
-			  msg_perror("couldn't change access and modification times of %s",(longname ? longname : head->header.name) + skipcrud);
+			if (utime(skipcrud+head->header.name,
+			    acc_upd_times) < 0) {
+				msg_perror("couldn't change access and modification times of %s",skipcrud+head->header.name);
 			}
 		}
 		/* We do the utime before the chmod because some versions of
@@ -535,11 +494,9 @@ extract_archive()
 		 */
 		if ((!f_keep)
 		    || (hstat.st_mode & (S_ISUID|S_ISGID|S_ISVTX))) {
-		  if (chmod((longname ? longname : head->header.name) + skipcrud,
+			if (chmod(skipcrud+head->header.name,
 				  notumask & (int)hstat.st_mode) < 0) {
-		    msg_perror("cannot change mode of file %s to %ld",
-			       (longname ? longname : head->header.name) + skipcrud,
-			       notumask & (int)hstat.st_mode);
+				msg_perror("cannot change mode of file %s to %ld",skipcrud+head->header.name,notumask & (int)hstat.st_mode);
 			}
 		}
 
@@ -551,38 +508,35 @@ extract_archive()
 	{
 		struct stat st1,st2;
 
-		check = link (longlink ? longlink : head->header.linkname,
-			      (longname ? longname : head->header.name) + skipcrud);
+		check = link (head->header.linkname,
+			      skipcrud+head->header.name);
 		if (check == 0)
 			break;
-		if (make_dirs((longname ? longname : head->header.name) + skipcrud))
+		if (make_dirs(skipcrud+head->header.name))
 			goto again_link;
 		if(f_gnudump && errno==EEXIST)
 			break;
-		if(stat(longlink ? longlink : head->header.linkname, &st1) == 0
-		   && stat((longname ? longname : head->header.name) + skipcrud, &st2)==0
+		if(   stat(head->header.linkname, &st1) == 0
+		   && stat(skipcrud+head->header.name, &st2)==0
 		   && st1.st_dev==st2.st_dev
 		   && st1.st_ino==st2.st_ino)
 			break;
 		msg_perror("Could not link %s to %s",
-			   (longname ? longname : head->header.name) + skipcrud,
-			   longlink ? longlink : longlink, 
-			   head->header.linkname);
+			skipcrud+head->header.name,head->header.linkname);
 	}
 		break;
 
 #ifdef S_ISLNK
 	case LF_SYMLINK:
 	again_symlink:
-		 check = symlink(longlink ? longlink : head->header.linkname,
-				 (longname ? longname : head->header.name) + skipcrud);
+		check = symlink(head->header.linkname,
+			        skipcrud+head->header.name);
 		/* FIXME, don't worry uid, gid, etc... */
 		if (check == 0)
 			break;
-		if (make_dirs((longname ? longname : head->header.name) + skipcrud)
+		if (make_dirs(skipcrud+head->header.name))
 			goto again_symlink;
-		msg_perror("Could not create symlink to %s",
-			   longlink ? longlink : head->header.linkname);
+		msg_perror("Could not create symlink to %s",head->header.linkname);
 		break;
 #endif
 
@@ -598,16 +552,12 @@ extract_archive()
 #endif
 #if defined(S_IFCHR) || defined(S_IFBLK)
 	make_node:
-		check = mknod((longname ? longname: head->header.name) + skipcrud,
+		check = mknod(skipcrud+head->header.name,
 			      (int) hstat.st_mode, (int) hstat.st_rdev);
 		if (check != 0) {
-			if (make_dirs((longname 
-				      ? longname
-				      : head->header.name) + skipcrud))
+			if (make_dirs(skipcrud+head->header.name))
 				goto make_node;
-			msg_perror("Could not make %s",
-				   (longname ? longname : head->header.name)
-				   + skipcrud);
+			msg_perror("Could not make %s",skipcrud+head->header.name);
 			break;
 		};
 		goto set_filestat;
@@ -617,29 +567,24 @@ extract_archive()
 	/* If local system doesn't support FIFOs, use default case */
 	case LF_FIFO:
 	make_fifo:
-		check = mkfifo((longname ? longname : head->header.name) + skipcrud,
+		check = mkfifo(skipcrud+head->header.name,
 			       (int) hstat.st_mode);
 		if (check != 0) {
-		  if (make_dirs((longname ? longname : head->header.name) + skipcrud))
-		    goto make_fifo;
-		  msg_perror("Could not make %s",
-			     (longname ? longname : head->header.name) + skipcrud);
-		  break;
+			if (make_dirs(skipcrud+head->header.name))
+				goto make_fifo;
+			msg_perror("Could not make %s",skipcrud+head->header.name);
+			break;
 		};
-		 goto set_filestat;
+		goto set_filestat;
 #endif
 
 	case LF_DIR:
 	case LF_DUMPDIR:
-		 namelen = strlen(longname ? longname : head->header.name)
-		    + skipcrud - 1;
+		namelen = strlen(skipcrud+head->header.name)-1;
 	really_dir:
 		/* Check for trailing /, and zap as many as we find. */
-		while (namelen
-		       && (longname 
-			   ? longname
-			   : head->header.name)[skipcrud+namelen] == '/')
-			(longname ? longname : head->header.name)[skipcrud+namelen--] = '\0';
+		while (namelen && head->header.name[skipcrud+namelen] == '/')
+			head->header.name[skipcrud+namelen--] = '\0';
 		if(f_gnudump) {		/* Read the entry and delete files
 					   that aren't listed in the archive */
 			gnu_restore(skipcrud);
@@ -649,23 +594,23 @@ extract_archive()
 
 	
 	again_dir:
-		check = mkdir(skipcrud+(longname ? longname : head->header.name),
+		check = mkdir(skipcrud+head->header.name,
 			      (we_are_root ? 0 : 0300) | (int)hstat.st_mode);
 		if (check != 0) {
 			struct stat st1;
 
-			if (make_dirs(skipcrud+(longname ? longname : head->header.name)))
+			if (make_dirs(skipcrud+head->header.name))
 				goto again_dir;
 			/* If we're trying to create '.', let it be. */
-			if ((longname ? longname : head->header.name)[skipcrud+namelen] == '.' && 
+			if (head->header.name[skipcrud+namelen] == '.' && 
 			    (namelen==0 ||
-			     (longname ? longname : head->header.name)[skipcrud+namelen-1]=='/'))
+			     head->header.name[skipcrud+namelen-1]=='/'))
 				goto check_perms;
 			if(   errno==EEXIST
- 			   && stat(skipcrud+(longname ? longname : head->header.name),&st1)==0
+ 			   && stat(skipcrud+head->header.name,&st1)==0
  			   && (S_ISDIR(st1.st_mode)))
 				break;
-			msg_perror("Could not create directory %s",skipcrud+(longname ? longname : head->header.name));
+			msg_perror("Could not create directory %s",skipcrud+head->header.name);
 			break;
 		}
 		
@@ -673,22 +618,15 @@ extract_archive()
 		if (!we_are_root && 0300 != (0300 & (int) hstat.st_mode)) {
 			hstat.st_mode |= 0300;
 			msg("Added write and execute permission to directory %s",
-			  skipcrud+(longname ? longname : head->header.name));
+			  skipcrud+head->header.name);
 		}
 
-		if (f_modified)
-		  goto set_filestat;
-		tmp = malloc (sizeof (struct saved_dir_info));
-		tmp->path = malloc (strlen (skipcrud + (longname ? longname : head->header.name)) + 1);
-		strcpy (tmp->path, skipcrud + (longname ? longname : head->header.name));
-		tmp->mode = hstat.st_mode;
-		tmp->atime = hstat.st_atime;
-		tmp->mtime = hstat.st_mtime;
-		tmp->next = saved_dir_info_head;
-		saved_dir_info_head = tmp;
+		goto set_filestat;
+		/* FIXME, Remember timestamps for after files created? */
+		/* FIXME, change mode after files created (if was R/O dir) */
 	case LF_VOLHDR:
 		if(f_verbose) {
-			printf("Reading %s\n",longname ? longname head->header.name);
+			printf("Reading %s\n",head->header.name);
 		}
 		break;
 
@@ -701,43 +639,7 @@ extract_archive()
 		skip_file((long)hstat.st_size);
 		break;
 
-	case LF_LONGNAME:
-		longp = &longname;
-		goto extract_long;
-		
-	case LF_LONGLINK
-		longp = &longlink;
-        extract_long:
-		
-		 if (*longp)
-		   free (*longp);
-		 bp = *longp = ck_malloc (hstat.st_size);
-
-		 for (size = hstat.st_size;
-		      size > 0;
-		      size -= written)
-		   {
-		     data = findrec ()->charptr;
-		     if (data == NULL)
-		       {
-			 msg ("Unexpected EOF on archive file");
-			 break;
-		       }
-		     written = endofrecs () ->charptr - data;
-		     if (written > size)
-		       written = size;
-		     
-		     bcopy (data, bp, written);
-		     bp += written;
-		     userec ((union record *) (data + written - 1));
-		   }
-	}	
-	
-	if (bumplongs)
-	  {
-	    longname = 0;
-	    longlink = 0;
-	  }
+	}
 
 	/* We don't need to save it any longer. */
 	saverec((union record **) 0);	/* Unsave it */
@@ -851,34 +753,4 @@ extract_sparse_file(fd, sizeleft, totalsize, name)
 			write(fd, "\000", 1);
 	}*/
 	userec(datarec);
-}
-
-/* Set back the utime and mode for all the extracted directories. */
-void restore_saved_dir_info ()
-{
-  time_t acc_upd_times[2];
-  saved_dir_info *tmp;
-
-  while (saved_info_head != NULL)
-    {
-      /* fixme if f_gnudump should set ctime too, but how? */
-      if(f_gnudump)
-	acc_upd_times[0]=saved_info_head -> atime;
-      else acc_upd_times[0] = now; /* Accessed now */
-      acc_upd_times[1] = saved_info_head -> mtime; /* Mod'd */
-      if (utime(saved_info_head -> path, acc_upd_times) < 0) {
-	msg_perror("couldn't change access and modification times of %s",
-		   saved_info_head -> path);
-      }
-      if ((!f_keep) || (saved_info_head -> mode & (S_ISUID|S_ISGID|S_ISVTX)))
-	{
-	  if (chmod(saved_info_head -> path,
-		    notumask & saved_info_head -> mode) < 0) {
-	    msg_perror("cannot change mode of file %s to %ld",
-		       saved_info_head -> path,
-		       notumask & saved_info_head -> mode);
-	  }
-	}
-      saved_info_head = saved_info_head -> next;
-    }
 }
