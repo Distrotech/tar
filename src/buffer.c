@@ -76,7 +76,7 @@ FILE *stdlis;
 
 static void backspace_output PARAMS ((void));
 static int new_volume PARAMS ((enum access_mode));
-static void archive_write_error PARAMS ((ssize_t));
+static void archive_write_error PARAMS ((ssize_t)) __attribute__ ((noreturn));
 static void archive_read_error PARAMS ((void));
 
 #if !MSDOS
@@ -250,20 +250,15 @@ available_space_after (union block *pointer)
 static void
 xclose (int fd)
 {
-  if (close (fd) < 0)
-    {
-      int e = errno;
-      FATAL_ERROR ((0, e, _("Cannot close file #%d"), fd));
-    }
+  if (close (fd) != 0)
+    close_error (_("(pipe)"));
 }
 
-/*-----------------------------------------------------------------------.
-| Duplicate file descriptor FROM into becoming INTO, or else, issue	 |
-| MESSAGE.  INTO is closed first and has to be the next available slot.	 |
-`-----------------------------------------------------------------------*/
+/* Duplicate file descriptor FROM into becoming INTO.
+   INTO is closed first and has to be the next available slot.  */
 
 static void
-xdup2 (int from, int into, const char *message)
+xdup2 (int from, int into)
 {
   if (from != into)
     {
@@ -272,13 +267,17 @@ xdup2 (int from, int into, const char *message)
       if (status != 0 && errno != EBADF)
 	{
 	  int e = errno;
-	  FATAL_ERROR ((0, e, _("Cannot close file descriptor")));
+	  FATAL_ERROR ((0, e, _("Cannot close")));
 	}
       status = dup (from);
       if (status != into)
 	{
-	  int e = status < 0 ? errno : 0;
-	  FATAL_ERROR ((0, e, _("Cannot properly duplicate %s"), message));
+	  if (status < 0)
+	    {
+	      int e = errno;
+	      FATAL_ERROR ((0, e, _("Cannot dup")));
+	    }
+	  abort ();
 	}
       xclose (from);
     }
@@ -369,7 +368,7 @@ child_open_for_compress (void)
 
   program_name = _("tar (child)");
 
-  xdup2 (parent_pipe[PREAD], STDIN_FILENO, _("(child) Pipe to stdin"));
+  xdup2 (parent_pipe[PREAD], STDIN_FILENO);
   xclose (parent_pipe[PWRITE]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
@@ -397,7 +396,7 @@ child_open_for_compress (void)
 	  errno = saved_errno;
 	  open_fatal (archive_name_array[0]);
 	}
-      xdup2 (archive, STDOUT_FILENO, _("Archive to stdout"));
+      xdup2 (archive, STDOUT_FILENO);
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
       exec_fatal (use_compress_program_option);
@@ -412,8 +411,7 @@ child_open_for_compress (void)
     {
       /* The child tar is still here!  Launch the compressor.  */
 
-      xdup2 (child_pipe[PWRITE], STDOUT_FILENO,
-	     _("((child)) Pipe to stdout"));
+      xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
       xclose (child_pipe[PREAD]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
@@ -426,7 +424,7 @@ child_open_for_compress (void)
 
   /* Prepare for reblocking the data from the compressor into the archive.  */
 
-  xdup2 (child_pipe[PREAD], STDIN_FILENO, _("(grandchild) Pipe to stdin"));
+  xdup2 (child_pipe[PREAD], STDIN_FILENO);
   xclose (child_pipe[PWRITE]);
 
   if (strcmp (archive_name_array[0], "-") == 0)
@@ -523,7 +521,7 @@ child_open_for_uncompress (void)
 
   program_name = _("tar (child)");
 
-  xdup2 (parent_pipe[PWRITE], STDOUT_FILENO, _("(child) Pipe to stdout"));
+  xdup2 (parent_pipe[PWRITE], STDOUT_FILENO);
   xclose (parent_pipe[PREAD]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
@@ -541,7 +539,7 @@ child_open_for_uncompress (void)
       archive = open (archive_name_array[0], O_RDONLY | O_BINARY, MODE_RW);
       if (archive < 0)
 	open_fatal (archive_name_array[0]);
-      xdup2 (archive, STDIN_FILENO, _("Archive to stdin"));
+      xdup2 (archive, STDIN_FILENO);
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
       exec_fatal (use_compress_program_option);
@@ -556,7 +554,7 @@ child_open_for_uncompress (void)
     {
       /* The child tar is still here!  Launch the uncompressor.  */
 
-      xdup2 (child_pipe[PREAD], STDIN_FILENO, _("((child)) Pipe to stdin"));
+      xdup2 (child_pipe[PREAD], STDIN_FILENO);
       xclose (child_pipe[PWRITE]);
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
@@ -569,7 +567,7 @@ child_open_for_uncompress (void)
 
   /* Prepare for unblocking the data from the archive into the uncompressor.  */
 
-  xdup2 (child_pipe[PWRITE], STDOUT_FILENO, _("(grandchild) Pipe to stdout"));
+  xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
   xclose (child_pipe[PREAD]);
 
   if (strcmp (archive_name_array[0], "-") == 0)
@@ -1030,22 +1028,16 @@ flush_write (void)
 static void
 archive_write_error (ssize_t status)
 {
-  int saved_errno = errno;
-
   /* It might be useful to know how much was written before the error
      occurred.  */
   if (totals_option)
-    print_total_written ();
-
-  if (status < 0)
     {
-      errno = saved_errno;
-      write_fatal (*archive_name_cursor);
+      int e = errno;
+      print_total_written ();
+      errno = e;
     }
-  else
-    FATAL_ERROR ((0, 0, _("Only wrote %lu of %lu bytes to %s"),
-		  (unsigned long) status, (unsigned long) record_size,
-		  quote (*archive_name_cursor)));
+
+  write_fatal_details (*archive_name_cursor, status, record_size);
 }
 
 /*-------------------------------------------------------------------.
@@ -1232,8 +1224,9 @@ flush_read (void)
 
   while (left % BLOCKSIZE != 0)
     {
-      while ((status = rmtread (archive, more, left)) < 0)
-	archive_read_error ();
+      if (status)
+	while ((status = rmtread (archive, more, left)) < 0)
+	  archive_read_error ();
 
       if (status == 0)
 	{
@@ -1281,14 +1274,8 @@ flush_archive (void)
 
       if (file_to_switch_to >= 0)
 	{
-	  int status = rmtclose (archive);
-
-	  if (status < 0)
-	    {
-	      int e = errno;
-	      WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
-		     quotearg_colon (*archive_name_cursor), archive, status));
-	    }
+	  if (rmtclose (archive) != 0)
+	    close_warn (*archive_name_cursor);
 
 	  archive = file_to_switch_to;
 	}
@@ -1393,16 +1380,8 @@ close_archive (void)
   if (verify_option)
     verify_volume ();
 
-  {
-    int status = rmtclose (archive);
-
-    if (status < 0)
-      {
-	int e = errno;
-	WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
-	       quotearg_colon (*archive_name_cursor), archive, status));
-      }
-  }
+  if (rmtclose (archive) != 0)
+    close_warn (*archive_name_cursor);
 
 #if !MSDOS
 
@@ -1500,8 +1479,6 @@ new_volume (enum access_mode access)
   static FILE *read_file;
   static int looped;
 
-  int status;
-
   if (!read_file && !info_script_option)
     /* FIXME: if fopen is used, it will never be closed.  */
     read_file = archive == STDIN_FILENO ? fopen (TTY_NAME, "r") : stdin;
@@ -1511,12 +1488,8 @@ new_volume (enum access_mode access)
   if (verify_option)
     verify_volume ();
 
-  if (status = rmtclose (archive), status < 0)
-    {
-      int e = errno;
-      WARN ((0, e, _("WARNING: %s: close (%d, %d)"),
-	     quotearg_colon (*archive_name_cursor), archive, status));
-    }
+  if (rmtclose (archive) != 0)
+    close_warn (*archive_name_cursor);
 
   global_volno++;
   volno++;
