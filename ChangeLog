@@ -23,6 +23,8 @@
 	* bootstrap: Added obstack.
 	* lib/.cvsignore: Likewise.
 	* configure.ac: Added 'gl_OBSTACK'
+	* m4/Makefile.am: Added new files.
+	* m4/.cvsignore: Likewise.
 	* TODO: Minor formatting change
 
 2003-08-31  Sergey Poznyakoff 
