@@ -2,7 +2,7 @@
 
 # Bootstrap 'tar' from CVS.
 
-# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -271,7 +271,8 @@ echo "$0: Creating m4/gnulib.m4"
  echo "])") > ./m4/gnulib.m4
 
 echo "$0: Creating lib/Makefile.am"
-(cat lib/Makefile.tmpl
+(echo "# This file is generated automatically from lib/Makefile.am. Do not edit!"
+ cat lib/Makefile.tmpl
 
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
@@ -324,7 +325,7 @@ fi
 # Reconfigure, getting other files.
 
 echo "$0: autoreconf --verbose --install --force ..."
-autoreconf --verbose --install --force
+autoreconf --verbose --install --force || exit 1
 
 
 echo "$0: done.  Now you can run './configure'."
