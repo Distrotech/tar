@@ -275,7 +275,7 @@ void userec();
 union record *endofrecs();
 void anno();
 
-#if !defined (VPRINTF_MISSING) && defined (__STDC__)
+#if defined (HAVE_VPRINTF) && __STDC__
 void msg(char *, ...);
 void msg_perror(char *, ...);
 #else

@@ -25,7 +25,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <alloca.h>
 #else /* not HAVE_ALLOCA_H */
 #ifdef _AIX
-#pragma alloca
+ #pragma alloca
 #else /* not _AIX */
 char *alloca ();
 #endif /* not _AIX */
