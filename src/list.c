@@ -51,6 +51,8 @@ extern FILE *msg_file;
 
 long from_oct ();		/* Decode octal number */
 void demode ();			/* Print file mode */
+void restore_saved_dir_info ();
+PTR ck_malloc ();
 
 union record *head;		/* Points to current archive header */
 struct stat hstat;		/* Stat struct corresponding */
@@ -443,9 +445,6 @@ decode_header (header, st, stdp, wantug)
      int wantug;
 {
   long from_oct ();
-  char **longp;
-  char *bp, *data;
-  int size, written;
 
   st->st_mode = from_oct (8, header->header.mode);
   st->st_mtime = from_oct (1 + 12, header->header.mtime);
@@ -561,9 +560,6 @@ print_header ()
   int pad;
   char *name;
   extern long baserec;
-  static char *longname;
-  static char *longlink;
-  int bumplongs;
 
   if (f_sayblock)
     fprintf (msg_file, "rec %10d: ", baserec + (ar_record - ar_block));
