@@ -286,6 +286,16 @@
 @set xref-no-recursion @xref{recurse}
 @set pxref-no-recursion @pxref{recurse}
 
+@set op-no-same-owner @kbd{--no-same-owner}
+@set ref-no-same-owner @ref{Attributes}
+@set xref-no-same-owner @xref{Attributes}
+@set pxref-no-same-owner @pxref{Attributes}
+
+@set op-no-same-permissions @kbd{--no-same-permissions}
+@set ref-no-same-permissions @ref{Attributes}
+@set xref-no-same-permissions @xref{Attributes}
+@set pxref-no-same-permissions @pxref{Attributes}
+
 @set op-null @kbd{--null}
 @set ref-null @ref{files}
 @set xref-null @xref{files}
@@ -2716,6 +2726,18 @@ also back up files for which any status information has changed).
 With this option, @code{tar} will not recurse into directories unless a
 directory is explicitly named as an argument to @code{tar}.  @FIXME-xref{}
 
+@item --no-same-owner
+
+When extracting an archive, do not attempt to preserve the owner
+specified in the @code{tar} archive.  This the default behavior
+for ordinary users; this option has an effect only for the superuser.
+
+@item --no-same-permissions
+
+When extracting an archive, subtract the user's umask from files from
+the permissions specified in the archive.  This is the default behavior
+for ordinary users; this option has an effect only for the superuser.
+
 @item --null
 
 When @code{tar} is using the @samp{--files-from} option, this option
@@ -2821,7 +2843,9 @@ archive.  @xref{Reading}.
 @item --same-owner
 
 When extracting an archive, @code{tar} will attempt to preserve the owner
-specified in the @code{tar} archive with this option present.  @FIXME-xref{}
+specified in the @code{tar} archive with this option present.
+This is the default behavior for the superuser; this option has an
+effect only for ordinary users.  @FIXME-xref{}
 
 @item --same-permissions
 
@@ -4679,55 +4703,32 @@ and written, and once after.
 Performing incremental dumps is similar to performing full dumps,
 although a few more options will usually be needed.
 
-You will need to use the @samp{-N @var{date}} option to tell @code{tar}
-to only store files that have been modified since @var{date}.
-@var{date} should be the date and time of the last full/incremental
-dump.
-
 A standard scheme is to do a @emph{monthly} (full) dump once a month,
 a @emph{weekly} dump once a week of everything since the last monthly
 and a @emph{daily} every day of everything since the last (weekly or
 monthly) dump.
 
-Here is a copy of the script used to dump the filesystems of the
-machines here at the Free Software Foundation.  This script is run via
-@code{cron} late at night when people are least likely to be using the
-machines.  This script dumps several filesystems from several machines
-at once (via NFS).  The operator is responsible for ensuring that all
-the machines will be up at the time the dump happens.  If a machine is
-not running, its files will not be dumped, and the next day's
-incremental dump will @emph{not} store files that would have gone onto
-that dump.
+Here is a sample script to dump the directory hierarchies @samp{/usr}
+and @samp{/var}.
 
 @example
-#!/bin/csh
-# Dump thingie
-set now = `date`
-set then = `cat date.nfs.dump`
-/u/hack/bin/tar -c -G -v\
- -f /dev/rtu20\
- -b 126\
- -N "$then"\
- -V "Dump from $then to $now"\
- /alpha-bits/gp\
- /gnu/hack\
- /hobbes/u\
- /spiff/u\
- /sugar-bombs/u
-echo $now > date.nfs.dump
-mt -f /dev/rtu20 rew
+#! /bin/sh
+tar --create \
+ --blocking-factor=126 \
+ --file=/dev/rmt/0 \
+ --label="`hostname` /usr /var `date +%Y-%m-%d`" \
+ --listed-incremental=/var/log/usr-var.snar \
+ --verbose \
+ /usr /var
 @end example
 
-Output from this script is stored in a file, for the operator to
-read later.
+This script uses the file @file{/var/log/usr-var.snar} as a snapshot to
+store information about the previous tar dump.
 
-This script uses the file @file{date.nfs.dump} to store the date/time
-of the last dump.
-
-Since this is a streaming tape drive, no attempt to verify the archive
-is done.  This is also why the high blocking factor (126) is used.
-The tape drive must also be rewound by the @code{mt} command after
-the dump is made.
+The blocking factor 126 is an attempt to make the tape drive stream.
+Some tape devices cannot handle 64 kB blocks or larger, and require the
+block size to be a multiple of 1 kB; for these devices, 126 is the
+largest blocking factor that can be used.
 
 @node incremental and listed-incremental, Backup Levels, Inc Dumps, Backups
 @section The Incremental Options
@@ -6880,8 +6881,8 @@ This option is meaningless with @value{op-list}.
 Create extracted files with the same ownership they have in the
 archive.
 
-When using super-user at extraction time, ownership is always restored.
-So, this option is meaningful only for non-root users, when @code{tar}
+This is the default behavior for the superuser,
+so this option is meaningful only for non-root users, when @code{tar}
 is executed on those systems able to give files away.  This is
 considered as a security flaw by many people, at least because it
 makes quite difficult to correctly account users for the disk space
@@ -6895,6 +6896,11 @@ and doing a @code{chmod} like when you use @value{op-same-permissions},
 @FIXME{same-owner?}it tries to look the name (if one was written)
 up in @file{/etc/passwd}.  If it fails, then it uses the user id
 stored in the archive instead.
+
+@item --no-same-owner
+Do not attempt to restore ownership when extracting.  This is the
+default behavior for ordinary users, so this option has an effect
+only for the superuser.
 
 @item --numeric-owner
 The @value{op-numeric-owner} option allows (ANSI) archives to be written
