@@ -1,3 +1,23 @@
+2004-08-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Merge from gnulib.
+	
+	* lib/.cvsignore: Add stat-macros.h.
+	Remove addext.c, malloc.c, realloc.c.
+
+	* src/extract.c: Include <getcwd.h>.
+	(extract_archive): Rewrite with new macro IS_ABSOLUTE_FILE_NAME.
+	* src/extract.c (make_directories):
+	FILESYSTEM_PREFIX_LEN -> FILE_SYSTEM_PREFIX_LEN.
+	* src/misc.c (must_be_dot_or_slash): Likewise.
+	* src/names.c (excluded_name, safer_name_suffix, stripped_prefix_len):
+	Likewise.
+	* src/tar.c (parse_opt): Likewise.
+	* src/incremen.c (purge_directory): Fix format buffer typos in warning
+	strings.
+	* src/tar.c (options): Add missing initializers to pacify gcc.
+	(decode_options): Remove unused var.
+
 2004-08-02  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap (gnulib_modules): Add getpagesize.
