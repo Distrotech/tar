@@ -28,9 +28,7 @@
    This #define will disappear in a few years.  FP, June 1995.  */
 #define OLDGNU_COMPATIBILITY 1
 
-/*---------------------------------------------.
-| `tar' Header Block, from POSIX 1003.1-1990.  |
-`---------------------------------------------*/
+/* tar Header Block, from POSIX 1003.1-1990.  */
 
 /* POSIX header.  */
 
@@ -86,9 +84,7 @@ struct posix_header
 #define TOWRITE  00002		/* write by other */
 #define TOEXEC   00001		/* execute/search by other */
 
-/*-------------------------------------.
-| `tar' Header Block, GNU extensions.  |
-`-------------------------------------*/
+/* tar Header Block, GNU extensions.  */
 
 /* In GNU tar, SYMTYPE is for to symbolic links, and CONTTYPE is for
    contiguous files, so maybe disobeying the `reserved' comment in POSIX
@@ -213,9 +209,7 @@ struct oldgnu_header
 /* This file is a tape/volume header.  Ignore it on extraction.  */
 #define GNUTYPE_VOLHDR 'V'
 
-/*--------------------------------------.
-| tar Header Block, overall structure.  |
-`--------------------------------------*/
+/* tar Header Block, overall structure.  */
 
 /* tar files are made in basic blocks of this size.  */
 #define BLOCKSIZE 512
