@@ -507,21 +507,17 @@ decode_header (union block *header, struct stat *stat_info,
 	}
       switch (header->header.typeflag)
 	{
-#ifdef S_ISBLK
 	case BLKTYPE:
 	  stat_info->st_rdev
 	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
 		       MINOR_FROM_OCT (header->header.devminor));
 	  break;
-#endif
 
-#ifdef S_ISCHR
 	case CHRTYPE:
 	  stat_info->st_rdev
 	    = makedev (MAJOR_FROM_OCT (header->header.devmajor),
 		       MINOR_FROM_OCT (header->header.devminor));
 	  break;
-#endif
 
 	default:
 	  stat_info->st_rdev = 0;
@@ -874,14 +870,12 @@ print_header (void)
 
       switch (current_header->header.typeflag)
 	{
-#if defined S_ISBLK || defined S_ISCHR
 	case CHRTYPE:
 	case BLKTYPE:
 	  sprintf (size, "%lu,%lu",
 		   (unsigned long) major (current_stat.st_rdev),
 		   (unsigned long) minor (current_stat.st_rdev));
 	  break;
-#endif
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
