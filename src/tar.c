@@ -400,7 +400,7 @@ or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
 	      DEFAULT_ARCHIVE, DEFAULT_BLOCKING);
       fputs (_("\
 \n\
-Report bugs to <tar-bugs@gnu.org>.\n"),
+Report bugs to <bug-tar@gnu.org>.\n"),
 	       stdout);
     }
   exit (status);
