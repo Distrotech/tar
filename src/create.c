@@ -972,8 +972,8 @@ dump_dir0 (char *directory,
     return;
 
   if (one_file_system_option
-	   && !top_level
-	   && parent_device != stat->stat.st_dev)
+      && !top_level
+      && parent_device != stat->stat.st_dev)
     {
       if (verbose_option)
 	WARN ((0, 0,
@@ -1293,12 +1293,11 @@ dump_file0 (struct tar_stat_info *stat, char *p,
   /* See if we want only new files, and check if this one is too old to
      put in the archive.  */
 
-  if ((0 < top_level || !incremental_option)
-      && !S_ISDIR (stat->stat.st_mode)
+  if (!S_ISDIR (stat->stat.st_mode)
       && stat->stat.st_mtime < newer_mtime_option
       && (!after_date_option || stat->stat.st_ctime < newer_ctime_option))
     {
-      if (0 < top_level)
+      if (0 < top_level) /* equivalent to !incremental_option */
 	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
 	       quotearg_colon (p)));
       /* FIXME: recheck this return.  */
