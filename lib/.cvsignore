@@ -40,6 +40,7 @@ getopt.c
 getopt.h
 getopt1.c
 getopt_int.h
+getpagesize.h
 gettext.h
 gettime.c
 gettimeofday.c
