@@ -1,3 +1,7 @@
+2004-12-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/tar.c (main): Reverted recent changes (#ifdef).
+
 2004-12-21  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Raise version number to 1.15.1
