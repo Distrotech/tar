@@ -1,7 +1,7 @@
 /* GNU tar Archive Format description.
 
-   Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996,
-   1997, 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
+   2000, 2001, 2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -185,7 +185,12 @@ struct oldgnu_header
 #define OLDGNU_MAGIC "ustar  "	/* 7 chars and a null */
 
 /* The standards committee allows only capital A through capital Z for
-   user-defined expansion.  */
+   user-defined expansion.  Other letters in use include:
+
+   'A' Solaris Access Control List
+   'E' Solaris Extended Attribute File
+   'I' Inode only, as in 'star'
+   'X' POSIX 1003.1-2001 eXtended (VU version)  */
 
 /* This is a dir entry that contains the names of files that were in the
    dir at the time the dump was made.  */
