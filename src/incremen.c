@@ -257,7 +257,7 @@ scan_path (struct obstack *stk, char *path, dev_t device)
     free (dirp);
 }
 
-/* Sort the contents of the obstack, anr convert it to the char * */
+/* Sort the contents of the obstack, and convert it to the char * */
 static char *
 sort_obstack (struct obstack *stk)
 {
