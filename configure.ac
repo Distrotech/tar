@@ -86,7 +86,8 @@ jm_AC_TYPE_UINTMAX_T
 
 # gnulib modules
 tar_GNULIB
-
+# paxutils modules
+tar_PAXUTILS
 
 AC_CHECK_MEMBERS([struct stat.st_spare1, struct stat.st_atim.tv_nsec, struct stat.st_atimespec.tv_nsec, struct stat.st_atimensec], , ,
                  [
@@ -217,8 +218,6 @@ DEFAULT_BLOCKING=${DEFAULT_BLOCKING-20}
 AC_DEFINE_UNQUOTED(DEFAULT_BLOCKING, $DEFAULT_BLOCKING,
   [Define to a number giving the default blocking size for archives.])
 AC_MSG_RESULT($DEFAULT_BLOCKING)
-
-PU_RMT
 
 # Iconv
 AM_ICONV
