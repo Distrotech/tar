@@ -1098,7 +1098,9 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 
       /* User and group names.  */
 
-      if (st->uname && current_format != V7_FORMAT
+      if (st->uname
+	  && st->uname[0]
+	  && current_format != V7_FORMAT
 	  && !numeric_owner_option)
 	user = st->uname;
       else
@@ -1121,7 +1123,9 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	    }
 	}
 
-      if (st->gname && current_format != V7_FORMAT
+      if (st->gname
+	  && st->gname[0]
+	  && current_format != V7_FORMAT
 	  && !numeric_owner_option)
 	group = st->gname;
       else
