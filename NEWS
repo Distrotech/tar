@@ -58,10 +58,13 @@ previous versions of tar were not able to extract it, since they
 were trying to link the file to itself, which always failed and
 lead to removing the already extracted copy. Preserve the first
 extracted copy in such cases.
-** Restore script was passing improper argument to tar --listed option.
-** Fixed verification of the created archives. 
-** Fixed unquoting of the file names containing backslash escapes (previous
+** Restore script was passing improper argument to tar --listed option (which
+didn't affect the functionality, but was logically incorrect).
+** Fixed verification of created archives. 
+** Fixed unquoting of file names containing backslash escapes (previous
 versions failed to recognize \a and \v).
+** When attempting to delete a non-existing member from the archive, previous
+versions of tar used to overwrite last archive block with zeroes.
   
 
 version 1.14 - Sergey Poznyakoff, 2004-05-11
