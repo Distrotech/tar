@@ -512,19 +512,22 @@ from_chars (char const *where0, size_t digs, char const *type,
   char const *lim = where + digs;
   int negative = 0;
 
-  /* Accommodate older tars, which output leading spaces, and at least one
-     buggy tar, which outputs leading NUL if the previous field overflows.  */
+  /* Accommodate buggy tar of unknown vintage, which outputs leading
+     NUL if the previous field overflows.  */
+  where += !*where;
+
+  /* Accommodate older tars, which output leading spaces.  */
   for (;;)
     {
       if (where == lim)
 	{
 	  if (type)
 	    ERROR ((0, 0,
-		    _("Empty header where numeric %s value expected"),
+		    _("Blanks in header where numeric %s value expected"),
 		    type));
 	  return -1;
 	}
-      if (!ISSPACE ((unsigned char) *where) && *where)
+      if (!ISSPACE ((unsigned char) *where))
 	break;
       where++;
     }
