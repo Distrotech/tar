@@ -204,9 +204,9 @@ set_stat (char *file_name, struct stat *stat_info, int symlink_flag)
 
 	/* On a few systems, and in particular, those allowing to give files
 	   away, changing the owner or group destroys the suid or sgid bits.
-	   So, when root, let's attempt setting these bits once more.  */
+	   So let's attempt setting these bits once more.  */
 
-	if (we_are_root && (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX)))
+	if (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX))
 	  set_mode (file_name, stat_info);
     }
 }
