@@ -15,14 +15,16 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
+/* Enable GNU extensions in fnmatch.h.  */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE 1
+#endif
+
 #include "system.h"
 
 #include <pwd.h>
 #include <grp.h>
-
-#ifndef FNM_LEADING_DIR
-# include <fnmatch.h>
-#endif
+#include <fnmatch.h>
 
 #include "common.h"
 
@@ -804,4 +806,26 @@ new_name (const char *path, const char *name)
 
   sprintf (buffer, "%s/%s", path, name);
   return buffer;
+}
+
+/* Return nonzero if file NAME is excluded.  Exclude a name if its
+   prefix matches a pattern that contains slashes, or if one of its
+   components matches a pattern that contains no slashes.  */
+int
+excluded_name (char const *name)
+{
+  char const *p;
+  name += FILESYSTEM_PREFIX_LEN (name);
+
+  if (excluded_filename (excluded_with_slash, name,
+			 FNM_FILE_NAME | FNM_LEADING_DIR))
+    return 1;
+
+  for (p = name; *p; p++)
+    if ((p == name || (ISSLASH (p[-1]) && !ISSLASH (p[0])))
+	&& excluded_filename (excluded_without_slash, p,
+			      FNM_FILE_NAME | FNM_LEADING_DIR))
+      return 1;
+
+  return 0;
 }
