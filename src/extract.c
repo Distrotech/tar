@@ -1,5 +1,5 @@
 /* Extract files from a tar archive.
-   Copyright (C) 1988, 1992 Free Software Foundation
+   Copyright (C) 1988, 1992, 1993 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -816,7 +816,8 @@ extract_sparse_file (fd, sizeleft, totalsize, name)
 	}
       else if (count != written)
 	{
-	  msg ("could only write %d of %d bytes to file %s", totalsize - *sizeleft, totalsize, name);
+	  msg ("could only write %d of %d bytes to file %s", count, 
+	       totalsize, name);
 	  skip_file ((long) (*sizeleft));
 	}
 
