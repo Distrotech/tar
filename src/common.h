@@ -155,6 +155,9 @@ GLOBAL int check_links_option;
 /* Patterns that match file names to be excluded.  */
 GLOBAL struct exclude *excluded;
 
+/* Exclude directories containing a cache directory tag. */
+GLOBAL bool exclude_caches_option;
+
 /* Specified file containing names to work on.  */
 GLOBAL const char *files_from_option;
 
