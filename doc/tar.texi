@@ -740,7 +740,7 @@ Date input formats
 * Day of week item::            Monday and others.
 * Relative item in date strings::  next tuesday, 2 years ago.
 * Pure numbers in date strings::  19931219, 1440.
-* Authors of getdate::          Bellovin, Salz, Berets, et al.
+* Authors of getdate::          Bellovin, Berets, Eggert, Salz, et al.
 
 Controlling the Archive Format
 
@@ -5904,7 +5904,7 @@ midnight, 1 January 1970 UCT.
 * Day of week item::            Monday and others.
 * Relative item in date strings::  next tuesday, 2 years ago.
 * Pure numbers in date strings::  19931219, 1440.
-* Authors of getdate::          Bellovin, Salz, Berets, et al.
+* Authors of getdate::          Bellovin, Berets, Eggert, Salz, et al.
 @end menu
 
 
@@ -6084,9 +6084,10 @@ but not both.
 
 A @dfn{time zone item} specifies an international time zone, indicated
 by a small set of letters, e.g.@: @samp{UTC} for Coordinated Universal
-Time.  Any included period is ignored.  By following a non-DST time zone
-by the string @samp{DST} in a separate word (that is, separated by some
-white space), the corresponding DST time zone may be specified.
+Time.  Any included period is ignored.  By following a
+non-daylight-saving time zone by the string @samp{DST} in a separate
+word (that is, separated by some white space), the corresponding
+daylight saving time zone may be specified.
 
 Time zone items are obsolescent and are not recommended, because they
 are ambiguous; for example, @samp{EST} has a different meaning in
@@ -6179,10 +6180,6 @@ items, like in @samp{12:00 today}.  The string @samp{this} also has
 the meaning of a zero-valued time displacement, but is preferred in
 date strings like @samp{this thursday}.
 
-When a relative item makes the resulting date to cross the boundary
-between DST and non-DST (or vice-versa), the hour is adjusted according
-to the local time.
-
 
 @node Pure numbers in date strings
 @section Pure numbers in date strings
@@ -6214,17 +6211,19 @@ year.
 @cindex authors of @code{getdate}
 
 @cindex Bellovin, Steven M.
-@cindex Salz, Rich
 @cindex Berets, Jim
+@cindex Eggert, Paul
 @cindex MacKenzie, David
 @cindex Meyering, Jim
+@cindex Salz, Rich
 @code{getdate} was originally implemented by Steven M. Bellovin
 (@samp{smb@@research.att.com}) while at the University of North Carolina
 at Chapel Hill.  The code was later tweaked by a couple of people on
 Usenet, then completely overhauled by Rich $alz (@samp{rsalz@@bbn.com})
 and Jim Berets (@samp{jberets@@bbn.com}) in August, 1990.  Various
 revisions for the @sc{gnu} system were made by David MacKenzie, Jim Meyering,
-and others.
+and others.  The code was rewritten again in August, 1999 by Paul Eggert,
+to improve its support for daylight saving time.
 
 @cindex Pinard, F.
 @cindex Berry, K.
