@@ -1,5 +1,5 @@
 /* Tar -- a tape archiver.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -225,7 +225,7 @@ main(argc, argv)
 		break;
 	case CMD_EXTRACT:
 		if (f_volhdr) {
-			char *err;
+			const char *err;
 			label_pattern = (struct re_pattern_buffer *)
 			  ck_malloc (sizeof *label_pattern);
 		 	err = re_compile_pattern (f_volhdr, strlen (f_volhdr),
@@ -243,7 +243,7 @@ main(argc, argv)
 		break;
 	case CMD_LIST:
 		if (f_volhdr) {
-			char *err;
+			const char *err;
 			label_pattern = (struct re_pattern_buffer *)
 			  ck_malloc (sizeof *label_pattern);
 		 	err = re_compile_pattern (f_volhdr, strlen (f_volhdr),
