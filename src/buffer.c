@@ -1130,30 +1130,31 @@ close_archive()
 			;
 
 		if (child != -1) {
-			switch (WTERMSIG(status)) {
-			case 0:
-				/* Child voluntarily terminated  -- but why? */
-				if (WEXITSTATUS(status) == MAGIC_STAT) {
-					exit(EX_SYSTEM);/* Child had trouble */
-				}
-				if (WEXITSTATUS(status) == (SIGPIPE + 128)) {
-					/*
-					 * /bin/sh returns this if its child
-					 * dies with SIGPIPE.  'Sok.
-					 */
-					break;
-				} else if (WEXITSTATUS(status))
-					msg("child returned status %d",
-						WEXITSTATUS(status));
-			case SIGPIPE:
-				break;		/* This is OK. */
-
-			default:
-				msg("child died with signal %d%s",
-				 WTERMSIG(status),
-				 WIFCOREDUMPED(status)? " (core dumped)": "");
+		  {
+		    if (WIFSIGNALED(status))
+		      {
+			/* SIGPIPE is OK, everything else is a problem. */
+			if (WTERMSIG (status) != SIGPIPE)
+			  msg("child died with signal %d%s", WTERMSIG(status),
+			      WIFCOREDUMPED(status)? " (core dumped)": "");
+		      }
+		    else
+		      {		      
+			/* Child voluntarily terminated  -- but why? */
+			if (WEXITSTATUS(status) == MAGIC_STAT) {
+			  exit(EX_SYSTEM);/* Child had trouble */
 			}
-		}
+			if (WEXITSTATUS(status) == (SIGPIPE + 128)) {
+			  /*
+			   * /bin/sh returns this if its child
+			   * dies with SIGPIPE.  'Sok.
+			   */
+			  break;
+			} else if (WEXITSTATUS(status))
+			  msg("child returned status %d",
+			      WEXITSTATUS(status));
+		      }
+		  }
 	}
 #endif	/* __MSDOS__ */
 }
