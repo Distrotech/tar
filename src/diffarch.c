@@ -1,5 +1,5 @@
 /* Diff files from a tar archive.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -139,7 +139,7 @@ diff_archive()
 
 	default:
 		msg("Unknown file type '%c' for %s, diffed as normal file",
-			head->header.linkflag, head->header.name);
+			head->header.linkflag, current_file_name);
 		/* FALL THRU */
 
 	case LF_OLDNORMAL:
@@ -150,8 +150,8 @@ diff_archive()
 		 * Appears to be a file.
 		 * See if it's really a directory.
 		 */
-		namelen = strlen(head->header.name)-1;
-		if (head->header.name[namelen] == '/')
+		namelen = strlen(current_file_name)-1;
+		if (current_file_name[namelen] == '/')
 			goto really_dir;
 
 		
@@ -165,7 +165,7 @@ diff_archive()
 
 		if (!S_ISREG(filestat.st_mode)) {
 			fprintf(msg_file, "%s: not a regular file\n",
-				head->header.name);
+				current_file_name);
 			skip_file((long)hstat.st_size);
 			different++;
 			goto quit;
@@ -187,17 +187,17 @@ diff_archive()
 			goto quit;
 		}
 
-		diff_fd = open(head->header.name, O_NDELAY|O_RDONLY|O_BINARY);
+		diff_fd = open(current_file_name, O_NDELAY|O_RDONLY|O_BINARY);
 
 		if (diff_fd < 0 && !f_absolute_paths) {
 			char tmpbuf[NAMSIZ+2];
 
 			tmpbuf[0]='/';
-			strcpy(&tmpbuf[1],head->header.name);
+			strcpy(&tmpbuf[1],current_file_name);
 			diff_fd=open(tmpbuf, O_NDELAY|O_RDONLY);
 		}
 		if (diff_fd < 0) {
-			msg_perror("cannot open %s",head->header.name);
+			msg_perror("cannot open %s",current_file_name);
 			if (head->header.isextended)
 				skip_extended_headers();
 			skip_file((long)hstat.st_size);
@@ -214,7 +214,7 @@ diff_archive()
 
 		check = close(diff_fd);
 		if (check < 0)
-			msg_perror("Error while closing %s",head->header.name);
+			msg_perror("Error while closing %s",current_file_name);
 
 	quit:
 		break;
@@ -225,18 +225,18 @@ diff_archive()
 			break;
 		dev = filestat.st_dev;
 		ino = filestat.st_ino;
-		err = stat(head->header.linkname, &filestat);
+		err = stat(current_link_name, &filestat);
 		if (err < 0) {
 			if (errno==ENOENT) {
-				fprintf(msg_file, "%s: does not exist\n",head->header.name);
+				fprintf(msg_file, "%s: does not exist\n",current_file_name);
 			} else {
-				msg_perror("cannot stat file %s",head->header.name);
+				msg_perror("cannot stat file %s",current_file_name);
 			}
 			different++;
 			break;
 		}
 		if(filestat.st_dev!=dev || filestat.st_ino!=ino) {
-			fprintf(msg_file, "%s not linked to %s\n",head->header.name,head->header.linkname);
+			fprintf(msg_file, "%s not linked to %s\n",current_file_name,current_link_name);
 			break;
 		}
 		break;
@@ -246,25 +246,25 @@ diff_archive()
 	case LF_SYMLINK:
 	{
 		char linkbuf[NAMSIZ+3];
-		check = readlink(head->header.name, linkbuf,
+		check = readlink(current_file_name, linkbuf,
 				 (sizeof linkbuf)-1);
 		
 		if (check < 0) {
 			if (errno == ENOENT) {
 				fprintf(msg_file,
 					"%s: no such file or directory\n",
-					head->header.name);
+					current_file_name);
 			} else {
-				msg_perror("cannot read link %s",head->header.name);
+				msg_perror("cannot read link %s",current_file_name);
 			}
 			different++;
 			break;
 		}
 
 		linkbuf[check] = '\0';	/* Null-terminate it */
-		if (strncmp(head->header.linkname, linkbuf, check) != 0) {
+		if (strncmp(current_link_name, linkbuf, check) != 0) {
 			fprintf(msg_file, "%s: symlink differs\n",
-				head->header.linkname);
+				current_link_name);
 			different++;
 		}
 	}
@@ -299,7 +299,7 @@ diff_archive()
 		if(do_stat(&filestat))
 			break;
 		if(hstat.st_rdev != filestat.st_rdev) {
-			fprintf(msg_file, "%s: device numbers changed\n", head->header.name);
+			fprintf(msg_file, "%s: device numbers changed\n", current_file_name);
 			different++;
 			break;
 		}
@@ -309,14 +309,14 @@ diff_archive()
 		if((hstat.st_mode & 07777) != (filestat.st_mode & 07777))
 #endif
 		{
-			fprintf(msg_file, "%s: mode or device-type changed\n", head->header.name);
+			fprintf(msg_file, "%s: mode or device-type changed\n", current_file_name);
 			different++;
 			break;
 		}
 		break;
 
 	case LF_DUMPDIR:
-		data=diff_dir=get_dir_contents(head->header.name,0);
+		data=diff_dir=get_dir_contents(current_file_name,0);
 		if (data) {
 			wantbytes((long)(hstat.st_size),compare_dir);
 			free(data);
@@ -326,15 +326,15 @@ diff_archive()
 
 	case LF_DIR:
 		/* Check for trailing / */
-		namelen = strlen(head->header.name)-1;
+		namelen = strlen(current_file_name)-1;
 	really_dir:
-		while (namelen && head->header.name[namelen] == '/')
-			head->header.name[namelen--] = '\0';	/* Zap / */
+		while (namelen && current_file_name[namelen] == '/')
+		  current_file_name[namelen--] = '\0';	/* Zap / */
 
 		if(do_stat(&filestat))
 			break;
 		if(!S_ISDIR(filestat.st_mode)) {
-			fprintf(msg_file, "%s is no longer a directory\n",head->header.name);
+			fprintf(msg_file, "%s is no longer a directory\n",current_file_name);
 			different++;
 			break;
 		}
@@ -346,8 +346,8 @@ diff_archive()
 		break;
 
 	case LF_MULTIVOL:
-		namelen = strlen(head->header.name)-1;
-		if (head->header.name[namelen] == '/')
+		namelen = strlen(current_file_name)-1;
+		if (current_file_name[namelen] == '/')
 			goto really_dir;
 
 		if(do_stat(&filestat))
@@ -355,7 +355,7 @@ diff_archive()
 
 		if (!S_ISREG(filestat.st_mode)) {
 			fprintf(msg_file, "%s: not a regular file\n",
-				head->header.name);
+				current_file_name);
 			skip_file((long)hstat.st_size);
 			different++;
 			break;
@@ -370,17 +370,17 @@ diff_archive()
 			break;
 		}
 
-		diff_fd = open(head->header.name, O_NDELAY|O_RDONLY|O_BINARY);
+		diff_fd = open(current_file_name, O_NDELAY|O_RDONLY|O_BINARY);
 
 		if (diff_fd < 0) {
-			msg_perror("cannot open file %s",head->header.name);
+			msg_perror("cannot open file %s",current_file_name);
 			skip_file((long)hstat.st_size);
 			different++;
 			break;
 		}
 		err = lseek(diff_fd, offset, 0);
 		if(err!=offset) {
-			msg_perror("cannot seek to %ld in file %s",offset,head->header.name);
+			msg_perror("cannot seek to %ld in file %s",offset,current_file_name);
 			different++;
 			break;
 		}
@@ -389,7 +389,7 @@ diff_archive()
 
 		check = close(diff_fd);
 		if (check < 0) {
-			msg_perror("Error while closing %s",head->header.name);
+			msg_perror("Error while closing %s",current_file_name);
 		}
 		break;
 
@@ -409,15 +409,15 @@ char *buffer;
 	err=read(diff_fd,diff_buf,bytes);
 	if(err!=bytes) {
 		if(err<0) {
-			msg_perror("can't read %s",head->header.name);
+			msg_perror("can't read %s",current_file_name);
 		} else {
-			fprintf(msg_file,"%s: could only read %d of %d bytes\n",head->header.name,err,bytes);
+			fprintf(msg_file,"%s: could only read %d of %d bytes\n",current_file_name,err,bytes);
 		}
 		different++;
 		return -1;
 	}
 	if(bcmp(buffer,diff_buf,bytes)) {
-		fprintf(msg_file, "%s: data differs\n",head->header.name);
+		fprintf(msg_file, "%s: data differs\n",current_file_name);
 		different++;
 		return -1;
 	}
@@ -430,7 +430,7 @@ long bytes;
 char *buffer;
 {
 	if(bcmp(buffer,diff_dir,bytes)) {
-		fprintf(msg_file, "%s: data differs\n",head->header.name);
+		fprintf(msg_file, "%s: data differs\n",current_file_name);
 		different++;
 		return -1;
 	}
@@ -447,7 +447,7 @@ sigh(what)
 {
 
 	fprintf(msg_file, "%s: %s differs\n",
-		head->header.name, what);
+		current_file_name, what);
 }
 
 void
@@ -506,12 +506,12 @@ struct stat *statp;
 {
 	int err;
 
-	err = f_follow_links ? stat(head->header.name, statp) : lstat(head->header.name, statp);
+	err = f_follow_links ? stat(current_file_name, statp) : lstat(current_file_name, statp);
 	if (err < 0) {
 		if (errno==ENOENT) {
-			fprintf(msg_file, "%s: does not exist\n",head->header.name);
+			fprintf(msg_file, "%s: does not exist\n",current_file_name);
 		} else
-			msg_perror("can't stat file %s",head->header.name);
+			msg_perror("can't stat file %s",current_file_name);
 /*		skip_file((long)hstat.st_size);
 		different++;*/
 		return 1;
@@ -569,7 +569,7 @@ int	filesize;
 		while (numbytes > RECORDSIZE) {
 			if ((err = read(diff_fd, buf, RECORDSIZE)) != RECORDSIZE) {
 	 			if (err < 0) 
-					msg_perror("can't read %s", head->header.name);
+					msg_perror("can't read %s", current_file_name);
 				else
 					fprintf(msg_file, "%s: could only read %d of %d bytes\n", 
 						err, numbytes);
@@ -586,7 +586,7 @@ int	filesize;
 		}
 		if ((err = read(diff_fd, buf, numbytes)) != numbytes) {
  			if (err < 0) 
-				msg_perror("can't read %s", head->header.name);
+				msg_perror("can't read %s", current_file_name);
 			else
 				fprintf(msg_file, "%s: could only read %d of %d bytes\n", 
 						err, numbytes);
@@ -617,7 +617,7 @@ int	filesize;
 	userec(datarec);
 	free(sparsearray);
 	if (different)
-		fprintf(msg_file, "%s: data differs\n", head->header.name);
+		fprintf(msg_file, "%s: data differs\n", current_file_name);
 
 }
 
