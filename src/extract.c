@@ -147,15 +147,12 @@ extract_archive()
 /*	int end_nulls; */
 	char **longp;
 	char *bp;
-	static char *longname;
-	static char *longlink;
-	int bumplongs;
 	
 	saverec(&head);			/* Make sure it sticks around */
 	userec(head);			/* And go past it in the archive */
 	decode_header(head, &hstat, &head_standard, 1);	/* Snarf fields */
 
-	if(f_confirm && !confirm("extract",head->header.name)) {
+	if(f_confirm && !confirm("extract",current_file_name)) {
 		if (head->header.isextended)
 			skip_extended_headers();
 		skip_file((long)hstat.st_size);
@@ -177,7 +174,7 @@ extract_archive()
 	 */
 	skipcrud = 0;
 	while (!f_absolute_paths
-	       && '/' == (longname ? longname : head->header.name)[skipcrud]) {
+	       && '/' == current_file_name[skipcrud]) {
 		static int warned_once = 0;
 
 		skipcrud++;	/* Force relative path */
@@ -186,14 +183,11 @@ extract_archive()
 		 }
 	 }
 
-	 bumplongs = (head->header.linkflag != LF_LONGNAME
-		      && head->header.linkflag != LF_LONGLINK);
-	
 	 switch (head->header.linkflag) {
 
 	 default:
 		 msg("Unknown file type '%c' for %s, extracted as normal file",
-			 head->header.linkflag, skipcrud+head->header.name);
+			 head->header.linkflag, skipcrud+current_file_name);
 		 /* FALL THRU */
 
 	 /* 
@@ -272,8 +266,8 @@ extract_archive()
 		  * Appears to be a file.
 		  * See if it's really a directory.
 		  */
-		 namelen = strlen(skipcrud+head->header.name)-1;
-		 if (head->header.name[skipcrud+namelen] == '/')
+		 namelen = strlen(skipcrud+current_file_name)-1;
+		 if (current_file_name[skipcrud+namelen] == '/')
 			 goto really_dir;
 
 		 /* FIXME, deal with protection issues */
@@ -325,21 +319,16 @@ extract_archive()
 			 /*
 			  * With 3-arg open(), we can do this up right.
 			  */
-			 fd = open((longname
-				    ? longname
-				    : head->header.name) + skipcrud,
+			 fd = open(skipcrud + current_file_name,
 				   openflag, hstat.st_mode);
  #endif
 		 }
 
 		 if (fd < 0) {
-			 if (make_dirs(longname
-				       ? longname
-				       : head->header.name) + skipcrud)
+			 if (make_dirs(skipcrud + current_file_name))
 				 goto again_file;
 			 msg_perror("Could not create file %s",
-				    skipcrud
-				    +(longname ? longname : head->header.name));
+				    skipcrud + current_file_name);
 			 if (head->header.isextended)
 				 skip_extended_headers();
 			 skip_file((long)hstat.st_size);
@@ -359,12 +348,11 @@ extract_archive()
 			  * that happen to contain the filename will look
 			  * REAL interesting unless we do this.
 			  */
-			 namelen = strlen(skipcrud+head->header.name);
+			 namelen = strlen(skipcrud + current_file_name);
 			 name = (char *) malloc((sizeof(char)) * namelen);
-			 bcopy(skipcrud+head->header.name, name, namelen);
+			 bcopy(skipcrud+current_file_name, name, namelen);
 			 size = hstat.st_size;
-			 extract_sparse_file(fd, &size, hstat.st_size,
-					     longname ? longname : name);
+			 extract_sparse_file(fd, &size, hstat.st_size, name);
 		 }			
 		 else 		
 		   for (size = hstat.st_size;
@@ -375,9 +363,7 @@ extract_archive()
 				 numbytes;*/
 
 			 if(f_multivol) {
-				 save_name=(longname
-					    ? longname
-					    : head->header.name);
+				 save_name=current_file_name;
 				 save_totsize=hstat.st_size;
 				 save_sizeleft=size;
 			 }
@@ -424,14 +410,10 @@ extract_archive()
 			  */
 			 if(check<0)
 				 msg_perror("couldn't write to file %s",
-					    (longname
-					     ? longname
-					     : head->header.name) + skipcrud);
+					    skipcrud + current_file_name);
 			 else
 			   msg("could only write %d of %d bytes to file %s",
-			       written,check,(longname
-					      ? longname
-					      : head->header.name) + skipcrud);
+			       written,check,skipcrud + current_file_name);
 			 skip_file((long)(size - written));
 			 break;	/* Still do the close, mod time, chmod, etc */
 		 }
@@ -469,9 +451,7 @@ extract_archive()
 		 check = close(fd);
 		 if (check < 0) {
 			 msg_perror("Error while closing %s",
-				    (longname
-				     ? longname
-				     : head->header.name) + skipcrud);
+				    skipcrud + current_file_name);
 		 }
 
 
@@ -484,14 +464,10 @@ extract_archive()
 		  * user; if running as root, we extract as the original owner.
 		  */
 		 if (we_are_root || f_do_chown) {
-			 if (chown((longname
-				    ? longname
-				    : head->header.name) + skipcrud,
+			 if (chown(skipcrud + current_file_name,
 				   hstat.st_uid, hstat.st_gid) < 0) {
 			   msg_perror("cannot chown file %s to uid %d gid %d",
-				      (longname
-				       ? longname
-				       : head->header.name) + skipcrud,
+				      skipcrud + current_file_name,
 				      hstat.st_uid,hstat.st_gid);
 			 }
 		 }
@@ -509,11 +485,9 @@ extract_archive()
 				acc_upd_times[0]=hstat.st_atime;
 			else acc_upd_times[0] = now;	         /* Accessed now */
 			acc_upd_times[1] = hstat.st_mtime; /* Mod'd */
-			if (utime((longname
-				   ? longname
-				   : head->header.name) + skipcrud,
+			if (utime(skipcrud + current_file_name,
 				  acc_upd_times) < 0) {
-			  msg_perror("couldn't change access and modification times of %s",(longname ? longname : head->header.name) + skipcrud);
+			  msg_perror("couldn't change access and modification times of %s",skipcrud + current_file_name);
 			}
 		}
 		/* We do the utime before the chmod because some versions of
@@ -535,10 +509,10 @@ extract_archive()
 		 */
 		if ((!f_keep)
 		    || (hstat.st_mode & (S_ISUID|S_ISGID|S_ISVTX))) {
-		  if (chmod((longname ? longname : head->header.name) + skipcrud,
-				  notumask & (int)hstat.st_mode) < 0) {
+		  if (chmod(skipcrud + current_file_name,
+			    notumask & (int)hstat.st_mode) < 0) {
 		    msg_perror("cannot change mode of file %s to %ld",
-			       (longname ? longname : head->header.name) + skipcrud,
+			       skipcrud + current_file_name,
 			       notumask & (int)hstat.st_mode);
 			}
 		}
@@ -551,38 +525,37 @@ extract_archive()
 	{
 		struct stat st1,st2;
 
-		check = link (longlink ? longlink : head->header.linkname,
-			      (longname ? longname : head->header.name) + skipcrud);
+		check = link (current_link_name, skipcrud + current_file_name);
+
 		if (check == 0)
 			break;
-		if (make_dirs((longname ? longname : head->header.name) + skipcrud))
+		if (make_dirs(skipcrud + current_file_name))
 			goto again_link;
 		if(f_gnudump && errno==EEXIST)
 			break;
-		if(stat(longlink ? longlink : head->header.linkname, &st1) == 0
-		   && stat((longname ? longname : head->header.name) + skipcrud, &st2)==0
+		if(stat(current_link_name, &st1) == 0
+		   && stat(current_file_name + skipcrud, &st2)==0
 		   && st1.st_dev==st2.st_dev
 		   && st1.st_ino==st2.st_ino)
 			break;
 		msg_perror("Could not link %s to %s",
-			   (longname ? longname : head->header.name) + skipcrud,
-			   longlink ? longlink : longlink, 
-			   head->header.linkname);
+			   skipcrud + current_file_name,
+			   current_link_name);
 	}
 		break;
 
 #ifdef S_ISLNK
 	case LF_SYMLINK:
 	again_symlink:
-		 check = symlink(longlink ? longlink : head->header.linkname,
-				 (longname ? longname : head->header.name) + skipcrud);
+		 check = symlink(current_link_name,
+				 skipcrud + current_file_name);
 		/* FIXME, don't worry uid, gid, etc... */
 		if (check == 0)
 			break;
-		if (make_dirs((longname ? longname : head->header.name) + skipcrud))
+		if (make_dirs(current_file_name + skipcrud))
 			goto again_symlink;
 		msg_perror("Could not create symlink to %s",
-			   longlink ? longlink : head->header.linkname);
+			   current_link_name);
 		break;
 #endif
 
@@ -598,16 +571,13 @@ extract_archive()
 #endif
 #if defined(S_IFCHR) || defined(S_IFBLK)
 	make_node:
-		check = mknod((longname ? longname: head->header.name) + skipcrud,
+		check = mknod(current_file_name + skipcrud,
 			      (int) hstat.st_mode, (int) hstat.st_rdev);
 		if (check != 0) {
-			if (make_dirs((longname 
-				      ? longname
-				      : head->header.name) + skipcrud))
+			if (make_dirs(skipcrud + current_file_name))
 				goto make_node;
 			msg_perror("Could not make %s",
-				   (longname ? longname : head->header.name)
-				   + skipcrud);
+				   current_file_name + skipcrud);
 			break;
 		};
 		goto set_filestat;
@@ -617,13 +587,13 @@ extract_archive()
 	/* If local system doesn't support FIFOs, use default case */
 	case LF_FIFO:
 	make_fifo:
-		check = mkfifo((longname ? longname : head->header.name) + skipcrud,
+		check = mkfifo(current_file_name + skipcrud,
 			       (int) hstat.st_mode);
 		if (check != 0) {
-		  if (make_dirs((longname ? longname : head->header.name) + skipcrud))
+		  if (make_dirs(current_file_name + skipcrud))
 		    goto make_fifo;
 		  msg_perror("Could not make %s",
-			     (longname ? longname : head->header.name) + skipcrud);
+			     skipcrud + current_file_name);
 		  break;
 		};
 		 goto set_filestat;
@@ -631,15 +601,12 @@ extract_archive()
 
 	case LF_DIR:
 	case LF_DUMPDIR:
-		 namelen = strlen(longname ? longname : head->header.name)
-		    + skipcrud - 1;
+		 namelen = strlen(current_file_name) + skipcrud - 1;
 	really_dir:
 		/* Check for trailing /, and zap as many as we find. */
 		while (namelen
-		       && (longname 
-			   ? longname
-			   : head->header.name)[skipcrud+namelen] == '/')
-			(longname ? longname : head->header.name)[skipcrud+namelen--] = '\0';
+		       && current_file_name[skipcrud+namelen] == '/')
+		  current_file_name[skipcrud+namelen--] = '\0';
 		if(f_gnudump) {		/* Read the entry and delete files
 					   that aren't listed in the archive */
 			gnu_restore(skipcrud);
@@ -649,23 +616,23 @@ extract_archive()
 
 	
 	again_dir:
-		check = mkdir(skipcrud+(longname ? longname : head->header.name),
+		check = mkdir(skipcrud+current_file_name,
 			      (we_are_root ? 0 : 0300) | (int)hstat.st_mode);
 		if (check != 0) {
 			struct stat st1;
 
-			if (make_dirs(skipcrud+(longname ? longname : head->header.name)))
+			if (make_dirs(skipcrud+current_file_name))
 				goto again_dir;
 			/* If we're trying to create '.', let it be. */
-			if ((longname ? longname : head->header.name)[skipcrud+namelen] == '.' && 
+			if (current_file_name[skipcrud+namelen] == '.' && 
 			    (namelen==0 ||
-			     (longname ? longname : head->header.name)[skipcrud+namelen-1]=='/'))
+			     current_file_name[skipcrud+namelen-1]=='/'))
 				goto check_perms;
 			if(   errno==EEXIST
- 			   && stat(skipcrud+(longname ? longname : head->header.name),&st1)==0
+ 			   && stat(skipcrud+current_file_name,&st1)==0
  			   && (S_ISDIR(st1.st_mode)))
 				break;
-			msg_perror("Could not create directory %s",skipcrud+(longname ? longname : head->header.name));
+			msg_perror("Could not create directory %s",skipcrud+current_file_name);
 			break;
 		}
 		
@@ -673,14 +640,14 @@ extract_archive()
 		if (!we_are_root && 0300 != (0300 & (int) hstat.st_mode)) {
 			hstat.st_mode |= 0300;
 			msg("Added write and execute permission to directory %s",
-			  skipcrud+(longname ? longname : head->header.name));
+			  skipcrud+current_file_name);
 		}
 
 		if (f_modified)
 		  goto set_filestat;
 		tmp = (struct saved_dir_info *) malloc (sizeof (struct saved_dir_info));
-		tmp->path = malloc (strlen (skipcrud + (longname ? longname : head->header.name)) + 1);
-		strcpy (tmp->path, skipcrud + (longname ? longname : head->header.name));
+		tmp->path = malloc (strlen (skipcrud + current_file_name) + 1);
+		strcpy (tmp->path, skipcrud + current_file_name);
 		tmp->mode = hstat.st_mode;
 		tmp->atime = hstat.st_atime;
 		tmp->mtime = hstat.st_mtime;
@@ -688,7 +655,7 @@ extract_archive()
 		saved_dir_info_head = tmp;
 	case LF_VOLHDR:
 		if(f_verbose) {
-			printf("Reading %s\n",longname ? longname : head->header.name);
+			printf("Reading %s\n", current_file_name);
 		}
 		break;
 
@@ -697,48 +664,17 @@ extract_archive()
 		break;
 
 	case LF_MULTIVOL:
-		msg("Can't extract '%s'--file is continued from another volume\n",head->header.name);
+		msg("Can't extract '%s'--file is continued from another volume\n",current_file_name);
 		skip_file((long)hstat.st_size);
 		break;
 
 	case LF_LONGNAME:
-		longp = &longname;
-		goto extract_long;
-		
 	case LF_LONGLINK:
-		longp = &longlink;
-        extract_long:
-		
-		 if (*longp)
-		   free (*longp);
-		 bp = *longp = (char *) ck_malloc (hstat.st_size);
-
-		 for (size = hstat.st_size;
-		      size > 0;
-		      size -= written)
-		   {
-		     data = findrec ()->charptr;
-		     if (data == NULL)
-		       {
-			 msg ("Unexpected EOF on archive file");
-			 break;
-		       }
-		     written = endofrecs () ->charptr - data;
-		     if (written > size)
-		       written = size;
-		     
-		     bcopy (data, bp, written);
-		     bp += written;
-		     userec ((union record *) (data + written - 1));
-		   }
+		 msg ("Visible long name error\n");
+		 skip_file ((long)hstat.st_size);
+		 break;
 	}	
 	
-	if (bumplongs)
-	  {
-	    longname = 0;
-	    longlink = 0;
-	  }
-
 	/* We don't need to save it any longer. */
 	saverec((union record **) 0);	/* Unsave it */
 }
