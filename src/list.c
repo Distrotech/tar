@@ -175,12 +175,9 @@ list_archive (void)
 {
   /* Print the header block.  */
 
+  decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
-    {
-      if (verbose_option > 1)
-	decode_header (current_header, &current_stat_info, &current_format, 0);
-      print_header (-1);
-    }
+    print_header (-1);
 
   if (incremental_option && current_header->header.typeflag == GNUTYPE_DUMPDIR)
     {
