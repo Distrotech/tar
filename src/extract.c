@@ -601,6 +601,10 @@ extract_archive (void)
   /* Extract the archive entry according to its type.  */
 
   typeflag = current_header->header.typeflag;
+  /*KLUDGE*/
+  if (current_stat_info.archive_file_size != current_stat_info.stat.st_size)
+    typeflag = GNUTYPE_SPARSE;
+  
   switch (typeflag)
     {
     case GNUTYPE_SPARSE:
