@@ -726,7 +726,7 @@ decode_options (int argc, char **argv)
 	/* Fall through.  */
 
       case NEWER_MTIME_OPTION:
-  	if (newer_mtime_option != TYPE_MINIMUM (time_t))
+	if (newer_mtime_option != TYPE_MINIMUM (time_t))
 	  USAGE_ERROR ((0, 0, _("More than one threshold date")));
 
 	newer_mtime_option = get_date (optarg, 0);
@@ -1106,6 +1106,24 @@ see the file named COPYING for details."),
       && newer_mtime_option != TYPE_MINIMUM (time_t))
     USAGE_ERROR ((0, 0,
 		  _("Cannot combine --listed-incremental with --newer")));
+
+  if (volume_label_option)
+    {
+      size_t volume_label_max_len =
+	(sizeof current_header->header.name
+	 - 1 /* for trailing '\0' */
+	 - (multi_volume_option
+	    ? (sizeof " Volume "
+	       - 1 /* for null at end of " Volume " */
+	       + INT_STRLEN_BOUND (int) /* for volume number */
+	       - 1 /* for sign, as 0 <= volno */)
+	    : 0));
+      if (volume_label_max_len < strlen (volume_label_option))
+	USAGE_ERROR ((0, 0,
+		      _("%s: Volume label is too long (limit is %lu bytes)"),
+		      quotearg_colon (volume_label_option),
+		      (unsigned long) volume_label_max_len));
+    }
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
