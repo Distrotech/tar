@@ -21,6 +21,7 @@
    they're on raw tape or something like that, it'll probably lose...  */
 
 #include "system.h"
+#include <quotearg.h>
 #include "common.h"
 
 /* FIXME: This module should not directly handle the following variable,
@@ -50,12 +51,12 @@ append_file (char *path)
 
   if (handle < 0)
     {
-      ERROR ((0, errno, _("Cannot open file %s"), path));
+      open_error (path);
       return;
     }
 
   if (fstat (handle, &stat_data) != 0)
-    ERROR ((0, errno, "%s", path));
+    stat_error (path);
   else
     {
       off_t bytes_left = stat_data.st_size;
@@ -77,14 +78,18 @@ append_file (char *path)
 
 	  status = safe_read (handle, start->buffer, buffer_size);
 	  if (status < 0)
-	    FATAL_ERROR ((0, errno,
-			  _("Read error at byte %s reading %lu bytes in file %s"),
-			  STRINGIFY_BIGINT (stat_data.st_size - bytes_left,
-					    buf),
-			  (unsigned long) buffer_size, path));
+	    {
+	      int e = errno;
+	      FATAL_ERROR ((0, e,
+			    _("Read error at byte %s reading %lu bytes in file %s"),
+			    STRINGIFY_BIGINT (stat_data.st_size - bytes_left,
+					      buf),
+			    (unsigned long) buffer_size, quote (path)));
+	    }
 	  if (status == 0)
 	    FATAL_ERROR ((0, 0, _("%s: File shrunk by %s bytes, (yark!)"),
-			  path, STRINGIFY_BIGINT (bytes_left, buf)));
+			  quotearg_colon (path),
+			  STRINGIFY_BIGINT (bytes_left, buf)));
 
 	  bytes_left -= status;
 
@@ -92,7 +97,8 @@ append_file (char *path)
 	}
     }
 
-  close (handle);
+  if (close (handle) != 0)
+    close_error (path);
 }
 
 /*-----------------------------------------------------------------------.
