@@ -1,4 +1,9 @@
-2005-02-04  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+2005-02-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/extract.c: Further rewrite.
+	* src/buffer.c: Removed unused variables.
+	* src/list.c: Likewise
+	* src/tar.c (update_argv): Changed type to void
 
 	* src/common.h (OLDGNU_NAME_FIELD_SIZE): New constant
 	* src/create.c (start_private_header,write_header_name)
