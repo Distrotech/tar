@@ -55,6 +55,12 @@ time_t time();
 
 #if defined(_POSIX_VERSION)
 #include <utime.h>
+#else
+struct utimbuf
+{
+  long actime;
+  long modtime;
+};
 #endif
 
 extern FILE *msg_file;
@@ -138,7 +144,7 @@ extract_archive()
 	register char *data;
 	int fd, check, namelen, written, openflag;
 	long size;
-	time_t acc_upd_times[2];
+	struct utimbuf acc_upd_times;
 	register int skipcrud;
 	register int i;
 /*	int sparse_ind = 0;*/
@@ -482,11 +488,12 @@ extract_archive()
 		 if (!f_modified) {
 			 /* fixme if f_gnudump should set ctime too, but how? */
 			if(f_gnudump)
-				acc_upd_times[0]=hstat.st_atime;
-			else acc_upd_times[0] = now;	         /* Accessed now */
-			acc_upd_times[1] = hstat.st_mtime; /* Mod'd */
+			  acc_upd_times.actime=hstat.st_atime;
+			else
+			  acc_upd_times.actime = now; /* Accessed now */
+			acc_upd_times.modtime = hstat.st_mtime; /* Mod'd */
 			if (utime(skipcrud + current_file_name,
-				  acc_upd_times) < 0) {
+				  &acc_upd_times) < 0) {
 			  msg_perror("couldn't change access and modification times of %s",skipcrud + current_file_name);
 			}
 		}
@@ -792,17 +799,18 @@ extract_sparse_file(fd, sizeleft, totalsize, name)
 /* Set back the utime and mode for all the extracted directories. */
 void restore_saved_dir_info ()
 {
-  time_t acc_upd_times[2];
+  struct utimbuf acc_upd_times;
   struct saved_dir_info *tmp;
 
   while (saved_dir_info_head != NULL)
     {
       /* fixme if f_gnudump should set ctime too, but how? */
       if(f_gnudump)
-	acc_upd_times[0]=saved_dir_info_head -> atime;
-      else acc_upd_times[0] = now; /* Accessed now */
-      acc_upd_times[1] = saved_dir_info_head -> mtime; /* Mod'd */
-      if (utime(saved_dir_info_head -> path, acc_upd_times) < 0) {
+	acc_upd_times.actime=saved_dir_info_head -> atime;
+      else 
+	acc_upd_times.actime = now; /* Accessed now */
+      acc_upd_times.modtime = saved_dir_info_head -> mtime; /* Mod'd */
+      if (utime(saved_dir_info_head -> path, &acc_upd_times) < 0) {
 	msg_perror("couldn't change access and modification times of %s",
 		   saved_dir_info_head -> path);
       }
