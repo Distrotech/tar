@@ -19,6 +19,10 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 
 #include "pathmax.h"
 
+#ifdef __GNUC__
+#define alloca __builtin_alloca
+#endif
+
 #ifdef _POSIX_VERSION
 #include <sys/wait.h>
 #else /* !_POSIX_VERSION */

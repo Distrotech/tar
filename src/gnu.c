@@ -266,7 +266,7 @@ collect_and_sort_names()
 		n->found=0;
 	}
 	if(gnu_dumpfile)
-		write_dir_file(gnu_dumpfile);
+		write_dir_file();
 }
 
 int

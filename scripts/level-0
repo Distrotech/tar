@@ -66,9 +66,10 @@ startdate="`date`"
 here="`pwd`"
 
 # Logfile name should be in the form  ``log-1993-03-18-level-0''
+# They go in the subdirectory `log' of the current directory. 
 # i.e. year-month-date.  This format is useful for sorting by name, since
 # logfiles are intentionally kept online for future reference.
-LOGFILE="log-`date | sed -ne '
+LOGFILE="log/log-`date | sed -ne '
    s/[^ ]*  *\([^ ]*\)  *\([^ ]*\).* \([^ ]*\)$/\3-\1-\2/
    /-[0-9]$/s/\([0-9]\)$/0\1/
    /Jan/{s/Jan/01/p;q;}
