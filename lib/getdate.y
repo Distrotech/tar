@@ -889,7 +889,7 @@ get_date (const char *p, const time_t *now)
 	  {
 	      {
 		pc.local_time_zone_table[1].name = tm->tm_zone;
-		pc.local_time_zone_table[1].type = tLOCAL_TIME_ZONE_TABLE;
+		pc.local_time_zone_table[1].type = tLOCAL_ZONE;
 		pc.local_time_zone_table[1].value = tm->tm_isdst;
 		pc.local_time_zone_table[2].name = 0;
 	      }
