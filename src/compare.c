@@ -700,7 +700,7 @@ verify_volume (void)
   flush_read ();
   while (1)
     {
-      enum read_header status = read_header (0);
+      enum read_header status = read_header (false);
 
       if (status == HEADER_FAILURE)
 	{
@@ -709,7 +709,7 @@ verify_volume (void)
 	  do
 	    {
 	      counter++;
-	      status = read_header (0);
+	      status = read_header (false);
 	    }
 	  while (status == HEADER_FAILURE);
 
