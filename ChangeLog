@@ -1,5 +1,18 @@
 2005-02-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/common.h (EXTRACT_OVER_PIPE): New macro
+	* src/compare.c: Code clean up.
+	* src/extract.c (extract_archive): Do not check for
+	EXTRACT_OVER_PIPE, decode_options() does this.
+	* src/misc.c (exec_error,fork_error,dup2_error)
+	(pipe_error): Removed unneeded functions.
+	* src/system.c (sys_exec_command): Use xclose, xpipe,
+	xfork, xdup2 and exec_fatal.
+	* src/tar.c (options): Improved sorting. Document --backup=off.
+	(decode_options): Clear backup_option if necessary.
+	
+2005-02-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	Initial implementation of --to-command option proposed
 	by Hansjoerg Lipp.
 	
