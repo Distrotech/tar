@@ -24,7 +24,8 @@
 
 # Parse options.
 
-for option; do
+for option
+do
   case $option in
   --help)
     echo "$0: usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME]"
