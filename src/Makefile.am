@@ -49,6 +49,10 @@ INCLUDES = -I$(top_srcdir)/lib -I../lib
 DISTCLEANFILES = localedir.h
 localedir.h : Makefile
 	echo '#define LOCALEDIR "$(localedir)"' >$@
+	echo "#ifndef DEFAULT_RMT_COMMAND" >> $@
+	echo "# define DEFAULT_RMT_COMMAND \"$(libexecdir)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
+	echo "#endif" >> $@
+
 rmt.o tar.o : localedir.h
 
 LDADD = ../lib/libtar.a $(LIBINTL)
