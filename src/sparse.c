@@ -489,7 +489,7 @@ sparse_diff_file (int fd, struct tar_stat_info *stat)
 	        + file.stat_info->sparse_map[i].numbytes;
     }
 
-  if (rc)
+  if (!rc)
     skip_file (file.stat_info->archive_file_size - file.dumped_size);
 
   tar_sparse_done (&file);
