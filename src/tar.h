@@ -1,5 +1,5 @@
 /* Declarations for tar archives.
-   Copyright (C) 1988 Free Software Foundation
+   Copyright (C) 1988, 1992 Free Software Foundation
 
 This file is part of GNU Tar.
 
@@ -176,7 +176,7 @@ TAR_EXTERN int cmd_mode;
 #define CMD_UPDATE	6		/* -u */
 #define CMD_EXTRACT	7		/* -x */
 #define CMD_DELETE	8		/* -D */
-#define CMD_VERSION	9		/* +version */
+#define CMD_VERSION	9		/* --version */
 
 					/* -[0-9][lmh] */
 			/* CMD_CAT	   -A */
@@ -218,8 +218,13 @@ TAR_EXTERN int  f_verify;		/* -W */
 TAR_EXTERN int  f_exclude;		/* -X */
 TAR_EXTERN int 	f_compress;		/* -z */
 					/* -Z */
-TAR_EXTERN int	f_do_chown;		/* +do-chown */
-TAR_EXTERN int  f_totals;		/* +totals */
+TAR_EXTERN int	f_do_chown;		/* --do-chown */
+TAR_EXTERN int  f_totals;		/* --totals */
+TAR_EXTERN int	f_remove_files;		/* --remove-files */
+TAR_EXTERN int	f_ignore_failed_read;	/* --ignore-failed-read */
+TAR_EXTERN int	f_checkpoint;		/* --checkpoint */
+TAR_EXTERN int	f_show_omitted_dirs;	/* --show-omitted-dirs */
+TAR_EXTERN char *f_volno_file;		/* --volno-file */
 
 /*
  * We default to Unix Standard format rather than 4.2BSD tar format.
@@ -270,7 +275,7 @@ void userec();
 union record *endofrecs();
 void anno();
 
-#if !defined (VPRINTF_MISSING) && defined (__STDC__)
+#if defined (HAVE_VPRINTF) && __STDC__
 void msg(char *, ...);
 void msg_perror(char *, ...);
 #else
