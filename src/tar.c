@@ -1,5 +1,5 @@
 /* A tar (tape archiver) program.
-   Copyright (C) 1988, 92,93,94,95,96,97, 1999 Free Software Foundation, Inc.
+   Copyright 1988, 92,93,94,95,96,97, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, starting 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -625,6 +625,7 @@ decode_options (int argc, char *const *argv)
 
       case 'g':
 	listed_incremental_option = optarg;
+	after_date_option = 1;
 	/* Fall through.  */
 
       case 'G':
@@ -1012,7 +1013,7 @@ decode_options (int argc, char *const *argv)
       printf ("tar (GNU %s) %s\n", PACKAGE, VERSION);
       fputs (_("\
 \n\
-Copyright (C) 1988, 92,93,94,95,96,97,98, 1999 Free Software Foundation, Inc.\n"),
+Copyright 1988, 92,93,94,95,96,97,98, 1999 Free Software Foundation, Inc.\n"),
 	     stdout);
       fputs (_("\
 This is free software; see the source for copying conditions.  There is NO\n\
@@ -1064,6 +1065,11 @@ Written by John Gilmore and Jay Fenlason.\n"),
   if (archive_names > 1 && !multi_volume_option)
     USAGE_ERROR ((0, 0,
 		  _("Multiple archive files requires `-M' option")));
+
+  if (listed_incremental_option
+      && newer_mtime_option != TYPE_MINIMUM (time_t))
+    USAGE_ERROR ((0, 0,
+		  _("Cannot combine --listed-incremental with --newer")));
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
