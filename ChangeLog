@@ -1,3 +1,9 @@
+2004-12-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/delete.c (delete_archive_members): Bugfix: when
+	attempting to delete an unexisting member, the last
+	blocking_factor blocks were zeroed.
+
 2004-12-14  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* TODO: Mention sub-second resolution, lutimes, lchmod.
