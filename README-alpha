@@ -1,3 +1,112 @@
 This is a test release of GNU tar.
 
 Please send comments and problem reports to <bug-tar@gnu.org>.
+
+This release was built with GNU automake 1.5 patched as follows:
+
+2001-09-14  Paul Eggert  <eggert@twinsun.com>
+
+	* lib/am/distdir.am (REMOVE_DISTDIR):
+	New macro.  Do not change permission of non-directories.
+	(distdir, dist, dist-bzip2, dist-tarZ, dist-shar, dist-zip, dist-all,
+	 distcheck): Use it.
+
+===================================================================
+RCS file: lib/am/distdir.am,v
+retrieving revision 1.5
+retrieving revision 1.5.0.1
+diff -pu -r1.5 -r1.5.0.1
+--- lib/am/distdir.am	2001/07/14 20:12:52	1.5
++++ lib/am/distdir.am	2001/09/15 05:12:18	1.5.0.1
+@@ -29,6 +29,11 @@ else !%?TOPDIR_P%
+ ?DISTDIR?distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
+ endif !%?TOPDIR_P%
+ 
++REMOVE_DISTDIR = \
++  { test ! -d $(distdir) \
++    || { find $(distdir) -type d ! -perm -200 -exec chmod u+w {} ';' \
++         && rm -fr $(distdir); }; }
++
+ distdir: $(DISTFILES)
+ ##
+ ## For Gnits users, this is pretty handy.  Look at 15 lines
+@@ -47,7 +52,7 @@ endif %?TOPDIR_P%
+ ## Only for the top dir.
+ ##
+ if %?TOPDIR_P%
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ 	mkdir $(distdir)
+ endif %?TOPDIR_P%
+ ##
+@@ -168,13 +173,13 @@ GZIP_ENV = --best
+ .PHONY: dist
+ dist: distdir
+ 	$(AMTAR) chof - $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).tar.gz
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ 
+ if  %?BZIP2%
+ .PHONY: dist-bzip2
+ dist-bzip2: distdir
+ 	$(AMTAR) chof - $(distdir) | bzip2 -9 -c >$(distdir).tar.bz2
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ endif  %?BZIP2%
+ 
+ 
+@@ -182,7 +187,7 @@ if  %?COMPRESS%
+ .PHONY: dist-tarZ
+ dist-tarZ: distdir
+ 	$(AMTAR) chof - $(distdir) | compress -c >$(distdir).tar.Z
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ endif  %?COMPRESS%
+ 
+ 
+@@ -190,7 +195,7 @@ if  %?SHAR%
+ .PHONY: dist-shar
+ dist-shar: distdir
+ 	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ endif  %?SHAR%
+ 
+ 
+@@ -199,7 +204,7 @@ if  %?ZIP%
+ dist-zip: distdir
+ 	-rm -f $(distdir).zip
+ 	zip -rq $(distdir).zip $(distdir)
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ endif  %?ZIP%
+ 
+ endif %?TOPDIR_P%
+@@ -223,7 +228,7 @@ dist-all: distdir
+ ?SHAR?	shar $(distdir) | GZIP=$(GZIP_ENV) gzip -c >$(distdir).shar.gz
+ ?ZIP?	-rm -f $(distdir).zip
+ ?ZIP?	zip -rq $(distdir).zip $(distdir)
+-	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ 
+ endif %?TOPDIR_P%
+ 
+@@ -239,8 +244,7 @@ if %?TOPDIR_P%
+ # tarfile.
+ .PHONY: distcheck
+ distcheck: dist
+-## Make sure we can remove distdir before trying to remove it.
+-	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ 	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
+ ## Make the new source tree read-only.  Distributions ought to work in
+ ## this case.  However, make the top-level directory writable so we
+@@ -273,7 +277,7 @@ distcheck: dist
+ 	  && (test `find . -type f -print | wc -l` -eq 0 \
+ 	     || (echo "Error: files left after distclean" 1>&2; \
+ 	         exit 1) )
+-	-chmod -R a+w $(distdir) > /dev/null 2>&1; rm -rf $(distdir)
++	$(REMOVE_DISTDIR)
+ 	@echo "$(distdir).tar.gz is ready for distribution" | \
+ 	  sed 'h;s/./=/g;p;x;p;x'
+ endif %?TOPDIR_P%
