@@ -1237,6 +1237,19 @@ skip_file (off_t size)
       save_sizeleft = size;
     }
 
+  if (seekable_archive)
+    {
+      off_t nblk = seek_archive (size);
+      if (nblk >= 0)
+	{
+	  size -= nblk * BLOCKSIZE;
+	  if (multi_volume_option) /* Argh.. */
+	    save_sizeleft -= nblk * BLOCKSIZE;
+	}
+      else
+	seekable_archive = false;
+    }
+  
   while (size > 0)
     {
       x = find_next_block ();
