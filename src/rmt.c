@@ -176,11 +176,11 @@ prepare_record_buffer (size_t size)
 }
 
 /* Decode OFLAG_STRING, which represents the 2nd argument to `open'.
-   OFLAG_STRING should contain an integer, followed by an optional
-   symbolic representation of an open flag using only '|' to separate
-   its components (e.g. "O_WRONLY|O_CREAT|O_TRUNC").  Prefer the
-   symbolic representation if available, falling back on the numeric
-   representation otherwise.
+   OFLAG_STRING should contain an optional integer, followed by an optional
+   symbolic representation of an open flag using only '|' to separate its
+   components (e.g. "O_WRONLY|O_CREAT|O_TRUNC").  Prefer the symbolic
+   representation if available, falling back on the numeric
+   representation, or to zero if both formats are absent.
 
    This function should be the inverse of encode_oflag.  The numeric
    representation is not portable from one host to another, but it is
