@@ -1,3 +1,8 @@
+2003-11-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/create.c (write_gnu_long_link): Use oldgnu
+	magic with @LongLink blocks.
+
 2003-11-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.h: Support for star sparse format.
