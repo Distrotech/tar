@@ -2,20 +2,19 @@
 
    Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify it
-   under the terms of the GNU Library General Public License as published
-   by the Free Software Foundation; either version 2, or (at your option)
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   Library General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
 
-   You should have received a copy of the GNU Library General Public
-   License along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
-   USA.  */
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Written by Bruno Haible <haible@clisp.cons.org>.  */
 
@@ -38,12 +37,16 @@
 #ifndef errno
 extern int errno;
 #endif
+#ifndef EILSEQ
+# define EILSEQ EINVAL
+#endif
+#ifndef ENOTSUP
+# define ENOTSUP EINVAL
+#endif
 
 #if HAVE_ICONV
 # include <iconv.h>
 #endif
-
-#include <error.h>
 
 #if ENABLE_NLS
 # include <libintl.h>
@@ -106,13 +109,17 @@ utf8_wctomb (unsigned char *r, unsigned int wc)
 #define UTF8_NAME "UTF-8"
 
 /* Converts the Unicode character CODE to its multibyte representation
-   in the current locale and calls the CALLBACK on the resulting byte
-   sequence.
-   Assumes that the locale doesn't change between two calls.  */
-void
+   in the current locale and calls SUCCESS on the resulting byte
+   sequence.  If an error occurs, invoke FAILURE instead,
+   passing it CODE with errno set appropriately.
+   Assumes that the locale doesn't change between two calls.
+   Return whatever the SUCCESS or FAILURE returns.  */
+int
 unicode_to_mb (unsigned int code,
-	       void (*callback) PARAMS((const char *buf, size_t buflen,
-					void *callback_arg)),
+	       int (*success) PARAMS((const char *buf, size_t buflen,
+				      void *callback_arg)),
+	       int (*failure) PARAMS((unsigned int code,
+				      void *callback_arg)),
 	       void *callback_arg)
 {
   static int initialized;
@@ -139,9 +146,7 @@ unicode_to_mb (unsigned int code,
 	      /* For an unknown encoding, assume ASCII.  */
 	      utf8_to_local = iconv_open ("ASCII", UTF8_NAME);
 	      if (utf8_to_local == (iconv_t)(-1))
-		error (1, 0,
-		       _("cannot convert U+%04X to local character set: iconv function not usable"),
-		       code);
+		return failure (code, callback_arg);
 	    }
 	}
 #endif
@@ -151,11 +156,14 @@ unicode_to_mb (unsigned int code,
   /* Convert the character to UTF-8.  */
   count = utf8_wctomb ((unsigned char *) inbuf, code);
   if (count < 0)
-    error (1, 0, _("U+%04X: character out of range"), code);
+    {
+      errno = EILSEQ;
+      return failure (code, callback_arg);
+    }
 
   if (is_utf8)
     {
-      callback (inbuf, count, callback_arg);
+      return success (inbuf, count, callback_arg);
     }
   else
     {
@@ -182,8 +190,11 @@ unicode_to_mb (unsigned int code,
 	  || (res > 0 && code != 0 && outptr - outbuf == 1 && *outbuf == '\0')
 # endif
          )
-	error (1, res == (size_t)(-1) ? errno : 0,
-	       _("cannot convert U+%04X to local character set"), code);
+	{
+	  if (res != (size_t)(-1))
+	    errno = EILSEQ;
+	  return failure (code, callback_arg);
+	}
 
       /* Avoid glibc-2.1 bug and Solaris 2.7 bug.  */
 # if defined _LIBICONV_VERSION \
@@ -192,33 +203,46 @@ unicode_to_mb (unsigned int code,
       /* Get back to the initial shift state.  */
       res = iconv (utf8_to_local, NULL, NULL, &outptr, &outbytesleft);
       if (res == (size_t)(-1))
-	error (1, errno, _("cannot convert U+%04X to local character set"),
-	       code);
+	return failure (code, callback_arg);
 # endif
 
-      callback (outbuf, outptr - outbuf, callback_arg);
+      return success (outbuf, outptr - outbuf, callback_arg);
 #else
-      error (1, 0,
-	     _("cannot convert U+%04X to local character set: iconv function not available"),
-	     code);
+      errno = ENOTSUP;
+      return failure (code, callback_arg);
 #endif
     }
 }
 
-/* Simple callback that outputs the converted string.
+/* Simple success callback that outputs the converted string.
    The STREAM is passed as callback_arg.  */
-static void
-fprintf_callback (const char *buf, size_t buflen, void *callback_arg)
+int
+print_unicode_success (const char *buf, size_t buflen, void *callback_arg)
 {
   FILE *stream = (FILE *) callback_arg;
 
-  fwrite (buf, 1, buflen, stream);
+  return fwrite (buf, 1, buflen, stream) == 0 ? -1 : 0;
+}
+
+/* Simple failure callback that prints an ASCII representation, using
+   the same notation as C99 strings.  */
+int
+print_unicode_failure (unsigned int code, void *callback_arg)
+{
+  int e = errno;
+  FILE *stream = callback_arg;
+  
+  fprintf (stream, code < 0x10000 ? "\\u%04X" : "\\U%08X", code);
+  errno = e;
+  return -1;
 }
 
 /* Outputs the Unicode character CODE to the output stream STREAM.
+   Returns zero if successful, -1 (setting errno) otherwise.
    Assumes that the locale doesn't change between two calls.  */
-void
+int
 print_unicode_char (FILE *stream, unsigned int code)
 {
-  unicode_to_mb (code, fprintf_callback, stream);
+  return unicode_to_mb (code, print_unicode_success, print_unicode_failure,
+			stream);
 }
