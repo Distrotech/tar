@@ -20,6 +20,7 @@
 
 #include <hash.h>
 #include <quotearg.h>
+#include <xstrtol.h>
 
 #include "common.h"
 
@@ -290,7 +291,9 @@ atime_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 atime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_atime = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_atime = u;
 }
 
 static void
@@ -303,7 +306,9 @@ gid_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 gid_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_gid = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_gid = u;
 }
 
 static void
@@ -342,7 +347,9 @@ ctime_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 ctime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_ctime = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_ctime = u;
 }
 
 static void
@@ -355,7 +362,9 @@ mtime_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 mtime_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_mtime = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_mtime = u;
 }
 
 static void
@@ -383,7 +392,9 @@ size_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 size_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_size = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_size = u;
 }
 
 static void
@@ -396,7 +407,9 @@ uid_coder (struct tar_stat_info const *st, char const *keyword,
 static void
 uid_decoder (struct tar_stat_info *st, char const *arg)
 {
-  st->stat.st_uid = strtoul (arg, NULL, 0);
+  uintmax_t u;
+  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK)
+    st->stat.st_uid = u;
 }
 
 static void
