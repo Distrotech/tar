@@ -10,26 +10,7 @@
 
 @c Search for comments marked with !! or <<<  (or >>>)
 
-@c <<< CONVENTIONS: this manual refers to "ordinary files" , "directory
-files" (or "directories"), "archive files", "archive members", and
-various I/O devices (which have names and file names).>>>
-
-@c <<< it's "file name" (not filename) unless we are talking about an
-argument, ie. @var{file-name}.  also, you "use" a "file-name argument"
-to "specify" a "file".>>>
-
-@c <<<  @code{tar} is always lower case, in bold. >>>
-
-@c <<< it's "operations of tar", "options to tar" also, it's " @samp{tar
---foo}" or "the @samp{--foo} operation".  MIB doesn't like using
-operations and options as separate concepts. I disagree --- would be a
-mess to explain otherwise
-
-@c <<< (don't forget to comment these out in final draft)  -ringo
-
-@c <<< please dont' change this without sending me e-mail.  some things
-@c are in progress or waiting to be edited in hardcopy.  -ringo
-@c smallbook
+@smallbook
 
 @iftex
 @c finalout
@@ -54,9 +35,7 @@ Copyright (C) 1992 Free Software Foundation, Inc.  DRAFT!
 @subtitle DRAFT
 @c subtitle   insert month here when ready
 
-@author Amy Gorin, Michael I. Bushnell, and Jay Fenlason
-@c <<<best to have hack read this over and see if anything is left he
-@c wrote.  I don't think so.  -ringo>>>>
+@author Michael I. Bushnell and Amy Gorin
 
 @page
 @vskip 0pt plus 1filll
@@ -97,32 +76,6 @@ version 1.12.
 * Concept Index::               Concept Index
 @end menu
 
-@node Introduction, Invoking @code{tar}, Top, Top
-@chapter @code{tar}: The GNU Tape Archiver
-
-You can use @code{tar} to create an @dfn{archive}---a single file
-which contains other files' contents as well as a listing of those
-files' characteristics.  You can also use @code{tar} to read, add to,
-or manipulate already existing archives.  Because an archive created
-by @code{tar} is capable of preserving file information and directory
-structure, @code{tar} is ideal for performing full and incremental
-backups, as well as for transferring groups of files between disks and
-over networks.
-
-The name @code{tar} comes from the words ``Tape ARchiver'', but
-@code{tar} can actually process archives wherever they are stored; on
-tapes and disk files, for example.  In addition, tar can read archives
-from standard input or write them to standard output.  (This is often
-useful if redirected another program with a pipe.)
-
-@c <<< this menu will conflict with menu above in info mode.  -ringo
-@menu
-* Invoking @code{tar}::         How to invoke @code{tar} and specify arguments.
-* Tutorial::                    An introduction to @code{tar}.
-* Operations::                  What you can use @code{tar} to do.
-* Options::                     How to change the way @code{tar} behaves.
-* Problems::                    Common problems with @code{tar}.
-@end menu
 @chapter Tutorial Introduction to @code{tar}
 
 This chapter guides you through some basic examples of @code{tar}
@@ -184,7 +137,7 @@ However, this manual consistently uses the terminology above in
 referring to files and archive members, to make it easier to learn how
 to use @code{tar}.
 
-@section Creating Archives
+@section How to Create Archives
 
 To create a new archive, use @samp{tar --create}.  You should generally
 use the @samp{--file} option to specify the name the tar archive will
@@ -260,7 +213,7 @@ is using a default value for @samp{--file}.  You should generally specify a
 @samp{--file} argument whenever you use @code{tar}, rather than relying
 on a default.
 
-@section Listing Archives
+@section How to List Archives
 
 Use @samp{tar --list} to print the names of members stored in an
 archive.  Use a @samp{--file} option just as with @samp{tar --create} to
@@ -301,7 +254,7 @@ file names @file{baloons} and @file{./baloons} name the same file,
 member names are compared using a simplistic name comparison, in which
 an exact match is necessary.
 
-@section Extracting Members from an Archive
+@section How to Extract Members from an Archive
 
 In order to extract members from an archive, use @samp{tar --extract}.
 Specify the name of the archive with @samp{--file}.  To extract specific
@@ -331,7 +284,7 @@ will extract all the members of the archive.
 If you give the @samp{--verbose} option, then @samp{tar --extract} will
 print the names of the archive members as it extracts them.
 
-@section Adding Files to Existing Archives
+@section How to Add Files to Existing Archives
 
 If you want to add files to an existing archive, then don't use
 @samp{tar --create}.  That will erase the archive and create a new one
@@ -352,7 +305,7 @@ complex.  @xref{Multiple Members with the Same Name}.  If you want to
 replace an archive member, use @samp{tar --delete} first, and then use
 @samp{tar --append}.
 
-@section Deleting Members from Archives
+@section How to Delete Members from Archives
 
 You can delete members from an archive using @samp{tar --delete}.
 Specify the name of the archive with @samp{--file}.  List the member
@@ -367,7 +320,7 @@ Archives}).
 The @samp{tar --delete} command only works with archives stored on disk.
 You cannot delete members from an archive stored on a tape.
 
-@section Directories 
+@section How to Archive Directories 
 
 When the names of files or members specify directories, the operation of
 @code{tar} is more complex.  Generally, when a directory is named,
@@ -405,7 +358,7 @@ The command @samp{tar --extract --file=@var{archive-name} .} will not
 extract all the contents of the archive, but only those members whose
 member names begin with @samp{./}.
 
-@section Shorthand names
+@section Shorthand Names
 
 Most of the options to @code{tar} come in both long forms and short
 forms.  The options described in this tutorial have the following
@@ -671,7 +624,24 @@ modify the way these names are interpreted, @pxref{Specifying Names to
 @code{tar}}).  If you name no members, then @samp{--list} will list the
 names of all the members of the archive.
 
-To see more th
+To see more than just the names of the members, use the @samp{--verbose}
+option to cause @code{tar} to print out a listing similar to that of
+@samp{ls -l}.
+
+@section Extracting Archive Members
+
+Use @samp{--extract} (or @samp{--get}, or @samp{-x}) to extract members
+from an archive.  For each member named (or for the entire archive if no
+members are named) on the command line (or with @samp{--files-from}) the
+a file is created with the contents of the archive member.  The name of
+the file is the same as the member name.
+
+The @samp{--same-permissions} (or @samp{--preserve-permissions}, or
+@samp{-p}) options cause @code{tar} to cause the new file to have the
+same permissions, owner, and so forth, as the original file did when it
+was placed in the archive.  
+
+The @samp{--mo
 
 
 @chapter Specifying Names to @code{tar}
