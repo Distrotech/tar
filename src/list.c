@@ -568,8 +568,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
     }
 
   current_stat_info.archive_file_size = current_stat_info.stat.st_size;
-  if (extended_header.size)
-    xheader_decode (stat_info);
+  xheader_decode (stat_info);
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
