@@ -2,10 +2,9 @@ Suggestions for improving GNU tar.
 
 * Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
 
-* Fix tar so that it can read and write POSIX.1-1990 tar archives.
-
-* Add support for POSIX 1003.1-2001 tar archives
-  (along with technical corrections to the standard since 2001).
+* Add support for GNU private keywords in POSIX 1003.1-2001 headers,
+so that the GNU extensions (--sparse, --incremental, --label and
+--multi-volume) may be used with POSIX archives.
 
 * Add support for a 'pax' command that conforms to POSIX 1003.1-2001.
   This would unify paxutils with tar.
@@ -30,6 +29,26 @@ Suggestions for improving GNU tar.
 
   It would be useful to be able to use '--remove-files' with '--diff',
   to remove all files that compare successfully, when verifying a backup.
+
+* Add an option to cut away the first N output path elements:
+
+  From: Marc Haber <mh+debian-bugs@zugschlus.de>
+  Date: Tue, 26 Aug 2003 08:55:31 +0200
+
+  some archives have members like
+  foo/bar
+  foo/baz
+  foo/bam
+  
+  When I now want to extract the three members bar, baz and bam to the
+  directory fom instead foo, I need to extract to foo and then to move
+  the files over manually.
+
+  patch(1) solves that problem by offering an option taking the number
+  of path elements to cut away before using the path name. With an
+  option like that, the above problem could be solved with
+
+  tar --extract --cut-path-elements 1 --directory fom
 
   
 * Copyright notice

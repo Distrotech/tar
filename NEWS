@@ -8,6 +8,12 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.13.26
 
+* Added support for POSIX.1-2001 archive format.
+* New option --format allows to select the output archive format
+* The default output format can be selected at configuration time
+by presetting the environment variable DEFAULT_ARCHIVE_FORMAT.
+Allowed values are GNU, V7, OLDGNU and POSIX.
+
 * Bug fixes.
 
 * New options --index-file, --no-overwrite-dir.  The --overwrite-dir

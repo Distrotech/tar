@@ -52,6 +52,10 @@ Besides those configure options documented in files `INSTALL' and
 operating system supports large files.  Typically, large files are
 those larger on 2 GB on a 32-bit host.
 
+The default archive format is GNU, this can be overridden by
+presetting DEFAULT_ARCHIVE_FORMAT while configuring. The allowed
+values are GNU, V7, OLDGNU and POSIX.
+
 The default archive device is now `stdin' on read and `stdout' on write.
 The installer can still override this by presetting `DEFAULT_ARCHIVE'
 in the environment before configuring (the behavior of `-[0-7]' or
