@@ -25,20 +25,20 @@ Boston, MA 02111-1307, USA.
 
 ----- ChangeLog -----
 
-1997-04-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
 	* configure.in: Check for the inline keyword.
 
-1997-04-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (BABYL): Delete admin/RMAIL, renamed rmail/announce.
 
 	* PORTS: New file.
 	(EXTRA_DIST): Adjusted.
 
-1997-04-23  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* BI-PATCHES: Patches for Bison 1.25.
 	* Makefile.am (EXTRA_DIST): Adjusted.
@@ -46,7 +46,7 @@ Boston, MA 02111-1307, USA.
 	* configure.in (AC_PROG_INSTALL): Call deleted.  AM_INIT_AUTOMAKE
 	takes care of this already.
 
-1997-04-22  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11q.
 
@@ -54,13 +54,13 @@ Boston, MA 02111-1307, USA.
 	checking for -lnsl.  It seems SINIX systems require this.
 	Reported by Bruno Haible.
 
-1997-04-19  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* acinclude.m4: New fp_WITH_INCLUDED_MALLOC macro.
 	* configure.in: Use it instead of the HP/UX test for GNU malloc.
 	Reported by Bruno Haible.
 
-1997-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11p.
 
@@ -68,18 +68,18 @@ Boston, MA 02111-1307, USA.
 	it requires config.guess.  I have to think more about this.
 	Reported by Bruno Haible.
 
-1997-04-16  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* AC-PATCHES: Patches for Autoconf 2.12.
 	* AM-PATCHES: Patches for Automake 1.1n.
 	* Makefile.am (EXTRA_DIST): Adjusted.
 
-1997-04-15  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Ensure all cpp directives are left justified.
 	Reported by Kaveh R. Ghazi.
 
-1997-04-12  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Add fnmatch.o to LIBOBJS if AC_FUNC_FNMATCH
 	says no working copy was found.  This is not done automatically.
@@ -87,12 +87,12 @@ Boston, MA 02111-1307, USA.
 	Kaveh R. Ghazi, Laurent Caillat-Vallet, Sakai Kiyotaka and
 	Santiago Vila Doncel.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Much simplify the -lsocket and -lnsl tests.
 	Reported by Larry Schwimmer.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
@@ -107,25 +107,25 @@ Boston, MA 02111-1307, USA.
 	R. Ghazi, Larry Schwimmer, Marcus Daniels, Mark Bynum and
 	Russell Cattelan.
 
-1997-04-10  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Define _GNU_SOURCE to get FNM_LEADIR_DIR, etc.
 	* acconfig.h: Document _GNU_SOURCE.
 	Reported by Andreas Jaeger, Becki Kain, Brendan Kehoe, David
 	N. Brown, J. Dean Brock, James V. DI Toro III, Jeffrey Mark
-	Siskind, Jürgen Reiss, Paul Eggert, Roland McGrath, Rolf
+	Siskind, JÃ¼rgen Reiss, Paul Eggert, Roland McGrath, Rolf
 	Niepraschk, Roman Gollent, Thomas Bushnell n/BSG and Ulrich
 	Drepper.
 
-1997-03-26  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (ALL_LINGUAS): Add it.
 
-1997-03-20  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Require Autoconf 2.12.
 
-1997-02-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Use AM_CONFIG_HEADER and AM_GNU_GETTEXT instead
 	of AC_CONFIG_HEADER and ud_GNU_GETTEXT.  Use AC_FUNC_FNMATCH
@@ -134,11 +134,11 @@ Boston, MA 02111-1307, USA.
 	* acinclude.m4: Replaced whole, from elsewhere.
 	* Makefile.am (EXTRA_DIST): Leave README-alpha to Automake.
 
-1997-02-12  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Delete README-alpha code, Automake handles it now.
 
-1996-11-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.14.
 
@@ -147,72 +147,72 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Check for sys/buf.h, as BSD/OS.
 	Reported by Dan Reish.
 
-1996-11-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Replace a missing basename.
 	Reported by Bryant Fujimoto, Erick Branderhorst, Greg Black, John
 	David Anglin, John J. Szetela, Kaveh R. Ghazi, Kurt Jaeger, Marcus
 	Daniels, Santiago Vila Doncel and William Bader.
 
-1996-11-08  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.13.
 
 	* configure.in: Replace a missing dirname.
 
-1996-10-07  François Pinard  <pinard@iro.umontreal.ca>
+1996-10-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Clean out some macro calls made useless since
 	AM_INIT_AUTOMAKE implies them.
 
-1996-09-20  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Do not check anymore for regex.
 
-1996-09-19  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12
 
 	* configure.in: Check echo for newline suppression.
 
-1996-09-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Do not add open3.o to LIBOBJS anymore.
 
-1996-09-05  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (ALL_LINGUAS): Add pl.
 
-1996-09-04  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (AC_OUTPUT): Prepare tests/Makefile and tests/preset.
 	* Use AM_ version of fp_ macros.
 
 	* Makefile.am (SUBDIRS): Add tests/.
 
-1996-07-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.11.
 
 	* configure.in: Use AC_PREREQ(2.10).
 
-1996-07-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (ALL_LINGUAS): Add nl.
 	Reported by Erick Branderhorst.
 
-1996-07-12  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.10.
 
 	* configure.in (ALL_LINGUAS): Add ko and sl.
 
-1996-05-01  François Pinard  <pinard@iro.umontreal.ca>
+1996-05-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for fsync, and linux/fd.h.
 	Reported by Marty Leisner.
 
-1996-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): New name for DIST_OTHERS.
 
@@ -220,7 +220,7 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.am (BABYL): Consider rmail/* instead of rmail/*/*.
 
-1996-02-28  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Avoid PROGRAMS, instead use RMT to substitute rmt.
 	* Makefile.am (SUBDIRS): Use intl and po instead of @INTLSUB@ and
@@ -229,22 +229,22 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Check for poll.h and stropts.h.
 	Check for nap, napms, poll, select and usleep.
 
-1996-02-12  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Remove CONFIG_HEADER, not required by Automake 0.29.
 	* configure.in: Temporarily remove a \ in AC_OUTPUT for automake.
 
-1996-02-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check size of unsigned long (assume 32 bits if
 	cross-compiling) and long long (assume not available).
 
-1996-01-14  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Select gnits and dist-shar.
 	(dist-zoo): New goal, experimental for now.
 
-1996-01-07  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am:  Force distribution of BACKLOG.
 	Reported by Jonathan Thornburg.
@@ -253,13 +253,13 @@ Boston, MA 02111-1307, USA.
 	and rebox.el.  Add id, ID and dist-shar targets.  Add parts of
 	previous Makefile.in as FIXME comments.
 
-1995-12-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Ensure there is a link for libintl.h.
-	Reported by Daniel S. Barclay, Göran Uddeborg, Jonathan Thornburg,
+	Reported by Daniel S. Barclay, GÃ¶ran Uddeborg, Jonathan Thornburg,
 	Ken Raeburn and Minh Tran-Le.
 
-1995-12-29  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.9.
 
@@ -268,7 +268,7 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Decide if README-alpha should be distributed.
 	From Ulrich Drepper.
 
-1995-12-28  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (AC_OUTPUT): Call sed for po/Makefile.in.
 
@@ -277,7 +277,7 @@ Boston, MA 02111-1307, USA.
 
 	* configure.in: Test for lchown.
 
-1995-12-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Prefer avoiding union wait, and use it only if
 	using int fails.  This turns around the previous test, as directly
@@ -299,7 +299,7 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Check <sys/tprintf.h> and <sys/device.h> for BSDi.
 	Reported by Chris Arthur and Skip Montanaro.
 
-1995-12-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Be more systematic at caching test results.
 	Reported by Ulrich Drepper.
@@ -309,14 +309,14 @@ Boston, MA 02111-1307, USA.
 
 	* configure.in: Prefer #if to #ifdef while checking for open3.
 
-1995-11-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for net/errno.h and sys/inet.h, trying to
 	get EOPNOTSUPP defined.
 
 	* configure.in: Check for sgtty.h.
 
-1995-11-06  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* acconfig.h: Document HAVE_STPCPY for the time being.  I do not
 	understand yet why this is mandatory: it should be automatic
@@ -327,21 +327,21 @@ Boston, MA 02111-1307, USA.
 	Reported by Chad Hurwitz, Dennis Pixton, Per Foreby, Richard
 	Westerik, Robert Weiner and Tom Tromey.
 
-1995-10-27  François Pinard  <pinard@iro.umontreal.ca>
+1995-10-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Add /usr/bin/rcmd as a possible remote shell, as
 	this is the name used by SCO Unix 3.2.4.
 	Reported by Bela Lubkin and Rodney Brown.
 
-1995-07-23  François Pinard  <pinard@iro.umontreal.ca>
+1995-07-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Adapt for GNU gettext 0.8.
 
-1995-07-10  François Pinard  <pinard@iro.umontreal.ca>
+1995-07-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (default): Define to all.
 
-1995-06-18  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: For mknod, also include <sys/types.h> prior to
 	<sys/stat.h>, as Ultrix needs this.
@@ -354,7 +354,7 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Force compilation of lib/open3.c if required.
 	Clean out old NO_OPEN3 code.
 
-1995-06-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.11.8.
 
@@ -373,53 +373,53 @@ Boston, MA 02111-1307, USA.
 	latter not being exported unless RX_WANT_RX_DEFS is defined.
 	Reported by Alan Modra.
 
-1995-06-15  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (dist): Do not hide copying rule.
 
 	* configure.in: Adjustments to NLS, so .sed scripts may now all
 	reside in intl/.
 
-1995-06-13  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (pot): New goal, triggering po/tar.pot.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Substitute POTFILES by contents of po/POTFILES.
 
 	* configure.in: More adjustments for GNU gettext 0.6.
 	* config.guess, config.sub:  New files, all taken from gettext 0.6.
 
-1995-06-04  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (check): New goal.
 
-1995-05-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Do not distribute SUPPORT, now
 	integrated in the documentation.
 	Reported by Karl Berry.
 
-1995-05-28  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for isascii, not iascii.
 	Reported by Alan Modra, Bruno Haible and Greg McGary.
 
-1995-05-16  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.7.
 
 	* Makefile.in (DISTFILES): Distribute NLS.
 	* configure.in, acconfig.h: Many adjustments for GNU gettext.
 
-1995-05-09  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Clean glocale out.
 	* Makefile.in (SUBDIRS): Add po.
 	* Makefile.in (pofile): New goal.
 
-1995-05-08  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Call ud_WITH_NLS, create intl/Makefile.in.
 	Compute size of unsigned short and unsigned int.
@@ -431,48 +431,48 @@ Boston, MA 02111-1307, USA.
 	* src/pt.po: New file, for Portuguese.
 	Reported by Antonio Jose Coutinho.
 
-1995-03-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-03-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Remove GLOCALE, add LINGUAS, use fp_WITH_CATALOGS.
 	* acconfig.h: Add description for WITH_CATALOGS.
 
-1995-02-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in, Makefile.in: Replace `date' by `echo timestamp'.
 
-1995-02-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Support ID files.  Do not distribute TAGS.
 
-1995-02-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (maintainer-clean): New name for realclean.
 
-1995-01-02  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <sys/ioccom.h>.
 	Reported by Joseph E. Sacco.
 
-1995-01-01  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Distribute SUPPORT, with *pre*-releases.
 
-1994-12-18  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for isascii.
 	Reported by Bruno Haible.
 
-1994-12-11  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Use fp_WITH_REGEX.
 	* acconfig.h: Document WITH_REGEX.
 
-1994-12-10  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* src/de.tt: New file, for German.
 	Reported by Ulrich Drepper.
 
-1994-12-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.6.
 
@@ -483,28 +483,28 @@ Boston, MA 02111-1307, USA.
 	* configure.in, {,*/}Makefile.in, acconfig.h:
 	Rename PRODUCT to PACKAGE.
 
-1994-11-26  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <libintl.h> and <locale.h>.
 
-1994-11-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for const only after having found possible
 	ANSIfying compiler flags, this is of no use to check it before.
 
-1994-11-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* {,*/}Makefile.in: Clean up, following those of GNU m4.  I will
 	not detail all the changes here.
 	* configure.in: Likewise.
 	* acconfig.h: Document PRODUCT and VERSION.
 
-1994-10-04  François Pinard  <pinard@iro.umontreal.ca>
+1994-10-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Correct shell assignment for ac_cv_path_RSH.
 	Reported by Kaveh R. Ghazi.
 
-1994-09-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Cleanup...  Use subshells for all cd's.
 	(MDEFINES): Do not use $(INSTALL...), because ./install-sh will
@@ -521,43 +521,43 @@ Boston, MA 02111-1307, USA.
 	(stamp-h.in): Use date instead of touch.
 	* configure.in (AC_OUTPUT): Create stamp-h.
 
-1994-09-09  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Use fp_ macros for accessing aclocal.m4.  Revert
 	_OS_ macros to their previous names, to follow Autoconf.
 
-1994-09-08  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Delete AC_OS_XENIX, now within AC_HEADER_DIRENT.
 
-1994-09-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in (PROGS): Warn if $DEFAULT_ARCHIVE was specified,
 	while not being found on the current system.
 	Reported by Robert Bernstein.
 
-1994-08-31  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-31  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Distribute it.
 
 	* Makefile.in (distclean-local): Delete config.log.
 
-1994-08-27  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* acconfig.h: Document HAVE_UNION_WAIT, no more in Autoconf.
 
-1994-08-24  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Replace AC_SYS_REMOTE_TAPE by its definition,
 	distillating it around.  It is going out of Autoconf.
 	Do not backslash quotes anymore while defining unquoted, this is
 	now corrected in Autoconf.
 
-1994-08-23  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Do not define RTAPELIB nor HAVE_RTAPELIB.
 
-1994-08-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Little cleanup in installation:
 	* configure.in: Do not check for wait3, this function is not used.
@@ -567,7 +567,7 @@ Boston, MA 02111-1307, USA.
 	value, when GNU C is being used.  Delay testing for presets.
 	Reported by Chris Arthur.
 
-1994-08-21  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.5.
 
@@ -585,12 +585,12 @@ Boston, MA 02111-1307, USA.
 	not override it, nicely use `-' as a convenient default.
 	Reported by Andreas Schwab and Kaveh R. Ghazi.
 
-1994-08-20  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Correct a checking message.
 	Reported by Bruno Haible.
 
-1994-08-17  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Replace AC_PROG_RSH with its expansion.  Correct
 	the no/true confusion in tests.  Do not substitute RSH anymore in
@@ -610,7 +610,7 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Also create doc/Makefile.
 	* Makefile.in: Add doc in subdirs, set infodir, update MDEFINES.
 
-1994-08-16  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Undo the `test -b' patch of 1994-08-05.  Ultrix
 	4.2 test does not know about -b.  Grrr...
@@ -627,11 +627,11 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Use $LIBOBJS, not LIBOJBS, while adding to it.
 	Reported by Demizu Noritoshi and Kaveh R. Ghazi.
 
-1994-08-15  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.4.
 
-1994-08-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Decide MTIO_CHECK_FIELD by grepping <sys/mtio.h>.
 	* acconfig.h: Document it.
@@ -644,11 +644,11 @@ Boston, MA 02111-1307, USA.
 	(all, install, uninstall): Use it.
 	Reported by Bruno Haible.
 
-1994-08-13  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <sys/wait.h>.
 
-1994-08-11  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: For <utime.h>, also ensure struct utimbuf is
 	defined by the header file before defining HAVE_UTIME_H.  Some
@@ -659,18 +659,18 @@ Boston, MA 02111-1307, USA.
 	* configure.in: Instead of replacing strstr, check for it, so
 	HAVE_STRSTR gets defined, then replace it explicitely if required.
 
-1994-08-09  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Updated for Autoconf 2.0.
 
-1994-08-08  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Replace memset, mkdir (and rmdir), rename, strstr,
 	ftruncate, when not found.
 	Reported by Kaveh R. Ghazi (for memset and strstr).
 	Reported by Bruno Haible (for mkdir and rename).
 
-1994-08-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Remove padding test.
 	* acconfig.h: Remove PADDING_IN_TAR_HEADER.
@@ -694,17 +694,17 @@ Boston, MA 02111-1307, USA.
 
 	* configure.in: Check for ST_BLKSIZE and ST_BLOCKS.
 
-1994-08-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.3.
 
 	* Makefile.in (dist, shar): Distribute the scripts directory.
 
-1994-08-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <memory.h>.
 
-1994-07-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: When --with-malloc-dbg, define WITH_MALLOC_DBG and
 	add -lmalloc_dbg to LIBS.
@@ -715,7 +715,7 @@ Boston, MA 02111-1307, USA.
 	* acconfig.h: Document DEVICE_PREFIX and DENSITY_LETTER.
 	Reported by Danny R. Johnston.
 
-1994-07-29  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* aclocal.m4: Adapt AC_PROTOTYPES to caching.
 
@@ -729,13 +729,13 @@ Boston, MA 02111-1307, USA.
 	Robert W. Kim, Stefan Skoglund, Tarang Kumar Patel, Tilman
 	Schmidt, Tim Ramsey, Van Snyder and W. Phillip Moore.
 
-1994-07-26  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <fcntl.h>.  Do not define BSD42, do
 	not look anymore if /vmunix, /sdmach or /../../mach exist.
 	* acconfig.h: Remove BSD42.
 
-1994-07-24  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Add gmalloc.o to LIBOBJS, instead of AC_SUBST'ing
 	MALLOC.  Check for valloc only if gmalloc.o is not being selected.
@@ -743,7 +743,7 @@ Boston, MA 02111-1307, USA.
 	* acconfig.h: Add a description for HAVE_VALLOC.
 	J.T. Conklin, Nelson H.F. Beebe and Tilman Schmidt.
 
-1994-07-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Use provided fnmatch only as a replacement.
 
@@ -751,22 +751,22 @@ Boston, MA 02111-1307, USA.
 	defining _IOW and _IOR on the Tektronix XD88.
 	Reported by Kaveh R. Ghazi.
 
-1994-07-20  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (BACKLOG): New goal, for summarizing the
 	maintainance backlog.  Distribute file BACKLOG.
 
-1994-07-08  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* regex.c, regex.h: Use newer versions.  This solves a few
 	problems reported by users.
 	Reported by Chris Hopps and John David Anglin.
 
-1994-07-06  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for <utime.h>.
 
-1994-07-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in:  Substitute DEFAULT_ARCHIVE and DEFAULT_BLOCKING
 	from the environment.  Check for /dev/tape first while trying to
@@ -781,7 +781,7 @@ Boston, MA 02111-1307, USA.
 	about a needed padding field in the tar header struct.
 	* acconfig.h: Explain PADDING_IN_TAR_HEADER.
 
-1994-07-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Check for -linet, this library is required on
 	a few systems for gettimeofday() or getservbyname().  Also, on ISC
@@ -795,7 +795,7 @@ Boston, MA 02111-1307, USA.
 
 	* configure.in: All tests reordered for clarity.
 
-1994-07-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: Use AC_TIME_WITH_SYS_TIME, test for <sys/time.h>.
 	This should solve the problem of multiple inclusions of <time.h>.
@@ -803,7 +803,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Jim Meyering, John Rouillard, Karl Berry and Rick
 	Emerson.
 
-1994-06-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-06-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* configure.in: AC_CONST was already added since 1.11.2, but no
 	ChangeLog entry for it, so here is one, with list of reporters.
@@ -853,37 +853,37 @@ Boston, MA 02111-1307, USA.
 
 ----- doc/ChangeLog -----
 
-1997-04-23  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
 	* Makefile.am (EXTRA_DIST): Remove tar-mew.texi for the release.
 	(tar.dvi) [!PUBLISH]: Delete @smallbook.  Call sed in all cases.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
 	* Makefile.am (tar.info): Comment about needed makeinfo version.
 	Reported by Sherwood Botsford.
 
-1997-04-10  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): Add tar-mew.texi.
 
-1997-03-16  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (tar.dvi): Merely use tar.texi and rely on -I to
 	resolve it in $(srcdir).  Remove tmp-tar.info* files right away.
 	(CLEANFILES): Define to tmp-*.
 
-1997-03-14  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Rename RENDERING, QUALITY, DRAFT and DEBUG to
 	RENDITION, PUBLISH, DISTRIB and PROOF respectively.  Ensure that
 	`@set DISTRIB' gets replaced after macro-expansion and before TeX.
 
-1996-11-06  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.13.
 
@@ -891,67 +891,67 @@ Boston, MA 02111-1307, USA.
 	* tar.texi: Replace a lot of text by an include of getdate.texi.
 	* Makefile.am: Adjusted.
 
-1996-08-24  François Pinard  <pinard@iro.umontreal.ca>
+1996-08-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12.
 
 	* Makefile.am (EXTRA_DIST): Remove texinfo.tex, now that Automake
 	handles it automatically.
 
-1996-07-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.11.
 
 	* Makefile.am (tar.info): Remove -I$(srcdir), which was useless.
 
-1996-07-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): Include texinfo.tex, until Automake
 	does it automatically.
 
-1996-07-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.10.
 
 	* Makefile.am (EXTRA_DIST): Distribute convtexi.pl, for now.
 
-1996-04-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Implement rendering levels (QUALITY, DRAFT or DEBUG).
 
-1996-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): New name for DIST_OTHER.
 
-1996-03-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-03-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (tar.dvi): Comment about needed makeinfo version.
 	Reported by Jonathan Thornburg.
 
-1996-02-12  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Replace TEXINFO by info_TEXINFOS for Automake 0.29.
 
-1996-01-14  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Select gnits.
 
-1996-01-08  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: New file.
 	* tar.texi: New name for tar.texinfo.
 
-1995-12-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (check): New goal, doing nothing.
 	Reported by Cesar Romani, Joachim Seelig, Mark Bynum and Ulrich
 	Drepper.
 
-1995-11-29  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (clean): Remove tmp-* files.
 
-1995-11-27  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use -I$(srcdir) with makeinfo, and -otmp-tar.info
 	so tar.info in build directory does not shadow the real one.
@@ -959,78 +959,78 @@ Boston, MA 02111-1307, USA.
 	texinfo.tex is found, as texi2dvi gets no clue from the file name.
 	(DISTFILES): Also distribute tar.info-8.
 
-1995-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Distribute ChangeLog.
 	* ChangeLog: New file, extracted from top-level ChangeLog.
 
-1995-06-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Get rid of docwarn.texi, now replaced by
 	the @UNREVISED macro, right into tar.texinfo.
 
-1995-06-18  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (tar.dvi): First macro-expand tar.texinfo.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use subdir and distdir.
 
-1995-06-03  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.texinfo: Use header.texi.
 	* Makefile.in: Prepare header.texi from src/tar.h.
 	Distribute it.
 
-1995-05-28  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Add tar.info-3.
 	Reported by Bruno Haible.
 
-1995-02-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Replace `date' by `echo timestamp'.
 
-1995-02-13  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use top_srcdir.
 
-1995-02-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (maintainer-clean): New name for realclean.
 
-1994-12-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Include docwarn.texi.
 
-1994-11-07  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (stamp-vti): Use new -r option to date.
 
-1994-11-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (realclean): Also remove stamp-vti.
 
-1994-09-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Cleanup...
 	(texclean): Deleted, merged into mostlyclean.
 	(Makefile): Have ./config.status create this Makefile only.
 
-1994-08-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (tar.info): Make the documentation in the source
 	directory only.
 
-1994-08-21  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Correct for when a different build directory.
 
 	* docwarn.texi: New file.
 	* Makefile.in: Distribute it.
 
-1994-08-17  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: New file.
 	* tar.texinfo: New file.
@@ -1039,11 +1039,11 @@ Boston, MA 02111-1307, USA.
 
 ----- lib/ChangeLog -----
 
-1997-04-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
-1997-04-16  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11p.
 
@@ -1053,34 +1053,34 @@ Boston, MA 02111-1307, USA.
 	* getdate.c: Specify $(srcdir)/, to silence GNU make.
 	Reported by Bruno Haible.
 
-1997-04-15  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (getdate.c): Announce 13 conflicts, not 10.
 	Reported by Bruno Haible, Bryant Fujimoto and Wolfram Wagner.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
 	* getdate.h: New file.
 	* Makefile.am: Adjusted.
 
-1997-04-10  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* modechange.c, modechange.h: New files.
 	* Makefile.am: Adjusted.
 
-1997-02-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Adapt library name to Automake 1.1l.
 
-1996-11-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.14.
 
 	* basename.c: New file.
 
-1996-11-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.13.
 
@@ -1088,96 +1088,96 @@ Boston, MA 02111-1307, USA.
 	put getdate.c instead of getdate.y in tar_SOURCES and keep
 	getdate.c in EXTRA_DIST.
 
-1996-11-06  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* argmatch.c, argmatch.h, backupfile.c, backupfile.h, dirname.c,
 	getversion.c: New files.
 	* Makefile.am: Adjusted.
 	Reported by Marty Leisner.
 
-1996-10-31  François Pinard  <pinard@iro.umontreal.ca>
+1996-10-31  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* safe-stat.h: Deleted.
 	* Makefile.am (noinst_HEADERS): Adjusted.
 	Reported by Jim Meyering.
 
-1996-09-20  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* regex.c, regex.h, rx.c, rx.h: Deleted.
 	* Makefile.am: Adjusted.
 
-1996-09-19  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12.
 
 	* execlp.c: Include stdio.h, not only stdio!
 
-1996-09-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* open3.h: File deleted after being merged into system.h.
 	* open3.c: File deleted, moved back into src/.
 	* Makefile.am: Adjusted.
 	Reported by Jim Meyering.
 
-1996-08-24  François Pinard  <pinard@iro.umontreal.ca>
+1996-08-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): $(BUILT_SOURCES) is no longer
 	necessary, as Automake now handles it automatically.
 
-1996-07-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.11.
 
 	* Makefile.am (EXTRA_DIST): Move stpcpy.c there, from tar_SOURCES.
 	Reported by Ulrich Drepper.
 
-1996-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.10.
 
 	* Makefile.am (EXTRA_DIST): New name for DIST_OTHER.
 
-1996-02-28  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* msleep.c: New file, from elsewhere.
 	* Makefile.am: Adjusted.
 
-1996-02-12  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Remove CONFIG_HEADER, not required by Automake 0.29.
 
-1996-01-14  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Select gnits.
 
-1996-01-07  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Add parts of previous Makefile.in as FIXME comments.
 
-1996-01-01  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* error.h: New file, from elsewhere.
 	* Makefile.am: Add error.h to HEADERS.
 	Reported by Jim Meyering.
 
-1995-12-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (INCLUDES): Add -I../intl to get libintl.h.
-	Reported by Daniel S. Barclay, Göran Uddeborg, Jonathan Thornburg
+	Reported by Daniel S. Barclay, GÃ¶ran Uddeborg, Jonathan Thornburg
 	and Minh Tran-Le.
 
-1995-12-29  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.9.
 
 	* Makefile.am: New file.
 
-1995-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Distribute ChangeLog.
 	* ChangeLog: New, extracted from the top-level ChangeLog.
 
-1995-06-18  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* execlp.c (execlp): New, extracted from src/port.c.
 	* Makefile.in: Adjusted.
@@ -1190,56 +1190,56 @@ Boston, MA 02111-1307, USA.
 	* insremque.h, insremque.c: Deleted.
 	* Makefile.in: Adjusted.
 
-1995-06-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Remove COPYING.LIB.
 	* COPYING.LIB: Deleted.
 
-1995-06-15  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (dist): Do not hide copying rule.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use subdir and distdir.
 
 	* stpcpy.c, xgetcwd.c: New functions needed by gettext.
 	* Makefile.in: Adjusted to always compile these.
 
-1995-05-16  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* insremque.h, insremque.c: New files, from GNU gettext.
 	* Makefile.in: Take care of insremque.[hc].
 
-1995-03-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-03-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Remove GLOCALE, add LINGUAS, use fp_WITH_CATALOGS.
 
-1995-02-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Support ID files.  Do not distribute TAGS.
 
-1995-02-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (maintainer-clean): New name for realclean.
 
-1994-12-18  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* safe-stat.h: New, from elsewhere.  This solves the fact that
 	mkdir.c, rmdir.c and rename.c were needing it.
 	* Makefile.in (Makefile): Distribute it.
 	Reported by Bruno Haible and Sherwood Botsford.
 
-1994-12-11  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rx.c, rx.h: New, from elsewhere.
 	* Makefile.in: Adjust accordingly.
 
-1994-12-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Localize, adapting from how it is done in sharutils.
 
-1994-09-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Cleanup...
 	(DISTFILES): Distribute TAGS.
@@ -1249,12 +1249,12 @@ Boston, MA 02111-1307, USA.
 	(realclean): Remove TAGS.
 	(Makefile): Have ./config.status create this Makefile only.
 
-1994-08-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Little cleanup in installation:
 	* Makefile.in (install, check): Depend on all.
 
-1994-08-21  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Correct for when a different build directory.
 
@@ -1262,18 +1262,18 @@ Boston, MA 02111-1307, USA.
 	* Makefile.in: Distribute it.
 	Reported by Greg Black.
 
-1994-08-17  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* ftruncate.c: Revised, because there is no ftruncate
 	capability whatsoever in Interactive Unix.
 	Reported by Peder Chr. Norgaard.
 
-1994-08-08  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 	* memset.c, mkdir.c, rename.c, strstr.c and
 	ftruncate.c: New, from elsewhere.
 	* Makefile.in: Distribute them.
 
-1994-08-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (getdate.c): Tell the installer to expect 10
 	shift/reduce conflicts instead of 9.
@@ -1282,16 +1282,16 @@ Boston, MA 02111-1307, USA.
 	* fileblocks.c: New, from elsewhere.
 	* Makefile.in: Distribute it.
 
-1994-08-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* xstrdup.c: New, from elsewhere.
 	* Makefile.in: Adjusted.
 
-1994-07-29  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* error.c: Add error_print_progname virtual routine.
 
-1994-07-24  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* gmalloc.c: New, from elsewhere.  This renames and updates
 	what was previously malloc.c.  This also solves __const vs const.
@@ -1299,7 +1299,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Cliff Krumvieda, Francois Pinard, Henrik Bakman,
 	J.T. Conklin, Nelson H.F. Beebe and Tilman Schmidt.
 
-1994-07-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (LIBOBJS): Get configured list of replacements.
 	* fnmatch.h: Undefine FNM_PATHNAME and FNM_PERIOD, for HP-UX
@@ -1312,59 +1312,59 @@ Boston, MA 02111-1307, USA.
 	Chr. Norgaard, Sarah Quady, Tarang Kumar Patel and Thomas
 	Koenig.
 
-1994-07-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* xmalloc.c: New file, from elsewhere.
 	* error.c: New, from elsewhere.
 	* Makefile.in: Adjusted.
 
-1994-06-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-06-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: New file.
 
 
 ----- po/ChangeLog -----
 
-1997-04-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
-1997-04-18  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11p.
 
 	* fr.po: Updated file.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
-1997-03-26  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* it.po: New file.
 
-1997-02-14  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* pl.po: Updated file.
 
-1996-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* POTFILES.in: Add src/common.h.
 	Reported by Christian Kirsch.
 
-1996-11-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.14.
 
 	* POTFILES.in: Adjust for changes in src/.
 
-1996-09-05  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12.
 
 	* pl.po: New file.
 
-1995-06-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.11.8.
 
@@ -1384,7 +1384,7 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.in (install-data, uninstall): Avoid using basename.
 
-1995-06-15  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (dist): Comment out tupdate action for now, it
 	needs more tweeking before being distributed active.
@@ -1401,7 +1401,7 @@ Boston, MA 02111-1307, USA.
 	* intl/Makefile.in, Makefile.in: Adjustments to NLS, so .sed
 	scripts may now all reside in intl/.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* POTFILES: New file.
 	* Makefile.in: Use POTFILES instead of TRANSCSRCS, also use
@@ -1410,7 +1410,7 @@ Boston, MA 02111-1307, USA.
 	* intl/linux-msg.sed, intl/po-to-tbl.sed, intl/xopen-msg.sed: New
 	files, all taken from gettext 0.6.
 
-1995-06-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* intl/*:  New from GNU gettext 0.6, replacing the previous
 	version of this directory.  This change should solve many problems.
@@ -1421,26 +1421,26 @@ Boston, MA 02111-1307, USA.
 	Leisner, Minh Tran-Le, Stephen Saroff, Thomas Koenig, Thomas
 	Krebs and William Bader.
 
-1995-05-16  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* intl/Makefile.in, Makefile.in: Many adjustments for GNU gettext.
 
-1995-05-09  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: New file.
 	* de.po, fr.po, pt.po, sv.po: New files, adapted from
 	the corresponding .tt files in src/.
 
-1995-05-08  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* intl/*: New, from nlsutils.
 
-1995-01-09  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* src/de.tt: New file, for Swedish.
 	Reported by Jan Djarv.
 
-1994-12-10  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* de.tt: New file, for German.
 	Reported by Ulrich Drepper.
@@ -1448,60 +1448,60 @@ Boston, MA 02111-1307, USA.
 
 ----- scripts/ChangeLog -----
 
-1997-04-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
 	* level-1, level-0: Replace --block-size by --blocking.
 
-1996-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.10.
 
 	* Makefile.am (EXTRA_DIST): New name for DIST_OTHER.
 
-1996-01-14  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Select gnits.
 
-1996-01-08  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: New file.
 
-1995-12-31  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-31  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (check, dvi): New goals, doing nothing.
 	Reported by Cesar Romani and Ulrich Drepper.
 
-1995-06-21  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.9.
 
 	* Makefile.in: Distribute the ChangeLog, now recovered!
 	Reported by Andreas Schwab.
 
-1995-06-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.11.8.
 
 	* WARNING: New file.
 	* Makefile.in (DISTFILES): Distribute it.
 
-1995-06-15  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* sripts/Makefile.in (dist): Do not hide copying rule.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use subdir and distdir.
 
-1995-02-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.7.
 
 	* Makefile.in (maintainer-clean): New name for realclean.
 
-1994-12-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.6.
 
@@ -1510,13 +1510,13 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.in (dist): Correct .../examples to .../scripts.
 
-1994-09-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Cleanup...
 	(check): Deleted.
 	(Makefile): Have ./config.status create this Makefile only.
 
-1994-06-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-06-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.5.
 
@@ -1668,7 +1668,7 @@ Boston, MA 02111-1307, USA.
 
 ----- src/ChangeLog -----
 
-1997-04-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
@@ -1680,7 +1680,7 @@ Boston, MA 02111-1307, USA.
 	* list.c (read_and): Set current_stat.st_mtime before testing it.
 	Reported by Sven Verdoolaege.
 
-1997-04-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (dump_file): Before asserting that we cannot access
 	a directory, make sure tar is not installed suid root.
@@ -1694,7 +1694,7 @@ Boston, MA 02111-1307, USA.
 	by continue; or break; depending on context.
 	Reported by Robert E. Brown.
 
-1997-04-23  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* arith.c (add_to_tarlong_helper): Compare a superdigit against a
 	value, rather than an unsigned sum against zero.
@@ -1702,7 +1702,7 @@ Boston, MA 02111-1307, USA.
 
 	* misc.c (quote_copy_string): Replace many if's by a switch.
 
-1997-04-22  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11q.
 
@@ -1714,11 +1714,11 @@ Boston, MA 02111-1307, USA.
 	* delete.c (delete_archive_members): New name for junk_archive.
 	* common.h, tar.c (main): Adjusted.
 
-1997-04-20  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (usage): Update comment about --mode.
 
-1997-04-19  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c: Include <fnmatch.h> if necessary.
 	Reported by Bruno Haible.
@@ -1743,20 +1743,20 @@ Boston, MA 02111-1307, USA.
 	an int, do not imply it.
 	Reported by Bruno Haible.
 
-1997-04-18  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11p.
 
 	* Makefile.am (tar._o, rmt._o): Revise rules further.
 	Reported by Bruno Haible and Ken Steube.
 
-1997-04-16  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* arith.h: Prefer a single long over a long long, if possible.
 	Also reject long long if it is not long enough :-).
 	Reported by Bruno Haible.
 
-1997-04-15  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c, tar.c, update.c, common.h: Replace _COMMAND suffixed
 	constants by _SUBCOMMAND suffixed.  Rename enum command by
@@ -1769,25 +1769,25 @@ Boston, MA 02111-1307, USA.
 	needed places instead.	Delete the critical_error flag, just
 	set exit_status to TAREXIT_FAILURE rather than setting this flag.
 
-1997-04-12  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* delete.c (move_archive): Declare it void.
 	Reported by Bruno Haible and Kaveh R. Ghazi.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
 	* Makefile.am: Duplicate rules for the ansi2knr case.
 	Reported by Kaveh R. Ghazi and Marcus Daniels.
 
-1997-04-10  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* common.h: Change mode_option from int to struct mode_change *.
 	* tar.c (decode_option): Use mode_compile.
 	* create.c (start_header): Use mode_adjust.
 
-1997-04-09  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* All: Replace all flag_ prefixed variables by _option suffixed.
 	* tar.c: Replace OPTION_ prefixed macros by _OPTION suffixed.
@@ -1831,19 +1831,19 @@ Boston, MA 02111-1307, USA.
 	at without checking after_date_option first, as threshold_time
 	before.  Make newer_cdate_option an alias for newer_mdate_option.
 
-1997-04-08  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c: Use int after extern to declare time_to_start_writing.
 	* extract.c: Use int after static to declare we_are_root.
 	Reported by Ariel Faigon.
 
-1997-04-03  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* list.c (read_and): Use the proper enum constants in switch,
 	instead of oldish and wrong numbers.
 	Reported by Martin Mares.
 
-1997-04-01  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* arith.c [SUPERDIGIT] (zerop_tarlong, lessp_tarlong,
 	clear_tarlong, add_to_tarlong, add_to_tarlong, mult_tarlong,
@@ -1858,7 +1858,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Alois Steindl, Mark Bynum, Martin Mares, Nelson
 	H. F. Beebe, Scott J. Kramer and Torkel Hasle.
 
-1997-03-29  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (dump_file): Ignore unreadable directories when
 	--ignore-failed-read.
@@ -1869,7 +1869,7 @@ Boston, MA 02111-1307, USA.
 	is approximative, as the whole thing should be rethought.
 	Reported by Andreas Degert.
 
-1997-03-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* All: Rename head to current_header, hstat to current_stat, and
 	header_format to current_format.
@@ -1878,14 +1878,14 @@ Boston, MA 02111-1307, USA.
 	(deal_with_sparse): Get rid of amidst_data, since numbytes is
 	already usable as a flag for the same thing.
 
-1997-03-21  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* names.c (name_gather): Do not declare static variables which
 	do not need to be.  Have allocated_length represent the full
 	allocated length, instead of only the name part.  It's clearer.
 	(addname): Similar cleanups.
 
-1997-03-20  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* compare.c: Always call report_difference when there is a
 	problem, so the exit status will be set in all cases.  Build the
@@ -1904,26 +1904,26 @@ Boston, MA 02111-1307, USA.
 	files were always and falsely reported as erroneous.
 	Reported by James E. Carpenter and Tim Towers.
 
-1997-02-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c: Adjust copyright years in --version output.
 
 	* create.c (dump_file): Allow saving directories even with -o.
 	Reported by Daniel Trinkle.
 
-1996-11-26  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* compare.c (verify_volume) [FDFLUSH]: Use fsync even in that case.
 	Reported by Marty Leisner.
 
-1996-11-25  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (new_volume): Write file name in two words.
 	* names.c (name_next): Idem.
 	* buffer.c (flush_read): Speak of record size instead of blocksize.
 	Reported by Christian Kirsch.
 
-1996-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* list.c (read_header): Return failure, instead of success,
 	whenever checksums do not match.
@@ -1945,7 +1945,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Akiko Matsushita, Andreas Schwab, Eric Backus, Jeff
 	Siegel, Saul Lubkin, Stuart Kemp and Yasushi Suzudo.
 
-1996-11-19  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* incremen.c (get_directory_contents): Compute distance using the
 	start of the proper buffer.
@@ -1955,7 +1955,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c (usage): Revise the mandatory/optional sentence again.
 	Reported by Karl Berry.
 
-1996-11-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.14.
 
@@ -1968,7 +1968,7 @@ Boston, MA 02111-1307, USA.
 	avoid many warnings on BSD/OS.
 	Reported by Dan Reish.
 
-1996-11-11  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* incremen.c (write_directory_file): Renamed from write_dir_file.
 	(get_directory_contents): Renamed from get_dir_contents.
@@ -1996,7 +1996,7 @@ Boston, MA 02111-1307, USA.
 
 	* tar.c: Merge --version-control into --backup, make it obsolete.
 
-1996-11-10  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* all: Add a FIXME comment everywhere errno is modified by tar.
 
@@ -2006,7 +2006,7 @@ Boston, MA 02111-1307, USA.
 	apparently useless allocation of one extra byte.  Avoid using p.
 
 	* buffer.c: Add DEBUG_FORK conditional code.
-	Reported by Thomas König and Ulrich Drepper.
+	Reported by Thomas KÃ¶nig and Ulrich Drepper.
 
 	* misc.c (maybe_backup_file): In the renaming message, say that
 	the previous file is being renamed, not the newly extracted one.
@@ -2016,7 +2016,7 @@ Boston, MA 02111-1307, USA.
 	* update.c (move_arch): Idem.
 	(xdup2): New name for redirect, order of arguments was not natural.
 
-1996-11-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* all: Remove all white lines between open braces and comments.
 
@@ -2031,7 +2031,7 @@ Boston, MA 02111-1307, USA.
 	Split of previous child_open_for_compress.  Clean up.
 	(open_archive): Adjusted for calling the proper function above.
 
-1996-11-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.13.
 
@@ -2051,12 +2051,12 @@ Boston, MA 02111-1307, USA.
 	* create.c (clear_buffer): Use memset instead of explicit loop.
 	(zero_block_p): Renamed from zero_block, callers adjusted.
 
-1996-11-07  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.c (private_strerror): Add const's to sys_errlist declaration.
 	Reported by Fabio d'Alessi.
 
-1996-11-06  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Add OPTION_BACKUP, OPTION_SUFFIX, OPTION_VERSION_CONTROL.
 	Renumber options from 3 instead of from 10.  Declare flag_backup.
@@ -2074,7 +2074,7 @@ Boston, MA 02111-1307, USA.
 	* misc.c (assign_string): Moved over from tar.c.
 	* tar.h: Adjusted.
 
-1996-10-28  François Pinard  <pinard@iro.umontreal.ca>
+1996-10-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Declare enum read_header, for return values of read_header.
 	* diffarch.c (verify_volume): Adjusted.
@@ -2083,19 +2083,19 @@ Boston, MA 02111-1307, USA.
 	* update.c: Rename prev_status to previous_status.
 	* update.c (junk_archive): Delete found_stuff, use logical_status.
 
-1996-10-15  François Pinard  <pinard@iro.umontreal.ca>
+1996-10-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (new_volume, open_archive): Soften messages.
 	* create.c, extract.c: Add quotes around slashes in some messages.
 	* tar.c (usage): Added a missing equal sign after --directory.
 	Reported by Jan Djarv.
 
-1996-09-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c: Write --no-recursion instead of --no-recurse.
 	Reported by Noah Friedman.
 
-1996-09-20  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Delete label_pattern.
 	* tar.c (main): Do not compile anymore volume_label as a regexp.
@@ -2106,7 +2106,7 @@ Boston, MA 02111-1307, USA.
 
 	* tar.c (decode_options): Better space --version output.
 
-1996-09-19  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12
 
@@ -2134,7 +2134,7 @@ Boston, MA 02111-1307, USA.
 	Deleted init_buffer, add_buffer, get_buffer and flush_buffer.
 	* tar.h: Adjusted.
 
-1996-09-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (write_error): Obey --totals before aborting.
 	Reported by Greg Chung.
@@ -2143,7 +2143,7 @@ Boston, MA 02111-1307, USA.
 	writeerror.
 	* tar.c (read_name_from_file): Rename c to character.
 
-1996-09-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* arith.h (tarlong): The typedef tarlong, when an array, is now
 	wrapped inside a struct to avoid bugs in EWS 4.2 C compiler.
@@ -2155,7 +2155,7 @@ Boston, MA 02111-1307, USA.
 	(close_archive): Limit archive draining to while reading a pipe.
 	Reported by Andreas Schwab.
 
-1996-09-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h: Define protected defaults for open parameter symbols.
 	[EMUL_OPEN3]: Intercept open calls and redirect them to open3.
@@ -2167,7 +2167,7 @@ Boston, MA 02111-1307, USA.
 	* extract.c: Don't call open3.h.
 	Reported by Jim Meyering.
 
-1996-09-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (libexec_PROGRAMS): Rely on @RMT@, not rmt.
 	(bin_PROGRAMS): Do not include @RMT@.
@@ -2178,7 +2178,7 @@ Boston, MA 02111-1307, USA.
 	directories over already existing hierarchies.
 	Reported by Martin Mares and Marty Leisner.
 
-1996-09-04  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* gnu.c (read_dir_file): Diagnose file names over PATH_MAX.
 	(get_dir_contents, add_dir_name): Increase namebuf many times if
@@ -2190,17 +2190,17 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.am: Remove check related lines, moved over to tests/.
 
-1996-09-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Use genfile in check_PROGRAMS, not noinst_PROGRAMS.
 	(check-local): Do not depend on genfile.
 
-1996-08-24  François Pinard  <pinard@iro.umontreal.ca>
+1996-08-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): Do not mention ansi2knr.1 nor
 	ansi2knr.c, as Automake now handle them automatically.
 
-1996-07-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* arith.h: Include tar.h, not arith.h, so FATAL_ERROR is defined.
 	[!SUPER_DIGIT]: Declare arguments to ..._tarlong routines as
@@ -2219,25 +2219,25 @@ Boston, MA 02111-1307, USA.
 	* Makefile.am (EXTRA_DIST): Include ansi2knr.[1c] for now.
 	Reported by Christian T. Dum, Jim Meyering and Kaveh R. Ghazi.
 
-1996-07-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.11.
 
 	* Makefile.am (check-local): Ensure relinking if the service
 	libraries where modified (waiting for Automake to do it!).
 
-1996-07-16  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.c (strerror): It is a macro on some systems.
 	Reported by Santiago Vila Doncel.
 
-1996-07-15  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.10.
 
 	* checktar.sh: Use a more regular WARNING in message.
 
-1996-07-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-07-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Declare that unquote_string as returning int, not char *.
 	* misc.c (unquote_string): New name for un_quote_string.  Clean
@@ -2248,7 +2248,7 @@ Boston, MA 02111-1307, USA.
 	always used, even if the quoting was improper.
 	Reported by Johan Vromans.
 
-1996-05-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-05-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Define TTY_NAME as a macro, instead of an external array.
 	* tar.c: Remove declaration of TTY_NAME.
@@ -2258,7 +2258,7 @@ Boston, MA 02111-1307, USA.
 	(decode_options): Clarify -N and --newer-mtime decoding, ensure
 	one of them is called at most, otherwise it would misbehave.
 
-1996-05-02  François Pinard  <pinard@iro.umontreal.ca>
+1996-05-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* misc.c (quote_copy_string): Ensure spaces are backslash-quoted.
 	Reported by Max Hailperin.
@@ -2277,7 +2277,7 @@ Boston, MA 02111-1307, USA.
 	* buffer.c, gnu.c, rtapelib.c, tar.c: Diagnose errors on fclose.
 	Reported by Jim Meyering.
 
-1996-05-01  François Pinard  <pinard@iro.umontreal.ca>
+1996-05-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (close_archive): If reading and the archive is
 	finished, read until end of archive, for avoiding an error
@@ -2292,13 +2292,13 @@ Boston, MA 02111-1307, USA.
 	(verify_volume): fsync, than ioctl(, FDFLUSH) first.
 	Reported by Marty Leisner.
 
-1996-04-29  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* list.c (isotime): New function.
 	(print_header) [!USE_OLD_CTIME]: Use it instead of ctime.
 	Reported by Karl Berry and Markus Kuhn.
 
-1996-04-23  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extract.c (set_stat): Accept a new parameter telling if this is
 	a symbolic link.  In this case, and if lchown exists, use it
@@ -2333,18 +2333,18 @@ Boston, MA 02111-1307, USA.
 	the --volno-file option was not specified, so avoiding crashes.
 	* tar.c (usage): Document the --volno-file option.
 	Reported by Christoph Litauer, Daniel S. Barclay, David Taylor,
-	Erik D. Frederick, Larry Creech, Loïc Prylli, Loren J. Rittle,
+	Erik D. Frederick, Larry Creech, LoÃ¯c Prylli, Loren J. Rittle,
 	Marty Leisner, Neil Faulks, Paul Mitchell, Rocky Giannini, Roy
 	Marantz, Sylvain Rougier, Timothy J. Lee and Werner Almesberger.
 
-1996-04-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h (N_): Define marking macro for delayed translations.
 	* rmt.c: Use N_ instead of _ for returned strings.  It does not
 	make sense translating messages in a remote process, not knowing
 	the language in use in the local process.
 
-1996-04-18  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Instead of -UU for removing directories, request a long option.
 	* tar.c: Implement --recursive-unlink.
@@ -2355,7 +2355,7 @@ Boston, MA 02111-1307, USA.
 	of flag_unlink_first > 1.
 	Reported by Andreas Schwab.
 
-1996-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1996-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (EXTRA_DIST): New name for DIST_OTHER.
 
@@ -2363,26 +2363,26 @@ Boston, MA 02111-1307, USA.
 	name, to prevent garbage to get into the structure.
 	Reported by Jonathan Kamens.
 
-1996-03-28  François Pinard  <pinard@iro.umontreal.ca>
+1996-03-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (dump_file): Cast %ld argument to (long).
-	Reported by Constantin Belous and Jörgen Hägg.
+	Reported by Constantin Belous and JÃ¶rgen HÃ¤gg.
 
-1996-03-21  François Pinard  <pinard@iro.umontreal.ca>
+1996-03-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (main): Return int, not void.
 	Reported by Timothy J. Lee and Peter Seebach.
 
-1996-02-28  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Use RMT instead of PROGRAMS and noinst_HEADERS
 	instead of HEADERS.
 
-1996-02-12  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Remove CONFIG_HEADER, not required by Automake 0.29.
 
-1996-02-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-02-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Ensure --totals work correctly for huge archives:
 	* arith.h, arith.c: New files.
@@ -2393,7 +2393,7 @@ Boston, MA 02111-1307, USA.
 	(init_total_written, print_total_written): New routines.
 	Reported by Albert W. Dorrington, Chris F.M. Verberne, David
 	Martin, Eduardo Villasenor de Rivas, Greg Chung, Jim Meyering,
-	John R. Vanderpool, Jon Lewis, Jörg Weule, Jörgen Hägg, Rod
+	John R. Vanderpool, Jon Lewis, JÃ¶rg Weule, JÃ¶rgen HÃ¤gg, Rod
 	Thompson, Russell Cattelan, Ted Rule and Tor Lillqvist.
 
 	Ensure --tape-length is usable for huge media:
@@ -2405,25 +2405,25 @@ Boston, MA 02111-1307, USA.
 	(init_total_written): Zero out bytes_written as well.
 	Reported by Dave Barr.
 
-1996-01-15  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c (rmt_open__) [MSDOS]: Do not call setuid/setgid.
 	Reported by Yasushi Suzudo.
 
-1996-01-14  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Select gnits and ansi2knr.
 
-1996-01-08  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c: Initialize linklist to NULL.
 	Reported by Bradley A. Smith.
 
-1996-01-07  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: Add parts of previous Makefile.in as FIXME comments.
 
-1996-01-03  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (usage): Avoid an unescaped new line.
 	Reported by Kaveh R. Ghazi and Mark Bynum.
@@ -2438,27 +2438,27 @@ Boston, MA 02111-1307, USA.
 	not completely empty, for better ANSI C compliance.
 	Reported by John David Anglin, Kaveh R. Ghazi and Mark Bynum.
 
-1996-01-02  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (open_archive): Allocate real_s_name at run time
 	instead of statically, because PATH_MAX is not always constant.
 	Reported by Bruno Haible, John David Anglin, Jonathan Thornburg,
 	Kaveh R. Ghazi, Martin Bellenberg, Marty Leisner, Nelson
-	H. F. Beebe, Roland McGrath and Thomas König.
+	H. F. Beebe, Roland McGrath and Thomas KÃ¶nig.
 
 	* Makefile.am (DIST_OTHER): Distribute BACKLOG.
 	Reported by Marty Leisner.
 
-1996-01-01  François Pinard  <pinard@iro.umontreal.ca>
+1996-01-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h: Include "error.h" instead of declaring error ().
 	Reported by Jim Meyering.
 
-1995-12-31  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-31  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am: New file.
 
-1995-12-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Define LOCALEDIR in DEFS.
 	* system.h [!ENABLE_NLS]: Add replacement for bindtextdomain.
@@ -2470,7 +2470,7 @@ Boston, MA 02111-1307, USA.
 	tar.h, update.c: Replace __P by PARAMS, to respect ANSI C.
 	* rtapelib.c, rmt.h: Replace all __rmt* symbols by rmt*__.
 
-1995-12-28  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.9.
 
@@ -2478,7 +2478,7 @@ Boston, MA 02111-1307, USA.
 	instead of partly relying on static initializations.  Remove
 	static initializations for those variables.
 
-1995-12-24  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extract.c (extract_archive): On systems not having symbolic
 	links, attempt extracting symbolic links as hard links instead,
@@ -2488,7 +2488,7 @@ Boston, MA 02111-1307, USA.
 	files, continue extracting them as regular files as before, but
 	emit a diagnostic on first occurrence.
 
-1995-12-23  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Declare remove_any_file.
 	* gnu.c (remove_any_file): New name for recursively_delete.
@@ -2510,7 +2510,7 @@ Boston, MA 02111-1307, USA.
 	Callsen, Daniel S. Barclay, Ian Jackson, James Stevens, Seth
 	Robertson, Tito Flagella, Warner Losh and Wolfram Wagner.
 
-1995-12-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (name_close): Specify static.
 	(main): Call name_close after create_archive.
@@ -2534,7 +2534,7 @@ Boston, MA 02111-1307, USA.
 	file, if -c is given without input file or list.
 	Reported by Karl Berry and Robert Bernstein.
 
-1995-12-21  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c: Rename a few err variables to status.
 	* extract.c: Rename a few check variables to status.
@@ -2560,9 +2560,9 @@ Boston, MA 02111-1307, USA.
 	* extract.c: Let newdir_umask be a global variable.
 	(make_directories): Use newdir_umask while creating intermediate
 	directories.  They used to be 0777 unconditionally.
-	Reported by Bruce Evans, Harald König and James Crawford Ralston.
+	Reported by Bruce Evans, Harald KÃ¶nig and James Crawford Ralston.
 
-1995-12-20  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (finish_header): Avoid printing the header for long
 	names or links, this avoids spurious `Visible longname error's.
@@ -2571,7 +2571,7 @@ Boston, MA 02111-1307, USA.
 	Franz-Werner Gergen, Ian Jackson, Jon Lewis, Mark Kollert, Paul
 	Nordstrom, Ted Rule, Thomas Priesner, Tim Rylance and Tom Tromey.
 
-1995-12-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c: Have real_s_name able to hold PATH_MAX characters,
 	not only NAME_FIELD_SIZE.  It was breaking --multi-volume
@@ -2589,7 +2589,7 @@ Boston, MA 02111-1307, USA.
 	Daniel S. Barclay, Dirk Herr-Hoyman, Donald H. Locker, Ed Childs,
 	Heiko Schinke, Hunyue Yau, Goeran Uddeborg, Grant McDorman,
 	Joachim Seelig, Joe DeBattista, Jonathan Thornburg, Joutsiniemi
-	Tommi Il, Jürgen Lüters, Keith Young, Kelly Stephens, Kevin
+	Tommi Il, JÃ¼rgen LÃ¼ters, Keith Young, Kelly Stephens, Kevin
 	Dalley, Konno Hiroharu, Larry Creech, Martin Mares, Michael
 	Dietrich, Michael Giddings, Michael Meissner, Michael P Urban,
 	Paul Siddall, Pierce Cantrell, Peter Fox, Robert Frey, Roderich
@@ -2605,7 +2605,7 @@ Boston, MA 02111-1307, USA.
 	Fabio d'Alessi, Greg Hudson, Jason R. Mastaler, Skip Montanaro,
 	Thomas Krebs and Troy Rudolph.
 
-1995-12-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extract.c (extract_archive): Unrecognized types were defaulted
 	to sparse files instead of regular files, because of an improper
@@ -2620,7 +2620,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Donald B Gordon, Gerben Wierda, Greg Chung, Norbert
 	Kiesel and Roman Czyborra.
 
-1995-12-04  François Pinard  <pinard@iro.umontreal.ca>
+1995-12-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Implement FATAL_ERROR, telling error is not recoverable.
 	* tar.c (main): Diagnose delayed error, for TAREXIT_FAILURE only.
@@ -2630,16 +2630,16 @@ Boston, MA 02111-1307, USA.
 
 	* list.c (read_and): When telling block numbers in verbose output,
 	clearly list block numbers for NUL blocks and end of file.
-	Reported by Jörg Weule.
+	Reported by JÃ¶rg Weule.
 
 	* tar.c (usage): Document --newer-time.
 	Reported by Greg Chung.
 
-1995-11-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h: Conditionally include <sgtty.h> prior to <mtio.h>.
 	* rmt.c: Do not include <sgtty.h> anymore.
-	Reported by Harald König and Kaveh R. Ghazi.
+	Reported by Harald KÃ¶nig and Kaveh R. Ghazi.
 
 	* rtapelib.c: Remove seemingly useless include of setjmp.h.
 
@@ -2648,7 +2648,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Goeran Uddeborg, J.J. Bailey, John L. Chmielewski,
 	Peder Chr. Norgaard and Yasushi Suzudo.
 
-1995-11-29  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (decode_options): Diagnose --block-compress properly.
 	Was segment violating because falling into --blocking-factor.
@@ -2676,11 +2676,11 @@ Boston, MA 02111-1307, USA.
 	gzipped empty archives will not produce spurious diagnostics.
 	Reported by Jonathan Kamens.
 
-1995-11-23  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (name_scan, name_match): Avoid labels and gotos.
 
-1995-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (DISTFILES): Distribute ChangeLog.
 
@@ -2693,7 +2693,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c (usage): Document that users should not count on
 	POSIX support yet, saying it is only partially implemented so far.
 
-1995-10-27  François Pinard  <pinard@iro.umontreal.ca>
+1995-10-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c (_rmt_shutdown): Add the errno_value parameter.
 	(__rmt_open): Call shutdown if remote open fails, or else, we lose
@@ -2711,28 +2711,28 @@ Boston, MA 02111-1307, USA.
 	* list.c (read_header):  Consistently use sizeof to find size
 	of checksum field.
 
-1995-08-26  François Pinard  <pinard@iro.umontreal.ca>
+1995-08-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* names.c (uid_to_uname, gid_to_gname): Ensure that the empty
 	string is returned when not found, instead of the previous one.
 
-1995-08-06  François Pinard  <pinard@iro.umontreal.ca>
+1995-08-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (new_volume): Use stderr rather than stdlis for
 	interactions.  Clarify `archive == 0' into `archive == STDIN'.
 	Reported by Scott Hunziker.
 
-1995-08-02  François Pinard  <pinard@iro.umontreal.ca>
+1995-08-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* diffarch.c (diff_archive): When symlink differs, report the
 	file name, not the link name.
 	Reported by Dale R. Worley and Wolfram Wagner.
 
-1995-07-23  François Pinard  <pinard@iro.umontreal.ca>
+1995-07-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (Makefile): Remove some useless lines.
 
-1995-06-27  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Sort out declarations a little better.
 	* tar.c (decode_options): Reorder the cases in the big switch.
@@ -2769,7 +2769,7 @@ Boston, MA 02111-1307, USA.
 	* buffer.c, diffarch.c, tar.h, update.c: Rename fl_read by
 	flush_read and fl_write by flush_write.
 
-1995-06-26  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (usage): Remind that `USER@' may be specified.
 	Reported by John J. Szetela and Oliver Trepte.
@@ -2818,7 +2818,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c: Rename --modification-time by --touch, and provide a
 	warning for the old option.
 
-1995-06-24  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* list.c (decode_header): At extraction time, use the stored
 	uid if uname is unknown in this system, and use the stored gid if
@@ -2854,7 +2854,7 @@ Boston, MA 02111-1307, USA.
 	* rmt.c: Add static to variable declarations.
 	* list.c (read_header): Rename recsum to recorded_sum.
 
-1995-06-23  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* *.[hc]: Rename --read-full-blocks to --read-full-records,
 	--block-size to --blocking-factor, and --record-number to
@@ -2868,7 +2868,7 @@ Boston, MA 02111-1307, USA.
 	simplify all callers, by using variable data_block systematically.
 	Also, rename union block field charptr to buffer.
 
-1995-06-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* *.[hc]: Exchange "record" and "block" almost everywhere and
 	whenever appropriate, to follow the terminology used in
@@ -2925,7 +2925,7 @@ Boston, MA 02111-1307, USA.
 	Daniel Quinlan, Michael Schmidt, Richard J. Kettlewell and Robert
 	Leslie.
 
-1995-06-21  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c (__rmt_open): Avoid dereferencing remote_user
 	when NULL.
@@ -2961,7 +2961,7 @@ Boston, MA 02111-1307, USA.
 	* tar.h: Remove external prototypes related to rtapelib.c, as
 	those are already declared in rmt.h.
 
-1995-06-18  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (xclose): New, from port.c (ck_close).
 	Replace ck_close by xclose in all modules.
@@ -2999,7 +2999,7 @@ Boston, MA 02111-1307, USA.
 
 	* system.h: Replace many #ifdef by #if, #ifndef by #if !.
 
-1995-06-17  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.11.8.
 
@@ -3020,11 +3020,11 @@ Boston, MA 02111-1307, USA.
 	takes care of it now.
 	Reported by Coranth Gryphon, Jim Blandy and Thomas Krebs.
 
-1995-06-15  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* checktar.sh: Send a message saying that it is still useless.
 
-1995-06-11  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h, tar.c (decode_options), extract.c
 	(extract_archive), diffarch.c (diff_archive), create.c
@@ -3037,7 +3037,7 @@ Boston, MA 02111-1307, USA.
 	setlocale to void independently of ENABLE_NLS.
 	Reported by Ulrich Drepper.
 
-1995-06-10  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (long_options): Use no_argument and require_argument,
 	instead of constants.  Have long option names translated to short
@@ -3047,7 +3047,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c (long_options): Add --gunzip as meaning -z.
 	Reported by Bruno Haible.
 
-1995-06-07  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-07  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use subdir and distdir.
 
@@ -3057,7 +3057,7 @@ Boston, MA 02111-1307, USA.
 	* Makefile.in (INCLUDES): Use ../intl in compilations,
 	taking care of the fact libintl.h might have been symlinked there.
 
-1995-06-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c, tar.h: Rename TAR_EXTERN to GLOBAL.
 
@@ -3067,7 +3067,7 @@ Boston, MA 02111-1307, USA.
 	not diagnose `Too many commands'.  Adjust things so this works.
 	Reported by Marty Leisner.
 
-1995-06-04  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (check): New goal.
 	* checktar.sh: New script.
@@ -3075,11 +3075,11 @@ Boston, MA 02111-1307, USA.
 	* Makefile.in (all): Prepare genfile.
 	* Makefile.in: Distribute checktar.sh and genfile.c.
 
-1995-06-03  François Pinard  <pinard@iro.umontreal.ca>
+1995-06-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Adjust so extracted doc/header.texi is neater.
 
-1995-05-30  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (name_match): Use %s for printing directory, not %d.
 	Reported by Marty Leisner.
@@ -3092,7 +3092,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c (name_next, name_from_list): Abort when chdir fails.
 	Reported by Ian Jackson and Marty Leisner.
 
-1995-05-28  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-28  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.h: Declare second argument of __rmt_lseek to be off_t
 	instead of long, so it is the same as in rmt.c.
@@ -3112,7 +3112,7 @@ Boston, MA 02111-1307, USA.
 	WITH_REGEX instead of WITH_REGEC.
 	Reported by Bruno Haible.
 
-1995-05-16  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.7.
 
@@ -3120,18 +3120,18 @@ Boston, MA 02111-1307, USA.
 
 	* system.h: Many adjustements for GNU gettext.
 
-1995-05-09  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Clean glocale out.
 
-1995-05-08  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use libintl.a while linking.
 	* system.h: Include <libintl.h> unconditionally, instead only
 	if WITH_CATALOG.  Let <libintl.h> define _() appropriately.
 	* tar.c (main): Call textdomain.
 
-1995-05-02  François Pinard  <pinard@iro.umontreal.ca>
+1995-05-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h, gnu.c, list.c, port.c: Avoid
 	superfluous parentheses in macro definitions.
@@ -3139,46 +3139,46 @@ Boston, MA 02111-1307, USA.
 	* buffer.c, create.c, diffarch.c, tar.c: Use comma
 	operator when assignment in test.
 
-1995-04-27  François Pinard  <pinard@iro.umontreal.ca>
+1995-04-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* port.c (link): Use WARN to report the message.
 	Reported by Sherwood Botsford.
 
-1995-03-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-03-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Remove GLOCALE, add LINGUAS, use fp_WITH_CATALOGS.
 	* system.h: Use WITH_CATALOGS to define _() differently.
 
-1995-03-14  François Pinard  <pinard@iro.umontreal.ca>
+1995-03-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c (__rmt_open): Close the unused side of each
 	pipe, instead of the useful one, prior to processing.
 	Reported by Charles Lopes and Minh Tran-Le.
 
-1995-02-22  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Replace `date' by `echo timestamp'.
 
-1995-02-19  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Support ID files.  Do not distribute TAGS.
 
-1995-02-13  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Use top_srcdir.
 
-1995-02-11  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* gnu.c (is_dot_or_dotdot): Through NFS, readdir might deliver
 	empty filenames under old Solaris 2.4, causing endless loops in
 	tar.  As a workaround, avoid `' as done already for `.' and `..'.
 	Reported by Jan Carlson.
 
-1995-02-05  François Pinard  <pinard@iro.umontreal.ca>
+1995-02-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (maintainer-clean): New name for realclean.
 
-1995-01-04  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extract.c (make_dirs) [MSDOS]: Correct for Turbo C, which may
 	return EACCES instead of EEXIST on mkdir.
@@ -3194,7 +3194,7 @@ Boston, MA 02111-1307, USA.
 	Environment (DCE) and Distributed File System (DFS).
 	Reported by Travis L. Priest.
 
-1995-01-03  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (decode_options): Renamed from options.  Convert
 	oldish-style non-dashed options to modern writing before
@@ -3208,7 +3208,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Bruno Haible, Les Mikesell, Patrick Timmons and Saul
 	Lubkin.
 
-1995-01-02  François Pinard  <pinard@iro.umontreal.ca>
+1995-01-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* system.h: New file, split out of tar.h.
 	* buffer.c, create.c, diffarch.c, extract.c,
@@ -3233,12 +3233,12 @@ Boston, MA 02111-1307, USA.
 	which GNU libc despises, sys/ioccom.h then provides definitions.
 	Reported by Joseph E. Sacco.
 
-1994-12-27  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.h: Ensure strrchr is defined to rindex in some cases.
 	Reported by Karl Vogel.
 
-1994-12-18  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-18  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Include <ctype.c> and declare ISASCII.
 	* gnu.c: Adjust, declare and use ISDIGIT and ISSPACE.
@@ -3246,11 +3246,11 @@ Boston, MA 02111-1307, USA.
 	* port.c: Adjust, declare and use ISPRINT.
 	Reported by Bruno Haible, Konno Hiroharu and Max Hailperin.
 
-1994-12-11  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c, tar.c [WITH_REGEX]: Check it.
 
-1994-12-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-12-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.6.
 
@@ -3266,7 +3266,7 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.in, tar.c: Rename PRODUCT to PACKAGE.
 
-1994-11-29  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c (backspace_output): Change cur from long to off_t.
 	* diffarch.c (diff_archive): Idem for offset.
@@ -3279,7 +3279,7 @@ Boston, MA 02111-1307, USA.
 	* update.c (move_arch): Change cur from long to off_t.
 	Reported by David J. MacKenzie.
 
-1994-11-26  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.h, tar.h, buffer.c, create.c,
 	diffarch.c, extract.c, gnu.c, list.c,
@@ -3295,17 +3295,17 @@ Boston, MA 02111-1307, USA.
 	* rtapelib.c: Declare prototype for xstrdup.  Do not declare
 	strstr, which is not needed.
 
-1994-11-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-11-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Clean up, following those of GNU m4.  I will
 	not detail all the changes here.
 	* tar.c: Use PRODUCT and VERSION instead of version_string.
 
-1994-10-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-10-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h [__STDC__]: Use #if instead of #ifdef.
 
-1994-10-27  François Pinard  <pinard@iro.umontreal.ca>
+1994-10-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.h, tar.h, buffer.c, create.c, diffarch.c,
 	extract.c, gnu.c, list.c, mangle.c, tar.c,
@@ -3320,35 +3320,35 @@ Boston, MA 02111-1307, USA.
 	Reported by Konno Hiroharu, Mats Lofkvist, Max Hailperin and
 	Ryutaro Susukita.
 
-1994-10-09  François Pinard  <pinard@iro.umontreal.ca>
+1994-10-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.c, rtapelib.c, tar.h: Get rid of CONFIG_BROKETS.
 
-1994-10-04  François Pinard  <pinard@iro.umontreal.ca>
+1994-10-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* diffarch.c (fill_in_sparse_array): Add a cast for Pyramid's
 	dumb compiler.  Later remove the cast and compare to 0 instead.
 	* extract.c (extract_archive): Idem.
 	Reported by Karl Vogel and Kaveh R. Ghazi.
 
-1994-09-27  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* diffarch.c: Normalize capitalization in diagnostics.
 
-1994-09-26  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (name_next, name_match): Abort tar if directory cannot
 	be changed, instead of going on.  This is not an innocuous error.
 	Reported by Marty Leisner.
 
-1994-09-15  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c: Include "rmt.h" only once <sys/types.h> has been
 	included, because off_t might not be defined otherwise.
 	Reported by James W. McKelvey, John L. Chmielewski, Karl
 	Vogel, Kaveh R. Ghazi an and Jim Meyering and Tilman Schmidt.
 
-1994-09-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in: Cleanup...
 	(DISTFILES): Distribute TAGS.
@@ -3358,7 +3358,7 @@ Boston, MA 02111-1307, USA.
 	(realclean): Remove TAGS.
 	(Makefile): Have ./config.status create this Makefile only.
 
-1994-09-13  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c: Remove the presetting of stdlis, because stdout is
 	not a constant in GNU libc.
@@ -3368,14 +3368,14 @@ Boston, MA 02111-1307, USA.
 	wait, do not use NULL.
 	Reported by Thomas Bushnell n/BSG.
 
-1994-09-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.in (TAGS): Remove -t on etags call.  It has been
 	the default behavior for a few releases of Emacs and it seems that
 	option -t is now disappearing (from Emacs 19.25, at least).
 	Reported by Goeran Uddeborg.
 
-1994-09-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-09-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* gnu.c (get_dir_contents): Do not set dp->allnew if dp is not
 	set itself.
@@ -3385,7 +3385,7 @@ Boston, MA 02111-1307, USA.
 	messages to msg_file, instead of stdout.
 	Reported by Piercarlo Grandi.
 
-1994-08-23  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-23  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Do not declare alloca if already defined, so HP's
 	+Olibcalls compiler option works.
@@ -3412,12 +3412,12 @@ Boston, MA 02111-1307, USA.
 	* (_rmt_rexec): The `user' parameter may never by the empty
 	string.  Remove code for that case.
 
-1994-08-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Little cleanup in installation:
 	* Makefile.in: Remove rule for ../lib/libtar.a.
 
-1994-08-21  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.5.
 
@@ -3430,7 +3430,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Demizu Noritoshi, Greg Black, Kaveh R. Ghazi,
 	Robert E. Brown and Russ Evans.
 
-1994-08-20  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	This might (?) solve the dirent problems on NeXT's and Apollo's:
 	* tar.h: Change includes and defines from older AC_DIR_HEADER
@@ -3439,7 +3439,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Drew Trieger, Hugh Secker-Walker, James W. McKelvey,
 	Robert E. Brown and Thomas Krebs.
 
-1994-08-17  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Remove some shadowings.
 	* update.c (update_archive): Rename head_standard to unused.
@@ -3479,7 +3479,7 @@ Boston, MA 02111-1307, USA.
 	* rmt.h: Always provide a prototype for __rmt_ioctl.  Delete
 	the RMTIOCTL machinery.
 
-1994-08-16  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-16  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rmt.c, buffer.c: Use a more uniform way of including
 	<sys/mtio.h> or its alternates.
@@ -3495,12 +3495,12 @@ Boston, MA 02111-1307, USA.
 	* rmt.c (string_error): Correct DEBUG2 into DEBUG1, and strint
 	into string.
 	Reported by Anders Andersson, Bruno Haible, Thomas Krebs and
-	Thomas König.
+	Thomas KÃ¶nig.
 
 	* Makefile.in: Add $U's to rtapelib and rmt specific rules.
-	Reported by Thomas König.
+	Reported by Thomas KÃ¶nig.
 
-1994-08-15  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.4.
 
@@ -3518,18 +3518,18 @@ Boston, MA 02111-1307, USA.
 
 	* Makefile.in (rmt): Declare dependencies over rmt.h.
 
-1994-08-14  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-14  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* rtapelib.c: Use MTIO_CHECK_FIELD instead of mt_type.
 	Reported by Ben A. Mesander.
 
-1994-08-13  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-13  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Include <sys/wait.h> if it exists, whether POSIX or not.
 	Check if WIFSTOPPED is defined, to decide if defining others WIF*.
 	Reported by Bruno Haible.
 
-1994-08-11  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extract.c (extract_archive) [O_CTG]: Declare longname variable.
 	Initialize it as NULL.  This dirty kludge will allow the module to
@@ -3539,7 +3539,7 @@ Boston, MA 02111-1307, USA.
 	* tar.h, rtapelib.c: Declare strstr if we replaced it.
 	Reported by Ben A. Mesander, Christian T. Dum and Kaveh R. Ghazi.
 
-1994-08-10  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-10  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (dump_file): Do not test only for hpux, but also
 	for __hpux.  I added __hpux__ too, as done in tar.h.
@@ -3549,9 +3549,9 @@ Boston, MA 02111-1307, USA.
 	HP-UX 8 and after, for which definitions are in <sys/sysmacros.h>,
 	and reorganize the tests in this area.
 	Reported by Christian T. Dum, Dimitris Fousekis, Kimmy Posey,
-	Michael Maass, Richard Lloyd and Thomas König.
+	Michael Maass, Richard Lloyd and Thomas KÃ¶nig.
 
-1994-08-09  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	These changes for const-cleaning gnu.c and tar.c:
 	* tar.c (read_name_from_file): Work directly on global
@@ -3564,7 +3564,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Ben A. Mesander, Bruno Haible, Christian T. Dum,
 	Dean Gaudet, James W. McKelvey, Richard Lloyd and Robert E. Brown.
 
-1994-08-08  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-08  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (name_next, name_gather, addname): Use strcmp for
 	checking for "-C", instead of decomposed tests, just for clarity.
@@ -3578,7 +3578,7 @@ Boston, MA 02111-1307, USA.
 	* tar.c: Include <fnmatch.h> if FNM_LEADING_DIR is not
 	defined, instead of checking for FNM_PATHNAME, because some
 	<unistd.h> define the later without defining the former.
-	Reported by Thomas König.
+	Reported by Thomas KÃ¶nig.
 
 	* create.c (dump_file): Cast alloca results, for those
 	compilers not processing void * properly.
@@ -3592,7 +3592,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Kaveh R. Ghazi (for memset and strstr).
 	Reported by Bruno Haible (for mkdir and rename).
 
-1994-08-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Replace msg_file by stdlis.
 	* buffer.c, gnu.c, list.c, diffarch.c: Idem.
@@ -3643,9 +3643,9 @@ Boston, MA 02111-1307, USA.
 	tests for HP-UX or Linux.  Also rewrite the test so it works
 	when ST_NBLOCKS is unsigned.
 	Reported by Bruno Haible, Dean Gaudet, Dick Streefland, Harald
-	König, Jim Meyering, Kai Petzke, Kaveh R. Ghazi and Torkel Hasle.
+	KÃ¶nig, Jim Meyering, Kai Petzke, Kaveh R. Ghazi and Torkel Hasle.
 
-1994-08-04  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c: Do not include <unistd.h> if we do not have it.
 	Reported by Kaveh R. Ghazi.
@@ -3665,7 +3665,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Demizu Noritoshi, James W. McKelvey, Kaveh R.
 	Ghazi and Robert E. Brown.
 
-1994-08-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.3.
 
@@ -3692,7 +3692,7 @@ Boston, MA 02111-1307, USA.
 	* diffarch.c (diff_archive): Allocate tmpbuf to the proper
 	size.  NAMSIZ + 2 is not necessarily enough.
 
-1994-08-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-08-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Refresh str*/mem* configured declarations.  Among
 	other things, this will solve previously missing #undef's.
@@ -3730,7 +3730,7 @@ Boston, MA 02111-1307, USA.
 
 	* buffer.c (close_archive): Free ar_block at end.
 
-1994-07-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h [WITH_MALLOC_DBG]: Include "malloc_dbg.h".
 
@@ -3748,10 +3748,10 @@ Boston, MA 02111-1307, USA.
 	* diffarch.c (diff_archive): If multi-volume, update save_name
 	and save_totsize before calling wantbytes.
 	* buffer.c (wantbytes): If multi-volume, update save_sizeleft.
-	Reported by Andreas Schwab, Denis Fortin, François Pinard,
+	Reported by Andreas Schwab, Denis Fortin, FranÃ§ois Pinard,
 	Hiroyuki Bessho, Olaf Schlueter, Simon Wright and Saul Lubkin.
 
-1994-07-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c (options): Implement DEVICE_PREFIX and DENSITY_LETTER.
 	Reported by Danny R. Johnston.
@@ -3760,7 +3760,7 @@ Boston, MA 02111-1307, USA.
 	* extract.c (extract_archive): Idem.
 	Reported by Timothy Fossum.
 
-1994-07-29  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (dump_file): Abort if no memory for a possible
 	link, remove related bogus code, and the variable nolinks.
@@ -3790,7 +3790,7 @@ Boston, MA 02111-1307, USA.
 	* rmt.c: Define EXIT_FAILURE and EXIT_SUCCESS if not already.
 	* rtapelib.c: Define EXIT_ON_EXEC_ERROR to 128 and use it.
 
-1994-07-27  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-27  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* diffarch.c (sigh): Increment errors, so a difference will
 	yield a non-zero exit status at end.
@@ -3824,7 +3824,7 @@ Boston, MA 02111-1307, USA.
 	* tar.h: Remove EX_* definitions for tar exit statuses.
 	Reported by Bob Mende and Torbjorn Granlund.
 
-1994-07-26  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-26  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Add f_rsh_command variable.
 	* tar.c: Add and process --rsh-command option.
@@ -3849,7 +3849,7 @@ Boston, MA 02111-1307, USA.
 	Sainte-Marthe, Noah Friedman, Reuben Sumner, Tom Quinn and
 	William Bader.
 
-1994-07-24  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Merely define valloc as being malloc if valloc does
 	not exist.
@@ -3857,7 +3857,7 @@ Boston, MA 02111-1307, USA.
 	Reported by Cliff Krumvieda, Francois Pinard, Henrik Bakman,
 	J.T. Conklin, Nelson H.F. Beebe and Tilman Schmidt.
 
-1994-07-22  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c (start_header): Cast NAMSIZ to size_t before
 	comparing it to strlen result.
@@ -3891,7 +3891,7 @@ Boston, MA 02111-1307, USA.
 	Accepts an exit status argument.  Callers adapted.
 	Reported by Richard O'Neill.
 
-1994-07-20  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* port.c (rename): Constify the arguments.
 	Reported by Elmar Heeb, Jeff Prothero and John Clark.
@@ -3900,7 +3900,7 @@ Boston, MA 02111-1307, USA.
 	* version.c: Deleted.
 	* Makefile.in: Adjusted.
 
-1994-07-19  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.h: Merge "port.h" towards the beginning of tar.h.
 	Include <stdio.h> and <errno.h>, and define errno if needed.
@@ -3920,13 +3920,13 @@ Boston, MA 02111-1307, USA.
 	with the changes just made, alloca should be properly declared.
 	Reported by Bryant Fujimoto and Michael Kubik.
 
-1994-07-06  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* create.c, extract.c [HAVE_UTIME_H]: Instead of _POSIX_VERSION,
 	for choosing to include <utime.h>.
 	Reported by Carl Swanson and Thomas Krebs.
 
-1994-07-05  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-05  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* tar.c: Replace DEF_AR_FILE with DEFAULT_ARCHIVE, replace
 	DEFBLOCKING with DEFAULT_BLOCKING.
@@ -3947,7 +3947,7 @@ Boston, MA 02111-1307, USA.
 	assign r to p, instead of strcpy'ing directly into p, for making
 	the module const clean.
 
-1994-07-03  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-03  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	Rename a few variables to avoid shadowing variables or functions:
 	* list.c (print_header): Change name to quoted_name.
@@ -3971,7 +3971,7 @@ Boston, MA 02111-1307, USA.
 	* port.c: Removed PTR declaration and including <sys/stat.h>.
 	* getoldopt.c, tar.c: Remove including "option.h".
 
-1994-07-02  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-02  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* *: Protoized all function headers.  Added static to
 	functions which can take it.  Add many const specifiers.  Remove
@@ -3997,13 +3997,13 @@ Boston, MA 02111-1307, USA.
 	* gnu.c (gnu_restore): Remove a spurious repetition of
 	program_name in error message.
 
-1994-07-01  François Pinard  <pinard@iro.umontreal.ca>
+1994-07-01  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* buffer.c, create.c extract.c, gnu.c, list.c,
 	names.c, rmt.c, tar.c, update.c: Remove all (void)
 	prefixes to function calls.  There are limits to lint clutter.
 
-1994-06-30  François Pinard  <pinard@iro.umontreal.ca>
+1994-06-30  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* port.h: Remove definition of const.  Let configure do it.
 
@@ -5389,7 +5389,7 @@ Boston, MA 02111-1307, USA.
 	* getdate.y : Parse European dates of the form YYMMDD.
 	In ftime(): Init timezone by calling localtime(), and remember that
 	timezone is in seconds, but we want timeb->timezone to be in minutes.
-	Reported by Jörgen Haegg.
+	Reported by JÃ¶rgen Haegg.
 
 	* rtape_lib.c (__rmt_open): Also look for /usr/bsd/rsh.
 	Declare signal handler as returning void instead of int if USG is
@@ -5722,7 +5722,7 @@ Previous releases by Jay Fenlason (hack@ai.mit.edu)
 
 ----- tests/ChangeLog -----
 
-1997-04-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Release 1.12.
 
@@ -5739,14 +5739,14 @@ Previous releases by Jay Fenlason (hack@ai.mit.edu)
 	$TAPE is defined or the default archive has been overridden.
 	Reported by Andreas Schwab.
 
-1997-04-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* after: Unredirect stdout and stderr before removing the files.
 	If redirections are to NFS files, removing them while they are
 	still opened may have strange effects, failing almost all tests.
 	Reported by Kaveh R. Ghazi.
 
-1997-04-22  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11q.
 
@@ -5772,63 +5772,63 @@ Previous releases by Jay Fenlason (hack@ai.mit.edu)
 	the tests distributed, but not executed.  These flaky tests are to
 	be addressed only after 1.12 is released.
 
-1997-04-19  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Makefile.am (AUTOMAKE_OPTIONS): Declare ../src/ansi2knr.
 	* (DEFS): New, for defining LOCALEDIR.
 	* (genfile.o): Deleted, will be implied from DEFS above.
 	Reported by Bruno Haible and Kaveh R. Ghazi.
 
-1997-04-17  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-17  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11p.
 
 	* genfile.c (usage): Add a program description.
 	(main): Output --version according to recent GNU standards.
 
-1997-04-15  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-15  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* ignfail.sh: Ensure the test does not fail if run as super-user.
 	Reported by John David Anglin.
 
-1997-04-12  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-12  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* genfile.c (pattern): Remove trailing comma for last enum item.
 	Reported by Bruno Haible.
 
-1997-04-11  François Pinard  <pinard@iro.umontreal.ca>
+1997-04-11  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11o.
 
-1997-03-29  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-29  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* ignfail.sh: New file.
 	* Makefile.am (TESTS): Adjusted.
 	Reported by Ralph Schleicher.
 
-1997-03-24  François Pinard  <pinard@iro.umontreal.ca>
+1997-03-24  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* genfile.c: Implement --pattern=default/zeros.
 
-1997-02-25  François Pinard  <pinard@iro.umontreal.ca>
+1997-02-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* old.sh: New file.
 	* Makefile.am (TESTS): Adjusted.
 	Reported by Daniel Trinkle.
 
-1997-01-21  François Pinard  <pinard@iro.umontreal.ca>
+1997-01-21  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* extrac01.sh: New name for extract.sh.
 	* extrac02.sh: New file.
 	* Makefile.am (TESTS): Adjusted.
 	Reported by Axel Boldt.
 
-1996-11-25  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-25  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* genfile.c (usage): Typo in message.
 	Reported by Christian Kirsch.
 
-1996-11-22  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-22  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* incremen.sh: New file.
 	Reported by Wolfram Wagner.
@@ -5850,19 +5850,19 @@ Previous releases by Jay Fenlason (hack@ai.mit.edu)
 	'' for out and err, so allowing us to use escaped newlines.  In
 	case of multiple output in a single test, ensure separator lines.
 
-1996-11-06  François Pinard  <pinard@iro.umontreal.ca>
+1996-11-06  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.13.
 
 	* childerr.sh, direxist.sh, volcheck.sh: Use sh, not bash.
 	Reported by John David Anglin.
 
-1996-09-20  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-20  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* volcheck.sh: New.
 	* Makefile.am (TESTS): Adjusted.
 
-1996-09-19  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-19  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* Prerelease 1.11.12.
 
@@ -5873,12 +5873,12 @@ Previous releases by Jay Fenlason (hack@ai.mit.edu)
 	(echo_n, echo_c): Define from the result of echo configuration.
 	* after: Handle echo with newline suppressed.
 
-1996-09-09  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-09  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* childerr.sh, direxist.sh, before, after: New files.
 	* Makefile.am: Adjusted.
 
-1996-09-04  François Pinard  <pinard@iro.umontreal.ca>
+1996-09-04  FranÃ§ois Pinard  <pinard@iro.umontreal.ca>
 
 	* ChangeLog, Makefile.am, pretest.in, version.sh: New files.
 	* checktar.sh, genfile.c: New files, moved from src/.
