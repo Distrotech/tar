@@ -885,19 +885,10 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
   if (current_stat.st_nlink > 1
       && (S_ISREG (current_stat.st_mode)
-#ifdef S_ISCTG
 	  || S_ISCTG (current_stat.st_mode)
-#endif
-#ifdef S_ISCHR
 	  || S_ISCHR (current_stat.st_mode)
-#endif
-#ifdef S_ISBLK
 	  || S_ISBLK (current_stat.st_mode)
-#endif
-#ifdef S_ISFIFO
-	  || S_ISFIFO (current_stat.st_mode)
-#endif
-      ))
+	  || S_ISFIFO (current_stat.st_mode)))
     {
       struct link *lp;
 
@@ -967,10 +958,7 @@ Removing leading `/' from absolute links")));
   /* This is not a link to a previously dumped file, so dump it.  */
 
   if (S_ISREG (current_stat.st_mode)
-#ifdef S_ISCTG
-      || S_ISCTG (current_stat.st_mode)
-#endif
-      )
+      || S_ISCTG (current_stat.st_mode))
     {
       int f;			/* file descriptor */
       size_t bufsize;
@@ -1113,12 +1101,12 @@ Removing leading `/' from absolute links")));
 	      return;
 	    }
 	}
-#ifdef S_ISCTG
+
       /* Mark contiguous files, if we support them.  */
 
       if (archive_format != V7_FORMAT && S_ISCTG (current_stat.st_mode))
 	header->header.typeflag = CONTTYPE;
-#endif
+
       isextended = header->oldgnu_header.isextended;
       save_typeflag = header->header.typeflag;
       finish_header (header);
@@ -1274,7 +1262,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
       return;
     }
 
-#ifdef S_ISLNK
+#ifdef HAVE_READLINK
   else if (S_ISLNK (current_stat.st_mode))
     {
       int size;
@@ -1311,7 +1299,7 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 	}
       return;
     }
-#endif /* S_ISLNK */
+#endif
 
   else if (S_ISDIR (current_stat.st_mode))
     {
@@ -1508,26 +1496,13 @@ Read error at byte %s, reading %lu bytes, in file %s"),
       return;
     }
 
-#ifdef S_ISCHR
   else if (S_ISCHR (current_stat.st_mode))
     type = CHRTYPE;
-#endif
-
-#ifdef S_ISBLK
   else if (S_ISBLK (current_stat.st_mode))
     type = BLKTYPE;
-#endif
-
-#ifdef S_ISFIFO
-  else if (S_ISFIFO (current_stat.st_mode))
+  else if (S_ISFIFO (current_stat.st_mode)
+	   || S_ISSOCK (current_stat.st_mode))
     type = FIFOTYPE;
-#endif
-
-#ifdef S_ISSOCK
-  else if (S_ISSOCK (current_stat.st_mode))
-    type = FIFOTYPE;
-#endif
-
   else
     goto unknown;
 
@@ -1544,13 +1519,11 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 
   header->header.typeflag = type;
 
-#if defined S_ISBLK || defined S_ISCHR
   if (type != FIFOTYPE)
     {
       MAJOR_TO_OCT (major (current_stat.st_rdev), header->header.devmajor);
       MINOR_TO_OCT (minor (current_stat.st_rdev), header->header.devminor);
     }
-#endif
 
   finish_header (header);
   if (remove_files_option)
