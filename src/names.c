@@ -22,7 +22,7 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
  *
  * This file should be modified for non-unix systems to do something
  * reasonable.
- */ 
+ */
 
 #include <sys/types.h>
 #include "tar.h"
@@ -34,13 +34,13 @@ the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #include <pwd.h>
 #include <grp.h>
 
-static int	saveuid = -993;
-static char	saveuname[TUNMLEN];
-static int	my_uid = -993;
+static int saveuid = -993;
+static char saveuname[TUNMLEN];
+static int my_uid = -993;
 
-static int	savegid = -993;
-static char	savegname[TGNMLEN];
-static int	my_gid = -993;
+static int savegid = -993;
+static char savegname[TGNMLEN];
+static int my_gid = -993;
 
 #define myuid	( my_uid < 0? (my_uid = getuid()): my_uid )
 #define	mygid	( my_gid < 0? (my_gid = getgid()): my_gid )
@@ -54,85 +54,96 @@ static int	my_gid = -993;
  * pages" code, roughly doubling the program size.  Thanks guys.
  */
 void
-finduname(uname, uid)
-	char	uname[TUNMLEN];
-	int	uid;
+finduname (uname, uid)
+     char uname[TUNMLEN];
+     int uid;
 {
-	struct passwd	*pw;
+  struct passwd *pw;
 #ifndef HAVE_GETPWUID
-	extern struct passwd *getpwuid ();
+  extern struct passwd *getpwuid ();
 #endif
 
-	if (uid != saveuid) {
-		saveuid = uid;
-		saveuname[0] = '\0';
-		pw = getpwuid(uid); 
-		if (pw) 
-			strncpy(saveuname, pw->pw_name, TUNMLEN);
-	}
-	strncpy(uname, saveuname, TUNMLEN);
+  if (uid != saveuid)
+    {
+      saveuid = uid;
+      saveuname[0] = '\0';
+      pw = getpwuid (uid);
+      if (pw)
+	strncpy (saveuname, pw->pw_name, TUNMLEN);
+    }
+  strncpy (uname, saveuname, TUNMLEN);
 }
 
 int
-finduid(uname)
-	char	uname[TUNMLEN];
+finduid (uname)
+     char uname[TUNMLEN];
 {
-	struct passwd	*pw;
-	extern struct passwd *getpwnam();
+  struct passwd *pw;
+  extern struct passwd *getpwnam ();
 
-	if (uname[0] != saveuname[0]	/* Quick test w/o proc call */
-	    || 0!=strncmp(uname, saveuname, TUNMLEN)) {
-		strncpy(saveuname, uname, TUNMLEN);
-		pw = getpwnam(uname); 
-		if (pw) {
-			saveuid = pw->pw_uid;
-		} else {
-			saveuid = myuid;
-		}
+  if (uname[0] != saveuname[0]	/* Quick test w/o proc call */
+      || 0 != strncmp (uname, saveuname, TUNMLEN))
+    {
+      strncpy (saveuname, uname, TUNMLEN);
+      pw = getpwnam (uname);
+      if (pw)
+	{
+	  saveuid = pw->pw_uid;
 	}
-	return saveuid;
+      else
+	{
+	  saveuid = myuid;
+	}
+    }
+  return saveuid;
 }
 
 
 void
-findgname(gname, gid)
-	char	gname[TGNMLEN];
-	int	gid;
+findgname (gname, gid)
+     char gname[TGNMLEN];
+     int gid;
 {
-	struct group	*gr;
+  struct group *gr;
 #ifndef HAVE_GETGRGID
-	extern struct group *getgrgid ();
+  extern struct group *getgrgid ();
 #endif
 
-	if (gid != savegid) {
-		savegid = gid;
-		savegname[0] = '\0';
-		(void)setgrent();
-		gr = getgrgid(gid); 
-		if (gr) 
-			strncpy(savegname, gr->gr_name, TGNMLEN);
-	}
-	(void) strncpy(gname, savegname, TGNMLEN);
+  if (gid != savegid)
+    {
+      savegid = gid;
+      savegname[0] = '\0';
+      (void) setgrent ();
+      gr = getgrgid (gid);
+      if (gr)
+	strncpy (savegname, gr->gr_name, TGNMLEN);
+    }
+  (void) strncpy (gname, savegname, TGNMLEN);
 }
 
 
 int
-findgid(gname)
-	char	gname[TUNMLEN];
+findgid (gname)
+     char gname[TUNMLEN];
 {
-	struct group	*gr;
-	extern struct group *getgrnam();
+  struct group *gr;
+  extern struct group *getgrnam ();
 
-	if (gname[0] != savegname[0]	/* Quick test w/o proc call */
-	    || 0!=strncmp(gname, savegname, TUNMLEN)) {
-		strncpy(savegname, gname, TUNMLEN);
-		gr = getgrnam(gname); 
-		if (gr) {
-			savegid = gr->gr_gid;
-		} else {
-			savegid = mygid;
-		}
+  if (gname[0] != savegname[0]	/* Quick test w/o proc call */
+      || 0 != strncmp (gname, savegname, TUNMLEN))
+    {
+      strncpy (savegname, gname, TUNMLEN);
+      gr = getgrnam (gname);
+      if (gr)
+	{
+	  savegid = gr->gr_gid;
 	}
-	return savegid;
+      else
+	{
+	  savegid = mygid;
+	}
+    }
+  return savegid;
 }
+
 #endif

@@ -21,9 +21,9 @@ of tar.
 
 makefile.pc is a makefile for Turbo C 2.0 on MS-DOS.
 
-Various people have been having problems using floppies on a NeXT.
-I've gotten conflicting reports about what should be done to solve the
-problems, and we have no way to test it ourselves.
+Various people have been having problems using floppies on a NeXT.  In
+order to have them work right, you need to kill the automounting
+program which tries to monut floppies as soon as they are added.
 
 If you want to do incremental dumps, use the distributed backup
 scripts.  They are what we use at the FSF to do all our backups.  Most
@@ -34,3 +34,13 @@ incremental dumps, use --incremental (-G).)
 
 There is no tar manual in this release.  The old manual has too many
 problems to make it usable.  A new manual will appear in version 1.12.
+
+If your system needs to link with -lPW to get alloca, but has
+rename in the C library (so HAVE_RENAME is defined), -lPW might
+give you an incorrect version of rename.  On HP-UX this manifests
+itself as an undefined data symbol called "Error" when linking cp, ln,
+and mv.  If this happens, use `ar x' to extract alloca.o from libPW.a
+and `ar rc' to put it in a library liballoca.a, and put that in LIBS
+instead of -lPW.  This problem does not occur when using gcc, which
+has alloca built in.
+

@@ -19,11 +19,11 @@
 
 #ifndef	NULL
 # define	NULL	0
-#endif	/* NULL */
+#endif /* NULL */
 
 #ifndef	MAXPATHLEN
 # define	MAXPATHLEN	255
-#endif	/* MAXPATHLEN */
+#endif /* MAXPATHLEN */
 
 /* attribute stuff */
 #define	A_RONLY		0x01
@@ -43,178 +43,187 @@
 #define ATTRIBUTES	(A_RONLY | A_SYSTEM | A_DIR)
 
 /* what find first/next calls look use */
-typedef struct {
-	char		d_buf[21];
-	char		d_attribute;
-	unsigned short	d_time;
-	unsigned short	d_date;
-	long		d_size;
-	char		d_name[13];
-} Dta_buf;
+typedef struct
+  {
+    char d_buf[21];
+    char d_attribute;
+    unsigned short d_time;
+    unsigned short d_date;
+    long d_size;
+    char d_name[13];
+  }
 
-static	char	*getdirent();
-static	void	mysetdta();
-static	void	free_dircontents();
+Dta_buf;
 
-static	Dta_buf		dtabuf;
-static	Dta_buf		*dtapnt = &dtabuf;
-static	union REGS	reg, nreg;
+static char *getdirent ();
+static void mysetdta ();
+static void free_dircontents ();
+
+static Dta_buf dtabuf;
+static Dta_buf *dtapnt = &dtabuf;
+static union REGS reg, nreg;
 
 #if	defined(M_I86LM)
-static	struct SREGS	sreg;
+static struct SREGS sreg;
 #endif
 
-DIR	*
-opendir(name)
-	char	*name;
+DIR *
+opendir (name)
+     char *name;
 {
-	struct	stat		statb;
-	DIR			*dirp;
-	char			c;
-	char			*s;
-	struct _dircontents	*dp;
-	char			nbuf[MAXPATHLEN + 1];
-	
-	if (stat(name, &statb) < 0 || (statb.st_mode & S_IFMT) != S_IFDIR)
-		return (DIR *) NULL;
-	if (Newisnull(dirp, DIR))
-		return (DIR *) NULL;
-	if (*name && (c = name[strlen(name) - 1]) != '\\' && c != '/')
-		(void) strcat(strcpy(nbuf, name), "\\*.*");
-	else
-		(void) strcat(strcpy(nbuf, name), "*.*");
-	dirp->dd_loc = 0;
-	mysetdta();
-	dirp->dd_contents = dirp->dd_cp = (struct _dircontents *) NULL;
-	if ((s = getdirent(nbuf)) == (char *) NULL)
-		return dirp;
-	do {
-		if (Newisnull(dp, struct _dircontents) || (dp->_d_entry =
-			malloc((unsigned) (strlen(s) + 1))) == (char *) NULL)
-		{
-			if (dp)
-				free((char *) dp);
-			free_dircontents(dirp->dd_contents);
-			return (DIR *) NULL;
-		}
-		if (dirp->dd_contents)
-			dirp->dd_cp = dirp->dd_cp->_d_next = dp;
-		else
-			dirp->dd_contents = dirp->dd_cp = dp;
-		(void) strcpy(dp->_d_entry, s);
-		dp->_d_next = (struct _dircontents *) NULL;
-	} while ((s = getdirent((char *) NULL)) != (char *) NULL);
-	dirp->dd_cp = dirp->dd_contents;
+  struct stat statb;
+  DIR *dirp;
+  char c;
+  char *s;
+  struct _dircontents *dp;
+  char nbuf[MAXPATHLEN + 1];
 
-	return dirp;
+  if (stat (name, &statb) < 0 || (statb.st_mode & S_IFMT) != S_IFDIR)
+    return (DIR *) NULL;
+  if (Newisnull (dirp, DIR))
+    return (DIR *) NULL;
+  if (*name && (c = name[strlen (name) - 1]) != '\\' && c != '/')
+    (void) strcat (strcpy (nbuf, name), "\\*.*");
+  else
+    (void) strcat (strcpy (nbuf, name), "*.*");
+  dirp->dd_loc = 0;
+  mysetdta ();
+  dirp->dd_contents = dirp->dd_cp = (struct _dircontents *) NULL;
+  if ((s = getdirent (nbuf)) == (char *) NULL)
+    return dirp;
+  do
+    {
+      if (Newisnull (dp, struct _dircontents) || (dp->_d_entry =
+		     malloc ((unsigned) (strlen (s) + 1))) == (char *) NULL)
+	{
+	  if (dp)
+	    free ((char *) dp);
+	  free_dircontents (dirp->dd_contents);
+	  return (DIR *) NULL;
+	}
+      if (dirp->dd_contents)
+	dirp->dd_cp = dirp->dd_cp->_d_next = dp;
+      else
+	dirp->dd_contents = dirp->dd_cp = dp;
+      (void) strcpy (dp->_d_entry, s);
+      dp->_d_next = (struct _dircontents *) NULL;
+    }
+  while ((s = getdirent ((char *) NULL)) != (char *) NULL);
+  dirp->dd_cp = dirp->dd_contents;
+
+  return dirp;
 }
 
 void
-closedir(dirp)
-	DIR	*dirp;
+closedir (dirp)
+     DIR *dirp;
 {
-	free_dircontents(dirp->dd_contents);
-	free((char *) dirp);
+  free_dircontents (dirp->dd_contents);
+  free ((char *) dirp);
 }
 
-struct dirent	*
-readdir(dirp)
-	DIR	*dirp;
+struct dirent *
+readdir (dirp)
+     DIR *dirp;
 {
-	static	struct dirent	dp;
-	
-	if (dirp->dd_cp == (struct _dircontents *) NULL)
-		return (struct dirent *) NULL;
-	dp.d_namlen = dp.d_reclen =
-		strlen(strcpy(dp.d_name, dirp->dd_cp->_d_entry));
-	strlwr(dp.d_name);		/* JF */
-	dp.d_ino = 0;
-	dirp->dd_cp = dirp->dd_cp->_d_next;
-	dirp->dd_loc++;
+  static struct dirent dp;
 
-	return &dp;
+  if (dirp->dd_cp == (struct _dircontents *) NULL)
+    return (struct dirent *) NULL;
+  dp.d_namlen = dp.d_reclen =
+    strlen (strcpy (dp.d_name, dirp->dd_cp->_d_entry));
+  strlwr (dp.d_name);		/* JF */
+  dp.d_ino = 0;
+  dirp->dd_cp = dirp->dd_cp->_d_next;
+  dirp->dd_loc++;
+
+  return &dp;
 }
 
 void
-seekdir(dirp, off)
-	DIR	*dirp;
-	long	off;
+seekdir (dirp, off)
+     DIR *dirp;
+     long off;
 {
-	long			i = off;
-	struct _dircontents	*dp;
+  long i = off;
+  struct _dircontents *dp;
 
-	if (off < 0)
-		return;
-	for (dp = dirp->dd_contents ; --i >= 0 && dp ; dp = dp->_d_next)
-		;
-	dirp->dd_loc = off - (i + 1);
-	dirp->dd_cp = dp;
+  if (off < 0)
+    return;
+  for (dp = dirp->dd_contents; --i >= 0 && dp; dp = dp->_d_next)
+    ;
+  dirp->dd_loc = off - (i + 1);
+  dirp->dd_cp = dp;
 }
 
 long
-telldir(dirp)
-	DIR	*dirp;
+telldir (dirp)
+     DIR *dirp;
 {
-	return dirp->dd_loc;
+  return dirp->dd_loc;
 }
 
-static	void
-free_dircontents(dp)
-	struct	_dircontents	*dp;
+static void
+free_dircontents (dp)
+     struct _dircontents *dp;
 {
-	struct _dircontents	*odp;
+  struct _dircontents *odp;
 
-	while (dp) {
-		if (dp->_d_entry)
-			free(dp->_d_entry);
-		dp = (odp = dp)->_d_next;
-		free((char *) odp);
-	}
+  while (dp)
+    {
+      if (dp->_d_entry)
+	free (dp->_d_entry);
+      dp = (odp = dp)->_d_next;
+      free ((char *) odp);
+    }
 }
 
-static	char	*
-getdirent(dir)
-	char	*dir;
+static char *
+getdirent (dir)
+     char *dir;
 {
-	if (dir != (char *) NULL) {		/* get first entry */
-		reg.h.ah = DOSI_FINDF;
-		reg.h.cl = ATTRIBUTES;
+  if (dir != (char *) NULL)
+    {				/* get first entry */
+      reg.h.ah = DOSI_FINDF;
+      reg.h.cl = ATTRIBUTES;
 #if	defined(M_I86LM)
-		reg.x.dx = FP_OFF(dir);
-		sreg.ds = FP_SEG(dir);
+      reg.x.dx = FP_OFF (dir);
+      sreg.ds = FP_SEG (dir);
 #else
-		reg.x.dx = (unsigned) dir;
+      reg.x.dx = (unsigned) dir;
 #endif
-	} else {				/* get next entry */
-		reg.h.ah = DOSI_FINDN;
+    }
+  else
+    {				/* get next entry */
+      reg.h.ah = DOSI_FINDN;
 #if	defined(M_I86LM)
-		reg.x.dx = FP_OFF(dtapnt);
-		sreg.ds = FP_SEG(dtapnt);
+      reg.x.dx = FP_OFF (dtapnt);
+      sreg.ds = FP_SEG (dtapnt);
 #else
-		reg.x.dx = (unsigned) dtapnt;
+      reg.x.dx = (unsigned) dtapnt;
 #endif
-	}
+    }
 #if	defined(M_I86LM)
-	intdosx(&reg, &nreg, &sreg);
+  intdosx (&reg, &nreg, &sreg);
 #else
-	intdos(&reg, &nreg);
+  intdos (&reg, &nreg);
 #endif
-	if (nreg.x.cflag)
-		return (char *) NULL;
+  if (nreg.x.cflag)
+    return (char *) NULL;
 
-	return dtabuf.d_name;
+  return dtabuf.d_name;
 }
 
-static	void
-mysetdta()
+static void
+mysetdta ()
 {
-	reg.h.ah = DOSI_SDTA;
+  reg.h.ah = DOSI_SDTA;
 #if	defined(M_I86LM)
-	reg.x.dx = FP_OFF(dtapnt);
-	sreg.ds = FP_SEG(dtapnt);
-	intdosx(&reg, &nreg, &sreg);
+  reg.x.dx = FP_OFF (dtapnt);
+  sreg.ds = FP_SEG (dtapnt);
+  intdosx (&reg, &nreg, &sreg);
 #else
-	reg.x.dx = (int) dtapnt;
-	intdos(&reg, &nreg);
+  reg.x.dx = (int) dtapnt;
+  intdos (&reg, &nreg);
 #endif
 }

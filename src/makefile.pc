@@ -1,4 +1,4 @@
-# Makefile for GNU tar on MS-DOS using Turbo C 2.0.
+# Makefile for GNU tar on MS-DOS.
 # Copyright (C) 1991 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -15,18 +15,14 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
-CC = tcc
+CC = bcc
 RM = rm -f
 
 MODEL = m
-DEFS = -DNONAMES -DNO_REMOTE -DNO_MTIO -DSTDC_HEADERS -m$(MODEL) -Dmain=_main
+DEFS = -DNONAMES -DNO_REMOTE -DSTDC_HEADERS=1 -m$(MODEL) -Dmain=_main
 LIBS =
-DEF_AR_FILE = tar.out
-DEFBLOCKING = 20
 
-CFLAGS = -I. $(DEFS) \
-	-DDEF_AR_FILE="$(DEF_AR_FILE)" \
-	-DDEFBLOCKING=$(DEFBLOCKING)
+CFLAGS = $(DEFS)
 LDFLAGS = -m$(MODEL)
 
 OBJ1 =	tar.obj create.obj extract.obj buffer.obj getoldopt.obj update.obj gnu.obj mangle.obj
@@ -42,6 +38,11 @@ tar:	testpad.h getdate.c $(OBJS)
 
 .c.obj:
 	$(CC) -c $(CFLAGS) $<
+
+# For some reason, Borland C++ 3.1 chokes on this file when given
+# the full set of -D options.
+getoldopt.obj: getoldopt.c
+	$(CC) -c -m$(MODEL) -DSTDC_HEADERS getoldopt.c
 
 testpad.h: testpad.exe
 	testpad
