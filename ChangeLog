@@ -1,3 +1,23 @@
+2004-10-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* THANKS: Added Bryan Ford
+	* doc/Makefile.am (.text): Fixed rule
+	* po/POTFILES.in: Added argp-help.c
+
+2004-10-04  Bryan Ford  <baford@mit.edu>
+
+	* src/tar.c: New option --exclude-caches, to exclude
+	cache directories automatically on archive creation.
+	Cache directories are directories containing a
+	standardized tag file, as specified at:
+		http://www.brynosaurus.com/cachedir/spec.html	
+	* src/common.h: New variable exclude_caches_option.
+	* src/create.c: New function check_cache_directory(),
+	called from dump_dir0() if exclude_caches_option is set,
+	to check for a cache directory tag and exclude the directory
+	if such a tag is found.
+	* doc/tar.texi: Updated accordingly.
+
 2004-09-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/tar.texi: Minor fix
