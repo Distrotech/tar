@@ -34,11 +34,13 @@ version 1.13.26
   with previous releases, however such usage is strongly deprecated as
   the option will change to its UNIX98 semantics in the future releases.
 
-* New option --first-copy can be used in conjunction with one of 
+* New option --occurrence[=N] can be used in conjunction with one of 
   the subcommands --delete, --diff, --extract or --list when a list of
   files is given either on the command line or via -T option. This
-  option instructs tar to terminate when all of the filenames from
-  the list were processed.
+  option instructs tar to process only the Nth occurence of each named
+  file. N defaults to 1, so `tar -x -f archive --occurence filename'
+  extracts the first occurence of `filename' from `archive'
+  and terminates without scanning to the end of the archive.
 
 * Removed obsolete command line options:
 ** --absolute-paths superseeded by --absolute-names
