@@ -1,3 +1,15 @@
+2004-06-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* src/common.h (root_device): New global.
+	(gnu_restore): Renamed to purge_directory().
+	* src/extract.c (extr_init): Save the device number
+	of the root device.
+	(extract_archive): Renamed gnu_restore() to purge_directory().
+	* src/incremen.c (gnu_restore): Renamed to purge_directory().
+	Do not attempt to purge the directory if it is on a different
+	device and one_file_system_option is set.
+
 2004-06-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/tar.texi: The actual default for exclude patterns
