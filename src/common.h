@@ -625,6 +625,7 @@ void xheader_destroy (struct xheader *);
 
 /* Module system.c */
 
+void sys_stat_nanoseconds (struct tar_stat_info *stat);
 void sys_detect_dev_null_output (void);
 void sys_save_archive_dev_ino (void);
 void sys_drain_input_pipe (void);
