@@ -50,7 +50,7 @@ void
 print_copyright (char const *notice)
 {
   fputs ("Copyright ", stdout);
-  unicode_to_mb (COPYRIGHT_SIGN, print_unicode_success, print_parenthesized_c,
+  unicode_to_mb (COPYRIGHT_SIGN, print_unicode_char, print_parenthesized_c,
 		 stdout);
   fputc (' ', stdout);
   puts (notice);
