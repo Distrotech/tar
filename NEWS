@@ -1,6 +1,13 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.13 - Paul Eggert, 1999-10-11.
+
+* Invalid headers in tar files now elicit errors, not just warnings.
+* `tar --version' output conforms to the latest GNU coding standards.
+* If you specify an invalid date, `tar' now substitutes (time_t) -1.
+* `configure --with-dmalloc' is no longer available.
+
 version 1.13.12 - Paul Eggert, 1999-09-24.
 
 * `tar' now supports hard links to symbolic links.
