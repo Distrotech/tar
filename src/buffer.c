@@ -216,28 +216,29 @@ check_compressed_archive ()
 int
 open_compressed_archive ()
 {
-  enum compress_type type;
-
   archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
 		     MODE_RW, rsh_command_option);
   if (archive == -1)
     return archive;
 
-  type = check_compressed_archive ();
+  if (!multi_volume_option) 
+    {
+      enum compress_type type = check_compressed_archive ();
   
-  if (type == ct_none)
-    return archive;
+      if (type == ct_none)
+	return archive;
 
-  /* FD is not needed any more */
-  rmtclose (archive);
+      /* FD is not needed any more */
+      rmtclose (archive);
 
-  hit_eof = false; /* It might have been set by find_next_block in
-		      check_compressed_archive */
+      hit_eof = false; /* It might have been set by find_next_block in
+			  check_compressed_archive */
 
-  /* Open compressed archive */
-  use_compress_program_option = compress_program (type);
-  child_pid = sys_child_open_for_uncompress ();
-  read_full_records = reading_from_pipe = true;
+      /* Open compressed archive */
+      use_compress_program_option = compress_program (type);
+      child_pid = sys_child_open_for_uncompress ();
+      read_full_records = reading_from_pipe = true;
+    }
   
   records_read = 0;
   record_end = record_start; /* set up for 1st record = # 0 */
