@@ -57,23 +57,23 @@ struct link *linklist = NULL;	/* points to first link in list */
 
 
 /*------------------------------------------------------------------------.
-| Convert VALUE into a size-SIZE field at WHERE, including a		  |
+| Convert VALUE (with substitute SUBSTITUTE if VALUE is out of range)	  |
+| into a size-SIZE field at WHERE, including a				  |
 | trailing space.  For example, 3 for SIZE means two digits and a space.  |
 |                                                                         |
 | We assume the trailing NUL is already there and don't fill it in.  This |
 | fact is used by start_header and finish_header, so don't change it!     |
 `------------------------------------------------------------------------*/
 
-/* This should be equivalent to: sprintf (WHERE, "%*lo ", SIZE - 1, VALUE);
+/* This should be equivalent to: sprintf (WHERE, "%*lo", SIZE, VALUE);
    except that we don't assume VALUE fits in an unsigned long, and
    except that sprintf fills in the trailing NUL and we don't.  */
 
 static void
-to_oct (uintmax_t value, char *where, size_t size, const char *type)
+to_oct (uintmax_t value, uintmax_t substitute, char *where, size_t size, const char *type)
 {
   uintmax_t v = value;
   size_t i = size;
-  where[--i] = ' ';		/* put in the space, though */
 
   /* Produce the digits -- at least one.  */
 
@@ -90,56 +90,78 @@ to_oct (uintmax_t value, char *where, size_t size, const char *type)
 
   if (v != 0)
     {
-      char buf[UINTMAX_STRSIZE_BOUND];
-      ERROR ((0, 0, _("%s value %s is too large to fit in a %u-bit field"),
-	      type, STRINGIFY_BIGINT (value, buf),
-	      (unsigned) ((size - 1) * 3)));
+      int bits = size * 3;
+      uintmax_t maxval = (bits < sizeof (uintmax_t) * CHAR_BIT
+			  ? ((uintmax_t) 1 << bits) - 1
+			  : (uintmax_t) -1);
+      char buf1[UINTMAX_STRSIZE_BOUND];
+      char buf2[UINTMAX_STRSIZE_BOUND];
+      char buf3[UINTMAX_STRSIZE_BOUND];
+      char *value_string = STRINGIFY_BIGINT (value, buf1);
+      char *maxval_string = STRINGIFY_BIGINT (maxval, buf2);
+      if (substitute)
+	{
+	  substitute &= maxval;
+	  WARN ((0, 0, _("%s value %s too large (max=%s); substituting %s"),
+		 type, value_string, maxval_string,
+		 STRINGIFY_BIGINT (substitute, buf3)));
+	  to_oct (substitute, (uintmax_t) 0, where, size, type);
+	}
+      else
+	ERROR ((0, 0, _("%s value %s too large (max=%s)"),
+		type, value_string, maxval_string));
     }
 }
+#ifndef GID_NOBODY
+#define GID_NOBODY 0
+#endif
 void
 gid_to_oct (gid_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "gid_t");
+  to_oct ((uintmax_t) v, (uintmax_t) GID_NOBODY, p, s, "gid_t");
 }
 void
 major_to_oct (major_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "major_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "major_t");
 }
 void
 minor_to_oct (minor_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "minor_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "minor_t");
 }
 void
 mode_to_oct (mode_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "mode_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "mode_t");
 }
 void
 off_to_oct (off_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "off_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "off_t");
 }
 void
 size_to_oct (size_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "size_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "size_t");
 }
 void
 time_to_oct (time_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "time_t");
+  to_oct ((uintmax_t) v, (uintmax_t) 0, p, s, "time_t");
 }
+#ifndef UID_NOBODY
+#define UID_NOBODY 0
+#endif
 void
 uid_to_oct (uid_t v, char *p, size_t s)
 {
-  to_oct ((uintmax_t) v, p, s, "uid_t");
+  to_oct ((uintmax_t) v, (uintmax_t) UID_NOBODY, p, s, "uid_t");
 }
 void
 uintmax_to_oct (uintmax_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "uintmax_t");
+  to_oct (v, (uintmax_t) 0, p, s, "uintmax_t");
 }
 
 /* Writing routines.  */
@@ -373,16 +395,16 @@ finish_header (union block *header)
 
   /* Fill in the checksum field.  It's formatted differently from the
      other fields: it has [6] digits, a null, then a space -- rather than
-     digits, a space, then a null.  We use to_oct then write the null in
-     over to_oct's space.  The final space is already there, from
-     checksumming, and to_oct doesn't modify it.
+     digits, then a null.  We use to_oct then write the null.
+     The final space is already there, from checksumming,
+     and to_oct doesn't modify it.
 
      This is a fast way to do:
 
      sprintf(header->header.chksum, "%6o", sum);  */
 
-  UINTMAX_TO_OCT ((uintmax_t) sum, header->header.chksum);
-  header->header.chksum[6] = '\0';	/* zap the space */
+  uintmax_to_oct ((uintmax_t) sum, header->header.chksum, 6);
+  header->header.chksum[6] = '\0';
 
   set_next_block_after (header);
 
@@ -758,6 +780,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
   union block *exhdr;
   char save_typeflag;
   struct utimbuf restore_times;
+  off_t restore_size;
 
   /* FIXME: `header' and `upperbound' might be used uninitialized in this
      function.  Reported by Bruno Haible.  */
@@ -769,7 +792,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
      Otherwise, use lstat (which falls back to stat if no symbolic links).  */
 
   if (dereference_option != 0
-#ifdef STX_HIDDEN		/* AIX */
+#if STX_HIDDEN && !_LARGE_FILES /* AIX */
       ? statx (p, &current_stat, STATSIZE, STX_HIDDEN)
       : statx (p, &current_stat, STATSIZE, STX_HIDDEN | STX_LINK)
 #else
@@ -785,6 +808,7 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
   restore_times.actime = current_stat.st_atime;
   restore_times.modtime = current_stat.st_mtime;
+  restore_size = current_stat.st_size;
 
 #ifdef S_ISHIDDEN
   if (S_ISHIDDEN (current_stat.st_mode))
@@ -1176,7 +1200,14 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 
       if (f >= 0)
 	{
-	  close (f);
+	  struct stat final_stat;
+	  if (fstat (f, &final_stat) != 0)
+	    ERROR ((0, errno, "%s: fstat", p));
+	  else if (final_stat.st_mtime != restore_times.modtime
+		   || final_stat.st_size != restore_size)
+	    ERROR ((0, errno, _("%s: file changed as we read it"), p));
+	  if (close (f) != 0)
+	    ERROR ((0, errno, _("%s: close"), p));
 	  if (atime_preserve_option)
 	    utime (p, &restore_times);
 	}
