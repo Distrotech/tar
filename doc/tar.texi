@@ -1864,6 +1864,10 @@ specify @w{@kbd{tar --extract --file=bfiles.tar ./birds}}.  To find the
 exact member names of the members of an archive, use @value{op-list}
 (@pxref{list}).
 
+You can extract a file to standard output by combining the above options
+with the @option{--to-stdout} option (@pxref{Writing to Standard
+Output}).
+
 If you give the @value{op-verbose} option, then @value{op-extract} will
 print the names of the archive members as it extracts them.
 
@@ -2797,6 +2801,11 @@ directory.  @FIXME-xref{}
 @item --overwrite
 
 Overwrite existing files and directory metadata when extracting files
+from an archive.  @xref{Overwrite Old Files}.
+
+@item --overwrite-dir
+
+Overwrite the metadata of existing directories when extracting files
 from an archive.  @xref{Overwrite Old Files}.
 
 @item --owner=@var{user}
@@ -4171,6 +4180,9 @@ member.  Instead, it reports an error.
 To be more aggressive about altering existing files, use the
 @value{op-overwrite} option.  It causes @command{tar} to overwrite
 existing files and to follow existing symbolic links when extracting.
+The @option{--overwrite-dir} option is somewhat more conservative than
+@value{op-overwrite}: it overwrites metadata (ownership, permission,
+etc.) for directories, but removes other files before extracting them.
 
 Some people argue that @sc{gnu} @command{tar} should not hesitate to overwrite
 files with other files when extracting.  When extracting a @command{tar}
@@ -4217,6 +4229,10 @@ combined with the @value{op-absolute-names} option, as this combination
 can change the contents, ownership or permissions of any file on your
 system.  Also, many systems do not take kindly to overwriting files that
 are currently being executed.
+
+@item --overwrite-dir
+Overwrite the metadata of directories when extracting files from an
+archive, but remove other files before extracting.
 @end table
 
 @node Keep Old Files
