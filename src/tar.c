@@ -452,6 +452,7 @@ decode_options (int argc, char *const *argv)
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
+  excluded = new_exclude ();
 
   owner_option = -1;
   group_option = -1;
@@ -783,8 +784,8 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case 'X':
-	exclude_option = 1;
-	add_exclude_file (optarg);
+	if (add_exclude_file (excluded, optarg, '\n') != 0)
+	  FATAL_ERROR ((0, errno, "%s", optarg));
 	break;
 
       case 'z':
@@ -810,8 +811,7 @@ decode_options (int argc, char *const *argv)
 	break;
 
       case EXCLUDE_OPTION:
-	exclude_option = 1;
-	add_exclude (optarg);
+	add_exclude (excluded, optarg);
 	break;
 
       case GROUP_OPTION:
