@@ -95,7 +95,30 @@ struct xhdr_tab xhdr_tab[] = {
   { "path",	path_coder,     path_decoder },
   { "size",	size_coder,     size_decoder },
   { "uid",	uid_coder,      uid_decoder },
-  { "uname",	uname_coder,    uname_decoder },    
+  { "uname",	uname_coder,    uname_decoder },
+#if 0 /* GNU private keywords (not yet implemented) */
+  /* Sparse file handling */
+  { "GNU.sparse.offset",     sparse_offset_coder, sparse_offset_decoder },
+  { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder },
+  
+  /* The next directory entry actually contains the names of files that were
+     in the directory at the time the dump was made. Supersedes
+     GNUTYPE_DUMPDIR header type */
+  { "GNU.dumpdir",  dumpdir_coder, dumpdir_decoder },
+  
+  /* Keeps the tape/volume header. May be present only in the global headers.
+     Equivalent to GNUTYPE_VOLHDR */
+  { "GNU.volume.header", volume_header_coder, volume_header_decoder },
+
+  /* These may be present in a first global header of the archive. They
+     provide the same functionality as GNUTYPE_MULTIVOL header.
+     The GNU.volume.size keeps the real_s_sizeleft value (which is
+     otherwise kept in the size field of a multivolume header).
+     The GNU.volume.offset keeps the offset of the start of this
+     volume (otherwise kept in oldgnu_header.offset */
+  { "GNU.volume.size", volume_size_coder, volume_size_decoder },
+  { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder },
+#endif
   { NULL },
 };
 
@@ -405,7 +428,7 @@ mtime_decoder (struct tar_stat_info *st, char *keyword, char *arg)
 static void
 path_coder (struct tar_stat_info *st, char *keyword, struct xheader *xhdr)
 {
-  code_string (st->orig_file_name, keyword, xhdr);
+  code_string (st->file_name, keyword, xhdr);
 }
 
 static void
