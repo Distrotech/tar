@@ -1,5 +1,5 @@
 /* A tar (tape archiver) program.
-   Copyright 1988, 92,93,94,95,96,97,99, 2000 Free Software Foundation, Inc.
+   Copyright 1988,92,93,94,95,96,97,99,2000,2001 Free Software Foundation, Inc.
    Written by John Gilmore, starting 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -24,11 +24,6 @@
 #include <signal.h>
 #if ! defined SIGCHLD && defined SIGCLD
 # define SIGCHLD SIGCLD
-#endif
-
-#include <time.h>
-#ifndef time
-time_t time ();
 #endif
 
 /* The following causes "common.h" to produce definitions of all the global
@@ -371,7 +366,7 @@ Archive format selection:\n\
 \n\
 Local file selection:\n\
   -C, --directory=DIR          change to directory DIR\n\
-  -T, -I, --files-from=NAME    get names to extract or create from file NAME\n\
+  -T, --files-from=NAME        get names to extract or create from file NAME\n\
       --null                   -T reads null-terminated names, disable -C\n\
       --exclude=PATTERN        exclude files, given as a globbing PATTERN\n\
   -X, --exclude-from=FILE      exclude globbing patterns listed in FILE\n\
@@ -428,17 +423,18 @@ or a device.  *This* `tar' defaults to `-f%s -b%d'.\n"),
 
 /* Parse the options for tar.  */
 
-/* Available option letters are DEHJQY and aenqy.  Some are reserved:
+/* Available option letters are DEHIJQY and aenqy.  Some are reserved:
 
    e  exit immediately with a nonzero exit status if unexpected errors occur
    E  use extended headers (draft POSIX headers, that is)
+   I  same as T (for compatibility with Solaris tar)
    n  the archive is quickly seekable, so don't worry about random seeks
    q  stop after extracting the first occurrence of the named file
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 #define OPTION_STRING \
-  "-01234567ABC:F:GIK:L:MN:OPRST:UV:WX:Zb:cdf:g:hijklmoprstuvwxz"
+  "-01234567ABC:F:GK:L:MN:OPRST:UV:WX:Zb:cdf:g:hijklmoprstuvwxz"
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -730,10 +726,25 @@ decode_options (int argc, char **argv)
 	if (newer_mtime_option != TYPE_MINIMUM (time_t))
 	  USAGE_ERROR ((0, 0, _("More than one threshold date")));
 
-	newer_mtime_option = get_date (optarg, 0);
-	if (newer_mtime_option == (time_t) -1)
-	  WARN ((0, 0, _("Substituting %s for unknown date format %s"),
-		 tartime (newer_mtime_option), quote (optarg)));
+	if (FILESYSTEM_PREFIX_LEN (optarg) != 0
+	    || ISSLASH (*optarg)
+	    || *optarg == '.')
+	  {
+	    struct stat st;
+	    if (deref_stat (dereference_option, optarg, &st) != 0)
+	      {
+		stat_error (optarg);
+		USAGE_ERROR ((0, 0, _("Date file not found")));
+	      }
+	    newer_mtime_option = st.st_mtime;
+	  }
+	else
+	  {
+	    newer_mtime_option = get_date (optarg, 0);
+	    if (newer_mtime_option == (time_t) -1)
+	      WARN ((0, 0, _("Substituting %s for unknown date format %s"),
+		     tartime (newer_mtime_option), quote (optarg)));
+	  }
 
 	break;
 #endif /* not MSDOS */
@@ -796,7 +807,6 @@ decode_options (int argc, char **argv)
 	break;
 
       case 'T':
-      case 'I': /* for compatibility with Solaris tar */
 	files_from_option = optarg;
 	break;
 
@@ -1050,7 +1060,7 @@ decode_options (int argc, char **argv)
   if (show_version)
     {
       printf ("tar (GNU %s) %s\n%s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 2000 Free Software Foundation, Inc.",
+	      "Copyright 2001 Free Software Foundation, Inc.",
 	      _("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
