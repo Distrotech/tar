@@ -563,6 +563,10 @@ flush_write (void)
   ssize_t status;
 
   if (checkpoint_option && !(++checkpoint % 10))
+    /* TRANSLATORS: This is a ``checkpoint of write operation'',
+       *not* ``Writing a checkpoint''. 
+       E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
+       *not* ``Escribiendo un punto de comprobaci@'on'' */
     WARN ((0, 0, _("Write checkpoint %d"), checkpoint));
 
   if (tape_length_option && tape_length_option <= bytes_written)
@@ -813,6 +817,10 @@ flush_read (void)
   size_t status;		/* result from system call */
 
   if (checkpoint_option && !(++checkpoint % 10))
+    /* TRANSLATORS: This is a ``checkpoint of read operation'',
+       *not* ``Reading a checkpoint''.
+       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
+       *not* ``Leyendo un punto de comprobaci@'on'' */
     WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
 
   /* Clear the count of errors.  This only applies to a single call to
