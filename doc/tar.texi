@@ -2723,8 +2723,8 @@ also back up files for which any status information has changed).
 
 @item --no-recursion
 
-With this option, @command{tar} will not recurse into directories unless a
-directory is explicitly named as an argument to @command{tar}.  @FIXME-xref{}
+With this option, @command{tar} will not recurse into directories.
+@FIXME-xref{}
 
 @item --no-same-owner
 
@@ -5468,7 +5468,7 @@ might fail.
 @item
 In earlier versions of @command{tar}, what is now the
 @samp{--exclude-from=@var{file-of-patterns}} option was called
-@samp{--exclude-@var{pattern}} instead.  Now,
+@samp{--exclude=@var{pattern}} instead.  Now,
 @samp{--exclude=@var{pattern}} applies to patterns listed on the command
 line and @samp{--exclude-from=@var{file-of-patterns}} applies to
 patterns listed in a file.
@@ -5655,7 +5655,7 @@ themselves, but does not descend on them recursively.  Many people use
 @command{tar} @emph{usually} recursively descends on directories, they have
 to use the @samp{@w{! -d}} option to @command{find} @FIXME{needs more
 explanation or a cite to another info file}as they usually do not want
-all the files in a directory.  They then use the @value{op-file-from}
+all the files in a directory.  They then use the @value{op-files-from}
 option to archive the files located via @command{find}.
 
 The problem when restoring files archived in this manner is that the
@@ -5664,6 +5664,10 @@ directories themselves are not in the archive; so the
 might really like it to.  Specifying @value{op-no-recursion} is a way to
 tell @command{tar} to grab only the directory entries given to it, adding
 no new files on its own.
+
+The @value{op-no-recursion} option also applies when extracting: it
+causes @command{tar} to extract only the matched directory entries, not
+the files under those directories.
 
 @FIXME{example here}
 
