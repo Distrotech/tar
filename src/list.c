@@ -73,7 +73,7 @@ read_and (void (*do_something) (void))
   name_gather ();
   open_archive (ACCESS_READ);
 
-  while (!all_names_found ())
+  do
     {
       prev_status = status;
       status = read_header (false);
@@ -113,7 +113,7 @@ read_and (void (*do_something) (void))
 		  skip_member ();
 		  continue;
 		}
-	      }
+	    }
 
 	  (*do_something) ();
 	  continue;
@@ -168,6 +168,7 @@ read_and (void (*do_something) (void))
 	}
       break;
     }
+  while (!all_names_found (&current_stat_info));
 
   close_archive ();
   names_notfound ();		/* print names not found */
