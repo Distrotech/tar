@@ -81,6 +81,9 @@ GLOBAL int exit_status;
 #include <quote.h>
 #include <safe-read.h>
 #include <timespec.h>
+#define obstack_chunk_alloc xmalloc
+#define obstack_chunk_free free
+#include <obstack.h>
 
 /* Log base 2 of common values.  */
 #define LG_8 3
@@ -157,9 +160,6 @@ GLOBAL struct exclude *excluded;
 
 /* Exclude directories containing a cache directory tag. */
 GLOBAL bool exclude_caches_option;
-
-/* Specified file containing names to work on.  */
-GLOBAL const char *files_from_option;
 
 /* Specified value to be put into tar file in place of stat () results, or
    just -1 if such an override should not take place.  */
@@ -331,6 +331,8 @@ GLOBAL bool seekable_archive;
 
 GLOBAL dev_t root_device;
 
+/* Unquote filenames */
+GLOBAL bool unquote_option;
 
 /* Declarations for each module.  */
 
@@ -574,6 +576,7 @@ void seek_error_details (char const *, off_t);
 void seek_warn (char const *);
 void seek_warn_details (char const *, off_t);
 void seek_diag_details (char const *, off_t);
+void stat_fatal (char const *);
 void stat_error (char const *);
 void stat_warn (char const *);
 void stat_diag (char const *name);
@@ -608,7 +611,6 @@ void name_add (const char *);
 void name_init (void);
 void name_term (void);
 char *name_next (int);
-void name_close (void);
 void name_gather (void);
 struct name *addname (char const *, int);
 int name_match (const char *);
