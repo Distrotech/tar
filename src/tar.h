@@ -220,7 +220,8 @@ enum archive_format
   DEFAULT_FORMAT,		/* format to be decided later */
   V7_FORMAT,			/* old V7 tar format */
   OLDGNU_FORMAT,		/* GNU format as per before tar 1.12 */
-  POSIX_FORMAT,			/* restricted, pure POSIX format */
+  USTAR_FORMAT,                 /* POSIX.1-1988 (ustar) format */
+  POSIX_FORMAT,			/* POSIX.1-2001 format */
   STAR_FORMAT,                  /* Star format defined in 1994 */
   GNU_FORMAT			/* POSIX format with GNU extensions */
 };
