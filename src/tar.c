@@ -280,7 +280,7 @@ main(argc, argv)
 		break;
 	case CMD_NONE:
 		msg("you must specify exactly one of the r, c, t, x, or d options\n");
- 		fprintf(stderr,"For more information, type ``%s +help''.\n",tar);
+ 		fprintf(stderr,"For more information, type ``%s --help''.\n",tar);
 		exit(EX_ARGSBAD);
 	}
 	if (f_volno_file)
@@ -616,7 +616,7 @@ options(argc, argv)
 
 		case '?':
 		badopt:
-			msg("Unknown option.  Use '%s +help' for a complete list of options.", tar);
+			msg("Unknown option.  Use '%s --help' for a complete list of options.", tar);
 			exit(EX_ARGSBAD);
 
 		}
@@ -973,9 +973,10 @@ addname(name)
 		if(chdir_name[0]!='/') {
 			char *path = ck_malloc(PATH_MAX);
 #if defined(__MSDOS__) || defined(USG) || defined(_POSIX_VERSION)
-			if(!getcwd(path,PATH_MAX))
+			if(!getcwd(path,PATH_MAX)) {
 				msg("Couldn't get current directory.");
 				exit(EX_SYSTEM);
+			}
 #else
 			char *getwd();
 
