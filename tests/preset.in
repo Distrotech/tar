@@ -3,15 +3,20 @@
 
 PACKAGE=@PACKAGE@
 VERSION=@VERSION@
-top_srcdir=@top_srcdir@
-srcdir=@srcdir@
-
-echo_n='@ECHO_N@'
-echo_c='@ECHO_C@'
+top_srcdir=@abs_top_srcdir@
+srcdir=@abs_srcdir@
+PATH=@abs_builddir@:@abs_top_builddir@/src:$top_srcdir:$srcdir:$PATH
 
 export LANGUAGE
 LANGUAGE=
-export LANG
-LANG=
-export LC_MESSAGES
-LC_MESSAGES=
+export LC_ALL
+LC_ALL="C"
+
+skiptest() {
+    exit 77
+}
+
+star_prereq() {
+    test -z "$STAR_TESTSCRIPTS" && skiptest
+    test -r "$STAR_TESTSCRIPTS/$1" || skiptest
+}

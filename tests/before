@@ -1,38 +1,34 @@
 #! /bin/sh
 # Do common operations before a particular test.
 
+case $# in
+    0)   TAR_ARCHIVE_FORMATS=${TAR_ARCHIVE_FORMATS:-v7 oldgnu ustar posix gnu}
+         for format in $TAR_ARCHIVE_FORMATS
+         do
+	     $0 $format
+	     R=$?
+	     test $R -eq 0 || exit $R
+	 done
+	 exit 0;;
+    1)   if test "x$1" = xauto; then
+            TAR_OPTIONS=
+	 else    
+            TAR_OPTIONS="--format=$1"
+	 fi;;   
+    *)   echo "Too many arguments" >&2 
+         exit 2;;
+esac    
+
 mkdir tmp-$$
 cd tmp-$$
-
-case $srcdir in
-  /*|~*) ;;
-  *) srcdir=../$srcdir ;;
-esac
 
 out=
 err=
 
-echo $0 > checking
+export TAR_OPTIONS
+#echo "$0 $1"
+echo "$0 $1" > checking
 exec 1> stdout
 exec 2> stderr
 
-PATH=..:../../src:$PATH
-    
-prereq() {
-    if test $# -ne 0; then
-        case $TAR_OPTIONS in
-            --format=*)   FMTOPT=$TAR_OPTIONS;;
-            *)            FMTOPT=`tar --show-defaults`;;
-        esac
-
-        FORMAT=
-        for option
-        do
-            case $FMTOPT in
-                --format=$option*) FORMAT=$option
-       	                           break;;
-            esac
-        done
-        test -z "$FORMAT" && exit 77
-    fi
-}
+	    
