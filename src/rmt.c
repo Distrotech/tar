@@ -1,5 +1,5 @@
 /* Remote connection server.
-   Copyright 1994, 1995, 1996, 1997, 1999, 2000 Free Software Foundation, Inc.
+   Copyright 1994,95,96,97,99,2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -32,6 +32,7 @@
 #include "system.h"
 #include <localedir.h>
 #include <safe-read.h>
+#include <full-write.h>
 
 #include <getopt.h>
 #include <sys/socket.h>
@@ -290,7 +291,7 @@ main (int argc, char *const *argv)
       
     case 'v':
       printf ("rmt (GNU %s) %s\n%s\n%s\n", PACKAGE, VERSION,
-	      "Copyright 2000 Free Software Foundation, Inc.",
+	      "Copyright 2001 Free Software Foundation, Inc.",
 	      _("\
 This program comes with NO WARRANTY, to the extent permitted by law.\n\
 You may redistribute it under the terms of the GNU General Public License;\n\
