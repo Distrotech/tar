@@ -762,7 +762,10 @@ short_read (size_t status)
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      WARN((0, 0, _("Read %s bytes from %s"),
+	      WARN((0, 0,
+		    ngettext ("Read %s byte from %s",
+			      "Read %s bytes from %s",
+			      record_size - left),
 		    STRINGIFY_BIGINT (record_size - left, buf),
 		    *archive_name_cursor));
 	    }
@@ -1176,7 +1179,8 @@ new_volume (enum access_mode mode)
 	  if (volno_file_option)
 	    closeout_volume_number ();
 	  if (system (info_script_option) != 0)
-	    FATAL_ERROR ((0, 0, _("`%s' command failed"), info_script_option));
+	    FATAL_ERROR ((0, 0, _("%s command failed"),
+			  quote (info_script_option)));
 	}
       else
 	while (1)
