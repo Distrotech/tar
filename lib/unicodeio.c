@@ -1,22 +1,26 @@
 /* Unicode character output to streams with locale dependent encoding.
 
-   Copyright (C) 2000, 2001 Free Software Foundation, Inc.
+   Copyright (C) 2000-2002 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU Library General Public License as published
+   by the Free Software Foundation; either version 2, or (at your option)
    any later version.
 
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   You should have received a copy of the GNU Library General Public
+   License along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA.  */
 
 /* Written by Bruno Haible <haible@clisp.cons.org>.  */
+
+/* Note: This file requires the locale_charset() function.  See in
+   libiconv-1.7/libcharset/INTEGRATE for how to obtain it.  */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -42,20 +46,17 @@ extern int errno;
 # include <iconv.h>
 #endif
 
-/* Some systems, like SunOS 4, don't have EILSEQ.  On these systems,
-   define EILSEQ to some value other than EINVAL, because our invokers
-   may want to distinguish EINVAL from EILSEQ.  */
-#ifndef EILSEQ
-# define EILSEQ ENOENT
-#endif
-#ifndef ENOTSUP
-# define ENOTSUP EINVAL
-#endif
+#include <error.h>
 
-#if HAVE_LANGINFO_CODESET && ! USE_INCLUDED_LIBINTL
-# include <langinfo.h>
+#if ENABLE_NLS
+# include <libintl.h>
+#else
+# define gettext(Text) Text
 #endif
+#define _(Text) gettext (Text)
+#define N_(Text) Text
 
+/* Specification.  */
 #include "unicodeio.h"
 
 /* When we pass a Unicode character to iconv(), we must pass it in a
@@ -110,17 +111,17 @@ utf8_wctomb (unsigned char *r, unsigned int wc)
 #define UTF8_NAME "UTF-8"
 
 /* Converts the Unicode character CODE to its multibyte representation
-   in the current locale and calls SUCCESS on the resulting byte
-   sequence.  If an error occurs, invoke FAILURE instead,
-   passing it CODE with errno set appropriately.
-   Assumes that the locale doesn't change between two calls.
-   Return whatever the SUCCESS or FAILURE returns.  */
-int
+   in the current locale and calls the SUCCESS callback on the resulting
+   byte sequence.  If an error occurs, invokes the FAILURE callback instead,
+   passing it CODE and an English error string.
+   Returns whatever the callback returned.
+   Assumes that the locale doesn't change between two calls.  */
+long
 unicode_to_mb (unsigned int code,
-	       int (*success) PARAMS((const char *buf, size_t buflen,
-				      void *callback_arg)),
-	       int (*failure) PARAMS((unsigned int code,
-				      void *callback_arg)),
+	       long (*success) PARAMS ((const char *buf, size_t buflen,
+					void *callback_arg)),
+	       long (*failure) PARAMS ((unsigned int code, const char *msg,
+					void *callback_arg)),
 	       void *callback_arg)
 {
   static int initialized;
@@ -134,18 +135,8 @@ unicode_to_mb (unsigned int code,
 
   if (!initialized)
     {
-      const char *charset;
-
-#if USE_INCLUDED_LIBINTL
       extern const char *locale_charset PARAMS ((void));
-      charset = locale_charset ();
-#else
-# if HAVE_LANGINFO_CODESET
-      charset = nl_langinfo (CODESET);
-# else
-      charset = "";
-# endif
-#endif
+      const char *charset = locale_charset ();
 
       is_utf8 = !strcmp (charset, UTF8_NAME);
 #if HAVE_ICONV
@@ -153,32 +144,32 @@ unicode_to_mb (unsigned int code,
 	{
 	  utf8_to_local = iconv_open (charset, UTF8_NAME);
 	  if (utf8_to_local == (iconv_t)(-1))
-	    {
-	      /* For an unknown encoding, assume ASCII.  */
-	      utf8_to_local = iconv_open ("ASCII", UTF8_NAME);
-	      if (utf8_to_local == (iconv_t)(-1))
-		return failure (code, callback_arg);
-	    }
+	    /* For an unknown encoding, assume ASCII.  */
+	    utf8_to_local = iconv_open ("ASCII", UTF8_NAME);
 	}
 #endif
       initialized = 1;
     }
 
+  /* Test whether the utf8_to_local converter is available at all.  */
+  if (!is_utf8)
+    {
+#if HAVE_ICONV
+      if (utf8_to_local == (iconv_t)(-1))
+	return failure (code, N_("iconv function not usable"), callback_arg);
+#else
+      return failure (code, N_("iconv function not available"), callback_arg);
+#endif
+    }
+
   /* Convert the character to UTF-8.  */
   count = utf8_wctomb ((unsigned char *) inbuf, code);
   if (count < 0)
-    {
-      errno = EILSEQ;
-      return failure (code, callback_arg);
-    }
+    return failure (code, N_("character out of range"), callback_arg);
 
-  if (is_utf8)
-    {
-      return success (inbuf, count, callback_arg);
-    }
-  else
-    {
 #if HAVE_ICONV
+  if (!is_utf8)
+    {
       char outbuf[25];
       const char *inptr;
       size_t inbytesleft;
@@ -201,11 +192,7 @@ unicode_to_mb (unsigned int code,
 	  || (res > 0 && code != 0 && outptr - outbuf == 1 && *outbuf == '\0')
 # endif
          )
-	{
-	  if (res != (size_t)(-1))
-	    errno = EILSEQ;
-	  return failure (code, callback_arg);
-	}
+	return failure (code, NULL, callback_arg);
 
       /* Avoid glibc-2.1 bug and Solaris 2.7 bug.  */
 # if defined _LIBICONV_VERSION \
@@ -214,46 +201,63 @@ unicode_to_mb (unsigned int code,
       /* Get back to the initial shift state.  */
       res = iconv (utf8_to_local, NULL, NULL, &outptr, &outbytesleft);
       if (res == (size_t)(-1))
-	return failure (code, callback_arg);
+	return failure (code, NULL, callback_arg);
 # endif
 
       return success (outbuf, outptr - outbuf, callback_arg);
-#else
-      errno = ENOTSUP;
-      return failure (code, callback_arg);
-#endif
     }
+#endif
+
+  /* At this point, is_utf8 is true, so no conversion is needed.  */
+  return success (inbuf, count, callback_arg);
 }
 
 /* Simple success callback that outputs the converted string.
    The STREAM is passed as callback_arg.  */
-int
-print_unicode_success (const char *buf, size_t buflen, void *callback_arg)
+long
+fwrite_success_callback (const char *buf, size_t buflen, void *callback_arg)
 {
   FILE *stream = (FILE *) callback_arg;
 
-  return fwrite (buf, 1, buflen, stream) == 0 ? -1 : 0;
+  fwrite (buf, 1, buflen, stream);
+  return 0;
 }
 
-/* Simple failure callback that prints an ASCII representation, using
-   the same notation as C99 strings.  */
-int
-print_unicode_failure (unsigned int code, void *callback_arg)
+/* Simple failure callback that displays an error and exits.  */
+static long
+exit_failure_callback (unsigned int code, const char *msg, void *callback_arg)
 {
-  int e = errno;
-  FILE *stream = callback_arg;
-  
-  fprintf (stream, code < 0x10000 ? "\\u%04X" : "\\U%08X", code);
-  errno = e;
+  if (msg == NULL)
+    error (1, 0, _("cannot convert U+%04X to local character set"), code);
+  else
+    error (1, 0, _("cannot convert U+%04X to local character set: %s"), code,
+	   gettext (msg));
+  return -1;
+}
+
+/* Simple failure callback that displays a fallback representation in plain
+   ASCII, using the same notation as ISO C99 strings.  */
+static long
+fallback_failure_callback (unsigned int code, const char *msg, void *callback_arg)
+{
+  FILE *stream = (FILE *) callback_arg;
+
+  if (code < 0x10000)
+    fprintf (stream, "\\u%04X", code);
+  else
+    fprintf (stream, "\\U%08X", code);
   return -1;
 }
 
 /* Outputs the Unicode character CODE to the output stream STREAM.
-   Returns zero if successful, -1 (setting errno) otherwise.
-   Assumes that the locale doesn't change between two calls.  */
-int
-print_unicode_char (FILE *stream, unsigned int code)
+   Upon failure, exit if exit_on_error is true, otherwise output a fallback
+   notation.  */
+void
+print_unicode_char (FILE *stream, unsigned int code, int exit_on_error)
 {
-  return unicode_to_mb (code, print_unicode_success, print_unicode_failure,
-			stream);
+  unicode_to_mb (code, fwrite_success_callback,
+		 exit_on_error
+		 ? exit_failure_callback
+		 : fallback_failure_callback,
+		 stream);
 }
