@@ -22,8 +22,8 @@ AC_INIT([GNU tar], [1.13.92], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_HEADERS([config.h:config.hin])
-AC_PREREQ([2.57])
-AM_INIT_AUTOMAKE([1.7.5 gnits dist-bzip2 dist-shar])
+AC_PREREQ([2.59])
+AM_INIT_AUTOMAKE([1.8 gnits dist-bzip2 dist-shar std-options])
 
 gl_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
@@ -271,6 +271,11 @@ AC_MSG_RESULT($DEFAULT_BLOCKING)
 AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.12.1)
 
-AC_OUTPUT([Makefile doc/Makefile lib/Makefile \
-m4/Makefile po/Makefile.in \
-scripts/Makefile src/Makefile tests/Makefile tests/preset])
+AC_OUTPUT([Makefile\
+           doc/Makefile\
+           lib/Makefile\
+           po/Makefile.in\
+           scripts/Makefile\
+           src/Makefile\
+           tests/Makefile\
+           tests/preset])
