@@ -487,6 +487,31 @@ addname (char const *string, int change_dir)
   return name;
 }
 
+/* Find a match for PATH (whose string length is LENGTH) in the name
+   list.  */
+static struct name *
+namelist_match (char const *path, size_t length)
+{
+  struct name *p;
+
+  for (p = namelist; p; p = p->next)
+    {
+      /* If first chars don't match, quick skip.  */
+
+      if (p->firstch && p->name[0] != path[0])
+	continue;
+
+      if (p->regexp
+	  ? fnmatch (p->name, path, FNM_LEADING_DIR) == 0
+	  : (p->length <= length
+	     && (path[p->length] == '\0' || path[p->length] == '/')
+	     && memcmp (path, p->name, p->length) == 0))
+	return p;
+    }
+
+  return 0;
+}
+
 /* Return true if and only if name PATH (from an archive) matches any
    name from the namelist.  */
 int
@@ -509,32 +534,20 @@ name_match (const char *path)
 	  return ! files_from_option;
 	}
 
-      for (; cursor; cursor = cursor->next)
+      cursor = namelist_match (path, length);
+      if (cursor)
 	{
-	  /* If first chars don't match, quick skip.  */
-
-	  if (cursor->firstch && cursor->name[0] != path[0])
-	    continue;
-
-	  if (cursor->regexp
-	      ? fnmatch (cursor->name, path, FNM_LEADING_DIR) == 0
-	      : (cursor->length <= length
-		 && (path[cursor->length] == '\0'
-		     || path[cursor->length] == '/')
-		 && memcmp (path, cursor->name, cursor->length) == 0))
+	  cursor->found = 1; /* remember it matched */
+	  if (starting_file_option)
 	    {
-	      cursor->found = 1; /* remember it matched */
-	      if (starting_file_option)
-		{
-		  free (namelist);
-		  namelist = 0;
-		  nametail = &namelist;
-		}
-	      chdir_do (cursor->change_dir);
-  
-	      /* We got a match.  */
-	      return 1;
+	      free (namelist);
+	      namelist = 0;
+	      nametail = &namelist;
 	    }
+	  chdir_do (cursor->change_dir);
+  
+	  /* We got a match.  */
+	  return 1;
 	}
 
       /* Filename from archive not found in namelist.  If we have the whole
@@ -557,25 +570,14 @@ name_match (const char *path)
 void
 names_notfound (void)
 {
-  struct name *cursor;
-  struct name *next;
+  struct name const *cursor;
 
-  for (cursor = namelist; cursor; cursor = next)
-    {
-      next = cursor->next;
-      if (!cursor->found && !cursor->fake)
-	ERROR ((0, 0, _("%s: Not found in archive"),
-		quotearg_colon (cursor->name)));
+  for (cursor = namelist; cursor; cursor = cursor->next)
+    if (!cursor->found && !cursor->fake)
+      ERROR ((0, 0, _("%s: Not found in archive"),
+	      quotearg_colon (cursor->name)));
 
-      /* We could free the list, but the process is about to die anyway, so
-	 save some CPU time.  Amigas and other similarly broken software
-	 will need to waste the time, though.  */
-
-#ifdef amiga
-      if (!same_order_option)
-	free (cursor);
-#endif
-    }
+  /* Don't bother freeing the name list; we're about to exit.  */
   namelist = 0;
   nametail = &namelist;
 
@@ -793,33 +795,16 @@ name_scan (const char *path)
 
   while (1)
     {
-      struct name *cursor = namelist;
-
-      if (!cursor)
-	return 0;
-
-      for (; cursor; cursor = cursor->next)
-	{
-	  /* If first chars don't match, quick skip.  */
-
-	  if (cursor->firstch && cursor->name[0] != path[0])
-	    continue;
-
-	  if (cursor->regexp
-	      ? fnmatch (cursor->name, path, FNM_LEADING_DIR) == 0
-	      : (cursor->length <= length
-		 && (path[cursor->length] == '\0'
-		     || path[cursor->length] == '/')
-		 && memcmp (path, cursor->name, cursor->length) == 0))
-	    return cursor;	/* we got a match */
-	}
+      struct name *cursor = namelist_match (path, length);
+      if (cursor)
+	return cursor;
 
       /* Filename from archive not found in namelist.  If we have the whole
 	 namelist here, just return 0.  Otherwise, read the next name in and
 	 compare it.  If this was the last name, namelist->found will remain
 	 on.  If not, we loop to compare the newly read name.  */
 
-      if (same_order_option && namelist->found)
+      if (same_order_option && namelist && namelist->found)
 	{
 	  name_gather ();	/* read one more */
 	  if (namelist->found)
