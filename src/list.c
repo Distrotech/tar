@@ -222,7 +222,7 @@ list_archive (void)
 	    }
 	}
       if (multi_volume_option)
-	assign_string (&save_name, NULL);
+	assign_string (&save_name, 0);
       fputc ('\n', stdlis);
       fflush (stdlis);
       return;
@@ -243,7 +243,7 @@ list_archive (void)
   skip_file (current_stat.st_size);
 
   if (multi_volume_option)
-    assign_string (&save_name, NULL);
+    assign_string (&save_name, 0);
 }
 
 /*-----------------------------------------------------------------------.
@@ -262,7 +262,7 @@ list_archive (void)
    bytes in the header as type char.  I think the type char was unsigned
    on the PDP-11, but it's signed on the Next and Sun.  It looks like the
    sources to BSD tar were never changed to compute the checksum
-   currectly, so both the Sun and Next add the bytes of the header as
+   correctly, so both the Sun and Next add the bytes of the header as
    signed chars.  This doesn't cause a problem until you get a file with
    a name containing characters with the high bit set.  So read_header
    computes two checksums -- signed and unsigned.  */
@@ -293,7 +293,7 @@ read_header (void)
       unsigned_sum = 0;
       signed_sum = 0;
       p = header->buffer;
-      for (i = sizeof (*header); i-- != 0;)
+      for (i = sizeof *header; i-- != 0;)
 	{
 	  unsigned_sum += (unsigned char) *p;
 	  signed_sum += signed_char (*p++);
@@ -304,7 +304,7 @@ read_header (void)
 
       /* Adjust checksum to count the "chksum" field as blanks.  */
 
-      for (i = sizeof (header->header.chksum); i-- != 0;)
+      for (i = sizeof header->header.chksum; i-- != 0;)
 	{
 	  unsigned_sum -= (unsigned char) header->header.chksum[i];
 	  signed_sum -= signed_char (header->header.chksum[i]);
@@ -313,9 +313,8 @@ read_header (void)
       signed_sum += ' ' * sizeof header->header.chksum;
 
       parsed_sum = from_chars (header->header.chksum,
-			       sizeof header->header.chksum,
-			       (char *) 0, (uintmax_t) 0,
-			       (uintmax_t) TYPE_MAXIMUM (int));
+			       sizeof header->header.chksum, 0,
+			       (uintmax_t) 0, (uintmax_t) TYPE_MAXIMUM (int));
       if (parsed_sum == (uintmax_t) -1)
 	return HEADER_FAILURE;
 
@@ -344,12 +343,12 @@ read_header (void)
 	  size = current_stat.st_size;
 	  if (size != current_stat.st_size)
 	    FATAL_ERROR ((0, 0, _("Memory exhausted")));
-	  bp = *longp = (char *) xmalloc (size);
+	  bp = *longp = xmalloc (size);
 
 	  for (; size > 0; size -= written)
 	    {
 	      data_block = find_next_block ();
-	      if (data_block == NULL)
+	      if (! data_block)
 		{
 		  ERROR ((0, 0, _("Unexpected EOF on archive file")));
 		  break;
@@ -540,7 +539,12 @@ from_chars (char const *where0, size_t digs, char const *type,
       do
 	{
 	  if (value << LG_8 >> LG_8 != value)
-	    goto out_of_range;
+	    {
+	      ERROR ((0, 0,
+		      _("Archive octal string `%.*s' is out of %s range"),
+		      (int) digs, where0, type));
+	      return -1;
+	    }
 	  value = (value << LG_8) | (*where++ - '0');
 	}
       while (where != lim && ISODIGIT (*where));
@@ -563,7 +567,12 @@ from_chars (char const *where0, size_t digs, char const *type,
 	     && (dig = base64_map[(unsigned char) *where]) < 64)
 	{
 	  if (value << LG_64 >> LG_64 != value)
-	    goto out_of_range;
+	    {
+	      ERROR ((0, 0,
+		      _("Archive signed base 64 string `%.*s' is out of %s range"),
+		      (int) digs, where0, type));
+	      return -1;
+	    }
 	  value = (value << LG_64) | dig;
 	  where++;
 	}
@@ -578,7 +587,7 @@ from_chars (char const *where0, size_t digs, char const *type,
 
 	  if (!o)
 	    {
-	      o = clone_quoting_options ((struct quoting_options *) 0);
+	      o = clone_quoting_options (0);
 	      set_quoting_style (o, c_quoting_style);
 	    }
 
@@ -586,7 +595,7 @@ from_chars (char const *where0, size_t digs, char const *type,
 	    lim--;
 	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
 	  ERROR ((0, 0,
-		  _("Header contains `%.*s' where numeric %s value expected"),
+		  _("Archive contains `%.*s' where numeric %s value expected"),
 		  (int) sizeof buf, buf, type));
 	}
 
@@ -596,10 +605,22 @@ from_chars (char const *where0, size_t digs, char const *type,
   if (value <= (negative ? minus_minval : maxval))
     return negative ? -value : value;
 
- out_of_range:
   if (type)
-    ERROR ((0, 0, _("Numeric value `%.*s' is out of range for %s"),
-	    (int) digs, where0, type));
+    {
+      char minval_buf[UINTMAX_STRSIZE_BOUND + 1];
+      char maxval_buf[UINTMAX_STRSIZE_BOUND];
+      char value_buf[UINTMAX_STRSIZE_BOUND + 1];
+      char *minval_string = STRINGIFY_BIGINT (minus_minval, minval_buf + 1);
+      char *value_string = STRINGIFY_BIGINT (value, value_buf + 1);
+      if (negative)
+	*--value_string = '-';
+      if (minus_minval)
+	*--minval_string = '-';
+      ERROR ((0, 0, _("Archive value %s is out of %s range %s..%s"),
+	      value_string, type,
+	      minval_string, STRINGIFY_BIGINT (maxval, maxval_buf)));
+    }
+
   return -1;
 }
 
@@ -651,8 +672,9 @@ mode_from_chars (const char *p, size_t s)
 off_t
 off_from_chars (const char *p, size_t s)
 {
-  return from_chars (p, s, "off_t",
-		     - (uintmax_t) TYPE_MINIMUM (off_t),
+  /* Negative offsets are not allowed in tar files, so invoke
+     from_chars with minimum value 0, not TYPE_MINIMUM (off_t).  */
+  return from_chars (p, s, "off_t", (uintmax_t) 0,
 		     (uintmax_t) TYPE_MAXIMUM (off_t));
 }
 
@@ -674,7 +696,8 @@ time_from_chars (const char *p, size_t s)
 uid_t
 uid_from_chars (const char *p, size_t s)
 {
-  return from_chars (p, s, "uid_t", (uintmax_t) 0,
+  return from_chars (p, s, "uid_t",
+		     - (uintmax_t) TYPE_MINIMUM (uid_t),
 		     (uintmax_t) TYPE_MAXIMUM (uid_t));
 }
 
@@ -723,8 +746,8 @@ isotime (time_t time)
     }
   else
     {
-      /* The timestamp cannot be broken down, most likely because it
-	 is a huge timestamp.  Convert it as an integer,
+      /* The time stamp cannot be broken down, most likely because it
+	 is out of range.  Convert it as an integer,
 	 right-adjusted in a field with the same width as the usual
 	 19-byte 4-year ISO time format.  */
       uintmax_t abstime = time < 0 ? - (uintmax_t) time : time;
@@ -796,7 +819,7 @@ void
 print_header (void)
 {
   char modes[11];
-  char const *timestamp;
+  char const *time_stamp;
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
   char *user, *group;
@@ -885,7 +908,7 @@ print_header (void)
 
       decode_mode (current_stat.st_mode, modes + 1);
 
-      /* Timestamp.  */
+      /* Time stamp.  */
 
       longie = current_stat.st_mtime;
 #if USE_OLD_CTIME
@@ -893,16 +916,16 @@ print_header (void)
 	char *ct = ctime (&longie);
 	if (ct)
 	  {
-	    timestamp = ct + 4;
+	    time_stamp = ct + 4;
 	    for (ct += 16; ct[4] != '\n'; ct++)
 	      ct[0] = ct[4];
 	    ct[0] = '\0';
 	  }
 	else
-	  timestamp = "??? ?? ??:?? ????";
+	  time_stamp = "??? ?? ??:?? ????";
       }
 #else
-      timestamp = isotime (longie);
+      time_stamp = isotime (longie);
 #endif
 
       /* User and group names.  */
@@ -953,7 +976,7 @@ print_header (void)
 	ugswidth = pad;
 
       fprintf (stdlis, "%s %s/%s %*s%s %s",
-	       modes, user, group, ugswidth - pad, "", size, timestamp);
+	       modes, user, group, ugswidth - pad, "", size, time_stamp);
 
       name = quote_copy_string (current_file_name);
       if (name)
@@ -1079,7 +1102,7 @@ skip_file (off_t size)
   while (size > 0)
     {
       x = find_next_block ();
-      if (x == NULL)
+      if (! x)
 	FATAL_ERROR ((0, 0, _("Unexpected EOF on archive file")));
 
       set_next_block_after (x);
