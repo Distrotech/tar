@@ -618,7 +618,7 @@ void update_archive (void);
 /* Module xheader.c.  */
 
 void xheader_decode (struct tar_stat_info *);
-void xheader_store (char const *, struct tar_stat_info const *);
+void xheader_store (char const *, struct tar_stat_info const *, void *);
 void xheader_read (union block *, size_t);
 void xheader_finish (struct xheader *);
 void xheader_destroy (struct xheader *);
