@@ -1,3 +1,13 @@
+2004-03-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Added gl_FUNC_STRTOULL
+	* src/create.c (start_header): Check for GNU_FORMAT
+	if incremental_option is set.
+	* src/xheader.c (to_decimal): New function.
+	(xheader_format_name): Use to_decimal() instead of snprintf.
+	* tests/listed01.sh: Use genfile instead of dd
+	* tests/multiv01.sh: Likewise.
+
 2004-03-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (read_and): Stop processing the archive after
