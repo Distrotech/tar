@@ -1,10 +1,13 @@
-\input texinfo
-@c %**start of header
+\input texinfo @c -*-texinfo-*-
+@comment %**start of header
 @setfilename tar.info
-@settitle GNU tar
-@finalout
-@smallbook
+@include version.texi
+@settitle GNU tar @value{VERSION}
 @setchapternewpage odd
+
+@finalout
+
+@smallbook
 @c %**end of header
 
 @c ======================================================================
@@ -452,8 +455,6 @@
 @set xref-volno-file @xref{Using Multiple Tapes}
 @set pxref-volno-file @pxref{Using Multiple Tapes}
 
-@include version.texi
-
 @c Put everything in one index (arbitrarily chosen to be the concept index).
 @syncodeindex fn cp
 @syncodeindex ky cp
@@ -463,37 +464,44 @@
 @defindex op
 @syncodeindex op cp
 
-@dircategory GNU Packages
+@copying
+
+This manual is for @acronym{GNU} @command{tar} (version
+@value{VERSION}, @value{UPDATED}), which creates and extracts files
+from archives.
+
+Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
+2003 Free Software Foundation, Inc.
+
+@quotation
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.1 or
+any later version published by the Free Software Foundation; with the
+Invariant Sections being "GNU General Public License", with the
+Front-Cover Texts being ``A GNU Manual,'' and with the Back-Cover Texts
+as in (a) below.  A copy of the license is included in the section
+entitled "GNU Free Documentation License".
+
+(a) The FSF's Back-Cover Text is: ``You are free to copy and modify
+this GNU Manual.  Buying copies from GNU Press supports the FSF in
+developing GNU and promoting software freedom.''
+@end quotation
+@end copying
+
+@dircategory Archiving
 @direntry
-* Tar: (tar).			Making tape (or disk) archives.
+* Tar: (tar).                   Making tape (or disk) archives.
 @end direntry
 
 @dircategory Individual utilities
 @direntry
-* tar: (tar)tar invocation.                     Invoking @sc{gnu} @command{tar}
+* tar: (tar)tar invocation.                     Invoking @acronym{GNU} @command{tar}
 @end direntry
 
-@ifinfo
-This file documents @sc{gnu} @command{tar}, which creates and extracts
-files from archives.
-
-Copyright 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001 Free Software
-Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1
-or any later version published by the Free Software Foundation;
-with no Invariant Sections, with no
-Front-Cover Texts, and with no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
-
-@end ifinfo
-
-@shorttitlepage @sc{gnu} @command{tar}
+@shorttitlepage @acronym{GNU} @command{tar}
 
 @titlepage
-@title @sc{gnu} tar: an archiver tool
+@title @acronym{GNU} tar: an archiver tool
 @subtitle @value{RENDITION} @value{VERSION}, @value{UPDATED}
 @author Melissa Weisshaus, Jay Fenlason,
 @author Thomas Bushnell, n/BSG, Amy Gorin
@@ -502,28 +510,17 @@ Free Documentation License''.
 
 @page
 @vskip 0pt plus 1filll
-Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001
-Free Software Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1
-or any later version published by the Free Software Foundation;
-with no Invariant Sections, with no
-Front-Cover Texts, and with no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU
-Free Documentation License''.
+@insertcopying
 @end titlepage
 
 @ifnottex
 @node Top
-@top @sc{gnu} tar: an archiver tool
+@top @acronym{GNU} tar: an archiver tool
+
+@insertcopying
 
 @cindex file archival
 @cindex archiving files
-
-@sc{gnu} @command{tar} creates and extracts files from archives.
-
-This manual documents version @value{VERSION} of @sc{gnu} @command{tar}.
 
 The first part of this master menu lists the major nodes in this Info
 document.  The rest of the menu lists all the lower level nodes.
@@ -556,7 +553,7 @@ Introduction
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
 * posix compliance::
-* Authors::                     @sc{gnu} @command{tar} Authors
+* Authors::                     @acronym{GNU} @command{tar} Authors
 * Reports::                     Reporting bugs or suggestions
 
 Tutorial Introduction to @command{tar}
@@ -596,7 +593,7 @@ How to Extract Members from an Archive
 * extract dir::
 * failing commands::
 
-Invoking @sc{gnu} @command{tar}
+Invoking @acronym{GNU} @command{tar}
 
 * Synopsis::
 * using tar options::
@@ -619,7 +616,7 @@ All @command{tar} Options
 * Option Summary::
 * Short Option Summary::
 
-@sc{gnu} @command{tar} Operations
+@acronym{GNU} @command{tar} Operations
 
 * Basic tar::
 * Advanced tar::
@@ -629,10 +626,9 @@ All @command{tar} Options
 * Applications::
 * looking ahead::
 
-Advanced @sc{gnu} @command{tar} Operations
+Advanced @acronym{GNU} @command{tar} Operations
 
 * Operations::
-* current state::
 * append::
 * update::
 * concatenate::
@@ -737,7 +733,7 @@ Controlling the Archive Format
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
 * Standard::                    The Standard Format
-* Extensions::                  @sc{gnu} Extensions to the Archive Format
+* Extensions::                  @acronym{GNU} Extensions to the Archive Format
 * cpio::                        Comparison of @command{tar} and @command{cpio}
 
 Making @command{tar} Archives More Portable
@@ -791,10 +787,12 @@ Copying This Manual
 @node Introduction
 @chapter Introduction
 
-Welcome to the @sc{gnu} @command{tar} manual.  @sc{gnu} @command{tar} creates
+@acronym{GNU} @command{tar} creates
 and manipulates (@dfn{archives}) which are actually collections of
 many other files; the program provides users with an organized and
 systematic method for controlling a large amount of data.
+The name ``tar'' originally came from the phrase ``Tape ARchive'', but
+archives need not (and these days, typically do not) reside on tapes.
 
 @menu
 * Book Contents::               What this Book Contains
@@ -802,7 +800,7 @@ systematic method for controlling a large amount of data.
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
 * posix compliance::
-* Authors::                     @sc{gnu} @command{tar} Authors
+* Authors::                     @acronym{GNU} @command{tar} Authors
 * Reports::                     Reporting bugs or suggestions
 @end menu
 
@@ -810,7 +808,7 @@ systematic method for controlling a large amount of data.
 @section What this Book Contains
 
 The first part of this chapter introduces you to various terms that will
-recur throughout the book.  It also tells you who has worked on @sc{gnu}
+recur throughout the book.  It also tells you who has worked on @acronym{GNU}
 @command{tar} and its documentation, and where you should send bug reports
 or comments.
 
@@ -834,16 +832,16 @@ concepts of using a Unix-type operating system; @pxref{Tutorial}.)
 The third chapter presents the remaining five operations, and
 information about using @command{tar} options and option syntax.
 
-@FIXME{this sounds more like a @sc{gnu} Project Manuals Concept [tm] more
+@FIXME{this sounds more like a @acronym{GNU} Project Manuals Concept [tm] more
 than the reality.  should think about whether this makes sense to say
 here, or not.}  The other chapters are meant to be used as a
 reference.  Each chapter presents everything that needs to be said
 about a specific topic.
 
-One of the chapters (@pxref{Date input formats}) exists in its entirety
-in other @sc{gnu} manuals, and is mostly self-contained.  In addition, one
-section of this manual (@pxref{Standard}) contains a big quote which is
-taken directly from @command{tar} sources.
+One of the chapters (@pxref{Date input formats}) exists in its
+entirety in other @acronym{GNU} manuals, and is mostly self-contained.
+In addition, one section of this manual (@pxref{Standard}) contains a
+big quote which is taken directly from @command{tar} sources.
 
 In general, we give both the long and short (abbreviated) option names
 at least once in each section where the relevant option is covered, so
@@ -915,10 +913,11 @@ of them: storage, backup, and transportation.
 @table @asis
 @item Storage
 Often, @command{tar} archives are used to store related files for
-convenient file transfer over a network.  For example, the @sc{gnu} Project
-distributes its software bundled into @command{tar} archives, so that
-all the files relating to a particular program (or set of related
-programs) can be transferred as a single unit.
+convenient file transfer over a network.  For example, the
+@acronym{GNU} Project distributes its software bundled into
+@command{tar} archives, so that all the files relating to a particular
+program (or set of related programs) can be transferred as a single
+unit.
 
 A magnetic tape can store several files in sequence.  However, the tape
 has no names for these files; it only knows their relative position on
@@ -935,14 +934,15 @@ space; the idea here is that @command{tar} can be used to move archives in
 all dimensions, even time!)
 
 @item Backup
-Because the archive created by @command{tar} is capable of preserving file
-information and directory structure, @command{tar} is commonly used for
-performing full and incremental backups of disks.  A backup puts a
-collection of files (possibly pertaining to many users and
-projects) together on a disk or a tape.  This guards against accidental
-destruction of the information in those files.  @sc{gnu} @command{tar} has
-special features that allow it to be used to make incremental and full
-dumps of all the files in a filesystem.
+Because the archive created by @command{tar} is capable of preserving
+file information and directory structure, @command{tar} is commonly
+used for performing full and incremental backups of disks.  A backup
+puts a collection of files (possibly pertaining to many users and
+projects) together on a disk or a tape.  This guards against
+accidental destruction of the information in those files.
+@acronym{GNU} @command{tar} has special features that allow it to be
+used to make incremental and full dumps of all the files in a
+filesystem.
 
 @item Transportation
 You can create an archive on one system, transfer it to another system,
@@ -980,31 +980,32 @@ We make some of our recommendations throughout this book for one
 reason in addition to what we think of as ``good sense''.  The main
 additional reason for a recommendation is to be compliant with the
 @sc{posix} standards.  If you set the shell environment variable
-@env{POSIXLY_CORRECT}, @sc{gnu} @command{tar} will force you to adhere to
-these standards.  Therefore, if this variable is set and you violate
-one of the @sc{posix} standards in the way you phrase a command, for
-example, @sc{gnu} @command{tar} will not allow the command and will signal an
-error message.  You would then have to reorder the options or rephrase
-the command to comply with the @sc{posix} standards.
+@env{POSIXLY_CORRECT}, @acronym{GNU} @command{tar} will force you to
+adhere to these standards.  Therefore, if this variable is set and you
+violate one of the @sc{posix} standards in the way you phrase a
+command, for example, @acronym{GNU} @command{tar} will not allow the
+command and will signal an error message.  You would then have to
+reorder the options or rephrase the command to comply with the
+@sc{posix} standards.
 
 There is a chance in the future that, if you set this environment
 variable, your archives will be forced to comply with @sc{posix} standards,
-also.  No @sc{gnu} @command{tar} extensions will be allowed.
+also.  No @acronym{GNU} @command{tar} extensions will be allowed.
 
 @node Authors
-@section @sc{gnu} @command{tar} Authors
+@section @acronym{GNU} @command{tar} Authors
 
-@sc{gnu} @command{tar} was originally written by John Gilmore, and modified by
-many people.  The @sc{gnu} enhancements were written by Jay Fenlason, then
-Joy Kendall, and the whole package has been further maintained by
-Thomas Bushnell, n/BSG, and finally Fran@,{c}ois Pinard, with
-the help of numerous and kind users.
+@acronym{GNU} @command{tar} was originally written by John Gilmore,
+and modified by many people.  The @acronym{GNU} enhancements were
+written by Jay Fenlason, then Joy Kendall, and the whole package has
+been further maintained by Thomas Bushnell, n/BSG, and finally
+Fran@,{c}ois Pinard, with the help of numerous and kind users.
 
 We wish to stress that @command{tar} is a collective work, and owes much to
 all those people who reported problems, offered solutions and other
 insights, or shared their thoughts and suggestions.  An impressive, yet
 partial list of those contributors can be found in the @file{THANKS}
-file from the @sc{gnu} @command{tar} distribution.
+file from the @acronym{GNU} @command{tar} distribution.
 
 @FIXME{i want all of these names mentioned, Absolutely.  BUT, i'm not
 sure i want to spell out the history in this detail, at least not for
@@ -1014,17 +1015,17 @@ i'll think about it.}
 @FIXME{History is more important, and surely more interesting, than
 actual names.  Quoting names without history would be meaningless.  FP}
 
-Jay Fenlason put together a draft of a @sc{gnu} @command{tar} manual,
-borrowing notes from the original man page from John Gilmore.  This
-was withdrawn in version
-1.11.  Thomas Bushnell, n/BSG and Amy Gorin worked on a tutorial and
-manual for @sc{gnu} @command{tar}.  Fran@,{c}ois Pinard put version 1.11.8
-of the manual together by taking information from all these sources
-and merging them.  Melissa Weisshaus finally edited and redesigned the
-book to create version 1.12.  @FIXME{update version number as
-necessary; i'm being optimistic!} @FIXME{Someone [maybe karl berry?
-maybe bob chassell?  maybe melissa? maybe julie sussman?]  needs to
-properly index the thing.}
+Jay Fenlason put together a draft of a @acronym{GNU} @command{tar}
+manual, borrowing notes from the original man page from John Gilmore.
+This was withdrawn in version 1.11.  Thomas Bushnell, n/BSG and Amy
+Gorin worked on a tutorial and manual for @acronym{GNU} @command{tar}.
+Fran@,{c}ois Pinard put version 1.11.8 of the manual together by
+taking information from all these sources and merging them.  Melissa
+Weisshaus finally edited and redesigned the book to create version
+1.12.  @FIXME{update version number as necessary; i'm being
+optimistic!} @FIXME{Someone [maybe karl berry?  maybe bob chassell?
+maybe melissa? maybe julie sussman?]  needs to properly index the
+thing.}
 
 For version 1.12, Daniel Hagerty contributed a great deal of technical
 consulting.  In particular, he is the primary author of @ref{Backups}.
@@ -1144,17 +1145,18 @@ that time).  Some options are used so frequently, and are so useful for
 helping you type commands more carefully that they are effectively
 ``required''.  We will discuss them in this chapter.
 
-You can write most of the @command{tar} operations and options in any of
-three forms: long (mnemonic) form, short form, and old style.  Some of
-the operations and options have no short or ``old'' forms; however, the
-operations and options which we will cover in this tutorial have
+You can write most of the @command{tar} operations and options in any
+of three forms: long (mnemonic) form, short form, and old style.  Some
+of the operations and options have no short or ``old'' forms; however,
+the operations and options which we will cover in this tutorial have
 corresponding abbreviations.  @FIXME{make sure this is still the case,
 at the end}We will indicate those abbreviations appropriately to get
 you used to seeing them.  (Note that the ``old style'' option forms
-exist in @sc{gnu} @command{tar} for compatibility with Unix @command{tar}.  We
-present a full discussion of this way of writing options and operations
-appears in @ref{Old Options}, and we discuss the other two styles of
-writing options in @ref{Mnemonic Options} and @ref{Short Options}.)
+exist in @acronym{GNU} @command{tar} for compatibility with Unix
+@command{tar}.  We present a full discussion of this way of writing
+options and operations appears in @ref{Old Options}, and we discuss
+the other two styles of writing options in @ref{Mnemonic Options} and
+@ref{Short Options}.)
 
 In the examples and in the text of this tutorial, we usually use the
 long forms of operations and options; but the ``short'' forms produce
@@ -1289,6 +1291,7 @@ clear, and we will give many examples both using and not using
 
 Sometimes, a single instance of @samp{--verbose} on the command line
 will show a full, @samp{ls} style listing of an archive or files,
+@c FIXME: Describe the exact output format, e.g., how hard links are displayed.
 giving sizes, owners, and similar information.  Other times,
 @samp{--verbose} will only show files or members that the particular
 operation is operating on at the time.  In the latter case, you can
@@ -1447,9 +1450,9 @@ and @file{jazz}, are now members of the archive, @file{collection.tar}
 in the archive, they are called @emph{archive members}, not files.
 @FIXME{xref to definitions?}
 
-When you create an archive, you @emph{must} specify which files you want
-placed in the archive.  If you do not specify any archive members, @sc{gnu}
-@command{tar} will complain.
+When you create an archive, you @emph{must} specify which files you
+want placed in the archive.  If you do not specify any archive
+members, @acronym{GNU} @command{tar} will complain.
 
 If you now list the contents of the working directory (@kbd{ls}), you will
 find the archive file listed as well as the files you saw previously:
@@ -1639,20 +1642,21 @@ $ @kbd{tar --create --file=foo.tar .}
 @end example
 
 @noindent
-@command{tar} will report @samp{tar: ./foo.tar is the archive; not dumped}.
-This happens because @command{tar} creates the archive @file{foo.tar} in
-the current directory before putting any files into it.  Then, when
-@command{tar} attempts to add all the files in the directory @file{.} to
-the archive, it notices that the file @file{./foo.tar} is the same as the
-archive @file{foo.tar}, and skips it.  (It makes no sense to put an archive
-into itself.)  @sc{gnu} @command{tar} will continue in this case, and create the
-archive normally, except for the exclusion of that one file.
-(@emph{Please note:} Other versions of @command{tar} are not so clever;
-they will enter an infinite loop when this happens, so you should not
-depend on this behavior unless you are certain you are running @sc{gnu}
-@command{tar}.)  @FIXME{bob doesn't like this sentence, since he does it
-all the time, and we've been doing it in the editing passes for this
-manual: In general, make sure that the archive is not inside a
+@command{tar} will report @samp{tar: ./foo.tar is the archive; not
+dumped}.  This happens because @command{tar} creates the archive
+@file{foo.tar} in the current directory before putting any files into
+it.  Then, when @command{tar} attempts to add all the files in the
+directory @file{.} to the archive, it notices that the file
+@file{./foo.tar} is the same as the archive @file{foo.tar}, and skips
+it.  (It makes no sense to put an archive into itself.)  @acronym{GNU}
+@command{tar} will continue in this case, and create the archive
+normally, except for the exclusion of that one file.  (@emph{Please
+note:} Other versions of @command{tar} are not so clever; they will
+enter an infinite loop when this happens, so you should not depend on
+this behavior unless you are certain you are running @acronym{GNU}
+@command{tar}.)  @FIXME{bob doesn't like this sentence, since he does
+it all the time, and we've been doing it in the editing passes for
+this manual: In general, make sure that the archive is not inside a
 directory being dumped.}
 
 @node list
@@ -1976,16 +1980,17 @@ use @w{@kbd{tar --list --verbose}} to list them correctly.
 be in the rest of the manual.}
 
 @node tar invocation
-@chapter Invoking @sc{gnu} @command{tar}
+@chapter Invoking @acronym{GNU} @command{tar}
 @UNREVISED
 
-This chapter is about how one invokes the @sc{gnu} @command{tar} command, from
-the command synopsis (@pxref{Synopsis}).  There are numerous options,
-and many styles for writing them.  One mandatory option specifies
-the operation @command{tar} should perform (@pxref{Operation Summary}),
-other options are meant to detail how this operation should be performed
-(@pxref{Option Summary}).  Non-option arguments are not always interpreted
-the same way, depending on what the operation is.
+This chapter is about how one invokes the @acronym{GNU} @command{tar}
+command, from the command synopsis (@pxref{Synopsis}).  There are
+numerous options, and many styles for writing them.  One mandatory
+option specifies the operation @command{tar} should perform
+(@pxref{Operation Summary}), other options are meant to detail how
+this operation should be performed (@pxref{Option Summary}).
+Non-option arguments are not always interpreted the same way,
+depending on what the operation is.
 
 You will find in this chapter everything about option styles and rules for
 writing them (@pxref{Styles}).  On the other hand, operations and options
@@ -2013,7 +2018,7 @@ and @value{op-interactive} options (@pxref{interactive}).
 @node Synopsis
 @section General Synopsis of @command{tar}
 
-The @sc{gnu} @command{tar} program is invoked as either one of:
+The @acronym{GNU} @command{tar} program is invoked as either one of:
 
 @example
 @kbd{tar @var{option}@dots{} [@var{name}]@dots{}}
@@ -2080,19 +2085,19 @@ on the entire contents of the archive.
 
 @cindex exit status
 @cindex return status
-Besides successful exits, @sc{gnu} @command{tar} may fail for many reasons.
-Some reasons correspond to bad usage, that is, when the @command{tar}
-command is improperly written.
-Errors may be encountered later, while encountering an error
-processing the archive or the files.  Some errors are recoverable,
-in which case the failure is delayed until @command{tar} has completed
-all its work.  Some errors are such that it would not meaningful,
-or at least risky, to continue processing: @command{tar} then aborts
-processing immediately.  All abnormal exits, whether immediate or
-delayed, should always be clearly diagnosed on @code{stderr}, after
-a line stating the nature of the error.
+Besides successful exits, @acronym{GNU} @command{tar} may fail for
+many reasons.  Some reasons correspond to bad usage, that is, when the
+@command{tar} command is improperly written.  Errors may be
+encountered later, while encountering an error processing the archive
+or the files.  Some errors are recoverable, in which case the failure
+is delayed until @command{tar} has completed all its work.  Some
+errors are such that it would not meaningful, or at least risky, to
+continue processing: @command{tar} then aborts processing immediately.
+All abnormal exits, whether immediate or delayed, should always be
+clearly diagnosed on @code{stderr}, after a line stating the nature of
+the error.
 
-@sc{gnu} @command{tar} returns only a few exit statuses.  I'm really
+@acronym{GNU} @command{tar} returns only a few exit statuses.  I'm really
 aiming simplicity in that area, for now.  If you are not using the
 @value{op-compare} option, zero means that everything went well, besides
 maybe innocuous warnings.  Nonzero means that something went wrong.
@@ -2102,16 +2107,16 @@ remote operations, where it may be 128.
 @node using tar options
 @section Using @command{tar} Options
 
-@sc{gnu} @command{tar} has a total of eight operating modes which allow you to
-perform a variety of tasks.  You are required to choose one operating
-mode each time you employ the @command{tar} program by specifying one, and
-only one operation as an argument to the @command{tar} command (two lists
-of four operations each may be found at @ref{frequent operations} and
-@ref{Operations}).  Depending on circumstances, you may also wish to
-customize how the chosen operating mode behaves.  For example, you may
-wish to change the way the output looks, or the format of the files that
-you wish to archive may require you to do something special in order to
-make the archive look right.
+@acronym{GNU} @command{tar} has a total of eight operating modes which
+allow you to perform a variety of tasks.  You are required to choose
+one operating mode each time you employ the @command{tar} program by
+specifying one, and only one operation as an argument to the
+@command{tar} command (two lists of four operations each may be found
+at @ref{frequent operations} and @ref{Operations}).  Depending on
+circumstances, you may also wish to customize how the chosen operating
+mode behaves.  For example, you may wish to change the way the output
+looks, or the format of the files that you wish to archive may require
+you to do something special in order to make the archive look right.
 
 You can customize and control @command{tar}'s performance by running
 @command{tar} with one or more options (such as @value{op-verbose}, which
@@ -2242,13 +2247,13 @@ archive.tar}} or @samp{-farchive.tar} instead of using
 specific archive, here named @file{archive.tar}.
 
 Short options' letters may be clumped together, but you are not
-required to do this (as compared to old options; see below).  When short
-options are clumped as a set, use one (single) dash for them all, e.g.@:
-@w{@samp{@command{tar} -cvf}}.  Only the last option in such a set is allowed
-to have an argument@footnote{Clustering many options, the last of which
-has an argument, is a rather opaque way to write options.  Some wonder if
-@sc{gnu} @code{getopt} should not even be made helpful enough for considering
-such usages as invalid.}.
+required to do this (as compared to old options; see below).  When
+short options are clumped as a set, use one (single) dash for them
+all, e.g.@: @w{@samp{@command{tar} -cvf}}.  Only the last option in
+such a set is allowed to have an argument@footnote{Clustering many
+options, the last of which has an argument, is a rather opaque way to
+write options.  Some wonder if @acronym{GNU} @code{getopt} should not
+even be made helpful enough for considering such usages as invalid.}.
 
 When the options are separated, the argument for each option which requires
 an argument directly follows that option, as is usual for Unix programs.
@@ -2334,29 +2339,31 @@ following are equivalent:
 @FIXME{still could explain this better; it's redundant:}
 
 @cindex option syntax, traditional
-As far as we know, all @command{tar} programs, @sc{gnu} and non-@sc{gnu}, support
-old options.  @sc{gnu} @command{tar} supports them not only for historical
-reasons, but also because many people are used to them.  For
-compatibility with Unix @command{tar}, the first argument is always
-treated as containing command and option letters even if it doesn't
-start with @samp{-}.  Thus, @samp{tar c} is equivalent to @w{@samp{tar
--c}:} both of them specify the @value{op-create} command to create an
-archive.
+As far as we know, all @command{tar} programs, @acronym{GNU} and
+non-@acronym{GNU}, support old options.  @acronym{GNU} @command{tar}
+supports them not only for historical reasons, but also because many
+people are used to them.  For compatibility with Unix @command{tar},
+the first argument is always treated as containing command and option
+letters even if it doesn't start with @samp{-}.  Thus, @samp{tar c} is
+equivalent to @w{@samp{tar -c}:} both of them specify the
+@value{op-create} command to create an archive.
 
 @node Mixing
 @subsection Mixing Option Styles
 
-All three styles may be intermixed in a single @command{tar} command, so
-long as the rules for each style are fully respected@footnote{Before @sc{gnu}
-@command{tar} version 1.11.6, a bug prevented intermixing old style options
-with mnemonic options in some cases.}.  Old style options and either of the
-modern styles of options may be mixed within a single @command{tar} command.
-However, old style options must be introduced as the first arguments only,
+All three styles may be intermixed in a single @command{tar} command,
+so long as the rules for each style are fully
+respected@footnote{Before @acronym{GNU} @command{tar} version 1.11.6,
+a bug prevented intermixing old style options with mnemonic options in
+some cases.}.  Old style options and either of the modern styles of
+options may be mixed within a single @command{tar} command.  However,
+old style options must be introduced as the first arguments only,
 following the rule for old options (old options must appear directly
-after the @command{tar} command and some white space).  Modern options may
-be given only after all arguments to the old options have been collected.
-If this rule is not respected, a modern option might be falsely interpreted
-as the value of the argument to one of the old style options.
+after the @command{tar} command and some white space).  Modern options
+may be given only after all arguments to the old options have been
+collected.  If this rule is not respected, a modern option might be
+falsely interpreted as the value of the argument to one of the old
+style options.
 
 For example, all the following commands are wholly equivalent, and
 illustrate the many combinations and orderings of option styles.
@@ -2486,12 +2493,12 @@ Lists the members in an archive.  @xref{list}.
 @item --update
 @itemx -u
 
-@FIXME{It was: A combination of the @samp{--compare} and @samp{--append} operations.
-This is not true and rather misleading, as @value{op-compare}
-does a lot more than @value{op-update} for ensuring files are identical.}
-Adds files to the end of the archive, but only if they are newer than
-their counterparts already in the archive, or if they do not already
-exist in the archive.
+@FIXME{It was: A combination of the @samp{--compare} and
+@samp{--append} operations.  This is not true and rather misleading,
+as @value{op-compare} does a lot more than @value{op-update} for
+ensuring files are identical.}  Adds files to the end of the archive,
+but only if they are newer than their counterparts already in the
+archive, or if they do not already exist in the archive.
 @xref{update}.
 
 @end table
@@ -2504,8 +2511,9 @@ exist in the archive.
 @item --absolute-names
 @itemx -P
 
-Normally when creating an archive, @command{tar} strips an initial @samp{/} from
-member names.  This option disables that behavior.  @FIXME-xref{}
+Normally when creating an archive, @command{tar} strips an initial
+@samp{/} from member names.  This option disables that behavior.
+@FIXME-xref{}
 
 @item --after-date
 
@@ -2529,9 +2537,9 @@ unless you're root.
 
 @item --backup=@var{backup-type}
 
-Rather than deleting files from the file system, @command{tar} will back them up
-using simple or numbered backups, depending upon @var{backup-type}.
-@FIXME-xref{}
+Rather than deleting files from the file system, @command{tar} will
+back them up using simple or numbered backups, depending upon
+@var{backup-type}.  @FIXME-xref{}
 
 @item --block-number
 @itemx -R
@@ -2548,8 +2556,8 @@ record.  @FIXME-xref{}
 @item --bzip2
 @itemx -j
 
-This option tells @command{tar} to read or write archives through @code{bzip2}.
-@FIXME-xref{}
+This option tells @command{tar} to read or write archives through
+@code{bzip2}.  @FIXME-xref{}
 
 @item --checkpoint
 
@@ -2562,9 +2570,9 @@ indication that @command{tar} is still running, but don't want to see
 @itemx --uncompress
 @itemx -Z
 
-@command{tar} will use the @command{compress} program when reading or writing the
-archive.  This allows you to directly act on archives while saving
-space.  @FIXME-xref{}
+@command{tar} will use the @command{compress} program when reading or
+writing the archive.  This allows you to directly act on archives
+while saving space.  @FIXME-xref{}
 
 @item --confirmation
 
@@ -2573,8 +2581,9 @@ space.  @FIXME-xref{}
 @item --dereference
 @itemx -h
 
-When creating a @command{tar} archive, @command{tar} will archive the file that a symbolic
-link points to, rather than archiving the symlink.  @FIXME-xref{}
+When creating a @command{tar} archive, @command{tar} will archive the
+file that a symbolic link points to, rather than archiving the
+symlink.  @FIXME-xref{}
 
 @item --directory=@var{dir}
 @itemx -C @var{dir}
@@ -2591,8 +2600,8 @@ When performing operations, @command{tar} will skip files that match
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 
-Similar to @samp{--exclude}, except @command{tar} will use the list of patterns
-in the file @var{file}.  @FIXME-xref{}
+Similar to @samp{--exclude}, except @command{tar} will use the list of
+patterns in the file @var{file}.  @FIXME-xref{}
 
 @item --file=@var{archive}
 @itemx -f @var{archive}
@@ -2610,8 +2619,9 @@ command-line.  @FIXME-xref{}
 
 @item --force-local
 
-Forces @command{tar} to interpret the filename given to @samp{--file} as a local
-file, even if it looks like a remote tape drive name.  @FIXME-xref{}
+Forces @command{tar} to interpret the filename given to @samp{--file}
+as a local file, even if it looks like a remote tape drive name.
+@FIXME-xref{}
 
 @item --group=@var{group}
 
@@ -2631,9 +2641,9 @@ Also see the comments for the @value{op-owner} option.
 @itemx --ungzip
 @itemx -z
 
-This option tells @command{tar} to read or write archives through @command{gzip},
-allowing @command{tar} to directly operate on several kinds of compressed
-archives transparently.  @FIXME-xref{}
+This option tells @command{tar} to read or write archives through
+@command{gzip}, allowing @command{tar} to directly operate on several
+kinds of compressed archives transparently.  @FIXME-xref{}
 
 @item --help
 
@@ -2652,15 +2662,19 @@ Do not exit unsuccessfully merely because an unreadable file was encountered.
 @item --ignore-zeros
 @itemx -i
 
-With this option, @command{tar} will ignore zeroed blocks in the archive, which
-normally signals EOF.  @xref{Reading}.
+With this option, @command{tar} will ignore zeroed blocks in the
+archive, which normally signals EOF.  @xref{Reading}.
 
 @item --incremental
 @itemx -G
 
-Used to inform @command{tar} that it is working with an  old @sc{gnu}-format
-incremental backup archive.  It is intended primarily for backwards
-compatibility only.  @FIXME-xref{}
+Used to inform @command{tar} that it is working with an old
+@acronym{GNU}-format incremental backup archive.  It is intended
+primarily for backwards compatibility only.  @FIXME-xref{}
+
+@item --index-file=@var{file}
+
+Send verbose output to @var{file} instead of to standard output.
 
 @item --info-script=@var{script-file}
 @itemx --new-volume-script=@var{script-file}
@@ -2687,28 +2701,29 @@ Do not overwrite existing files when extracting files from an archive.
 @item --label=@var{name}
 @itemx -V @var{name}
 
-When creating an archive, instructs @command{tar} to write @var{name} as a name
-record in the archive.  When extracting or listing archives, @command{tar} will
-only operate on archives that have a label matching the pattern
-specified in @var{name}.  @FIXME-xref{}
+When creating an archive, instructs @command{tar} to write @var{name}
+as a name record in the archive.  When extracting or listing archives,
+@command{tar} will only operate on archives that have a label matching
+the pattern specified in @var{name}.  @FIXME-xref{}
 
 @item --listed-incremental=@var{snapshot-file}
 @itemx -g @var{snapshot-file}
 
 During a @samp{--create} operation, specifies that the archive that
-@command{tar} creates is a new @sc{gnu}-format incremental backup, using
-@var{snapshot-file} to determine which files to backup.
-With other operations, informs @command{tar} that the archive is in incremental
-format.  @FIXME-xref{}
+@command{tar} creates is a new @acronym{GNU}-format incremental
+backup, using @var{snapshot-file} to determine which files to backup.
+With other operations, informs @command{tar} that the archive is in
+incremental format.  @FIXME-xref{}
 
 @item --mode=@var{permissions}
 
-When adding files to an archive, @command{tar} will use @var{permissions}
-for the archive members, rather than the permissions from the files.
-The program @command{chmod} and this @command{tar} option share the same syntax
-for what @var{permissions} might be.  @xref{File permissions, Permissions,
-File permissions, fileutils, @sc{gnu} file utilities}.  This reference also
-has useful information for those not being overly familiar with the Unix
+When adding files to an archive, @command{tar} will use
+@var{permissions} for the archive members, rather than the permissions
+from the files.  The program @command{chmod} and this @command{tar}
+option share the same syntax for what @var{permissions} might be.
+@xref{File permissions, Permissions, File permissions, fileutils,
+@acronym{GNU} file utilities}.  This reference also has useful
+information for those not being overly familiar with the Unix
 permission system.
 
 Of course, @var{permissions} might be plainly specified as an octal number.
@@ -2784,8 +2799,9 @@ instructs @command{tar} to expect filenames terminated with @kbd{NUL}, so
 
 @item --numeric-owner
 
-This option will notify @command{tar} that it should use numeric user and group
-IDs when creating a @command{tar} file, rather than names.  @FIXME-xref{}
+This option will notify @command{tar} that it should use numeric user
+and group IDs when creating a @command{tar} file, rather than names.
+@FIXME-xref{}
 
 @item --old-archive
 
@@ -2832,7 +2848,8 @@ Tells @command{tar} to create an archive that is compatible with Unix V7
 
 @item --posix
 
-Instructs @command{tar} to create a @sc{posix} compliant @command{tar} archive.  @FIXME-xref{}
+Instructs @command{tar} to create a @sc{posix} compliant @command{tar}
+archive.  @FIXME-xref{}
 
 @item --preserve
 
@@ -2847,17 +2864,17 @@ Synonymous with specifying both @samp{--preserve-permissions} and
 @itemx --same-permissions
 @itemx -p
 
-When @command{tar} is extracting an archive, it normally subtracts the users'
-umask from the permissions specified in the archive and uses that
-number as the permissions to create the destination file.  Specifying
-this option instructs @command{tar} that it should use the permissions directly
-from the archive.  @xref{Writing}.
+When @command{tar} is extracting an archive, it normally subtracts the
+users' umask from the permissions specified in the archive and uses
+that number as the permissions to create the destination file.
+Specifying this option instructs @command{tar} that it should use the
+permissions directly from the archive.  @xref{Writing}.
 
 @item --read-full-records
 @itemx -B
 
-Specifies that @command{tar} should reblock its input, for reading from pipes on
-systems with buggy implementations.  @xref{Reading}.
+Specifies that @command{tar} should reblock its input, for reading
+from pipes on systems with buggy implementations.  @xref{Reading}.
 
 @item --record-size=@var{size}
 
@@ -2907,13 +2924,13 @@ effect only for ordinary users.  @FIXME-xref{}
 
 @item --show-omitted-dirs
 
-Instructs @command{tar} to mention directories its skipping over when operating
-on a @command{tar} archive.  @FIXME-xref{}
+Instructs @command{tar} to mention directories its skipping over when
+operating on a @command{tar} archive.  @FIXME-xref{}
 
 @item --sparse
 @itemx -S
 
-Invokes a @sc{gnu} extension when adding files to an archive that handles
+Invokes a @acronym{GNU} extension when adding files to an archive that handles
 sparse files efficiently.  @FIXME-xref{}
 
 @item --starting-file=@var{name}
@@ -2937,8 +2954,8 @@ Specifies the length of tapes that @command{tar} is writing as being
 @item --to-stdout
 @itemx -O
 
-During extraction, @command{tar} will extract files to stdout rather than to the
-file system.  @xref{Writing}.
+During extraction, @command{tar} will extract files to stdout rather
+than to the file system.  @xref{Writing}.
 
 @item --totals
 
@@ -2986,8 +3003,9 @@ archive.  @FIXME-xref{}
 
 @item --version
 
-@command{tar} will print an informational message about what version it is and a
-copyright message, some credits, and then exit.  @FIXME-xref{}
+@command{tar} will print an informational message about what version
+it is and a copyright message, some credits, and then exit.
+@FIXME-xref{}
 
 @item --volno-file=@var{file}
 
@@ -3116,6 +3134,10 @@ them with the equivalent long option.
 
 @samp{--ignore-zeros}
 
+@item -j
+
+@samp{--bzip2}
+
 @item -k
 
 @samp{--keep-old-files}
@@ -3171,40 +3193,43 @@ them with the equivalent long option.
 @end table
 
 @node help
-@section @sc{gnu} @command{tar} documentation
+@section @acronym{GNU} @command{tar} documentation
 
-Being careful, the first thing is really checking that you are using @sc{gnu}
-@command{tar}, indeed.  The @value{op-version} option will generate a message
-giving confirmation that you are using @sc{gnu} @command{tar}, with the precise
-version of @sc{gnu} @command{tar} you are using.  @command{tar} identifies itself
-and prints the version number to the standard output, then immediately
+Being careful, the first thing is really checking that you are using
+@acronym{GNU} @command{tar}, indeed.  The @value{op-version} option
+will generate a message giving confirmation that you are using
+@acronym{GNU} @command{tar}, with the precise version of @acronym{GNU}
+@command{tar} you are using.  @command{tar} identifies itself and
+prints the version number to the standard output, then immediately
 exits successfully, without doing anything else, ignoring all other
 options.  For example, @w{@samp{tar --version}} might return:
 
 @example
-tar (@sc{gnu} tar) @value{VERSION}
+tar (@acronym{GNU} tar) @value{VERSION}
 @end example
 
 @noindent
 The first occurrence of @samp{tar} in the result above is the program
-name in the package (for example, @command{rmt} is another program), while
-the second occurrence of @samp{tar} is the name of the package itself,
-containing possibly many programs.  The package is currently named
-@samp{tar}, after the name of the main program it contains@footnote{There
-are plans to merge the @command{cpio} and @command{tar} packages into a single one
-which would be called @code{paxutils}.  So, who knows if, one of this days,
-the @value{op-version} would not yield @w{@samp{tar (@sc{gnu} paxutils) 3.2}}}.
+name in the package (for example, @command{rmt} is another program),
+while the second occurrence of @samp{tar} is the name of the package
+itself, containing possibly many programs.  The package is currently
+named @samp{tar}, after the name of the main program it
+contains@footnote{There are plans to merge the @command{cpio} and
+@command{tar} packages into a single one which would be called
+@code{paxutils}.  So, who knows if, one of this days, the
+@value{op-version} would not yield @w{@samp{tar (@acronym{GNU}
+paxutils) 3.2}}}.
 
 Another thing you might want to do is checking the spelling or meaning
-of some particular @command{tar} option, without resorting to this manual,
-for once you have carefully read it.  @sc{gnu} @command{tar} has a short help
-feature, triggerable through the @value{op-help} option.  By using this
-option, @command{tar} will print a usage message listing all available
-options on standard output, then exit successfully, without doing
-anything else and ignoring all other options.  Even if this is only a
-brief summary, it may be several screens long.  So, if you are not
-using some kind of scrollable window, you might prefer to use something
-like:
+of some particular @command{tar} option, without resorting to this
+manual, for once you have carefully read it.  @acronym{GNU}
+@command{tar} has a short help feature, triggerable through the
+@value{op-help} option.  By using this option, @command{tar} will
+print a usage message listing all available options on standard
+output, then exit successfully, without doing anything else and
+ignoring all other options.  Even if this is only a brief summary, it
+may be several screens long.  So, if you are not using some kind of
+scrollable window, you might prefer to use something like:
 
 @example
 $ @kbd{tar --help | less}
@@ -3229,24 +3254,26 @@ previous paragraphs.  It is written that both @value{op-version} and
 fact, they cannot ignore each other, and one of them has to win.  We do
 not specify which is stronger, here; experiment if you really wonder!
 
-The short help output is quite succinct, and you might have to get back
-to the full documentation for precise points.  If you are reading this
-paragraph, you already have the @command{tar} manual in some form.  This
-manual is available in printed form, as a kind of small book.  It may
-printed out of the @sc{gnu} @command{tar} distribution, provided you have @TeX{}
-already installed somewhere, and a laser printer around.  Just configure
-the distribution, execute the command @w{@samp{make dvi}}, then print
-@file{doc/tar.dvi} the usual way (contact your local guru to know how).
-If @sc{gnu} @command{tar} has been conveniently installed at your place, this
+The short help output is quite succinct, and you might have to get
+back to the full documentation for precise points.  If you are reading
+this paragraph, you already have the @command{tar} manual in some
+form.  This manual is available in printed form, as a kind of small
+book.  It may printed out of the @acronym{GNU} @command{tar}
+distribution, provided you have @TeX{} already installed somewhere,
+and a laser printer around.  Just configure the distribution, execute
+the command @w{@samp{make dvi}}, then print @file{doc/tar.dvi} the
+usual way (contact your local guru to know how).  If @acronym{GNU}
+@command{tar} has been conveniently installed at your place, this
 manual is also available in interactive, hypertextual form as an Info
 file.  Just call @w{@samp{info tar}} or, if you do not have the
-@command{info} program handy, use the Info reader provided within @sc{gnu}
-Emacs, calling @samp{tar} from the main Info menu.
+@command{info} program handy, use the Info reader provided within
+@acronym{GNU} Emacs, calling @samp{tar} from the main Info menu.
 
-There is currently no @code{man} page for @sc{gnu} @command{tar}.  If you observe
-such a @code{man} page on the system you are running, either it does not
-long to @sc{gnu} @command{tar}, or it has not been produced by @sc{gnu}.  Currently,
-@sc{gnu} @command{tar} documentation is provided in Texinfo format only, if we
+There is currently no @code{man} page for @acronym{GNU} @command{tar}.
+If you observe such a @code{man} page on the system you are running,
+either it does not long to @acronym{GNU} @command{tar}, or it has not
+been produced by @acronym{GNU}.  Currently, @acronym{GNU}
+@command{tar} documentation is provided in Texinfo format only, if we
 except, of course, the short result of @kbd{tar --help}.
 
 @node verbose
@@ -3304,6 +3331,10 @@ being written to the standard output, as with @samp{tar --create
 installer let standard output be the default archive).  In that case
 @command{tar} writes verbose output to the standard error stream.
 
+If @option{--index-file=@var{file}} is specified, @command{tar} sends
+verbose output to @var{file} rather than to standard output or standard
+error.
+
 The @value{op-totals} option---which is only meaningful when used with
 @value{op-create}---causes @command{tar} to print the total
 amount written to the archive, after it has been fully created.
@@ -3326,15 +3357,16 @@ not have been named on the command line (implicitly or explicitly),
 it might be excluded by the use of the @value{op-exclude} option, or
 some other reason.
 
-If @value{op-block-number} is used, @command{tar} prints, along with every
-message it would normally produce, the block number within the archive
-where the message was triggered.  Also, supplementary messages are
-triggered when reading blocks full of NULs, or when hitting end of file on
-the archive.  As of now, if the archive if properly terminated with a NUL
-block, the reading of the file may stop before end of file is met, so the
-position of end of file will not usually show when @value{op-block-number}
-is used.  Note that @sc{gnu} @command{tar} drains the archive before exiting when
-reading the archive from a pipe.
+If @value{op-block-number} is used, @command{tar} prints, along with
+every message it would normally produce, the block number within the
+archive where the message was triggered.  Also, supplementary messages
+are triggered when reading blocks full of NULs, or when hitting end of
+file on the archive.  As of now, if the archive if properly terminated
+with a NUL block, the reading of the file may stop before end of file
+is met, so the position of end of file will not usually show when
+@value{op-block-number} is used.  Note that @acronym{GNU}
+@command{tar} drains the archive before exiting when reading the
+archive from a pipe.
 
 This option is especially useful when reading damaged archives, since
 it helps pinpoint the damaged sections.  It can also be used with
@@ -3383,7 +3415,7 @@ read from that named pipe.  This has the advantage of letting standard
 output free to receive verbose output, all separate from errors.
 
 @node operations
-@chapter @sc{gnu} @command{tar} Operations
+@chapter @acronym{GNU} @command{tar} Operations
 
 @menu
 * Basic tar::
@@ -3396,7 +3428,7 @@ output free to receive verbose output, all separate from errors.
 @end menu
 
 @node Basic tar
-@section Basic @sc{gnu} @command{tar} Operations
+@section Basic @acronym{GNU} @command{tar} Operations
 
 The basic @command{tar} operations, @value{op-create}, @value{op-list} and
 @value{op-extract}, are currently presented and described in the tutorial
@@ -3435,10 +3467,10 @@ file, which was meant to be saved, is rather destroyed.
 @end enumerate
 
 So, recognizing the likelihood and the catastrophical nature of these
-errors, @sc{gnu} @command{tar} now takes some distance from elegance, and
+errors, @acronym{GNU} @command{tar} now takes some distance from elegance, and
 cowardly refuses to create an archive when @value{op-create} option is
 given, there are no arguments besides options, and @value{op-files-from}
-option is @emph{not} used.  To get around the cautiousness of @sc{gnu}
+option is @emph{not} used.  To get around the cautiousness of @acronym{GNU}
 @command{tar} and nevertheless create an archive with nothing in it,
 one may still use, as the value for the @value{op-files-from} option,
 a file with no names in it, as shown in the following commands:
@@ -3450,17 +3482,18 @@ a file with no names in it, as shown in the following commands:
 
 @item @value{op-extract}
 
-A socket is stored, within a @sc{gnu} @command{tar} archive, as a pipe.
+A socket is stored, within a @acronym{GNU} @command{tar} archive, as a pipe.
 
 @item @value{op-list}
 
-@sc{gnu} @command{tar} now shows dates as @samp{1996-08-30}, while it used to
-show them as @samp{Aug 30 1996}.  (One can revert to the old behavior by
-defining @code{USE_OLD_CTIME} in @file{src/list.c} before reinstalling.)
-But preferably, people should get used to ISO 8601 dates.  Local
-American dates should be made available again with full date localization
-support, once ready.  In the meantime, programs not being localizable
-for dates should prefer international dates, that's really the way to go.
+@acronym{GNU} @command{tar} now shows dates as @samp{1996-08-30},
+while it used to show them as @samp{Aug 30 1996}.  (One can revert to
+the old behavior by defining @code{USE_OLD_CTIME} in @file{src/list.c}
+before reinstalling.)  But preferably, people should get used to ISO
+8601 dates.  Local American dates should be made available again with
+full date localization support, once ready.  In the meantime, programs
+not being localizable for dates should prefer international dates,
+that's really the way to go.
 
 Look up @url{http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html} if you
 are curious, it contains a detailed explanation of the ISO 8601 standard.
@@ -3468,10 +3501,11 @@ are curious, it contains a detailed explanation of the ISO 8601 standard.
 @end table
 
 @node Advanced tar
-@section Advanced @sc{gnu} @command{tar} Operations
+@section Advanced @acronym{GNU} @command{tar} Operations
 
-Now that you have learned the basics of using @sc{gnu} @command{tar}, you may
-want to learn about further ways in which @command{tar} can help you.
+Now that you have learned the basics of using @acronym{GNU}
+@command{tar}, you may want to learn about further ways in which
+@command{tar} can help you.
 
 This chapter presents five, more advanced operations which you probably
 won't use on a daily basis, but which serve more specialized functions.
@@ -3486,7 +3520,6 @@ it still introduces the info in the chapter correctly : ).}
 
 @menu
 * Operations::
-* current state::
 * append::
 * update::
 * concatenate::
@@ -3544,33 +3577,6 @@ Delete items from an archive (does not work on tapes).
 @itemx -d
 Compare archive members to their counterparts in the file system.
 @end table
-
-@node current state
-@subsection The Current State of the Practice Files
-
-Currently, the listing of the directory using @command{ls} is as follows:
-
-@example
-
-@end example
-
-@noindent
-The archive file @samp{collection.tar} looks like this:
-
-@example
-$ @kbd{tar -tvf collection.tar}
-
-@end example
-
-@noindent
-The archive file @samp{music.tar} looks like this:
-
-@example
-$ @kbd{tar -tvf music.tar}
-
-@end example
-
-@FIXME{need to fill in the above!!!}
 
 @node append
 @subsection How to Add Files to Existing Archives: @code{--append}
@@ -3808,10 +3814,10 @@ process.  Tapes are not designed to go backward.  @xref{Media}, for more
 information about tapes.
 
 @value{op-update} is not suitable for performing backups for two
-reasons: it does not change directory content entries, and it lengthens
-the archive every time it is used.  The @sc{gnu} @command{tar} options intended
-specifically for backups are more efficient.  If you need to run
-backups, please consult @ref{Backups}.
+reasons: it does not change directory content entries, and it
+lengthens the archive every time it is used.  The @acronym{GNU}
+@command{tar} options intended specifically for backups are more
+efficient.  If you need to run backups, please consult @ref{Backups}.
 
 @node concatenate
 @subsection Combining Archives with @code{--concatenate}
@@ -4123,7 +4129,7 @@ together).
 
 The @value{op-ignore-zeros} option is turned off by default because many
 versions of @command{tar} write garbage after the end-of-archive entry,
-since that part of the media is never supposed to be read.  @sc{gnu}
+since that part of the media is never supposed to be read.  @acronym{GNU}
 @command{tar} does not write after the end of an archive, but seeks to
 maintain compatiblity among archiving utilities.
 
@@ -4168,10 +4174,12 @@ file already exists, it normally replaces the file by removing it before
 extracting it, to prevent confusion in the presence of hard or symbolic
 links.  (If the existing file is a symbolic link, it is removed, not
 followed.)  However, if a directory cannot be removed because it is
-nonempty, @command{tar} neither removes it nor modifies its ownership,
-permissions, or time stamps.
+nonempty, @command{tar} normally overwrites its metadata (ownership,
+permission, etc.).  The @option{--overwrite-dir} option enables this
+default behavior.  To be more cautious and preserve the metadata of
+such a directory, use the @option{--no-overwrite-dir} option.
 
-To be more cautious and prevent existing files from being replaced, use
+To be even more cautious and prevent existing files from being replaced, use
 the @value{op-keep-old-files} option.  It causes @command{tar} to refuse
 to replace or update a file that already exists, i.e., a file with the
 same name as an archive member prevents extraction of that archive
@@ -4180,25 +4188,24 @@ member.  Instead, it reports an error.
 To be more aggressive about altering existing files, use the
 @value{op-overwrite} option.  It causes @command{tar} to overwrite
 existing files and to follow existing symbolic links when extracting.
-The @option{--overwrite-dir} option is somewhat more conservative than
-@value{op-overwrite}: it overwrites metadata (ownership, permission,
-etc.) for directories, but removes other files before extracting them.
 
-Some people argue that @sc{gnu} @command{tar} should not hesitate to overwrite
-files with other files when extracting.  When extracting a @command{tar}
-archive, they expect to see a faithful copy of the state of the filesystem
-when the archive was created.  It is debatable that this would always
-be a proper behavior.  For example, suppose one has an archive in
-which @file{usr/local} is a link to @file{usr/local2}.  Since then,
-maybe the site removed the link and renamed the whole hierarchy from
-@file{/usr/local2} to @file{/usr/local}.  Such things happen all the time.
-I guess it would not be welcome at all that @sc{gnu} @command{tar} removes the
-whole hierarchy just to make room for the link to be reinstated (unless it
-@emph{also} simultaneously restores the full @file{/usr/local2}, of course!
-@sc{gnu} @command{tar} is indeed able to remove a whole hierarchy to reestablish a
-symbolic link, for example, but @emph{only if} @value{op-recursive-unlink}
-is specified to allow this behavior.  In any case, single files are
-silently removed.
+Some people argue that @acronym{GNU} @command{tar} should not hesitate
+to overwrite files with other files when extracting.  When extracting
+a @command{tar} archive, they expect to see a faithful copy of the
+state of the filesystem when the archive was created.  It is debatable
+that this would always be a proper behavior.  For example, suppose one
+has an archive in which @file{usr/local} is a link to
+@file{usr/local2}.  Since then, maybe the site removed the link and
+renamed the whole hierarchy from @file{/usr/local2} to
+@file{/usr/local}.  Such things happen all the time.  I guess it would
+not be welcome at all that @acronym{GNU} @command{tar} removes the
+whole hierarchy just to make room for the link to be reinstated
+(unless it @emph{also} simultaneously restores the full
+@file{/usr/local2}, of course!  @acronym{GNU} @command{tar} is indeed
+able to remove a whole hierarchy to reestablish a symbolic link, for
+example, but @emph{only if} @value{op-recursive-unlink} is specified
+to allow this behavior.  In any case, single files are silently
+removed.
 
 Finally, the @value{op-unlink-first} option can improve performance in
 some cases by causing @command{tar} to remove files unconditionally
@@ -4339,9 +4346,19 @@ be useful if you are only extracting the files in order to send them
 through a pipe.  This option is meaningless with @value{op-list}.
 @end table
 
-@FIXME{Why would you want to do such a thing, how are files separated on
-the standard output? is this useful with more that one file?  Are
-pipes the real reason?}
+This can be useful, for example, if you have a tar archive containing
+a big file and don't want to store the file on disk before processing
+it.  You can use a command like this:
+
+@example
+tar -xOzf foo.tgz bigfile | process
+@end example
+
+or even like this if you want to process the concatenation of the files:
+
+@example
+tar -xOzf foo.tgz bigfile1 bigfile2 | process
+@end example
 
 @node remove files
 @unnumberedsubsubsec Removing Files
@@ -4421,12 +4438,12 @@ This option is probably never needed on modern computer systems.
 
 @cindex backup options
 
-@sc{gnu} @command{tar} offers options for making backups of files before writing
-new versions.  These options control the details of these backups.
-They may apply to the archive itself before it is created or rewritten,
-as well as individual extracted members.  Other @sc{gnu} programs (@command{cp},
-@command{install}, @command{ln}, and @command{mv}, for example) offer similar
-options.
+@acronym{GNU} @command{tar} offers options for making backups of files
+before writing new versions.  These options control the details of
+these backups.  They may apply to the archive itself before it is
+created or rewritten, as well as individual extracted members.  Other
+@acronym{GNU} programs (@command{cp}, @command{install}, @command{ln},
+and @command{mv}, for example) offer similar options.
 
 Backup options may prove unexpectedly useful when extracting archives
 containing many members having identical name, or when extracting archives
@@ -4580,13 +4597,13 @@ and not archive them.  @xref{Choosing}.
 @chapter Performing Backups and Restoring Files
 @UNREVISED
 
-@sc{gnu} @command{tar} is distributed along with the scripts which the Free
-Software Foundation uses for performing backups.  There is no corresponding
-scripts available yet for doing restoration of files.  Even if there is
-a good chance those scripts may be satisfying to you, they are not the
-only scripts or methods available for doing backups and restore.  You may
-well create your own, or use more sophisticated packages dedicated to
-that purpose.
+@acronym{GNU} @command{tar} is distributed along with the scripts
+which the Free Software Foundation uses for performing backups.  There
+is no corresponding scripts available yet for doing restoration of
+files.  Even if there is a good chance those scripts may be satisfying
+to you, they are not the only scripts or methods available for doing
+backups and restore.  You may well create your own, or use more
+sophisticated packages dedicated to that purpose.
 
 Some users are enthusiastic about @code{Amanda} (The Advanced Maryland
 Automatic Network Disk Archiver), a backup system developed by James
@@ -4601,7 +4618,8 @@ ftp://ftp.cs.umd.edu/pub/amanda
 @ifclear PUBLISH
 
 Here is a possible plan for a future documentation about the backuping
-scripts which are provided within the @sc{gnu} @command{tar} distribution.
+scripts which are provided within the @acronym{GNU} @command{tar}
+distribution.
 
 @example
 .* dumps
@@ -4610,8 +4628,8 @@ scripts which are provided within the @sc{gnu} @command{tar} distribution.
 . + different levels of dumps
 .  - full dump = dump everything
 .  - level 1, level 2 dumps etc, -
-	A level n dump dumps everything changed since the last level
-	n-1 dump (?)
+        A level n dump dumps everything changed since the last level
+        n-1 dump (?)
 
 . + how to use scripts for dumps  (ie, the concept)
 .  - scripts to run after editing backup specs (details)
@@ -4703,7 +4721,7 @@ file exists, uses that file to see what has changed.
 
 @value{op-incremental} @FIXME{look it up}
 
-@value{op-incremental} handle old @sc{gnu}-format incremental backup.
+@value{op-incremental} handle old @acronym{GNU}-format incremental backup.
 
 This option should only be used when creating an incremental backup of
 a filesystem.  When the @value{op-incremental} option is used, @command{tar}
@@ -4715,22 +4733,23 @@ is going to be put in the archive.  This information is used when
 doing a complete incremental restore.
 
 Note that this option causes @command{tar} to create a non-standard
-archive that may not be readable by non-@sc{gnu} versions of the @command{tar}
-program.
+archive that may not be readable by non-@acronym{GNU} versions of the
+@command{tar} program.
 
 The @value{op-incremental} option means the archive is an incremental
 backup.  Its meaning depends on the command that it modifies.
 
-If the @value{op-incremental} option is used with @value{op-list}, @command{tar}
-will list, for each directory in the archive, the list of files in
-that directory at the time the archive was created.  This information
-is put out in a format that is not easy for humans to read, but which
-is unambiguous for a program: each file name is preceded by either a
-@samp{Y} if the file is present in the archive, an @samp{N} if the
-file is not included in the archive, or a @samp{D} if the file is
-a directory (and is included in the archive).  Each file name is
-terminated by a null character.  The last file is followed by an
-additional null and a newline to indicate the end of the data.
+If the @value{op-incremental} option is used with @value{op-list},
+@command{tar} will list, for each directory in the archive, the list
+of files in that directory at the time the archive was created.  This
+information is put out in a format that is not easy for humans to
+read, but which is unambiguous for a program: each file name is
+preceded by either a @samp{Y} if the file is present in the archive,
+an @samp{N} if the file is not included in the archive, or a @samp{D}
+if the file is a directory (and is included in the archive).  Each
+file name is terminated by a null character.  The last file is
+followed by an additional null and a newline to indicate the end of
+the data.
 
 If the @value{op-incremental} option is used with @value{op-extract}, then
 when the entry for a directory is found, all files that currently
@@ -4743,10 +4762,11 @@ entire state of the file system to that which obtained when the backup
 was made.  If you don't use @value{op-incremental}, the file system will
 probably fill up with files that shouldn't exist any more.
 
-@value{op-listed-incremental} handle new @sc{gnu}-format incremental backup.
-This option handles new @sc{gnu}-format incremental backup.  It has much the
-same effect as @value{op-incremental}, but also the time when the dump
-is done and the list of directories dumped is written to the given
+@value{op-listed-incremental} handle new @acronym{GNU}-format
+incremental backup.  This option handles new @acronym{GNU}-format
+incremental backup.  It has much the same effect as
+@value{op-incremental}, but also the time when the dump is done and
+the list of directories dumped is written to the given
 @var{file}. When restoring, only files newer than the saved time are
 restored, and the directory list is used to speed up operations.
 
@@ -4766,9 +4786,6 @@ times, and directories with an unchanged inode number and device but
 a changed directory name.  The file is updated after the files to
 be archived are determined, but before the new archive is actually
 created.
-
-@sc{gnu} @command{tar} actually writes the file twice: once before the data
-and written, and once after.
 
 @node Inc Dumps
 @section Using @command{tar} to Perform Incremental Dumps
@@ -4827,8 +4844,8 @@ time the archive was created and a flag for each file indicating
 whether or not the file is going to be put in the archive.
 
 Note that this option causes @command{tar} to create a non-standard
-archive that may not be readable by non-@sc{gnu} versions of the @command{tar}
-program.
+archive that may not be readable by non-@acronym{GNU} versions of the
+@command{tar} program.
 
 @value{op-incremental} in conjunction with @value{op-extract} causes
 @command{tar} to read the lists of directory contents previously stored
@@ -4883,6 +4900,12 @@ So @command{tar} now considers all NFS devices as being equal when it comes
 to comparing directories; this is fairly gross, but there does not seem
 to be a better way to go.
 
+@command{tar} doesn't access @var{snapshot-file} when
+@value{op-create} or @value{op-list} are specified, but the
+@value{op-listed-incremental} option must still be given.  A
+placeholder @var{snapshot-file} can be specified, e.g.,
+@file{/dev/null}.
+
 @FIXME{this section needs to be written}
 
 @node Backup Levels
@@ -4909,10 +4932,10 @@ last daily (level one) dump.  The only information lost would be in
 files changed or created since the last daily backup.  (Doing dumps
 more than once a day is usually not worth the trouble).
 
-@sc{gnu} @command{tar} comes with scripts you can use to do full and level-one
-dumps.  Using scripts (shell programs) to perform backups and
-restoration is a convenient and reliable alternative to typing out
-file name lists and @command{tar} commands by hand.
+@acronym{GNU} @command{tar} comes with scripts you can use to do full
+and level-one dumps.  Using scripts (shell programs) to perform
+backups and restoration is a convenient and reliable alternative to
+typing out file name lists and @command{tar} commands by hand.
 
 Before you use these scripts, you need to edit the file
 @file{backup-specs}, which specifies parameters used by the backup
@@ -4990,13 +5013,13 @@ Subdirectories on other file systems will be ignored.
 
 The host name specifies which host to run @command{tar} on, and should
 normally be the host that actually contains the file system.  However,
-the host machine must have @sc{gnu} @command{tar} installed, and must be able
-to access the directory containing the backup scripts and their
-support files using the same file name that is used on the machine
-where the scripts are run (ie. what @command{pwd} will print when in that
-directory on that machine).  If the host that contains the file system
-does not have this capability, you can specify another host as long as
-it can access the file system through NFS.
+the host machine must have @acronym{GNU} @command{tar} installed, and
+must be able to access the directory containing the backup scripts and
+their support files using the same file name that is used on the
+machine where the scripts are run (ie. what @command{pwd} will print
+when in that directory on that machine).  If the host that contains
+the file system does not have this capability, you can specify another
+host as long as it can access the file system through NFS.
 
 @item BACKUP_FILES
 A list of individual files to be dumped.  These should be accessible
@@ -5026,20 +5049,20 @@ TAPE_FILE=/dev/nrsmt0
 TAPE_STATUS="mts -t $TAPE_FILE"
 BLOCKING=124
 BACKUP_DIRS="
-	albert:/fs/fsf
-	apple-gunkies:/gd
-	albert:/fs/gd2
-	albert:/fs/gp
-	geech:/usr/jla
-	churchy:/usr/roland
-	albert:/
-	albert:/usr
-	apple-gunkies:/
-	apple-gunkies:/usr
-	gnu:/hack
-	gnu:/u
-	apple-gunkies:/com/mailer/gnu
-	apple-gunkies:/com/archive/gnu"
+        albert:/fs/fsf
+        apple-gunkies:/gd
+        albert:/fs/gd2
+        albert:/fs/gp
+        geech:/usr/jla
+        churchy:/usr/roland
+        albert:/
+        albert:/usr
+        apple-gunkies:/
+        apple-gunkies:/usr
+        gnu:/hack
+        gnu:/u
+        apple-gunkies:/com/mailer/gnu
+        apple-gunkies:/com/archive/gnu"
 
 BACKUP_FILES="/com/mailer/aliases /com/mailer/league*[a-z]"
 
@@ -5118,7 +5141,7 @@ The @command{tar} distribution does not provide restoring scripts.
 @ifclear PUBLISH
 
 @quotation
-@strong{Warning:} The @sc{gnu} @command{tar} distribution does @emph{not}
+@strong{Warning:} The @acronym{GNU} @command{tar} distribution does @emph{not}
 provide any such @code{restore} script yet.  This section is only
 listed here for documentation maintenance purposes.  In any case,
 all contents is subject to change as things develop.
@@ -5285,10 +5308,10 @@ into what came before it well enough <<i moved it now, is it better
 here?>>.  bob also comments that if Amanda isn't free software, we
 shouldn't mention it..}
 
-When the archive is being created to @file{/dev/null}, @sc{gnu} @command{tar}
-tries to minimize input and output operations.  The Amanda backup
-system, when used with @sc{gnu} @command{tar}, has an initial sizing pass which
-uses this feature.
+When the archive is being created to @file{/dev/null}, @acronym{GNU}
+@command{tar} tries to minimize input and output operations.  The
+Amanda backup system, when used with @acronym{GNU} @command{tar}, has
+an initial sizing pass which uses this feature.
 
 @node Selecting Archive Members
 @section Selecting Archive Members
@@ -5388,11 +5411,12 @@ Only consider @kbd{NUL} terminated file names, instead of files that
 terminate in a newline.
 @end table
 
-The @samp{--null} option is just like the one in @sc{gnu} @command{xargs} and
-@command{cpio}, and is useful with the @samp{-print0} predicate of @sc{gnu}
-@command{find}.  In @command{tar}, @samp{--null} also causes
-@value{op-directory} options to be treated as file names to archive, in
-case there are any files out there called @file{-C}.
+The @samp{--null} option is just like the one in @acronym{GNU}
+@command{xargs} and @command{cpio}, and is useful with the
+@samp{-print0} predicate of @acronym{GNU} @command{find}.  In
+@command{tar}, @samp{--null} also causes @value{op-directory} options
+to be treated as file names to archive, in case there are any files
+out there called @file{-C}.
 
 This example shows how to use @command{find} to generate a list of files
 larger than 800K in length and put that list into a file called
@@ -5537,11 +5561,11 @@ patterns can exclude zero, one, or many files.
 
 @item
 When you use @value{op-exclude}, be sure to quote the @var{pattern}
-parameter, so @sc{gnu} @command{tar} sees wildcard characters like @samp{*}.
-If you do not do this, the shell might expand the @samp{*} itself
-using files at hand, so @command{tar} might receive a list of files
-instead of one pattern, or none at all, making the command somewhat
-illegal.  This might not correspond to what you want.
+parameter, so @acronym{GNU} @command{tar} sees wildcard characters
+like @samp{*}.  If you do not do this, the shell might expand the
+@samp{*} itself using files at hand, so @command{tar} might receive a
+list of files instead of one pattern, or none at all, making the
+command somewhat illegal.  This might not correspond to what you want.
 
 For example, write:
 
@@ -5625,15 +5649,6 @@ Periods (@samp{.}) or forward slashes (@samp{/}) are not considered
 special for wildcard matches.  However, if a pattern completely matches
 a directory prefix of a matched string, then it matches the full matched
 string: excluding a directory also excludes all the files beneath it.
-
-There are some discussions floating in the air and asking for modifications
-in the way @sc{gnu} @command{tar} accomplishes wildcard matches.  We perceive
-any change of semantics in this area as a delicate thing to impose on
-@sc{gnu} @command{tar} users.  On the other hand, the @sc{gnu} project should be
-progressive enough to correct any ill design: compatibility at all price
-is not always a good attitude.  In conclusion, it is @emph{possible}
-that slight amendments be later brought to the previous description.
-Your opinions on the matter are welcome.
 
 @node after
 @section Operating Only on New Files
@@ -5744,14 +5759,15 @@ Requires @command{tar} to recursively descend directories.
 This is the default.
 @end table
 
-When you use @samp{--no-recursion}, @sc{gnu} @command{tar} grabs directory entries
-themselves, but does not descend on them recursively.  Many people use
-@command{find} for locating files they want to back up, and since
-@command{tar} @emph{usually} recursively descends on directories, they have
-to use the @samp{@w{! -d}} option to @command{find} @FIXME{needs more
-explanation or a cite to another info file}as they usually do not want
-all the files in a directory.  They then use the @value{op-files-from}
-option to archive the files located via @command{find}.
+When you use @samp{--no-recursion}, @acronym{GNU} @command{tar} grabs
+directory entries themselves, but does not descend on them
+recursively.  Many people use @command{find} for locating files they
+want to back up, and since @command{tar} @emph{usually} recursively
+descends on directories, they have to use the @samp{@w{! -d}} option
+to @command{find} @FIXME{needs more explanation or a cite to another
+info file}as they usually do not want all the files in a directory.
+They then use the @value{op-files-from} option to archive the files
+located via @command{find}.
 
 The problem when restoring files archived in this manner is that the
 directories themselves are not in the archive; so the
@@ -5767,7 +5783,18 @@ the files under those directories.
 The @value{op-no-recursion} option also affects how exclude patterns
 are interpreted (@pxref{controlling pattern-patching with exclude}).
 
-@FIXME{example here}
+The @option{--no-recursion} and @option{--recursion} options apply to
+later options and operands, and can be overridden by later occurrences
+of @option{--no-recursion} and @option{--recursion}.  For example:
+
+@example
+$ @kbd{tar -cf jams.tar --norecursion grape --recursion grape/concord}
+@end example
+
+@noindent
+creates an archive with one entry for @file{grape}, and the recursive
+contents of @file{grape/concord}, but no entries under @file{grape}
+other than @file{grape/concord}.
 
 @node one
 @section Crossing Filesystem Boundaries
@@ -5905,9 +5932,9 @@ Do not strip leading slashes from file names, and permit file names
 containing a @file{..} file name component.
 @end table
 
-By default, @sc{gnu} @command{tar} drops a leading @samp{/} on input or output,
-and complains about file names containing a @file{..} component.
-This option turns off this behavior.
+By default, @acronym{GNU} @command{tar} drops a leading @samp{/} on
+input or output, and complains about file names containing a @file{..}
+component.  This option turns off this behavior.
 
 When @command{tar} extracts archive members from an archive, it strips any
 leading slashes (@samp{/}) from the member name.  This causes absolute
@@ -5922,13 +5949,14 @@ File names containing @file{..} can cause problems when extracting, so
 @command{tar} normally warns you about such files when creating an
 archive, and rejects attempts to extracts such files.
 
-Other @command{tar} programs do not do this.  As a result, if you create an
-archive whose member names start with a slash, they will be difficult
-for other people with a non-@sc{gnu} @command{tar} program to use.  Therefore,
-@sc{gnu} @command{tar} also strips leading slashes from member names when
-putting members into the archive.  For example, if you ask @command{tar} to
-add the file @file{/bin/ls} to an archive, it will do so, but the member
-name will be @file{bin/ls}.
+Other @command{tar} programs do not do this.  As a result, if you
+create an archive whose member names start with a slash, they will be
+difficult for other people with a non-@acronym{GNU} @command{tar}
+program to use.  Therefore, @acronym{GNU} @command{tar} also strips
+leading slashes from member names when putting members into the
+archive.  For example, if you ask @command{tar} to add the file
+@file{/bin/ls} to an archive, it will do so, but the member name will
+be @file{bin/ls}.
 
 If you use the @value{op-absolute-names} option, @command{tar} will do
 none of these transformations.
@@ -5960,10 +5988,10 @@ archiving files.  Preserves leading slash when extracting files.
 
 @FIXME{this is still horrible; need to talk with dan on monday.}
 
-@command{tar} prints out a message about removing the @samp{/} from file
-names.  This message appears once per @sc{gnu} @command{tar} invocation.  It
-represents something which ought to be told; ignoring what it means can
-cause very serious surprises, later.
+@command{tar} prints out a message about removing the @samp{/} from
+file names.  This message appears once per @acronym{GNU} @command{tar}
+invocation.  It represents something which ought to be told; ignoring
+what it means can cause very serious surprises, later.
 
 Some people, nevertheless, do not want to see this message.  Wanting to
 play really dangerously, one may of course redirect @command{tar} standard
@@ -5995,7 +6023,7 @@ $ @kbd{tar -c -f archive.tar -C  / home}
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
 * Standard::                    The Standard Format
-* Extensions::                  @sc{gnu} Extensions to the Archive Format
+* Extensions::                  @acronym{GNU} Extensions to the Archive Format
 * cpio::                        Comparison of @command{tar} and @command{cpio}
 @end menu
 
@@ -6034,10 +6062,11 @@ contain @samp{/-}.  Avoid deep directory nesting.  For portability to
 old Unix hosts, limit your file name components to 14 characters or
 less.
 
-If you intend to have your @command{tar} archives to be read under MSDOS,
-you should not rely on case distinction for file names, and you might
-use the @sc{gnu} @command{doschk} program for helping you further diagnosing
-illegal MSDOS names, which are even more limited than System V's.
+If you intend to have your @command{tar} archives to be read under
+MSDOS, you should not rely on case distinction for file names, and you
+might use the @acronym{GNU} @command{doschk} program for helping you
+further diagnosing illegal MSDOS names, which are even more limited
+than System V's.
 
 @node dereference
 @subsection Symbolic Links
@@ -6047,11 +6076,11 @@ illegal MSDOS names, which are even more limited than System V's.
 Normally, when @command{tar} archives a symbolic link, it writes a
 block to the archive naming the target of the link.  In that way, the
 @command{tar} archive is a faithful record of the filesystem contents.
-@value{op-dereference} is used with @value{op-create}, and causes @command{tar}
-to archive the files symbolic links point to, instead of the links
-themselves.  When this option is used, when @command{tar} encounters a
-symbolic link, it will archive the linked-to file, instead of simply
-recording the presence of a symbolic link.
+@value{op-dereference} is used with @value{op-create}, and causes
+@command{tar} to archive the files symbolic links point to, instead of
+the links themselves.  When this option is used, when @command{tar}
+encounters a symbolic link, it will archive the linked-to file,
+instead of simply recording the presence of a symbolic link.
 
 The name under which the file is stored in the file system is not
 recorded in the archive.  To record both the symbolic link name and
@@ -6095,110 +6124,122 @@ able to read old format archives, so it might be safer for you to
 always use @value{op-old-archive} for your distributions.
 
 @node posix
-@subsection @sc{gnu} @command{tar} and @sc{posix} @command{tar}
+@subsection @acronym{GNU} @command{tar} and @sc{posix} @command{tar}
 
-@sc{gnu} @command{tar} was based on an early draft of the @sc{posix} 1003.1
-@code{ustar} standard.  @sc{gnu} extensions to @command{tar}, such as the
-support for file names longer than 100 characters, use portions of the
-@command{tar} header record which were specified in that @sc{posix} draft as
-unused.  Subsequent changes in @sc{posix} have allocated the same parts of
-the header record for other purposes.  As a result, @sc{gnu} @command{tar} is
-incompatible with the current @sc{posix} spec, and with @command{tar} programs
-that follow it.
+@acronym{GNU} @command{tar} was based on an early draft of the
+@sc{posix} 1003.1 @code{ustar} standard.  @acronym{GNU} extensions to
+@command{tar}, such as the support for file names longer than 100
+characters, use portions of the @command{tar} header record which were
+specified in that @sc{posix} draft as unused.  Subsequent changes in
+@sc{posix} have allocated the same parts of the header record for
+other purposes.  As a result, @acronym{GNU} @command{tar} is
+incompatible with the current @sc{posix} spec, and with @command{tar}
+programs that follow it.
 
-We plan to reimplement these @sc{gnu} extensions in a new way which is
+We plan to reimplement these @acronym{GNU} extensions in a new way which is
 upward compatible with the latest @sc{posix} @command{tar} format, but we
 don't know when this will be done.
 
 In the mean time, there is simply no telling what might happen if you
-read a @sc{gnu} @command{tar} archive, which uses the @sc{gnu} extensions, using
-some other @command{tar} program.  So if you want to read the archive
-with another @command{tar} program, be sure to write it using the
-@samp{--old-archive} option (@samp{-o}).
+read a @acronym{GNU} @command{tar} archive, which uses the
+@acronym{GNU} extensions, using some other @command{tar} program.  So
+if you want to read the archive with another @command{tar} program, be
+sure to write it using the @samp{--old-archive} option (@samp{-o}).
 
 @FIXME{is there a way to tell which flavor of tar was used to write a
 particular archive before you try to read it?}
 
-Traditionally, old @command{tar}s have a limit of 100 characters.  @sc{gnu}
-@command{tar} attempted two different approaches to overcome this limit,
-using and extending a format specified by a draft of some P1003.1.
-The first way was not that successful, and involved @file{@@MaNgLeD@@}
-file names, or such; while a second approach used @file{././@@LongLink}
-and other tricks, yielding better success.  In theory, @sc{gnu} @command{tar}
-should be able to handle file names of practically unlimited length.
-So, if @sc{gnu} @command{tar} fails to dump and retrieve files having more
-than 100 characters, then there is a bug in @sc{gnu} @command{tar}, indeed.
+Traditionally, old @command{tar}s have a limit of 100 characters.
+@acronym{GNU} @command{tar} attempted two different approaches to
+overcome this limit, using and extending a format specified by a draft
+of some P1003.1.  The first way was not that successful, and involved
+@file{@@MaNgLeD@@} file names, or such; while a second approach used
+@file{././@@LongLink} and other tricks, yielding better success.  In
+theory, @acronym{GNU} @command{tar} should be able to handle file
+names of practically unlimited length.  So, if @acronym{GNU}
+@command{tar} fails to dump and retrieve files having more than 100
+characters, then there is a bug in @acronym{GNU} @command{tar},
+indeed.
 
 But, being strictly @sc{posix}, the limit was still 100 characters.
-For various other purposes, @sc{gnu} @command{tar} used areas left unassigned
-in the @sc{posix} draft.  @sc{posix} later revised P1003.1 @code{ustar} format by
-assigning previously unused header fields, in such a way that the upper
-limit for file name length was raised to 256 characters.  However, the
-actual @sc{posix} limit oscillates between 100 and 256, depending on the
-precise location of slashes in full file name (this is rather ugly).
-Since @sc{gnu} @command{tar} use the same fields for quite other purposes,
-it became incompatible with the latest @sc{posix} standards.
+For various other purposes, @acronym{GNU} @command{tar} used areas
+left unassigned in the @sc{posix} draft.  @sc{posix} later revised
+P1003.1 @code{ustar} format by assigning previously unused header
+fields, in such a way that the upper limit for file name length was
+raised to 256 characters.  However, the actual @sc{posix} limit
+oscillates between 100 and 256, depending on the precise location of
+slashes in full file name (this is rather ugly).  Since @acronym{GNU}
+@command{tar} use the same fields for quite other purposes, it became
+incompatible with the latest @sc{posix} standards.
 
 For longer or non-fitting file names, we plan to use yet another set
-of @sc{gnu} extensions, but this time, complying with the provisions @sc{posix}
-offers for extending the format, rather than conflicting with it.
-Whenever an archive uses old @sc{gnu} @command{tar} extension format or @sc{posix}
-extensions, would it be for very long file names or other specialities,
-this archive becomes non-portable to other @command{tar} implementations.
-In fact, anything can happen.  The most forgiving @command{tar}s will
-merely unpack the file using a wrong name, and maybe create another
-file named something like @file{@@LongName}, with the true file name
-in it.  @command{tar}s not protecting themselves may segment violate!
+of @acronym{GNU} extensions, but this time, complying with the
+provisions @sc{posix} offers for extending the format, rather than
+conflicting with it.  Whenever an archive uses old @acronym{GNU}
+@command{tar} extension format or @sc{posix} extensions, would it be
+for very long file names or other specialities, this archive becomes
+non-portable to other @command{tar} implementations.  In fact,
+anything can happen.  The most forgiving @command{tar}s will merely
+unpack the file using a wrong name, and maybe create another file
+named something like @file{@@LongName}, with the true file name in it.
+@command{tar}s not protecting themselves may segment violate!
 
-Compatibility concerns make all this thing more difficult, as we
-will have to support @emph{all} these things together, for a while.
-@sc{gnu} @command{tar} should be able to produce and read true @sc{posix} format
-files, while being able to detect old @sc{gnu} @command{tar} formats, besides
-old V7 format, and process them conveniently.  It would take years
-before this whole area stabilizes@dots{}
+Compatibility concerns make all this thing more difficult, as we will
+have to support @emph{all} these things together, for a while.
+@acronym{GNU} @command{tar} should be able to produce and read true
+@sc{posix} format files, while being able to detect old @acronym{GNU}
+@command{tar} formats, besides old V7 format, and process them
+conveniently.  It would take years before this whole area
+stabilizes@dots{}
 
-There are plans to raise this 100 limit to 256, and yet produce @sc{posix}
-conforming archives.  Past 256, I do not know yet if @sc{gnu} @command{tar}
-will go non-@sc{posix} again, or merely refuse to archive the file.
+There are plans to raise this 100 limit to 256, and yet produce
+@sc{posix} conforming archives.  Past 256, I do not know yet if
+@acronym{GNU} @command{tar} will go non-@sc{posix} again, or merely
+refuse to archive the file.
 
-There are plans so @sc{gnu} @command{tar} support more fully the latest @sc{posix}
-format, while being able to read old V7 format, @sc{gnu} (semi-@sc{posix} plus
-extension), as well as full @sc{posix}.  One may ask if there is part of
-the @sc{posix} format that we still cannot support.  This simple question
-has a complex answer.  Maybe that, on intimate look, some strong
-limitations will pop up, but until now, nothing sounds too difficult
-(but see below).  I only have these few pages of @sc{posix} telling about
-``Extended tar Format'' (P1003.1-1990 -- section 10.1.1), and there are
-references to other parts of the standard I do not have, which should
-normally enforce limitations on stored file names (I suspect things
-like fixing what @kbd{/} and @kbd{@key{NUL}} means).  There are also
-some points which the standard does not make clear, Existing practice
-will then drive what I should do.
+There are plans so @acronym{GNU} @command{tar} support more fully the
+latest @sc{posix} format, while being able to read old V7 format,
+@acronym{GNU} (semi-@sc{posix} plus extension), as well as full
+@sc{posix}.  One may ask if there is part of the @sc{posix} format
+that we still cannot support.  This simple question has a complex
+answer.  Maybe that, on intimate look, some strong limitations will
+pop up, but until now, nothing sounds too difficult (but see below).
+I only have these few pages of @sc{posix} telling about ``Extended tar
+Format'' (P1003.1-1990 -- section 10.1.1), and there are references to
+other parts of the standard I do not have, which should normally
+enforce limitations on stored file names (I suspect things like fixing
+what @kbd{/} and @kbd{@key{NUL}} means).  There are also some points
+which the standard does not make clear, Existing practice will then
+drive what I should do.
 
 @sc{posix} mandates that, when a file name cannot fit within 100 to
-256 characters (the variance comes from the fact a @kbd{/} is
-ideally needed as the 156'th character), or a link name cannot
-fit within 100 characters, a warning should be issued and the file
-@emph{not} be stored.  Unless some @value{op-posix} option is given
-(or @env{POSIXLY_CORRECT} is set), I suspect that @sc{gnu} @command{tar}
-should disobey this specification, and automatically switch to using
-@sc{gnu} extensions to overcome file name or link name length limitations.
+256 characters (the variance comes from the fact a @kbd{/} is ideally
+needed as the 156'th character), or a link name cannot fit within 100
+characters, a warning should be issued and the file @emph{not} be
+stored.  Unless some @value{op-posix} option is given (or
+@env{POSIXLY_CORRECT} is set), I suspect that @acronym{GNU}
+@command{tar} should disobey this specification, and automatically
+switch to using @acronym{GNU} extensions to overcome file name or link
+name length limitations.
 
 There is a problem, however, which I did not intimately studied yet.
-Given a truly @sc{posix} archive with names having more than 100 characters,
-I guess that @sc{gnu} @command{tar} up to 1.11.8 will process it as if it were an
-old V7 archive, and be fooled by some fields which are coded differently.
-So, the question is to decide if the next generation of @sc{gnu} @command{tar}
-should produce @sc{posix} format by default, whenever possible, producing
-archives older versions of @sc{gnu} @command{tar} might not be able to read
-correctly.  I fear that we will have to suffer such a choice one of these
-days, if we want @sc{gnu} @command{tar} to go closer to @sc{posix}.  We can rush it.
-Another possibility is to produce the current @sc{gnu} @command{tar} format
-by default for a few years, but have @sc{gnu} @command{tar} versions from some
-1.@var{POSIX} and up able to recognize all three formats, and let older
-@sc{gnu} @command{tar} fade out slowly.  Then, we could switch to producing @sc{posix}
-format by default, with not much harm to those still having (very old at
-that time) @sc{gnu} @command{tar} versions prior to 1.@var{POSIX}.
+Given a truly @sc{posix} archive with names having more than 100
+characters, I guess that @acronym{GNU} @command{tar} up to 1.11.8 will
+process it as if it were an old V7 archive, and be fooled by some
+fields which are coded differently.  So, the question is to decide if
+the next generation of @acronym{GNU} @command{tar} should produce
+@sc{posix} format by default, whenever possible, producing archives
+older versions of @acronym{GNU} @command{tar} might not be able to
+read correctly.  I fear that we will have to suffer such a choice one
+of these days, if we want @acronym{GNU} @command{tar} to go closer to
+@sc{posix}.  We can rush it.  Another possibility is to produce the
+current @acronym{GNU} @command{tar} format by default for a few years,
+but have @acronym{GNU} @command{tar} versions from some 1.@var{POSIX}
+and up able to recognize all three formats, and let older
+@acronym{GNU} @command{tar} fade out slowly.  Then, we could switch to
+producing @sc{posix} format by default, with not much harm to those
+still having (very old at that time) @acronym{GNU} @command{tar}
+versions prior to 1.@var{POSIX}.
 
 @sc{posix} format cannot represent very long names, volume headers,
 splitting of files in multi-volumes, sparse files, and incremental
@@ -6208,97 +6249,110 @@ names, or @samp{-[VMSgG]}, then it should automatically go non-@sc{posix}.
 I think this is easily granted without much discussion.
 
 Another point is that only @code{mtime} is stored in @sc{posix}
-archives, while @sc{gnu} @command{tar} currently also store @code{atime}
-and @code{ctime}.  If we want @sc{gnu} @command{tar} to go closer to @sc{posix},
-my choice would be to drop @code{atime} and @code{ctime} support on
-average.  On the other hand, I perceive that full dumps or incremental
-dumps need @code{atime} and @code{ctime} support, so for those special
-applications, @sc{posix} has to be avoided altogether.
+archives, while @acronym{GNU} @command{tar} currently also store
+@code{atime} and @code{ctime}.  If we want @acronym{GNU} @command{tar}
+to go closer to @sc{posix}, my choice would be to drop @code{atime}
+and @code{ctime} support on average.  On the other hand, I perceive
+that full dumps or incremental dumps need @code{atime} and
+@code{ctime} support, so for those special applications, @sc{posix}
+has to be avoided altogether.
 
 A few users requested that @value{op-sparse} be always active by
-default, I think that before replying to them, we have to decide
-if we want @sc{gnu} @command{tar} to go closer to @sc{posix} on average, while
-producing files.  My choice would be to go closer to @sc{posix} in the
-long run.  Besides possible double reading, I do not see any point
-of not trying to save files as sparse when creating archives which
-are neither @sc{posix} nor old-V7, so the actual @value{op-sparse} would
-become selected by default when producing such archives, whatever
-the reason is.  So, @value{op-sparse} alone might be redefined to force
-@sc{gnu}-format archives, and recover its previous meaning from this fact.
+default, I think that before replying to them, we have to decide if we
+want @acronym{GNU} @command{tar} to go closer to @sc{posix} on
+average, while producing files.  My choice would be to go closer to
+@sc{posix} in the long run.  Besides possible double reading, I do not
+see any point of not trying to save files as sparse when creating
+archives which are neither @sc{posix} nor old-V7, so the actual
+@value{op-sparse} would become selected by default when producing such
+archives, whatever the reason is.  So, @value{op-sparse} alone might
+be redefined to force @acronym{GNU}-format archives, and recover its
+previous meaning from this fact.
 
-@sc{gnu}-format as it exists now can easily fool other @sc{posix} @command{tar},
-as it uses fields which @sc{posix} considers to be part of the file name
-prefix.  I wonder if it would not be a good idea, in the long run,
-to try changing @sc{gnu}-format so any added field (like @code{ctime},
-@code{atime}, file offset in subsequent volumes, or sparse file
-descriptions) be wholly and always pushed into an extension block,
-instead of using space in the @sc{posix} header block.  I could manage
-to do that portably between future @sc{gnu} @command{tar}s.  So other @sc{posix}
-@command{tar}s might be at least able to provide kind of correct listings
-for the archives produced by @sc{gnu} @command{tar}, if not able to process
-them otherwise.
+@acronym{GNU}-format as it exists now can easily fool other @sc{posix}
+@command{tar}, as it uses fields which @sc{posix} considers to be part
+of the file name prefix.  I wonder if it would not be a good idea, in
+the long run, to try changing @acronym{GNU}-format so any added field
+(like @code{ctime}, @code{atime}, file offset in subsequent volumes,
+or sparse file descriptions) be wholly and always pushed into an
+extension block, instead of using space in the @sc{posix} header
+block.  I could manage to do that portably between future
+@acronym{GNU} @command{tar}s.  So other @sc{posix} @command{tar}s
+might be at least able to provide kind of correct listings for the
+archives produced by @acronym{GNU} @command{tar}, if not able to
+process them otherwise.
 
-Using these projected extensions might induce older @command{tar}s to fail.
-We would use the same approach as for @sc{posix}.  I'll put out a @command{tar}
-capable of reading @sc{posix}ier, yet extended archives, but will not produce
-this format by default, in @sc{gnu} mode.  In a few years, when newer @sc{gnu}
-@command{tar}s will have flooded out @command{tar} 1.11.X and previous, we
-could switch to producing @sc{posix}ier extended archives, with no real harm
-to users, as almost all existing @sc{gnu} @command{tar}s will be ready to read
-@sc{posix}ier format.  In fact, I'll do both changes at the same time, in a
-few years, and just prepare @command{tar} for both changes, without effecting
-them, from 1.@var{POSIX}.  (Both changes: 1---using @sc{posix} convention for
-getting over 100 characters; 2---avoiding mangling @sc{posix} headers for @sc{gnu}
-extensions, using only @sc{posix} mandated extension techniques).
+Using these projected extensions might induce older @command{tar}s to
+fail.  We would use the same approach as for @sc{posix}.  I'll put out
+a @command{tar} capable of reading @sc{posix}ier, yet extended
+archives, but will not produce this format by default, in
+@acronym{GNU} mode.  In a few years, when newer @acronym{GNU}
+@command{tar}s will have flooded out @command{tar} 1.11.X and
+previous, we could switch to producing @sc{posix}ier extended
+archives, with no real harm to users, as almost all existing
+@acronym{GNU} @command{tar}s will be ready to read @sc{posix}ier
+format.  In fact, I'll do both changes at the same time, in a few
+years, and just prepare @command{tar} for both changes, without
+effecting them, from 1.@var{POSIX}.  (Both changes: 1---using
+@sc{posix} convention for getting over 100 characters; 2---avoiding
+mangling @sc{posix} headers for @acronym{GNU} extensions, using only
+@sc{posix} mandated extension techniques).
 
-So, a future @command{tar} will have a @value{op-posix}
-flag forcing the usage of truly @sc{posix} headers, and so, producing
-archives previous @sc{gnu} @command{tar} will not be able to read.
-So, @emph{once} pretest will announce that feature, it would be
+So, a future @command{tar} will have a @value{op-posix} flag forcing
+the usage of truly @sc{posix} headers, and so, producing archives
+previous @acronym{GNU} @command{tar} will not be able to read.  So,
+@emph{once} pretest will announce that feature, it would be
 particularly useful that users test how exchangeable will be archives
-between @sc{gnu} @command{tar} with @value{op-posix} and other @sc{posix} @command{tar}.
+between @acronym{GNU} @command{tar} with @value{op-posix} and other
+@sc{posix} @command{tar}.
 
-In a few years, when @sc{gnu} @command{tar} will produce @sc{posix} headers by
-default, @value{op-posix} will have a strong meaning and will disallow
-@sc{gnu} extensions.  But in the meantime, for a long while, @value{op-posix}
-in @sc{gnu} tar will not disallow @sc{gnu} extensions like @value{op-label},
-@value{op-multi-volume}, @value{op-sparse}, or very long file or link names.
-However, @value{op-posix} with @sc{gnu} extensions will use @sc{posix}
-headers with reserved-for-users extensions to headers, and I will be
-curious to know how well or bad @sc{posix} @command{tar}s will react to these.
+In a few years, when @acronym{GNU} @command{tar} will produce
+@sc{posix} headers by default, @value{op-posix} will have a strong
+meaning and will disallow @acronym{GNU} extensions.  But in the
+meantime, for a long while, @value{op-posix} in @acronym{GNU} tar will
+not disallow @acronym{GNU} extensions like @value{op-label},
+@value{op-multi-volume}, @value{op-sparse}, or very long file or link
+names.  However, @value{op-posix} with @acronym{GNU} extensions will
+use @sc{posix} headers with reserved-for-users extensions to headers,
+and I will be curious to know how well or bad @sc{posix}
+@command{tar}s will react to these.
 
-@sc{gnu} @command{tar} prior to 1.@var{POSIX}, and after 1.@var{POSIX} without
-@value{op-posix}, generates and checks @samp{ustar@w{ }@w{ }}, with two
-suffixed spaces.  This is sufficient for older @sc{gnu} @command{tar} not to
-recognize @sc{posix} archives, and consequently, wrongly decide those archives
-are in old V7 format.  It is a useful bug for me, because @sc{gnu} @command{tar}
-has other @sc{posix} incompatibilities, and I need to segregate @sc{gnu} @command{tar}
-semi-@sc{posix} archives from truly @sc{posix} archives, for @sc{gnu} @command{tar} should
-be somewhat compatible with itself, while migrating closer to latest
-@sc{posix} standards.  So, I'll be very careful about how and when I will do
-the correction.
+@acronym{GNU} @command{tar} prior to 1.@var{POSIX}, and after
+1.@var{POSIX} without @value{op-posix}, generates and checks
+@samp{ustar@w{ }@w{ }}, with two suffixed spaces.  This is sufficient
+for older @acronym{GNU} @command{tar} not to recognize @sc{posix}
+archives, and consequently, wrongly decide those archives are in old
+V7 format.  It is a useful bug for me, because @acronym{GNU}
+@command{tar} has other @sc{posix} incompatibilities, and I need to
+segregate @acronym{GNU} @command{tar} semi-@sc{posix} archives from
+truly @sc{posix} archives, for @acronym{GNU} @command{tar} should be
+somewhat compatible with itself, while migrating closer to latest
+@sc{posix} standards.  So, I'll be very careful about how and when I
+will do the correction.
 
 @node Checksumming
 @subsection Checksumming Problems
 
-SunOS and HP-UX @command{tar} fail to accept archives created using @sc{gnu}
-@command{tar} and containing non-ASCII file names, that is, file names
-having characters with the eight bit set, because they use signed
-checksums, while @sc{gnu} @command{tar} uses unsigned checksums while creating
-archives, as per @sc{posix} standards.  On reading, @sc{gnu} @command{tar} computes
-both checksums and accept any.  It is somewhat worrying that a lot of
-people may go around doing backup of their files using faulty (or at
-least non-standard) software, not learning about it until it's time
-to restore their missing files with an incompatible file extractor,
-or vice versa.
+SunOS and HP-UX @command{tar} fail to accept archives created using
+@acronym{GNU} @command{tar} and containing non-ASCII file names, that
+is, file names having characters with the eight bit set, because they
+use signed checksums, while @acronym{GNU} @command{tar} uses unsigned
+checksums while creating archives, as per @sc{posix} standards.  On
+reading, @acronym{GNU} @command{tar} computes both checksums and
+accept any.  It is somewhat worrying that a lot of people may go
+around doing backup of their files using faulty (or at least
+non-standard) software, not learning about it until it's time to
+restore their missing files with an incompatible file extractor, or
+vice versa.
 
-@sc{gnu} @command{tar} compute checksums both ways, and accept any on read,
-so @sc{gnu} tar can read Sun tapes even with their wrong checksums.
-@sc{gnu} @command{tar} produces the standard checksum, however, raising
-incompatibilities with Sun.  That is to say, @sc{gnu} @command{tar} has not
-been modified to @emph{produce} incorrect archives to be read by buggy
-@command{tar}'s.  I've been told that more recent Sun @command{tar} now
-read standard archives, so maybe Sun did a similar patch, after all?
+@acronym{GNU} @command{tar} compute checksums both ways, and accept
+any on read, so @acronym{GNU} tar can read Sun tapes even with their
+wrong checksums.  @acronym{GNU} @command{tar} produces the standard
+checksum, however, raising incompatibilities with Sun.  That is to
+say, @acronym{GNU} @command{tar} has not been modified to
+@emph{produce} incorrect archives to be read by buggy @command{tar}'s.
+I've been told that more recent Sun @command{tar} now read standard
+archives, so maybe Sun did a similar patch, after all?
 
 The story seems to be that when Sun first imported @command{tar}
 sources on their system, they recompiled it without realizing that
@@ -6321,7 +6375,7 @@ a @command{tar} able to read the good archives they receive.
 @sc{posix} @command{tar} format uses fixed-sized unsigned octal strings
 to represent numeric values.  User and group IDs and device major and
 minor numbers have unsigned 21-bit representations, and file sizes and
-times have unsigned 33-bit representations.  @sc{gnu} @command{tar}
+times have unsigned 33-bit representations.  @acronym{GNU} @command{tar}
 generates @sc{posix} representations when possible, but for values
 outside the @sc{posix} range it generates two's-complement base-256
 strings: uids, gids, and device numbers have signed 57-bit
@@ -6348,7 +6402,7 @@ representations are negative.  Many traditional @command{tar}
 implementations generate a two's complement representation for negative
 time stamps that assumes a signed 32-bit @code{time_t}; hence they
 generate archives that are not portable to hosts with differing
-@code{time_t} representations.  @sc{gnu} @command{tar} recognizes this
+@code{time_t} representations.  @acronym{GNU} @command{tar} recognizes this
 situation when it is run on host with a signed 32-bit @code{time_t}, but
 it issues a warning, as these time stamps are nonstandard and unportable.
 
@@ -6389,7 +6443,7 @@ The @value{op-gzip} option does not work with the @value{op-multi-volume}
 option, or with the @value{op-update}, @value{op-append},
 @value{op-concatenate}, or @value{op-delete} operations.
 
-It is not exact to say that @sc{gnu} @command{tar} is to work in concert
+It is not exact to say that @acronym{GNU} @command{tar} is to work in concert
 with @command{gzip} in a way similar to @command{zip}, say.  Surely, it is
 possible that @command{tar} and @command{gzip} be done with a single call,
 like in:
@@ -6430,7 +6484,7 @@ construction of the compression tables becomes unsynchronized, and there
 is little chance that you could recover later in the archive.
 
 There are pending suggestions for having a per-volume or per-file
-compression in @sc{gnu} @command{tar}.  This would allow for viewing the
+compression in @acronym{GNU} @command{tar}.  This would allow for viewing the
 contents without decompression, and for resynchronizing decompression at
 every volume or file, in case of corrupted archives.  Doing so, we might
 lose some compressibility.  But this would have make recovering easier.
@@ -6444,7 +6498,8 @@ Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
 @item -Z
 @itemx --compress
 @itemx --uncompress
-Filter the archive through @command{compress}.  Otherwise like @value{op-gzip}.
+Filter the archive through @command{compress}.  Otherwise like
+@value{op-gzip}.
 
 @item --use-compress-program=@var{prog}
 Filter through @var{prog} (must accept @samp{-d}).
@@ -6481,10 +6536,10 @@ the @code{bzip2} utility.
 @itemx --uncompress
 @itemx -z
 @itemx -Z
-When this option is specified, @command{tar} will compress (when writing
-an archive), or uncompress (when reading an archive).  Used in
-conjunction with the @value{op-create}, @value{op-extract}, @value{op-list} and
-@value{op-compare} operations.
+When this option is specified, @command{tar} will compress (when
+writing an archive), or uncompress (when reading an archive).  Used in
+conjunction with the @value{op-create}, @value{op-extract},
+@value{op-list} and @value{op-compare} operations.
 @end table
 
 You can have archives be compressed by using the @value{op-gzip} option.
@@ -6492,21 +6547,21 @@ This will arrange for @command{tar} to use the @command{gzip} program to be
 used to compress or uncompress the archive wren writing or reading it.
 
 To use the older, obsolete, @command{compress} program, use the
-@value{op-compress} option.  The @sc{gnu} Project recommends you not use
+@value{op-compress} option.  The @acronym{GNU} Project recommends you not use
 @command{compress}, because there is a patent covering the algorithm it
 uses.  You could be sued for patent infringement merely by running
 @command{compress}.
 
 I have one question, or maybe it's a suggestion if there isn't a way
-to do it now. I would like to use @value{op-gzip}, but I'd also like the
-output to be fed through a program like @sc{gnu} @command{ecc} (actually, right
-now that's @samp{exactly} what I'd like to use :-)), basically adding
-ECC protection on top of compression.  It seems as if this should be
-quite easy to do, but I can't work out exactly how to go about it.
-Of course, I can pipe the standard output of @command{tar} through
-@command{ecc}, but then I lose (though I haven't started using it yet,
-I confess) the ability to have @command{tar} use @command{rmt} for it's I/O
-(I think).
+to do it now. I would like to use @value{op-gzip}, but I'd also like
+the output to be fed through a program like @acronym{GNU}
+@command{ecc} (actually, right now that's @samp{exactly} what I'd like
+to use :-)), basically adding ECC protection on top of compression.
+It seems as if this should be quite easy to do, but I can't work out
+exactly how to go about it.  Of course, I can pipe the standard output
+of @command{tar} through @command{ecc}, but then I lose (though I
+haven't started using it yet, I confess) the ability to have
+@command{tar} use @command{rmt} for it's I/O (I think).
 
 I think the most straightforward thing would be to let me specify a
 general set of filters outboard of compression (preferably ordered,
@@ -6550,7 +6605,7 @@ space needed to store such a file.
 
 In later versions, this option may be removed, and the testing and
 treatment of sparse files may be done automatically with any special
-@sc{gnu} options.  For now, it is an option needing to be specified on
+@acronym{GNU} options.  For now, it is an option needing to be specified on
 the command line with the creation or updating of an archive.
 
 Files in the filesystem occasionally have ``holes.''  A hole in a file
@@ -6604,15 +6659,16 @@ Files stored sparsely in the file system are represented sparsely in
 the archive.  Use in conjunction with write operations.
 @end table
 
-However, users should be well aware that at archive creation time, @sc{gnu}
-@command{tar} still has to read whole disk file to locate the @dfn{holes}, and
-so, even if sparse files use little space on disk and in the archive, they
-may sometimes require inordinate amount of time for reading and examining
-all-zero blocks of a file.  Although it works, it's painfully slow for a
-large (sparse) file, even though the resulting tar archive may be small.
-(One user reports that dumping a @file{core} file of over 400 megabytes,
-but with only about 3 megabytes of actual data, took about 9 minutes on
-a Sun Sparcstation ELC, with full CPU utilization.)
+However, users should be well aware that at archive creation time,
+@acronym{GNU} @command{tar} still has to read whole disk file to
+locate the @dfn{holes}, and so, even if sparse files use little space
+on disk and in the archive, they may sometimes require inordinate
+amount of time for reading and examining all-zero blocks of a file.
+Although it works, it's painfully slow for a large (sparse) file, even
+though the resulting tar archive may be small.  (One user reports that
+dumping a @file{core} file of over 400 megabytes, but with only about
+3 megabytes of actual data, took about 9 minutes on a Sun Sparcstation
+ELC, with full CPU utilization.)
 
 This reading is required in all cases and is not related to the fact
 the @value{op-sparse} option is used or not, so by merely @emph{not}
@@ -6622,13 +6678,14 @@ an archive, the current @command{tar} algorithm requires sparse files to be
 read twice, not once.  We hope to develop a new archive format for saving
 sparse files in which one pass will be sufficient.}.
 
-Programs like @command{dump} do not have to read the entire file; by examining
-the file system directly, they can determine in advance exactly where the
-holes are and thus avoid reading through them.  The only data it need read
-are the actual allocated data blocks.  @sc{gnu} @command{tar} uses a more portable
-and straightforward archiving approach, it would be fairly difficult that
-it does otherwise.  Elizabeth Zwicky writes to @file{comp.unix.internals},
-on 1990-12-10:
+Programs like @command{dump} do not have to read the entire file; by
+examining the file system directly, they can determine in advance
+exactly where the holes are and thus avoid reading through them.  The
+only data it need read are the actual allocated data blocks.
+@acronym{GNU} @command{tar} uses a more portable and straightforward
+archiving approach, it would be fairly difficult that it does
+otherwise.  Elizabeth Zwicky writes to @file{comp.unix.internals}, on
+1990-12-10:
 
 @quotation
 What I did say is that you cannot tell the difference between a hole and an
@@ -6730,11 +6787,12 @@ the file system.  The way to prepare a clean distribution is usually
 to have some Makefile rule creating a directory, copying all needed
 files in that directory, then setting ownership and permissions as
 wanted (there are a lot of possible schemes), and only then making a
-@command{tar} archive out of this directory, before cleaning everything
-out.  Of course, we could add a lot of options to @sc{gnu} @command{tar} for
-fine tuning permissions and ownership.  This is not the good way,
-I think.  @sc{gnu} @command{tar} is already crowded with options and moreover,
-the approach just explained gives you a great deal of control already.
+@command{tar} archive out of this directory, before cleaning
+everything out.  Of course, we could add a lot of options to
+@acronym{GNU} @command{tar} for fine tuning permissions and ownership.
+This is not the good way, I think.  @acronym{GNU} @command{tar} is
+already crowded with options and moreover, the approach just explained
+gives you a great deal of control already.
 
 @item -p
 @itemx --same-permissions
@@ -6767,8 +6825,8 @@ single ordinary file.  Like any other file, an archive file can be
 written to a storage device such as a tape or disk, sent through a
 pipe or over a network, saved on the active file system, or even
 stored in another archive.  An archive file is not easy to read or
-manipulate without using the @command{tar} utility or Tar mode in @sc{gnu}
-Emacs.
+manipulate without using the @command{tar} utility or Tar mode in
+@acronym{GNU} Emacs.
 
 Physically, an archive consists of a series of file entries terminated
 by an end-of-archive entry, which consists of 512 zero bytes.  A file
@@ -6811,8 +6869,8 @@ an archive, a reasonable system should properly handle an archive
 whose last record is shorter than the rest, or which contains garbage
 records after a zero block.
 
-The header block is defined in C as follows.  In the @sc{gnu} @command{tar}
-distribution, this is part of file @file{src/tar.h}:
+The header block is defined in C as follows.  In the @acronym{GNU}
+@command{tar} distribution, this is part of file @file{src/tar.h}:
 
 @example
 @include header.texi
@@ -6992,7 +7050,7 @@ type as a normal file.
 
 @item @code{A} @dots{} @code{Z}
 These are reserved for custom implementations.  Some of these are
-used in the @sc{gnu} modified format, as described below.
+used in the @acronym{GNU} modified format, as described below.
 
 @end table
 
@@ -7012,10 +7070,10 @@ IEEE Std 1003.2-1992, pages 380-388 (section 4.48) and pages 936-940
 (section E.4.48) for @cite{pax - Portable archive interchange}.
 
 @node Extensions
-@section @sc{gnu} Extensions to the Archive Format
+@section @acronym{GNU} Extensions to the Archive Format
 @UNREVISED
 
-The @sc{gnu} format uses additional file types to describe new types of
+The @acronym{GNU} format uses additional file types to describe new types of
 files in an archive.  These are listed below.
 
 @table @code
@@ -7057,13 +7115,14 @@ of an archive should have this type.
 
 @end table
 
-You may have trouble reading a @sc{gnu} format archive on a non-@sc{gnu}
-system if the options @value{op-incremental}, @value{op-multi-volume},
-@value{op-sparse}, or @value{op-label} were used when writing the archive.
-In general, if @command{tar} does not use the @sc{gnu}-added fields of the
-header, other versions of @command{tar} should be able to read the
-archive.  Otherwise, the @command{tar} program will give an error, the
-most likely one being a checksum error.
+You may have trouble reading a @acronym{GNU} format archive on a
+non-@acronym{GNU} system if the options @value{op-incremental},
+@value{op-multi-volume}, @value{op-sparse}, or @value{op-label} were
+used when writing the archive.  In general, if @command{tar} does not
+use the @acronym{GNU}-added fields of the header, other versions of
+@command{tar} should be able to read the archive.  Otherwise, the
+@command{tar} program will give an error, the most likely one being a
+checksum error.
 
 @node cpio
 @section Comparison of @command{tar} and @command{cpio}
@@ -7074,7 +7133,7 @@ most likely one being a checksum error.
 The @command{cpio} archive formats, like @command{tar}, do have maximum
 pathname lengths.  The binary and old ASCII formats have a max path
 length of 256, and the new ASCII and CRC ASCII formats have a max
-path length of 1024.  @sc{gnu} @command{cpio} can read and write archives
+path length of 1024.  @acronym{GNU} @command{cpio} can read and write archives
 with arbitrary pathname lengths, but other @command{cpio} implementations
 may crash unexplainedly trying to read them.
 
@@ -7168,13 +7227,14 @@ and using only the space needed for the headers where @command{tar}
 always uses 512 bytes per file header) and it knows how to archive
 special files.
 
-You might want to look at the freely available alternatives.  The major
-ones are @command{afio}, @sc{gnu} @command{tar}, and @command{pax}, each of which
-have their own extensions with some backwards compatibility.
+You might want to look at the freely available alternatives.  The
+major ones are @command{afio}, @acronym{GNU} @command{tar}, and
+@command{pax}, each of which have their own extensions with some
+backwards compatibility.
 
-Sparse files were @command{tar}red as sparse files (which you can easily
-test, because the resulting archive gets smaller, and @sc{gnu} @command{cpio}
-can no longer read it).
+Sparse files were @command{tar}red as sparse files (which you can
+easily test, because the resulting archive gets smaller, and
+@acronym{GNU} @command{cpio} can no longer read it).
 
 @node Media
 @chapter Tapes and Other Archive Media
@@ -7250,20 +7310,21 @@ This program is free software from the University of California, and a
 copy of the source code can be found with the sources for @command{tar};
 it's compiled and installed by default.
 
-If this option is not given, but the environment variable @env{TAPE} is
-set, its value is used; otherwise, old versions of @command{tar} used a default
-archive name (which was picked when @command{tar} was compiled).  The
-default is normally set up to be the @dfn{first} tape drive or other
-transportable I/O medium on the system.
+If this option is not given, but the environment variable @env{TAPE}
+is set, its value is used; otherwise, old versions of @command{tar}
+used a default archive name (which was picked when @command{tar} was
+compiled).  The default is normally set up to be the @dfn{first} tape
+drive or other transportable I/O medium on the system.
 
-Starting with version 1.11.5, @sc{gnu} @command{tar} uses standard input and
-standard output as the default device, and I will not try anymore
-supporting automatic device detection at installation time.  This was
-failing really in too many cases, it was hopeless.  This is now
-completely left to the installer to override standard input and standard
-output for default device, if this seems preferable.
-Further, I think @emph{most} actual usages of @command{tar} are done with
-pipes or disks, not really tapes, cartridges or diskettes.
+Starting with version 1.11.5, @acronym{GNU} @command{tar} uses
+standard input and standard output as the default device, and I will
+not try anymore supporting automatic device detection at installation
+time.  This was failing really in too many cases, it was hopeless.
+This is now completely left to the installer to override standard
+input and standard output for default device, if this seems
+preferable.  Further, I think @emph{most} actual usages of
+@command{tar} are done with pipes or disks, not really tapes,
+cartridges or diskettes.
 
 Some users think that using standard input and output is running
 after trouble.  This could lead to a nasty surprise on your screen if
@@ -7278,10 +7339,11 @@ processes to accidental destruction of real tapes.  After having seen
 all this mess, using standard input and output as a default really
 sounds like the only clean choice left, and a very useful one too.
 
-@sc{gnu} @command{tar} reads and writes archive in records, I suspect this is the
-main reason why block devices are preferred over character devices.
-Most probably, block devices are more efficient too.  The installer
-could also check for @samp{DEFTAPE} in @file{<sys/mtio.h>}.
+@acronym{GNU} @command{tar} reads and writes archive in records, I
+suspect this is the main reason why block devices are preferred over
+character devices.  Most probably, block devices are more efficient
+too.  The installer could also check for @samp{DEFTAPE} in
+@file{<sys/mtio.h>}.
 
 @table @kbd
 @item --force-local
@@ -7343,25 +7405,26 @@ California, but can be freely distributed.  Instructions for compiling
 and installing it are included in the @file{Makefile}.
 
 @cindex absolute file names
-Unless you use the @value{op-absolute-names} option, @sc{gnu} @command{tar} will
-not allow you to create an archive that contains absolute file names
-(a file name beginning with @samp{/}.) If you try, @command{tar} will
-automatically remove the leading @samp{/} from the file names it
-stores in the archive.  It will also type a warning message telling
-you what it is doing.
+Unless you use the @value{op-absolute-names} option, @acronym{GNU}
+@command{tar} will not allow you to create an archive that contains
+absolute file names (a file name beginning with @samp{/}.) If you try,
+@command{tar} will automatically remove the leading @samp{/} from the
+file names it stores in the archive.  It will also type a warning
+message telling you what it is doing.
 
-When reading an archive that was created with a different @command{tar}
-program, @sc{gnu} @command{tar} automatically extracts entries in the archive
-which have absolute file names as if the file names were not absolute.
-This is an important feature.  A visitor here once gave a
-@command{tar} tape to an operator to restore; the operator used Sun @command{tar}
-instead of @sc{gnu} @command{tar}, and the result was that it replaced large
-portions of our @file{/bin} and friends with versions from the tape;
-needless to say, we were unhappy about having to recover the file system
-from backup tapes.
+When reading an archive that was created with a different
+@command{tar} program, @acronym{GNU} @command{tar} automatically
+extracts entries in the archive which have absolute file names as if
+the file names were not absolute.  This is an important feature.  A
+visitor here once gave a @command{tar} tape to an operator to restore;
+the operator used Sun @command{tar} instead of @acronym{GNU}
+@command{tar}, and the result was that it replaced large portions of
+our @file{/bin} and friends with versions from the tape; needless to
+say, we were unhappy about having to recover the file system from
+backup tapes.
 
 For example, if the archive contained a file @file{/usr/bin/computoy},
-@sc{gnu} @command{tar} would extract the file to @file{usr/bin/computoy},
+@acronym{GNU} @command{tar} would extract the file to @file{usr/bin/computoy},
 relative to the current directory.  If you want to extract the files in
 an archive to the same absolute names that they had when the archive
 was created, you should do a @samp{cd /} before extracting the files
@@ -7433,7 +7496,7 @@ the next two paragraphs, as the remainder of this manual uses those
 two terms in a quite consistent way.
 
 John Gilmore, the writer of the public domain @command{tar} from which
-@sc{gnu} @command{tar} was originally derived, wrote (June 1995):
+@acronym{GNU} @command{tar} was originally derived, wrote (June 1995):
 
 @quotation
 The nomenclature of tape drives comes from IBM, where I believe
@@ -7466,7 +7529,7 @@ format, which is meant to be portable, so a @command{tar} block is always
 The term @dfn{logical block} often represents the basic chunk of
 allocation of many disk blocks as a single entity, which the operating
 system treats somewhat atomically; this concept is only barely used
-in @sc{gnu} @command{tar}.
+in @acronym{GNU} @command{tar}.
 
 The term @dfn{physical record} is another way to speak of a physical
 block, those two terms are somewhat interchangeable.  In this manual,
@@ -7482,7 +7545,7 @@ the logical organization of many characters into something meaningful
 to the application.  The term @dfn{unit record} describes a small set
 of characters which are transmitted whole to or by the application,
 and often refers to a line of text.  Those two last terms are unrelated
-to what we call a @dfn{record} in @sc{gnu} @command{tar}.
+to what we call a @dfn{record} in @acronym{GNU} @command{tar}.
 
 When writing to tapes, @command{tar} writes the contents of the archive
 in chunks known as @dfn{records}.  To change the default blocking
@@ -7499,20 +7562,23 @@ performance (because the software layers above the tape drive still
 honor the blocking), but not as dramatically as on tape drives that
 honor blocking.
 
-When reading an archive, @command{tar} can usually figure out the record
-size on itself.  When this is the case, and a non-standard record size
-was used when the archive was created, @command{tar} will print a message
-about a non-standard blocking factor, and then operate normally.  On
-some tape devices, however, @command{tar} cannot figure out the record size
-itself.  On most of those, you can specify a blocking factor (with
-@value{op-blocking-factor}) larger than the actual blocking factor, and then use
-the @value{op-read-full-records} option.  (If you specify a blocking factor
-with @value{op-blocking-factor} and don't use the @value{op-read-full-records}
-option, then @command{tar} will not attempt to figure out the recording size
-itself.)  On some devices, you must always specify the record size
-exactly with @value{op-blocking-factor} when reading, because @command{tar} cannot
+When reading an archive, @command{tar} can usually figure out the
+record size on itself.  When this is the case, and a non-standard
+record size was used when the archive was created, @command{tar} will
+print a message about a non-standard blocking factor, and then operate
+normally.  On some tape devices, however, @command{tar} cannot figure
+out the record size itself.  On most of those, you can specify a
+blocking factor (with @value{op-blocking-factor}) larger than the
+actual blocking factor, and then use the @value{op-read-full-records}
+option.  (If you specify a blocking factor with
+@value{op-blocking-factor} and don't use the
+@value{op-read-full-records} option, then @command{tar} will not
+attempt to figure out the recording size itself.)  On some devices,
+you must always specify the record size exactly with
+@value{op-blocking-factor} when reading, because @command{tar} cannot
 figure it out.  In any case, use @value{op-list} before doing any
-extractions to see whether @command{tar} is reading the archive correctly.
+extractions to see whether @command{tar} is reading the archive
+correctly.
 
 @command{tar} blocks are all fixed size (512 bytes), and its scheme for
 putting them into records is to put a whole number of them (one or
@@ -7530,11 +7596,12 @@ stream and not waste tape.  When writing tapes for myself, some tend
 to use a factor of the order of 2048, say, giving a record size of
 around one megabyte.
 
-If you use a blocking factor larger than 20, older @command{tar} programs
-might not be able to read the archive, so we recommend this as a limit
-to use in practice.  @sc{gnu} @command{tar}, however, will support arbitrarily
-large record sizes, limited only by the amount of virtual memory or the
-physical characteristics of the tape device.
+If you use a blocking factor larger than 20, older @command{tar}
+programs might not be able to read the archive, so we recommend this
+as a limit to use in practice.  @acronym{GNU} @command{tar}, however,
+will support arbitrarily large record sizes, limited only by the
+amount of virtual memory or the physical characteristics of the tape
+device.
 
 @menu
 * Format Variations::           Format Variations
@@ -7601,7 +7668,7 @@ writing archives.
 Archives with blocking factors larger than 20 cannot be read
 by very old versions of @command{tar}, or by some newer versions
 of @command{tar} running on old machines with small address spaces.
-With @sc{gnu} @command{tar}, the blocking factor of an archive is limited
+With @acronym{GNU} @command{tar}, the blocking factor of an archive is limited
 only by the maximum record size of the device containing the archive,
 or by the amount of available virtual memory.
 
@@ -7614,12 +7681,13 @@ Cannot write to /dev/dlt: Invalid argument
 @end example
 
 @noindent
-In such cases, it sometimes happen that the @command{tar} bundled by the
-system is aware of block size idiosyncrasies, while @sc{gnu} @command{tar} requires
-an explicit specification for the block size, which it cannot guess.
-This yields some people to consider @sc{gnu} @command{tar} is misbehaving, because
-by comparison, @cite{the bundle @command{tar} works OK}.  Adding @w{@kbd{-b
-256}}, for example, might resolve the problem.
+In such cases, it sometimes happen that the @command{tar} bundled by
+the system is aware of block size idiosyncrasies, while @acronym{GNU}
+@command{tar} requires an explicit specification for the block size,
+which it cannot guess.  This yields some people to consider
+@acronym{GNU} @command{tar} is misbehaving, because by comparison,
+@cite{the bundle @command{tar} works OK}.  Adding @w{@kbd{-b 256}},
+for example, might resolve the problem.
 
 If you use a non-default blocking factor when you create an archive, you
 must specify the same blocking factor when you modify that archive.  Some
@@ -7677,9 +7745,9 @@ If we choose our blocksize as a multiple of 8k bytes, then the problem
 seems to dissapper.  Id est, we are using block size of 112 right
 now, and we haven't had the problem since we switched@dots{}
 
-With @sc{gnu} @command{tar} the blocking factor is limited only by the maximum
-record size of the device containing the archive, or by the amount of
-available virtual memory.
+With @acronym{GNU} @command{tar} the blocking factor is limited only
+by the maximum record size of the device containing the archive, or by
+the amount of available virtual memory.
 
 However, deblocking or reblocking is virtually avoided in a special
 case which often occurs in practice, but which requires all the
@@ -7698,13 +7766,14 @@ device,
 invocation.
 @end itemize
 
-In previous versions of @sc{gnu} @command{tar}, the @samp{--compress-block}
-option (or even older: @samp{--block-compress}) was necessary to
-reblock compressed archives.  It is now a dummy option just asking
-not to be used, and otherwise ignored.  If the output goes directly
-to a local disk, and not through stdout, then the last write is
-not extended to a full record size.  Otherwise, reblocking occurs.
-Here are a few other remarks on this topic:
+In previous versions of @acronym{GNU} @command{tar}, the
+@samp{--compress-block} option (or even older:
+@samp{--block-compress}) was necessary to reblock compressed archives.
+It is now a dummy option just asking not to be used, and otherwise
+ignored.  If the output goes directly to a local disk, and not through
+stdout, then the last write is not extended to a full record size.
+Otherwise, reblocking occurs.  Here are a few other remarks on this
+topic:
 
 @itemize @bullet
 
@@ -8055,8 +8124,9 @@ the first archive, using @value{op-multi-volume}, and then put in the
 second tape when prompted, so @command{tar} can restore both halves of the
 file.)
 
-@sc{gnu} @command{tar} multi-volume archives do not use a truly portable format.
-You need @sc{gnu} @command{tar} at both end to process them properly.
+@acronym{GNU} @command{tar} multi-volume archives do not use a truly
+portable format.  You need @acronym{GNU} @command{tar} at both end to
+process them properly.
 
 When prompting for a new tape, @command{tar} accepts any of the following
 responses:
@@ -8129,7 +8199,7 @@ it successfully is with a multi-volume extract command @samp{--extract
 the file begins.
 
 For example, let's presume someone has two tape drives on a system
-named @file{/dev/tape0} and @file{/dev/tape1}.  For having @sc{gnu}
+named @file{/dev/tape0} and @file{/dev/tape1}.  For having @acronym{GNU}
 @command{tar} to switch to the second drive when it needs to write the
 second tape, and then back to the first tape, etc., just do either of:
 
@@ -8216,16 +8286,18 @@ Creates a multi-volume archive via a script.  Used in conjunction with
 @value{op-create}.
 @end table
 
-Beware that there is @emph{no} real standard about the proper way, for a
-@command{tar} archive, to span volume boundaries.  If you have a multi-volume
-created by some vendor's @command{tar}, there is almost no chance you could
-read all the volumes with @sc{gnu} @command{tar}.  The converse is also true:
-you may not expect multi-volume archives created by @sc{gnu} @command{tar} to
-be fully recovered by vendor's @command{tar}.  Since there is little chance
-that, in mixed system configurations, some vendor's @command{tar} will work on
-another vendor's machine, and there is a great chance that @sc{gnu} @command{tar}
-will work on most of them, your best bet is to install @sc{gnu} @command{tar}
-on all machines between which you know exchange of files is possible.
+Beware that there is @emph{no} real standard about the proper way, for
+a @command{tar} archive, to span volume boundaries.  If you have a
+multi-volume created by some vendor's @command{tar}, there is almost
+no chance you could read all the volumes with @acronym{GNU}
+@command{tar}.  The converse is also true: you may not expect
+multi-volume archives created by @acronym{GNU} @command{tar} to be
+fully recovered by vendor's @command{tar}.  Since there is little
+chance that, in mixed system configurations, some vendor's
+@command{tar} will work on another vendor's machine, and there is a
+great chance that @acronym{GNU} @command{tar} will work on most of
+them, your best bet is to install @acronym{GNU} @command{tar} on all
+machines between which you know exchange of files is possible.
 
 @node Tape Files
 @subsection Tape Files
@@ -8311,9 +8383,9 @@ The @value{op-label} was once called @samp{--volume}, but is not available
 under that name anymore.
 
 To find out an archive's label entry (or to find out if an archive has
-a label at all), use @samp{tar --list --verbose}.  @command{tar} will print the
-label first, and then print archive member information, as in the
-example below:
+a label at all), use @samp{tar --list --verbose}.  @command{tar} will
+print the label first, and then print archive member information, as
+in the example below:
 
 @example
 $ @kbd{tar --verbose --list --file=iamanarchive}
@@ -8343,12 +8415,12 @@ $ @kbd{tar --create --file=/dev/tape --multi-volume \
 @end example
 
 Also note that each label has its own date and time, which corresponds
-to when @sc{gnu} @command{tar} initially attempted to write it, often soon
-after the operator launches @command{tar} or types the carriage return
-telling that the next tape is ready.  Comparing date labels does give
-an idea of tape throughput only if the delays for rewinding tapes
-and the operator switching them were negligible, which is usually
-not the case.
+to when @acronym{GNU} @command{tar} initially attempted to write it,
+often soon after the operator launches @command{tar} or types the
+carriage return telling that the next tape is ready.  Comparing date
+labels does give an idea of tape throughput only if the delays for
+rewinding tapes and the operator switching them were negligible, which
+is usually not the case.
 
 @FIXME{was --volume}
 
