@@ -6,7 +6,7 @@ See the end for copying conditions.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.13.26
+version 1.13.90
 
 * Added support for POSIX.1-2001 archive format.
 * New option --format allows to select the output archive format
