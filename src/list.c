@@ -20,7 +20,7 @@
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 /* Define to non-zero for forcing old ctime format instead of ISO format.  */
-#undef USE_OLD_CTIME
+#undef USE_OLD_CTIME 
 
 #include "system.h"
 #include <quotearg.h>
@@ -900,7 +900,7 @@ tartime (time_t t)
 #else
   /* Use ISO 8610 format.  See:
      http://www.cl.cam.ac.uk/~mgk25/iso-time.html  */
-  struct tm *tm = localtime (&t);
+  struct tm *tm = utc_option ? gmtime (&t) : localtime (&t);
   if (tm)
     {
       sprintf (buffer, "%04ld-%02d-%02d %02d:%02d:%02d",
