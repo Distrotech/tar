@@ -21,6 +21,7 @@ getdate.m4
 getline.m4
 getndelim2.m4
 getopt.m4
+getpagesize.m4
 gettext.m4
 gettime.m4
 gettimeofday.m4
