@@ -51,7 +51,16 @@ tar -c -v --listed-incremental=tart.incr1 -f archive.1 tart || exit 1
 sleep 1
 echo Modifying filesystem
 rm tart/a1
+
+# Current incremental backup algorithm is not able to cope with
+# renamed files on filesystems that do not change ctime when
+# renaming. So, if we're on such filesystem, we skip this test.
+CTIME=`genfile --stat=ctime tart/b1`
 mv tart/b1 tart/b2
+if test $CTIME -eq `genfile --stat=ctime tart/b2`; then
+  AT_SKIP_TEST
+fi
+# 
 mv tart/c1 tart/c2
 touch tart/c2/ca3
 
