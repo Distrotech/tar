@@ -1,3 +1,331 @@
+2003-07-05  Paul Eggert  <eggert@twinsun.com>
+
+	Finish the checkin begin yesterday.
+
+	* NEWS: Document the user-visible changes installed in the last
+	two days.
+
+	* TODO: New file (actually, resurrected; but with new contents).
+
+	* src/list.c (read_and): Give full type for procedure arg.
+	(read_header): Strip trailing slashes, setting current_trailing_slash.
+	(tartime): Avoid int overflow when printing year (!).
+	(print_header): New arg specifying block ordinal.  All uses changed.
+	Print link as 'h' type.  Give labels for long links and names.
+
+	* src/misc.c (contains_dot_dot): Moved to names.c
+	(must_be_dot_or_slash): New function.
+	(safer_rmdir): Use it.
+	(remove_any_file): Now takes enum as option, not boolean.
+	Check for (Linux) EISDIR as well as (POSIX) EPERM when attempting
+	to unlink a directory.
+	(deref_stat): Accept bool, not int.
+
+	* src/names.c (namelist_match): Allow partial matches only if
+	recursive.
+	(hash_string_hasher): Renamed from hash_avoided_name.
+	(hash_string_compare): Renamed from compare_avoided_anames.
+	(hash_string_insert, hash_string_lookup): New functions.
+	(add_avoided_name, is_avoided_name): Use them.
+	(safer_name_suffix): New function.
+	(contains_dot_dot): Moved here from misc.c.  Now returns bool, not int.
+
+	* src/rmt.c: Don't include print-copyr.h.
+	(prepare_input_buffer): New arg FD.
+	Do not read more than INT_MAX bytes at once,
+	since it breaks on some brain damaged Tru64 hosts.
+	Divide size by two
+	when retrying instead of subtracting 1024; for speed.
+	(main): Use gettext to translate (C), not print_copyright.
+
+	* src/system.h: Include <alloca.h> and <stdbool.h> unconditionally,
+	now that gnulib handles this.
+	Include <stddef.h> and <limits.h> unconditionally, now that we assume
+	C89 or better.
+	Assume that offsetof is defined in stddef.h.
+	Do not include <sys/param.h>.
+	(realloc, lseek): Do not declare.
+	(HAVE_DECL_VALLOC): Renamed from HAVE_VALLOC.
+	(CHAR_BIT, CHAR_MAX, UCHAR_MAX, LONG_MAX): Remove
+	declarations, since we now assume C89 or better.
+	(PARAMS): Remove, as we now assume C89.  All uses changed.
+	(bindtextdomain, textdomain): Include <gettext.h> to define.
+	Include <unlocked-io.h>.
+	(valloc): Define if not defined, and if valloc is not declared.
+	(xstrdup): Remove decl.
+
+	* src/tar.c: Do not include <print-copyr.h>.
+	Include <getdate.h>.
+	(get_date): Remove decl.
+	(ATIME_PRESERVE_OPTION, CHECKPOINT_OPTION, FORCE_LOCAL_OPTION,
+	IGNORE_FAILED_READ_OPTION, INDEX_FILE_OPTION, NO_OVERWRITE_DIR_OPTION,
+	NUMERIC_OWNER_OPTION, RECURSIVE_UNLINK_OPTION, REMOVE_FILES_OPTION,
+	SHOW_OMITTED_DIRS_OPTION, TOTALS_OPTION): New constants.
+	(long_options, decode_options): Use them.
+	(OVERWRITE_DIR_OPTION): Remove.
+	(long_options): New options --index-file, --no-overwrite-dir.
+	Remove --overwrite-dir option.
+	(usage): Use PACKAGE_BUGREPORT.
+	(decode_options): Terminate new argv properly.
+	Use PACKAGE_NAME, PACKAGE_VERSION.
+	If verbose, report how we grokked any textual date option.
+	(main): Add support for index-file.
+
+	* tests/Makefile.am: Convert to UTF-8.
+	(AUTOMAKE_OPTIONS): Remove.
+	(TESTS): Add delete04.sh, multiv01.sh, options.sh.
+	(INCLUDES): Remove ../intl.
+	(LDADD): Don't link libtar.a twice.
+
+	* tests/genfile.c: Convert to UTF-8.
+	Don't include <print-copyr.h>.
+	(DEFAULT_PATTERN): Renamed from DEFAULT.
+	(ZEROS_PATTERN): Renamed from ZEROS.
+	(main): Use gettext to translate (C), not print_copyright.
+
+2003-07-04  Paul Eggert  <eggert@twinsun.com>
+
+	Revamp to meet current standards of autoconf, automake,
+	gettext, and gnulib, and incorporate new translations.
+
+	* config/config.guess, config/config.sub, config/depcomp,
+	config/install-sh, config/mdate-sh, config/missing,
+	config/mkinstalldirs, config/texinfo.texi:
+	Moved here from parent directory, or from doc.
+	* config.hin: Renamed from config.h.in.
+	* config/config.rpath: New file.
+
+	* intl: Remove this subdirectory.
+
+	* lib/fnmatch_.h: Renamed from lib/fnmatch.hin.
+
+	* lib/getstr.c, lib/getstr.h, lib/msleep.c, lib/print-copyr.c,
+	lib/print-copyr.h, lib/readutmp.c, lib/rename.c, lib/stpcpy.c,
+	lib/strstr.c, lib/strtoimax.c, lib/strtoll.c, lib/strtoull.c,
+	lib/strtoumax.c, lib/unicodeio.c, lib/unicodeio.h,
+	lib/xstrtoimax.c, m4/c-bs-a.m4, m4/ccstdc.m4, m4/check-decl.m4,
+	m4/decl.m4, m4/jm-mktime.m4, m4/prereq.m4, m4/xstrtoimax.m4,
+	stamp-h.in: Remove.
+
+	* lib/alloca_.h, lib/fnmatch_loop.c, lib/gettext.h, lib/pathmax.h,
+	lib/safe-write.c, lib/safe-write.h, lib/stdbool_.h, lib/strcase.h,
+	lib/stripslash.c, lib/unlocked-io.h, lib/xgetcwd.h, m4/alloca.m4,
+	m4/backupfile.m4, m4/bison.m4, m4/chown.m4, m4/dirname.m4,
+	m4/dos.m4, m4/exclude.m4, m4/fileblocks.m4, m4/ftruncate.m4,
+	m4/getdate.m4, m4/getopt.m4, m4/hash.m4, m4/human.m4,
+	m4/intdiv0.m4, m4/intmax_t.m4, m4/inttypes-pri.m4,
+	m4/inttypes_h.m4, m4/isc-posix.m4, m4/lchown.m4, m4/lib-ld.m4,
+	m4/lib-link.m4, m4/lib-prefix.m4, m4/memset.m4, m4/mktime.m4,
+	m4/modechange.m4, m4/nls.m4, m4/onceonly.m4, m4/pathmax.m4,
+	m4/po.m4, m4/quote.m4, m4/quotearg.m4, m4/rmdir.m4,
+	m4/safe-read.m4, m4/safe-write.m4, m4/save-cwd.m4, m4/savedir.m4,
+	m4/ssize_t.m4, m4/stdbool.m4, m4/stdint_h.m4, m4/strcase.m4,
+	m4/strtoimax.m4, m4/strtol.m4, m4/strtoll.m4, m4/strtoul.m4,
+	m4/strtoull.m4, m4/strtoumax.m4, m4/tm_gmtoff.m4, m4/uintmax_t.m4,
+	m4/unlocked-io.m4, m4/xalloc.m4, m4/xgetcwd.m4, m4/xstrtol.m4,
+	po/LINGUAS, po/Makevars, po/Rules-quot, po/boldquot.sed,
+	po/en@boldquot.header, po/en@quot.header, po/en_GB.po,
+	po/insert-header.sin, po/remove-potcdate.sin, po/stamp-po: New files.
+
+	* ABOUT-NLS, INSTALL, lib/addext.c, lib/alloca.c, lib/argmatch.c,
+	lib/argmatch.h, lib/backupfile.c, lib/backupfile.h, lib/dirname.c,
+	lib/dirname.h, lib/error.c, lib/exclude.c, lib/exclude.h,
+	lib/fnmatch.h, lib/full-write.c, lib/full-write.h, lib/getdate.h,
+	lib/getdate.y, lib/getline.c, lib/getline.h, lib/getopt.c,
+	lib/getopt.h, lib/getopt1.c, lib/hash.c, lib/hash.h, lib/human.c,
+	lib/human.h, lib/lchown.c, lib/malloc.c, lib/mktime.c,
+	lib/modechange.c, lib/modechange.h, lib/quote.c, lib/quote.h,
+	lib/quotearg.c, lib/quotearg.h, lib/realloc.c, lib/safe-read.c,
+	lib/safe-read.h, lib/save-cwd.c, lib/save-cwd.h, lib/savedir.c,
+	lib/savedir.h, lib/strcasecmp.c, lib/utime.c, lib/xalloc.h,
+	lib/xgetcwd.c, lib/xmalloc.c, lib/xstrdup.c, lib/xstrtol.c,
+	lib/xstrtol.h, lib/xstrtoumax.c, m4/codeset.m4, m4/d-ino.m4,
+	m4/error.m4, m4/fnmatch.m4, m4/getcwd.m4, m4/getline.m4, m4/gettext.m4,
+	m4/glibc21.m4, m4/iconv.m4, m4/inttypes.m4, m4/lcmessage.m4,
+	m4/longlong.m4, m4/malloc.m4, m4/mbrtowc.m4, m4/mbstate_t.m4,
+	m4/progtest.m4, m4/realloc.m4, m4/strerror_r.m4, m4/ulonglong.m4,
+	m4/utimbuf.m4, m4/utime.m4, m4/utimes.m4, m4/xstrtoumax.m4,
+	po/Makefile.in.in:
+	Upgrade to latest version from external source.  The file "bootstrap"
+	now grabs these automatically, so we needn't keep track of them
+	in this change long any longer.
+
+	* Makefile.am (AUTOMAKE_OPTIONS): Remove.  Now done by configure.ac.
+	(SUBDIRS): Remove intl.
+	* PORTS: Update for star, Macintosh.
+	* README, README-alpha: Suggest Autoconf 2.57, Automake 1.7.5,
+	Bison 1.875, gettext 0.12.1.
+	* THANKS: Add Bernhard Rosenkraenzer, Solar Designer.
+	* configure.ac (AC_INIT, AM_INIT_AUTOMAKE): Convert to modern form.
+	(AC_CONFIG_AUX_DIR): New.
+	(AC_CONFIG_HEADERS): Rename config.h.in to config.hin, to be more
+	like coreutils.
+	(AC_PREREQ): Bump from 2.52 to 2.57.
+	(AC_GNU_SOURCE): New.
+	(AC_PROG_GCC_TRADITIONAL, AM_C_PROTOTYPES, AC_C_CONST): Remove;
+	we no longer support K&R C.
+	(YACC): Remove.
+	(AC_CHECK_HEADERS): Remove limits.h, poll.h, stdbool.h, stropts.h,
+	sys/ioccom.h, sys/param.h, sys/time.h, sys/timeb.h, wchar.h, wctype.h.
+	(AC_MBSTATE_T): Remove.
+	(HAVE_UTIME_H, HAVE_DECL_FREE, HAVE_DECL_GETGRGID, HAVE_DECL_GETPWUID,
+	HAVE_DECL_GETENV, HAVE_DECL_MALLOC, HAVE_DECL_STRTOUL,
+	HAVE_DECL_STRTOULL, HAVE_MKNOD): Remove our special code.
+	(AM_STDBOOL_H): Add.
+	(AC_HEADER_TIME, AC_STRUCT_TIMEZONE,
+	jm_CHECK_TYPE_STRUCT_DIRENT_D_INO): Remove.
+	(AC_CHECK_TYPE): Remove ssize_t.
+	(gt_TYPE_SSIZE_T): Add.
+	(jm_AC_PREREQ_XSTRTOUMAX, jm_PREREQ_ADDEXT, jm_PREREQ_ERROR,
+	jm_PREREQ_HUMAN, jm_PREREQ_QUOTEARG, jm_PREREQ_XGETCWD,
+	AC_FUNC_ALLOCA, AC_FUNC_CLOSEDIR_VOID, AC_FUNC_STRERROR_R,
+	AC_FUNC_FNMATCH, AC_FUNC_VPRINTF, AM_FUNC_GETLINE, jm_FUNC_MALLOC,
+	jm_FUNC_MKTIME, jm_FUNC_REALLOC):
+	Remove.  Switch to gnulib macros like gl_BACKUPFILE instead.
+	(tar_LDADD): Rename to LIB_CLOCK_GETTIME.  All uses changed.
+	(rmt_LDADD): Rename to LIB_SETSOCKOPT.  All uses changed.
+	(AC_CHECK_FUNCS): Remove fchdir, ftime, getcwd, isascii, nap,
+	napms, poll, select, strstr, usleep.
+	(AC_REPLACE_FUNCS): Remove ftruncate, lchown, memset, rename,
+	rmdir, strcasecmp, strncasecmp, strtol, strtoul.
+	(AM_GNU_GETTEXT): Use external and need-ngettext options.
+	(AM_GNU_GETTEXT_VERSION): New.
+	(AC_OUTPUT): Remove intl/Makefile.
+
+	* doc/Makefile.am (AUTOMAKE_OPTIONS): Remove.
+	($(srcdir)/tar.info, tar.dvi): Remove obsolete warnings.
+	* doc/fdl.texi: Update to current GNU version.
+	* doc/gettext.texi: Update to current coreutils version,
+	plus a copyright notice.
+	* doc/tar.texi: Switch to new method for doing copyright notices.
+	Use @acronym instead of @sc where appropriate.
+	Remove empty examples.  Give a few more examples.
+
+	* lib/Makefile.am (AUTOMAKE_OPTIONS): Remove.
+	(EXTRA_DIST, libtar_a_SOURCES): Switch to gnulib, so that they
+	are built up in pieces with +=.
+	(noinst_HEADERS, INCLUDES): Remove.
+	(BUILT_SOURCES, MAINTAINERCLEANFILES, MOSTLYCLEANFILES): New.
+	(libtar_a_LIBADD): Use $ rather than @.
+	(all-local, alloca.h, fnmatch.h, stdbool.h): New rules, from gnulib.
+
+	* m4/Makefile.am (EXTRA_DIST): Add alloca.m4, backupfile.m4,
+	bison.m4, chown.m4, dirname.m4, dos.m4, exclude.m4, fileblocks.m4,
+	ftruncate.m4, getdate.m4, getopt.m4, hash.m4, human.m4,
+	intdiv0.m4, intmax_t.m4, inttypes_h.m4, inttypes-pri.m4,
+	isc-posix.m4, lcown.m4, lib-ld.m4, lib-link.m4, lib-prefix.m4,
+	memset.m4, mktime.m4, modechange.m4, nls.m4, onceonly.m4,
+	pathmax.m4, po.m4, quotearg.m4, quote.m4, rmdir.m4, safe-read.m4,
+	safe-write.m4, save-cwd.m4, savedir.m4, ssize_t.m4, stdbool.m4,
+	stdint_h.m4, strcase.m4, strtoimax.m4, strtoll.m4, strtol.m4,
+	strtoull.m4, strtoul.m4, strtoumax.m4, tm_gmtoff.m4, uintmax_t.m4,
+	unlocked-io.m4, xalloc.m4, xgetcwd.m4, xstrtol.m4.
+	Remove c-bs-a.m4, ccstdc.m4, check-decl.m4, decl.m4, jm-mktime.m4,
+	prereq.m4, xstrtoimax.m4.
+
+	* po/POTFILES.in: Remove tests/genfile.c; it doesn't need to
+	be translated, since it's not a user-visible tool.
+
+	* scripts/Makefile.am (AUTOMAKE_OPTIONS): Remove.
+
+	* src/Makefile.am (AUTOMAKE_OPTIONS): Remove.
+	(INCLUDES): Remove ../intl.  Put top-srcdir before ., for
+	consistency with coreutils.
+	(LDADD): Link LIBINTL after libtar.a, since
+	it's now external and should stand by itself.
+
+	* src/buffer.c (print_total_written): Adjust to new human.h
+	interface.
+	(child_open_for_compress): Do not increase size to BLOCKSIZE.
+	(open_archive): Open index file name.
+	Strip trailing slahes from file names.
+	(flush_write): Set size to 0 if not saving names.
+	(flush_write, flush_read): Use safer_name_suffix rather than
+	inline code.
+
+	* src/common.h: Include <quote.h>.
+	(absolute_names_option, atime_preserve_option, backup_option,
+	block_number_option, checkpoint_option, dereference_option,
+	force_local_option, ignore_failed_read_option, ignore_zeros_option,
+	incremental_option, interactive_option, multi_volume_option,
+	numeric_owner_option, one_file_system_option, recursive_unlink_option,
+	read_full_records_option, remove_files_option, same_order_option,
+	show_omitted_dirs_option, sparse_option, starting_file_option,
+	to_stdout_option, totals_option, touch_option, verify_option,
+	dev_null_output, now_verifying, we_are_root): Now bool, not int.
+	(current_trailing_slash, index_file_name, recent_long_name_blocks,
+	recent_long_link_blocks): New vars.
+	(NO_OVERWRITE_DIR_OLD_FILES): New constant.
+	(OVERWRITE_OLD_DIRS): Remove.
+	(enum remove_option): New enum.
+	(remove_any_file): Use it as option arg, not int.
+	(is_avoided_name, contains_dot_dot): Return bool, not int.
+	(safer_name_suffix): New decl.
+
+	* src/compare.c (now_verifying): Now bool, not int.
+	(fill_in_sparse_array): Move to extract.c.  Now returns bool;
+	all callers changed to test for failure.
+	(diff_sparse_files): Take size from current_stat, not from param.
+	(diff_archive): Do not count trailing slashes in archives.
+	(verify_volume): Test for header failure after loop, not before.
+
+	* src/create.c (relativize): Remove; replaced by safer_name_suffix.
+	All callers changed.
+	(start_header): Clear devmajor and devminor fields, too.
+	(finish_header): New arg block_ordinal.
+	(init_sparsearray): Now extern.  Set sp_array_size to
+	SPARSES_IN_OLDGNU_HEADER if it is zero.
+	(dump_file): Keep link table as a hash.
+	Do not count "file changed as we read it" as a failure.
+
+	* src/delete.c (recent_long_name_blocks, recent_long_link_blocks):
+	Move extern decl to common.h.
+
+	* src/extract.c (we_are_root): Now bool, not int.
+	(check_time): Warn about implausibly old time stamps.
+	(set_stat): Use utimbuf, not stat_info.
+	(prepare_to_extract): New arg DIRECTORY.
+	(fill_in_sparse_array): Moved here from compare.c.
+	(extract_sparse_file): Now returns off_t, giving size left.
+	Truncate file at end.
+	(extract_archive): Use safer_name_suffix rather than rolling our own.
+	Use fill_in_sparse_array rather than rolling our own.
+	Strip trailing slashes more effectively.
+	Check for unsafe names.
+
+	* src/incremen.c (struct directory): nfs and found are now of type
+	bool, not int.
+	(gnu_restore): Now takes directory name as argument, not offset
+	of directory name in a global.  All uses changed.
+	(CURRENT_FILE_NAME): Remove.
+
+	New tests.
+	* tests/delete04.sh, tests/multiv01.sh, tests/options.sh: New
+	files.
+
+2002-09-30  Paul Eggert  <eggert@twinsun.com>
+
+	* src/rmt.c (prepare_input_buffer): Renamed form
+	prepare_record_buffer.  All uses changed.  Do not assume that
+	size_t is the same width as int.
+
+2002-03-29  Paul Eggert  <eggert@twinsun.com>
+
+	* src/incremen.c (get_directory_contents):
+	If ignore_failed_read_option, only warn about
+	get_directory_contents failures.  Fix suggested by
+	Mark Costlow.
+
+2002-01-31  Mark W. Eichin  <eichin@thok.org>
+
+	* src/buffer.c (child_open_for_compress): Don't try to read
+	past the end of the buffer.
+
+2001-10-11  Jim Meyering  <meyering@lucent.com>
+
+	* argmatch.c (argmatch_invalid): Use quotearg_n_style (0, ...
+	and quote_n (1, ... to avoid clobbering a buffer.
+
 2001-09-26  Paul Eggert  <eggert@twinsun.com>
 
 	* NEWS, configure.ac (AM_INIT_AUTOMAKE): Version 1.13.25.
@@ -2521,7 +2849,7 @@
 	component, when deciding whether to exclude it.
 
 	* src/list.c (<fnmatch.h>): Do not include.
-	(from_chars): Renamed from from_oct.  New parameter specifing
+	(from_chars): Renamed from from_oct.  New parameter specifying
 	the negative of the minimum allowed value.  Support negative
 	and base-64 values.
 	(base64_map): New var.
@@ -3551,7 +3879,8 @@
 See ChangeLog.1 for earlier changes.
 
 
-Copyright (C) 1997, 1998, 1999, 2000, 2001 Free Software Foundation, Inc.
+Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003 Free Software Foundation,
+Inc.
 
 This file is part of GNU tar.
 
