@@ -21,8 +21,14 @@
 # include <config.h>
 #endif
 
+#include <stddef.h>
+
 #if HAVE_ICONV
 # include <iconv.h>
+
+# if ! USE_INCLUDED_LIBINTL && HAVE_LANGINFO_CODESET
+#  include <langinfo.h>
+# endif
 
 # if HAVE_STDLIB_H
 #  include <stdlib.h>
@@ -44,8 +50,14 @@ copyright_symbol (char *buf, size_t bufsize)
 
   if (! (outcharset && *outcharset))
     {
+#if USE_INCLUDED_LIBINTL
       extern char const *locale_charset (void);
       outcharset = locale_charset ();
+#else
+# if HAVE_LANGINFO_CODESET
+      outcharset = nl_langinfo (CODESET);
+# endif
+#endif
     }
 
   if (*outcharset)
