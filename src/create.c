@@ -1224,15 +1224,6 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	  block_ordinal = current_block_ordinal ();
 	  current_stat_info.stat.st_size = 0;	/* force 0 size on dir */
 
-	  /* FIXME: If people could really read standard archives, this
-	     should be:
-
-	     header
-	       = start_header (standard_option ? p : namebuf, &current_stat_info);
-
-	     but since they'd interpret DIRTYPE blocks as regular
-	     files, we'd better put the / on the name.  */
-
 	  header = start_header (namebuf, &current_stat_info);
 	  if (!header)
 	    return;
@@ -1492,8 +1483,8 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
 	  sizeleft = current_stat_info.stat.st_size;
 
-	  /* Don't bother opening empty, world readable files.  Also do not open
-	     files when archive is meant for /dev/null.  */
+	  /* Don't bother opening empty, world readable files.  Also do not
+	     open files when archive is meant for /dev/null.  */
 
 	  if (dev_null_output
 	      || (sizeleft == 0
@@ -1533,8 +1524,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	    isextended = header->oldgnu_header.isextended;
 	  else
 	    isextended = 0;
-	  if (isextended)
-	    abort();
+
 	  save_typeflag = header->header.typeflag;
 	  finish_header (header, block_ordinal);
 	  if (isextended)
