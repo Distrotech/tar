@@ -21,6 +21,7 @@
 #include <fnmatch.h>
 #include <hash.h>
 #include <quotearg.h>
+#include <stpcpy.h>
 #include <xstrtol.h>
 
 #include "common.h"
