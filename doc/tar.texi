@@ -351,7 +351,7 @@
 @set xref-owner @xref{Option Summary}
 @set pxref-owner @pxref{Option Summary}
 
-@set op-format @kbd{--format}
+@set op-format @kbd{--format} (@kbd{-H})
 @set ref-format @ref{format}
 @set xref-format @xref{format}
 @set pxref-format @pxref{format}
