@@ -1,3 +1,18 @@
+2003-10-04  Sergey Poznyakoff  
+
+	* configure.ac: Check for dev_t and ino_t.
+	* m4/Makefile.am: Added missing files.
+	* src/system.c: New file.
+	* src/Makefile.am: Added system.c
+	* src/common.h: Prototypes for functions from system.c
+	* src/system.h (SET_BINARY_MODE, ERRNO_IS_EACCESS): New defines
+	* src/buffer.c: Moved system dependencies to system.c
+	* src/compare.c: Likewise.
+	* src/create.c: Likewise.
+	* src/delete.c: Likewise.
+	* src/extract.c: Likewise.
+	* src/rtapelib.c: Likewise.
+	
 2003-10-04  Sergey Poznyakoff 
 
 	Implemented --occurrence option.
