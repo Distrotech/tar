@@ -119,15 +119,15 @@ static int global_volno = 1;	/* volume number to print in external
 
 char *save_name;		/* name of the file we are currently writing */
 off_t save_totsize;		/* total size of file we are writing, only
-				   valid if save_name is non NULL */
+				   valid if save_name is nonzero */
 off_t save_sizeleft;		/* where we are in the file we are writing,
 				   only valid if save_name is nonzero */
 
-int write_archive_to_stdout = 0;
+int write_archive_to_stdout;
 
 /* Used by flush_read and flush_write to store the real info about saved
    names.  */
-static char *real_s_name = NULL;
+static char *real_s_name;
 static off_t real_s_totsize;
 static off_t real_s_sizeleft;
 
@@ -185,7 +185,7 @@ reset_eof (void)
 
 /*-------------------------------------------------------------------------.
 | Return the location of the next available input or output block.	   |
-| Return NULL for EOF.  Once we have returned NULL, we just keep returning |
+| Return zero for EOF.  Once we have returned zero, we just keep returning |
 | it, to avoid accidentally going on to the next file on the tape.	   |
 `-------------------------------------------------------------------------*/
 
@@ -195,12 +195,12 @@ find_next_block (void)
   if (current_block == record_end)
     {
       if (hit_eof)
-	return NULL;
+	return 0;
       flush_archive ();
       if (current_block == record_end)
 	{
 	  hit_eof = 1;
-	  return NULL;
+	  return 0;
 	}
     }
   return current_block;
@@ -240,7 +240,7 @@ available_space_after (union block *pointer)
 }
 
 /*------------------------------------------------------------------.
-| Close file having descriptor FD, and abort if close unsucessful.  |
+| Close file having descriptor FD, and abort if close unsuccessful. |
 `------------------------------------------------------------------*/
 
 static void
@@ -682,8 +682,8 @@ open_archive (enum access_mode access)
   if (archive_names == 0)
     FATAL_ERROR ((0, 0, _("No archive name given")));
 
-  current_file_name = NULL;
-  current_link_name = NULL;
+  current_file_name = 0;
+  current_link_name = 0;
 
   /* FIXME: According to POSIX.1, PATH_MAX may well not be a compile-time
      constant, and the value from sysconf (_SC_PATH_MAX) may well not be any
@@ -692,20 +692,19 @@ open_archive (enum access_mode access)
      allocation.  (Roland McGrath)  */
 
   if (!real_s_name)
-    real_s_name = (char *) xmalloc (PATH_MAX);
+    real_s_name = xmalloc (PATH_MAX);
   /* FIXME: real_s_name is never freed.  */
 
-  save_name = NULL;
+  save_name = 0;
 
   if (multi_volume_option)
     {
-      record_start
-	= (union block *) valloc (record_size + (2 * BLOCKSIZE));
+      record_start = valloc (record_size + (2 * BLOCKSIZE));
       if (record_start)
 	record_start += 2;
     }
   else
-    record_start = (union block *) valloc (record_size);
+    record_start = valloc (record_size);
   if (!record_start)
     FATAL_ERROR ((0, 0, _("Could not allocate memory for blocking factor %d"),
 		  blocking_factor));
@@ -846,7 +845,7 @@ open_archive (enum access_mode access)
 	  union block *label = find_next_block ();
 
 	  if (!label)
-	    FATAL_ERROR ((0, 0, _("Archive not labelled to match `%s'"),
+	    FATAL_ERROR ((0, 0, _("Archive not labeled to match `%s'"),
 			  volume_label_option));
 	  if (!check_label_pattern (label))
 	    FATAL_ERROR ((0, 0, _("Volume `%s' does not match `%s'"),
@@ -857,7 +856,7 @@ open_archive (enum access_mode access)
     case ACCESS_WRITE:
       if (volume_label_option)
 	{
-	  memset ((void *) record_start, 0, BLOCKSIZE);
+	  memset (record_start, 0, BLOCKSIZE);
 	  if (multi_volume_option)
 	    sprintf (record_start->header.name, "%s Volume 1",
 		     volume_label_option);
@@ -960,7 +959,7 @@ flush_write (void)
 
   if (volume_label_option)
     {
-      memset ((void *) record_start, 0, BLOCKSIZE);
+      memset (record_start, 0, BLOCKSIZE);
       sprintf (record_start->header.name, "%s Volume %d", volume_label_option, volno);
       TIME_TO_CHARS (time (0), record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
@@ -974,7 +973,7 @@ flush_write (void)
       if (volume_label_option)
 	record_start++;
 
-      memset ((void *) record_start, 0, BLOCKSIZE);
+      memset (record_start, 0, BLOCKSIZE);
 
       /* FIXME: Michael P Urban writes: [a long name file] is being written
 	 when a new volume rolls around [...]  Looks like the wrong value is
@@ -1003,9 +1002,9 @@ flush_write (void)
   if (copy_back)
     {
       record_start += copy_back;
-      memcpy ((void *) current_block,
-	      (void *) (record_start + blocking_factor - copy_back),
-	      (size_t) (copy_back * BLOCKSIZE));
+      memcpy (current_block,
+	      record_start + blocking_factor - copy_back,
+	      copy_back * BLOCKSIZE);
       current_block += copy_back;
 
       if (real_s_sizeleft >= copy_back * BLOCKSIZE)
@@ -1356,7 +1355,7 @@ backspace_output (void)
 
 	if (record_start->buffer != output_start)
 	  memset (record_start->buffer, 0,
-		  (size_t) (output_start - record_start->buffer));
+		  output_start - record_start->buffer);
       }
   }
 }
@@ -1497,8 +1496,8 @@ closeout_volume_number (void)
 static int
 new_volume (enum access_mode access)
 {
-  static FILE *read_file = NULL;
-  static int looped = 0;
+  static FILE *read_file;
+  static int looped;
 
   int status;
 
@@ -1546,7 +1545,7 @@ new_volume (enum access_mode access)
 		     global_volno, *archive_name_cursor);
 	    fflush (stderr);
 
-	    if (fgets (input_buffer, sizeof (input_buffer), read_file) == 0)
+	    if (fgets (input_buffer, sizeof input_buffer, read_file) == 0)
 	      {
 		fprintf (stderr, _("EOF where user reply was expected"));
 
@@ -1623,7 +1622,7 @@ new_volume (enum access_mode access)
 		      {
 			const char *shell = getenv ("SHELL");
 			
-			if (shell == NULL)
+			if (! shell)
 			  shell = "/bin/sh";
 			execlp (shell, "-sh", "-i", 0);
 			FATAL_ERROR ((0, errno, _("Cannot exec a shell %s"),
