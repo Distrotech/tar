@@ -1,3 +1,9 @@
+2003-07-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c (print_header): Revised
+	* NEWS: Started the entry for 1.13.26 
+	* doc/Makefile.am (tar.dvi): Fixed TEXINPUTS value.
+
 2003-07-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* .cvsignore: Added to the repository.
