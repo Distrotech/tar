@@ -755,7 +755,8 @@ create_archive (void)
       collect_and_sort_names ();
 
       while (p = name_from_list (), p)
-	dump_file (p, (dev_t) -1, 1);
+	if (!excluded_pathname (excluded, p))
+	  dump_file (p, (dev_t) -1, 1);
 
       blank_name_list ();
       while (p = name_from_list (), p)
@@ -780,7 +781,8 @@ create_archive (void)
   else
     {
       while (p = name_next (1), p)
-	dump_file (p, (dev_t) -1, 1);
+	if (!excluded_pathname (excluded, p))
+	  dump_file (p, (dev_t) -1, 1);
     }
 
   write_eot ();
