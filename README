@@ -12,7 +12,8 @@ send in bug reports about that manual.  In particular, the mechanism
 for doing incremental dumps has been significantly changed.
 
 This distribution also includes rmt, the remote tape server (which
-must reside in /etc).  The mt program is in the GNU cpio distribution.
+normally must reside in /etc).  The mt tape drive control program is
+in the GNU cpio distribution.
 
 See the file INSTALL for compilation and installation instructions for Unix.
 See the file NEWS for information on all that is new in this version
@@ -26,11 +27,10 @@ problems, and we have no way to test it ourselves.
 
 If you want to do incremental dumps, use the distributed backup
 scripts.  They are what we use at the FSF to do all our backups.  Most
-importantly, do not use +incremental (-G) or +after-date (-N) or
-+newer-mtime to do incremental dumps.  The only option that works
-correctly for this purpose is +listed-incremental.  (When extracting
-incremental dumps, use +incremental (-G).)
+importantly, do not use --incremental (-G) or --after-date (-N) or
+--newer-mtime to do incremental dumps.  The only option that works
+correctly for this purpose is --listed-incremental.  (When extracting
+incremental dumps, use --incremental (-G).)
 
 There is no tar manual in this release.  The old manual has too many
 problems to make it usable.  A new manual will appear in version 1.12.
-
