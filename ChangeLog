@@ -3,7 +3,7 @@
 	* bootstrap: New option --update-po
 	* src/tar.c: New option -H (short alias to --format)
 	* doc/tar.texi: Document -H option
- 	* src/names.c (safer_name_suffix): Fixed bug intraduced
+ 	* src/names.c (safer_name_suffix): Fixed bug introduced
 	2004-05-11.
 
 2004-05-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
