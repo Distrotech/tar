@@ -1417,7 +1417,7 @@ decode_options (int argc, char **argv)
       else
 	{
 	  /* UNIX98 compatibility */
-	  same_owner_option = 1;
+	  same_owner_option = -1;
 	}
     }
 
