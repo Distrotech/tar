@@ -19,8 +19,17 @@
 ## 02111-1307, USA.
 
 noinst_LIBRARIES = libtar.a
+noinst_HEADERS = system.h localedir.h rmt.h
+libtar_a_SOURCES = prepargs.c prepargs.h rtapelib.c
 
-libtar_a_SOURCES = prepargs.c prepargs.h
+localedir = $(datadir)/locale
+
+DISTCLEANFILES = localedir.h
+localedir.h : Makefile
+	echo '#define LOCALEDIR "$(localedir)"' >$@
+	echo "#ifndef DEFAULT_RMT_COMMAND" >> $@
+	echo "# define DEFAULT_RMT_COMMAND \"$(DEFAULT_RMT_DIR)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
+	echo "#endif" >> $@
 
 libtar_a_LIBADD = $(LIBOBJS) $(ALLOCA)
 libtar_a_DEPENDENCIES = $(libtar_a_LIBADD)

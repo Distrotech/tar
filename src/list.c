@@ -22,7 +22,7 @@
 /* Define to non-zero for forcing old ctime format instead of ISO format.  */
 #undef USE_OLD_CTIME
 
-#include "system.h"
+#include <system.h>
 #include <quotearg.h>
 
 #include "common.h"

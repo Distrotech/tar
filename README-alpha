@@ -24,25 +24,33 @@ Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
 site and prepares the source directory for building.
 
-When run without arguments, bootstrap will try to obtain gnulib files
-from CVS repository on savannah using anonymous SSH access. Then, it
-will fetch the po files from tar page at Translation Project, and,
-finally, it will start autoconfiguration process. Simply running
-it without arguments should do in most cases. Several options
-allow to control the behavior of bootstrap:
-
+When run without arguments, bootstrap will try to obtain gnulib and
+paxutils files from their corresponding CVS repositories on Savannah
+using anonymous SSH access. Then, it will fetch the po files from tar
+page at Translation Project, and, finally, it will start autoconfiguration
+process. Simply running it without arguments should do in most cases.
+Several options allow to control the behavior of bootstrap:
 
  --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
                               sources reside. Use this if you already
                               have gnulib sources on your machine, and
                               do not want to waste your bandwidth dowloading
                               them again.
+
+ --paxutils-srcdir=DIRNAME    Specify the local directory where paxutils
+                              sources reside. Use this if you already
+                              have paxutils sources on your machine, and
+                              do not want to waste your bandwidth dowloading
+                              them again.
+
  --cvs-auth=METHOD            Set the CVS access method used for downloading
                               gnulib files. METHOD is one of the keywords
                               accepted by cvs -d option (see info cvs
                               repository).
+
  --cvs-user=USERNAME          Set the CVS username to be used when accessing
                               the gnulib repository.
+
  --no-po                      Do not download po files.
 
 Notice also that when using CVS authentication method "ext", bootstrap

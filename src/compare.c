@@ -19,7 +19,7 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include "system.h"
+#include <system.h>
 
 #if HAVE_UTIME_H
 # include <utime.h>
@@ -38,7 +38,7 @@ struct utimbuf
 #include <quotearg.h>
 
 #include "common.h"
-#include "rmt.h"
+#include <rmt.h>
 #include <stdarg.h>
 
 /* Nonzero if we are verifying at the moment.  */

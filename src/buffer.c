@@ -19,7 +19,7 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include "system.h"
+#include <system.h>
 
 #include <signal.h>
 
@@ -28,7 +28,7 @@
 #include <quotearg.h>
 
 #include "common.h"
-#include "rmt.h"
+#include <rmt.h>
 
 /* Number of retries before giving up on read.  */
 #define	READ_ERROR_MAX 10

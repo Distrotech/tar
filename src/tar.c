@@ -19,7 +19,7 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include "system.h"
+#include <system.h>
 
 #include <fnmatch.h>
 #include <argp.h>
@@ -38,6 +38,7 @@
 
 #include <getdate.h>
 #include <localedir.h>
+#include <rmt.h>
 #include <prepargs.h>
 #include <quotearg.h>
 #include <xstrtol.h>
@@ -1060,7 +1061,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
       break;
       
     case RMT_COMMAND_OPTION:
-      rmt_command_option = arg;
+      rmt_command = arg;
       break;
       
     case RSH_COMMAND_OPTION:
@@ -1510,9 +1511,6 @@ decode_options (int argc, char **argv)
   if (utc_option)
     verbose_option = 2;
 
-  if (!rmt_command_option)
-    rmt_command_option = DEFAULT_RMT_COMMAND;
-  
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */
 

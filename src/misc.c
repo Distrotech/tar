@@ -17,8 +17,8 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-#include "system.h"
-#include "rmt.h"
+#include <system.h>
+#include <rmt.h>
 #include "common.h"
 #include <quotearg.h>
 #include <save-cwd.h>

@@ -19,7 +19,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
 # 02111-1307, USA.
 
-# Written by Paul Eggert.
+# Written by Paul Eggert and Sergey Poznyakoff.
 
 # URL of our text domain page in Translation Project
 TP_URL="http://www2.iro.umontreal.ca/~gnutra/po/maint/tar/"
@@ -31,8 +31,13 @@ export LC_ALL
 
 usage() {
  cat <<EOF
- usage: $0 [--gnulib-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME][--no-po]
+ usage: $0 [--gnulib-srcdir=DIR][--paxutils-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME][--no-po]
  Options are:
+ --paxutils-srcdir=DIRNAME    Specify the local directory where paxutils
+                              sources reside. Use this if you already
+                              have paxutils sources on your machine, and
+                              do not want to waste your bandwidth dowloading
+                              them again.
  --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
                               sources reside. Use this if you already
                               have gnulib sources on your machine, and
@@ -84,6 +89,8 @@ do
     exit;;
   --gnulib-srcdir=*)
     GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
+  --paxutils-srcdir=*)
+    PAXUTILS_SRCDIR=`expr "$option" : '--paxutils-srcdir=\(.*\)'`;;
   --cvs-auth=*)
     CVS_AUTH=`expr "$option" : '--cvs-auth=\(.*\)'`;;
   --cvs-user=*)
@@ -124,33 +131,41 @@ build_cvs_prefix() {
   fi
 }
 
-# Get gnulib files.
-
-case ${GNULIB_SRCDIR--} in
--)
-  if [ ! -d gnulib ]; then
-    echo "$0: getting gnulib files..."
+# checkout package
+checkout() {
+  if [ ! -d $1 ]; then
+    echo "$0: getting $1 files..."
 
     trap exit 1 2 13 15
-    trap 'rm -fr gnulib; exit 1' 0
+    trap 'rm -fr $1; exit 1' 0
 
     case "${CVS_AUTH--}" in
-    -)       build_cvs_prefix ext anoncvs;;
-    pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs};;
+    -)       build_cvs_prefix ext anoncvs
+             ;;
+    pserver) build_cvs_prefix $CVS_AUTH ${CVS_USER:-anoncvs}
+             ;;
     gserver|server)
-	     build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
-    ext)     build_cvs_prefix $CVS_AUTH ${CVS_USER--};;
+	     build_cvs_prefix $CVS_AUTH ${CVS_USER--}
+	     ;;
+    ext)     build_cvs_prefix $CVS_AUTH ${CVS_USER--}
+             ;;
     *)       echo "$0: Unknown CVS access method" >&2
 	     exit 1;;
     esac
     if [ "${CVS_AUTH--}" = "pserver" ]; then
-      cvs -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib login || exit
+      cvs -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/$1 login || exit
     fi
-    cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/gnulib co gnulib || exit
+    cvs -q -d ${CVS_PREFIX}subversions.gnu.org:/cvsroot/$1 co $1 || exit
 
     trap 0
   fi
-  GNULIB_SRCDIR=gnulib
+}
+
+# Get gnulib files.
+
+case ${GNULIB_SRCDIR--} in
+-) checkout gnulib
+   GNULIB_SRCDIR=gnulib
 esac
 
 <$GNULIB_SRCDIR/gnulib-tool || exit
@@ -258,6 +273,36 @@ echo "$0: Creating lib/Makefile.am"
     echo "# $gnulib_module"
     $GNULIB_SRCDIR/gnulib-tool --extract-automake-snippet $gnulib_module
  done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
+
+# Get paxutils files 
+case ${PAXUTILS_SRCDIR--} in
+-) checkout paxutils
+   PAXUTILS_SRCDIR=paxutils
+esac
+
+# copy_files srcdir dstdir
+copy_files() {
+  for file in `cat $1/DISTFILES`
+  do
+    case $file in
+    "#*")  continue;;
+    esac
+    echo "$0: Copying file $1/$file" 
+    cp -p $1/$file $2/`expr $file : '.*/\(.*\)'`
+  done
+}
+
+copy_files ${PAXUTILS_SRCDIR}/m4 m4 
+
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+copy_files ${PAXUTILS_SRCDIR}/rmt rmt 
+
+copy_files ${PAXUTILS_SRCDIR}/lib lib
 
 # Get translations.
 if test "$DOWNLOAD_PO" = "yes"; then

@@ -1,3 +1,38 @@
+2004-09-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Started merging with cpio into paxutils. Sources before
+	this point are tagged alpha-1_14_90
+	
+	* Makefile.am: Updated for use with paxutils
+	* README-alpha: Likewise
+	* bootstrap: Likewise
+	* configure.ac: Likewise
+	* lib/Makefile.tmpl: Likewise
+	* po/POTFILES.in: Likewise
+	* src/Makefile.am: Likewise
+	* src/buffer.c: Likewise
+	* src/common.h: Likewise
+	* src/compare.c: Likewise
+	* src/create.c: Likewise
+	* src/delete.c: Likewise
+	* src/extract.c: Likewise
+	* src/incremen.c: Likewise
+	* src/list.c: Likewise
+	* src/mangle.c: Likewise
+	* src/misc.c: Likewise
+	* src/names.c: Likewise
+	* src/sparse.c: Likewise
+	* src/system.c: Likewise
+	* src/tar.c: Likewise
+	* src/update.c: Likewise
+	* src/utf8.c: Likewise
+	* src/xheader.c: Likewise
+	
+	* src/system.h: Removed
+	* src/rmt.c: Removed
+	* src/rmt.h: Removed
+	* src/rtapelib.c: Removed
+	
 2004-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* tests/listed02.sh: Do not depend on any particular ordering

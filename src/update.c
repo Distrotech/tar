@@ -22,7 +22,7 @@
    of the archive.  No attempt is made to record the reads from the args; if
    they're on raw tape or something like that, it'll probably lose...  */
 
-#include "system.h"
+#include <system.h>
 #include <quotearg.h>
 #include "common.h"
 
