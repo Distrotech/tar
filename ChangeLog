@@ -1,3 +1,8 @@
+2005-01-04  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/Makefile.tmpl (localedir.h): Omit needless quotes and a
+	needless sed command.  Problem reported by Paul Jarc.
+
 2004-12-23  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Accommodate latest gnulib.

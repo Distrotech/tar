@@ -1,6 +1,6 @@
 # Makefile for GNU tar library.
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004
+# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005
 # Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@ DISTCLEANFILES = localedir.h
 localedir.h : Makefile
 	echo '#define LOCALEDIR "$(localedir)"' >$@
 	echo "#ifndef DEFAULT_RMT_COMMAND" >> $@
-	echo "# define DEFAULT_RMT_COMMAND \"$(DEFAULT_RMT_DIR)/`echo \"rmt\" | sed 's,^.*/,,;$(transform)'`$(EXEEXT)\"" >> $@
+	echo "# define DEFAULT_RMT_COMMAND \"$(DEFAULT_RMT_DIR)/`echo rmt | sed '$(transform)'`$(EXEEXT)\"" >> $@
 	echo "#endif" >> $@
 
 rtapelib.o: localedir.h
@@ -51,6 +51,5 @@ $(srcdir)/getdate.c: getdate.y
 	  mv -f y.tab.c getdate.c
 
 SUFFIXES = .o .c .h
-CLEANFILES = 
+CLEANFILES =
 # gnulib modules
-
