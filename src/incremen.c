@@ -460,10 +460,9 @@ write_directory_file (void)
 /* Restoration of incremental dumps.  */
 
 /* Examine the directories under directory_name and delete any
-   files that were not there at the time of the back-up.
-   FIXME: The function name is obviously a misnomer */
+   files that were not there at the time of the back-up. */
 void
-gnu_restore (char const *directory_name)
+purge_directory (char const *directory_name)
 {
   char *archive_dir;
   char *current_dir;
@@ -516,13 +515,30 @@ gnu_restore (char const *directory_name)
 	}
       if (*arc == '\0')
 	{
+	  struct stat st;
 	  char *p = new_name (directory_name, cur);
+
+	  if (deref_stat (true, p, &st))
+	    {
+	      stat_diag (p);
+	      WARN((0, 0, _("%s: Not purging directory %s: unable to stat"),
+		    quotearg_colon (p)));
+	      continue; 
+	    }
+	  else if (one_file_system_option && st.st_dev != root_device)
+	    {
+	      WARN((0, 0,
+		    _("%s: directory %s is on a different device: not purging"),
+		    quotearg_colon (p)));
+	      continue;
+	    }
+	    
 	  if (! interactive_option || confirm ("delete", p))
 	    {
 	      if (verbose_option)
 		fprintf (stdlis, _("%s: Deleting %s\n"),
 			 program_name, quote (p));
-	      if (! remove_any_file (p, 1))
+	      if (! remove_any_file (p, RECURSIVE_REMOVE_OPTION))
 		{
 		  int e = errno;
 		  ERROR ((0, e, _("%s: Cannot remove"), quotearg_colon (p)));
