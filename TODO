@@ -2,6 +2,8 @@ Suggestions for improving GNU tar.
 
 * Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
 
+* --append should bail out if the two archives are of different types.
+
 * Add support for GNU private keywords in POSIX 1003.1-2001 headers,
 so that the GNU extensions (--incremental, --label and
 --multi-volume) may be used with POSIX archives.
