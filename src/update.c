@@ -192,7 +192,7 @@ update_archive (void)
 	if (subcommand_option == CAT_SUBCOMMAND)
 	  append_file (path);
 	else
-	  dump_file (path, (dev_t) 0, 1);
+	  dump_file (path, 1, (dev_t) 0);
       }
   }
 
