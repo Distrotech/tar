@@ -1,6 +1,35 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.12 - Paul Eggert, 1999-09-24.
+
+* `tar' now supports hard links to symbolic links.
+
+* New options --no-same-owner, --no-same-permissions.
+
+* --total now also outputs a human-readable size, and a throughput value.
+
+* `tar' now uses two's-complement base-256 when outputting header
+  values that are out of the range of the standard unsigned base-8
+  format.  This affects archive members with negative or huge time
+  stamps or uids, and archive members 8 GB or larger.  The new tar
+  archives cannot be read by traditional tar, or by older versions of
+  GNU tar.  Use the --old-archive option to revert to the old
+  behavior, which uses unportable representations for negative values,
+  and which rejects large files.
+
+* On 32-bit hosts, `tar' now assumes that an incoming time stamp T in
+  the range 2**31 <= T < 2**32 represents the negative time (T -
+  2**32).  This behavior is nonstandard and is not portable to 64-bit
+  time_t hosts, so `tar' issues a warning.
+
+* `tar' no longer gives up extracting immediately upon discovering
+  that an archive contains garbage at the end.  It attempts to extract
+  as many files as possible from the good data before the garbage.
+
+* Some diagnostics have been reworded for consistency.
+
+
 version 1.13.11 - Paul Eggert, 1999-08-23.
 
 * The short name of the --bzip option has been changed to -I,
@@ -16,7 +45,7 @@ version 1.13.11 - Paul Eggert, 1999-08-23.
 * For the --newer and --after-date options, the table of time zone
   abbreviations like `EST' has been updated to match current practice.
   Also, local time abbreviations are now recognized, even if they are
-  not in tar's hardwired table.  Remember, thougy, that you should use
+  not in tar's hardwired table.  Remember, though, that you should use
   numeric UTC offsets like `-0500' instead of abbreviations like
   `EST', as abbreviations are not standardized and are ambiguous.
 
@@ -24,13 +53,9 @@ version 1.13.11 - Paul Eggert, 1999-08-23.
 version 1.13.10 - Paul Eggert, 1999-08-20.
 
 * `tar' now uses signed base-64 when outputting header values that are
-  out of the range of the standard unsigned base-8 format.  This
-  affects archive members with negative time stamps or uids, and
-  archive members 8 GB or larger.  The new tar archives cannot be read
-  by traditional tar, or by older versions of GNU tar.  Use the
-  --old-archive option to revert to the old behavior, which uses
-  unportable representations for negative values, and which rejects
-  large files.
+  out of the range of the standard unsigned base-8 format.  [This
+  change was superseded in 1.13.12, described above.]
+
 
 version 1.13.9 - Paul Eggert, 1999-08-18.
 
