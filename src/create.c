@@ -547,8 +547,9 @@ write_extended (struct tar_stat_info *st, union block *old_header, char type)
   size = extended_header.size;
 
   memcpy (hp.buffer, old_header, sizeof (hp));
-  
-  header = start_private_header ("././@PaxHeader", size);
+
+  header = start_private_header (p = xheader_xhdr_name (st), size);
+  free (p);
   header->header.typeflag = type;
 
   finish_header (st, header, -1);
