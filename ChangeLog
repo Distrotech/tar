@@ -1,3 +1,7 @@
+2004-08-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/tar.c (find_argp_option): Fixed typo
+
 2004-08-12  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Merge argp, getopt, xalloc changes from gnulib.
