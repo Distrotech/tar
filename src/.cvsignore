@@ -4,3 +4,4 @@ localedir.h
 rmt
 tar
 .deps
+.gdbinit
