@@ -328,7 +328,9 @@ encode_oflag (char *buf, int oflag)
     default: abort ();
     }
 
+#ifdef O_APPEND
   if (oflag & O_APPEND) strcat (buf, "|O_APPEND");
+#endif
   if (oflag & O_CREAT) strcat (buf, "|O_CREAT");
 #ifdef O_DSYNC
   if (oflag & O_DSYNC) strcat (buf, "|O_DSYNC");

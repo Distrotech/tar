@@ -204,7 +204,9 @@ decode_oflag (char const *oflag_string)
       struct name_value_pair { char const *name; int value; };
       static struct name_value_pair const table[] =
       {
+#ifdef O_APPEND
 	{"APPEND", O_APPEND},
+#endif
 	{"CREAT", O_CREAT},
 #ifdef O_DSYNC
 	{"DSYNC", O_DSYNC},
