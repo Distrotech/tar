@@ -145,6 +145,8 @@
 @set xref-checkpoint @xref{verbose}
 @set pxref-checkpoint @pxref{verbose}
 
+@set op-check-links @kbd{--check-links}
+
 @set op-compare @kbd{--compare} (@kbd{--diff}, @kbd{-d})
 @set ref-compare @ref{compare}
 @set xref-compare @xref{compare}
@@ -2565,6 +2567,13 @@ This option directs @command{tar} to print periodic checkpoint messages as it
 reads through the archive.  Its intended for when you want a visual
 indication that @command{tar} is still running, but don't want to see
 @samp{--verbose} output.  @FIXME-xref{}
+
+@item --check-links
+
+If this option was given, @command{tar} will check the number of links
+dumped for each processed file. If this number does not match the
+total number of hard links for the file, a warning message will be
+output.
 
 @item --compress
 @itemx --uncompress

@@ -14,6 +14,18 @@ version 1.13.26
 
 * Bug fixes.
 
+* The semantics of -o option is changed. When extracting, it
+does the same as --no-same-owner GNU tar option. This is compatible
+with UNIX98 tar. Otherwise, its effect is the same as that of
+--old-archive option. This latter is deprecated and will be removed
+in future.
+
+* New option --check-links prints a message if not all links are dumped
+for a file being archived. This corresponds to the UNIX98 -l option.
+The current semantics of the -l option is retained for compatibility
+with previous releases, however such usage is strongly deprecated as
+the option will change to its UNIX98 semantics in the future releases.
+
 version 1.13.25 - Paul Eggert, 2001-09-26
 
 * Bug fixes.

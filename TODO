@@ -11,29 +11,15 @@ Suggestions for improving GNU tar.
   This would unify paxutils with tar.
 
 * Remove command-line incompatibilities between GNU tar and UNIX tar
-  as specified by UNIX98.  The main problems are:
+  as specified by UNIX98.  The main problem is:
 
      l   GNU tar doesn't cross filesystem boundaries.
 	 UNIX98 tar warns if all links cannot be resolved.
-	   (GNU tar has no similar option.)
+	   (GNU tar --check-links option)
 
-     o   GNU tar says output old format.
-	 UNIX98 tar says don't chown files after extracting
-	   (GNU tar uses "--no-same-owner" for this).
-
-  Many people rely on GNU tar's "l" and "o" so we can't abruptly change
-  GNU tar to be compatible with UNIX98 tar.
-
-  However, "o" is relatively easy: we can extend GNU tar so that "o" is
-  a synonym for --no-same-owner when extracting, keeping "o"'s current
-  semantics when creating.  This is a bit of a hack, but it shouldn't
-  break things.
-
-  "l" will be harder, since it's a clear incompatibility.  Perhaps we
-  could announce a phase-in period where "l" changes in semantics.
-  However, the first step should be to support the UNIX98 semantics,
-  using a long option, without changing the meaning of "l" for now.  That
-  will give people a migration strategy.
+  Perhaps we could announce a phase-in period where "l" changes in semantics.
+  In the meanwhile we could make the "l" semantics to be determined by the
+  value of POSIXLY_CORRECT variable.
 
 * Interoperate better with Joerg Schilling's star implementation.
 
