@@ -132,7 +132,6 @@ LIBS=$tar_save_LIBS
 AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale utimes)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
-AC_CHECK_DECLS([valloc])
 AC_CHECK_DECLS([time],,, [#include <time.h>])
 
 # Set LIB_SETSOCKOPT to -lnsl -lsocket if necessary.
