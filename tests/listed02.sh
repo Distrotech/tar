@@ -69,7 +69,10 @@ rm -rf tart/*
 echo Extracting main archive
 tar -x -v --listed-incremental=tart.incr1 -f archive.1
 echo Extracting incremental archive
-tar -x -v --listed-incremental=tart.incr2 -f archive.2
+# This command should produce three messages about deletion
+# of the existing files, that may appear in any order. Piping
+# to sort makes sure we don't depend on any particular ordering.
+tar -x -v --listed-incremental=tart.incr2 -f archive.2 | sort
 
 echo Final files:
 find tart|sort
@@ -120,13 +123,13 @@ tart/c0/cq2
 tart/c1/ca1
 tart/c1/ca2
 Extracting incremental archive
-tart/
-tar: Deleting \`tart/c1'
 tar: Deleting \`tart/a1'
 tar: Deleting \`tart/b1'
+tar: Deleting \`tart/c1'
+tart/
+tart/b2
 tart/c0/
 tart/c2/
-tart/b2
 tart/c2/ca1
 tart/c2/ca2
 tart/c2/ca3
