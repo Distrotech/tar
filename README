@@ -1,9 +1,10 @@
 Hey!  Emacs!  Yo!  This is -*- Text -*- !!!
 
-This GNU tar 1.11.  Please send bug reports, etc., to
+This GNU tar 1.11.1.  Please send bug reports, etc., to
 bug-gnu-utils@prep.ai.mit.edu.  This is a beta-test release.  Please
 try it out.  After bug reports are processed for this release, version
-1.12 will be released.
+1.12 will be released.  This release includes only bugfixes past
+version 1.11, most of which are fairly important.
 
 GNU tar is based heavily on John Gilmore's public domain tar, but with
 added features.  The manual is currently being written.  An old
