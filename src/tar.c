@@ -707,7 +707,7 @@ decode_options (int argc, char **argv)
 	/* Try to reblock input records.  For reading 4.2BSD pipes.  */
 
 	/* It would surely make sense to exchange -B and -R, but it seems
-	   that -B has been used for a long while in Sun tar ans most
+	   that -B has been used for a long while in Sun tar and most
 	   BSD-derived systems.  This is a consequence of the block/record
 	   terminology confusion.  */
 
