@@ -1,6 +1,6 @@
 /* Functions for dealing with sparse files
 
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -46,6 +46,9 @@ struct tar_sparse_optab
 struct tar_sparse_file
 {
   int fd;                           /* File descriptor */
+  bool seekable;                    /* Is fd seekable? */
+  size_t offset;                    /* Current offset in fd if seekable==false.
+				       Otherwise unused */
   size_t dumped_size;               /* Number of bytes actually written
 				       to the archive */
   struct tar_stat_info *stat_info;  /* Information about the file */
@@ -53,6 +56,39 @@ struct tar_sparse_file
   void *closure;                    /* Any additional data optab calls might
 				       reqiure */
 };
+
+/* Dump zeros to file->fd until offset is reached. It is used instead of
+   lseek if the output file is not seekable */
+static long
+dump_zeros (struct tar_sparse_file *file, off_t offset)
+{
+  char buf[BLOCKSIZE];
+  
+  if (offset - file->offset < 0)
+    {
+      errno = EINVAL;
+      return -1;
+    }
+
+  memset (buf, 0, sizeof buf);
+  while (file->offset < offset)
+    {
+      size_t size = offset - file->offset;
+      size_t wrbytes;
+      
+      if (size > sizeof buf)
+	size = sizeof buf;
+      wrbytes = write (file->fd, buf, size);
+      if (wrbytes <= 0)
+	{
+	  if (wrbytes == 0)
+	    errno = EINVAL;
+	  return -1;
+	}
+      file->offset += wrbytes;
+    }
+  return file->offset;
+}
 
 static bool
 tar_sparse_member_p (struct tar_sparse_file *file)
@@ -130,9 +166,16 @@ tar_sparse_fixup_header (struct tar_sparse_file *file)
 
 
 static bool
-lseek_or_error (struct tar_sparse_file *file, off_t offset, int whence)
+lseek_or_error (struct tar_sparse_file *file, off_t offset)
 {
-  if (lseek (file->fd, offset, whence) < 0)
+  off_t off;
+
+  if (file->seekable)
+    off = lseek (file->fd, offset, SEEK_SET);
+  else
+    off = dump_zeros (file, offset);
+  
+  if (off < 0)
     {
       seek_diag_details (file->stat_info->orig_file_name, offset);
       return false;
@@ -185,7 +228,7 @@ sparse_scan_file (struct tar_sparse_file *file)
   size_t offset = 0;
   struct sp_array sp = {0, 0};
 
-  if (!lseek_or_error (file, 0, SEEK_SET))
+  if (!lseek_or_error (file, 0))
     return false;
   clear_block (buffer);
 
@@ -269,8 +312,7 @@ sparse_dump_region (struct tar_sparse_file *file, size_t i)
   union block *blk;
   off_t bytes_left = file->stat_info->sparse_map[i].numbytes;
 
-  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset,
-		       SEEK_SET))
+  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset))
     return false;
 
   while (bytes_left > 0)
@@ -304,8 +346,7 @@ sparse_extract_region (struct tar_sparse_file *file, size_t i)
 {
   size_t write_size;
 
-  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset,
-		       SEEK_SET))
+  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset))
     return false;
 
   write_size = file->stat_info->sparse_map[i].numbytes;
@@ -313,7 +354,7 @@ sparse_extract_region (struct tar_sparse_file *file, size_t i)
   if (write_size == 0)
     {
       /* Last block of the file is a hole */
-      if (sys_truncate (file->fd))
+      if (file->seekable && sys_truncate (file->fd))
 	truncate_warn (file->stat_info->orig_file_name);
     }
   else while (write_size > 0)
@@ -330,6 +371,7 @@ sparse_extract_region (struct tar_sparse_file *file, size_t i)
       count = full_write (file->fd, blk->buffer, wrbytes);
       write_size -= count;
       file->dumped_size += count;
+      file->offset += count;
       if (count != wrbytes)
 	{
 	  write_error_details (file->stat_info->orig_file_name,
@@ -351,7 +393,9 @@ sparse_dump_file (int fd, struct tar_stat_info *st)
 
   file.stat_info = st;
   file.fd = fd;
-
+  file.seekable = true; /* File *must* be seekable for dump to work */
+  file.offset = 0;
+  
   if (!sparse_select_optab (&file)
       || !tar_sparse_init (&file))
     return dump_status_not_implemented;
@@ -414,7 +458,9 @@ sparse_extract_file (int fd, struct tar_stat_info *st, off_t *size)
 
   file.stat_info = st;
   file.fd = fd;
-
+  file.seekable = lseek (fd, 0, SEEK_SET) == 0;
+  file.offset = 0;
+  
   if (!sparse_select_optab (&file)
       || !tar_sparse_init (&file))
     return dump_status_not_implemented;
@@ -450,7 +496,7 @@ static char diff_buffer[BLOCKSIZE];
 static bool
 check_sparse_region (struct tar_sparse_file *file, off_t beg, off_t end)
 {
-  if (!lseek_or_error (file, beg, SEEK_SET))
+  if (!lseek_or_error (file, beg))
     return false;
 
   while (beg < end)
@@ -486,8 +532,7 @@ check_data_region (struct tar_sparse_file *file, size_t i)
 {
   size_t size_left;
 
-  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset,
-		       SEEK_SET))
+  if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset))
     return false;
   size_left = file->stat_info->sparse_map[i].numbytes;
   while (size_left > 0)
