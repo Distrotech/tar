@@ -448,7 +448,7 @@ child_open_for_compress (void)
 
       status = write_archive_buffer ();
       if (status != record_size)
- 	archive_write_error (status);
+	archive_write_error (status);
     }
 
 #if 0
@@ -463,7 +463,7 @@ child_open_for_compress (void)
 	waitpid_error (use_compress_program_option);
 	break;
       }
-  
+
   if (WIFSIGNALED (wait_status))
     {
       kill (child_pid, WTERMSIG (wait_status));
@@ -613,7 +613,7 @@ child_open_for_uncompress (void)
 	waitpid_error (use_compress_program_option);
 	break;
       }
-  
+
   if (WIFSIGNALED (wait_status))
     {
       kill (child_pid, WTERMSIG (wait_status));
@@ -636,6 +636,9 @@ check_label_pattern (union block *label)
 {
   char *string;
   int result;
+
+  if (! memchr (label->header.name, '\0', sizeof label->header.name))
+    return 0;
 
   if (fnmatch (volume_label_option, label->header.name, 0) == 0)
     return 1;
@@ -957,7 +960,7 @@ flush_write (void)
       strcpy (record_start->header.name, real_s_name);
       record_start->header.typeflag = GNUTYPE_MULTIVOL;
       OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
-      OFF_TO_CHARS (real_s_totsize - real_s_sizeleft, 
+      OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
 		    record_start->oldgnu_header.offset);
       tmp = verbose_option;
       verbose_option = 0;
@@ -1162,7 +1165,7 @@ flush_read (void)
 	      char totsizebuf[UINTMAX_STRSIZE_BOUND];
 	      char s1buf[UINTMAX_STRSIZE_BOUND];
 	      char s2buf[UINTMAX_STRSIZE_BOUND];
-	      
+
 	      WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
 		     quote (cursor->header.name),
 		     STRINGIFY_BIGINT (save_totsize, totsizebuf),
@@ -1211,7 +1214,7 @@ flush_read (void)
       if (! read_full_records_option)
 	FATAL_ERROR ((0, 0, _("Unaligned block (%lu bytes) in archive"),
 		      (unsigned long) (record_size - left)));
-	  
+
       /* User warned us about this.  Fix up.  */
 
       left -= status;
@@ -1379,7 +1382,10 @@ init_volume_number (void)
 
   if (file)
     {
-      fscanf (file, "%d", &global_volno);
+      if (fscanf (file, "%d", &global_volno) != 1
+	  || global_volno < 0)
+	FATAL_ERROR ((0, 0, _("%s: contains invalid volume number"),
+		      quotearg_colon (volno_file_option)));
       if (ferror (file))
 	read_error (volno_file_option);
       if (fclose (file) != 0)
@@ -1428,6 +1434,8 @@ new_volume (enum access_mode access)
     close_warn (*archive_name_cursor);
 
   global_volno++;
+  if (global_volno < 0)
+    FATAL_ERROR ((0, 0, _("Volume number overflow")));
   volno++;
   archive_name_cursor++;
   if (archive_name_cursor == archive_name_array + archive_names)
