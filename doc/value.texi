@@ -1,0 +1,407 @@
+@c This is part of GNU tar manual.
+@c Copyright (C) 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
+@c 2003, 2004 Free Software Foundation, Inc.
+@c See file tar.texi for copying conditions.
+
+@macro GNUTAR
+@acronym{GNU} @command{tar}
+@end macro
+
+@set op-absolute-names @option{--absolute-names} (@option{-P})
+@set ref-absolute-names @ref{absolute}
+@set xref-absolute-names @xref{absolute}
+@set pxref-absolute-names @pxref{absolute}
+
+@set op-after-date @option{--after-date=@var{date}} (@option{--newer=@var{date}}, @option{-N @var{date}})
+@set ref-after-date @ref{after}
+@set xref-after-date @xref{after}
+@set pxref-after-date @pxref{after}
+
+@set op-append @option{--append} (@option{-r})
+@set ref-append @ref{add}
+@set xref-append @xref{add}
+@set pxref-append @pxref{add}
+
+@set op-atime-preserve @option{--atime-preserve}
+@set ref-atime-preserve @ref{Attributes}
+@set xref-atime-preserve @xref{Attributes}
+@set pxref-atime-preserve @pxref{Attributes}
+
+@set op-backup @option{--backup}
+@set ref-backup @ref{Backup options}
+@set xref-backup @xref{Backup options}
+@set pxref-backup @pxref{Backup options}
+
+@set op-block-number @option{--block-number} (@option{-R})
+@set ref-block-number @ref{verbose}
+@set xref-block-number @xref{verbose}
+@set pxref-block-number @pxref{verbose}
+
+@set op-blocking-factor @option{--blocking-factor=@var{512-size}} (@option{-b @var{512-size}})
+@set ref-blocking-factor @ref{Blocking Factor}
+@set xref-blocking-factor @xref{Blocking Factor}
+@set pxref-blocking-factor @pxref{Blocking Factor}
+
+@set op-bzip2 @option{--bzip2} (@option{-j})
+@set ref-bzip2 @ref{gzip}
+@set xref-bzip2 @xref{gzip}
+@set pxref-bzip2 @pxref{gzip}
+
+@set op-check-links @option{--check-links} (@option{-l})
+@set ref-check-links @ref{--check-links}
+@set xref-check-links @xref{--check-links}
+@set pxref-check-links @pxref{--check-links}
+
+@set op-checkpoint @option{--checkpoint}
+@set ref-checkpoint @ref{verbose}
+@set xref-checkpoint @xref{verbose}
+@set pxref-checkpoint @pxref{verbose}
+
+@set op-check-links @option{--check-links}
+
+@set op-compare @option{--compare} (@option{--diff}, @option{-d})
+@set ref-compare @ref{compare}
+@set xref-compare @xref{compare}
+@set pxref-compare @pxref{compare}
+
+@set op-compress @option{--compress} (@option{--uncompress}, @option{-Z})
+@set ref-compress @ref{gzip}
+@set xref-compress @xref{gzip}
+@set pxref-compress @pxref{gzip}
+
+@set op-concatenate @option{--concatenate} (@option{--catenate}, @option{-A})
+@set ref-concatenate @ref{concatenate}
+@set xref-concatenate @xref{concatenate}
+@set pxref-concatenate @pxref{concatenate}
+
+@set op-create @option{--create} (@option{-c})
+@set ref-create @ref{create}
+@set xref-create @xref{create}
+@set pxref-create @pxref{create}
+
+@set op-delete @option{--delete}
+@set ref-delete @ref{delete}
+@set xref-delete @xref{delete}
+@set pxref-delete @pxref{delete}
+
+@set op-dereference @option{--dereference} (@option{-h})
+@set ref-dereference @ref{dereference}
+@set xref-dereference @xref{dereference}
+@set pxref-dereference @pxref{dereference}
+
+@set op-directory @option{--directory=@var{directory}} (@option{-C @var{directory}})
+@set ref-directory @ref{directory}
+@set xref-directory @xref{directory}
+@set pxref-directory @pxref{directory}
+
+@set op-exclude @option{--exclude=@var{pattern}}
+@set ref-exclude @ref{exclude}
+@set xref-exclude @xref{exclude}
+@set pxref-exclude @pxref{exclude}
+
+@set op-exclude-from @option{--exclude-from=@var{file-of-patterns}} (@option{-X @var{file-of-patterns}})
+@set ref-exclude-from @ref{exclude}
+@set xref-exclude-from @xref{exclude}
+@set pxref-exclude-from @pxref{exclude}
+
+@set op-exclude-caches @option{--exclude-caches}
+@set ref-exclude-from @ref{exclude-caches}
+@set xref-exclude-from @xref{exclude-caches}
+@set pxref-exclude-from @pxref{exclude-caches}
+
+@set op-extract @option{--extract} (@option{--get}, @option{-x})
+@set ref-extract @ref{extract}
+@set xref-extract @xref{extract}
+@set pxref-extract @pxref{extract}
+
+@set op-file @option{--file=@var{archive-name}} (@option{-f @var{archive-name}})
+@set ref-file @ref{file}
+@set xref-file @xref{file}
+@set pxref-file @pxref{file}
+
+@set op-files-from @option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}})
+@set ref-files-from @ref{files}
+@set xref-files-from @xref{files}
+@set pxref-files-from @pxref{files}
+
+@set op-force-local @option{--force-local}
+@set ref-force-local @ref{file}
+@set xref-force-local @xref{file}
+@set pxref-force-local @pxref{file}
+
+@set op-group @option{--group=@var{group}}
+@set ref-group @ref{Option Summary}
+@set xref-group @xref{Option Summary}
+@set pxref-group @pxref{Option Summary}
+
+@set op-gzip @option{--gzip} (@option{--gunzip}, @option{--ungzip}, @option{-z})
+@set ref-gzip @ref{gzip}
+@set xref-gzip @xref{gzip}
+@set pxref-gzip @pxref{gzip}
+
+@set op-help @option{--help}
+@set ref-help @ref{help}
+@set xref-help @xref{help}
+@set pxref-help @pxref{help}
+
+@set op-ignore-failed-read @option{--ignore-failed-read}
+@set ref-ignore-failed-read @ref{create options}
+@set xref-ignore-failed-read @xref{create options}
+@set pxref-ignore-failed-read @pxref{create options}
+
+@set op-ignore-zeros @option{--ignore-zeros} (@option{-i})
+@set ref-ignore-zeros @ref{Reading}
+@set xref-ignore-zeros @xref{Reading}
+@set pxref-ignore-zeros @pxref{Reading}
+
+@set op-incremental @option{--incremental} (@option{-G})
+@set ref-incremental @ref{Inc Dumps}
+@set xref-incremental @xref{Inc Dumps}
+@set pxref-incremental @pxref{Inc Dumps}
+
+@set op-info-script @option{--info-script=@var{script-name}} (@option{--new-volume-script=@var{script-name}}, @option{-F @var{script-name}})
+@set ref-info-script @ref{Multi-Volume Archives}
+@set xref-info-script @xref{Multi-Volume Archives}
+@set pxref-info-script @pxref{Multi-Volume Archives}
+
+@set op-interactive @option{--interactive} (@option{-w})
+@set ref-interactive @ref{interactive}
+@set xref-interactive @xref{interactive}
+@set pxref-interactive @pxref{interactive}
+
+@set op-keep-old-files @option{--keep-old-files} (@option{-k})
+@set ref-keep-old-files @ref{Keep Old Files}
+@set xref-keep-old-files @xref{Keep Old Files}
+@set pxref-keep-old-files @pxref{Keep Old Files}
+
+@set op-keep-newer-files @option{--keep-old-files} 
+@set ref-keep-newer-files @ref{Keep Newer Files}
+@set xref-keep-newer-files @xref{Keep Newer Files}
+@set pxref-keep-newer-files @pxref{Keep Newer Files}
+
+@set op-label @option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
+@set ref-label @ref{label}
+@set xref-label @xref{label}
+@set pxref-label @pxref{label}
+
+@set op-list @option{--list} (@option{-t})
+@set ref-list @ref{list}
+@set xref-list @xref{list}
+@set pxref-list @pxref{list}
+
+@set op-listed-incremental @option{--listed-incremental=@var{snapshot-file}} (@option{-g @var{snapshot-file}})
+@set ref-listed-incremental @ref{Inc Dumps}
+@set xref-listed-incremental @xref{Inc Dumps}
+@set pxref-listed-incremental @pxref{Inc Dumps}
+
+@set op-mode @option{--mode=@var{permissions}}
+@set ref-mode @ref{Option Summary}
+@set xref-mode @xref{Option Summary}
+@set pxref-mode @pxref{Option Summary}
+
+@set op-multi-volume @option{--multi-volume} (@option{-M})
+@set ref-multi-volume @ref{Multi-Volume Archives}
+@set xref-multi-volume @xref{Multi-Volume Archives}
+@set pxref-multi-volume @pxref{Multi-Volume Archives}
+
+@set op-newer-mtime @option{--newer-mtime=@var{date}}
+@set ref-newer-mtime @ref{after}
+@set xref-newer-mtime @xref{after}
+@set pxref-newer-mtime @pxref{after}
+
+@set op-no-recursion @option{--no-recursion}
+@set ref-no-recursion @ref{recurse}
+@set xref-no-recursion @xref{recurse}
+@set pxref-no-recursion @pxref{recurse}
+
+@set op-no-same-owner @option{--no-same-owner} (@option{-o})
+@set ref-no-same-owner @ref{Attributes}
+@set xref-no-same-owner @xref{Attributes}
+@set pxref-no-same-owner @pxref{Attributes}
+
+@set op-no-same-permissions @option{--no-same-permissions}
+@set ref-no-same-permissions @ref{Attributes}
+@set xref-no-same-permissions @xref{Attributes}
+@set pxref-no-same-permissions @pxref{Attributes}
+
+@set op-null @option{--null}
+@set ref-null @ref{files}
+@set xref-null @xref{files}
+@set pxref-null @pxref{files}
+
+@set op-numeric-owner @option{--numeric-owner}
+@set ref-numeric-owner @ref{Attributes}
+@set xref-numeric-owner @xref{Attributes}
+@set pxref-numeric-owner @pxref{Attributes}
+
+@set op-occurrence @option{--occurrence} 
+@set ref-occurrence @ref{--occurrence}
+@set xref-occurrence @xref{--occurrence}
+@set pxref-occurrence @pxref{--occurrence}
+
+@set op-old-archive @option{--old-archive} (@option{-o})
+@set ref-old-archive @ref{old}
+@set xref-old-archive @xref{old}
+@set pxref-old-archive @pxref{old}
+
+@set op-one-file-system @option{--one-file-system} (@option{-l})
+@set ref-one-file-system @ref{one}
+@set xref-one-file-system @xref{one}
+@set pxref-one-file-system @pxref{one}
+
+@set op-overwrite @option{--overwrite}
+@set ref-overwrite @ref{Overwrite Old Files}
+@set xref-overwrite @xref{Overwrite Old Files}
+@set pxref-overwrite @pxref{Overwrite Old Files}
+
+@set op-owner @option{--owner=@var{user}}
+@set ref-owner @ref{Option Summary}
+@set xref-owner @xref{Option Summary}
+@set pxref-owner @pxref{Option Summary}
+
+@set op-format @option{--format} (@option{-H})
+@set ref-format @ref{format}
+@set xref-format @xref{format}
+@set pxref-format @pxref{format}
+
+@set op-format-v7 @option{--format=v7}
+@set op-format-gnu @option{--format=gnu}
+@set op-format-oldgnu @option{--format=oldgnu}
+@set op-format-posix @option{--format=posix}
+@set op-format-ustar @option{--format=ustar}
+
+@set op-posix @option{--posix}
+@set ref-posix @ref{posix}
+@set xref-posix @xref{posix}
+@set pxref-posix @pxref{posix}
+
+@set op-preserve @option{--preserve}
+@set ref-preserve @ref{Attributes}
+@set xref-preserve @xref{Attributes}
+@set pxref-preserve @pxref{Attributes}
+
+@set op-record-size @option{--record-size=@var{size}}
+@set ref-record-size @ref{Blocking}
+@set xref-record-size @xref{Blocking}
+@set pxref-record-size @pxref{Blocking}
+
+@set op-recursive-unlink @option{--recursive-unlink}
+@set ref-recursive-unlink @ref{Writing}
+@set xref-recursive-unlink @xref{Writing}
+@set pxref-recursive-unlink @pxref{Writing}
+
+@set op-read-full-records @option{--read-full-records} (@option{-B})
+@set ref-read-full-records @ref{Blocking}
+@set xref-read-full-records @xref{Blocking}
+@set pxref-read-full-records @pxref{Blocking}
+@c FIXME: or should it be Reading, or Blocking Factor
+
+@set op-remove-files @option{--remove-files}
+@set ref-remove-files @ref{Writing}
+@set xref-remove-files @xref{Writing}
+@set pxref-remove-files @pxref{Writing}
+
+@set op-rmt-command @option{rmt-command=@var{command}}
+@set op-rsh-command @option{rsh-command=@var{command}}
+
+@set op-same-order @option{--same-order} (@option{--preserve-order}, @option{-s})
+@set ref-same-order @ref{Scarce}
+@set xref-same-order @xref{Scarce}
+@set pxref-same-order @pxref{Scarce}
+@c FIXME: or should it be Reading, or Attributes?
+
+@set op-same-owner @option{--same-owner}
+@set ref-same-owner @ref{Attributes}
+@set xref-same-owner @xref{Attributes}
+@set pxref-same-owner @pxref{Attributes}
+
+@set op-same-permissions @option{--same-permissions} (@option{--preserve-permissions}, @option{-p})
+@set ref-same-permissions @ref{Attributes}
+@set xref-same-permissions @xref{Attributes}
+@set pxref-same-permissions @pxref{Attributes}
+@c FIXME: or should it be Writing?
+
+@set op-show-omitted-dirs @option{--show-omitted-dirs}
+@set ref-show-omitted-dirs @ref{verbose}
+@set xref-show-omitted-dirs @xref{verbose}
+@set pxref-show-omitted-dirs @pxref{verbose}
+
+@set op-sparse @option{--sparse} (@option{-S})
+@set ref-sparse @ref{sparse}
+@set xref-sparse @xref{sparse}
+@set pxref-sparse @pxref{sparse}
+
+@set op-starting-file @option{--starting-file=@var{name}} (@option{-K @var{name}})
+@set ref-starting-file @ref{Scarce}
+@set xref-starting-file @xref{Scarce}
+@set pxref-starting-file @pxref{Scarce}
+
+@set op-strip-components @option{--strip-components} 
+@set ref-strip-components @ref{--strip-components}
+@set xref-strip-components @xref{--strip-components}
+@set pxref-strip-components @pxref{--strip-components}
+
+@set op-suffix @option{--suffix=@var{suffix}}
+@set ref-suffix @ref{Backup options}
+@set xref-suffix @xref{Backup options}
+@set pxref-suffix @pxref{Backup options}
+
+@set op-tape-length @option{--tape-length=@var{1024-size}} (@option{-L @var{1024-size}})
+@set ref-tape-length @ref{Using Multiple Tapes}
+@set xref-tape-length @xref{Using Multiple Tapes}
+@set pxref-tape-length @pxref{Using Multiple Tapes}
+
+@set op-to-stdout @option{--to-stdout} (@option{-O})
+@set ref-to-stdout @ref{Writing}
+@set xref-to-stdout @xref{Writing}
+@set pxref-to-stdout @pxref{Writing}
+
+@set op-totals @option{--totals}
+@set ref-totals @ref{verbose}
+@set xref-totals @xref{verbose}
+@set pxref-totals @pxref{verbose}
+
+@set op-touch @option{--touch} (@option{-m})
+@set ref-touch @ref{Writing}
+@set xref-touch @xref{Writing}
+@set pxref-touch @pxref{Writing}
+
+@set op-unlink-first @option{--unlink-first} (@option{-U})
+@set ref-unlink-first @ref{Writing}
+@set xref-unlink-first @xref{Writing}
+@set pxref-unlink-first @pxref{Writing}
+
+@set op-update @option{--update} (@option{-u})
+@set ref-update @ref{update}
+@set xref-update @xref{update}
+@set pxref-update @pxref{update}
+
+@set op-use-compress-prog @option{--use-compress-prog=@var{program}}
+@set ref-use-compress-prog @ref{gzip}
+@set xref-use-compress-prog @xref{gzip}
+@set pxref-use-compress-prog @pxref{gzip}
+
+@set op-verbose @option{--verbose} (@option{-v})
+@set ref-verbose @ref{verbose}
+@set xref-verbose @xref{verbose}
+@set pxref-verbose @pxref{verbose}
+
+@set op-verify @option{--verify} (@option{-W})
+@set ref-verify @ref{verify}
+@set xref-verify @xref{verify}
+@set pxref-verify @pxref{verify}
+
+@set op-version @option{--version}
+@set ref-version @ref{help}
+@set xref-version @xref{help}
+@set pxref-version @pxref{help}
+
+@set op-volno-file @option{--volno-file=@var{file-of-number}}
+@set ref-volno-file @ref{Using Multiple Tapes}
+@set xref-volno-file @xref{Using Multiple Tapes}
+@set pxref-volno-file @pxref{Using Multiple Tapes}
+
+@set op-seek @option{--seek}
+@set ref-seek @ref{seek}
+@set xref-seek @xref{seek}
+@set pxref-seek @pxref{seek}
