@@ -24,6 +24,7 @@ AT_KEYWORDS([ustar-big-2g])
 unset TAR_OPTIONS
 
 AT_CHECK([
+AT_GZIP_PREREQ([bzip2])
 AT_STAR_PREREQ([ustar-big-2g.tar.bz2])
 
 tar --utc -tvjf $STAR_TESTSCRIPTS/ustar-big-2g.tar.bz2

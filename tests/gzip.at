@@ -26,6 +26,7 @@ AT_KEYWORDS([gzip])
 unset TAR_OPTIONS
 
 AT_CHECK([
+AT_GZIP_PREREQ
 tar xfvz /dev/null
 test $? = 2 || exit 1
 ],
