@@ -261,14 +261,6 @@ AC_CHECK_TYPE(iconv_t,:,
 #endif
 ])
 
-# Check if we have reentrant versions of getopt. Argp needs them,
-# but many versions of Glibc lack them, though they define the
-# same getopt interface version as lib/getopt.c.
-AC_CHECK_FUNC(_getopt_long_only_r,
-              :,
-              [AC_DEFINE(WANT_INCLUDED_GETOPT,1,
-                         [Define if the included version of getopt has to be used])])
-
 AC_SUBST(BACKUP_LIBEXEC_SCRIPTS)
 AC_SUBST(BACKUP_SBIN_SCRIPTS)
 AC_ARG_ENABLE(backup-scripts,
