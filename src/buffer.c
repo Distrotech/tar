@@ -14,7 +14,7 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
-   59 Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #include "system.h"
 
@@ -1565,8 +1565,9 @@ tryagain:
 	  {
 	    char input_buffer[80];
 
+	    fputc ('\007', stderr);
 	    fprintf (stderr,
-		     _("\007Prepare volume #%d for %s and hit return: "),
+		     _("Prepare volume #%d for %s and hit return: "),
 		     global_volno, *archive_name_cursor);
 	    fflush (stderr);
 
