@@ -49,17 +49,19 @@ AC_CHECK_HEADERS([sys/buf.h], [], [],
 AC_HEADER_SYS_WAIT
 AM_STDBOOL_H
 
-if test $ac_cv_header_sys_mtio_h = yes; then
-  AC_CACHE_CHECK(for remote tape header files, tar_cv_header_rmt,
-    [AC_TRY_CPP([
+enable_rmt() {
+  if test $ac_cv_header_sys_mtio_h = yes; then
+    AC_CACHE_CHECK(for remote tape header files, tar_cv_header_rmt,
+      [AC_TRY_CPP([
 #if HAVE_SGTTY_H
 # include <sgtty.h>
 #endif
 #include <sys/socket.h>],
-    tar_cv_header_rmt=yes, tar_cv_header_rmt=no)])
-  test $tar_cv_header_rmt = yes && RMT='rmt$(EXEEXT)'
-  AC_SUBST(RMT)
-fi
+      tar_cv_header_rmt=yes, tar_cv_header_rmt=no)])
+    test $tar_cv_header_rmt = yes && RMT='rmt'
+    AC_SUBST(RMT)
+  fi
+}
 
 AC_CACHE_CHECK(which ioctl field to test for reversed bytes,
   tar_cv_header_mtio_check_field,
@@ -238,12 +240,36 @@ AC_DEFINE_UNQUOTED(DEFAULT_BLOCKING, $DEFAULT_BLOCKING,
   [Define to a number giving the default blocking size for archives.])
 AC_MSG_RESULT($DEFAULT_BLOCKING)
 
-AC_ARG_VAR([DEFAULT_RMT_COMMAND],
-           [Define full pathname of rmt program.])
+AC_ARG_VAR([DEFAULT_RMT_DIR],
+           [Define full file name of the directory where to install `rmt'. (default: $(libexecdir))])
+if test "x$DEFAULT_RMT_DIR" != x; then
+	DEFAULT_RMT_COMMAND=$DEFAULT_RMT_DIR/rmt
+else
+	DEFAULT_RMT_DIR='$(libexecdir)'
+fi
+
+AC_MSG_CHECKING([whether to build rmt])
+AC_ARG_WITH([rmt],
+            AC_HELP_STRING([--with-rmt=FILE],
+                           [Use FILE as the default `rmt' program. Do not build included copy of `rmt'.]),
+            [case $withval in
+	     yes|no) AC_MSG_ERROR([Invalid argument to --with-rmt]);;
+	     /*)     DEFAULT_RMT_COMMAND=$withval
+	             AC_MSG_RESULT([no, use $withval instead]);;
+	     *)      AC_MSG_ERROR([Argument to --with-rmt must be an absolute file name]);;
+             esac],
+             [AC_MSG_RESULT([yes])
+              enable_rmt
+              if test "$RMT" = ""; then
+                 AC_MSG_WARN([not building rmt, required header files are missing])
+              fi])
+
+AC_SUBST(DEFAULT_RMT_COMMAND)
 if test "x$DEFAULT_RMT_COMMAND" != x; then
   AC_DEFINE_UNQUOTED(DEFAULT_RMT_COMMAND, "$DEFAULT_RMT_COMMAND",
-                     [Define full pathname of rmt program.])
+                     [Define full file name of rmt program.])
 fi
+
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-ngettext])
