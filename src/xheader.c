@@ -159,7 +159,7 @@ xheader_set_keyword_equal (char *kw, char *eq)
   if (strcmp (kw, "delete") == 0)
     {
       if (xheader_protected_pattern_p (p))
-	USAGE_ERROR ((0, 0, _("Pattern %s cannot be used"), p));
+	USAGE_ERROR ((0, 0, _("Pattern %s cannot be used"), quote (p)));
       xheader_list_append (&keyword_pattern_list, p, NULL);
     }
   else if (strcmp (kw, "exthdr.name") == 0)

@@ -475,7 +475,7 @@ prepare_to_extract (char const *file_name)
     case KEEP_NEWER_FILES:
       if (file_newer_p (file_name, &current_stat_info))
 	{
-	  WARN ((0, 0, _("Current `%s' is newer"), file_name));
+	  WARN ((0, 0, _("Current %s is newer"), quote (file_name)));
 	  return 0;
 	}
       break;

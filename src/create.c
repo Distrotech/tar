@@ -1317,7 +1317,7 @@ check_links (void)
     {
       if (lp->nlink)
 	{
-	  WARN ((0, 0, _("Missing links to '%s'.\n"), lp->name));
+	  WARN ((0, 0, _("Missing links to %s.\n"), quote (lp->name)));
 	}
     }
 }
