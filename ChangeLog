@@ -1,3 +1,22 @@
+2004-08-02  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap (gnulib_modules): Add getpagesize.
+	* configure.ac (valloc): Remove check; valloc no longer used.
+	* lib/.cvsignore: Add getpagesize.h.
+	* m4/.cvsignore: Add getpagesize.m4.
+	* src/buffer.c (record_buffer): New var.
+	(open_archive): Don't use valloc; on older or buggy hosts, you can't
+	free the result.  Use page_aligned_alloc instead.
+	* src/compare.c (diff_init): Likewise.
+	* src/buffer.c (open_archive): Record the pointer to be freed
+	into record_buffer.
+	(close_archive): Free record_buffer.
+	* src/common.h (page_aligned_alloc): New decl.
+	* src/misc.c (quote_n, quote): Remove these redundant functions.
+	(ptr_align): New function, from coreutils/src/system.h.
+	(page_aligned_alloc): New function.
+	* src/system.h (valloc): Remove.
+
 2004-07-09  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/extract.c (extract_archive): Do not report an error
