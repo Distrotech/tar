@@ -16,13 +16,16 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
-/* Define to non-zero for forcing old ctime() instead of isotime().  */
+/* Define to non-zero for forcing old ctime format instead of ISO format.  */
 #undef USE_OLD_CTIME
 
 #include "system.h"
 #include <quotearg.h>
 
 #include <time.h>
+#ifndef time
+time_t time ();
+#endif
 
 #include "common.h"
 
@@ -32,12 +35,23 @@ union block *current_header;	/* points to current archive header */
 struct stat current_stat;	/* stat struct corresponding */
 enum archive_format current_format; /* recognized format */
 
-static uintmax_t from_chars PARAMS ((const char *, size_t, const char *,
-				     uintmax_t, uintmax_t));
+static char const *tartime PARAMS ((time_t));
+static uintmax_t from_header PARAMS ((const char *, size_t, const char *,
+				      uintmax_t, uintmax_t));
 
-/* Table of base 64 digit values indexed by unsigned chars.
-   The value is 64 for unsigned chars that are not base 64 digits.  */
-static char base64_map[1 + (unsigned char) -1];
+/* Base 64 digits; see Internet RFC 2045 Table 1.  */
+static char const base_64_digits[64] =
+{
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'
+};
+
+/* Table of base-64 digit values indexed by unsigned chars.
+   The value is 64 for unsigned chars that are not base-64 digits.  */
+static char base64_map[UCHAR_MAX + 1];
 
 static void
 base64_init (void)
@@ -76,12 +90,14 @@ read_and (void (*do_something) ())
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
 
-	  /* FIXME: This is a quick kludge before 1.12 goes out.  */
-	  current_stat.st_mtime
-	    = TIME_FROM_CHARS (current_header->header.mtime);
-
 	  if (!name_match (current_file_name)
-	      || current_stat.st_mtime < newer_mtime_option
+	      || (newer_mtime_option != TYPE_MINIMUM (time_t)
+		  /* FIXME: We get mtime now, and again later; this
+		     causes duplicate diagnostics if header.mtime is
+		     bogus.  */
+		  && ((current_stat.st_mtime
+		       = TIME_FROM_HEADER (current_header->header.mtime))
+		      < newer_mtime_option))
 	      || excluded_name (current_file_name))
 	    {
 	      char save_typeflag;
@@ -144,12 +160,12 @@ read_and (void (*do_something) ())
 	  switch (prev_status)
 	    {
 	    case HEADER_STILL_UNREAD:
-	      WARN ((0, 0, _("Hmm, this doesn't look like a tar archive")));
+	      WARN ((0, 0, _("This does not look like a tar archive")));
 	      /* Fall through.  */
 
 	    case HEADER_ZERO_BLOCK:
 	    case HEADER_SUCCESS:
-	      WARN ((0, 0, _("Skipping to next file header")));
+	      WARN ((0, 0, _("Skipping to next header")));
 	      break;
 
 	    case HEADER_END_OF_FILE:
@@ -312,9 +328,10 @@ read_header (void)
       unsigned_sum += ' ' * sizeof header->header.chksum;
       signed_sum += ' ' * sizeof header->header.chksum;
 
-      parsed_sum = from_chars (header->header.chksum,
-			       sizeof header->header.chksum, 0,
-			       (uintmax_t) 0, (uintmax_t) TYPE_MAXIMUM (int));
+      parsed_sum = from_header (header->header.chksum,
+				sizeof header->header.chksum, 0,
+				(uintmax_t) 0,
+				(uintmax_t) TYPE_MAXIMUM (int));
       if (parsed_sum == (uintmax_t) -1)
 	return HEADER_FAILURE;
 
@@ -328,7 +345,7 @@ read_header (void)
       if (header->header.typeflag == LNKTYPE)
 	current_stat.st_size = 0;	/* links 0 size on tape */
       else
-	current_stat.st_size = OFF_FROM_CHARS (header->header.size);
+	current_stat.st_size = OFF_FROM_HEADER (header->header.size);
 
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK)
@@ -447,19 +464,19 @@ decode_header (union block *header, struct stat *stat_info,
     format = V7_FORMAT;
   *format_pointer = format;
 
-  stat_info->st_mode = MODE_FROM_CHARS (header->header.mode);
-  stat_info->st_mtime = TIME_FROM_CHARS (header->header.mtime);
+  stat_info->st_mode = MODE_FROM_HEADER (header->header.mode);
+  stat_info->st_mtime = TIME_FROM_HEADER (header->header.mtime);
 
   if (format == OLDGNU_FORMAT && incremental_option)
     {
-      stat_info->st_atime = TIME_FROM_CHARS (header->oldgnu_header.atime);
-      stat_info->st_ctime = TIME_FROM_CHARS (header->oldgnu_header.ctime);
+      stat_info->st_atime = TIME_FROM_HEADER (header->oldgnu_header.atime);
+      stat_info->st_ctime = TIME_FROM_HEADER (header->oldgnu_header.ctime);
     }
 
   if (format == V7_FORMAT)
     {
-      stat_info->st_uid = UID_FROM_CHARS (header->header.uid);
-      stat_info->st_gid = GID_FROM_CHARS (header->header.gid);
+      stat_info->st_uid = UID_FROM_HEADER (header->header.uid);
+      stat_info->st_gid = GID_FROM_HEADER (header->header.gid);
       stat_info->st_rdev = 0;
     }
   else
@@ -471,25 +488,25 @@ decode_header (union block *header, struct stat *stat_info,
 	  if (numeric_owner_option
 	      || !*header->header.uname
 	      || !uname_to_uid (header->header.uname, &stat_info->st_uid))
-	    stat_info->st_uid = UID_FROM_CHARS (header->header.uid);
+	    stat_info->st_uid = UID_FROM_HEADER (header->header.uid);
 
 	  if (numeric_owner_option
 	      || !*header->header.gname
 	      || !gname_to_gid (header->header.gname, &stat_info->st_gid))
-	    stat_info->st_gid = GID_FROM_CHARS (header->header.gid);
+	    stat_info->st_gid = GID_FROM_HEADER (header->header.gid);
 	}
       switch (header->header.typeflag)
 	{
 	case BLKTYPE:
 	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_CHARS (header->header.devmajor),
-		       MINOR_FROM_CHARS (header->header.devminor));
+	    = makedev (MAJOR_FROM_HEADER (header->header.devmajor),
+		       MINOR_FROM_HEADER (header->header.devminor));
 	  break;
 
 	case CHRTYPE:
 	  stat_info->st_rdev
-	    = makedev (MAJOR_FROM_CHARS (header->header.devmajor),
-		       MINOR_FROM_CHARS (header->header.devminor));
+	    = makedev (MAJOR_FROM_HEADER (header->header.devmajor),
+		       MINOR_FROM_HEADER (header->header.devminor));
 	  break;
 
 	default:
@@ -501,12 +518,12 @@ decode_header (union block *header, struct stat *stat_info,
 /*------------------------------------------------------------------------.
 | Convert buffer at WHERE0 of size DIGS from external format to uintmax_t.|
 | The data is of type TYPE.  The buffer must represent a value in the     |
-| range -MINUS_MINVAL through MAXVAL.					  |
+| range -MINUS_MINVAL through MAXVAL.  DIGS must be positive.		  |
 `------------------------------------------------------------------------*/
 
 static uintmax_t
-from_chars (char const *where0, size_t digs, char const *type,
-	    uintmax_t minus_minval, uintmax_t maxval)
+from_header (char const *where0, size_t digs, char const *type,
+	     uintmax_t minus_minval, uintmax_t maxval)
 {
   uintmax_t value;
   char const *where = where0;
@@ -536,45 +553,115 @@ from_chars (char const *where0, size_t digs, char const *type,
   value = 0;
   if (ISODIGIT (*where))
     {
-      do
-	{
-	  if (value << LG_8 >> LG_8 != value)
-	    {
-	      ERROR ((0, 0,
-		      _("Archive octal string `%.*s' is out of %s range"),
-		      (int) digs, where0, type));
-	      return -1;
-	    }
-	  value = (value << LG_8) | (*where++ - '0');
-	}
-      while (where != lim && ISODIGIT (*where));
+      char const *where1 = where;
+      uintmax_t overflow = 0;
 
-      /* Parse the output of older tars, which output negative values
-	 in two's complement octal.  This method works only if the
-	 type has the same number of bits as it did on the host that
-	 created the tar file, but that's the best we can do.  */
-      if (maxval < value && value - maxval <= minus_minval)
+      for (;;)
 	{
-	  value = minus_minval - (value - maxval);
-	  negative = 1;
+	  value += *where++ - '0';
+	  if (where == lim || ! ISODIGIT (*where))
+	    break;
+	  overflow |= value ^ (value << LG_8 >> LG_8);
+	  value <<= LG_8;
+	}
+
+      /* Parse the output of older, unportable tars, which generate
+	 negative values in two's complement octal.  */
+      if ((overflow || maxval < value) && '4' <= *where1)
+	{
+	  /* Compute the negative of the input value, assuming two's
+	     complement.  */
+	  for (value = 0, where = where1, overflow = 0; ; )
+	    {
+	      value += 7 - (*where++ - '0');
+	      if (where == lim || ! ISODIGIT (*where))
+		break;
+	      overflow |= value ^ (value << LG_8 >> LG_8);
+	      value <<= LG_8;
+	    }
+	  value++;
+	  overflow |= !value;
+
+	  if (!overflow && value <= minus_minval)
+	    {
+	      WARN ((0, 0,
+		     _("Archive octal value %.*s is out of %s range; assuming two's complement"),
+		     (int) (where - where1), where1, type));
+	      negative = 1;
+	    }
+	}
+
+      if (overflow)
+	{
+	  ERROR ((0, 0,
+		  _("Archive octal value %.*s is out of %s range"),
+		  (int) (where - where1), where1, type));
+	  return -1;
 	}
     }
-  else if (*where == '-' || *where == '+')
+  else if (type)
     {
-      int dig;
-      negative = *where++ == '-';
-      while (where != lim
-	     && (dig = base64_map[(unsigned char) *where]) < 64)
+      /* The following forms cannot appear as checksums, so we don't
+	 check for them if TYPE is null.  */
+
+      if (*where == '-' || *where == '+')
 	{
-	  if (value << LG_64 >> LG_64 != value)
+	  /* Parse base-64 output produced only by tar test versions
+	     1.13.6 (1999-08-11) through 1.13.11 (1999-08-23).
+	     Support for this will be withdrawn in future releases.  */
+	  int dig;
+	  static int warned_once;
+	  if (! warned_once)
 	    {
-	      ERROR ((0, 0,
-		      _("Archive signed base 64 string `%.*s' is out of %s range"),
-		      (int) digs, where0, type));
-	      return -1;
+	      warned_once = 1;
+	      WARN ((0, 0,
+		     _("Archive contains obsolescent base-64 headers")));
 	    }
-	  value = (value << LG_64) | dig;
-	  where++;
+	  negative = *where++ == '-';
+	  while (where != lim
+		 && (dig = base64_map[(unsigned char) *where]) < 64)
+	    {
+	      if (value << LG_64 >> LG_64 != value)
+		{
+		  ERROR ((0, 0,
+			  _("Archive signed base-64 string `%.*s' is out of %s range"),
+			  (int) digs, where0, type));
+		  return -1;
+		}
+	      value = (value << LG_64) | dig;
+	      where++;
+	    }
+	}
+      else if (*where == '\200' /* positive base-256 */
+	       || *where == '\377' /* negative base-256 */)
+	{
+	  /* Parse base-256 output.  A nonnegative number N is
+	     represented as (256**DIGS)/2 + N; a negative number -N is
+	     represented as (256**DIGS) - N, i.e. as two's complement.
+	     The representation guarantees that the leading bit is
+	     always on, so that we don't confuse this format with the
+	     others (assuming ASCII bytes of 8 bits or more).  */
+	  int signbit = *where & (1 << (LG_256 - 2));
+	  uintmax_t topbits = (((uintmax_t) - signbit)
+			       << (CHAR_BIT * sizeof (uintmax_t)
+				   - LG_256 - (LG_256 - 2)));
+	  value = (*where++ & ((1 << (LG_256 - 2)) - 1)) - signbit;
+	  for (;;)
+	    {
+	      value = (value << LG_256) + (unsigned char) *where++;
+	      if (where == lim)
+		break;
+	      if (((value << LG_256 >> LG_256) | topbits) != value)
+		{
+		  ERROR ((0, 0,
+			  _("Archive base-256 value is out of %s range"),
+			  type));
+		  return -1;
+		}
+	    }
+	  negative = signbit;
+	  if (negative)
+	    value = -value;
 	}
     }
 
@@ -625,36 +712,36 @@ from_chars (char const *where0, size_t digs, char const *type,
 }
 
 gid_t
-gid_from_chars (const char *p, size_t s)
+gid_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "gid_t",
-		     - (uintmax_t) TYPE_MINIMUM (gid_t),
-		     (uintmax_t) TYPE_MAXIMUM (gid_t));
+  return from_header (p, s, "gid_t",
+		      - (uintmax_t) TYPE_MINIMUM (gid_t),
+		      (uintmax_t) TYPE_MAXIMUM (gid_t));
 }
 
 major_t
-major_from_chars (const char *p, size_t s)
+major_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "major_t",
-		     - (uintmax_t) TYPE_MINIMUM (major_t),
-		     (uintmax_t) TYPE_MAXIMUM (major_t));
+  return from_header (p, s, "major_t",
+		      - (uintmax_t) TYPE_MINIMUM (major_t),
+		      (uintmax_t) TYPE_MAXIMUM (major_t));
 }
 
 minor_t
-minor_from_chars (const char *p, size_t s)
+minor_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "minor_t",
-		     - (uintmax_t) TYPE_MINIMUM (minor_t),
-		     (uintmax_t) TYPE_MAXIMUM (minor_t));
+  return from_header (p, s, "minor_t",
+		      - (uintmax_t) TYPE_MINIMUM (minor_t),
+		      (uintmax_t) TYPE_MAXIMUM (minor_t));
 }
 
 mode_t
-mode_from_chars (const char *p, size_t s)
+mode_from_header (const char *p, size_t s)
 {
   /* Do not complain about unrecognized mode bits.  */
-  unsigned u = from_chars (p, s, "mode_t",
-			   - (uintmax_t) TYPE_MINIMUM (mode_t),
-			   TYPE_MAXIMUM (uintmax_t));
+  unsigned u = from_header (p, s, "mode_t",
+			    - (uintmax_t) TYPE_MINIMUM (mode_t),
+			    TYPE_MAXIMUM (uintmax_t));
   return ((u & TSUID ? S_ISUID : 0)
 	  | (u & TSGID ? S_ISGID : 0)
 	  | (u & TSVTX ? S_ISVTX : 0)
@@ -670,42 +757,45 @@ mode_from_chars (const char *p, size_t s)
 }
 
 off_t
-off_from_chars (const char *p, size_t s)
+off_from_header (const char *p, size_t s)
 {
   /* Negative offsets are not allowed in tar files, so invoke
-     from_chars with minimum value 0, not TYPE_MINIMUM (off_t).  */
-  return from_chars (p, s, "off_t", (uintmax_t) 0,
-		     (uintmax_t) TYPE_MAXIMUM (off_t));
+     from_header with minimum value 0, not TYPE_MINIMUM (off_t).  */
+  return from_header (p, s, "off_t", (uintmax_t) 0,
+		      (uintmax_t) TYPE_MAXIMUM (off_t));
 }
 
 size_t
-size_from_chars (const char *p, size_t s)
+size_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "size_t", (uintmax_t) 0, 
-		     (uintmax_t) TYPE_MAXIMUM (size_t));
+  return from_header (p, s, "size_t", (uintmax_t) 0, 
+		      (uintmax_t) TYPE_MAXIMUM (size_t));
 }
 
 time_t
-time_from_chars (const char *p, size_t s)
+time_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "time_t",
-		     - (uintmax_t) TYPE_MINIMUM (time_t),
-		     (uintmax_t) TYPE_MAXIMUM (time_t));
+  time_t t = from_header (p, s, "time_t",
+			  - (uintmax_t) TYPE_MINIMUM (time_t),
+			  (uintmax_t) TYPE_MAXIMUM (time_t));
+  if (start_time < t && time (0) < t)
+    WARN ((0, 0, _("Archive contains future timestamp %s"), tartime (t)));
+  return t;
 }
 
 uid_t
-uid_from_chars (const char *p, size_t s)
+uid_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "uid_t",
-		     - (uintmax_t) TYPE_MINIMUM (uid_t),
-		     (uintmax_t) TYPE_MAXIMUM (uid_t));
+  return from_header (p, s, "uid_t",
+		      - (uintmax_t) TYPE_MINIMUM (uid_t),
+		      (uintmax_t) TYPE_MAXIMUM (uid_t));
 }
 
 uintmax_t
-uintmax_from_chars (const char *p, size_t s)
+uintmax_from_header (const char *p, size_t s)
 {
-  return from_chars (p, s, "uintmax_t", (uintmax_t) 0,
-		     TYPE_MAXIMUM (uintmax_t));
+  return from_header (p, s, "uintmax_t", (uintmax_t) 0,
+		      TYPE_MAXIMUM (uintmax_t));
 }
 
 
@@ -723,20 +813,30 @@ stringify_uintmax_t_backwards (uintmax_t o, char *buf)
   return buf;
 }
 
-#if !USE_OLD_CTIME
-
-/*-------------------------------------------.
-| Return the time formatted along ISO 8601.  |
-`-------------------------------------------*/
-
-/* Also, see http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html.  */
-
+/* Return a printable representation of T.  The result points to
+   static storage that can be reused in the next call to this
+   function, to ctime, or to asctime.  */
 static char const *
-isotime (time_t time)
+tartime (time_t t)
 {
   static char buffer[max (UINTMAX_STRSIZE_BOUND + 1,
 			  INT_STRLEN_BOUND (int) + 16)];
-  struct tm *tm = localtime (&time);
+  char *p;
+
+#if USE_OLD_CTIME
+  p = ctime (&t);
+  if (p)
+    {
+      char const *time_stamp = p + 4;
+      for (p += 16; p[4] != '\n'; p++)
+	p[0] = p[4];
+      p[0] = '\0';
+      return time_stamp;
+    }
+#else
+  /* Use ISO 8610 format.  See:
+     http://www.cl.cam.ac.uk/~mgk25/iso-time.html  */
+  struct tm *tm = localtime (&t);
   if (tm)
     {
       sprintf (buffer, "%04d-%02d-%02d %02d:%02d:%02d",
@@ -744,24 +844,20 @@ isotime (time_t time)
 	       tm->tm_hour, tm->tm_min, tm->tm_sec);
       return buffer;
     }
-  else
-    {
-      /* The time stamp cannot be broken down, most likely because it
-	 is out of range.  Convert it as an integer,
-	 right-adjusted in a field with the same width as the usual
-	 19-byte 4-year ISO time format.  */
-      uintmax_t abstime = time < 0 ? - (uintmax_t) time : time;
-      char *p = stringify_uintmax_t_backwards (abstime,
-					       buffer + sizeof buffer);
-      if (time < 0)
-	*--p = '-';
-      while (buffer + sizeof buffer - 19 - 1 < p)
-	*--p = ' ';
-      return p;
-    }
-}
+#endif
 
-#endif /* not USE_OLD_CTIME */
+  /* The time stamp cannot be broken down, most likely because it
+     is out of range.  Convert it as an integer,
+     right-adjusted in a field with the same width as the usual
+     19-byte 4-year ISO time format.  */
+  p = stringify_uintmax_t_backwards (t < 0 ? - (uintmax_t) t : (uintmax_t) t,
+				     buffer + sizeof buffer);
+  if (t < 0)
+    *--p = '-';
+  while (buffer + sizeof buffer - 19 - 1 < p)
+    *--p = ' ';
+  return p;
+}
 
 /*-------------------------------------------------------------------------.
 | Decode MODE from its binary form in a stat structure, and encode it into |
@@ -826,7 +922,6 @@ print_header (void)
   char size[2 * UINTMAX_STRSIZE_BOUND];
   				/* holds formatted size or major,minor */
   char uintbuf[UINTMAX_STRSIZE_BOUND];
-  time_t longie;		/* to make ctime() call portable */
   int pad;
   char *name;
 
@@ -910,23 +1005,7 @@ print_header (void)
 
       /* Time stamp.  */
 
-      longie = current_stat.st_mtime;
-#if USE_OLD_CTIME
-      {
-	char *ct = ctime (&longie);
-	if (ct)
-	  {
-	    time_stamp = ct + 4;
-	    for (ct += 16; ct[4] != '\n'; ct++)
-	      ct[0] = ct[4];
-	    ct[0] = '\0';
-	  }
-	else
-	  time_stamp = "??? ?? ??:?? ????";
-      }
-#else
-      time_stamp = isotime (longie);
-#endif
+      time_stamp = tartime (current_stat.st_mtime);
 
       /* User and group names.  */
 
@@ -934,7 +1013,7 @@ print_header (void)
 	  && !numeric_owner_option)
 	user = current_header->header.uname;
       else
-	user = STRINGIFY_BIGINT (UINTMAX_FROM_CHARS
+	user = STRINGIFY_BIGINT (UINTMAX_FROM_HEADER
 				 (current_header->header.uid),
 				 uform);
 
@@ -942,7 +1021,7 @@ print_header (void)
 	  && !numeric_owner_option)
 	group = current_header->header.gname;
       else
-	group = STRINGIFY_BIGINT (UINTMAX_FROM_CHARS
+	group = STRINGIFY_BIGINT (UINTMAX_FROM_HEADER
 				  (current_header->header.gid),
 				  gform);
 
@@ -961,7 +1040,8 @@ print_header (void)
 	case GNUTYPE_SPARSE:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_CHARS (current_header->oldgnu_header.realsize),
+		  (UINTMAX_FROM_HEADER (current_header
+					->oldgnu_header.realsize),
 		   uintbuf));
 	  break;
 	default:
@@ -1035,7 +1115,7 @@ print_header (void)
 	case GNUTYPE_MULTIVOL:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_CHARS (current_header->oldgnu_header.offset),
+		  (UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset),
 		   uintbuf));
 	  fprintf (stdlis, _("--Continued at byte %s--\n"), size);
 	  break;
