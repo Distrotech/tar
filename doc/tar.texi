@@ -2028,8 +2028,8 @@ $ @kbd{tar -xvf ../untrusted.tar}
 @end smallexample
 
 It is also a good practice to examine contents of the archive
-before extracting it, using @option{op-list} option, possibly combined
-with @option{op-verbose}.
+before extracting it, using @value{op-list} option, possibly combined
+with @value{op-verbose}.
 
 @node failing commands
 @subsection Commands That Will Fail
@@ -3268,7 +3268,8 @@ files in the archive until it finds one that matches @var{name}.
 
 @item --strip-components=@var{number}
 Strip given @var{number} of leading components from file names before
-extraction. For example, if archive @file{archive.tar} contained
+extraction.@footnote{This option was called @option{--strip-path} in
+version 1.14.} For example, if archive @file{archive.tar} contained
 @file{/some/file/name}, then running
 
 @smallexample
@@ -4579,7 +4580,7 @@ renamed the whole hierarchy from @file{/usr/local2} to
 not be welcome at all that @GNUTAR{} removes the
 whole hierarchy just to make room for the link to be reinstated
 (unless it @emph{also} simultaneously restores the full
-@file{/usr/local2}, of course!  @GNUTAR{} is indeed
+@file{/usr/local2}, of course!)  @GNUTAR{} is indeed
 able to remove a whole hierarchy to reestablish a symbolic link, for
 example, but @emph{only if} @value{op-recursive-unlink} is specified
 to allow this behavior.  In any case, single files are silently
@@ -5044,7 +5045,7 @@ distribution.
 
 @end ifclear
 
-This chapter documents both the provided FSF scripts and @command{tar}
+This chapter documents both the provided shell scripts and @command{tar}
 options which are more specific to usage as a backup tool.
 
 To @dfn{back up} a file system means to create archives that contain
@@ -5470,7 +5471,7 @@ located on the remote machine and containing the list of files to
 be excluded from the backup. Exclude file lists are searched in
 /etc/tar-backup directory. A common use for exclude file lists
 is to exclude files containing security-sensitive information
-(e.g. @file{/etc/shadow} from backups.
+(e.g. @file{/etc/shadow} from backups).
 
 This variable affects only @code{backup}.
 @end defvr
@@ -5524,7 +5525,7 @@ mt_begin() @{
 @end defvr
 
 @defvr {Backup variable} MT_REWIND
-THe name of @dfn{rewind} function. The default definition is as
+The name of @dfn{rewind} function. The default definition is as
 follows:
 
 @smallexample
@@ -5567,14 +5568,14 @@ mt_status() @{
 @subsection User Hooks
 
 @dfn{User hooks} are shell functions executed before and after
-each @command{tar} invocations. Thus, there are @dfn{backup 
+each @command{tar} invocation. Thus, there are @dfn{backup 
 hooks}, which are executed before and after dumping each file
 system, and @dfn{restore hooks}, executed before and
 after restoring a file system. Each user hook is a shell function
 taking four arguments:
 
 @deffn {User Hook Function} hook @var{level} @var{host} @var{fs} @var{fsname}
-The arguments are:
+Its arguments are:
 
 @table @var
 @item level
@@ -5613,7 +5614,7 @@ Executed after restoring the filesystem.
 @node backup-specs example
 @subsection An Example Text of @file{Backup-specs}
 
-The following is the text of @file{backup-specs} as it appears at FSF:
+The following is an example of @file{backup-specs}:
 
 @smallexample
 # site-specific parameters for file system backup.
@@ -5715,8 +5716,8 @@ and files dumped, what time the backup was made, and any error
 messages that were generated, as well as how much space was left in
 the media volume after the last volume of the archive was written.
 You should check this log file after every backup.  The file name is
-@file{log-@var{mmm-ddd-yyyy}-level-@var{n}}, where @var{n} represents
-current dump level number.
+@file{log-@var{mm-dd-yyyy}-level-@var{n}}, where @var{mm-dd-yyyy}
+represents current date, and @var{n} represents current dump level number.
 
 The script also prints the name of each system being dumped to the
 standard output.
@@ -5733,7 +5734,7 @@ Do backup level @var{level} (default 0).
 @itemx --force
 Force backup even if today's log file already exists.
 
-@item -v@var{level}
+@item -v[@var{level}]
 @itemx --verbose[=@var{level}]
 Set verbosity level. The higher the level is, the more debugging
 information will be output during execution. Devault @var{level}
@@ -5804,7 +5805,7 @@ The full list of options accepted by @code{restore} follows:
 @itemx --level=@var{level}
 Start restoring from the given backup level, instead of the default 0.
 
-@item -v@var{level}
+@item -v[@var{level}]
 @itemx --verbose[=@var{level}]
 Set verbosity level. The higher the level is, the more debugging
 information will be output during execution. Devault @var{level}
