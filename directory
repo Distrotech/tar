@@ -40,7 +40,7 @@ programs (using pipes); tar can even access remote devices or files
  Jeff Bailey <jbailey@nisa.net>,
  Paul Eggert <eggert@CS.UCLA.EDU>
 
-%%updated: 20 Dec 2004
+%%updated: 21 Dec 2004
 
 %%keywords: archive, backup, tar, pax
 
@@ -66,7 +66,7 @@ programs (using pipes); tar can even access remote devices or files
  Joy Kendall,
  Francois Pinard <pinard@iro.umontreal.ca>
  
-%%source-tarball: ftp://ftp.gnu.org/pub/gnu/tar/tar-1.15.tar.gz
+%%source-tarball: ftp://ftp.gnu.org/pub/gnu/tar/tar-1.15.1.tar.gz
 %%source-info: http://savannah.gnu.org/projects/tar
 
 %%repository:
@@ -79,7 +79,7 @@ programs (using pipes); tar can even access remote devices or files
 
 %%related-programs: GNU cpio
 
-%%version: 1.15 (stable) released on 20 Dec 2004
+%%version: 1.15.1 (stable) released on 21 Dec 2004
 
 %%bug-list: bug-tar@gnu.org bug-tar@gnu.org http://mail.gnu.org/mailman/listinfo/bug-tar
 
