@@ -1,9 +1,10 @@
-GNU `tar' 1.12.lfs.2 is an unofficial port of GNU `tar' 1.12 to Large
+GNU `tar' 1.12.lfs.3 is an unofficial port of GNU `tar' 1.12 to Large
 File Summit (LFS) environments like Solaris 2.6 that rely on integer
 system types longer than `long'.  Ordinary GNU `tar' 1.12 cannot handle
 files larger than 2 GB when compiled in such environments.  This port
-addresses that problem.  Please send bug reports specific to this
-unofficial version of GNU `tar' to <eggert@twinsun.com>.
+addresses that problem, and fixes some other well-known bugs in GNU tar 1.12.
+Please send bug reports specific to this unofficial version of GNU `tar'
+to <eggert@twinsun.com>.
 
 This is not intended to be a forked release for GNU tar; it's
 just an interim experimental release, mostly intended for
