@@ -18,6 +18,7 @@
 
 #include "system.h"
 #include <quotearg.h>
+#include <time.h>
 
 #if HAVE_UTIME_H
 # include <utime.h>
