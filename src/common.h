@@ -269,6 +269,9 @@ GLOBAL bool totals_option;
 
 GLOBAL bool touch_option;
 
+GLOBAL char *to_command_option;
+GLOBAL bool ignore_command_error_option;
+
 /* Count how many times the option has been set, multiple setting yields
    more verbose behavior.  Value 0 means no verbosity, 1 means file name
    only, 2 means file name and all attributes.  More than 2 is just like 2.  */
@@ -692,6 +695,8 @@ pid_t sys_child_open_for_compress (void);
 pid_t sys_child_open_for_uncompress (void);
 size_t sys_write_archive_buffer (void);
 bool sys_get_archive_stat (void);
+int sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st);
+void sys_wait_command (void);
 
 /* Module compare.c */
 void report_difference (struct tar_stat_info *st, const char *message, ...);
