@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ AT_TAR_CHECK([
 mkdir directory
 genfile --length 10240 --pattern zeros > directory/file1
 genfile --length 13 > directory/file2
-tar cf archive directory
+tar cf archive directory|sort 2>/dev/null
 mv directory orig
 cat archive | tar xfv -
 echo "separator"
