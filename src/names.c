@@ -1,5 +1,5 @@
 /* Various processing of names.
-   Copyright 1988, 92, 94, 96, 97, 98, 99, 2000 Free Software Foundation, Inc.
+   Copyright 1988,92,94,96,97,98,99,2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -330,7 +330,7 @@ name_next (int change_dirs)
       /* Zap trailing slashes.  */
 
       cursor = name_buffer + strlen (name_buffer) - 1;
-      while (cursor > name_buffer && *cursor == '/')
+      while (cursor > name_buffer && ISSLASH (*cursor))
 	*cursor-- = '\0';
 
       if (chdir_flag)
@@ -504,7 +504,7 @@ namelist_match (char const *path, size_t length)
       if (p->regexp
 	  ? fnmatch (p->name, path, recursion_option) == 0
 	  : (p->length <= length
-	     && (path[p->length] == '\0' || path[p->length] == '/')
+	     && (path[p->length] == '\0' || ISSLASH (path[p->length]))
 	     && memcmp (path, p->name, p->length) == 0))
 	return p;
     }
@@ -679,15 +679,14 @@ compare_names (struct name const *n1, struct name const *n2)
 }
 
 /* Add all the dirs under NAME, which names a directory, to the namelist.
-   DIRSIZE is the size of the directory, or -1 if not known.
    If any of the files is a directory, recurse on the subdirectory.
    DEVICE is the device not to leave, if the -l option is specified.  */
 
 static void
-add_hierarchy_to_namelist (struct name *name, off_t dirsize, dev_t device)
+add_hierarchy_to_namelist (struct name *name, dev_t device)
 {
   char *path = name->name;
-  char *buffer = get_directory_contents (path, dirsize, device);
+  char *buffer = get_directory_contents (path, device);
 
   if (! buffer)
     name->dir_contents = "\0\0\0\0";
@@ -705,7 +704,7 @@ add_hierarchy_to_namelist (struct name *name, off_t dirsize, dev_t device)
 
       name->dir_contents = buffer;
       strcpy (name_buffer, path);
-      if (name_buffer[name_length - 1] != '/')
+      if (! ISSLASH (name_buffer[name_length - 1]))
 	{
 	  name_buffer[name_length++] = '/';
 	  name_buffer[name_length] = '\0';
@@ -724,7 +723,7 @@ add_hierarchy_to_namelist (struct name *name, off_t dirsize, dev_t device)
 		}
 	      strcpy (name_buffer + name_length, string + 1);
 	      add_hierarchy_to_namelist (addname (name_buffer, change_dir),
-					 -1, device);
+					 device);
 	    }
 	}
 
@@ -771,7 +770,7 @@ collect_and_sort_names (void)
       if (S_ISDIR (statbuf.st_mode))
 	{
 	  name->found = 1;
-	  add_hierarchy_to_namelist (name, statbuf.st_size, statbuf.st_dev);
+	  add_hierarchy_to_namelist (name, statbuf.st_dev);
 	}
     }
 
@@ -853,7 +852,7 @@ new_name (const char *path, const char *name)
 {
   size_t pathlen = strlen (path);
   size_t namesize = strlen (name) + 1;
-  int slash = pathlen && path[pathlen - 1] != '/';
+  int slash = pathlen && ! ISSLASH (path[pathlen - 1]);
   char *buffer = xmalloc (pathlen + slash + namesize);
   memcpy (buffer, path, pathlen);
   buffer[pathlen] = '/';
