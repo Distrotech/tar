@@ -1,3 +1,35 @@
+2003-11-16  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	Rewritten sparse file handling.
+	
+	* src/sparse.c: New file. Provides a universal framework
+	for various methods for sparse files handling.  
+	* src/Makefile.am: Added sparse.c
+	* src/common.h (struct sp_array,sparsearray,sp_array_size)
+	(init_sparsearray,fill_in_sparse_array): Removed
+	(enum dump_status): New data type
+	(pad_archive,close_diag,open_diag,read_diag_details)
+	(readlink_diag,savedir_diag,seek_diag_details,stat_diag): New
+	functions.
+	(sparse_file_p,sparse_dump_file,sparse_extract_file): New
+	functions.
+	(print_header): Changed prototype declaration.
+	* src/tar.h (struct sp_array): Declaration from common.h
+	(struct tar_stat_info): New members archive_file_size,
+	sparse_map_avail,sparse_map.
+	* src/create.c: Major rewrite.
+	* src/extract.c: Use new sparse file interface.
+	* src/compare.c (diff_sparse_files): Temporary placeholder.
+
+	* src/buffer.c: Minor changes
+	* src/tar.c: Likewise.
+	* src/list.c: Likewise.
+	* src/misc.c (close_diag,open_diag,read_diag_details)
+	(readlink_diag,savedir_diag,seek_diag_details,stat_diag): New
+	diagnostics functions.
+	* src/incremen.c: Use new diagnostics functions.
+	* src/names.c: Likewise.
+	
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed check for setsockopt
