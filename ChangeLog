@@ -1,3 +1,11 @@
+2004-03-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/rtapelib.c (rmt_lseek__,rmt_ioctl__): Bugfix. The
+	conversion buffer was not null terminated. Fix provided
+	by Leland Lucius <llucius@tiny.net>
+	* THANKS: Added Leland Lucius
+	* src/utf8.c (utf8_convert): Indentation fix.
+
 2004-02-29  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/buffer.c (flush_read): Bugfix: the
