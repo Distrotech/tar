@@ -114,3 +114,6 @@ xsize.m4
 xstrtol.m4
 xstrtoumax.m4
 pathmax.m4
+eoverflow.m4
+vasnprintf.m4
+vsnprintf.m4

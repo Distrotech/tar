@@ -141,3 +141,16 @@ xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
+asnprintf.c
+minmax.h
+pathmax.h
+printf-args.c
+printf-args.h
+printf-parse.c
+printf-parse.h
+vasnprintf.c
+vasnprintf.h
+vsnprintf.c
+vsnprintf.h
+xsize.h
+xstrdup.c
