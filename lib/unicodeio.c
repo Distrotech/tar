@@ -48,6 +48,10 @@ extern int errno;
 # include <iconv.h>
 #endif
 
+#if HAVE_LANGINFO_CODESET && ! USE_INCLUDED_LIBINTL
+# include <langinfo.h>
+#endif
+
 #include "unicodeio.h"
 
 /* When we pass a Unicode character to iconv(), we must pass it in a
@@ -126,8 +130,18 @@ unicode_to_mb (unsigned int code,
 
   if (!initialized)
     {
+      const char *charset;
+
+#if USE_INCLUDED_LIBINTL
       extern const char *locale_charset PARAMS ((void));
-      const char *charset = locale_charset ();
+      charset = locale_charset ();
+#else
+# if HAVE_LANGINFO_CODESET
+      charset = nl_langinfo (CODESET);
+# else
+      charset = "";
+# endif
+#endif
 
       is_utf8 = !strcmp (charset, UTF8_NAME);
 #if HAVE_ICONV
