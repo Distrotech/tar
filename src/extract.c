@@ -1,5 +1,5 @@
 /* Extract files from a tar archive.
-   Copyright (C) 1988, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+   Copyright (C) 1988, 92,93,94,96,97,98, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-11-19.
 
    This program is free software; you can redistribute it and/or modify it
@@ -392,6 +392,7 @@ extract_archive (void)
   off_t size;
   int skipcrud;
   int counter;
+  char typeflag;
 #if 0
   int sparse_ind = 0;
 #endif
@@ -447,7 +448,8 @@ Removing leading `/' from absolute path names in the archive")));
 
   /* Extract the archive entry according to its type.  */
 
-  switch (current_header->header.typeflag)
+  typeflag = current_header->header.typeflag;
+  switch (typeflag)
     {
       /* JK - What we want to do if the file is sparse is loop through
 	 the array of sparse structures in the header and read in and
@@ -480,8 +482,9 @@ Removing leading `/' from absolute path names in the archive")));
 
       if (current_header->oldgnu_header.isextended)
 	{
-	  /* Read in the list of extended headers and translate them into
-	     the sparsearray as before.  */
+	  /* Read in the list of extended headers and translate them
+	     into the sparsearray as before.  Note that this
+	     invalidates current_header.  */
 
 	  /* static */ int ind = SPARSES_IN_OLDGNU_HEADER;
 
@@ -538,7 +541,7 @@ Removing leading `/' from absolute path names in the archive")));
       openflag = (keep_old_files_option ?
 		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_EXCL :
 		  O_BINARY | O_NDELAY | O_WRONLY | O_CREAT | O_TRUNC)
-	| ((current_header->header.typeflag == GNUTYPE_SPARSE) ? 0 : O_APPEND);
+	| ((typeflag == GNUTYPE_SPARSE) ? 0 : O_APPEND);
 
       /* JK - The last | is a kludge to solve the problem the O_APPEND
 	 flag causes with files we are trying to make sparse: when a file
@@ -562,14 +565,14 @@ Removing leading `/' from absolute path names in the archive")));
       /* Contiguous files (on the Masscomp) have to specify the size in
 	 the open call that creates them.  */
 
-      if (current_header->header.typeflag == CONTTYPE)
+      if (typeflag == CONTTYPE)
 	fd = open (CURRENT_FILE_NAME, openflag | O_CTG,
 		   current_stat.st_mode, current_stat.st_size);
       else
 	fd = open (CURRENT_FILE_NAME, openflag, current_stat.st_mode);
 
 #else /* not O_CTG */
-      if (current_header->header.typeflag == CONTTYPE)
+      if (typeflag == CONTTYPE)
 	{
 	  static int conttype_diagnosed = 0;
 
@@ -599,7 +602,7 @@ Removing leading `/' from absolute path names in the archive")));
 	}
 
     extract_file:
-      if (current_header->header.typeflag == GNUTYPE_SPARSE)
+      if (typeflag == GNUTYPE_SPARSE)
 	{
 	  char *name;
 	  size_t name_length_bis;
@@ -644,7 +647,7 @@ Removing leading `/' from absolute path names in the archive")));
 	       see how many bytes we want to write at that position.  */
 
 #if 0
-	    if (current_header->header.typeflag == GNUTYPE_SPARSE)
+	    if (typeflag == GNUTYPE_SPARSE)
 	      {
 		lseek (fd, sparsearray[sparse_ind].offset, 0);
 		written = sparsearray[sparse_ind++].numbytes;
@@ -876,7 +879,7 @@ Attempting extraction of symbolic links as hard links")));
 
 	  gnu_restore (skipcrud);
 	}
-      else if (current_header->header.typeflag == GNUTYPE_DUMPDIR)
+      else if (typeflag == GNUTYPE_DUMPDIR)
 	skip_file (current_stat.st_size);
 
       if (to_stdout_option)
@@ -997,7 +1000,7 @@ Cannot extract `%s' -- file is continued from another volume"),
     default:
       WARN ((0, 0,
 	     _("Unknown file type '%c' for %s, extracted as normal file"),
-	     current_header->header.typeflag, CURRENT_FILE_NAME));
+	     typeflag, CURRENT_FILE_NAME));
       goto again_file;
     }
 
