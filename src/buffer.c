@@ -888,6 +888,42 @@ backspace_output (void)
   }
 }
 
+off_t
+seek_archive (off_t size)
+{
+  off_t start = current_block_ordinal ();
+  off_t offset;
+  off_t nrec, nblk;
+  off_t skipped = (blocking_factor - (current_block - record_start));
+  
+  size -= skipped * BLOCKSIZE;
+  
+  if (size < record_size)
+    return 0;
+  /* FIXME: flush? */
+  
+  /* Compute number of records to skip */
+  nrec = size / record_size;
+  offset = rmtlseek (archive, nrec * record_size, SEEK_CUR);
+  if (offset < 0)
+    return offset;
+
+  if (offset % record_size)
+    FATAL_ERROR ((0, 0, _("rmtlseek not stopped at a record boundary")));
+
+  /* Convert to number of records */
+  offset /= BLOCKSIZE;
+  /* Compute number of skipped blocks */
+  nblk = offset - start;
+
+  /* Update buffering info */
+  records_read += nblk / blocking_factor;
+  record_start_block = offset - blocking_factor;
+  current_block = record_end;
+ 
+  return nblk;
+}
+
 /* Close the archive file.  */
 void
 close_archive (void)
