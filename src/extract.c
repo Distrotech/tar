@@ -153,8 +153,6 @@ extract_archive ()
   union record *exhdr;
   struct saved_dir_info *tmp;
   /*	int end_nulls; */
-  char **longp;
-  char *bp;
 
   saverec (&head);		/* Make sure it sticks around */
   userec (head);		/* And go past it in the archive */
@@ -842,7 +840,6 @@ void
 restore_saved_dir_info ()
 {
   struct utimbuf acc_upd_times;
-  struct saved_dir_info *tmp;
 
   while (saved_dir_info_head != NULL)
     {
