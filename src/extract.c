@@ -53,9 +53,14 @@ enum permstatus
 };
 
 /* List of directories whose statuses we need to extract after we've
-   finished extracting their subsidiary files.  The head of the list
-   has the longest name; each non-head element in the list is an
-   ancestor (in the directory hierarchy) of the preceding element.  */
+   finished extracting their subsidiary files.  If you consider each
+   contiguous subsequence of elements of the form [D]?[^D]*, where [D]
+   represents an element where AFTER_SYMLINKS is nonzero and [^D]
+   represents an element where AFTER_SYMLINKS is zero, then the head
+   of the subsequence has the longest name, and each non-head element
+   in the prefix is an ancestor (in the directory hierarchy) of the
+   preceding element.  */
+
 struct delayed_set_stat
   {
     struct delayed_set_stat *next;
@@ -63,6 +68,7 @@ struct delayed_set_stat
     size_t file_name_len;
     mode_t invert_permissions;
     enum permstatus permstatus;
+    bool after_symlinks;
     char file_name[1];
   };
 
@@ -123,12 +129,14 @@ extr_init (void)
 }
 
 /* If restoring permissions, restore the mode for FILE_NAME from
-   information given in *STAT_INFO; otherwise invert the
+   information given in *STAT_INFO (where *CURRENT_STAT_INFO gives
+   the current status if CURRENT_STAT_INFO is nonzero); otherwise invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.
    TYPEFLAG specifies the type of the file.  */
 static void
 set_mode (char const *file_name, struct stat const *stat_info,
+	  struct stat const *current_stat_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -160,12 +168,16 @@ set_mode (char const *file_name, struct stat const *stat_info,
 	 that we created, so there's no point optimizing this code for
 	 other cases.  */
       struct stat st;
-      if (stat (file_name, &st) != 0)
+      if (! current_stat_info)
 	{
-	  stat_error (file_name);
-	  return;
+	  if (stat (file_name, &st) != 0)
+	    {
+	      stat_error (file_name);
+	      return;
+	    }
+	  current_stat_info = &st;
 	}
-      mode = st.st_mode ^ invert_permissions;
+      mode = current_stat_info->st_mode ^ invert_permissions;
     }
 
   if (chmod (file_name, mode) != 0)
@@ -184,6 +196,8 @@ check_time (char const *file_name, time_t t)
 
 /* Restore stat attributes (owner, group, mode and times) for
    FILE_NAME, using information given in *STAT_INFO.
+   If CURRENT_STAT_INFO is nonzero, *CURRENT_STAT_INFO is the
+   file's currernt status.
    If not restoring permissions, invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.
@@ -196,6 +210,7 @@ check_time (char const *file_name, time_t t)
 
 static void
 set_stat (char const *file_name, struct stat const *stat_info,
+	  struct stat const *current_stat_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -234,7 +249,7 @@ set_stat (char const *file_name, struct stat const *stat_info,
 	 done, it is not possible anymore to change file permissions, so we
 	 have to set permissions prior to possibly giving files away.  */
 
-      set_mode (file_name, stat_info,
+      set_mode (file_name, stat_info, current_stat_info,
 		invert_permissions, permstatus, typeflag);
     }
 
@@ -263,7 +278,7 @@ set_stat (char const *file_name, struct stat const *stat_info,
 	     away, changing the owner or group destroys the suid or sgid bits.
 	     So let's attempt setting these bits once more.  */
 	  if (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX))
-	    set_mode (file_name, stat_info,
+	    set_mode (file_name, stat_info, 0,
 		      invert_permissions, permstatus, typeflag);
 	}
     }
@@ -287,6 +302,7 @@ delay_set_stat (char const *file_name, struct stat const *stat_info,
   strcpy (data->file_name, file_name);
   data->invert_permissions = invert_permissions;
   data->permstatus = permstatus;
+  data->after_symlinks = 0;
   data->stat_info = *stat_info;
   data->next = delayed_set_stat_head;
   delayed_set_stat_head = data;
@@ -519,24 +535,55 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 }
 
 /* Fix the statuses of all directories whose statuses need fixing, and
-   which are not ancestors of FILE_NAME.  */
+   which are not ancestors of FILE_NAME.  If AFTER_SYMLINKS is
+   nonzero, do this for all such directories; otherwise, stop at the
+   first directory that is marked to be fixed up only after delayed
+   symlinks are applied.  */
 static void
-apply_nonancestor_delayed_set_stat (char const *file_name)
+apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
 {
   size_t file_name_len = strlen (file_name);
+  bool check_for_renamed_directories = 0;
 
   while (delayed_set_stat_head)
     {
       struct delayed_set_stat *data = delayed_set_stat_head;
-      if (data->file_name_len < file_name_len
-	  && file_name[data->file_name_len]
-	  && (ISSLASH (file_name[data->file_name_len])
-	      || ISSLASH (file_name[data->file_name_len - 1]))
-	  && memcmp (file_name, data->file_name, data->file_name_len) == 0)
+      bool skip_this_one = 0;
+      check_for_renamed_directories |= data->after_symlinks;
+      struct stat st;
+      struct stat const *current_stat_info = 0;
+
+      if (after_symlinks < data->after_symlinks
+	  || (data->file_name_len < file_name_len
+	      && file_name[data->file_name_len]
+	      && (ISSLASH (file_name[data->file_name_len])
+		  || ISSLASH (file_name[data->file_name_len - 1]))
+	      && memcmp (file_name, data->file_name, data->file_name_len) == 0))
 	break;
+
+      if (check_for_renamed_directories)
+	{
+	  current_stat_info = &st;
+	  if (stat (data->file_name, &st) != 0)
+	    {
+	      stat_error (data->file_name);
+	      skip_this_one = 1;
+	    }
+	  else if (! (st.st_dev == data->stat_info.st_dev
+		      && (st.st_ino == data->stat_info.st_ino)))
+	    {
+	      ERROR ((0, 0,
+		      _("%s: Directory renamed before its status could be extracted"),
+		      quotearg_colon (data->file_name)));
+	      skip_this_one = 1;
+	    }
+	}
+
+      if (! skip_this_one)
+	set_stat (data->file_name, &data->stat_info, current_stat_info,
+		  data->invert_permissions, data->permstatus, DIRTYPE);
+
       delayed_set_stat_head = data->next;
-      set_stat (data->file_name, &data->stat_info,
-		data->invert_permissions, data->permstatus, DIRTYPE);
       free (data);
     }
 }
@@ -606,7 +653,7 @@ extract_archive (void)
 	}
     }
 
-  apply_nonancestor_delayed_set_stat (CURRENT_FILE_NAME);
+  apply_nonancestor_delayed_set_stat (CURRENT_FILE_NAME, 0);
 
   /* Take a safety backup of a previously existing file.  */
 
@@ -849,7 +896,7 @@ extract_archive (void)
 	    undo_last_backup ();
 	}
 
-      set_stat (CURRENT_FILE_NAME, &current_stat, 0,
+      set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
 		(old_files_option == OVERWRITE_OLD_FILES
 		 ? UNKNOWN_PERMSTATUS
 		 : ARCHIVED_PERMSTATUS),
@@ -872,7 +919,7 @@ extract_archive (void)
 	      break;
 
 	  if (status == 0)
-	    set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0, SYMTYPE);
+	    set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0, 0, SYMTYPE);
 	  else
 	    symlink_error (current_link_name, CURRENT_FILE_NAME);
 	}
@@ -900,6 +947,7 @@ extract_archive (void)
 	    close_error (CURRENT_FILE_NAME);
 	  else
 	    {
+	      struct delayed_set_stat *h;
 	      struct delayed_symlink *p =
 		xmalloc (offsetof (struct delayed_symlink, target)
 			 + strlen (current_link_name) + 1);
@@ -915,6 +963,25 @@ extract_archive (void)
 	      p->sources->next = 0;
 	      strcpy (p->sources->string, CURRENT_FILE_NAME);
 	      strcpy (p->target, current_link_name);
+
+	      h = delayed_set_stat_head;
+	      if (h && ! h->after_symlinks
+		  && strncmp (CURRENT_FILE_NAME, h->file_name, h->file_name_len) == 0
+		  && ISSLASH (CURRENT_FILE_NAME[h->file_name_len])
+		  && (base_name (CURRENT_FILE_NAME)
+		      == CURRENT_FILE_NAME + h->file_name_len + 1))
+		{
+		  h->after_symlinks = 1;
+
+		  if (stat (h->file_name, &st) != 0)
+		    stat_error (h->file_name);
+		  else
+		    {
+		      h->stat_info.st_dev = st.st_dev;
+		      h->stat_info.st_ino = st.st_ino;
+		    }
+		}
+
 	      status = 0;
 	    }
 	}
@@ -1015,7 +1082,7 @@ extract_archive (void)
 	    undo_last_backup ();
 	  break;
 	};
-      set_stat (CURRENT_FILE_NAME, &current_stat, 0,
+      set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
 		ARCHIVED_PERMSTATUS, typeflag);
       break;
 #endif
@@ -1031,7 +1098,7 @@ extract_archive (void)
 	  break;
 
       if (status == 0)
-	set_stat (CURRENT_FILE_NAME, &current_stat, 0,
+	set_stat (CURRENT_FILE_NAME, &current_stat, 0, 0,
 		  ARCHIVED_PERMSTATUS, typeflag);
       else
 	{
@@ -1190,7 +1257,7 @@ apply_delayed_symlinks (void)
 		  valid_source = source;
 		  st.st_uid = ds->uid;
 		  st.st_gid = ds->gid;
-		  set_stat (source, &st, 0, 0, SYMTYPE);
+		  set_stat (source, &st, 0, 0, 0, SYMTYPE);
 		}
 	    }
 	}
@@ -1216,10 +1283,16 @@ apply_delayed_symlinks (void)
 void
 extract_finish (void)
 {
-  /* Apply delayed symlinks last, so that they don't affect
-     delayed directory status-setting.  */
-  apply_nonancestor_delayed_set_stat ("");
+  /* First, fix the status of ordinary directories that need fixing.  */
+  apply_nonancestor_delayed_set_stat ("", 0);
+
+  /* Then, apply delayed symlinks, so that they don't affect delayed
+     directory status-setting for ordinary directories.  */
   apply_delayed_symlinks ();
+
+  /* Finally, fix the status of directories that are ancestors
+     of delayed symlinks.  */
+  apply_nonancestor_delayed_set_stat ("", 1);
 }
 
 void
