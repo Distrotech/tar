@@ -1802,6 +1802,7 @@ long form of the operation without affecting the performance.
 * extracting archives::
 * extracting files::
 * extract dir::
+* extracting untrusted archives::
 * failing commands::
 @end menu
 
@@ -1921,6 +1922,23 @@ of the file names when you extract those files from the archive.
 
 @FIXME{IMPORTANT!  show the final structure, here.  figure out what it
 will be.}
+
+@node extracting untrusted archives
+@subsection Extracting Archives from Untrusted Sources
+
+Extracting files from archives can overwrite files that already exist.
+If you receive an archive from an untrusted source, you should make a
+new directory and extract into that directory, so that you don't have
+to worry about the extraction overwriting one of your existing files.
+For example, if @file{untrusted.tar} came from somewhere else on the
+Internet, and you don't necessarily trust its contents, you can
+extract it as follows:
+
+@example
+$ @kbd{mkdir newdir}
+$ @kbd{cd newdir}
+$ @kbd{tar -xvf ../untrusted.tar}
+@end example
 
 @node failing commands
 @subsection Commands That Will Fail
