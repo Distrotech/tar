@@ -27,7 +27,7 @@
    derived from this software without specific prior written permission.
    THIS SOFTWARE IS PROVIDED ``AS IS'' AND WITHOUT ANY EXPRESS OR IMPLIED
    WARRANTIES, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF
-   MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
+   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.  */
 
 #include "system.h"
 #include "safe-read.h"
@@ -51,15 +51,15 @@ const char *program_name;
 static int tape = -1;
 
 /* Buffer containing transferred data, and its allocated size.  */
-static char *record_buffer = NULL;
-static size_t allocated_size = 0;
+static char *record_buffer;
+static size_t allocated_size;
 
 /* Buffer for constructing the reply.  */
 static char reply_buffer[BUFSIZ];
 
 /* Debugging tools.  */
 
-static FILE *debug_file = NULL;
+static FILE *debug_file;
 
 #define	DEBUG(File) \
   if (debug_file) fprintf(debug_file, File)
@@ -153,7 +153,7 @@ prepare_record_buffer (size_t size)
 
   record_buffer = malloc (size);
 
-  if (record_buffer == NULL)
+  if (! record_buffer)
     {
       DEBUG (_("rmtd: Cannot allocate buffer space\n"));
 
@@ -260,10 +260,10 @@ int
 main (int argc, char *const *argv)
 {
   char command;
-  long status;
+  ssize_t status;
 
-  /* FIXME: Localisation is meaningless, unless --help and --version are
-     locally used.  Localisation would be best accomplished by the calling
+  /* FIXME: Localization is meaningless, unless --help and --version are
+     locally used.  Localization would be best accomplished by the calling
      tar, on messages found within error packets.  */
 
   program_name = argv[0];
@@ -282,7 +282,7 @@ main (int argc, char *const *argv)
 	  report_numbered_error (errno);
 	  exit (EXIT_FAILURE);
 	}
-      setbuf (debug_file, NULL);
+      setbuf (debug_file, 0);
     }
 
 top:
@@ -437,9 +437,9 @@ top:
 	status = safe_read (tape, record_buffer, size);
 	if (status < 0)
 	  goto ioerror;
-	sprintf (reply_buffer, "A%ld\n", status);
+	sprintf (reply_buffer, "A%ld\n", (long) status);
 	full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
-	full_write (STDOUT_FILENO, record_buffer, (size_t) status);
+	full_write (STDOUT_FILENO, record_buffer, status);
 	goto top;
       }
 
@@ -512,10 +512,10 @@ top:
 
 	  if (ioctl (tape, MTIOCGET, (char *) &operation) < 0)
 	    goto ioerror;
-	  status = sizeof (operation);
-	  sprintf (reply_buffer, "A%ld\n", status);
+	  status = sizeof operation;
+	  sprintf (reply_buffer, "A%ld\n", (long) status);
 	  full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
-	  full_write (STDOUT_FILENO, (char *) &operation, sizeof (operation));
+	  full_write (STDOUT_FILENO, (char *) &operation, sizeof operation);
 	}
 #endif
 	goto top;
@@ -529,9 +529,9 @@ top:
     }
 
 respond:
-  DEBUG1 ("rmtd: A %ld\n", status);
+  DEBUG1 ("rmtd: A %ld\n", (long) status);
 
-  sprintf (reply_buffer, "A%ld\n", status);
+  sprintf (reply_buffer, "A%ld\n", (long) status);
   full_write (STDOUT_FILENO, reply_buffer, strlen (reply_buffer));
   goto top;
 
