@@ -52,14 +52,16 @@
 static tarlong prev_written;	/* bytes written on previous volumes */
 static tarlong bytes_written;	/* bytes written on this volume */
 
-/* FIXME: The following four variables should ideally be static to this
-   module.  However, this cannot be done yet, as update.c uses the first
-   three a lot, and compare.c uses the fourth.  The cleanup continues!  */
+/* FIXME: The following variables should ideally be static to this
+   module.  However, this cannot be done yet.  The cleanup continues!  */
 
 union block *record_start;	/* start of record of archive */
 union block *record_end;	/* last+1 block of archive record */
 union block *current_block;	/* current block of archive */
 enum access_mode access_mode;	/* how do we handle the archive */
+off_t records_read;		/* number of records read from this archive */
+off_t records_written;		/* likewise, for records written */
+
 static struct stat archive_stat; /* stat block for archive file */
 
 static off_t record_start_block; /* block ordinal at record_start */
@@ -117,7 +119,7 @@ off_t save_totsize;		/* total size of file we are writing, only
 off_t save_sizeleft;		/* where we are in the file we are writing,
 				   only valid if save_name is nonzero */
 
-int write_archive_to_stdout;
+bool write_archive_to_stdout;
 
 /* Used by flush_read and flush_write to store the real info about saved
    names.  */
@@ -804,8 +806,10 @@ open_archive (enum access_mode wanted_access)
 
   switch (wanted_access)
     {
-    case ACCESS_READ:
     case ACCESS_UPDATE:
+      records_written = 0;
+    case ACCESS_READ:
+      records_read = 0;
       record_end = record_start; /* set up for 1st record = # 0 */
       find_next_block ();	/* read it in, check for EOF */
 
@@ -824,6 +828,7 @@ open_archive (enum access_mode wanted_access)
       break;
 
     case ACCESS_WRITE:
+      records_written = 0;
       if (volume_label_option)
 	{
 	  memset (record_start, 0, BLOCKSIZE);
@@ -869,7 +874,10 @@ flush_write (void)
     archive_write_error (status);
 
   if (status > 0)
-    bytes_written += status;
+    {
+      records_written++;
+      bytes_written += status;
+    }
 
   if (status == record_size)
     {
@@ -1078,7 +1086,10 @@ flush_read (void)
  error_loop:
   status = rmtread (archive, record_start->buffer, record_size);
   if (status == record_size)
-    return;
+    {
+      records_read++;
+      return;
+    }
 
   if ((status == 0
        || (status < 0 && errno == ENOSPC)
@@ -1176,6 +1187,7 @@ flush_read (void)
 	  cursor++;
 	}
       current_block = cursor;
+      records_read++;
       return;
     }
   else if (status < 0)
@@ -1222,6 +1234,7 @@ flush_read (void)
 	   (unsigned long) ((record_size - left) / BLOCKSIZE)));
 
   record_end = record_start + (record_size - left) / BLOCKSIZE;
+  records_read++;
 }
 
 /*  Flush the current buffer to/from the archive.  */
