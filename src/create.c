@@ -251,6 +251,7 @@ mode_to_chars (mode_t v, char *p, size_t s)
       && S_IRGRP == TGREAD && S_IWGRP == TGWRITE && S_IXGRP == TGEXEC
       && S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC
       && archive_format != POSIX_FORMAT
+      && archive_format != USTAR_FORMAT
       && archive_format != GNU_FORMAT)
     {
       negative = v < 0;
@@ -329,15 +330,20 @@ string_to_chars (char *str, char *p, size_t s)
 }
 
 
-/* Writing routines.  */
+/* A file is not dumpable if
+   a) it is empty *and* world-readable, or
+   b) current archive is /dev/null */
 
-/* Zero out the buffer so we don't confuse ourselves with leftover
-   data.  */
-static void
-clear_buffer (char *buffer)
+bool
+file_dumpable_p (struct tar_stat_info *stat)
 {
-  memset (buffer, 0, BLOCKSIZE);
+  return !(dev_null_output
+	   || (stat->archive_file_size == 0
+	       && (stat->stat.st_mode & MODE_R) == MODE_R));
 }
+
+
+/* Writing routines.  */
 
 /* Write the EOT block(s).  Zero at least two blocks, through the end
    of the record.  Old tar, as previous versions of GNU tar, writes
@@ -400,7 +406,7 @@ write_short_name (struct tar_stat_info *st)
 
 /* Write a GNUTYPE_LONGLINK or GNUTYPE_LONGNAME block.  */
 static void
-write_gnu_long_link (const char *p, char type)
+write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
 {
   size_t size = strlen (p) + 1;
   size_t bufsize;
@@ -408,7 +414,7 @@ write_gnu_long_link (const char *p, char type)
 
   header = start_private_header ("././@LongLink", size);
   header->header.typeflag = type;
-  finish_header (header, -1);
+  finish_header (st, header, -1);
 
   header = find_next_block ();
 
@@ -457,12 +463,11 @@ write_ustar_long_name (const char *name)
     }
   
   i = split_long_name (name, length);
-  if (i == 0 || length - i -1 > NAME_FIELD_SIZE)
+  if (i == 0 || length - i - 1 > NAME_FIELD_SIZE)
     {
       WARN ((0, 0,
 	     _("%s: file name is too long (cannot be split); not dumped"),
-	     quotearg_colon (name),
-	     PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1));
+	     quotearg_colon (name)));
       return NULL;
     }
 
@@ -494,7 +499,7 @@ write_long_link (struct tar_stat_info *st)
       
     case OLDGNU_FORMAT:
     case GNU_FORMAT:
-      write_gnu_long_link (st->link_name, GNUTYPE_LONGLINK);
+      write_gnu_long_link (st, st->link_name, GNUTYPE_LONGLINK);
       break;
 
     default:
@@ -518,7 +523,7 @@ write_long_name (struct tar_stat_info *st)
       
     case OLDGNU_FORMAT:
     case GNU_FORMAT:
-      write_gnu_long_link (st->file_name, GNUTYPE_LONGNAME);
+      write_gnu_long_link (st, st->file_name, GNUTYPE_LONGNAME);
       break;
 
     default:
@@ -528,10 +533,9 @@ write_long_name (struct tar_stat_info *st)
 }
 
 static union block *
-write_extended (union block *old_header, char type)
+write_extended (struct tar_stat_info *st, union block *old_header, char type)
 {
   union block *header, hp;
-  struct tar_stat_info foo;
   size_t size;
   char *p;
 
@@ -546,7 +550,7 @@ write_extended (union block *old_header, char type)
   header = start_private_header ("././@PaxHeader", size);
   header->header.typeflag = type;
 
-  finish_header (header, -1);
+  finish_header (st, header, -1);
 
   p = extended_header.buffer;
 
@@ -588,19 +592,14 @@ write_header_name (struct tar_stat_info *st)
 /* Make a header block for the file whose stat info is st,
    and return its address.  */
 
-static union block *
-start_header (const char *name, struct tar_stat_info *st)
+union block *
+start_header (struct tar_stat_info *st)
 {
   union block *header;
-
-  name = safer_name_suffix (name, 0);
-  assign_string (&st->file_name, name);
 
   header = write_header_name (st);
   if (!header)
     return NULL;
-
-  assign_string (&current_stat_info.file_name, name);
 
   /* Override some stat fields, if requested to do so.  */
 
@@ -700,13 +699,13 @@ start_header (const char *name, struct tar_stat_info *st)
       break;
 
     case OLDGNU_FORMAT:
+    case GNU_FORMAT:   /*FIXME?*/
       /* Overwrite header->header.magic and header.version in one blow.  */
       strcpy (header->header.magic, OLDGNU_MAGIC);
       break;
 
     case POSIX_FORMAT:
     case USTAR_FORMAT:
-    case GNU_FORMAT:   /*FIXME?*/
       strncpy (header->header.magic, TMAGIC, TMAGLEN);
       strncpy (header->header.version, TVERSION, TVERSLEN);
       break;
@@ -745,7 +744,8 @@ start_header (const char *name, struct tar_stat_info *st)
    is not negative, is the block ordinal of the first record for this
    file, which may be a preceding long name or long link record.  */
 void
-finish_header (union block *header, off_t block_ordinal)
+finish_header (struct tar_stat_info *st,
+	       union block *header, off_t block_ordinal)
 {
   size_t i;
   int sum;
@@ -762,12 +762,11 @@ finish_header (union block *header, off_t block_ordinal)
       /* These globals are parameters to print_header, sigh.  */
 
       current_header = header;
-      /* current_stat_info is already set up.  */
       current_format = archive_format;
-      print_header (block_ordinal);
+      print_header (st, block_ordinal);
     }
 
-  header = write_extended (header, XHDTYPE);
+  header = write_extended (st, header, XHDTYPE);
   
   memcpy (header->header.chksum, CHKBLANKS, sizeof header->header.chksum);
 
@@ -792,216 +791,269 @@ finish_header (union block *header, off_t block_ordinal)
   set_next_block_after (header);
 }
 
-/* Sparse file processing.  */
 
-/* Takes a blockful of data and basically cruises through it to see if
-   it's made *entirely* of zeros, returning a 0 the instant it finds
-   something that is a nonzero, i.e., useful data.  */
-static int
-zero_block_p (char *buffer)
+void
+pad_archive (off_t size_left)
 {
-  int counter;
+  union block *blk;
+  while (size_left > 0)
+    {
+      save_sizeleft = size_left;
+      blk = find_next_block ();
+      memset (blk->buffer, 0, BLOCKSIZE);
+      set_next_block_after (blk);
+      size_left -= BLOCKSIZE;
+    }
+}  
 
-  for (counter = 0; counter < BLOCKSIZE; counter++)
-    if (buffer[counter] != '\0')
-      return 0;
-  return 1;
+static enum dump_status
+dump_regular_file (int fd, struct tar_stat_info *stat)
+{
+  off_t size_left = stat->stat.st_size;
+  off_t block_ordinal;
+  union block *blk;
+  
+  block_ordinal = current_block_ordinal ();
+  blk = start_header (stat);
+  if (!blk)
+    return dump_status_fail;
+
+  /* Mark contiguous files, if we support them.  */
+  if (archive_format != V7_FORMAT && S_ISCTG (stat->stat.st_mode))
+    blk->header.typeflag = CONTTYPE;
+
+  finish_header (stat, blk, block_ordinal);
+
+  while (size_left > 0)
+    {
+      size_t bufsize, count;
+      
+      if (multi_volume_option)
+	{
+	  assign_string (&save_name, stat->file_name);
+	  save_sizeleft = size_left;
+	  save_totsize = stat->stat.st_size;
+	}
+      blk = find_next_block ();
+      
+      bufsize = available_space_after (blk);
+      
+      if (size_left < bufsize)
+	{
+	  /* Last read -- zero out area beyond.  */
+	  bufsize = size_left;
+	  count = bufsize % BLOCKSIZE;
+	  if (count)
+	    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
+	}
+      
+      count = (fd < 0) ? bufsize : safe_read (fd, blk->buffer, bufsize);
+      if (count < 0)
+	{
+	  read_diag_details (stat->orig_file_name, 
+	                     stat->stat.st_size - size_left, bufsize);
+	  pad_archive (size_left);
+	  return dump_status_short;
+	}
+      size_left -= count;
+
+      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
+
+      if (count != bufsize)
+	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  memset (blk->buffer + count, 0, bufsize - count);
+	  WARN ((0, 0,
+		 ngettext ("%s: File shrank by %s byte; padding with zeros",
+			   "%s: File shrank by %s bytes; padding with zeros",
+			   size_left),
+		 quotearg_colon (stat->orig_file_name),
+		 STRINGIFY_BIGINT (size_left, buf)));
+	  if (! ignore_failed_read_option)
+	    exit_status = TAREXIT_FAILURE;
+	  pad_archive (size_left);
+	  return dump_status_short;
+	}
+    }
+  return dump_status_ok;
 }
 
 void
-init_sparsearray (void)
+dump_regular_finish (int fd, struct tar_stat_info *st, time_t original_ctime)
 {
-  if (! sp_array_size)
-    sp_array_size = SPARSES_IN_OLDGNU_HEADER;
-  sparsearray = xmalloc (sp_array_size * sizeof *sparsearray);
-}
-
-static off_t
-find_new_file_size (int sparses)
-{
-  int i;
-  off_t s = 0;
-  for (i = 0; i < sparses; i++)
-    s += sparsearray[i].numbytes;
-  return s;
-}
-
-/* Make one pass over the file NAME, studying where any non-zero data
-   is, that is, how far into the file each instance of data is, and
-   how many bytes are there.  Save this information in the
-   sparsearray, which will later be translated into header
-   information.  */
-
-/* There is little point in trimming small amounts of null data at the head
-   and tail of blocks, only avoid dumping full null blocks.  */
-
-/* FIXME: this routine might accept bits of algorithmic cleanup, it is
-   too kludgey for my taste...  */
-
-static int
-deal_with_sparse (char *name, union block *header)
-{
-  size_t numbytes = 0;
-  off_t offset = 0;
-  int file;
-  int sparses = 0;
-  ssize_t count;
-  char buffer[BLOCKSIZE];
-
-  if (archive_format == OLDGNU_FORMAT)
-    header->oldgnu_header.isextended = 0;
-
-  if (file = open (name, O_RDONLY), file < 0)
-    /* This problem will be caught later on, so just return.  */
-    return 0;
-
-  init_sparsearray ();
-  clear_buffer (buffer);
-
-  for (;;)
+  if (fd >= 0)
     {
-      /* Realloc the scratch area as necessary.  FIXME: should reallocate
-	 only at beginning of a new instance of non-zero data.  */
-
-      if (sp_array_size <= sparses)
+      struct stat final_stat;
+      if (fstat (fd, &final_stat) != 0)
 	{
-	  sparsearray =
-	    xrealloc (sparsearray,
-		      2 * sp_array_size * sizeof (struct sp_array));
-	  sp_array_size *= 2;
+	  stat_diag (st->orig_file_name);
 	}
-      
-      count = safe_read (file, buffer, sizeof buffer);
-      if (count <= 0)
-	break;
+      else if (final_stat.st_ctime != original_ctime)
+	{
+	  WARN ((0, 0, _("%s: file changed as we read it"),
+		 quotearg_colon (st->orig_file_name)));
+	}
+      if (close (fd) != 0)
+	{
+	  close_diag (st->orig_file_name);
+	}
+    }
+  if (remove_files_option)
+    {
+      if (unlink (st->orig_file_name) == -1)
+	unlink_error (st->orig_file_name);
+    }
+}
 
-      /* Process one block.  */
+void
+dump_dir0 (char *directory,
+	   struct tar_stat_info *stat, int top_level, dev_t parent_device)
+{
+  dev_t our_device = stat->stat.st_dev;
+  
+  if (!is_avoided_name (stat->orig_file_name))
+    {
+      union block *blk = NULL;
+      off_t block_ordinal = current_block_ordinal ();
+      stat->stat.st_size = 0;	/* force 0 size on dir */
 
-      if (count == sizeof buffer)
+      blk = start_header (stat);
+      if (!blk)
+	return;
+	  
+      if (incremental_option)
+	blk->header.typeflag = GNUTYPE_DUMPDIR;
+      else /* if (standard_option) */
+	blk->header.typeflag = DIRTYPE;
 
-	if (zero_block_p (buffer))
-	  {
-	    if (numbytes)
+      /* If we're gnudumping, we aren't done yet so don't close it.  */
+
+      if (!incremental_option)
+	finish_header (stat, blk, block_ordinal);
+      else if (gnu_list_name->dir_contents)
+	{
+	  off_t size_left;
+	  off_t totsize;
+	  size_t bufsize;
+	  ssize_t count;
+	  const char *buffer, *p_buffer;
+	  off_t block_ordinal = current_block_ordinal ();
+	  
+	  buffer = gnu_list_name->dir_contents; /* FOO */
+	  totsize = 0;
+	  if (buffer)
+	    for (p_buffer = buffer; *p_buffer; )
 	      {
-		sparsearray[sparses++].numbytes = numbytes;
-		numbytes = 0;
+		size_t size = strlen (p_buffer) + 1;
+		totsize += size;
+		p_buffer += size;
 	      }
-	  }
-	else
-	  {
-	    if (!numbytes)
-	      sparsearray[sparses].offset = offset;
-	    numbytes += count;
-	  }
-
-      else
-
-	/* Since count < sizeof buffer, we have the last bit of the file.  */
-
-	if (!zero_block_p (buffer))
-	  {
-	    if (!numbytes)
-	      sparsearray[sparses].offset = offset;
-	    numbytes += count;
-	  }
-	else
-	  /* The next two lines are suggested by Andreas Degert, who says
-	     they are required for trailing full blocks to be written to the
-	     archive, when all zeroed.  Yet, it seems to me that the case
-	     does not apply.  Further, at restore time, the file is not as
-	     sparse as it should.  So, some serious cleanup is *also* needed
-	     in this area.  Just one more... :-(.  FIXME.  */
-	  if (numbytes)
-	    numbytes += count;
-
-      /* Prepare for next block.  */
-
-      offset += count;
-      /* FIXME: do not clear unless necessary.  */
-      clear_buffer (buffer);
-    }
-
-  if (numbytes)
-    sparsearray[sparses++].numbytes = numbytes;
-  else
-    {
-      sparsearray[sparses].offset = offset - 1;
-      sparsearray[sparses++].numbytes = 1;
-    }
-
-  return close (file) == 0 && 0 <= count ? sparses : 0;
-}
-
-static int
-finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
-{
-  union block *start;
-  size_t bufsize;
-  int sparses = 0;
-  ssize_t count;
-
-  while (*sizeleft > 0)
-    {
-      start = find_next_block ();
-      memset (start->buffer, 0, BLOCKSIZE);
-      bufsize = sparsearray[sparses].numbytes;
-      if (! bufsize)
-	abort ();
-
-      if (lseek (file, sparsearray[sparses++].offset, SEEK_SET) < 0)
-	{
-	  (ignore_failed_read_option ? seek_warn_details : seek_error_details)
-	    (name, sparsearray[sparses - 1].offset);
-	  break;
-	}
-
-      /* If the number of bytes to be written here exceeds the size of
-	 the temporary buffer, do it in steps.  */
-
-      while (bufsize > BLOCKSIZE)
-	{
-	  count = safe_read (file, start->buffer, BLOCKSIZE);
-	  if (count < 0)
+	  totsize++;
+	  OFF_TO_CHARS (totsize, blk->header.size);
+	  finish_header (stat, blk, block_ordinal); 
+	  p_buffer = buffer;
+	  size_left = totsize;
+	  while (size_left > 0)
 	    {
-	      (ignore_failed_read_option
-	       ? read_warn_details
-	       : read_error_details)
-		(name, fullsize - *sizeleft, bufsize);
-	      return 1;
+	      if (multi_volume_option)
+		{
+		  assign_string (&save_name, stat->orig_file_name);
+		  save_sizeleft = size_left;
+		  save_totsize = totsize;
+		}
+	      blk = find_next_block ();
+	      bufsize = available_space_after (blk);
+	      if (size_left < bufsize)
+		{
+		  bufsize = size_left;
+		  count = bufsize % BLOCKSIZE;
+		  if (count)
+		    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
+		}
+	      memcpy (blk->buffer, p_buffer, bufsize);
+	      size_left -= bufsize;
+	      p_buffer += bufsize;
+	      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
 	    }
-	  bufsize -= count;
-	  *sizeleft -= count;
-	  set_next_block_after (start);
-	  start = find_next_block ();
-	  memset (start->buffer, 0, BLOCKSIZE);
+	  if (multi_volume_option)
+	    assign_string (&save_name, 0);
+	  return;
 	}
-
-      {
-	char buffer[BLOCKSIZE];
-
-	clear_buffer (buffer);
-	count = safe_read (file, buffer, bufsize);
-	memcpy (start->buffer, buffer, BLOCKSIZE);
-      }
-
-      if (count < 0)
-	{
-	  (ignore_failed_read_option
-	   ? read_warn_details
-	   : read_error_details)
-	    (name, fullsize - *sizeleft, bufsize);
-	  return 1;
-	}
-
-      *sizeleft -= count;
-      set_next_block_after (start);
     }
-  free (sparsearray);
-#if 0
-  set_next_block_after (start + (count - 1) / BLOCKSIZE);
-#endif
-  return 0;
+  else if (!recursion_option)
+    return;
+  else if (one_file_system_option
+	   && !top_level
+	   && parent_device != stat->stat.st_dev)
+    {
+      if (verbose_option)
+	WARN ((0, 0,
+	       _("%s: file is on a different filesystem; not dumped"),
+	       quotearg_colon (stat->orig_file_name)));
+      return;
+    }
+
+  {
+    char const *entry;
+    size_t entry_len;
+    char *name_buf = strdup (stat->orig_file_name);
+    size_t name_size = strlen (name_buf);
+    size_t name_len = name_size;
+    
+    /* Now output all the files in the directory.  */
+    /* FIXME: Should speed this up by cd-ing into the dir.  */
+    
+    for (entry = directory; (entry_len = strlen (entry)) != 0;
+	 entry += entry_len + 1)
+      {
+	if (name_size < name_len + entry_len)
+	  {
+	    name_size = name_len + entry_len;
+	    name_buf = xrealloc (name_buf, name_size + 1);
+	  }
+	strcpy (name_buf + name_len, entry);
+	if (!excluded_name (name_buf))
+	  dump_file (name_buf, 0, our_device);
+      }
+    
+    free (name_buf);
+  }
 }
+
+/* Ensure exactly one trailing slash.  */
+static void
+ensure_slash (char **pstr)
+{
+  size_t len = strlen (*pstr);
+  while (len >= 1 && ISSLASH ((*pstr)[len - 1]))
+    len--;
+  if (!ISSLASH ((*pstr)[len]))
+    *pstr = xrealloc (*pstr, len + 2);
+  (*pstr)[len++] = '/';
+  (*pstr)[len] = '\0';
+}
+
+bool
+dump_dir (struct tar_stat_info *stat, int top_level, dev_t parent_device)
+{
+  char *directory;
+
+  directory = savedir (stat->orig_file_name);
+  if (!directory)
+    {
+      savedir_diag (stat->orig_file_name);
+      return false;
+    }
+
+  ensure_slash (&stat->orig_file_name);
+  ensure_slash (&stat->file_name);
+
+  dump_dir0 (directory, stat, top_level, parent_device);
+
+  free (directory);
+  return true;
+}
+
 
 /* Main functions of this module.  */
 
@@ -1020,12 +1072,12 @@ create_archive (void)
 
       collect_and_sort_names ();
 
-      while (p = name_from_list (), p)
+      while ((p = name_from_list ()) != NULL)
 	if (!excluded_name (p))
 	  dump_file (p, -1, (dev_t) 0);
 
       blank_name_list ();
-      while (p = name_from_list (), p)
+      while ((p = name_from_list ()) != NULL)
 	if (!excluded_name (p))
 	  {
 	    size_t plen = strlen (p);
@@ -1050,7 +1102,7 @@ create_archive (void)
 			  while ((buffer_size *=2 ) < plen + qlen)
 			    continue;
 			  buffer = xrealloc (buffer, buffer_size);
-			}
+ 			}
 		      strcpy (buffer + plen, q + 1);
 		      dump_file (buffer, -1, (dev_t) 0);
 		    }
@@ -1061,7 +1113,7 @@ create_archive (void)
     }
   else
     {
-      while (p = name_next (1), p)
+      while ((p = name_next (1)) != NULL)
 	if (!excluded_name (p))
 	  dump_file (p, 1, (dev_t) 0);
     }
@@ -1091,690 +1143,80 @@ compare_links (void const *entry1, void const *entry2)
   return ((link1->dev ^ link2->dev) | (link1->ino ^ link2->ino)) == 0;
 }
 
+static void
+unknown_file_error (char *p)
+{
+  WARN ((0, 0, _("%s: Unknown file type; file ignored"),
+	 quotearg_colon (p)));
+  if (!ignore_failed_read_option)
+    exit_status = TAREXIT_FAILURE;
+}
+
+
+/* Handling of hard links */
+
 /* Table of all non-directories that we've written so far.  Any time
    we see another, we check the table and avoid dumping the data
    again if we've done it once already.  */
 static Hash_table *link_table;
 
-/* Dump a single file, recursing on directories.  P is the file name
-   to dump.  TOP_LEVEL tells whether this is a top-level call; zero
-   means no, positive means yes, and negative means the top level
-   of an incremental dump.  PARENT_DEVICE is the device of P's
-   parent directory; it is examined only if TOP_LEVEL is zero.
-
-   Set global CURRENT_STAT_INFO to stat output for this file.  */
-
-/* FIXME: One should make sure that for *every* path leading to setting
-   exit_status to failure, a clear diagnostic has been issued.  */
-
-void
-dump_file (char *p, int top_level, dev_t parent_device)
+/* Try to dump stat as a hard link to another file in the archive. If
+   succeeded returns true */
+static bool
+dump_hard_link (struct tar_stat_info *stat)
 {
-  union block *header;
-  char type;
-  union block *exhdr;
-  char save_typeflag;
-  time_t original_ctime;
-  struct utimbuf restore_times;
-  off_t block_ordinal = -1;
-
-  /* FIXME: `header' might be used uninitialized in this
-     function.  Reported by Bruno Haible.  */
-
-  if (interactive_option && !confirm ("add", p))
-    return;
-
-  if (deref_stat (dereference_option, p, &current_stat_info.stat) != 0)
+  if (link_table && stat->stat.st_nlink > 1)
     {
-      if (ignore_failed_read_option)
-	stat_warn (p);
-      else
-	stat_error (p);
-      return;
-    }
+      struct link lp;
+      struct link *dup;
+      off_t block_ordinal;
+      union block *blk;
+      
+      lp.ino = stat->stat.st_ino;
+      lp.dev = stat->stat.st_dev;
 
-  original_ctime = current_stat_info.stat.st_ctime;
-  restore_times.actime = current_stat_info.stat.st_atime;
-  restore_times.modtime = current_stat_info.stat.st_mtime;
-
-#ifdef S_ISHIDDEN
-  if (S_ISHIDDEN (current_stat_info.stat.st_mode))
-    {
-      char *new = (char *) alloca (strlen (p) + 2);
-      if (new)
+      if ((dup = hash_lookup (link_table, &lp)))
 	{
-	  strcpy (new, p);
-	  strcat (new, "@");
-	  p = new;
-	}
-    }
-#endif
+	  /* We found a link.  */
+	  char const *link_name = safer_name_suffix (dup->name, 1);
 
-  /* See if we want only new files, and check if this one is too old to
-     put in the archive.  */
-
-  if ((0 < top_level || !incremental_option)
-      && !S_ISDIR (current_stat_info.stat.st_mode)
-      && current_stat_info.stat.st_mtime < newer_mtime_option
-      && (!after_date_option || current_stat_info.stat.st_ctime < newer_ctime_option))
-    {
-      if (0 < top_level)
-	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
-	       quotearg_colon (p)));
-      /* FIXME: recheck this return.  */
-      return;
-    }
-
-  /* See if we are trying to dump the archive.  */
-  if (sys_file_is_archive (&current_stat_info))
-    {
-      WARN ((0, 0, _("%s: file is the archive; not dumped"),
-	     quotearg_colon (p)));
-      return;
-    }
-
-  if (S_ISDIR (current_stat_info.stat.st_mode))
-    {
-      char *directory;
-      char const *entry;
-      size_t entrylen;
-      char *namebuf;
-      size_t buflen;
-      size_t len;
-      dev_t our_device = current_stat_info.stat.st_dev;
-
-      errno = 0;
-
-      directory = savedir (p);
-      if (! directory)
-	{
-	  if (ignore_failed_read_option)
-	    savedir_warn (p);
-	  else
-	    savedir_error (p);
-	  return;
-	}
-
-      /* Build new prototype name.  Ensure exactly one trailing slash.  */
-
-      len = strlen (p);
-      buflen = len + NAME_FIELD_SIZE;
-      namebuf = xmalloc (buflen + 1);
-      memcpy (namebuf, p, len);
-      while (len >= 1 && ISSLASH (namebuf[len - 1]))
-	len--;
-      namebuf[len++] = '/';
-      namebuf[len] = '\0';
-
-      if (! is_avoided_name (namebuf))
-	{
-	  /* The condition above used to be "archive_format != V7_FORMAT".
-	     GNU tar was not writing directory blocks at all.  Daniel Trinkle
-	     writes: ``All old versions of tar I have ever seen have
-	     correctly archived an empty directory.  The really old ones I
-	     checked included HP-UX 7 and Mt. Xinu More/BSD.  There may be
-	     some subtle reason for the exclusion that I don't know, but the
-	     current behavior is broken.''  I do not know those subtle
-	     reasons either, so until these are reported (anew?), just allow
-	     directory blocks to be written even with old archives.  */
-
-	  block_ordinal = current_block_ordinal ();
-	  current_stat_info.stat.st_size = 0;	/* force 0 size on dir */
-
-	  header = start_header (namebuf, &current_stat_info);
-	  if (!header)
-	    return;
-	  
-	  if (incremental_option)
-	    header->header.typeflag = GNUTYPE_DUMPDIR;
-	  else /* if (standard_option) */
-	    header->header.typeflag = DIRTYPE;
-
-	  /* If we're gnudumping, we aren't done yet so don't close it.  */
-
-	  if (!incremental_option)
-	    finish_header (header, block_ordinal);
-	}
-
-      if (incremental_option && gnu_list_name->dir_contents)
-	{
-	  off_t sizeleft;
-	  off_t totsize;
-	  size_t bufsize;
-	  union block *start;
-	  ssize_t count;
-	  const char *buffer, *p_buffer;
-
-	  buffer = gnu_list_name->dir_contents; /* FOO */
-	  totsize = 0;
-	  if (buffer)
-	    for (p_buffer = buffer; *p_buffer; )
-	      {
-		size_t size = strlen (p_buffer) + 1;
-		totsize += size;
-		p_buffer += size;
-	      }
-	  totsize++;
-	  OFF_TO_CHARS (totsize, header->header.size);
-	  finish_header (header, block_ordinal);
-	  p_buffer = buffer;
-	  sizeleft = totsize;
-	  while (sizeleft > 0)
-	    {
-	      if (multi_volume_option)
-		{
-		  assign_string (&save_name, p);
-		  save_sizeleft = sizeleft;
-		  save_totsize = totsize;
-		}
-	      start = find_next_block ();
-	      bufsize = available_space_after (start);
-	      if (sizeleft < bufsize)
-		{
-		  bufsize = sizeleft;
-		  count = bufsize % BLOCKSIZE;
-		  if (count)
-		    memset (start->buffer + sizeleft, 0, BLOCKSIZE - count);
-		}
-	      memcpy (start->buffer, p_buffer, bufsize);
-	      sizeleft -= bufsize;
-	      p_buffer += bufsize;
-	      set_next_block_after (start + (bufsize - 1) / BLOCKSIZE);
-	    }
-	  if (multi_volume_option)
-	    assign_string (&save_name, 0);
-	  goto finish_dir;
-	}
-
-      /* See if we are about to recurse into a directory, and avoid doing
-	 so if the user wants that we do not descend into directories.  */
-
-      if (! recursion_option)
-	goto finish_dir;
-
-      /* See if we are crossing from one file system to another, and
-	 avoid doing so if the user only wants to dump one file system.  */
-
-      if (one_file_system_option && !top_level
-	  && parent_device != current_stat_info.stat.st_dev)
-	{
-	  if (verbose_option)
-	    WARN ((0, 0,
-		   _("%s: file is on a different filesystem; not dumped"),
-		   quotearg_colon (p)));
-	  goto finish_dir;
-	}
-
-      /* Now output all the files in the directory.  */
-
-      /* FIXME: Should speed this up by cd-ing into the dir.  */
-
-      for (entry = directory;
-	   (entrylen = strlen (entry)) != 0;
-	   entry += entrylen + 1)
-	{
-	  if (buflen < len + entrylen)
-	    {
-	      buflen = len + entrylen;
-	      namebuf = xrealloc (namebuf, buflen + 1);
-	    }
-	  strcpy (namebuf + len, entry);
-	  if (!excluded_name (namebuf))
-	    dump_file (namebuf, 0, our_device);
-	}
-
-    finish_dir:
-
-      free (directory);
-      free (namebuf);
-      if (atime_preserve_option)
-	utime (p, &restore_times);
-      return;
-    }
-  else if (is_avoided_name (p))
-    return;
-  else
-    {
-      /* Check for multiple links.  */
-
-      if (1 < current_stat_info.stat.st_nlink && link_table)
-	{
-	  struct link lp;
-	  struct link *dup;
-	  lp.ino = current_stat_info.stat.st_ino;
-	  lp.dev = current_stat_info.stat.st_dev;
-
-	  if ((dup = hash_lookup (link_table, &lp)))
-	    {
-	      /* We found a link.  */
-	      char const *link_name = safer_name_suffix (dup->name, 1);
-
-	      dup->nlink--;
+	  dup->nlink--;
 	      
-	      block_ordinal = current_block_ordinal ();
-	      assign_string (&current_stat_info.link_name, link_name);
-	      if (NAME_FIELD_SIZE < strlen (link_name))
-		write_long_link (&current_stat_info);
-
-	      current_stat_info.stat.st_size = 0;
-	      header = start_header (p, &current_stat_info);
-	      if (!header)
-		return;
-	      tar_copy_str (header->header.linkname, link_name,
-			    NAME_FIELD_SIZE);
-
-	      header->header.typeflag = LNKTYPE;
-	      finish_header (header, block_ordinal);
-
-	      /* FIXME: Maybe remove from table after all links found?  */
-
-	      if (remove_files_option && unlink (p) != 0)
-		unlink_error (p);
-
-	      /* We dumped it, and we don't need to put it in the
-                 table again.  */
-	      return;
-	    }
-	}
-
-      /* This is not a link to a previously dumped file, so dump it.  */
-
-      if (S_ISREG (current_stat_info.stat.st_mode)
-	  || S_ISCTG (current_stat_info.stat.st_mode))
-	{
-	  int f;			/* file descriptor */
-	  size_t bufsize;
-	  ssize_t count;
-	  off_t sizeleft;
-	  union block *start;
-	  int header_moved;
-	  char isextended = 0;
-	  int sparses = 0;
-
-	  header_moved = 0;
-
-	  if (sparse_option)
-	    {
-	      /* Check the size of the file against the number of blocks
-		 allocated for it, counting both data and indirect blocks.
-		 If there is a smaller number of blocks than would be
-		 necessary to accommodate a file of this size, this is safe
-		 to say that we have a sparse file: at least one of those
-		 blocks in the file is just a useless hole.  For sparse
-		 files not having more hole blocks than indirect blocks, the
-		 sparseness will go undetected.  */
-
-	      /* Bruno Haible sent me these statistics for Linux.  It seems
-		 that some filesystems count indirect blocks in st_blocks,
-		 while others do not seem to:
-
-		 minix-fs   tar: size=7205, st_blocks=18 and ST_NBLOCKS=18
-		 extfs      tar: size=7205, st_blocks=18 and ST_NBLOCKS=18
-		 ext2fs     tar: size=7205, st_blocks=16 and ST_NBLOCKS=16
-		 msdos-fs   tar: size=7205, st_blocks=16 and ST_NBLOCKS=16
-
-		 Dick Streefland reports the previous numbers as misleading,
-		 because ext2fs use 12 direct blocks, while minix-fs uses only
-		 6 direct blocks.  Dick gets:
-
-		 ext2	size=20480	ls listed blocks=21
-		 minix	size=20480	ls listed blocks=21
-		 msdos	size=20480	ls listed blocks=20
-
-		 It seems that indirect blocks *are* included in st_blocks.
-		 The minix filesystem does not account for phantom blocks in
-		 st_blocks, so `du' and `ls -s' give wrong results.  So, the
-		 --sparse option would not work on a minix filesystem.  */
-
-	      if (ST_NBLOCKS (current_stat_info.stat)
-		  < (current_stat_info.stat.st_size / ST_NBLOCKSIZE
-		     + (current_stat_info.stat.st_size % ST_NBLOCKSIZE != 0)))
-		{
-		  int counter;
-
-		  block_ordinal = current_block_ordinal ();
-		  header = start_header (p, &current_stat_info);
-		  if (!header)
-		    return;
-		  header->header.typeflag = GNUTYPE_SPARSE;
-		  header_moved = 1;
-
-		  /* Call the routine that figures out the layout of the
-		     sparse file in question.  SPARSES is the index of the
-		     first unused element of the "sparsearray," i.e.,
-		     the number of elements it needed to describe the file.  */
-
-		  sparses = deal_with_sparse (p, header);
-
-		  /* See if we'll need an extended header later.  */
-
-		  if (SPARSES_IN_OLDGNU_HEADER < sparses)
-		    header->oldgnu_header.isextended = 1;
-
-		  /* We store the "real" file size so we can show that in
-		     case someone wants to list the archive, i.e., tar tvf
-		     <file>.  It might be kind of disconcerting if the
-		     shrunken file size was the one that showed up.  */
-
-		  OFF_TO_CHARS (current_stat_info.stat.st_size,
-				header->oldgnu_header.realsize);
-
-		  /* This will be the new "size" of the file, i.e., the size
-		     of the file minus the blocks of holes that we're
-		     skipping over.  */
-
-		  current_stat_info.stat.st_size = find_new_file_size (sparses);
-		  OFF_TO_CHARS (current_stat_info.stat.st_size, header->header.size);
-
-		  for (counter = 0;
-		       counter < sparses && counter < SPARSES_IN_OLDGNU_HEADER;
-		       counter++)
-		    {
-		      OFF_TO_CHARS (sparsearray[counter].offset,
-				    header->oldgnu_header.sp[counter].offset);
-		      SIZE_TO_CHARS (sparsearray[counter].numbytes,
-				     header->oldgnu_header.sp[counter].numbytes);
-		    }
-		}
-	    }
-
-	  sizeleft = current_stat_info.stat.st_size;
-
-	  /* Don't bother opening empty, world readable files.  Also do not
-	     open files when archive is meant for /dev/null.  */
-
-	  if (dev_null_output
-	      || (sizeleft == 0
-		  && MODE_R == (MODE_R & current_stat_info.stat.st_mode)))
-	    f = -1;
-	  else
-	    {
-	      f = open (p, O_RDONLY | O_BINARY);
-	      if (f < 0)
-		{
-		  if (! top_level && errno == ENOENT)
-		    WARN ((0, 0, _("%s: File removed before we read it"),
-			   quotearg_colon (p)));
-		  else
-		    (ignore_failed_read_option ? open_warn : open_error) (p);
-		  return;
-		}
-	    }
-
-	  /* If the file is sparse, we've already taken care of this.  */
-
-	  if (!header_moved)
-	    {
-	      block_ordinal = current_block_ordinal ();
-	      header = start_header (p, &current_stat_info);
-	      if (!header)
-		return;
-	    }
-
-	  /* Mark contiguous files, if we support them.  */
-
-	  if (archive_format != V7_FORMAT
-	      && S_ISCTG (current_stat_info.stat.st_mode))
-	    header->header.typeflag = CONTTYPE;
-
-	  if (archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
-	    isextended = header->oldgnu_header.isextended;
-	  else
-	    isextended = 0;
-
-	  save_typeflag = header->header.typeflag;
-	  finish_header (header, block_ordinal);
-	  if (isextended)
-	    {
-	      int sparses_emitted = SPARSES_IN_OLDGNU_HEADER;
-
-	      for (;;)
-		{
-		  int i;
-		  exhdr = find_next_block ();
-		  memset (exhdr->buffer, 0, BLOCKSIZE);
-		  for (i = 0;
-		       (i < SPARSES_IN_SPARSE_HEADER
-			&& sparses_emitted + i < sparses);
-		       i++)
-		    {
-		      SIZE_TO_CHARS (sparsearray[sparses_emitted + i].numbytes,
-				     exhdr->sparse_header.sp[i].numbytes);
-		      OFF_TO_CHARS (sparsearray[sparses_emitted + i].offset,
-				    exhdr->sparse_header.sp[i].offset);
-		    }
-		  set_next_block_after (exhdr);
-		  sparses_emitted += i;
-		  if (sparses == sparses_emitted)
-		    break;
-		  exhdr->sparse_header.isextended = 1;
-		}
-	    }
-	  if (save_typeflag == GNUTYPE_SPARSE)
-	    {
-	      if (f < 0
-		  || finish_sparse_file (f, &sizeleft,
-					 current_stat_info.stat.st_size, p))
-		goto padit;
-	    }
-	  else
-	    while (sizeleft > 0)
-	      {
-		if (multi_volume_option)
-		  {
-		    assign_string (&save_name, p);
-		    save_sizeleft = sizeleft;
-		    save_totsize = current_stat_info.stat.st_size;
-		  }
-		start = find_next_block ();
-
-		bufsize = available_space_after (start);
-
-		if (sizeleft < bufsize)
-		  {
-		    /* Last read -- zero out area beyond.  */
-
-		    bufsize = sizeleft;
-		    count = bufsize % BLOCKSIZE;
-		    if (count)
-		      memset (start->buffer + sizeleft, 0, BLOCKSIZE - count);
-		  }
-		if (f < 0)
-		  count = bufsize;
-		else
-		  count = safe_read (f, start->buffer, bufsize);
-		if (count < 0)
-		  {
-		    (ignore_failed_read_option
-		     ? read_warn_details
-		     : read_error_details)
-		      (p, current_stat_info.stat.st_size - sizeleft, bufsize);
-		    goto padit;
-		  }
-		sizeleft -= count;
-
-		/* This is nonportable (the type of set_next_block_after's arg).  */
-
-		set_next_block_after (start + (bufsize - 1) / BLOCKSIZE);
-
-
-		if (count != bufsize)
-		  {
-		    char buf[UINTMAX_STRSIZE_BOUND];
-		    memset (start->buffer + count, 0, bufsize - count);
-		    WARN ((0, 0,
-			   ngettext ("%s: File shrank by %s byte; padding with zeros",
-				     "%s: File shrank by %s bytes; padding with zeros",
-				     sizeleft),
-			   quotearg_colon (p),
-			   STRINGIFY_BIGINT (sizeleft, buf)));
-		    if (! ignore_failed_read_option)
-		      exit_status = TAREXIT_FAILURE;
-		    goto padit;		/* short read */
-		  }
-	      }
-
-	  if (multi_volume_option)
-	    assign_string (&save_name, 0);
-
-	  if (f >= 0)
-	    {
-	      struct stat final_stat;
-	      if (fstat (f, &final_stat) != 0)
-		{
-		  if (ignore_failed_read_option)
-		    stat_warn (p);
-		  else
-		    stat_error (p);
-		}
-	      else if (final_stat.st_ctime != original_ctime)
-		{
-		  char const *qp = quotearg_colon (p);
-		  WARN ((0, 0, _("%s: file changed as we read it"), qp));
-		}
-	      if (close (f) != 0)
-		{
-		  if (ignore_failed_read_option)
-		    close_warn (p);
-		  else
-		    close_error (p);
-		}
-	      if (atime_preserve_option)
-		utime (p, &restore_times);
-	    }
-	  if (remove_files_option)
-	    {
-	      if (unlink (p) == -1)
-		unlink_error (p);
-	    }
-	  goto file_was_dumped;
-
-	  /* File shrunk or gave error, pad out tape to match the size we
-	     specified in the header.  */
-
-	padit:
-	  while (sizeleft > 0)
-	    {
-	      save_sizeleft = sizeleft;
-	      start = find_next_block ();
-	      memset (start->buffer, 0, BLOCKSIZE);
-	      set_next_block_after (start);
-	      sizeleft -= BLOCKSIZE;
-	    }
-	  if (multi_volume_option)
-	    assign_string (&save_name, 0);
-	  if (f >= 0)
-	    {
-	      close (f);
-	      if (atime_preserve_option)
-		utime (p, &restore_times);
-	    }
-	  goto file_was_dumped;
-	}
-#ifdef HAVE_READLINK
-      else if (S_ISLNK (current_stat_info.stat.st_mode))
-	{
-	  char *buffer;
-	  int size;
-	  size_t linklen = current_stat_info.stat.st_size;
-	  if (linklen != current_stat_info.stat.st_size || linklen + 1 == 0)
-	    xalloc_die ();
-	  buffer = (char *) alloca (linklen + 1);
-	  size = readlink (p, buffer, linklen + 1);
-	  if (size < 0)
-	    {
-	      if (ignore_failed_read_option)
-		readlink_warn (p);
-	      else
-		readlink_error (p);
-	      return;
-	    }
-	  buffer[size] = '\0';
-	  assign_string (&current_stat_info.link_name, buffer);
-	  if (size > NAME_FIELD_SIZE)
-	    write_long_link (&current_stat_info);
-
 	  block_ordinal = current_block_ordinal ();
-	  current_stat_info.stat.st_size = 0;	/* force 0 size on symlink */
-	  header = start_header (p, &current_stat_info);
-	  if (!header)
-	    return;
-	  tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
-	  header->header.typeflag = SYMTYPE;
-	  finish_header (header, block_ordinal);
-	  /* nothing more to do to it */
+	  assign_string (&stat->link_name, link_name);
+	  if (NAME_FIELD_SIZE < strlen (link_name))
+	    write_long_link (stat);
+	  
+	  stat->stat.st_size = 0;
+	  blk = start_header (stat);
+	  if (!blk)
+	    return true;
+	  tar_copy_str (blk->header.linkname, link_name, NAME_FIELD_SIZE);
 
-	  if (remove_files_option)
-	    {
-	      if (unlink (p) == -1)
-		unlink_error (p);
-	    }
-	  goto file_was_dumped;
+	  blk->header.typeflag = LNKTYPE;
+	  finish_header (stat, blk, block_ordinal);
+
+	  if (remove_files_option && unlink (stat->orig_file_name) != 0)
+	    unlink_error (stat->orig_file_name);
+
+	  return true;
 	}
-#endif
-      else if (S_ISCHR (current_stat_info.stat.st_mode))
-	type = CHRTYPE;
-      else if (S_ISBLK (current_stat_info.stat.st_mode))
-	type = BLKTYPE;
-      else if (S_ISFIFO (current_stat_info.stat.st_mode))
-	type = FIFOTYPE;
-      else if (S_ISSOCK (current_stat_info.stat.st_mode))
-	{
-	  WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
-	  return;
-	}
-      else if (S_ISDOOR (current_stat_info.stat.st_mode))
-	{
-	  WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
-	  return;
-	}
-      else
-	goto unknown;
     }
+  return false;
+}
 
-  if (archive_format == V7_FORMAT)
-    goto unknown;
-
-  block_ordinal = current_block_ordinal ();
-  current_stat_info.stat.st_size = 0;	/* force 0 size */
-  header = start_header (p, &current_stat_info);
-  if (!header)
-    return;
-  header->header.typeflag = type;
-
-  if (type != FIFOTYPE)
-    {
-      MAJOR_TO_CHARS (major (current_stat_info.stat.st_rdev),
-		      header->header.devmajor);
-      MINOR_TO_CHARS (minor (current_stat_info.stat.st_rdev),
-		      header->header.devminor);
-    }
-
-  finish_header (header, block_ordinal);
-  if (remove_files_option)
-    {
-      if (unlink (p) == -1)
-	unlink_error (p);
-    }
-  goto file_was_dumped;
-
-unknown:
-  WARN ((0, 0, _("%s: Unknown file type; file ignored"),
-	 quotearg_colon (p)));
-  if (! ignore_failed_read_option)
-    exit_status = TAREXIT_FAILURE;
-  return;
-
-file_was_dumped:
-  if (1 < current_stat_info.stat.st_nlink)
+static void
+file_count_links (struct tar_stat_info *stat)
+{
+  if (stat->stat.st_nlink > 1)
     {
       struct link *dup;
       struct link *lp = xmalloc (offsetof (struct link, name)
-				 + strlen (p) + 1);
-      lp->ino = current_stat_info.stat.st_ino;
-      lp->dev = current_stat_info.stat.st_dev;
-      lp->nlink = current_stat_info.stat.st_nlink;
-      strcpy (lp->name, p);
+				 + strlen (stat->orig_file_name) + 1);
+      lp->ino = stat->stat.st_ino;
+      lp->dev = stat->stat.st_dev;
+      lp->nlink = stat->stat.st_nlink;
+      strcpy (lp->name, stat->orig_file_name);
 
       if (! ((link_table
 	      || (link_table = hash_initialize (0, 0, hash_link,
@@ -1786,7 +1228,6 @@ file_was_dumped:
 	abort ();
       lp->nlink--;
     }
-
 }
 
 /* For each dumped file, check if all its links were dumped. Emit
@@ -1807,4 +1248,253 @@ check_links ()
 	  WARN ((0, 0, _("Missing links to '%s'.\n"), lp->name));
 	}
     }
+}
+
+
+/* Dump a single file, recursing on directories.  P is the file name
+   to dump.  TOP_LEVEL tells whether this is a top-level call; zero
+   means no, positive means yes, and negative means the top level
+   of an incremental dump.  PARENT_DEVICE is the device of P's
+   parent directory; it is examined only if TOP_LEVEL is zero. */
+
+/* FIXME: One should make sure that for *every* path leading to setting
+   exit_status to failure, a clear diagnostic has been issued.  */
+
+void
+dump_file0 (struct tar_stat_info *stat, char *p,
+	    int top_level, dev_t parent_device)
+{
+  union block *header;
+  char type;
+  time_t original_ctime;
+  struct utimbuf restore_times;
+  off_t block_ordinal = -1;
+  
+  if (interactive_option && !confirm ("add", p))
+    return;
+
+  assign_string (&stat->orig_file_name, p);
+  assign_string (&stat->file_name, safer_name_suffix (p, 0));
+
+  if (deref_stat (dereference_option, p, &stat->stat) != 0)
+    {
+      stat_diag (p);
+      return;
+    }
+  stat->archive_file_size = stat->stat.st_size;
+  
+  original_ctime = stat->stat.st_ctime;
+  restore_times.actime = stat->stat.st_atime;
+  restore_times.modtime = stat->stat.st_mtime;
+
+#ifdef S_ISHIDDEN
+  if (S_ISHIDDEN (stat->stat.st_mode))
+    {
+      char *new = (char *) alloca (strlen (p) + 2);
+      if (new)
+	{
+	  strcpy (new, p);
+	  strcat (new, "@");
+	  p = new;
+	}
+    }
+#endif
+
+  /* See if we want only new files, and check if this one is too old to
+     put in the archive.  */
+
+  if ((0 < top_level || !incremental_option)
+      && !S_ISDIR (stat->stat.st_mode)
+      && stat->stat.st_mtime < newer_mtime_option
+      && (!after_date_option || stat->stat.st_ctime < newer_ctime_option))
+    {
+      if (0 < top_level)
+	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
+	       quotearg_colon (p)));
+      /* FIXME: recheck this return.  */
+      return;
+    }
+
+  /* See if we are trying to dump the archive.  */
+  if (sys_file_is_archive (stat))
+    {
+      WARN ((0, 0, _("%s: file is the archive; not dumped"),
+	     quotearg_colon (p)));
+      return;
+    }
+
+  if (S_ISDIR (stat->stat.st_mode))
+    {
+      dump_dir (stat, top_level, parent_device);
+      if (atime_preserve_option)
+	utime (p, &restore_times);
+      return;
+    }
+  else if (is_avoided_name (p))
+    return;
+  else
+    {
+      /* Check for multiple links.  */
+      if (dump_hard_link (stat))
+	return;
+      
+      /* This is not a link to a previously dumped file, so dump it.  */
+
+      if (S_ISREG (stat->stat.st_mode)
+	  || S_ISCTG (stat->stat.st_mode))
+	{
+	  int fd;
+	  enum dump_status status;
+
+	  if (file_dumpable_p (stat))
+	    {
+	      fd = open (stat->orig_file_name,
+			 O_RDONLY | O_BINARY);
+	      if (fd < 0)
+		{
+		  if (!top_level && errno == ENOENT)
+		    WARN ((0, 0, _("%s: File removed before we read it"),
+			   quotearg_colon (stat->orig_file_name)));
+		  else
+		    open_diag (stat->orig_file_name);
+		  return;
+		}
+	    }
+	  else
+	    fd = -1;
+	  
+	  if (sparse_option && sparse_file_p (stat))
+	    {
+	      status = sparse_dump_file (fd, stat); 
+	      if (status == dump_status_not_implemented)
+		status = dump_regular_file (fd, stat);
+	    }
+	  else
+	    status = dump_regular_file (fd, stat);
+
+	  switch (status)
+	    {
+	    case dump_status_ok:
+	      if (multi_volume_option)
+		assign_string (&save_name, 0);
+	      dump_regular_finish (fd, stat, original_ctime);
+	      break;
+
+	    case dump_status_short:
+	      if (multi_volume_option)
+		assign_string (&save_name, 0);
+	      close (fd);
+	      break;
+      
+	    case dump_status_fail:
+	      close (fd);
+	      return;
+
+	    case dump_status_not_implemented:
+	      abort ();
+	    }
+
+	  if (atime_preserve_option)
+	    utime (stat->orig_file_name, &restore_times);
+	  file_count_links (stat);
+	  return;
+	}
+#ifdef HAVE_READLINK
+      else if (S_ISLNK (stat->stat.st_mode))
+	{
+	  char *buffer;
+	  int size;
+	  size_t linklen = stat->stat.st_size;
+	  if (linklen != stat->stat.st_size || linklen + 1 == 0)
+	    xalloc_die ();
+	  buffer = (char *) alloca (linklen + 1);
+	  size = readlink (p, buffer, linklen + 1);
+	  if (size < 0)
+	    {
+	      readlink_diag (p);
+	      return;
+	    }
+	  buffer[size] = '\0';
+	  assign_string (&stat->link_name, buffer);
+	  if (size > NAME_FIELD_SIZE)
+	    write_long_link (stat);
+
+	  block_ordinal = current_block_ordinal ();
+	  stat->stat.st_size = 0;	/* force 0 size on symlink */
+	  header = start_header (stat);
+	  if (!header)
+	    return;
+	  tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
+	  header->header.typeflag = SYMTYPE;
+	  finish_header (stat, header, block_ordinal);
+	  /* nothing more to do to it */
+
+	  if (remove_files_option)
+	    {
+	      if (unlink (p) == -1)
+		unlink_error (p);
+	    }
+	  file_count_links (stat);
+	  return;
+	}
+#endif
+      else if (S_ISCHR (stat->stat.st_mode))
+	type = CHRTYPE;
+      else if (S_ISBLK (stat->stat.st_mode))
+	type = BLKTYPE;
+      else if (S_ISFIFO (stat->stat.st_mode))
+	type = FIFOTYPE;
+      else if (S_ISSOCK (stat->stat.st_mode))
+	{
+	  WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
+	  return;
+	}
+      else if (S_ISDOOR (stat->stat.st_mode))
+	{
+	  WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
+	  return;
+	}
+      else
+	{
+	  unknown_file_error (p);
+	  return;
+	}
+    }
+
+  if (archive_format == V7_FORMAT)
+    {
+      unknown_file_error (p);
+      return;
+    }
+
+  block_ordinal = current_block_ordinal ();
+  stat->stat.st_size = 0;	/* force 0 size */
+  header = start_header (stat);
+  if (!header)
+    return;
+  header->header.typeflag = type;
+
+  if (type != FIFOTYPE)
+    {
+      MAJOR_TO_CHARS (major (stat->stat.st_rdev),
+		      header->header.devmajor);
+      MINOR_TO_CHARS (minor (stat->stat.st_rdev),
+		      header->header.devminor);
+    }
+
+  finish_header (stat, header, block_ordinal);
+  if (remove_files_option)
+    {
+      if (unlink (p) == -1)
+	unlink_error (p);
+    }
+}
+
+void
+dump_file (char *p, int top_level, dev_t parent_device)
+{
+  struct tar_stat_info stat;
+  tar_stat_init (&stat);
+  dump_file0 (&stat, p, top_level, parent_device);
+  tar_stat_destroy (&stat);
 }
