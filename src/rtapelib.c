@@ -1,5 +1,5 @@
 /* Functions for communicating with a remote tape drive.
-   Copyright (C) 1988, 1992, 1994, 1996 Free Software Foundation, Inc.
+   Copyright 1988, 1992, 1994, 1996, 1997, 1999 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -414,10 +414,6 @@ rmt_open__ (const char *path, int open_mode, int bias, const char *remote_shell)
 #endif
       }
     remote_shell_basename = base_name (remote_shell);
-    if (remote_shell_basename)
-      remote_shell_basename++;
-    else
-      remote_shell_basename = remote_shell;
 
     /* Set up the pipes for the `rsh' command, and fork.  */
 
