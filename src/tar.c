@@ -20,6 +20,11 @@
 
 #include <getopt.h>
 
+#include <signal.h>
+#if ! defined SIGCHLD && defined SIGCLD
+# define SIGCHLD SIGCLD
+#endif
+
 /* The following causes "common.h" to produce definitions of all the global
    variables, rather than just "extern" declarations of them.  GNU tar does
    depend on the system loader to preset all GLOBAL variables to neutral (or
@@ -1115,6 +1120,11 @@ main (int argc, char *const *argv)
   archive_name_array = (const char **)
     xmalloc (sizeof (const char *) * allocated_archive_names);
   archive_names = 0;
+
+#ifdef SIGCHLD
+  /* System V fork+wait does not work if SIGCHLD is ignored.  */
+  signal (SIGCHLD, SIG_DFL);
+#endif
 
   init_names ();
 
