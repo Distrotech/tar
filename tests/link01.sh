@@ -1,0 +1,51 @@
+#! /bin/sh
+# This file is part of GNU tar testsuite.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# If a member with link count > 2 was stored in the archive twice,
+# previous versions of tar were not able to extract it, since they
+# were trying to link the file to itself, which always failed and
+# lead to removing the already extracted copy. This script tests
+# the workaround by Paul Eggert that leaves the extracted copy
+# untouched.
+
+# The script is based on the report by Toby Peterson <toby@apple.com>
+
+. ./preset
+. $srcdir/before
+
+mkdir directory
+mkdir directory/test1
+mkdir directory/test2
+
+echo TEST > directory/test1/test.txt
+ln directory/test1/test.txt directory/test2/test.txt
+
+tar cf archive directory/test1/test.txt directory/test1/test.txt
+
+rm -r directory
+tar xf archive
+
+ls directory/test1
+
+out="test.txt
+"
+
+. $srcdir/after
+
+# End of link01.sh
