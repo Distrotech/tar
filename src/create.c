@@ -372,28 +372,29 @@ start_header (const char *name, struct stat *st)
 
   if (!absolute_names_option)
     {
-      static int warned_once = 0;
       size_t prefix_len = FILESYSTEM_PREFIX_LEN (name);
 
       if (prefix_len)
 	{
-	  name += prefix_len;
+	  static int warned_once;
 	  if (!warned_once)
 	    {
 	      warned_once = 1;
-	      WARN ((0, 0, _("Removing filesystem prefix from names in the archive")));
+	      WARN ((0, 0, _("Removing `%.*s' prefix from archive names"),
+		     (int) prefix_len, name));
 	    }
+	  name += prefix_len;
 	}
 
       while (*name == '/')
 	{
-	  name++;		/* force relative path */
+	  static int warned_once;
 	  if (!warned_once)
 	    {
 	      warned_once = 1;
-	      WARN ((0, 0, _("\
-Removing leading `/' from absolute path names in the archive")));
+	      WARN ((0, 0, _("Removing leading `/' from archive names")));
 	    }
+	  name++;
 	}
     }
 
@@ -851,22 +852,21 @@ create_archive (void)
 
       blank_name_list ();
       while (p = name_from_list (), p)
-	{
-	  strcpy (buffer, p);
-	  if (p[strlen (p) - 1] != '/')
-	    strcat (buffer, "/");
-	  bufp = buffer + strlen (buffer);
-	  for (q = gnu_list_name->dir_contents;
-	       q && *q;
-	       q += strlen (q) + 1)
-	    {
-	      if (*q == 'Y')
-		{
-		  strcpy (bufp, q + 1);
-		  dump_file (buffer, (dev_t) -1, 1);
-		}
-	    }
-	}
+	if (!excluded_name (p))
+	  {
+	    strcpy (buffer, p);
+	    if (p[strlen (p) - 1] != '/')
+	      strcat (buffer, "/");
+	    bufp = buffer + strlen (buffer);
+	    q = gnu_list_name->dir_contents;
+	    if (q)
+	      for (; *q; q += strlen (q) + 1)
+		if (*q == 'Y')
+		  {
+		    strcpy (bufp, q + 1);
+		    dump_file (buffer, (dev_t) -1, 1);
+		  }
+	  }
       free (buffer);
     }
   else
@@ -945,14 +945,15 @@ dump_file (char *p, dev_t parent_device, int top_level)
     }
 #endif
 
-  /* See if we only want new files, and check if this one is too old to
+  /* See if we want only new files, and check if this one is too old to
      put in the archive.  */
 
-  if (!incremental_option && !S_ISDIR (current_stat.st_mode)
+  if ((!incremental_option || listed_incremental_option)
+      && !S_ISDIR (current_stat.st_mode)
       && current_stat.st_mtime < newer_mtime_option
       && (!after_date_option || current_stat.st_ctime < newer_ctime_option))
     {
-      if (parent_device == (dev_t) -1)
+      if (!listed_incremental_option && parent_device == (dev_t) -1)
 	WARN ((0, 0, _("%s: is unchanged; not dumped"), p));
       /* FIXME: recheck this return.  */
       return;
@@ -994,13 +995,11 @@ dump_file (char *p, dev_t parent_device, int top_level)
 
 	    while (!absolute_names_option && *link_name == '/')
 	      {
-		static int warned_once = 0;
-
+		static int warned_once;
 		if (!warned_once)
 		  {
 		    warned_once = 1;
-		    WARN ((0, 0, _("\
-Removing leading `/' from absolute links")));
+		    WARN ((0, 0, _("Removing leading `/' from link names")));
 		  }
 		link_name++;
 	      }
@@ -1549,11 +1548,6 @@ Read error at byte %s, reading %lu bytes, in file %s"),
 	  ERROR ((0, errno, _("Cannot open directory %s"), p));
 	  return;
 	}
-
-      /* Hack to remove "./" from the front of all the file names.  */
-
-      if (len == 2 && namebuf[0] == '.' && namebuf[1] == '/')
-	len = 0;
 
       /* FIXME: Should speed this up by cd-ing into the dir.  */
 
