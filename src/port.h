@@ -62,12 +62,13 @@ char *alloca ();
 #define	major(dev)		(dev)
 #define	minor(dev)		(dev)
 typedef long off_t;
-#endif	/* __MSDOS__ */
+#endif /* __MSDOS__ */
 
 #if defined(__STDC__) || defined(__TURBOC__)
 #define PTR void *
 #else
 #define PTR char *
+#define const
 #endif
 
 /* Since major is a function on SVR4, we can't just use `ifndef major'.  */
@@ -92,7 +93,7 @@ typedef long off_t;
 #endif
 #undef HAVE_MAJOR
 
-#if defined(STDC_HEADERS) || defined(USG)
+#if defined(STDC_HEADERS) || defined(HAVE_STRING_H)
 #include <string.h>
 #if !defined(__MSDOS__) && !defined(STDC_HEADERS)
 #include <memory.h>
@@ -115,17 +116,17 @@ typedef long off_t;
 #if defined(STDC_HEADERS)
 #include <stdlib.h>
 #else
-char *malloc(), *realloc();
-char *getenv();
+char *malloc (), *realloc ();
+char *getenv ();
 #endif
 
 #ifndef _POSIX_VERSION
 #ifdef __MSDOS__
 #include <io.h>
-#else				/* !__MSDOS__ */
-off_t lseek();
-#endif				/* !__MSDOS__ */
-char *getcwd();
+#else /* !__MSDOS__ */
+off_t lseek ();
+#endif /* !__MSDOS__ */
+char *getcwd ();
 #endif /* !_POSIX_VERSION */
 
 #ifndef NULL
@@ -174,16 +175,41 @@ char *getcwd();
 #if !defined(S_ISSOCK) && defined(S_IFSOCK)
 #define	S_ISSOCK(m) (((m) & S_IFMT) == S_IFSOCK)
 #endif
-#if !defined(S_ISMPB) && defined(S_IFMPB) /* V7 */
+#if !defined(S_ISMPB) && defined(S_IFMPB)	/* V7 */
 #define S_ISMPB(m) (((m) & S_IFMT) == S_IFMPB)
 #define S_ISMPC(m) (((m) & S_IFMT) == S_IFMPC)
 #endif
-#if !defined(S_ISNWK) && defined(S_IFNWK) /* HP/UX */
+#if !defined(S_ISNWK) && defined(S_IFNWK)	/* HP/UX */
 #define S_ISNWK(m) (((m) & S_IFMT) == S_IFNWK)
 #endif
-#if !defined(S_ISCTG) && defined(S_IFCTG) /* contiguous file */
+#if !defined(S_ISCTG) && defined(S_IFCTG)	/* contiguous file */
 #define S_ISCTG(m) (((m) & S_IFMT) == S_IFCTG)
 #endif
 #if !defined(S_ISVTX)
 #define S_ISVTX 0001000
 #endif
+
+#ifdef __MSDOS__
+#include "msd_dir.h"
+#define NLENGTH(direct) ((direct)->d_namlen)
+
+#else /* not __MSDOS__ */
+
+#if defined(DIRENT) || defined(_POSIX_VERSION)
+#include <dirent.h>
+#define NLENGTH(direct) (strlen((direct)->d_name))
+#else /* not (DIRENT or _POSIX_VERSION) */
+#define dirent direct
+#define NLENGTH(direct) ((direct)->d_namlen)
+#ifdef SYSNDIR
+#include <sys/ndir.h>
+#endif /* SYSNDIR */
+#ifdef SYSDIR
+#include <sys/dir.h>
+#endif /* SYSDIR */
+#ifdef NDIR
+#include <ndir.h>
+#endif /* NDIR */
+#endif /* DIRENT or _POSIX_VERSION */
+
+#endif /* not __MSDOS__ */
