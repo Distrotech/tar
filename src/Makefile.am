@@ -43,6 +43,6 @@ INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib
 
 tar.o: ../lib/localedir.h
 
-LDADD = ../lib/libtar.a $(LIBINTL)
+LDADD = ../lib/libtar.a $(LIBINTL) $(LIBICONV)
 
 tar_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
