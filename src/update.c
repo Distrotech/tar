@@ -78,16 +78,10 @@ append_file (char *path)
 
 	  status = safe_read (handle, start->buffer, buffer_size);
 	  if (status < 0)
-	    {
-	      int e = errno;
-	      FATAL_ERROR ((0, e,
-			    _("Read error at byte %s reading %lu bytes in file %s"),
-			    STRINGIFY_BIGINT (stat_data.st_size - bytes_left,
-					      buf),
-			    (unsigned long) buffer_size, quote (path)));
-	    }
+	    read_fatal_details (path, stat_data.st_size - bytes_left,
+				buffer_size);
 	  if (status == 0)
-	    FATAL_ERROR ((0, 0, _("%s: File shrunk by %s bytes, (yark!)"),
+	    FATAL_ERROR ((0, 0, _("%s: File shrank by %s bytes"),
 			  quotearg_colon (path),
 			  STRINGIFY_BIGINT (bytes_left, buf)));
 
