@@ -1,6 +1,7 @@
 ## Process this file with automake to produce Makefile.in -*-Makefile-*-
 
 EXTRA_DIST = \
+c-bs-a.m4 \
 ccstdc.m4 \
 d-ino.m4 \
 fnmatch.m4 \
