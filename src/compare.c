@@ -494,6 +494,14 @@ diff_archive (void)
 void
 verify_volume (void)
 {
+  if (removed_prefixes_p ())
+    {
+      WARN((0, 0,
+	    _("Archive contains file names with leading prefixes removed.")));
+      WARN((0, 0,
+	    _("Verification may fail to locate original files.")));
+    }
+
   if (!diff_buffer)
     diff_init ();
 
@@ -555,6 +563,7 @@ verify_volume (void)
 	  do
 	    {
 	      counter++;
+	      set_next_block_after (current_header);
 	      status = read_header (false);
 	    }
 	  while (status == HEADER_FAILURE);
@@ -568,6 +577,8 @@ verify_volume (void)
 	break;
 
       diff_archive ();
+      tar_stat_destroy (&current_stat_info);
+      xheader_destroy (&extended_header);
     }
 
   access_mode = ACCESS_WRITE;
