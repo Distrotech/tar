@@ -831,7 +831,10 @@ yyerror (char *s ATTRIBUTE_UNUSED)
   return 0;
 }
 
-/* ?? */
+/* Parse a date/time string P.  Return the corresponding time_t value,
+   or (time_t) -1 if there is an error.  P can be an incomplete or
+   relative time specification; if so, use *NOW as the basis for the
+   returned time.  */
 time_t
 get_date (const char *p, const time_t *now)
 {
