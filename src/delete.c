@@ -150,7 +150,7 @@ delete_archive_members (void)
 
   do
     {
-      enum read_header status = read_header (1);
+      enum read_header status = read_header (true);
 
       switch (status)
 	{
@@ -189,6 +189,7 @@ delete_archive_members (void)
 	      /* Fall through.  */
 
 	    case HEADER_SUCCESS:
+	    case HEADER_SUCCESS_EXTENDED:
 	    case HEADER_ZERO_BLOCK:
 	      ERROR ((0, 0, _("Skipping to next header")));
 	      /* Fall through.  */
@@ -238,7 +239,7 @@ delete_archive_members (void)
 
 	  if (current_block == record_end)
 	    flush_archive ();
-	  status = read_header (0);
+	  status = read_header (false);
 
 	  if (status == HEADER_ZERO_BLOCK && ignore_zeros_option)
 	    {
