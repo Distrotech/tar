@@ -1541,7 +1541,7 @@ new_volume (enum access_mode access)
       looped = 1;
     }
 
-tryagain:
+ tryagain:
   if (looped)
     {
       /* We have to prompt from now on.  */
@@ -1572,6 +1572,7 @@ tryagain:
 		    && subcommand_option != DIFF_SUBCOMMAND)
 		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
+		apply_delayed_set_stat ();
 		exit (TAREXIT_FAILURE);
 	      }
 	    if (input_buffer[0] == '\n'
@@ -1601,6 +1602,7 @@ tryagain:
 		    && subcommand_option != DIFF_SUBCOMMAND)
 		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
+		apply_delayed_set_stat ();
 		exit (TAREXIT_FAILURE);
 
 	      case 'n':
