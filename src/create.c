@@ -353,6 +353,15 @@ write_eot (void)
   set_next_block_after (pointer);
 }
 
+/* Copy at most LEN bytes from SRC to DST. Terminate with NUL unless
+   SRC is LEN characters long */
+static void
+tar_copy_str (char *dst, const char *src, size_t len)
+{
+  dst[len-1] = 0;
+  strncpy (dst, src, len);
+}
+
 /* Write a "private" header */
 static union block *
 start_private_header (const char *name, size_t size)
@@ -362,8 +371,7 @@ start_private_header (const char *name, size_t size)
   
   memset (header->buffer, 0, sizeof (union block));
 
-  strncpy (header->header.name, name, NAME_FIELD_SIZE);
-  header->header.name[NAME_FIELD_SIZE - 1] = '\0';
+  tar_copy_str (header->header.name, name, NAME_FIELD_SIZE);
   OFF_TO_CHARS (size, header->header.size);
 
   time (&t);
@@ -386,9 +394,7 @@ write_short_name (struct tar_stat_info *st)
 {
   union block *header = find_next_block ();
   memset (header->buffer, 0, sizeof (union block));
-  
-  strncpy (header->header.name, st->file_name, NAME_FIELD_SIZE);
-  header->header.name[NAME_FIELD_SIZE - 1] = '\0';
+  tar_copy_str (header->header.name, st->file_name, NAME_FIELD_SIZE);
   return header;
 }
 
@@ -451,7 +457,7 @@ write_ustar_long_name (const char *name)
     }
   
   i = split_long_name (name, length);
-  if (i == 0)
+  if (i == 0 || length - i -1 > NAME_FIELD_SIZE)
     {
       WARN ((0, 0,
 	     _("%s: file name is too long (cannot be split); not dumped"),
@@ -463,7 +469,7 @@ write_ustar_long_name (const char *name)
   header = find_next_block ();
   memset (header->buffer, 0, sizeof (header->buffer));
   memcpy (header->header.prefix, name, i);
-  memcpy (header->header.name, name + i + 1, length - i);
+  memcpy (header->header.name, name + i + 1, length - i - 1);
   
   return header;
 }
@@ -570,7 +576,7 @@ write_extended (union block *old_header, char type)
 static union block * 
 write_header_name (struct tar_stat_info *st)
 {
-  if (NAME_FIELD_SIZE <= strlen (st->file_name))
+  if (NAME_FIELD_SIZE < strlen (st->file_name))
     return write_long_name (st);
   else
     return write_short_name (st);
@@ -1083,15 +1089,6 @@ compare_links (void const *entry1, void const *entry2)
   struct link const *link1 = entry1;
   struct link const *link2 = entry2;
   return ((link1->dev ^ link2->dev) | (link1->ino ^ link2->ino)) == 0;
-}
-
-/* Copy at most LEN bytes from SRC to DST. Terminate with NUL unless
-   SRC is LEN characters long */
-static void
-tar_copy_str (char *dst, const char *src, size_t len)
-{
-  dst[len-1] = 0;
-  strncpy (dst, src, len);
 }
 
 /* Table of all non-directories that we've written so far.  Any time
@@ -1747,8 +1744,10 @@ dump_file (char *p, int top_level, dev_t parent_device)
 
   if (type != FIFOTYPE)
     {
-      MAJOR_TO_CHARS (major (current_stat_info.stat.st_rdev), header->header.devmajor);
-      MINOR_TO_CHARS (minor (current_stat_info.stat.st_rdev), header->header.devminor);
+      MAJOR_TO_CHARS (major (current_stat_info.stat.st_rdev),
+		      header->header.devmajor);
+      MINOR_TO_CHARS (minor (current_stat_info.stat.st_rdev),
+		      header->header.devminor);
     }
 
   finish_header (header, block_ordinal);
