@@ -826,6 +826,12 @@ symlink_error (char const *contents, char const *name)
 }
 
 void
+stat_fatal (char const *name)
+{
+  call_arg_fatal ("stat", name);
+}
+
+void
 stat_error (char const *name)
 {
   call_arg_error ("stat", name);
