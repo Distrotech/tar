@@ -35,8 +35,8 @@ $1)],$2,$3,$4,$5,$6)])
 
 m4_define([RE_CHECK],[
 AT_DATA([$1.re],[$2])
-awk '{print NR " " $[]0}' $1.re > $[]$.1
-awk '{print NR " " $[]0}' $1 | join $[]$.1 - |
+awk '{print NR " " $[]0}' $1 > $[]$.1
+awk '{print NR " " $[]0}' $1.re | join - $[]$.1 |
 while read NUM RE LINE
 do
   echo "$LINE" | grep -- "$RE" >/dev/null || exit 1
@@ -119,4 +119,3 @@ m4_include([star/ustar-big-2g.at])
 m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
-
