@@ -56,7 +56,7 @@
 # define DEFAULT_BLOCKING 20
 #endif
 
-static void usage (int) __attribute__ ((noreturn));
+void usage (int) __attribute__ ((noreturn));
 
 /* Miscellaneous.  */
 
@@ -206,6 +206,7 @@ enum
   OCCURRENCE_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
+  PAX_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
   RECORD_SIZE_OPTION,
@@ -296,6 +297,7 @@ static struct option long_options[] =
   {"one-file-system", no_argument, 0, 'l'},
   {"overwrite", no_argument, 0, OVERWRITE_OPTION},
   {"owner", required_argument, 0, OWNER_OPTION},
+  {"pax-option", required_argument, 0, PAX_OPTION},
   {"portability", no_argument, 0, 'o'},
   {"posix", no_argument, 0, POSIX_OPTION},
   {"preserve", no_argument, 0, PRESERVE_OPTION},
@@ -336,7 +338,7 @@ static struct option long_options[] =
 };
 
 /* Print a usage message and exit with STATUS.  */
-static void
+void
 usage (int status)
 {
   if (status != TAREXIT_SUCCESS)
@@ -1073,6 +1075,10 @@ decode_options (int argc, char **argv)
 	  }
 	break;
 
+      case PAX_OPTION:
+	xheader_set_option (optarg);
+	break;
+			    
       case POSIX_OPTION:
 	set_archive_format ("posix");
 	break;
@@ -1298,7 +1304,7 @@ see the file named COPYING for details."));
 	    USAGE_ERROR ((0, 0,
 			  _("--occurrence cannot be used in the requested operation mode")));
     }
-  
+
   if (archive_names == 0)
     {
       /* If no archive file name given, try TAPE from the environment, or
