@@ -293,6 +293,7 @@ open_archive (enum access_mode wanted_access)
 	{
 	case ACCESS_READ:
 	  child_pid = sys_child_open_for_uncompress ();
+	  read_full_records_option = false;
 	  break;
 
 	case ACCESS_WRITE:
@@ -644,7 +645,7 @@ short_read (ssize_t status)
   /* FIXME: for size=0, multi-volume support.  On the first record, warn
      about the problem.  */
 
-  if (!read_full_records_option && verbose_option
+  if (!read_full_records_option && verbose_option > 1
       && record_start_block == 0 && status > 0)
     {
       unsigned long rsize = (record_size - left) / BLOCKSIZE;
