@@ -1,5 +1,5 @@
 /* full-write.c -- an interface to write that retries after interrupts
-   Copyright 1993, 1994, 1997, 1998, 1999, 2000 Free Software Foundation, Inc.
+   Copyright 1993,94,97,98,99,2000, 2001 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #include <sys/types.h>
 
-#include "safe-read.h"
+#include "full-write.h"
 
 #if HAVE_UNISTD_H
 # include <unistd.h>
@@ -35,13 +35,14 @@
 extern int errno;
 #endif
 
-/* Write LEN bytes at PTR to descriptor DESC, retrying if interrupted.
-   Return LEN upon success, -1 (setting errno) otherwise.  */
+/* Write LEN bytes at PTR to descriptor DESC, retrying if interrupted
+   or if partial writes occur.  Return the number of bytes successfully
+   written, setting errno if that is less than LEN.  */
 
-ssize_t
+size_t
 full_write (int desc, const char *ptr, size_t len)
 {
-  ssize_t total_written = 0;
+  size_t total_written = 0;
 
   while (len > 0)
     {
@@ -55,7 +56,7 @@ full_write (int desc, const char *ptr, size_t len)
 	  if (errno == EINTR)
 	    continue;
 #endif
-	  return -1;
+	  break;
 	}
       total_written += written;
       ptr += written;
