@@ -62,7 +62,7 @@ struct sp_array {
 union record {
 	char		charptr[RECORDSIZE];
 	struct header {
-		char	name[NAMSIZ];
+		char	arch_name[NAMSIZ];
 		char	mode[8];
 		char	uid[8];
 		char	gid[8];
@@ -70,7 +70,7 @@ union record {
 		char	mtime[12];
 		char	chksum[8];
 		char	linkflag;
-		char	linkname[NAMSIZ];
+		char	arch_linkname[NAMSIZ];
 		char	magic[8];
 		char	uname[TUNMLEN];
 		char	gname[TGNMLEN];
@@ -169,6 +169,7 @@ TAR_EXTERN char    	**ar_files;	/* list of tape drive names */
 TAR_EXTERN int		n_ar_files;	/* number of tape drive names */
 TAR_EXTERN int		cur_ar_file;	/* tape drive currently being used */
 TAR_EXTERN int		ar_files_len;	/* malloced size of ar_files */
+TAR_EXTERN char		*current_file_name, *current_link_name;
 
 /*
  * Flags from the command line
