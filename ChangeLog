@@ -31,6 +31,8 @@
 	* tests/star/ustar-big-2g.sh: Likewise
 	* tests/star/ustar-big-8g.sh: Likewise
 
+	* doc/.cvsignore: Updated
+	
 2004-05-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Check whether date accepts +format argument
