@@ -1,5 +1,7 @@
 /* Functions for communicating with a remote tape drive.
-   Copyright 1988,92,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,8 +59,6 @@
 #endif
 
 #include "rmt.h"
-
-char *base_name PARAMS ((char const *));
 
 /* Exit status if exec errors.  */
 #define EXIT_ON_EXEC_ERROR 128
