@@ -105,7 +105,7 @@ OBJ2 =	version.o list.o names.o diffarch.o port.o fnmatch.o getopt.o @MALLOC@
 OBJ3 =  getopt1.o regex.o getdate.o $(RTAPELIB) @ALLOCA@
 OBJS =	$(OBJ1) $(OBJ2) $(OBJ3)
 AUX =   README INSTALL NEWS COPYING ChangeLog Makefile.in makefile.pc \
-	configure configure.in \
+	configure configure.in mkinstalldirs \
 	tar.h fnmatch.h pathmax.h port.h open3.h getopt.h regex.h \
 	rmt.h rmt.c rtapelib.c \
 	msd_dir.h msd_dir.c tcexparg.c \
@@ -127,7 +127,7 @@ rmt:	rmt.c
 tar.info: tar.texinfo
 	makeinfo $(srcdir)/tar.texinfo
 
-install: all
+install: all installdirs
 	$(INSTALL_PROGRAM) tar $(bindir)/$(binprefix)tar
 	-test ! -f rmt || $(INSTALL_PROGRAM) rmt $(libdir)/rmt
 #	for file in $(srcdir)/tar.info*; \
@@ -137,6 +137,16 @@ install: all
 uninstall:
 	rm -f $(bindir)/$(binprefix)tar	$(infodir)/tar.info*
 	-rm -f $(libdir)/rmt
+
+installdirs:
+	$(SHELL) ${srcdir}/mkinstalldirs $(bindir) $(libdir) $(infodir)
+
+Makefile: Makefile.in config.status
+	$(SHELL) config.status
+config.status: configure
+	$(SHELL) $(srcdir)/configure --no-create
+configure: configure.in
+	cd $(srcdir); autoconf
 
 $(OBJS): tar.h pathmax.h port.h testpad.h
 regex.o buffer.o tar.o: regex.h
