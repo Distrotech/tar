@@ -1,5 +1,8 @@
 /* Buffer management for tar.
-   Copyright 1988,92,93,94,96,97,99,2000, 2001 Free Software Foundation, Inc.
+
+   Copyright 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001 Free
+   Software Foundation, Inc.
+
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -1442,7 +1445,8 @@ new_volume (enum access_mode access)
 	{
 	  if (volno_file_option)
 	    closeout_volume_number ();
-	  system (info_script_option);
+	  if (system (info_script_option) != 0)
+	    FATAL_ERROR ((0, 0, _("`%s' command failed"), info_script_option));
 	}
       else
 	while (1)
