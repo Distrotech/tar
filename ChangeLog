@@ -1,3 +1,18 @@
+2004-05-06  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Check whether date accepts +format argument
+	(for backup scripts).
+	* scripts/level-0: Removed
+	* scripts/level-1: Removed
+	* scripts/weekly.new: Removed
+	* scripts/dump-remind: Removed
+	* scripts/backup.in: New file
+	* scripts/backup.sh: New file
+	* scripts/dump-remind.in: New file
+	* scripts/backup-specs: Updated
+	* scripts/Makefile.am: Updated for new directory contents.
+	* scripts/.cvsignore: Updated
+	
 2004-05-05  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* TODO: Updated
