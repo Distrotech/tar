@@ -1,6 +1,12 @@
 GNU tar NEWS - User visible changes.
 Copyright 1994, 1995-1998, 1999 Free Software Foundation, Inc.
 
+version 1.13.8 - Paul Eggert, 1999-08-16.
+
+* For compatibility with traditional `tar', intermediate directories
+  created automatically by root are no longer given the uid and gid of
+  the original file or directory.
+
 version 1.13.7 - Paul Eggert, 1999-08-14.
 
 * --listed-incremental and --newer are now incompatible options.
