@@ -55,7 +55,6 @@ read_and (void (*do_something) ())
 {
   enum read_header status = HEADER_STILL_UNREAD;
   enum read_header prev_status;
-  char save_typeflag;
 
   base64_init ();
   name_gather ();
@@ -83,7 +82,7 @@ read_and (void (*do_something) ())
 	      || current_stat.st_mtime < newer_mtime_option
 	      || excluded_name (current_file_name))
 	    {
-	      int isextended = 0;
+	      char save_typeflag;
 
 	      if (current_header->header.typeflag == GNUTYPE_VOLHDR
 		  || current_header->header.typeflag == GNUTYPE_MULTIVOL
@@ -98,28 +97,10 @@ read_and (void (*do_something) ())
 
 	      /* Skip past it in the archive.  */
 
-	      if (current_header->oldgnu_header.isextended)
-		isextended = 1;
 	      save_typeflag = current_header->header.typeflag;
 	      set_next_block_after (current_header);
-	      if (isextended)
-		{
-#if 0
-		  union block *exhdr;
-
-		  while (1)
-		    {
-		      exhdr = find_next_block ();
-		      if (!exhdr->sparse_header.isextended)
-			{
-			  set_next_block_after (exhdr);
-			  break;
-			}
-		    }
-		  set_next_block_after (exhdr);
-#endif
-		  skip_extended_headers ();
-		}
+	      if (current_header->oldgnu_header.isextended)
+		skip_extended_headers ();
 
 	      /* Skip to the next header on the archive.  */
 
@@ -191,8 +172,6 @@ read_and (void (*do_something) ())
 void
 list_archive (void)
 {
-  int isextended = 0;		/* to remember if current_header is extended */
-
   /* Print the header block.  */
 
   if (verbose_option)
@@ -248,37 +227,11 @@ list_archive (void)
 
     }
 
-  /* Check to see if we have an extended header to skip over also.  */
-
-  if (current_header->oldgnu_header.isextended)
-    isextended = 1;
-
-  /* Skip past the header in the archive.  */
+  /* Skip past the header in the archive, and past any extended headers.  */
 
   set_next_block_after (current_header);
-
-  /* If we needed to skip any extended headers, do so now, by reading
-     extended headers and skipping past them in the archive.  */
-
-  if (isextended)
-    {
-#if 0
-      union block *exhdr;
-
-      while (1)
-	{
-	  exhdr = find_next_block ();
-
-	  if (!exhdr->sparse_header.isextended)
-	    {
-	      set_next_block_after (exhdr);
-	      break;
-	    }
-	  set_next_block_after (exhdr);
-	}
-#endif
-      skip_extended_headers ();
-    }
+  if (current_header->oldgnu_header.isextended)
+    skip_extended_headers ();
 
   if (multi_volume_option)
     assign_string (&save_name, current_file_name);
@@ -312,16 +265,13 @@ list_archive (void)
    a name containing characters with the high bit set.  So read_header
    computes two checksums -- signed and unsigned.  */
 
-/* FIXME: The signed checksum computation is broken on machines where char's
-   are unsigned.  It's uneasy to handle all cases correctly...  */
-
 enum read_header
 read_header (void)
 {
   size_t i;
-  long unsigned_sum;		/* the POSIX one :-) */
-  long signed_sum;		/* the Sun one :-( */
-  long recorded_sum;
+  int unsigned_sum;		/* the POSIX one :-) */
+  int signed_sum;		/* the Sun one :-( */
+  int recorded_sum;
   uintmax_t parsed_sum;
   char *p;
   union block *header;
@@ -338,43 +288,36 @@ read_header (void)
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      parsed_sum = from_chars (header->header.chksum,
-			       sizeof header->header.chksum,
-			       (char *) 0, (uintmax_t) 0,
-			       (uintmax_t) TYPE_MAXIMUM (long));
-      if (parsed_sum == (uintmax_t) -1)
-	return HEADER_FAILURE;
-
-      recorded_sum = parsed_sum;
       unsigned_sum = 0;
       signed_sum = 0;
       p = header->buffer;
       for (i = sizeof (*header); i-- != 0;)
 	{
-	  /* We can't use unsigned char here because of old compilers,
-	     e.g. V7.  */
-
-	  unsigned_sum += 0xFF & *p;
-	  signed_sum += *p++;
+	  unsigned_sum += (unsigned char) *p;
+	  signed_sum += signed_char (*p++);
 	}
+
+      if (unsigned_sum == 0)
+	return HEADER_ZERO_BLOCK;
 
       /* Adjust checksum to count the "chksum" field as blanks.  */
 
       for (i = sizeof (header->header.chksum); i-- != 0;)
 	{
-	  unsigned_sum -= 0xFF & header->header.chksum[i];
-	  signed_sum -= header->header.chksum[i];
+	  unsigned_sum -= (unsigned char) header->header.chksum[i];
+	  signed_sum -= signed_char (header->header.chksum[i]);
 	}
       unsigned_sum += ' ' * sizeof header->header.chksum;
       signed_sum += ' ' * sizeof header->header.chksum;
 
-      if (unsigned_sum == sizeof header->header.chksum * ' ')
-	{
-	  /* This is a zeroed block...whole block is 0's except for the
-	     blanks we faked for the checksum field.  */
+      parsed_sum = from_chars (header->header.chksum,
+			       sizeof header->header.chksum,
+			       (char *) 0, (uintmax_t) 0,
+			       (uintmax_t) TYPE_MAXIMUM (int));
+      if (parsed_sum == (uintmax_t) -1)
+	return HEADER_FAILURE;
 
-	  return HEADER_ZERO_BLOCK;
-	}
+      recorded_sum = parsed_sum;
 
       if (unsigned_sum != recorded_sum && signed_sum != recorded_sum)
 	return HEADER_FAILURE;
@@ -448,6 +391,11 @@ read_header (void)
 	      name = namebuf;
 	    }
 	  assign_string (&current_file_name, name);
+	  if (next_long_name)
+	    {
+	      free (next_long_name);
+	      next_long_name = 0;
+	    }
 	  
 	  name = next_long_link;
 	  if (! name)
@@ -457,8 +405,12 @@ read_header (void)
 	      name = namebuf;
 	    }
 	  assign_string (&current_link_name, name);
+	  if (next_long_link)
+	    {
+	      free (next_long_link);
+	      next_long_link = 0;
+	    }
 
-	  next_long_link = next_long_name = 0;
 	  return HEADER_SUCCESS;
 	}
     }
@@ -560,17 +512,19 @@ from_chars (char const *where0, size_t digs, char const *type,
   char const *lim = where + digs;
   int negative = 0;
 
+  /* Accommodate older tars, which output leading spaces, and at least one
+     buggy tar, which outputs leading NUL if the previous field overflows.  */
   for (;;)
     {
       if (where == lim)
 	{
 	  if (type)
 	    ERROR ((0, 0,
-		    _("Blanks in header where numeric %s value expected"),
+		    _("Empty header where numeric %s value expected"),
 		    type));
 	  return -1;
 	}
-      if (!ISSPACE ((unsigned char) *where))
+      if (!ISSPACE ((unsigned char) *where) && *where)
 	break;
       where++;
     }
@@ -1123,14 +1077,12 @@ skip_extended_headers (void)
 {
   union block *exhdr;
 
-  while (1)
+  do
     {
       exhdr = find_next_block ();
-      if (!exhdr->sparse_header.isextended)
-	{
-	  set_next_block_after (exhdr);
-	  break;
-	}
+      if (!exhdr)
+	FATAL_ERROR ((0, 0, _("Unexpected EOF on archive file")));
       set_next_block_after (exhdr);
     }
+  while (exhdr->sparse_header.isextended);
 }
