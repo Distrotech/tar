@@ -253,7 +253,9 @@ enum archive_format
   USTAR_FORMAT,                 /* POSIX.1-1988 (ustar) format */
   POSIX_FORMAT,			/* POSIX.1-2001 format */
   STAR_FORMAT,                  /* Star format defined in 1994 */
-  GNU_FORMAT			/* POSIX format with GNU extensions */
+  GNU_FORMAT			/* Same as OLDGNU_FORMAT with one exception:
+                                   see FIXME note for to_chars() function
+                                   (create.c:189) */
 };
 
 /* Information about a sparse file.  */

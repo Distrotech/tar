@@ -186,6 +186,8 @@ to_chars (int negative, uintmax_t value, size_t valsize,
 	{
 	  int negsub;
 	  uintmax_t sub = substitute (&negsub) & maxval;
+	  /* FIXME: This is the only place where GNU_FORMAT differs from
+             OLDGNU_FORMAT. Apart from this they are completely identical. */
 	  uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
 	  char subbuf[UINTMAX_STRSIZE_BOUND + 1];
 	  char *sub_string = STRINGIFY_BIGINT (s, subbuf + 1);
