@@ -1,3 +1,27 @@
+2003-12-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Check for varios members of struct stat
+	that may represent file modification times with a subsecond
+	precision.
+	Check for utimes (for future use)
+	* src/buffer.c (short_read): Issue a warning on short reads.
+	* src/common.h (sys_stat_nanoseconds): New function
+	* src/create.c (dump_file0): Use sys_stat_nanoseconds().
+	* src/list.c (read_and): Treat only two successive zero
+	filled blocks as an EOF indicator. Issue a warning if
+	a single one is encountered.
+	* src/system.c (sys_stat_nanoseconds): New function
+	* src/tar.h (tar_stat_info.atime_nsec,mtime_nsec,ctime_nsec): New
+	members.
+	* src/xheader.c (code_time,decode_time): Support for subsecond
+	precision.
+	(atime_coder,atime_decoder,ctime_coder,ctime_decoder)
+	(mtime_coder,mtime_decoder): Update invocations of code_time and
+	decode_time.
+	(gid_decoder,size_decoder,uid_decoder,sparse_size_decoder)
+	(sparse_numblocks_decoder,sparse_offset_decoder)
+	(sparse_numbytes_decoder): Updated
+
 2003-12-18  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/names.c (safer_name_suffix): Reverted change made
