@@ -75,6 +75,7 @@ extr_init (void)
   we_are_root = geteuid () == 0;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
+  xalloc_fail_func = apply_delayed_set_stat;
 
   /* Option -p clears the kernel umask, so it does not affect proper
      restoration of file permissions.  New intermediate directories will
@@ -137,11 +138,7 @@ set_mode (char *file_name, struct stat *stat_info,
     }
 
   if (chmod (file_name, mode) != 0)
-    {
-      int e = errno;
-      ERROR ((0, e, _("%s: Cannot change mode to %04lo"),
-	      quotearg_colon (file_name), (unsigned long) mode));
-    }
+    chmod_error_details (file_name, mode);
 }
 
 /* Restore stat attributes (owner, group, mode and times) for
@@ -184,12 +181,7 @@ set_stat (char *file_name, struct stat *stat_info,
 	  utimbuf.modtime = stat_info->st_mtime;
 
 	  if (utime (file_name, &utimbuf) < 0)
-	    {
-	      int e = errno;
-	      ERROR ((0, e,
-		      _("%s: Cannot change access and modification times"),
-		      quotearg_colon (file_name)));
-	    }
+	    utime_error (file_name);
 	}
 
       /* Some systems allow non-root users to give files away.  Once this
@@ -211,25 +203,15 @@ set_stat (char *file_name, struct stat *stat_info,
 	{
 #if HAVE_LCHOWN
 	  if (lchown (file_name, stat_info->st_uid, stat_info->st_gid) < 0)
-	    {
-	      int e = errno;
-	      ERROR ((0, e, _("%s: Cannot lchown to uid %lu gid %lu"),
-		      quotearg_colon (file_name),
-		      (unsigned long) stat_info->st_uid,
-		      (unsigned long) stat_info->st_gid));
-	    }
+	    chown_error_details (file_name,
+				 stat_info->st_uid, stat_info->st_gid);
 #endif
 	}
       else
 	{
 	  if (chown (file_name, stat_info->st_uid, stat_info->st_gid) < 0)
-	    {
-	      int e = errno;
-	      ERROR ((0, e, _("%s: Cannot chown to uid %lu gid %lu"),
-		      quotearg_colon (file_name),
-		      (unsigned long) stat_info->st_uid,
-		      (unsigned long) stat_info->st_gid));
-	    }
+	    chown_error_details (file_name,
+				 stat_info->st_uid, stat_info->st_gid);
 
 	  /* On a few systems, and in particular, those allowing to give files
 	     away, changing the owner or group destroys the suid or sgid bits.
@@ -291,8 +273,8 @@ repair_delayed_set_stat (char const *dir_name,
 	}
     }
 
-  ERROR ((0, 0, _("Unexpected inconsistency when making directory %s"),
-	  quote (dir_name)));
+  ERROR ((0, 0, _("%s: Unexpected inconsistency when making directory"),
+	  quotearg_colon (dir_name)));
 }
 
 /*-----------------------------------------------------------------------.
@@ -379,7 +361,7 @@ prepare_to_extract (char const *file_name)
 
   if (old_files_option == UNLINK_FIRST_OLD_FILES
       && !remove_any_file (file_name, recursive_unlink_option)
-      && errno != ENOENT)
+      && errno && errno != ENOENT)
     {
       unlink_error (file_name);
       return 0;
@@ -452,16 +434,12 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
       union block *data_block = find_next_block ();
       if (! data_block)
 	{
-	  ERROR ((0, 0, _("Unexpected EOF on archive file")));
+	  ERROR ((0, 0, _("Unexpected EOF in archive")));
 	  return;
 	}
       if (lseek (fd, sparsearray[sparse_ind].offset, SEEK_SET) < 0)
 	{
-	  char buf[UINTMAX_STRSIZE_BOUND];
-	  int e = errno;
-	  ERROR ((0, e, _("%s: lseek error at byte %s"),
-		  quotearg_colon (name),
-		  STRINGIFY_BIGINT (sparsearray[sparse_ind].offset, buf)));
+	  seek_error_details (name, sparsearray[sparse_ind].offset);
 	  return;
 	}
       written = sparsearray[sparse_ind++].numbytes;
@@ -476,7 +454,7 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 	  data_block = find_next_block ();
 	  if (! data_block)
 	    {
-	      ERROR ((0, 0, _("Unexpected EOF on archive file")));
+	      ERROR ((0, 0, _("Unexpected EOF in archive")));
 	      return;
 	    }
 	}
@@ -487,12 +465,7 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 	write_error (name);
       else if (count != written)
 	{
-	  char buf1[UINTMAX_STRSIZE_BOUND];
-	  char buf2[UINTMAX_STRSIZE_BOUND];
-	  ERROR ((0, 0, _("%s: Could only write %s of %s bytes"),
-		  quotearg_colon (name),
-		  STRINGIFY_BIGINT (totalsize - *sizeleft, buf1),
-		  STRINGIFY_BIGINT (totalsize, buf2)));
+	  write_error_details (name, count, written);
 	  skip_file (*sizeleft);
 	}
 
@@ -635,7 +608,7 @@ extract_archive (void)
 	      exhdr = find_next_block ();
 	      if (! exhdr)
 		{
-		  ERROR ((0, 0, _("Unexpected EOF on archive file")));
+		  ERROR ((0, 0, _("Unexpected EOF in archive")));
 		  return;
 		}
 	      for (counter = 0; counter < SPARSES_IN_SPARSE_HEADER; counter++)
@@ -782,7 +755,7 @@ extract_archive (void)
 	    data_block = find_next_block ();
 	    if (! data_block)
 	      {
-		ERROR ((0, 0, _("Unexpected EOF on archive file")));
+		ERROR ((0, 0, _("Unexpected EOF in archive")));
 		break;		/* FIXME: What happens, then?  */
 	      }
 
@@ -801,13 +774,7 @@ extract_archive (void)
 	    /* Error in writing to file.  Print it, skip to next file in
 	       archive.  */
 
-	    if (sstatus < 0)
-	      write_error (CURRENT_FILE_NAME);
-	    else
-	      ERROR ((0, 0, _("%s: Could only write %lu of %lu bytes"),
-		      quotearg_colon (CURRENT_FILE_NAME),
-		      (unsigned long) sstatus,
-		      (unsigned long) written));
+	    write_error_details (CURRENT_FILE_NAME, sstatus, written);
 	    skip_file (size - written);
 	    break;		/* still do the close, mod time, chmod, etc */
 	  }
@@ -1029,8 +996,7 @@ extract_archive (void)
 
 	  if (errno != EEXIST || old_files_option == KEEP_OLD_FILES)
 	    {
-	      int e = errno;
-	      ERROR ((0, e, "%s: mkdir", quotearg_colon (CURRENT_FILE_NAME)));
+	      mkdir_error (CURRENT_FILE_NAME);
 	      if (backup_option)
 		undo_last_backup ();
 	      break;
@@ -1057,8 +1023,8 @@ extract_archive (void)
 
     case GNUTYPE_MULTIVOL:
       ERROR ((0, 0,
-	      _("Cannot extract %s -- file is continued from another volume"),
-	      quote (current_file_name)));
+	      _("%s: Cannot extract -- file is continued from another volume"),
+	      quotearg_colon (current_file_name)));
       skip_file (current_stat.st_size);
       if (backup_option)
 	undo_last_backup ();
@@ -1074,28 +1040,36 @@ extract_archive (void)
 
     default:
       WARN ((0, 0,
-	     _("Unknown file type '%c' for %s, extracted as normal file"),
-	     typeflag, quote (CURRENT_FILE_NAME)));
+	     _("%s: Unknown file type '%c', extracted as normal file"),
+	     quotearg_colon (CURRENT_FILE_NAME), typeflag));
       goto again_file;
     }
 
 #undef CURRENT_FILE_NAME
 }
 
-/* Fix the statuses of all directories that are not ancestors of FILE_NAME.  */
+/* Fix the status of all directories whose statuses need fixing.  */
 void
-apply_delayed_set_stat (char const *file_name)
+apply_delayed_set_stat (void)
+{
+  apply_nonancestor_delayed_set_stat ("");
+}
+
+/* Fix the statuses of all directories whose statuses need fixing, and
+   which are not ancestors of FILE_NAME.  */
+void
+apply_nonancestor_delayed_set_stat (char const *file_name)
 {
   size_t file_name_len = strlen (file_name);
 
   while (delayed_set_stat_head)
     {
       struct delayed_set_stat *data = delayed_set_stat_head;
-      delayed_set_stat_head = data->next;
       if (data->file_name_len < file_name_len
 	  && file_name[data->file_name_len] == '/'
 	  && memcmp (file_name, data->file_name, data->file_name_len) == 0)
 	break;
+      delayed_set_stat_head = data->next;
       set_stat (data->file_name, &data->stat_info,
 		data->invert_permissions, data->permstatus, DIRTYPE);
       free (data);
@@ -1105,7 +1079,7 @@ apply_delayed_set_stat (char const *file_name)
 void
 fatal_exit (void)
 {
-  apply_delayed_set_stat ("");
+  apply_delayed_set_stat ();
   error (TAREXIT_FAILURE, 0, _("Error is not recoverable: exiting now"));
   abort ();
 }
