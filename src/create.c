@@ -1,5 +1,5 @@
 /* Create a tar archive.
-   Copyright (C) 1985, 92, 93, 94, 96, 97 Free Software Foundation, Inc.
+   Copyright 1985, 92, 93, 94, 96, 97, 1999 Free Software Foundation, Inc.
    Written by John Gilmore, on 1985-08-25.
 
    This program is free software; you can redistribute it and/or modify it
@@ -99,42 +99,42 @@ to_oct (uintmax_t value, char *where, size_t size, const char *type)
 void
 gid_to_oct (gid_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "gid_t");
+  to_oct ((uintmax_t) v, p, s, "gid_t");
 }
 void
 major_to_oct (major_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "major_t");
+  to_oct ((uintmax_t) v, p, s, "major_t");
 }
 void
 minor_to_oct (minor_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "minor_t");
+  to_oct ((uintmax_t) v, p, s, "minor_t");
 }
 void
 mode_to_oct (mode_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "mode_t");
+  to_oct ((uintmax_t) v, p, s, "mode_t");
 }
 void
 off_to_oct (off_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "off_t");
+  to_oct ((uintmax_t) v, p, s, "off_t");
 }
 void
 size_to_oct (size_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "size_t");
+  to_oct ((uintmax_t) v, p, s, "size_t");
 }
 void
 time_to_oct (time_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "time_t");
+  to_oct ((uintmax_t) v, p, s, "time_t");
 }
 void
 uid_to_oct (uid_t v, char *p, size_t s)
 {
-  to_oct (v, p, s, "uid_t");
+  to_oct ((uintmax_t) v, p, s, "uid_t");
 }
 void
 uintmax_to_oct (uintmax_t v, char *p, size_t s)
