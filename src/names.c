@@ -502,7 +502,7 @@ namelist_match (char const *path, size_t length)
 	continue;
 
       if (p->regexp
-	  ? fnmatch (p->name, path, FNM_LEADING_DIR) == 0
+	  ? fnmatch (p->name, path, recursion_option) == 0
 	  : (p->length <= length
 	     && (path[p->length] == '\0' || path[p->length] == '/')
 	     && memcmp (path, p->name, p->length) == 0))
@@ -871,7 +871,7 @@ excluded_name (char const *name)
   name += FILESYSTEM_PREFIX_LEN (name);
 
   if (excluded_filename (excluded_with_slash, name,
-			 FNM_FILE_NAME | FNM_LEADING_DIR))
+			 FNM_FILE_NAME | recursion_option))
     return 1;
 
   for (p = name; *p; p++)
