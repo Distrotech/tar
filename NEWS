@@ -7,6 +7,15 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.14.1 - Sergey Poznyakoff, <DATE>
 
+* When restoring incremental dumps, --one-file-system option
+prevents directory hierarchies residing on different devices
+from being purged.
+
+With the previous versions of tar it was dangerous to create
+incremental dumps with --one-file-system option, since they
+would recursively remove mount points when restoring from the
+back up. This change fixes the bug.
+
 * Renamed --strip-path to --strip-components for consistency with
   the GNU convention.
 
