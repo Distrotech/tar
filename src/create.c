@@ -49,6 +49,16 @@ extern int	errno;
 #include <grp.h>
 #endif
 
+#if defined (_POSIX_VERSION)
+#include <utime.h>
+#else
+struct utimbuf
+{
+  long actime;
+  long modtime;
+};
+#endif
+
 #if defined(_POSIX_VERSION) || defined(DIRENT)
 #include <dirent.h>
 #ifdef direct
@@ -206,7 +216,7 @@ dump_file (p, curdev, toplevel)
 	char save_linkflag;
 	extern time_t new_time;
 	int critical_error = 0;
-	time_t restore_times[2];
+	struct utimbuf restore_times;
 /*	int sparse_ind = 0;*/
 
 
@@ -234,8 +244,8 @@ badfile:
 		return;
 	}
 	
-	restore_times[0] = hstat.st_atime;
-	restore_times[1] = hstat.st_mtime;
+	restore_times.actime = hstat.st_atime;
+	restore_times.modtime = hstat.st_mtime;
 
 #ifdef S_ISHIDDEN
 	if (S_ISHIDDEN (hstat.st_mode)) {
@@ -575,7 +585,7 @@ badfile:
 		      msg_perror ("cannot remove %s", p);
 		  }
 		if (f_atime_preserve)
-		  utime (p, restore_times);
+		  utime (p, &restore_times);
 		return;
 
 		/*
@@ -595,7 +605,7 @@ badfile:
 		if(f>=0)
 			(void)close(f);
 		if (f_atime_preserve)
-		  utime (p, restore_times);
+		  utime (p, &restore_times);
 	        return;
 	}
 
@@ -727,7 +737,7 @@ badfile:
 			if(f_multivol)
 				save_name = 0;
 			if (f_atime_preserve)
-			  utime (p, restore_times);
+			  utime (p, &restore_times);
  			return;
 		}
 
@@ -786,7 +796,7 @@ badfile:
 		closedir(dirp);
 		free(namebuf);
 		if (f_atime_preserve)
-		  utime (p, restore_times);
+		  utime (p, &restore_times);
 		return;
 	}
 
