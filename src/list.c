@@ -37,7 +37,7 @@ size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 
 static uintmax_t from_header (const char *, size_t, const char *,
-			      uintmax_t, uintmax_t);
+			      uintmax_t, uintmax_t, bool);
 
 /* Base 64 digits; see Internet RFC 2045 Table 1.  */
 static char const base_64_digits[64] =
@@ -71,8 +71,8 @@ read_and (void (*do_something) (void))
 
   base64_init ();
   name_gather ();
-  open_archive (ACCESS_READ);
 
+  open_archive (ACCESS_READ);
   do
     {
       prev_status = status;
@@ -277,7 +277,7 @@ list_archive (void)
    computes two checksums -- signed and unsigned.  */
 
 enum read_header
-tar_checksum (union block *header)
+tar_checksum (union block *header, bool silent)
 {
   size_t i;
   int unsigned_sum = 0;		/* the POSIX one :-) */
@@ -309,7 +309,7 @@ tar_checksum (union block *header)
   parsed_sum = from_header (header->header.chksum,
 			    sizeof header->header.chksum, 0,
 			    (uintmax_t) 0,
-			    (uintmax_t) TYPE_MAXIMUM (int));
+			    (uintmax_t) TYPE_MAXIMUM (int), silent);
   if (parsed_sum == (uintmax_t) -1)
     return HEADER_FAILURE;
 
@@ -357,7 +357,7 @@ read_header (bool raw_extended_headers)
       if (!header)
 	return HEADER_END_OF_FILE;
 
-      if ((status = tar_checksum (header)) != HEADER_SUCCESS)
+      if ((status = tar_checksum (header, false)) != HEADER_SUCCESS)
 	return status;
 
       /* Good block.  Decode file size and return.  */
@@ -618,11 +618,12 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 /* Convert buffer at WHERE0 of size DIGS from external format to
    uintmax_t.  The data is of type TYPE.  The buffer must represent a
    value in the range -MINUS_MINVAL through MAXVAL.  DIGS must be
-   positive.  Return -1 on error, diagnosing the error if TYPE is
-   nonzero.  */
+   positive. SILENT=true inhibits printing diagnostic messages.
+   Return -1 on error, diagnosing the error if TYPE is
+   nonzero. */
 static uintmax_t
 from_header (char const *where0, size_t digs, char const *type,
-	     uintmax_t minus_minval, uintmax_t maxval)
+	     uintmax_t minus_minval, uintmax_t maxval, bool silent)
 {
   uintmax_t value;
   char const *where = where0;
@@ -638,7 +639,7 @@ from_header (char const *where0, size_t digs, char const *type,
     {
       if (where == lim)
 	{
-	  if (type)
+	  if (type && !silent)
 	    ERROR ((0, 0,
 		    _("Blanks in header where numeric %s value expected"),
 		    type));
@@ -692,16 +693,17 @@ from_header (char const *where0, size_t digs, char const *type,
 
 	  if (!overflow && value <= minus_minval)
 	    {
-	      WARN ((0, 0,
-		     _("Archive octal value %.*s is out of %s range; assuming two's complement"),
-		     (int) (where - where1), where1, type));
+	      if (!silent)
+		WARN ((0, 0,
+		       _("Archive octal value %.*s is out of %s range; assuming two's complement"),
+		       (int) (where - where1), where1, type));
 	      negative = 1;
 	    }
 	}
 
       if (overflow)
 	{
-	  if (type)
+	  if (type && !silent)
 	    ERROR ((0, 0,
 		    _("Archive octal value %.*s is out of %s range"),
 		    (int) (where - where1), where1, type));
@@ -718,8 +720,9 @@ from_header (char const *where0, size_t digs, char const *type,
       if (! warned_once)
 	{
 	  warned_once = 1;
-	  WARN ((0, 0,
-		 _("Archive contains obsolescent base-64 headers")));
+	  if (!silent)
+	    WARN ((0, 0,
+		   _("Archive contains obsolescent base-64 headers")));
 	}
       negative = *where++ == '-';
       while (where != lim
@@ -730,7 +733,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	      char *string = alloca (digs + 1);
 	      memcpy (string, where0, digs);
 	      string[digs] = '\0';
-	      if (type)
+	      if (type && !silent)
 		ERROR ((0, 0,
 			_("Archive signed base-64 string %s is out of %s range"),
 			quote (string), type));
@@ -761,7 +764,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	    break;
 	  if (((value << LG_256 >> LG_256) | topbits) != value)
 	    {
-	      if (type)
+	      if (type && !silent)
 		ERROR ((0, 0,
 			_("Archive base-256 value is out of %s range"),
 			type));
@@ -789,9 +792,10 @@ from_header (char const *where0, size_t digs, char const *type,
 	  while (where0 != lim && ! lim[-1])
 	    lim--;
 	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
-	  ERROR ((0, 0,
-		  _("Archive contains %.*s where numeric %s value expected"),
-		  (int) sizeof buf, buf, type));
+	  if (!silent)
+	    ERROR ((0, 0,
+		    _("Archive contains %.*s where numeric %s value expected"),
+		    (int) sizeof buf, buf, type));
 	}
 
       return -1;
@@ -800,7 +804,7 @@ from_header (char const *where0, size_t digs, char const *type,
   if (value <= (negative ? minus_minval : maxval))
     return negative ? -value : value;
 
-  if (type)
+  if (type && !silent)
     {
       char minval_buf[UINTMAX_STRSIZE_BOUND + 1];
       char maxval_buf[UINTMAX_STRSIZE_BOUND];
@@ -824,7 +828,8 @@ gid_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "gid_t",
 		      - (uintmax_t) TYPE_MINIMUM (gid_t),
-		      (uintmax_t) TYPE_MAXIMUM (gid_t));
+		      (uintmax_t) TYPE_MAXIMUM (gid_t),
+		      false);
 }
 
 major_t
@@ -832,7 +837,7 @@ major_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "major_t",
 		      - (uintmax_t) TYPE_MINIMUM (major_t),
-		      (uintmax_t) TYPE_MAXIMUM (major_t));
+		      (uintmax_t) TYPE_MAXIMUM (major_t), false);
 }
 
 minor_t
@@ -840,7 +845,7 @@ minor_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "minor_t",
 		      - (uintmax_t) TYPE_MINIMUM (minor_t),
-		      (uintmax_t) TYPE_MAXIMUM (minor_t));
+		      (uintmax_t) TYPE_MAXIMUM (minor_t), false);
 }
 
 mode_t
@@ -849,7 +854,7 @@ mode_from_header (const char *p, size_t s)
   /* Do not complain about unrecognized mode bits.  */
   unsigned u = from_header (p, s, "mode_t",
 			    - (uintmax_t) TYPE_MINIMUM (mode_t),
-			    TYPE_MAXIMUM (uintmax_t));
+			    TYPE_MAXIMUM (uintmax_t), false);
   return ((u & TSUID ? S_ISUID : 0)
 	  | (u & TSGID ? S_ISGID : 0)
 	  | (u & TSVTX ? S_ISVTX : 0)
@@ -870,14 +875,14 @@ off_from_header (const char *p, size_t s)
   /* Negative offsets are not allowed in tar files, so invoke
      from_header with minimum value 0, not TYPE_MINIMUM (off_t).  */
   return from_header (p, s, "off_t", (uintmax_t) 0,
-		      (uintmax_t) TYPE_MAXIMUM (off_t));
+		      (uintmax_t) TYPE_MAXIMUM (off_t), false);
 }
 
 size_t
 size_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "size_t", (uintmax_t) 0,
-		      (uintmax_t) TYPE_MAXIMUM (size_t));
+		      (uintmax_t) TYPE_MAXIMUM (size_t), false);
 }
 
 time_t
@@ -885,7 +890,7 @@ time_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "time_t",
 		      - (uintmax_t) TYPE_MINIMUM (time_t),
-		      (uintmax_t) TYPE_MAXIMUM (time_t));
+		      (uintmax_t) TYPE_MAXIMUM (time_t), false);
 }
 
 uid_t
@@ -893,14 +898,14 @@ uid_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "uid_t",
 		      - (uintmax_t) TYPE_MINIMUM (uid_t),
-		      (uintmax_t) TYPE_MAXIMUM (uid_t));
+		      (uintmax_t) TYPE_MAXIMUM (uid_t), false);
 }
 
 uintmax_t
 uintmax_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "uintmax_t", (uintmax_t) 0,
-		      TYPE_MAXIMUM (uintmax_t));
+		      TYPE_MAXIMUM (uintmax_t), false);
 }
 
 
@@ -1095,7 +1100,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  uintmax_t u = from_header (current_header->header.uid,
 				     sizeof current_header->header.uid, 0,
 				     (uintmax_t) 0,
-				     (uintmax_t) TYPE_MAXIMUM (uintmax_t));
+				     (uintmax_t) TYPE_MAXIMUM (uintmax_t),
+				     false);
 	  if (u != -1)
 	    user = STRINGIFY_BIGINT (u, uform);
 	  else
@@ -1117,7 +1123,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  uintmax_t g = from_header (current_header->header.gid,
 				     sizeof current_header->header.gid, 0,
 				     (uintmax_t) 0,
-				     (uintmax_t) TYPE_MAXIMUM (uintmax_t));
+				     (uintmax_t) TYPE_MAXIMUM (uintmax_t),
+				     false);
 	  if (g != -1)
 	    group = STRINGIFY_BIGINT (g, gform);
 	  else
