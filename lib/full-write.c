@@ -1,7 +1,6 @@
-/* full-write.c -- an interface to write that retries after interrupts
+/* An interface to read and write that retries (if necessary) until complete.
 
-   Copyright 1993, 1994, 1997, 1998, 1999, 2000, 2001 Free Software
-   Foundation, Inc.
+   Copyright (C) 1993, 1994, 1997-2003 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,20 +14,17 @@
 
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software Foundation,
-   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-
-   Written by Paul Eggert.  */
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #if HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#include <sys/types.h>
-
-#include "full-write.h"
-
-#if HAVE_UNISTD_H
-# include <unistd.h>
+/* Specification.  */
+#ifdef FULL_READ
+# include "full-read.h"
+#else
+# include "full-write.h"
 #endif
 
 #include <errno.h>
@@ -36,32 +32,54 @@
 extern int errno;
 #endif
 
-/* Write LEN bytes at PTR to descriptor DESC, retrying if interrupted
-   or if partial writes occur.  Return the number of bytes successfully
-   written, setting errno if that is less than LEN.  */
-
-size_t
-full_write (int desc, const char *ptr, size_t len)
-{
-  size_t total_written = 0;
-
-  while (len > 0)
-    {
-      ssize_t written = write (desc, ptr, len);
-      if (written <= 0)
-	{
-	  /* Some buggy drivers return 0 when you fall off a device's end.  */
-	  if (written == 0)
-	    errno = ENOSPC;
-#ifdef EINTR
-	  if (errno == EINTR)
-	    continue;
+#ifdef FULL_READ
+# include "safe-read.h"
+# define safe_rw safe_read
+# define full_rw full_read
+# undef const
+# define const /* empty */
+#else
+# include "safe-write.h"
+# define safe_rw safe_write
+# define full_rw full_write
 #endif
+
+#ifdef FULL_READ
+/* Set errno to zero upon EOF.  */
+# define ZERO_BYTE_TRANSFER_ERRNO 0
+#else
+/* Some buggy drivers return 0 when one tries to write beyond
+   a device's end.  (Example: Linux 1.2.13 on /dev/fd0.)
+   Set errno to ENOSPC so they get a sensible diagnostic.  */
+# define ZERO_BYTE_TRANSFER_ERRNO ENOSPC
+#endif
+
+/* Write(read) COUNT bytes at BUF to(from) descriptor FD, retrying if
+   interrupted or if a partial write(read) occurs.  Return the number
+   of bytes transferred.
+   When writing, set errno if fewer than COUNT bytes are written.
+   When reading, if fewer than COUNT bytes are read, you must examine
+   errno to distinguish failure from EOF (errno == 0).  */
+size_t
+full_rw (int fd, const void *buf, size_t count)
+{
+  size_t total = 0;
+  const char *ptr = buf;
+
+  while (count > 0)
+    {
+      size_t n_rw = safe_rw (fd, ptr, count);
+      if (n_rw == (size_t) -1)
+	break;
+      if (n_rw == 0)
+	{
+	  errno = ZERO_BYTE_TRANSFER_ERRNO;
 	  break;
 	}
-      total_written += written;
-      ptr += written;
-      len -= written;
+      total += n_rw;
+      ptr += n_rw;
+      count -= n_rw;
     }
-  return total_written;
+
+  return total;
 }
