@@ -1,6 +1,4 @@
-# Makefile for GNU tar scripts.
-
-# Copyright (C) 1994, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2004 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,7 +11,28 @@
 ## GNU General Public License for more details.
 
 ## You should have received a copy of the GNU General Public License
-## along with this program; if not, write to the Free Software Foundation,
-## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+## 02111-1307, USA.
 
-EXTRA_DIST = WARNING backup-specs dump-remind level-0 level-1 weekly.new
+libexec_SCRIPTS=backup.sh dump-remind
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT=backup.sh dump-remind
+sbin_SCRIPTS=backup
+EXTRA_DIST=$(libexec_SCRIPTS) backup.in dump-remind.in backup-specs
+CLEANFILES=backup dump-remind
+
+backup: $(srcdir)/backup.in
+	sed "s,\@libexecdir\@,$(libexecdir),;\
+             s,\@sysconfdir\@,$(sysconfdir),;\
+             s,\@PACKAGE\@,$(PACKAGE),;\
+             s,\@VERSION\@,$(VERSION),;\
+             s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
+             s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@" $? > $@
+
+dump-remind: $(srcdir)/dump-remind.in
+	sed "s,\@libexecdir\@,$(libexecdir),;\
+             s,\@sysconfdir\@,$(sysconfdir),;\
+             s,\@PACKAGE\@,$(PACKAGE),;\
+             s,\@VERSION\@,$(VERSION),;\
+             s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
+             s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@" $? > $@
