@@ -22,6 +22,43 @@
 #include "rmt.h"
 #include <signal.h>
 
+void
+sys_stat_nanoseconds(struct tar_stat_info *stat)
+{
+#if defined(HAVE_STRUCT_STAT_ST_SPARE1)
+  stat->atime_nsec = stat->stat.st_spare1 * 1000;
+  stat->mtime_nsec = stat->stat.st_spare2 * 1000;
+  stat->ctime_nsec = stat->stat.st_spare3 * 1000;
+#elif defined(HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC)
+  stat->atime_nsec = stat->stat.st_atim.tv_nsec;
+  stat->mtime_nsec = stat->stat.st_mtim.tv_nsec;
+  stat->ctime_nsec = stat->stat.st_ctim.tv_nsec;
+#elif defined(HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC)
+  stat->atime_nsec = stat->stat.st_atimespec.tv_nsec;
+  stat->mtime_nsec = stat->stat.st_mtimespec.tv_nsec;
+  stat->ctime_nsec = stat->stat.st_ctimespec.tv_nsec;
+#elif defined(HAVE_STRUCT_STAT_ST_ATIMENSEC)
+  stat->atime_nsec = stat->stat.st_atimensec;
+  stat->mtime_nsec = stat->stat.st_mtimensec;
+  stat->ctime_nsec = stat->stat.st_ctimensec;
+#else
+  stat->atime_nsec  = stat->mtime_nsec = stat->ctime_nsec = 0;
+#endif
+}
+
+int
+sys_utimes(char *file_name, struct timeval tvp[3])
+{
+#ifdef HAVE_UTIMES
+  return utimes (file_name, tvp);
+#else
+  struct utimbuf utimbuf;
+  utimbuf.actime = tvp[0].tv_sec;
+  utimbuf.modtime = tvp[1].tv_sec;
+  return utime (file_name, &utimbuf);
+#endif
+}
+
 #if MSDOS
 
 bool
