@@ -20,7 +20,7 @@
 
 AC_DEFUN([AC_FUNC_GETCWD_NULL],
   [AC_CHECK_HEADERS(stdlib.h unistd.h)
-   AC_CACHE_CHECK([[whether getcwd (NULL, 0) allocates memory for result]],
+   AC_CACHE_CHECK([whether getcwd (NULL, 0) allocates memory for result],
      [ac_cv_func_getcwd_null],
      [AC_TRY_RUN(
         [
@@ -49,5 +49,5 @@ AC_DEFUN([AC_FUNC_GETCWD_NULL],
 	[ac_cv_func_getcwd_null=no])])
    if test $ac_cv_func_getcwd_null = yes; then
      AC_DEFINE(HAVE_GETCWD_NULL, 1,
-	       [[Define if getcwd (NULL, 0) allocates memory for result.]])
+	       [Define if getcwd (NULL, 0) allocates memory for result.])
    fi])
