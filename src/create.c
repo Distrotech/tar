@@ -57,35 +57,89 @@ struct link *linklist = NULL;	/* points to first link in list */
 
 
 /*------------------------------------------------------------------------.
-| Converts long VALUE into a DIGS-digit field at WHERE, including a       |
-| trailing space and room for a NUL.  For example, 3 for DIGS 3 means one |
-| digit, a space, and room for a NUL.                                     |
+| Convert VALUE into a size-SIZE field at WHERE, including a		  |
+| trailing space.  For example, 3 for SIZE means two digits and a space.  |
 |                                                                         |
 | We assume the trailing NUL is already there and don't fill it in.  This |
 | fact is used by start_header and finish_header, so don't change it!     |
 `------------------------------------------------------------------------*/
 
-/* This should be equivalent to: sprintf (WHERE, "%*lo ", DIGS - 2, VALUE);
+/* This should be equivalent to: sprintf (WHERE, "%*lo ", SIZE - 1, VALUE);
+   except that we don't assume VALUE fits in an unsigned long, and
    except that sprintf fills in the trailing NUL and we don't.  */
 
-void
-to_oct (long value, int digs, char *where)
+static void
+to_oct (uintmax_t value, char *where, size_t size, const char *type)
 {
-  --digs;			/* Trailing null slot is left alone */
-  where[--digs] = ' ';		/* put in the space, though */
+  uintmax_t v = value;
+  size_t i = size;
+  where[--i] = ' ';		/* put in the space, though */
 
   /* Produce the digits -- at least one.  */
 
   do
     {
-      where[--digs] = '0' + (char) (value & 7);	/* one octal digit */
-      value >>= 3;
+      where[--i] = '0' + (int) (v & 7);	/* one octal digit */
+      v >>= 3;
     }
-  while (digs > 0 && value != 0);
+  while (i != 0 && v != 0);
 
   /* Leading spaces, if necessary.  */
-  while (digs > 0)
-    where[--digs] = ' ';
+  while (i != 0)
+    where[--i] = ' ';
+
+  if (v != 0)
+    {
+      char buf[UINTMAX_STRSIZE_BOUND];
+      ERROR ((0, 0, _("%s value %s is too large to fit in a %u-bit field"),
+	      type, STRINGIFY_BIGINT (value, buf),
+	      (unsigned) ((size - 1) * 3)));
+    }
+}
+void
+gid_to_oct (gid_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "gid_t");
+}
+void
+major_to_oct (major_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "major_t");
+}
+void
+minor_to_oct (minor_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "minor_t");
+}
+void
+mode_to_oct (mode_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "mode_t");
+}
+void
+off_to_oct (off_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "off_t");
+}
+void
+size_to_oct (size_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "size_t");
+}
+void
+time_to_oct (time_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "time_t");
+}
+void
+uid_to_oct (uid_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "uid_t");
+}
+void
+uintmax_to_oct (uintmax_t v, char *p, size_t s)
+{
+  to_oct (v, p, s, "uintmax_t");
 }
 
 /* Writing routines.  */
@@ -114,9 +168,9 @@ write_eot (void)
 
   if (pointer)
     {
-      int space = available_space_after (pointer);
+      size_t space = available_space_after (pointer);
 
-      memset (pointer->buffer, 0, (size_t) space);
+      memset (pointer->buffer, 0, space);
       set_next_block_after (pointer);
     }
 }
@@ -132,8 +186,8 @@ static union block *start_header PARAMS ((const char *, struct stat *));
 static void
 write_long (const char *p, char type)
 {
-  int size = strlen (p) + 1;
-  int bufsize;
+  size_t size = strlen (p) + 1;
+  size_t bufsize;
   union block *header;
   struct stat foo;
 
@@ -150,15 +204,15 @@ write_long (const char *p, char type)
 
   while (bufsize < size)
     {
-      memcpy (header->buffer, p, (size_t) bufsize);
+      memcpy (header->buffer, p, bufsize);
       p += bufsize;
       size -= bufsize;
       set_next_block_after (header + (bufsize - 1) / BLOCKSIZE);
       header = find_next_block ();
       bufsize = available_space_after (header);
     }
-  memcpy (header->buffer, p, (size_t) size);
-  memset (header->buffer + size, 0, (size_t) (bufsize - size));
+  memcpy (header->buffer, p, size);
+  memset (header->buffer + size, 0, bufsize - size);
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
 
@@ -248,20 +302,20 @@ Removing leading `/' from absolute path names in the archive")));
      acceptor for Paul's test.  */
 
   if (archive_format == V7_FORMAT)
-    to_oct ((long) st->st_mode & 07777, 8, header->header.mode);
+    MODE_TO_OCT (st->st_mode & 07777, header->header.mode);
   else
-    to_oct ((long) st->st_mode, 8, header->header.mode);
+    MODE_TO_OCT (st->st_mode, header->header.mode);
 
-  to_oct ((long) st->st_uid, 8, header->header.uid);
-  to_oct ((long) st->st_gid, 8, header->header.gid);
-  to_oct ((long) st->st_size, 1 + 12, header->header.size);
-  to_oct ((long) st->st_mtime, 1 + 12, header->header.mtime);
+  UID_TO_OCT (st->st_uid, header->header.uid);
+  GID_TO_OCT (st->st_gid, header->header.gid);
+  OFF_TO_OCT (st->st_size, header->header.size);
+  TIME_TO_OCT (st->st_mtime, header->header.mtime);
 
   if (incremental_option)
     if (archive_format == OLDGNU_FORMAT)
       {
-	to_oct ((long) st->st_atime, 1 + 12, header->oldgnu_header.atime);
-	to_oct ((long) st->st_ctime, 1 + 12, header->oldgnu_header.ctime);
+	TIME_TO_OCT (st->st_atime, header->oldgnu_header.atime);
+	TIME_TO_OCT (st->st_ctime, header->oldgnu_header.ctime);
       }
 
   header->header.typeflag = archive_format == V7_FORMAT ? AREGTYPE : REGTYPE;
@@ -305,14 +359,15 @@ Removing leading `/' from absolute path names in the archive")));
 void
 finish_header (union block *header)
 {
-  int i, sum;
+  size_t i;
+  int sum;
   char *p;
 
   memcpy (header->header.chksum, CHKBLANKS, sizeof (header->header.chksum));
 
   sum = 0;
   p = header->buffer;
-  for (i = sizeof (*header); --i >= 0; )
+  for (i = sizeof (*header); i-- != 0; )
     /* We can't use unsigned char here because of old compilers, e.g. V7.  */
     sum += 0xFF & *p++;
 
@@ -326,7 +381,7 @@ finish_header (union block *header)
 
      sprintf(header->header.chksum, "%6o", sum);  */
 
-  to_oct ((long) sum, 8, header->header.chksum);
+  UINTMAX_TO_OCT ((uintmax_t) sum, header->header.chksum);
   header->header.chksum[6] = '\0';	/* zap the space */
 
   set_next_block_after (header);
@@ -390,7 +445,7 @@ init_sparsearray (void)
 `---*/
 
 static void
-find_new_file_size (int *filesize, int highest_index)
+find_new_file_size (off_t *filesize, int highest_index)
 {
   int counter;
 
@@ -417,11 +472,11 @@ find_new_file_size (int *filesize, int highest_index)
 static int
 deal_with_sparse (char *name, union block *header)
 {
-  long numbytes = 0;
-  long offset = 0;
+  size_t numbytes = 0;
+  off_t offset = 0;
   int file;
   int sparse_index = 0;
-  int count;
+  ssize_t count;
   char buffer[BLOCKSIZE];
 
   if (archive_format == OLDGNU_FORMAT)
@@ -511,14 +566,12 @@ deal_with_sparse (char *name, union block *header)
 `---*/
 
 static int
-finish_sparse_file (int file, long *sizeleft, long fullsize, char *name)
+finish_sparse_file (int file, off_t *sizeleft, off_t fullsize, char *name)
 {
   union block *start;
-  int bufsize;
+  size_t bufsize;
   int sparse_index = 0;
-  int count;
-  long pos;
-  long nwritten = 0;
+  ssize_t count;
 
   while (*sizeleft > 0)
     {
@@ -528,12 +581,24 @@ finish_sparse_file (int file, long *sizeleft, long fullsize, char *name)
       if (!bufsize)
 	{
 	  /* We blew it, maybe.  */
+	  char buf1[UINTMAX_STRSIZE_BOUND];
+	  char buf2[UINTMAX_STRSIZE_BOUND];
 
-	  ERROR ((0, 0, _("Wrote %ld of %ld bytes to file %s"),
-		  fullsize - *sizeleft, fullsize, name));
+	  ERROR ((0, 0, _("Wrote %s of %s bytes to file %s"),
+		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf1),
+		  STRINGIFY_BIGINT (fullsize, buf2),
+		  name));
 	  break;
 	}
-      pos = lseek (file, sparsearray[sparse_index++].offset, 0);
+
+      if (lseek (file, sparsearray[sparse_index++].offset, 0) < 0)
+	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  ERROR ((0, errno, _("lseek error at byte %s in file %s"),
+		  STRINGIFY_BIGINT (sparsearray[sparse_index - 1].offset, buf),
+		  name));
+	  break;
+	}
 
       /* If the number of bytes to be written here exceeds the size of
 	 the temporary buffer, do it in steps.  */
@@ -557,15 +622,16 @@ finish_sparse_file (int file, long *sizeleft, long fullsize, char *name)
 	  count = read (file, start->buffer, BLOCKSIZE);
 	  if (count < 0)
 	    {
+	      char buf[UINTMAX_STRSIZE_BOUND];
 	      ERROR ((0, errno, _("\
-Read error at byte %ld, reading %d bytes, in file %s"),
-			 fullsize - *sizeleft, bufsize, name));
+Read error at byte %s, reading %lu bytes, in file %s"),
+		      STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
+		      (unsigned long) bufsize, name));
 	      return 1;
 	    }
 	  bufsize -= count;
 	  *sizeleft -= count;
 	  set_next_block_after (start);
-	  nwritten += BLOCKSIZE;	/* FIXME: ??? */
 	  start = find_next_block ();
 	  memset (start->buffer, 0, BLOCKSIZE);
 	}
@@ -574,15 +640,18 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 	char buffer[BLOCKSIZE];
 
 	clear_buffer (buffer);
-	count = read (file, buffer, (size_t) bufsize);
+	count = read (file, buffer, bufsize);
 	memcpy (start->buffer, buffer, BLOCKSIZE);
       }
 
       if (count < 0)
 	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  
 	  ERROR ((0, errno,
-		  _("Read error at byte %ld, reading %d bytes, in file %s"),
-		  fullsize - *sizeleft, bufsize, name));
+		  _("Read error at byte %s, reading %lu bytes, in file %s"),
+		  STRINGIFY_BIGINT (fullsize - *sizeleft, buf),
+		  (unsigned long) bufsize, name));
 	  return 1;
 	}
 #if 0
@@ -593,8 +662,8 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 	  if (count != bufsize)
 	    {
 	      ERROR ((0, 0,
-		      _("File %s shrunk by %d bytes, padding with zeros"),
-		      name, sizeleft));
+		      _("File %s shrunk, padding with zeros"),
+		      name));
 	      return 1;
 	    }
 	  start = find_next_block ();
@@ -602,14 +671,12 @@ Read error at byte %ld, reading %d bytes, in file %s"),
       else
 	amount_read += bufsize;
 #endif
-      nwritten += count;	/* FIXME: ??? */
       *sizeleft -= count;
       set_next_block_after (start);
 
     }
   free (sparsearray);
 #if 0
-  printf (_("Amount actually written is (I hope) %d.\n"), nwritten);
   set_next_block_after (start + (count - 1) / BLOCKSIZE);
 #endif
   return 0;
@@ -631,12 +698,13 @@ create_archive (void)
   if (incremental_option)
     {
       char *buffer = xmalloc (PATH_MAX);
-      char *q, *bufp;
+      const char *q;
+      char *bufp;
 
       collect_and_sort_names ();
 
       while (p = name_from_list (), p)
-	dump_file (p, -1, 1);
+	dump_file (p, (dev_t) -1, 1);
 
       blank_name_list ();
       while (p = name_from_list (), p)
@@ -652,7 +720,7 @@ create_archive (void)
 	      if (*q == 'Y')
 		{
 		  strcpy (bufp, q + 1);
-		  dump_file (buffer, -1, 1);
+		  dump_file (buffer, (dev_t) -1, 1);
 		}
 	    }
 	}
@@ -661,7 +729,7 @@ create_archive (void)
   else
     {
       while (p = name_next (1), p)
-	dump_file (p, -1, 1);
+	dump_file (p, (dev_t) -1, 1);
     }
 
   write_eot ();
@@ -683,7 +751,7 @@ create_archive (void)
    exit_status to failure, a clear diagnostic has been issued.  */
 
 void
-dump_file (char *p, int parent_device, int top_level)
+dump_file (char *p, dev_t parent_device, int top_level)
 {
   union block *header;
   char type;
@@ -738,7 +806,7 @@ dump_file (char *p, int parent_device, int top_level)
       && current_stat.st_mtime < newer_mtime_option
       && (!after_date_option || current_stat.st_ctime < newer_ctime_option))
     {
-      if (parent_device == -1)
+      if (parent_device == (dev_t) -1)
 	WARN ((0, 0, _("%s: is unchanged; not dumped"), p));
       /* FIXME: recheck this return.  */
       return;
@@ -850,8 +918,9 @@ Removing leading `/' from absolute links")));
       )
     {
       int f;			/* file descriptor */
-      long bufsize, count;
-      long sizeleft;
+      size_t bufsize;
+      ssize_t count;
+      off_t sizeleft;
       union block *start;
       int header_moved;
       char isextended = 0;
@@ -872,10 +941,6 @@ Removing leading `/' from absolute links")));
 	     blocks in the file is just a useless hole.  For sparse
 	     files not having more hole blocks than indirect blocks, the
 	     sparseness will go undetected.  */
-
-	  /* tar.h defines ST_NBLOCKS in term of 512 byte sectors, even
-	     for HP-UX's which count in 1024 byte units and AIX's which
-	     count in 4096 byte units.  So this should work...  */
 
 	  /* Bruno Haible sent me these statistics for Linux.  It seems
 	     that some filesystems count indirect blocks in st_blocks,
@@ -899,9 +964,11 @@ Removing leading `/' from absolute links")));
 	     st_blocks, so `du' and `ls -s' give wrong results.  So, the
 	     --sparse option would not work on a minix filesystem.  */
 
-	  if (current_stat.st_size > ST_NBLOCKS (current_stat) * BLOCKSIZE)
+	  if (ST_NBLOCKS (current_stat)
+	      < (current_stat.st_size / ST_NBLOCKSIZE
+		 + (current_stat.st_size % ST_NBLOCKSIZE != 0)))
 	    {
-	      int filesize = current_stat.st_size;
+	      off_t filesize = current_stat.st_size;
 	      int counter;
 
 	      header = start_header (p, &current_stat);
@@ -930,8 +997,8 @@ Removing leading `/' from absolute links")));
 		 <file>.  It might be kind of disconcerting if the
 		 shrunken file size was the one that showed up.  */
 
-	      to_oct ((long) current_stat.st_size, 1 + 12,
-		      header->oldgnu_header.realsize);
+	      OFF_TO_OCT (current_stat.st_size,
+			  header->oldgnu_header.realsize);
 
 	      /* This will be the new "size" of the file, i.e., the size
 		 of the file minus the blocks of holes that we're
@@ -939,17 +1006,17 @@ Removing leading `/' from absolute links")));
 
 	      find_new_file_size (&filesize, upperbound);
 	      current_stat.st_size = filesize;
-	      to_oct ((long) filesize, 1 + 12, header->header.size);
+	      OFF_TO_OCT (filesize, header->header.size);
 
 	      for (counter = 0; counter < SPARSES_IN_OLDGNU_HEADER; counter++)
 		{
 		  if (!sparsearray[counter].numbytes)
 		    break;
 
-		  to_oct (sparsearray[counter].offset, 1 + 12,
-			  header->oldgnu_header.sp[counter].offset);
-		  to_oct (sparsearray[counter].numbytes, 1 + 12,
-			  header->oldgnu_header.sp[counter].numbytes);
+		  OFF_TO_OCT (sparsearray[counter].offset,
+			      header->oldgnu_header.sp[counter].offset);
+		  SIZE_TO_OCT (sparsearray[counter].numbytes,
+			       header->oldgnu_header.sp[counter].numbytes);
 		}
 
 	    }
@@ -1025,12 +1092,10 @@ Removing leading `/' from absolute links")));
 	      if (counter + index_offset > upperbound)
 		break;
 
-	      to_oct ((long) sparsearray[counter + index_offset].numbytes,
-		      1 + 12,
-		      exhdr->sparse_header.sp[counter].numbytes);
-	      to_oct ((long) sparsearray[counter + index_offset].offset,
-		      1 + 12,
-		      exhdr->sparse_header.sp[counter].offset);
+	      SIZE_TO_OCT (sparsearray[counter + index_offset].numbytes,
+			   exhdr->sparse_header.sp[counter].numbytes);
+	      OFF_TO_OCT (sparsearray[counter + index_offset].offset,
+			  exhdr->sparse_header.sp[counter].offset);
 	    }
 	  set_next_block_after (exhdr);
 #if 0
@@ -1068,7 +1133,7 @@ Removing leading `/' from absolute links")));
 	      {
 		/* Last read -- zero out area beyond.  */
 
-		bufsize = (int) sizeleft;
+		bufsize = sizeleft;
 		count = bufsize % BLOCKSIZE;
 		if (count)
 		  memset (start->buffer + sizeleft, 0,
@@ -1077,12 +1142,15 @@ Removing leading `/' from absolute links")));
 	    if (f < 0)
 	      count = bufsize;
 	    else
-	      count = read (f, start->buffer, (size_t) bufsize);
+	      count = read (f, start->buffer, bufsize);
 	    if (count < 0)
 	      {
+		char buf[UINTMAX_STRSIZE_BOUND];
 		ERROR ((0, errno, _("\
-Read error at byte %ld, reading %d bytes, in file %s"),
-			(long) (current_stat.st_size - sizeleft), bufsize, p));
+Read error at byte %s, reading %lu bytes, in file %s"),
+			STRINGIFY_BIGINT (current_stat.st_size - sizeleft,
+					  buf),
+			(unsigned long) bufsize, p));
 		goto padit;
 	      }
 	    sizeleft -= count;
@@ -1093,9 +1161,14 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 
 	    if (count == bufsize)
 	      continue;
-	    ERROR ((0, 0, _("File %s shrunk by %d bytes, padding with zeros"),
-		    p, sizeleft));
-	    goto padit;		/* short read */
+	    else
+	      {
+		char buf[UINTMAX_STRSIZE_BOUND];
+		ERROR ((0, 0,
+			_("File %s shrunk by %s bytes, padding with zeros"),
+			p, STRINGIFY_BIGINT (sizeleft, buf)));
+		goto padit;		/* short read */
+	      }
 	  }
 
       if (multi_volume_option)
@@ -1181,9 +1254,9 @@ Read error at byte %ld, reading %d bytes, in file %s"),
       DIR *directory;
       struct dirent *entry;
       char *namebuf;
-      int buflen;
-      int len;
-      int our_device = current_stat.st_dev;
+      size_t buflen;
+      size_t len;
+      dev_t our_device = current_stat.st_dev;
 
       /* If this tar program is installed suid root, like for Amanda, the
 	 access might look like denied, while it is not really.
@@ -1204,8 +1277,8 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 
       len = strlen (p);
       buflen = len + NAME_FIELD_SIZE;
-      namebuf = xmalloc ((size_t) (buflen + 1));
-      strncpy (namebuf, p, (size_t) buflen);
+      namebuf = xmalloc (buflen + 1);
+      strncpy (namebuf, p, buflen);
       while (len >= 1 && namebuf[len - 1] == '/')
 	len--;
       namebuf[len++] = '/';
@@ -1254,25 +1327,25 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 
       if (incremental_option && gnu_list_name->dir_contents)
 	{
-	  int sizeleft;
-	  int totsize;
-	  int bufsize;
+	  off_t sizeleft;
+	  off_t totsize;
+	  size_t bufsize;
 	  union block *start;
-	  int count;
-	  char *buffer, *p_buffer;
+	  ssize_t count;
+	  const char *buffer, *p_buffer;
 
 	  buffer = gnu_list_name->dir_contents; /* FOO */
 	  totsize = 0;
 	  for (p_buffer = buffer; p_buffer && *p_buffer;)
 	    {
-	      int tmp;
+	      size_t tmp;
 
 	      tmp = strlen (p_buffer) + 1;
 	      totsize += tmp;
 	      p_buffer += tmp;
 	    }
 	  totsize++;
-	  to_oct ((long) totsize, 1 + 12, header->header.size);
+	  OFF_TO_OCT (totsize, header->header.size);
 	  finish_header (header);
 	  p_buffer = buffer;
 	  sizeleft = totsize;
@@ -1294,7 +1367,7 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 		    memset (start->buffer + sizeleft, 0,
 			   (size_t) (BLOCKSIZE - count));
 		}
-	      memcpy (start->buffer, p_buffer, (size_t) bufsize);
+	      memcpy (start->buffer, p_buffer, bufsize);
 	      sizeleft -= bufsize;
 	      p_buffer += bufsize;
 	      set_next_block_after (start + (bufsize - 1) / BLOCKSIZE);
@@ -1351,7 +1424,7 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 	  if ((int) NAMLEN (entry) + len >= buflen)
 	    {
 	      buflen = len + NAMLEN (entry);
-	      namebuf = (char *) xrealloc (namebuf, (size_t) (buflen + 1));
+	      namebuf = (char *) xrealloc (namebuf, buflen + 1);
 #if 0
 	      namebuf[len] = '\0';
 	      ERROR ((0, 0, _("File name %s%s too long"),
@@ -1413,10 +1486,8 @@ Read error at byte %ld, reading %d bytes, in file %s"),
 #if defined(S_IFBLK) || defined(S_IFCHR)
   if (type != FIFOTYPE)
     {
-      to_oct ((long) major (current_stat.st_rdev), 8,
-	      header->header.devmajor);
-      to_oct ((long) minor (current_stat.st_rdev), 8,
-	      header->header.devminor);
+      MAJOR_TO_OCT (major (current_stat.st_rdev), header->header.devmajor);
+      MINOR_TO_OCT (minor (current_stat.st_rdev), header->header.devminor);
     }
 #endif
 
