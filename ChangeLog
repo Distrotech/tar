@@ -1,3 +1,11 @@
+2004-03-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/create.c (write_long_name): Do not allow more than
+	NAME_FIELD_SIZE-1 characters in a file name for V7 format
+	archives.
+	* tests/longv7.sh: New file.
+	* tests/Makefile.am: Add longv7.sh
+
 2004-03-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/buffer.c (open_archive): Clear read_full_records_option
