@@ -402,6 +402,16 @@ write_long (const char *p, char type)
   set_next_block_after (header + (size - 1) / BLOCKSIZE);
 }
 
+/* Write a long link name, depending on the current archive format */
+static void
+write_long_link (struct tar_stat_info *st)
+{
+  if (archive_format == POSIX_FORMAT)
+    xheader_store ("linkpath", st);
+  else
+    write_long (st->link_name, GNUTYPE_LONGNAME);
+}
+
 /* NOTE: Cross recursion between start_header and write_extended  */
 
 static union block *
@@ -1245,9 +1255,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      dup->nlink--;
 	      
 	      block_ordinal = current_block_ordinal ();
-	      if (NAME_FIELD_SIZE <= strlen (link_name))
-		write_long (link_name, GNUTYPE_LONGLINK);
 	      assign_string (&current_stat_info.link_name, link_name);
+	      if (NAME_FIELD_SIZE <= strlen (link_name))
+		write_long_link (&current_stat_info);
 
 	      current_stat_info.stat.st_size = 0;
 	      header = start_header (p, &current_stat_info);
@@ -1572,9 +1582,9 @@ dump_file (char *p, int top_level, dev_t parent_device)
 	      return;
 	    }
 	  buffer[size] = '\0';
-	  if (size >= NAME_FIELD_SIZE)
-	    write_long (buffer, GNUTYPE_LONGLINK);
 	  assign_string (&current_stat_info.link_name, buffer);
+	  if (size >= NAME_FIELD_SIZE)
+	    write_long_link (&current_stat_info);
 
 	  block_ordinal = current_block_ordinal ();
 	  current_stat_info.stat.st_size = 0;	/* force 0 size on symlink */
