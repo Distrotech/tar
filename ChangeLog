@@ -1,3 +1,8 @@
+2003-09-17  Paul Eggert  <eggert@twinsun.com>
+
+	* bootstrap: Don't use "for option; do";
+	Solaris 8 /bin/sh doesn't like that.
+
 2003-09-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* README-alpha: Updated
@@ -28,7 +33,7 @@
 	* src/extract.c (extract_archive): Implemented --strip-path
 	* src/names.c (cut_path_elements): New functon.
 	* src/tar.c: New option --strip-path=NUM.
-	(decode_options) Assign boolean values to bool variables. 
+	(decode_options) Assign boolean values to bool variables.
 
 2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
@@ -43,7 +48,7 @@
 	disappear when GNU extended header keywords are working.
 	* tests/multiv01.sh: Likewise
 	* tests/volume.sh: Likewise
-	
+
 2003-09-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c: Support for "linkpath" extended keyword.
@@ -59,7 +64,7 @@
 	* README: Updated.
 	* NEWS: Updated.
 	* TODO: Updated.
-	
+
 2003-09-02  Paul Eggert  <eggert@twinsun.com>
 
 	* src/common.h (destroy_stat, xheader_decode, xheader_store,
@@ -73,7 +78,7 @@
 	* src/list.c (read_and): Abort if HEADER_SUCCESS_EXTENDED
 	occurs, as it's not possible.
 	* src/update.c (update_archive): Likewise.
-	
+
 	Use "const" when possible in new code.
 	* src/tar.c (struct fmttab.name): Now char const *.  All uses changed.
 	(fmttab): Now const.  All uses changed.
@@ -100,7 +105,7 @@
 
 	* src/tar.c (set_archive_format): Now static.
 	* src/xheader.c (xhdr_tab, format_uintmax): Now static.
-	
+
 	* src/xheader.c (dummy_coder, dummy_decoder, atime_coder,
 	atime_decoder, gid_coder, gid_decoder, gname_coder, gname_decoder,
 	linkpath_coder, linkpath_decoder, mtime_coder, mtime_decoder,
@@ -109,7 +114,7 @@
 	Remove forward decls; no longer needed.
 	(xhdr_tab): Move to end, so that the forward decls aren't needed.
 	Add a forward declaration.
-	
+
 	Use 'bool' in new code, when appropriate.
 	* src/xheader.c (decode_record): Return bool, not int.
 	* src/common.h (read_header): Since it accepts bool, change
@@ -124,7 +129,7 @@
 
 	Minor style fixes.
 	(xheader_store): Avoid parentheses around object operand of sizeof.
-	
+
 2003-09-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
         * src/create.c (start_header): Store long file names
@@ -151,10 +156,10 @@
 	Update from gnulib modules alloca, fnmatch, getline, stdbool.
 	* m4/.cvsignore: Add utimes-null.m4.  Sort.
 
-2003-09-01  Sergey Poznyakoff 
+2003-09-01  Sergey Poznyakoff
 
 	Added initial support for creating POSIX headers.
-	
+
 	* src/common.h (MAXOCTAL11,MAXOCTAL7): New defines
 	(string_to_chars): New functions
 	(struct xheader): Changed structure
@@ -180,11 +185,11 @@
 	* m4/.cvsignore: Likewise.
 	* TODO: Minor formatting change
 
-2003-08-31  Sergey Poznyakoff 
+2003-08-31  Sergey Poznyakoff
 
 	Added initial support for POSIX extended and STAR headers
 	(only for listing/extracting).
-	
+
 	* src/xheader.c: New file.
 	* src/Makefile.am: Added xheader.c
 	* src/tar.h (struct star_header): New datatype
@@ -247,11 +252,11 @@
 	-o to comply to UNIX98 when extracting and to its previous
 	semantics otherwise.
 	(main): Call check_links if --check-links. was given.
-	
+
 2003-07-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c (print_header): Revised
-	* NEWS: Started the entry for 1.13.26 
+	* NEWS: Started the entry for 1.13.26
 	* doc/Makefile.am (tar.dvi): Fixed TEXINPUTS value.
 
 2003-07-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
@@ -274,7 +279,7 @@
 	current_trailing_slash was set (extrac03.sh,extrac04.sh tests).
 	* tests/multiv01.sh: Minor changes.
 	* m4/Makefile.am: Added missing files.
-	
+
 2003-07-05  Paul Eggert  <eggert@twinsun.com>
 
 	Finish the checkin begin yesterday.
