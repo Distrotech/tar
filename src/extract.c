@@ -81,7 +81,7 @@ extr_init (void)
 
   /* FIXME: Just make sure we can add files in directories we create.  Maybe
      should we later remove permissions we are adding, here?  */
-  newdir_umask &= ~0300;
+  newdir_umask &= ~ MODE_WXUSR;
 }
 
 /*------------------------------------------------------------------.
@@ -104,7 +104,7 @@ set_mode (char *file_name, struct stat *stat_info)
   if (!keep_old_files_option
       || (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX)))
     if (chmod (file_name, ~current_umask & stat_info->st_mode) < 0)
-      ERROR ((0, errno, _("%s: Cannot change mode to %0.4lo"),
+      ERROR ((0, errno, _("%s: Cannot change mode to %04lo"),
 	      file_name,
 	      (unsigned long) (~current_umask & stat_info->st_mode)));
 }
@@ -240,7 +240,7 @@ make_directories (char *file_name)
 	continue;
 
       *cursor = '\0';		/* truncate the path there */
-      status = mkdir (file_name, ~newdir_umask & 0777);
+      status = mkdir (file_name, ~newdir_umask & MODE_RWX);
 
       if (status == 0)
 	{
@@ -255,7 +255,7 @@ make_directories (char *file_name)
 		      (unsigned long) current_stat.st_gid));
 
 	  print_for_mkdir (file_name, cursor - file_name,
-			   ~newdir_umask & 0777);
+			   ~newdir_umask & MODE_RWX);
 	  did_something = 1;
 
 	  *cursor = '/';
@@ -321,25 +321,28 @@ maybe_recoverable (char *file_name)
 static void
 extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
 {
-  union block *data_block;
   int sparse_ind = 0;
   size_t written;
   ssize_t count;
-
-  /* FIXME: `data_block' might be used uninitialized in this function.
-     Reported by Bruno Haible.  */
 
   /* assuming sizeleft is initially totalsize */
 
   while (*sizeleft > 0)
     {
-      data_block = find_next_block ();
+      union block *data_block = find_next_block ();
       if (data_block == NULL)
 	{
 	  ERROR ((0, 0, _("Unexpected EOF on archive file")));
 	  return;
 	}
-      lseek (fd, sparsearray[sparse_ind].offset, 0);
+      if (lseek (fd, sparsearray[sparse_ind].offset, SEEK_SET) < 0)
+	{
+	  char buf[UINTMAX_STRSIZE_BOUND];
+	  ERROR ((0, errno, _("%s: lseek error at byte %s"),
+		  STRINGIFY_BIGINT (sparsearray[sparse_ind].offset, buf),
+		  name));
+	  return;
+	}
       written = sparsearray[sparse_ind++].numbytes;
       while (written > BLOCKSIZE)
 	{
@@ -371,8 +374,8 @@ extract_sparse_file (int fd, off_t *sizeleft, off_t totalsize, char *name)
       *sizeleft -= count;
       set_next_block_after (data_block);
     }
+
   free (sparsearray);
-  set_next_block_after (data_block);
 }
 
 /*----------------------------------.
@@ -642,19 +645,7 @@ Removing leading `/' from absolute path names in the archive")));
 		break;		/* FIXME: What happens, then?  */
 	      }
 
-	    /* If the file is sparse, use the sparsearray that we created
-	       before to lseek into the new file the proper amount, and to
-	       see how many bytes we want to write at that position.  */
-
-#if 0
-	    if (typeflag == GNUTYPE_SPARSE)
-	      {
-		lseek (fd, sparsearray[sparse_ind].offset, 0);
-		written = sparsearray[sparse_ind++].numbytes;
-	      }
-	    else
-#endif
-	      written = available_space_after (data_block);
+	    written = available_space_after (data_block);
 
 	    if (written > size)
 	      written = size;
@@ -690,28 +681,6 @@ Removing leading `/' from absolute path names in the archive")));
       if (to_stdout_option)
 	break;
 
-#if 0
-      if (current_header->header.isextended)
-	{
-	  union block *exhdr;
-	  int counter;
-
-	  for (counter = 0; counter < 21; counter++)
-	    {
-	      off_t offset;
-
-	      if (!exhdr->sparse_header.sp[counter].numbytes)
-		break;
-	      offset = OFF_FROM_OCT (exhdr->sparse_header.sp[counter].offset);
-	      written
-		= SIZE_FROM_OCT (exhdr->sparse_header.sp[counter].numbytes);
-	      lseek (fd, offset, 0);
-	      sstatus = full_write (fd, data_block->buffer, written);
-	      if (sstatus == written)
-		continue;
-	    }
-	}
-#endif
       status = close (fd);
       if (status < 0)
 	{
@@ -887,7 +856,8 @@ Attempting extraction of symbolic links as hard links")));
 
     again_dir:
       status = mkdir (CURRENT_FILE_NAME,
-		     (we_are_root ? 0 : 0300) | current_stat.st_mode);
+		      ((we_are_root ? 0 : MODE_WXUSR)
+		       | current_stat.st_mode));
       if (status != 0)
 	{
 	  /* If the directory creation fails, let's consider immediately the
@@ -940,9 +910,9 @@ Attempting extraction of symbolic links as hard links")));
 	}
 
     check_perms:
-      if (!we_are_root && 0300 != (0300 & current_stat.st_mode))
+      if (!we_are_root && MODE_WXUSR != (MODE_WXUSR & current_stat.st_mode))
 	{
-	  current_stat.st_mode |= 0300;
+	  current_stat.st_mode |= MODE_WXUSR;
 	  WARN ((0, 0, _("Added write and execute permission to directory %s"),
 		 CURRENT_FILE_NAME));
 	}
