@@ -299,13 +299,6 @@ badfile:
 				char *link_name = lp->name;
 
 				/* We found a link. */
-				hstat.st_size = 0;
-				header = start_header(p, &hstat);
-				if (header == NULL) 
-				  {
-				    critical_error = 1;
-				    goto badfile;
-				  }
 				while(!f_absolute_paths && *link_name == '/') {
 					static int link_warn = 0;
 
@@ -315,6 +308,16 @@ badfile:
 					}
 					link_name++;
 				}
+				if (link_name - lp->name >= NAMSIZ)
+				  write_longlink (link_name);
+
+				hstat.st_size = 0;
+				header = start_header(p, &hstat);
+				if (header == NULL) 
+				  {
+				    critical_error = 1;
+				    goto badfile;
+				  }
   				strncpy(header->header.linkname,
 					link_name,NAMSIZ);
 				if(header->header.linkname[NAMSIZ-1]) {
@@ -1340,3 +1343,14 @@ write_eot()
 	    userec(p);
 	  }
 }
+
+/* Write a LF_LONGLINK or LF_LONGNAME record. */
+void
+write_long (p)
+{
+  /* Link name won't fit, so we write
+     an LF_LONGLINK record. */
+  hstat.st_size = strlen (link_name) + 1;
+  header = start_header ("././@LongLink", &hstat);
+  header->header.linkflag = LF_NAMES;
+  finish_header (header);
