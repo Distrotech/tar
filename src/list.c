@@ -76,6 +76,9 @@ read_and (void (*do_something) (void))
   do
     {
       prev_status = status;
+      destroy_stat (&current_stat_info);
+      xheader_destroy (&extended_header);
+      
       status = read_header (false);
       switch (status)
 	{
