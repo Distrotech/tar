@@ -108,7 +108,7 @@ fi
  mt -f "${TAPE_FILE}" rewind
  rm -f "${VOLNO_FILE}"
 
- set - "${BACKUP_DIRS}"
+ set - ${BACKUP_DIRS}
  while [ $# -ne 0 ] ; do
     date="`date`"
     remotehost="`echo \"${1}\" | sed -e 's/:.*$//'`"
