@@ -224,6 +224,11 @@ PU_RMT
 AM_GNU_GETTEXT([external], [need-ngettext])
 AM_GNU_GETTEXT_VERSION(0.12.1)
 
+# Initialize the test suite.
+AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_FILES([tests/Makefile tests/atlocal]) # FIXME: tests/preset?
+AM_MISSING_PROG([AUTOM4TE], [autom4te])
+
 # Iconv
 AM_ICONV
 AC_CHECK_HEADERS(iconv.h)
@@ -261,6 +266,4 @@ AC_OUTPUT([Makefile\
            po/Makefile.in\
            scripts/Makefile\
            rmt/Makefile\
-           src/Makefile\
-           tests/Makefile\
-           tests/preset])
+           src/Makefile])
