@@ -112,6 +112,40 @@ confirm (const char *message_action, const char *message_name)
     return reply == 'y' || reply == 'Y';
   }
 }
+
+void
+set_archive_format (char *name)
+{
+  static struct fmttab {
+    char *name;
+    enum archive_format fmt;
+  } fmttab[] = {
+    { "v7",      V7_FORMAT },
+    { "oldgnu",  OLDGNU_FORMAT },	
+    { "posix",   POSIX_FORMAT },
+#if 0 /* not fully supported yet */
+    { "star",    STAR_FORMAT },
+#endif
+    { "gnu",     GNU_FORMAT },
+    NULL
+  };
+  struct fmttab *p;
+  enum archive_format fmt;
+  
+  for (p = fmttab; p->name; p++)
+    {
+      if (strcmp (p->name, name) == 0)
+	{
+	  fmt = p->fmt;
+	  break;
+	}
+    }
+
+  if (archive_format != DEFAULT_FORMAT && archive_format != fmt)
+    USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
+  
+  archive_format = fmt;
+}
 
 /* Options.  */
 
@@ -131,6 +165,7 @@ enum
   DELETE_OPTION,
   EXCLUDE_OPTION,
   FORCE_LOCAL_OPTION,
+  FORMAT_OPTION,
   GROUP_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_FAILED_READ_OPTION,
@@ -197,6 +232,7 @@ static struct option long_options[] =
   {"file", required_argument, 0, 'f'},
   {"files-from", required_argument, 0, 'T'},
   {"force-local", no_argument, 0, FORCE_LOCAL_OPTION},
+  {"format", required_argument, 0, FORMAT_OPTION},
   {"get", no_argument, 0, 'x'},
   {"group", required_argument, 0, GROUP_OPTION},
   {"gunzip", no_argument, 0, 'z'},
@@ -368,10 +404,16 @@ Device blocking:\n\
       fputs (_("\
 \n\
 Archive format selection:\n\
+      --format=FMTNAME               create archive of the given format.\n\
+                                     FMTNAME is one of the following:\n\
+                                     v7        old V7 tar format\n\
+                                     oldgnu    GNU format as per tar <= 1.12\n\
+                                     posix     POSIX 1003.1-2001 tar format\n\
+                                     gnu       GNU format\n\
+      --old-archive, --portability   same as --format=v7\n\
+      --posix                        same as --format=posix\n\
   -V, --label=NAME                   create archive with volume name NAME\n\
               PATTERN                at list/extract time, a globbing PATTERN\n\
-      --old-archive, --portability   write a V7 format archive\n\
-      --posix                        write a POSIX format archive\n\
   -j, --bzip2                        filter the archive through bzip2\n\
   -z, --gzip, --ungzip               filter the archive through gzip\n\
   -Z, --compress, --uncompress       filter the archive through compress\n\
@@ -896,6 +938,10 @@ decode_options (int argc, char **argv)
 	force_local_option = 1;
 	break;
 
+      case FORMAT_OPTION:
+	set_archive_format (optarg);
+	break;
+	
       case INDEX_FILE_OPTION:
 	index_file_name = optarg;
 	break;
@@ -979,17 +1025,7 @@ decode_options (int argc, char **argv)
 	break;
 
       case POSIX_OPTION:
-#if OLDGNU_COMPATIBILITY
-	if (archive_format == DEFAULT_FORMAT)
-	  archive_format = GNU_FORMAT;
-	else if (archive_format != GNU_FORMAT)
-	  USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
-#else
-	if (archive_format == DEFAULT_FORMAT)
-	  archive_format = POSIX_FORMAT;
-	else if (archive_format != POSIX_FORMAT)
-	  USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
-#endif
+	set_archive_format ("posix");
 	break;
 
       case PRESERVE_OPTION:
@@ -1109,10 +1145,7 @@ decode_options (int argc, char **argv)
 		xrealloc (archive_name_array,
 			  sizeof (const char *) * allocated_archive_names);
 	    }
-	  archive_name_array[archive_names++] = buf;
-
-	  /* FIXME: How comes this works for many archives when buf is
-	     not xstrdup'ed?  */
+	  archive_name_array[archive_names++] = strdup (buf);
 	}
 	break;
 
@@ -1138,10 +1171,7 @@ decode_options (int argc, char **argv)
       if (subcommand_option == CREATE_SUBCOMMAND)
 	{
 	  /* GNU Tar <= 1.13 compatibility */
-	  if (archive_format == DEFAULT_FORMAT)
-	    archive_format = V7_FORMAT;
-	  else if (archive_format != V7_FORMAT)
-	    USAGE_ERROR ((0, 0, _("Conflicting archive format options")));
+	  set_archive_format ("v7");
 	}
       else
 	{
@@ -1179,13 +1209,7 @@ see the file named COPYING for details."));
   /* Derive option values and check option consistency.  */
 
   if (archive_format == DEFAULT_FORMAT)
-    {
-#if OLDGNU_COMPATIBILITY
-      archive_format = OLDGNU_FORMAT;
-#else
-      archive_format = GNU_FORMAT;
-#endif
-    }
+    archive_format = GNU_FORMAT;
 
   if (archive_format == GNU_FORMAT && getenv ("POSIXLY_CORRECT"))
     archive_format = POSIX_FORMAT;
@@ -1411,3 +1435,4 @@ destroy_stat (struct tar_stat_info *st)
   free (st->gname);
   memset (st, 0, sizeof (*st));
 }
+
