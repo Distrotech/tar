@@ -532,8 +532,10 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 
   stat_info->stat.st_mode = MODE_FROM_HEADER (header->header.mode);
   stat_info->stat.st_mtime = TIME_FROM_HEADER (header->header.mtime);
-  assign_string (&stat_info->uname, header->header.uname);
-  assign_string (&stat_info->gname, header->header.gname);
+  assign_string (&stat_info->uname,
+		 header->header.uname[0] ? header->header.uname : NULL);
+  assign_string (&stat_info->gname,
+		 header->header.gname[0] ? header->header.gname : NULL);
   stat_info->devmajor = MAJOR_FROM_HEADER (header->header.devmajor);
   stat_info->devminor = MINOR_FROM_HEADER (header->header.devminor);
 
