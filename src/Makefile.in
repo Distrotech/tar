@@ -115,10 +115,10 @@ tar:	$(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
 
 rmt:	rmt.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $rmt.c<
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(srcdir)/rmt.c
 
 tar.info: tar.texinfo
-	makeinfo $tar.texinfo<
+	makeinfo $(srcdir)/tar.texinfo
 
 install: all
 	$(INSTALL_PROGRAM) tar $(bindir)/$(binprefix)tar
