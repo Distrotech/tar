@@ -1,4 +1,4 @@
-#serial 5
+#serial 6
 
 dnl From Paul Eggert.
 
@@ -7,7 +7,7 @@ AC_PREREQ(2.50)
 # Define uintmax_t to `unsigned long' or `unsigned long long'
 # if <inttypes.h> does not exist.
 
-AC_DEFUN(jm_AC_TYPE_UINTMAX_T,
+AC_DEFUN([jm_AC_TYPE_UINTMAX_T],
 [
   AC_CHECK_TYPE(uintmax_t, ,
     [AC_REQUIRE([jm_AC_TYPE_UNSIGNED_LONG_LONG])
@@ -15,5 +15,5 @@ AC_DEFUN(jm_AC_TYPE_UINTMAX_T,
        && ac_type='unsigned long long' \
        || ac_type='unsigned long'
      AC_DEFINE_UNQUOTED(uintmax_t, $ac_type,
-       [Define to the widest unsigned integer type if standard headers do not declare.])])
+       [Define to the widest unsigned type if standard headers do not declare.])])
 ])
