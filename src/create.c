@@ -152,7 +152,7 @@ to_chars (int negative, uintmax_t value, size_t valsize,
       if (! warned_once)
 	{
 	  warned_once = 1;
-	  WARN ((0, 0, _("Generating negative octal headers\n")));
+	  WARN ((0, 0, _("Generating negative octal headers")));
 	}
       where[size - 1] = '\0';
       to_octal (value & MAX_VAL_WITH_DIGITS (valsize * CHAR_BIT, 1),
@@ -1555,6 +1555,13 @@ dump_file (char *p, int top_level, dev_t parent_device)
       else if (S_ISFIFO (current_stat.st_mode)
 	       || S_ISSOCK (current_stat.st_mode))
 	type = FIFOTYPE;
+#ifdef S_ISDOOR
+      else if (S_ISDOOR (current_stat.st_mode))
+	{
+	  WARN ((0, 0, _("%s: door ignored"), p));
+	  return;
+	}
+#endif
       else
 	goto unknown;
     }
