@@ -183,14 +183,17 @@ for gnulib_file in $gnulib_files; do
 
   case $gnulib_file in
   m4/codeset.m4) continue;;
-  m4/glibc21.m4) continue;;
   m4/intdiv0.m4) continue;;
-  m4/inttypes_h.m4) continue;;
-  m4/inttypes.m4) continue;;
   m4/inttypes-pri.m4) continue;;
   m4/isc-posix.m4) continue;;
   m4/lcmessage.m4) continue;;
   m4/onceonly_2_57.m4) dest=m4/onceonly.m4;;
+  # These will be overwritten by autopoint, which still uses
+  # old jm_.* macro names, so we have to keep both copies.
+  m4/ulonglong.m4) dest=m4/ulonglong_gl.m4;;
+  m4/inttypes_h.m4) dest=m4/inttypes_h_gl.m4;;
+  m4/stdint_h.m4) dest=m4/stdint_h_gl.m4;;
+  m4/uintmax_t.m4) dest=m4/uintmax_t_gl.m4;;
   esac
 
   rm -f $dest &&
@@ -198,6 +201,23 @@ for gnulib_file in $gnulib_files; do
   cp -p $GNULIB_SRCDIR/$gnulib_file $dest || exit
 done
 
+echo "$0: Creating m4/gnulib.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([tar_GNULIB],["
+ for gnulib_module in $gnulib_modules; do
+    echo "# $gnulib_module"
+    $GNULIB_SRCDIR/gnulib-tool --extract-autoconf-snippet $gnulib_module
+ done | sed '/AM_GNU_GETTEXT/d'
+ echo "])") > ./m4/gnulib.m4
+
+echo "$0: Creating lib/Makefile.am"
+(cat lib/Makefile.tmpl
+ 
+ for gnulib_module in $gnulib_modules; do
+    echo "# $gnulib_module"
+    $GNULIB_SRCDIR/gnulib-tool --extract-automake-snippet $gnulib_module
+ done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
 
 # Get translations.
 
