@@ -152,7 +152,7 @@ create_archive()
 	open_archive(0);		/* Open for writing */
 
 	if(f_gnudump) {
-		char *buf = ck_malloc(NAME_MAX);
+		char *buf = ck_malloc(PATH_MAX);
 		char *q,*bufp;
 
 		collect_and_sort_names();
@@ -1219,6 +1219,8 @@ start_header(name, st)
 	if (f_standard) {
 		header->header.linkflag = LF_NORMAL;	/* New default */
 		strcpy(header->header.magic, TMAGIC);	/* Mark as Unix Std */
+		/* Fill in the POSIX TVERSION field after magic.  */
+		header->header.magic[6] = header->header.magic[7] = '0';
 		finduname(header->header.uname, st->st_uid);
 		findgname(header->header.gname, st->st_gid);
 	}
