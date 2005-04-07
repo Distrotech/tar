@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004,2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,8 +33,7 @@ AFILE=`awk 'BEGIN { for (i = 0; i < 100; i++) printf "a"; exit; }'`
 BFILE=`awk 'BEGIN { for (i = 0; i < 101; i++) printf "b"; exit; }'`
 
 cat > ../experr <<EOF
-tar: $BFILE: file name too long to be stored in a GNU multivolume header
-tar: Error is not recoverable: exiting now
+tar: $BFILE: file name too long to be stored in a GNU multivolume header, truncated
 EOF
 
 cat > ../expout <<EOF
@@ -52,7 +51,7 @@ echo separator
 genfile --length 15360 > $BFILE
 tar -M -L 10 -c -f arch.1 -f arch.2 $BFILE 
 ],
-[2],
+[0],
 [expout],
 [experr],
 [],[],[gnu, oldgnu])
