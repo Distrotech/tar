@@ -713,7 +713,7 @@ extract_file (char *file_name, int typeflag)
       {
 	if (multi_volume_option)
 	  {
-	    assign_string (&save_name, current_stat_info.file_name);
+	    assign_string (&save_name, current_stat_info.orig_file_name);
 	    save_totsize = current_stat_info.stat.st_size;
 	    save_sizeleft = size;
 	  }
@@ -1072,7 +1072,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
 
     default:
       WARN ((0, 0,
-	     _("%s: Unknown file type '%c', extracted as normal file"),
+	     _("%s: Unknown file type `%c', extracted as normal file"),
 	     quotearg_colon (file_name), typeflag));
       *fun = extract_file;
     }
