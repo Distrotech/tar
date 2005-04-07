@@ -160,9 +160,9 @@ struct zip_magic
 {
   enum compress_type type;
   size_t length;
-  char magic[sizeof "BZh" - 1];
-  char program[sizeof "compress"];
-  char option[sizeof "-Z"];
+  char *magic;
+  char *program;
+  char *option;
 };
 
 static struct zip_magic const magic[] = {
@@ -653,8 +653,8 @@ flush_write (void)
 	record_start++;
 
       if (strlen (real_s_name) > NAME_FIELD_SIZE)
-	FATAL_ERROR ((0, 0,
-		      _("%s: file name too long to be stored in a GNU multivolume header"),
+	WARN ((0, 0,
+	      _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
 		      quotearg_colon (real_s_name)));
 
       memset (record_start, 0, BLOCKSIZE);
