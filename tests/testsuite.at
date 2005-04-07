@@ -97,6 +97,7 @@ m4_include([long01.at])
 m4_include([multiv01.at])
 m4_include([multiv02.at])
 m4_include([multiv03.at])
+m4_include([multiv04.at])
 
 m4_include([old.at])
 

@@ -71,6 +71,7 @@ TESTSUITE_AT = \
  multiv01.at\
  multiv02.at\
  multiv03.at\
+ multiv04.at\
  old.at\
  options.at\
  options02.at\
