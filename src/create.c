@@ -859,7 +859,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 
       if (multi_volume_option)
 	{
-	  assign_string (&save_name, st->file_name);
+	  assign_string (&save_name, st->orig_file_name);
 	  save_sizeleft = size_left;
 	  save_totsize = st->stat.st_size;
 	}

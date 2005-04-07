@@ -222,7 +222,7 @@ list_archive (void)
       set_next_block_after (current_header);
       if (multi_volume_option)
 	{
-	  assign_string (&save_name, current_stat_info.file_name);
+	  assign_string (&save_name, current_stat_info.orig_file_name);
 	  save_totsize = current_stat_info.stat.st_size;
 	}
       for (size = current_stat_info.stat.st_size; size > 0; size -= written)
@@ -258,7 +258,7 @@ list_archive (void)
     }
 
   if (multi_volume_option)
-    assign_string (&save_name, current_stat_info.file_name);
+    assign_string (&save_name, current_stat_info.orig_file_name);
 
   skip_member ();
 
@@ -1309,7 +1309,7 @@ skip_member (void)
   char save_typeflag = current_header->header.typeflag;
   set_next_block_after (current_header);
 
-  assign_string (&save_name, current_stat_info.file_name);
+  assign_string (&save_name, current_stat_info.orig_file_name);
 
   if (current_stat_info.is_sparse)
     sparse_skip_file (&current_stat_info);
