@@ -56,6 +56,8 @@ diff_init (void)
 {
   void *ptr;
   diff_buffer = page_aligned_alloc (&ptr, record_size);
+  if (listed_incremental_option)
+    read_directory_file ();
 }
 
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
@@ -263,7 +265,8 @@ diff_file ()
 		{
 		  if (multi_volume_option)
 		    {
-		      assign_string (&save_name, current_stat_info.file_name);
+		      assign_string (&save_name, 
+                                     current_stat_info.orig_file_name);
 		      save_totsize = current_stat_info.stat.st_size;
 		      /* save_sizeleft is set in read_and_process.  */
 		    }
@@ -365,7 +368,7 @@ diff_dumpdir ()
 
   if (multi_volume_option)
     {
-      assign_string (&save_name, current_stat_info.file_name);
+      assign_string (&save_name, current_stat_info.orig_file_name);
       save_totsize = current_stat_info.stat.st_size;
       /* save_sizeleft is set in read_and_process.  */
     }
@@ -433,7 +436,7 @@ diff_multivol ()
 
   if (multi_volume_option)
     {
-      assign_string (&save_name, current_stat_info.file_name);
+      assign_string (&save_name, current_stat_info.orig_file_name);
       save_totsize = stat_data.st_size;
       /* save_sizeleft is set in read_and_process.  */
     }
@@ -468,7 +471,7 @@ diff_archive (void)
   switch (current_header->header.typeflag)
     {
     default:
-      ERROR ((0, 0, _("%s: Unknown file type '%c', diffed as normal file"),
+      ERROR ((0, 0, _("%s: Unknown file type `%c', diffed as normal file"),
 	      quotearg_colon (current_stat_info.file_name),
 	      current_header->header.typeflag));
       /* Fall through.  */
