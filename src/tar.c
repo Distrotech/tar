@@ -381,7 +381,7 @@ static struct argp_option options[] = {
   {"file", 'f', N_("ARCHIVE"), 0,
    N_("use archive file or device ARCHIVE"), 61 },
   {"force-local", FORCE_LOCAL_OPTION, 0, 0,
-   N_("archive file is local even if has a colon"), 61 },
+   N_("archive file is local even if it has a colon"), 61 },
   {"rmt-command", RMT_COMMAND_OPTION, N_("COMMAND"), 0,
    N_("use given rmt COMMAND instead of rmt"), 61 }, 
   {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
@@ -418,7 +418,7 @@ static struct argp_option options[] = {
   {"blocking-factor", 'b', N_("BLOCKS"), 0,
    N_("BLOCKS x 512 bytes per record"), 71 },
   {"record-size", RECORD_SIZE_OPTION, N_("NUMBER"), 0,
-   N_("SIZE bytes per record, multiple of 512"), 71 },
+   N_("NUMBER of bytes per record, multiple of 512"), 71 },
   {"ignore-zeros", 'i', 0, 0,
    N_("ignore zeroed blocks in archive (means EOF)"), 71 },
   {"read-full-records", 'B', 0, 0,
@@ -467,11 +467,11 @@ static struct argp_option options[] = {
    N_("Local file selection:"), 90 },
 
   {"add-file", ARGP_KEY_ARG, N_("FILE"), 0,
-   N_("add given file to the archive (useful if FILE name starts with a dash)"), 91},
+   N_("add given FILE to the archive (useful if its name starts with a dash)"), 91},
   {"directory", 'C', N_("DIR"), 0,
    N_("change to directory DIR"), 91 },
   {"files-from", 'T', N_("FILE"), 0,
-   N_("get names to extract or create from file FILE"), 91 },
+   N_("get names to extract or create from FILE"), 91 },
   {"null", NULL_OPTION, 0, 0,
    N_("-T reads null-terminated names, disable -C"), 91 },
   {"unquote", UNQUOTE_OPTION, 0, 0,
@@ -489,13 +489,13 @@ static struct argp_option options[] = {
   {"anchored", ANCHORED_OPTION, 0, 0,
    N_("exclude patterns match file name start"), 91 },
   {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match after any / (default)"), 91 },
+   N_("exclude patterns match after any `/' (default)"), 91 },
   {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
    N_("exclusion is case sensitive (default)"), 91 },
   {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
    N_("exclude patterns are plain strings"), 91 },
   {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards do not match '/'"), 91 },
+   N_("exclude pattern wildcards do not match `/'"), 91 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), 91 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
@@ -506,7 +506,7 @@ static struct argp_option options[] = {
   {"absolute-names", 'P', 0, 0,
    N_("don't strip leading `/'s from file names"), 91 },
   {"dereference", 'h', 0, 0,
-   N_("dump instead the files symlinks point to"), 91 },
+   N_("follow symlinks; archive and dump the files they point to"), 91 },
   {"starting-file", 'K', N_("MEMBER-NAME"), 0,
    N_("begin at member MEMBER-NAME in the archive"), 91 },
   {"strip-components", STRIP_COMPONENTS_OPTION, N_("NUMBER"), 0,
@@ -524,7 +524,7 @@ static struct argp_option options[] = {
   {"wildcards", WILDCARDS_OPTION, 0, 0,
    N_("exclude patterns use wildcards (default)"), 91 },
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards match '/' (default)"), 91 },
+   N_("exclude pattern wildcards match `/' (default)"), 91 },
 
   {NULL, 0, NULL, 0,
    N_("Informative output:"), 100 },
@@ -1388,7 +1388,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    break;
 
 	  default:
-	    argp_error (state, _("Unknown density: '%c'"), arg[0]);
+	    argp_error (state, _("Unknown density: `%c'"), arg[0]);
 	  }
 	sprintf (cursor, "%d", device);
 	
