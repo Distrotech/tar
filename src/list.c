@@ -369,7 +369,8 @@ read_header (bool raw_extended_headers)
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK
 	  || header->header.typeflag == XHDTYPE
-	  || header->header.typeflag == XGLTYPE)
+	  || header->header.typeflag == XGLTYPE
+	  || header->header.typeflag == SOLARIS_XHDTYPE)
 	{
 	  if (raw_extended_headers)
 	    return HEADER_SUCCESS_EXTENDED;
@@ -427,7 +428,8 @@ read_header (bool raw_extended_headers)
 
 	      *bp = '\0';
 	    }
-	  else if (header->header.typeflag == XHDTYPE)
+	  else if (header->header.typeflag == XHDTYPE
+		   || header->header.typeflag == SOLARIS_XHDTYPE)
 	    xheader_read (header, OFF_FROM_HEADER (header->header.size));
 	  else if (header->header.typeflag == XGLTYPE)
 	    {
