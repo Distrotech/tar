@@ -189,6 +189,9 @@ struct oldgnu_header
 /* This file is a tape/volume header.  Ignore it on extraction.  */
 #define GNUTYPE_VOLHDR 'V'
 
+/* Solaris extended header */
+#define SOLARIS_XHDTYPE 'X'
+
 
 /* Jörg Schilling star header */
 
