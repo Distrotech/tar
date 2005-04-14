@@ -1,3 +1,8 @@
+2005-04-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/list.c: Handle Solaris 'X' type flag
+	* src/tar.h (SOLARIS_XHDTYPE): New define
+
 2005-04-06  Sergey Poznyakoff  <gray@mirddin.farlep.net>
 
 	* src/tar.c: Minor fixes to text messages. Proposed by Benno
