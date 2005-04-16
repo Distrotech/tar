@@ -34,7 +34,7 @@ was not processed correctly.
 
 version 1.15.1 - Sergey Poznyakoff, 2004-12-21
 
-This version fixes a bug introduced in 1.15 which caused 
+This version fixes a bug introduced in 1.15 which caused
 tar to refuse to extract files from standard input.
 
 
@@ -69,7 +69,7 @@ the file names had their prefixes stripped off.
 automatically on archive creation. Cache directories are those
 containing a standardized tag file, as specified at:
 
-	http://www.brynosaurus.com/cachedir/spec.html	
+	http://www.brynosaurus.com/cachedir/spec.html
 
 * New configure option --with-rmt allows to specify full path name to
 the `rmt' utility. This supercedes DEFAULT_RMT_COMMAND variable
@@ -93,12 +93,12 @@ lead to removing the already extracted copy. Preserve the first
 extracted copy in such cases.
 ** Restore script was passing improper argument to tar --listed option (which
 didn't affect the functionality, but was logically incorrect).
-** Fixed verification of created archives. 
+** Fixed verification of created archives.
 ** Fixed unquoting of file names containing backslash escapes (previous
 versions failed to recognize \a and \v).
 ** When attempting to delete a non-existing member from the archive, previous
 versions of tar used to overwrite last archive block with zeroes.
-  
+
 
 version 1.14 - Sergey Poznyakoff, 2004-05-11
 
@@ -126,7 +126,7 @@ version 1.14 - Sergey Poznyakoff, 2004-05-11
   with previous releases, however such usage is strongly deprecated as
   the option will change to its UNIX98 semantics in the future releases.
 
-* New option --occurrence[=N] can be used in conjunction with one of 
+* New option --occurrence[=N] can be used in conjunction with one of
   the subcommands --delete, --diff, --extract or --list when a list of
   files is given either on the command line or via -T option. This
   option instructs tar to process only the Nth occurrence of each named
@@ -157,8 +157,8 @@ DEFAULT_RMT_COMMAND=/etc/rmt.
 
 Notice also that the full path name of the "rmt" utility to
 use can be set at runtime, by giving option --rmt-command to
-tar. 
-      
+tar.
+
 * Removed obsolete command line options:
 ** --absolute-paths superseded by --absolute-names
 ** --block-compress is not needed any longer
@@ -171,7 +171,7 @@ tar.
 * New message translations fi (Finnish), gl (Galician), hr (Croatian),
   hu (Hungarian), ms (Malaysian), nb (Norwegian), ro (Romanian), sk
   (Slovak), zh_CN (Chinese simplified), zh_TW (Chinese traditional).
-  The code 'no' for Norwegian (Bokmål) has been withdrawn; use 'nb' instead.
+  The code 'no' for Norwegian (BokmÃ¥l) has been withdrawn; use 'nb' instead.
 
 * Bug fixes.
 
@@ -229,7 +229,7 @@ version 1.13.20 - Paul Eggert, 2001-08-27
   The translation for Korean has been withdrawn due to encoding errors.
   It will be reissued once those are fixed.
 
-  
+
 version 1.13.19 - Paul Eggert, 2001-01-13
 
 * The -I option has been withdrawn, as it was buggy and confusing.
@@ -238,7 +238,7 @@ version 1.13.19 - Paul Eggert, 2001-01-13
 * With an option like -N DATE, if DATE starts with "/" or ".", it is taken
   to be a file name; the last-modified time of that file is used as the date.
 
-  
+
 version 1.13.18 - Paul Eggert, 2000-10-29
 
 * Some security problems have been fixed.  `tar -x' now modifies only
@@ -266,7 +266,7 @@ version 1.13.18 - Paul Eggert, 2000-10-29
 
 * This version of tar works best with GNU gzip test version 1.3 or later.
   Please see <ftp://alpha.gnu.org/gnu/gzip/>.
-  
+
 * `tar --delete -f -' now works again.
 
 
@@ -319,13 +319,13 @@ version 1.13.16 - Paul Eggert, 1999-12-13.
 * tar now ignores socket files when creating an archive.
   Previously tar archived sockets as fifos, which caused problems.
 
-  
+
 version 1.13.15 - Paul Eggert, 1999-12-03.
 
 * If a file's ctime changes when being archived, report an error.
   Previously tar looked at mtime, which missed some errors.
 
-  
+
 version 1.13.14 - Paul Eggert, 1999-11-07.
 
 * New translations ja, pt_BR.

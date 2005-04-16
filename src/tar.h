@@ -1,7 +1,7 @@
 /* GNU tar Archive Format description.
 
    Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   2000, 2001, 2003 Free Software Foundation, Inc.
+   2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -193,7 +193,7 @@ struct oldgnu_header
 #define SOLARIS_XHDTYPE 'X'
 
 
-/* Jörg Schilling star header */
+/* JÃ¶rg Schilling star header */
 
 struct star_header
 {				/* byte offset */
@@ -287,17 +287,17 @@ struct tar_stat_info
   unsigned long atime_nsec;
   unsigned long mtime_nsec;
   unsigned long ctime_nsec;
-  
+
   off_t archive_file_size;  /* Size of file as stored in the archive.
 			       Equals stat.st_size for non-sparse files */
 
-  bool   is_sparse;         /* Is the file sparse */ 
-  
+  bool   is_sparse;         /* Is the file sparse */
+
   size_t sparse_map_avail;  /* Index to the first unused element in
 			       sparse_map array. Zero if the file is
 			       not sparse */
   size_t sparse_map_size;   /* Size of the sparse map */
-  struct sp_array *sparse_map; 
+  struct sp_array *sparse_map;
 };
 
 union block

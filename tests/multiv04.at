@@ -20,7 +20,7 @@
 
 # Problem: Tar was not able to match directory name if the directory
 # member was split between two volumes
-# References: Jörg Schilling pretends to have reported this two
+# References: JÃ¶rg Schilling pretends to have reported this two
 # years ago (<42551FF2.nail98011FRAT@burner>).
 
 # Test idea:
@@ -62,7 +62,3 @@ block 35: ** Block of NULs **
 [],[],[gnu, oldgnu])
 
 AT_CLEANUP
-
-
-
-

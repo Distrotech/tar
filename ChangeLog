@@ -26,14 +26,14 @@
 	* src/create.c: Assign orig_file_name
 	to save_name uniformly over the program. This fixes matching
 	directory names at the start of an archive volume.
-	* src/list.c: Likewise	
+	* src/list.c: Likewise
 
 	* tests/multiv03.at: Modified to match the new behavior
 	* tests/multiv04.at: New file. Test splittind directory members between
 	the archive volumes.
 	* tests/Makefile.am: Add multiv04.at
 	* tests/testsuite.at: Likewise.
-	
+
 2005-04-04  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* configure.ac (AC_CONFIG_AUX_DIR): Rename from config to build-aux,
@@ -1064,8 +1064,8 @@
 2004-04-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac: Fixed test for iconv_t
-	* src/rmt.h: Bugfix by Jürgen Weigert
-	* THANKS: Add Jürgen Weigert
+	* src/rmt.h: Bugfix by JÃ¼rgen Weigert
+	* THANKS: Add JÃ¼rgen Weigert
 	* tests/star/README: Fixed typo
 
 2004-04-04  Paul Eggert  <eggert@twinsun.com>
