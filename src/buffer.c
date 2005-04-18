@@ -73,7 +73,6 @@ static bool hit_eof;
 static int checkpoint;
 
 static bool read_full_records = false;
-static bool reading_from_pipe = false;
 
 /* We're reading, but we just read the last block and it's time to update.
    Declared in update.c
@@ -182,21 +181,17 @@ enum compress_type
 check_compressed_archive ()
 {
   struct zip_magic const *p;
-  bool sfr, srp;
+  bool sfr;
 
   /* Prepare global data needed for find_next_block: */
   record_end = record_start; /* set up for 1st record = # 0 */
   sfr = read_full_records;
   read_full_records = true; /* Suppress fatal error on reading a partial
 			       record */
-  srp = reading_from_pipe;
-  reading_from_pipe = true; /* Suppress warning message on reading a partial
-			       record */
   find_next_block ();
 
   /* Restore global values */
   read_full_records = sfr;
-  reading_from_pipe = srp;
 
   if (tar_checksum (record_start, true) == HEADER_SUCCESS)
     /* Probably a valid header */
@@ -236,7 +231,7 @@ open_compressed_archive ()
       /* Open compressed archive */
       use_compress_program_option = compress_program (type);
       child_pid = sys_child_open_for_uncompress ();
-      read_full_records = reading_from_pipe = true;
+      read_full_records = true;
     }
 
   records_read = 0;
@@ -406,7 +401,6 @@ open_archive (enum access_mode wanted_access)
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
   read_full_records = read_full_records_option;
-  reading_from_pipe = false;
 
   records_read = 0;
 
@@ -416,7 +410,7 @@ open_archive (enum access_mode wanted_access)
 	{
 	case ACCESS_READ:
 	  child_pid = sys_child_open_for_uncompress ();
-	  read_full_records = reading_from_pipe = true;
+	  read_full_records = true;
 	  record_end = record_start; /* set up for 1st record = # 0 */
 	  break;
 
@@ -760,20 +754,7 @@ short_read (size_t status)
 	  archive_read_error ();
 
       if (status == 0)
-	{
-	  if (!reading_from_pipe)
-	    {
-	      char buf[UINTMAX_STRSIZE_BOUND];
-
-	      WARN((0, 0,
-		    ngettext ("Read %s byte from %s",
-			      "Read %s bytes from %s",
-			      record_size - left),
-		    STRINGIFY_BIGINT (record_size - left, buf),
-		    *archive_name_cursor));
-	    }
-	  break;
-	}
+	break;
 
       if (! read_full_records)
 	{

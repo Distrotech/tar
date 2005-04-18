@@ -1,3 +1,14 @@
+2005-04-18  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/buffer.c (reading_from_pipe): Remove.  All uses removed.
+	(short_read): Don't warn about short reads; they're normal.
+	* tests/shortrec.at: New file.
+	* tests/testsuite.at: Include it.
+
+	* bootstrap (gnulib_modules): Don't create a file modlist.tmp, as
+	it is sometimes left behind as a garbage file (maybe due to the
+	multiple traps?).
+
 2005-04-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/list.c: Handle Solaris 'X' type flag
