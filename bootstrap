@@ -162,12 +162,16 @@ checkout() {
   fi
 }
 
-# Prepare temporary module list
-cat /dev/null > modlist.tmp
-trap 'rm -f modlist.tmp' 0 1 2 13 15
+gnulib_modules=
+newline='
+'
 
 get_modules() {
-	sed '/^[ 	]*#/d;/^[ 	]*$/d' $* >> modlist.tmp
+  new_gnulib_modules=`sed '/^[	 ]*#/d; /^[	 ]*$/d' $*`
+  case $gnulib_modules,$new_gnulib_modules in
+  ?*,?*) new_gnulib_modules=$newline$new_gnulib_modules;;
+  esac
+  gnulib_modules=$gnulib_modules$new_gnulib_modules
 }
 
 # Get paxutils files
@@ -223,7 +227,7 @@ esac
 
 get_modules gnulib.modules
 
-gnulib_modules=`sort -u modlist.tmp`
+gnulib_modules=`echo "$gnulib_modules" | sort -u`
 previous_gnulib_modules=
 while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
   previous_gnulib_modules=$gnulib_modules
