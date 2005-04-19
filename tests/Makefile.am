@@ -79,6 +79,7 @@ TESTSUITE_AT = \
  recurse.at\
  same-order01.at\
  same-order02.at\
+ shortrec.at\
  sparse01.at\
  sparse02.at\
  volume.at\
