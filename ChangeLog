@@ -1,3 +1,7 @@
+2005-04-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* tests/Makefile.am: Add shortrec.at.
+
 2005-04-18  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/buffer.c (reading_from_pipe): Remove.  All uses removed.
