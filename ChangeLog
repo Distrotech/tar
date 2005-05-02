@@ -1,3 +1,12 @@
+2005-05-02  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to recent gnulib changes.
+	* lib/.cvsignore: Add dup-safer.c, fd-safer.c, unistd-safer.h.
+	* src/common.h (initial_umask): New var.
+	* src/create.c (start_ueader): Use it, and adjust to new modechange
+	API.
+	* src/tar.c (parse_opt): Set it, and adjust to new modechange API.
+
 2005-04-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* tests/Makefile.am: Add shortrec.at.
