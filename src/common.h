@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -198,6 +198,9 @@ GLOBAL const char *listed_incremental_option;
 
 /* Specified mode change string.  */
 GLOBAL struct mode_change *mode_option;
+
+/* Initial umask, if needed for mode change string.  */
+GLOBAL mode_t initial_umask;
 
 GLOBAL bool multi_volume_option;
 
@@ -540,7 +543,7 @@ enum remove_option
      (RECURSIVE_REMOVE_OPTION value), which removes them in
      prepare_to_extract() phase. However, with the addition of more
      meta-info to the incremental dumps, this should become unnecessary */
-  WANT_DIRECTORY_REMOVE_OPTION  
+  WANT_DIRECTORY_REMOVE_OPTION
 };
 int remove_any_file (const char *, enum remove_option);
 bool maybe_backup_file (const char *, int);
