@@ -50,8 +50,8 @@ static Hash_table *directory_table;
 #endif
 
 /* Calculate the hash of a directory.  */
-static unsigned
-hash_directory (void const *entry, unsigned n_buckets)
+static size_t
+hash_directory (void const *entry, size_t n_buckets)
 {
   struct directory const *directory = entry;
   return hash_string (directory->name, n_buckets);
@@ -520,7 +520,7 @@ purge_directory (char const *directory_name)
 	      stat_diag (p);
 	      WARN((0, 0, _("%s: Not purging directory: unable to stat"),
 		    quotearg_colon (p)));
-	      continue; 
+	      continue;
 	    }
 	  else if (one_file_system_option && st.st_dev != root_device)
 	    {
@@ -529,7 +529,7 @@ purge_directory (char const *directory_name)
 		    quotearg_colon (p)));
 	      continue;
 	    }
-	    
+
 	  if (! interactive_option || confirm ("delete", p))
 	    {
 	      if (verbose_option)

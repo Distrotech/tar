@@ -266,20 +266,20 @@ name_next (int change_dirs)
       if (name_buffer_length < source_len)
 	{
 	  do
-	    { 	
+	    {
 	      name_buffer_length *= 2;
 	      if (! name_buffer_length)
 		xalloc_die ();
 	    }
 	  while (name_buffer_length < source_len);
-	  
+
 	  free (name_buffer);
 	  name_buffer = xmalloc (name_buffer_length + 2);
 	}
       strcpy (name_buffer, source);
 
       /* Zap trailing slashes.  */
-      
+
       cursor = name_buffer + strlen (name_buffer) - 1;
       while (cursor > name_buffer && ISSLASH (*cursor))
 	*cursor-- = '\0';
@@ -867,8 +867,8 @@ excluded_name (char const *name)
 /* Hash tables of strings.  */
 
 /* Calculate the hash of a string.  */
-static unsigned
-hash_string_hasher (void const *name, unsigned n_buckets)
+static size_t
+hash_string_hasher (void const *name, size_t n_buckets)
 {
   return hash_string (name, n_buckets);
 }

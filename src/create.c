@@ -1211,8 +1211,8 @@ create_archive (void)
 
 
 /* Calculate the hash of a link.  */
-static unsigned
-hash_link (void const *entry, unsigned n_buckets)
+static size_t
+hash_link (void const *entry, size_t n_buckets)
 {
   struct link const *l = entry;
   uintmax_t num = l->dev ^ l->ino;
