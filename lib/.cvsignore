@@ -33,6 +33,7 @@ chown.c
 config.charset
 dirname.c
 dirname.h
+dup-safer.c
 error.c
 error.h
 exclude.c
@@ -41,6 +42,7 @@ exit.h
 exitfail.c
 exitfail.h
 fchown-stub.c
+fd-safer.c
 fileblocks.c
 fnmatch.c
 fnmatch.h
@@ -141,6 +143,7 @@ system.h
 time_r.c
 time_r.h
 timespec.h
+unistd-safer.h
 unlocked-io.h
 unsetenv.c
 utime.c
