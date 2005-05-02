@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
-   2001, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -268,14 +268,14 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    E  use extended headers (--format=posix)
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
    [I  same as T =/= will harm star compatibility]
-   
+
    y  per-file gzip compression
    Y  per-block gzip compression */
 
 static struct argp_option options[] = {
   {NULL, 0, NULL, 0,
    N_("Main operation mode:"), 0},
-  
+
   {"list", 't', 0, 0,
    N_("list the contents of an archive"), 10 },
   {"extract", 'x', 0, 0,
@@ -343,7 +343,7 @@ static struct argp_option options[] = {
    N_("ignore exit codes of children"), 41 },
   {"no-ignore-command-error", NO_IGNORE_COMMAND_ERROR_OPTION, 0, 0,
    N_("treat non-zero exit codes of children as error"), 41 },
-    
+
   {NULL, 0, NULL, 0,
    N_("Handling of file attributes:"), 50 },
 
@@ -377,20 +377,20 @@ static struct argp_option options[] = {
 
   {NULL, 0, NULL, 0,
    N_("Device selection and switching:"), 60 },
-  
+
   {"file", 'f', N_("ARCHIVE"), 0,
    N_("use archive file or device ARCHIVE"), 61 },
   {"force-local", FORCE_LOCAL_OPTION, 0, 0,
    N_("archive file is local even if it has a colon"), 61 },
   {"rmt-command", RMT_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("use given rmt COMMAND instead of rmt"), 61 }, 
+   N_("use given rmt COMMAND instead of rmt"), 61 },
   {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
    N_("use remote COMMAND instead of rsh"), 61 },
 #ifdef DEVICE_PREFIX
   {"-[0-7][lmh]", 0, NULL, OPTION_DOC, /* It is OK, since `name' will never be
 					  translated */
    N_("specify drive and density"), 61 },
-#endif  
+#endif
   {NULL, '0', NULL, OPTION_HIDDEN, NULL, 61 },
   {NULL, '1', NULL, OPTION_HIDDEN, NULL, 61 },
   {NULL, '2', NULL, OPTION_HIDDEN, NULL, 61 },
@@ -401,7 +401,7 @@ static struct argp_option options[] = {
   {NULL, '7', NULL, OPTION_HIDDEN, NULL, 61 },
   {NULL, '8', NULL, OPTION_HIDDEN, NULL, 61 },
   {NULL, '9', NULL, OPTION_HIDDEN, NULL, 61 },
-  
+
   {"multi-volume", 'M', 0, 0,
    N_("create/list/extract multi-volume archive"), 61 },
   {"tape-length", 'L', N_("NUMBER"), 0,
@@ -422,11 +422,11 @@ static struct argp_option options[] = {
   {"ignore-zeros", 'i', 0, 0,
    N_("ignore zeroed blocks in archive (means EOF)"), 71 },
   {"read-full-records", 'B', 0, 0,
-   N_("reblock as we read (for 4.2BSD pipes)"), 71 }, 
+   N_("reblock as we read (for 4.2BSD pipes)"), 71 },
 
   {NULL, 0, NULL, 0,
    N_("Archive format selection:"), 80 },
-  
+
   {"format", 'H', N_("FORMAT"), 0,
    N_("create archive of the given format."), 81 },
 
@@ -441,7 +441,7 @@ static struct argp_option options[] = {
   {"  pax", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
    N_("POSIX 1003.1-2001 (pax) format"), 83 },
   {"  posix", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("same as pax"), 83 },
-  
+
   {"old-archive", OLD_ARCHIVE_OPTION, 0, 0, /* FIXME */
    N_("same as --format=v7"), 88 },
   {"portability", 0, 0, OPTION_ALIAS, NULL, 88 },
@@ -528,7 +528,7 @@ static struct argp_option options[] = {
 
   {NULL, 0, NULL, 0,
    N_("Informative output:"), 100 },
-  
+
   {"verbose", 'v', 0, 0,
    N_("verbosely list files processed"), 101 },
   {"checkpoint", CHECKPOINT_OPTION, 0, 0,
@@ -550,7 +550,7 @@ static struct argp_option options[] = {
    N_("Show tar defaults"), 102 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
    N_("When listing or extracting, list each directory that does not match search criteria"), 102 },
-  
+
   {NULL, 0, NULL, 0,
    N_("Compatibility options:"), 110 },
 
@@ -696,7 +696,7 @@ add_file_id (const char *filename)
   p->dev = st.st_dev;
   file_id_list = p;
 }
-      
+
 static void
 update_argv (const char *filename, struct argp_state *state)
 {
@@ -706,7 +706,7 @@ update_argv (const char *filename, struct argp_state *state)
   char **new_argv;
   size_t new_argc;
   bool is_stdin = false;
-  
+
   if (!strcmp (filename, "-"))
     {
       is_stdin = true;
@@ -719,23 +719,23 @@ update_argv (const char *filename, struct argp_state *state)
       if ((fp = fopen (filename, "r")) == NULL)
 	open_fatal (filename);
     }
-  
+
   while (read_name_from_file (fp, &argv_stk))
     count++;
 
   if (!is_stdin)
     fclose (fp);
-  
+
   if (count == 0)
     return;
 
   start = obstack_finish (&argv_stk);
-  
+
   if (filename_terminator == 0)
     for (p = start; *p; p += strlen (p) + 1)
       if (p[0] == '-')
 	count++;
-    
+
   new_argc = state->argc + count;
   new_argv = xmalloc (sizeof (state->argv[0]) * (new_argc + 1));
   memcpy (new_argv, state->argv, sizeof (state->argv[0]) * (state->argc + 1));
@@ -758,7 +758,7 @@ static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
   struct tar_args *args = state->input;
-  
+
   switch (key)
     {
       case ARGP_KEY_ARG:
@@ -770,7 +770,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'A':
       set_subcommand_option (CAT_SUBCOMMAND);
       break;
-      
+
     case 'b':
       {
 	uintmax_t u;
@@ -785,12 +785,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'B':
       /* Try to reblock input records.  For reading 4.2BSD pipes.  */
-      
+
       /* It would surely make sense to exchange -B and -R, but it seems
 	 that -B has been used for a long while in Sun tar and most
 	 BSD-derived systems.  This is a consequence of the block/record
 	 terminology confusion.  */
-      
+
       read_full_records_option = true;
       break;
 
@@ -821,57 +821,57 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'F':
       /* Since -F is only useful with -M, make it implied.  Run this
 	 script at the end of each tape.  */
-      
+
       info_script_option = arg;
       multi_volume_option = true;
       break;
-      
+
     case 'g':
       listed_incremental_option = arg;
       after_date_option = true;
       /* Fall through.  */
-      
+
     case 'G':
       /* We are making an incremental dump (FIXME: are we?); save
 	 directories at the beginning of the archive, and include in each
 	 directory its contents.  */
-      
+
       incremental_option = true;
       break;
-      
+
     case 'h':
       /* Follow symbolic links.  */
       dereference_option = true;
       break;
-      
+
     case 'i':
       /* Ignore zero blocks (eofs).  This can't be the default,
 	 because Unix tar writes two blocks of zeros, then pads out
 	 the record with garbage.  */
-      
+
       ignore_zeros_option = true;
       break;
-      
+
     case 'I':
       USAGE_ERROR ((0, 0,
 		    _("Warning: the -I option is not supported;"
 		      " perhaps you meant -j or -T?")));
       break;
-      
+
     case 'j':
       set_use_compress_program_option ("bzip2");
       break;
-      
+
     case 'k':
       /* Don't replace existing files.  */
       old_files_option = KEEP_OLD_FILES;
       break;
-      
+
     case 'K':
       starting_file_option = true;
       addname (arg, 0);
       break;
-      
+
     case 'l':
       /* Historically equivalent to --one-file-system. This usage is
 	 incompatible with UNIX98 and POSIX specs and therefore is
@@ -888,7 +888,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	 that are on other filesystems. */
       one_file_system_option = true;
       break;
-      
+
     case 'L':
       {
 	uintmax_t u;
@@ -899,22 +899,22 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	multi_volume_option = true;
       }
       break;
-      
+
     case 'm':
       touch_option = true;
       break;
-      
+
     case 'M':
       /* Make multivolume archive: when we can't write any more into
 	 the archive, re-open it, and continue writing.  */
-      
+
       multi_volume_option = true;
       break;
 
     case 'n':
       seekable_archive = true;
       break;
-      
+
 #if !MSDOS
     case 'N':
       after_date_option = true;
@@ -923,7 +923,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NEWER_MTIME_OPTION:
       if (NEWER_OPTION_INITIALIZED (newer_mtime_option))
 	USAGE_ERROR ((0, 0, _("More than one threshold date")));
-      
+
       if (FILE_SYSTEM_PREFIX_LEN (arg) != 0
 	  || ISSLASH (*arg)
 	  || *arg == '.')
@@ -948,14 +948,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  else
 	    args->textual_date_option = arg;
 	}
-      
+
       break;
 #endif /* not MSDOS */
-      
+
     case 'o':
       args->o_option = true;
       break;
-      
+
     case 'O':
       to_stdout_option = true;
       break;
@@ -963,36 +963,36 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'p':
       same_permissions_option = true;
       break;
-      
+
     case 'P':
       absolute_names_option = true;
       break;
-      
+
     case 'r':
       set_subcommand_option (APPEND_SUBCOMMAND);
       break;
-      
+
     case 'R':
       /* Print block numbers for debugging bad tar archives.  */
-      
+
       /* It would surely make sense to exchange -B and -R, but it seems
 	 that -B has been used for a long while in Sun tar ans most
 	 BSD-derived systems.  This is a consequence of the block/record
 	 terminology confusion.  */
-      
+
       block_number_option = true;
       break;
-      
+
     case 's':
       /* Names to extr are sorted.  */
-      
+
       same_order_option = true;
       break;
-      
+
     case 'S':
       sparse_option = true;
       break;
-      
+
     case 't':
       set_subcommand_option (LIST_SUBCOMMAND);
       verbose_option++;
@@ -1003,41 +1003,41 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* Indicate we've been given -T option. This is for backward
 	 compatibility only, so that `tar cfT archive /dev/null will
 	 succeed */
-      files_from_option = true; 
+      files_from_option = true;
       break;
-      
+
     case 'u':
       set_subcommand_option (UPDATE_SUBCOMMAND);
       break;
-      
+
     case 'U':
       old_files_option = UNLINK_FIRST_OLD_FILES;
       break;
-      
+
     case UTC_OPTION:
       utc_option = true;
       break;
-      
+
     case 'v':
       verbose_option++;
       break;
-      
+
     case 'V':
       volume_label_option = arg;
       break;
-      
+
     case 'w':
       interactive_option = true;
       break;
-      
+
     case 'W':
       verify_option = true;
       break;
-      
+
     case 'x':
       set_subcommand_option (EXTRACT_SUBCOMMAND);
       break;
-      
+
     case 'X':
       if (add_exclude_file (add_exclude, excluded, arg,
 			    args->exclude_options | recursion_option, '\n')
@@ -1047,17 +1047,17 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  FATAL_ERROR ((0, e, "%s", quotearg_colon (arg)));
 	}
       break;
-      
+
     case 'y':
       USAGE_ERROR ((0, 0,
 		    _("Warning: the -y option is not supported;"
 		      " perhaps you meant -j?")));
       break;
-      
+
     case 'z':
       set_use_compress_program_option ("gzip");
       break;
-      
+
     case 'Z':
       set_use_compress_program_option ("compress");
       break;
@@ -1065,29 +1065,29 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case ANCHORED_OPTION:
       args->exclude_options |= EXCLUDE_ANCHORED;
       break;
-      
+
     case ATIME_PRESERVE_OPTION:
       atime_preserve_option = true;
       break;
-      
+
     case CHECKPOINT_OPTION:
       checkpoint_option = true;
       break;
-      
+
     case BACKUP_OPTION:
       backup_option = true;
       if (arg)
 	args->version_control_string = arg;
       break;
-      
+
     case DELETE_OPTION:
       set_subcommand_option (DELETE_SUBCOMMAND);
       break;
-      
+
     case EXCLUDE_OPTION:
       add_exclude (excluded, arg, args->exclude_options | recursion_option);
       break;
-      
+
     case EXCLUDE_CACHES_OPTION:
       exclude_caches_option = true;
       break;
@@ -1095,15 +1095,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
-      
+
     case 'H':
       set_archive_format (arg);
       break;
-      
+
     case INDEX_FILE_OPTION:
       index_file_name = arg;
       break;
-      
+
     case IGNORE_CASE_OPTION:
       args->exclude_options |= FNM_CASEFOLD;
       break;
@@ -1111,15 +1111,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case IGNORE_COMMAND_ERROR_OPTION:
       ignore_command_error_option = true;
       break;
-      
+
     case IGNORE_FAILED_READ_OPTION:
       ignore_failed_read_option = true;
       break;
-      
+
     case KEEP_NEWER_FILES_OPTION:
       old_files_option = KEEP_NEWER_FILES;
       break;
-      
+
     case GROUP_OPTION:
       if (! (strlen (arg) < GNAME_FIELD_SIZE
 	     && gname_to_gid (arg, &group_option)))
@@ -1133,25 +1133,23 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			  _("%s: Invalid group")));
 	}
       break;
-      
+
     case MODE_OPTION:
-      mode_option
-	= mode_compile (arg,
-			MODE_MASK_EQUALS | MODE_MASK_PLUS | MODE_MASK_MINUS);
-      if (mode_option == MODE_INVALID)
+      mode_option = mode_compile (arg);
+      if (!mode_option)
 	FATAL_ERROR ((0, 0, _("Invalid mode given on option")));
-      if (mode_option == MODE_MEMORY_EXHAUSTED)
-	xalloc_die ();
+      initial_umask = umask (0);
+      umask (initial_umask);
       break;
-      
+
     case NO_ANCHORED_OPTION:
       args->exclude_options &= ~ EXCLUDE_ANCHORED;
       break;
-      
+
     case NO_IGNORE_CASE_OPTION:
       args->exclude_options &= ~ FNM_CASEFOLD;
       break;
-      
+
     case NO_IGNORE_COMMAND_ERROR_OPTION:
       ignore_command_error_option = false;
       break;
@@ -1159,23 +1157,23 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NO_OVERWRITE_DIR_OPTION:
       old_files_option = NO_OVERWRITE_DIR_OLD_FILES;
       break;
-      
+
     case NO_WILDCARDS_OPTION:
       args->exclude_options &= ~ EXCLUDE_WILDCARDS;
       break;
-      
+
     case NO_WILDCARDS_MATCH_SLASH_OPTION:
       args->exclude_options |= FNM_FILE_NAME;
       break;
-      
+
     case NULL_OPTION:
       filename_terminator = '\0';
       break;
-      
+
     case NUMERIC_OWNER_OPTION:
       numeric_owner_option = true;
       break;
-      
+
     case OCCURRENCE_OPTION:
       if (!arg)
 	occurrence_option = 1;
@@ -1189,7 +1187,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			  _("Invalid number")));
 	}
       break;
-      
+
     case OVERWRITE_OPTION:
       old_files_option = OVERWRITE_OLD_FILES;
       break;
@@ -1207,21 +1205,21 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			  _("Invalid owner")));
 	}
       break;
-      
+
     case PAX_OPTION:
       args->pax_option++;
       xheader_set_option (arg);
       break;
-      
+
     case POSIX_OPTION:
       set_archive_format ("posix");
       break;
-      
+
     case PRESERVE_OPTION:
       same_permissions_option = true;
       same_order_option = true;
       break;
-      
+
     case RECORD_SIZE_OPTION:
       {
 	uintmax_t u;
@@ -1236,27 +1234,27 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	blocking_factor = record_size / BLOCKSIZE;
       }
       break;
-      
+
     case RECURSIVE_UNLINK_OPTION:
       recursive_unlink_option = true;
       break;
-      
+
     case REMOVE_FILES_OPTION:
       remove_files_option = true;
       break;
-      
+
     case RMT_COMMAND_OPTION:
       rmt_command = arg;
       break;
-      
+
     case RSH_COMMAND_OPTION:
       rsh_command_option = arg;
       break;
-      
+
     case SHOW_DEFAULTS_OPTION:
       show_default_settings (stdout);
       exit(0);
-      
+
     case STRIP_COMPONENTS_OPTION:
       {
 	uintmax_t u;
@@ -1271,7 +1269,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case SHOW_OMITTED_DIRS_OPTION:
       show_omitted_dirs_option = true;
       break;
-      
+
     case SUFFIX_OPTION:
       backup_option = true;
       args->backup_suffix_string = arg;
@@ -1282,23 +1280,23 @@ parse_opt (int key, char *arg, struct argp_state *state)
         USAGE_ERROR ((0, 0, _("Only one --to-command option allowed")));
       to_command_option = arg;
       break;
-      
+
     case TOTALS_OPTION:
       totals_option = true;
       break;
-      
+
     case USE_COMPRESS_PROGRAM_OPTION:
       set_use_compress_program_option (arg);
       break;
-      
+
     case VOLNO_FILE_OPTION:
       volno_file_option = arg;
       break;
-      
+
     case WILDCARDS_OPTION:
       args->exclude_options |= EXCLUDE_WILDCARDS;
       break;
-      
+
     case WILDCARDS_MATCH_SLASH_OPTION:
       args->exclude_options &= ~ FNM_FILE_NAME;
       break;
@@ -1306,7 +1304,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case CHECK_LINKS_OPTION:
       check_links_option = 1;
       break;
-      
+
     case NO_RECURSION_OPTION:
       recursion_option = 0;
       break;
@@ -1334,7 +1332,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NO_UNQUOTE_OPTION:
       unquote_option = false;
       break;
-      
+
     case '0':
     case '1':
     case '2':
@@ -1353,14 +1351,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 	if (arg[1])
 	  argp_error (state, _("Malformed density argument: %s"), quote (arg));
-	
+
 	strcpy (buf, DEVICE_PREFIX);
 	cursor = buf + strlen (buf);
 
 #ifdef DENSITY_LETTER
 
 	sprintf (cursor, "%d%c", device, arg[0]);
-	
+
 #else /* not DENSITY_LETTER */
 
 	switch (arg[0])
@@ -1370,7 +1368,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    device += LOW_NUM;
 #endif
 	    break;
-	    
+
 	  case 'm':
 #ifdef MID_NUM
 	    device += MID_NUM;
@@ -1378,7 +1376,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    device += 8;
 #endif
 	    break;
-	    
+
 	  case 'h':
 #ifdef HGH_NUM
 	    device += HGH_NUM;
@@ -1391,7 +1389,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    argp_error (state, _("Unknown density: `%c'"), arg[0]);
 	  }
 	sprintf (cursor, "%d", device);
-	
+
 #endif /* not DENSITY_LETTER */
 
 	if (archive_names == allocated_archive_names)
@@ -1407,11 +1405,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 #else /* not DEVICE_PREFIX */
 
-      argp_error (state, 
+      argp_error (state,
 		  _("Options `-[0-7][lmh]' not supported by *this* tar"));
-      
+
 #endif /* not DEVICE_PREFIX */
-      
+
     case '?':
       state->flags |= ARGP_NO_EXIT;
       argp_state_help (state, state->out_stream,
@@ -1419,7 +1417,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       fprintf (state->out_stream, _("\n*This* tar defaults to:\n"));
       show_default_settings (state->out_stream);
       fprintf (state->out_stream, "\n");
-      fprintf (state->out_stream, _("Report bugs to %s.\n"), 
+      fprintf (state->out_stream, _("Report bugs to %s.\n"),
 	       argp_program_bug_address);
       exit (0);
 
@@ -1441,7 +1439,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       while (_argp_hang-- > 0)
 	sleep (1);
       break;
-      
+
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -1486,7 +1484,7 @@ decode_options (int argc, char **argv)
 {
   int index;
   struct tar_args args;
-  
+
   /* Set some default option values.  */
   args.textual_date_option = NULL;
   args.exclude_options = EXCLUDE_WILDCARDS;
@@ -1505,7 +1503,7 @@ decode_options (int argc, char **argv)
   newer_mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
   unquote_option = true;
-  
+
   owner_option = -1;
   group_option = -1;
 
@@ -1540,7 +1538,7 @@ decode_options (int argc, char **argv)
       for (letter = *in++; *letter; letter++)
 	{
 	  struct argp_option *opt;
-	  
+
 	  buffer[1] = *letter;
 	  *out++ = xstrdup (buffer);
 	  opt = find_argp_option (options, *letter);
@@ -1573,7 +1571,7 @@ decode_options (int argc, char **argv)
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP,
 		  &index, &args))
     exit (1);
-      
+
 
   /* Special handling for 'o' option:
 
@@ -1652,7 +1650,7 @@ decode_options (int argc, char **argv)
 	 problem. */
       seekable_archive = false;
     }
-  
+
   if (archive_names == 0)
     {
       /* If no archive file name given, try TAPE from the environment, or
@@ -1821,7 +1819,7 @@ main (int argc, char **argv)
   archive_names = 0;
 
   obstack_init (&argv_stk);
-  
+
 #ifdef SIGCHLD
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
