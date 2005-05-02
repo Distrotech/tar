@@ -1,7 +1,7 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -376,7 +376,7 @@ static void
 tar_name_copy_str (char *dst, const char *src, size_t len)
 {
   tar_copy_str (dst, src, len);
-  if (archive_format == OLDGNU_FORMAT) 
+  if (archive_format == OLDGNU_FORMAT)
     dst[len-1] = 0;
 }
 
@@ -420,7 +420,7 @@ write_short_name (struct tar_stat_info *st)
   memset(field, byte, sizeof(field)-1);  \
   (field)[sizeof(field)-1] = 0;          \
 } while (0)
-  
+
 /* Write a GNUTYPE_LONGLINK or GNUTYPE_LONGNAME block.  */
 static void
 write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
@@ -429,7 +429,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   size_t bufsize;
   union block *header;
   char *tmpname;
-  
+
   header = start_private_header ("././@LongLink", size);
   FILL(header->header.mtime, '0');
   FILL(header->header.mode, '0');
@@ -443,7 +443,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   gid_to_gname (0, &tmpname);
   GNAME_TO_CHARS (tmpname, header->header.gname);
   free (tmpname);
-  
+
   strcpy (header->header.magic, OLDGNU_MAGIC);
   header->header.typeflag = type;
   finish_header (st, header, -1);
@@ -630,8 +630,9 @@ start_header (struct tar_stat_info *st)
   if (group_option != (gid_t) -1)
     st->stat.st_gid = group_option;
   if (mode_option)
-    st->stat.st_mode = ((st->stat.st_mode & ~MODE_ALL)
-		   | mode_adjust (st->stat.st_mode, mode_option));
+    st->stat.st_mode =
+      ((st->stat.st_mode & ~MODE_ALL)
+       | mode_adjust (st->stat.st_mode, mode_option, initial_umask));
 
   /* Paul Eggert tried the trivial test ($WRITER cf a b; $READER tvf a)
      for a few tars and came up with the following interoperability
@@ -961,7 +962,7 @@ check_cache_directory (char *dirname)
   if (fd >= 0)
     {
       static char tagbuf[CACHEDIR_SIGNATURE_SIZE];
-      
+
       if (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE)
 	  == CACHEDIR_SIGNATURE_SIZE
 	  && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0)
