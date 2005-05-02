@@ -1,10 +1,15 @@
 2005-05-02  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* tests/multivol04.at: Tell awk to read from /dev/null.
+
 	Adjust to recent gnulib changes.
 	* lib/.cvsignore: Add dup-safer.c, fd-safer.c, unistd-safer.h.
 	* src/common.h (initial_umask): New var.
 	* src/create.c (start_ueader): Use it, and adjust to new modechange
 	API.
+	(hash_link): unsigned -> size_t parameters and result.
+	* src/incremen.c (hash_directory): Likewise.
+	* src/names.c (hash_string_hasher): Likewise.
 	* src/tar.c (parse_opt): Set it, and adjust to new modechange API.
 
 2005-04-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
