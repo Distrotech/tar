@@ -18,7 +18,7 @@
 ## Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 info_TEXINFOS = tar.texi
-tar_TEXINFOS = fdl.texi freemanuals.texi getdate.texi header.texi rendition.texi value.texi
+tar_TEXINFOS = fdl.texi freemanuals.texi getdate.texi header.texi rendition.texi value.texi genfile.texi
 EXTRA_DIST = convtexi.pl gendocs_template 
 DISTCLEANFILES=*.info* 
 
