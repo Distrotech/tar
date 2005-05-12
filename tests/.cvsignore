@@ -1,5 +1,7 @@
 Makefile.in
 Makefile
+argcv.h
+argcv.c
 .deps
 genfile
 atconfig

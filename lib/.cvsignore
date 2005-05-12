@@ -92,6 +92,7 @@ obstack.c
 obstack.h
 openat.c
 openat.h
+pathmax.h
 printf-args.c
 printf-args.h
 printf-parse.c
@@ -157,7 +158,9 @@ xgetcwd.c
 xgetcwd.h
 xmalloc.c
 xsize.h
+xstrdup.c
 xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
+

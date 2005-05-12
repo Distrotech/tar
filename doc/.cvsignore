@@ -1,6 +1,7 @@
 *.stamp
 Makefile
 Makefile.in
+genfile.texi
 getdate.texi
 header.texi
 html_chapter
