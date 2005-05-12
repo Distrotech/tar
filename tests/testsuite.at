@@ -115,6 +115,8 @@ m4_include([volume.at])
 
 m4_include([comprec.at])
 
+m4_include([truncate.at])
+
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
 

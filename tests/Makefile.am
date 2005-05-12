@@ -82,6 +82,7 @@ TESTSUITE_AT = \
  shortrec.at\
  sparse01.at\
  sparse02.at\
+ truncate.at\
  volume.at\
  version.at\
  star/gtarfail.at\
@@ -120,10 +121,10 @@ installcheck-local:
 
 check_PROGRAMS = genfile
 
-genfile_SOURCES = genfile.c
+genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
 
-LDADD = ../lib/libtar.a $(LIBINTL)
+LDADD = ../lib/libtar.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
 
