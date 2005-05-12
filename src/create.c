@@ -886,9 +886,9 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 	  return dump_status_short;
 	}
       size_left -= count;
-
-      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
-
+      if (count)
+	set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
+      
       if (count != bufsize)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
@@ -901,7 +901,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 		 STRINGIFY_BIGINT (size_left, buf)));
 	  if (! ignore_failed_read_option)
 	    exit_status = TAREXIT_FAILURE;
-	  pad_archive (size_left);
+	  pad_archive (size_left - (bufsize-count));
 	  return dump_status_short;
 	}
     }
