@@ -97,6 +97,10 @@ document.  The rest of the menu lists all the lower level nodes.
 * Date input formats::
 * Formats::
 * Media::
+
+Appendices
+
+* Genfile::
 * Free Software Needs Free Documentation::
 * Copying This Manual::
 * Index::
@@ -338,6 +342,10 @@ Using Multiple Tapes
 
 * Multi-Volume Archives::       Archives Longer than One Tape or Disk
 * Tape Files::                  Tape Files
+
+GNU tar test suite
+
+* Genfile::
 
 Copying This Manual
 
@@ -8802,6 +8810,10 @@ changeable feature.
 @node Free Software Needs Free Documentation
 @appendix Free Software Needs Free Documentation
 @include freemanuals.texi
+
+@node Genfile
+@appendix Genfile
+@include genfile.texi
 
 @node Copying This Manual
 @appendix Copying This Manual
