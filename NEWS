@@ -30,6 +30,9 @@ used to read an extra block of data after a long name header
 if length of the member name was divisible by block size (512).
 Consequently, the file pointer was set off and the next member
 was not processed correctly.
+** Previous version created invalid archives when files shrink
+during reading.
+** Compare mode (tar d) hanged when trying to compare file contents.
 
 
 version 1.15.1 - Sergey Poznyakoff, 2004-12-21
