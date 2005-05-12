@@ -243,9 +243,9 @@ diff_file ()
 	}
       else
 	{
-	  int fd = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
+	  diff_handle = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
 
-	  if (fd < 0)
+	  if (diff_handle < 0)
 	    {
 	      open_error (current_stat_info.file_name);
 	      skip_member ();
@@ -278,7 +278,7 @@ diff_file ()
 		    assign_string (&save_name, 0);
 		}
 
-	      status = close (fd);
+	      status = close (diff_handle);
 	      if (status != 0)
 		close_error (current_stat_info.file_name);
 
