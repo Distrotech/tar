@@ -440,7 +440,8 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
   if (stat (file_name, &st))
     {
       stat_warn (file_name);
-      return true; /* Be on the safe side */
+      /* Be on the safe side: if the file does exist assume it is newer */
+      return errno != ENOENT;
     }
   if (!S_ISDIR (st.st_mode)
       && st.st_mtime >= tar_stat->stat.st_mtime)
@@ -1097,7 +1098,8 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     case KEEP_NEWER_FILES:
       if (file_newer_p (file_name, &current_stat_info))
 	{
-	  WARN ((0, 0, _("Current %s is newer"), quote (file_name)));
+	  WARN ((0, 0, _("Current %s is newer or same age"),
+		 quote (file_name)));
 	  return 0;
 	}
       break;
