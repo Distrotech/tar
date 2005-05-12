@@ -210,11 +210,10 @@ else
    mkdir rmt
 fi
 
-copy_files ${PAXUTILS_SRCDIR}/rmt rmt
-
-copy_files ${PAXUTILS_SRCDIR}/lib lib
-
-copy_files ${PAXUTILS_SRCDIR}/tests tests
+for dir in doc rmt lib tests
+do
+	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
+done
 
 # Get gnulib files.
 
