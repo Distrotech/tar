@@ -1,3 +1,24 @@
+2005-05-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* THANKS: Updated
+	* bootstrap: Install files from paxutils/doc
+	* doc/Makefile.am (tar_TEXINFOS): Add genfile.texi
+	* doc/tar.texi (Genfile): New appendix
+	* src/compare.c (diff_file): diff_handle was not initialized
+	* src/create.c (dump_regular_file): Correctly pad archive members
+	that shrunk during archiving. Repored by Frank Heckenbach.
+	* src/extract.c (file_newer_p): Return false if file does not
+	exist
+	(prepare_to_extract): Correct warning wording.
+	* tests/truncate.at: New test case
+	* tests/Makefile.am: Add truncate.at
+	* tests/testsuite.at: Likewise.
+
+	* doc/.cvsignore: Updated
+	* lib/.cvsignore: Updated
+	* tests/.cvsignore: Updated
+	
 2005-05-02  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* tests/multivol04.at: Tell awk to read from /dev/null.
