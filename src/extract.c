@@ -36,7 +36,7 @@ struct utimbuf
 
 #include "common.h"
 
-bool we_are_root;		/* true if our effective uid == 0 */
+static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 
@@ -119,7 +119,7 @@ extr_init (void)
      FIXME: Should the same be done after handling -C option ? */
   if (one_file_system_option)
     {
-      struct stat st;      
+      struct stat st;
       char *dir = xgetcwd ();
 
       if (deref_stat (true, dir, &st))
@@ -127,7 +127,7 @@ extr_init (void)
       else
 	root_device = st.st_dev;
     }
-  
+
   /* Option -p clears the kernel umask, so it does not affect proper
      restoration of file permissions.  New intermediate directories will
      comply with umask at start of program.  */
@@ -576,7 +576,7 @@ extract_dir (char *file_name, int typeflag)
   int status;
   mode_t mode;
   int interdir_made = 0;
-  
+
   if (incremental_option)
     /* Read the entry and delete files that aren't listed in the archive.  */
     purge_directory (file_name);
@@ -608,10 +608,10 @@ extract_dir (char *file_name, int typeflag)
 	    }
 	  errno = EEXIST;
 	}
-      
+
       if (maybe_recoverable (file_name, &interdir_made))
 	continue;
-      
+
       if (errno != EEXIST)
 	{
 	  mkdir_error (file_name);
@@ -619,7 +619,7 @@ extract_dir (char *file_name, int typeflag)
 	}
       break;
     }
-  
+
   if (status == 0
       || old_files_option == DEFAULT_OLD_FILES
       || old_files_option == OVERWRITE_OLD_FILES)
@@ -666,7 +666,7 @@ open_output_file (char *file_name, int typeflag)
   fd = open (file_name, openflag, mode);
 
 #endif /* not O_CTG */
-  
+
   return fd;
 }
 
@@ -680,7 +680,7 @@ extract_file (char *file_name, int typeflag)
   size_t count;
   size_t written;
   int interdir_made = 0;
-  
+
   /* FIXME: deal with protection issues.  */
 
   if (to_stdout_option)
@@ -699,14 +699,14 @@ extract_file (char *file_name, int typeflag)
       do
 	fd = open_output_file (file_name, typeflag);
       while (fd < 0 && maybe_recoverable (file_name, &interdir_made));
-    
+
       if (fd < 0)
 	{
 	  open_error (file_name);
 	  return 1;
 	}
     }
-    
+
   if (current_stat_info.is_sparse)
     sparse_extract_file (fd, &current_stat_info, &size);
   else
@@ -722,7 +722,7 @@ extract_file (char *file_name, int typeflag)
 	/* Locate data, determine max length writeable, write it,
 	   block that we have used the data, then check if the write
 	   worked.  */
-	
+
 	data_block = find_next_block ();
 	if (! data_block)
 	  {
@@ -731,13 +731,13 @@ extract_file (char *file_name, int typeflag)
 	  }
 
 	written = available_space_after (data_block);
-	
+
 	if (written > size)
 	  written = size;
 	errno = 0;
 	count = full_write (fd, data_block->buffer, written);
 	size -= written;
-	
+
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
 	if (count != written)
@@ -748,7 +748,7 @@ extract_file (char *file_name, int typeflag)
 	    break;
 	  }
       }
-  
+
   skip_file (size);
 
   if (multi_volume_option)
@@ -773,14 +773,14 @@ extract_file (char *file_name, int typeflag)
 	      typeflag);
 
   return status;
-}  
+}
 
 static int
 extract_link (char *file_name, int typeflag)
 {
   char const *link_name = safer_name_suffix (current_stat_info.link_name, true);
   int interdir_made = 0;
-  
+
   do
     {
       struct stat st1, st2;
@@ -812,7 +812,7 @@ extract_link (char *file_name, int typeflag)
 		   && st1.st_dev == st2.st_dev
 		   && st1.st_ino == st2.st_ino))
 	return 0;
-      
+
       errno = e;
     }
   while (maybe_recoverable (file_name, &interdir_made));
@@ -823,7 +823,7 @@ extract_link (char *file_name, int typeflag)
       return 1;
     }
   return 0;
-}  
+}
 
 static int
 extract_symlink (char *file_name, int typeflag)
@@ -831,7 +831,7 @@ extract_symlink (char *file_name, int typeflag)
 #ifdef HAVE_SYMLINK
   int status, fd;
   int interdir_made = 0;
-  
+
   if (absolute_names_option
       || ! (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
 	    || contains_dot_dot (current_stat_info.link_name)))
@@ -894,7 +894,7 @@ extract_symlink (char *file_name, int typeflag)
 	      do
 		{
 		  h->after_symlinks = 1;
-		  
+
 		  if (stat (h->file_name, &st) != 0)
 		    stat_error (h->file_name);
 		  else
@@ -905,7 +905,7 @@ extract_symlink (char *file_name, int typeflag)
 		}
 	      while ((h = h->next) && ! h->after_symlinks);
 	    }
-	  
+
 	  status = 0;
 	}
     }
@@ -920,9 +920,9 @@ extract_symlink (char *file_name, int typeflag)
       warned_once = 1;
       WARN ((0, 0, _("Attempting extraction of symbolic links as hard links")));
     }
-  return extract_link (file_name, typeflag);  
+  return extract_link (file_name, typeflag);
 #endif
-}  
+}
 
 #if S_IFCHR || S_IFBLK
 static int
@@ -930,12 +930,12 @@ extract_node (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
-  
+
   do
     status = mknod (file_name, current_stat_info.stat.st_mode,
 		    current_stat_info.stat.st_rdev);
   while (status && maybe_recoverable (file_name, &interdir_made));
-  
+
   if (status != 0)
     mknod_error (file_name);
   else
@@ -950,7 +950,7 @@ extract_fifo (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
-  
+
   while ((status = mkfifo (file_name, current_stat_info.stat.st_mode)))
     if (!maybe_recoverable (file_name, &interdir_made))
       break;
@@ -961,7 +961,7 @@ extract_fifo (char *file_name, int typeflag)
   else
     mkfifo_error (file_name);
   return status;
-}  
+}
 #endif
 
 static int
@@ -971,7 +971,7 @@ extract_mangle_wrapper (char *file_name, int typeflag)
   return 0;
 }
 
-     
+
 static int
 extract_failure (char *file_name, int typeflag)
 {
@@ -989,7 +989,7 @@ static int
 prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
 {
   int rc = 1;
-  
+
   if (EXTRACT_OVER_PIPE)
     rc = 0;
 
@@ -1000,7 +1000,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
       *fun = extract_file;
       rc = 1;
       break;
-      
+
     case AREGTYPE:
     case REGTYPE:
     case CONTTYPE:
@@ -1081,12 +1081,12 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
   /* Determine whether the extraction should proceed */
   if (rc == 0)
     return 0;
-  
+
   switch (old_files_option)
     {
     case UNLINK_FIRST_OLD_FILES:
-      if (!remove_any_file (file_name, 
-                            recursive_unlink_option ? RECURSIVE_REMOVE_OPTION 
+      if (!remove_any_file (file_name,
+                            recursive_unlink_option ? RECURSIVE_REMOVE_OPTION
                                                       : ORDINARY_REMOVE_OPTION)
 	  && errno && errno != ENOENT)
 	{
@@ -1118,7 +1118,7 @@ extract_archive (void)
   char typeflag;
   char *file_name;
   tar_extractor_t fun;
-  
+
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat_info, &current_format, 1);
 
@@ -1172,7 +1172,7 @@ extract_archive (void)
     }
   else
     skip_member ();
-  
+
 }
 
 /* Extract the symbolic links whose final extraction were delayed.  */

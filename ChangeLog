@@ -1,5 +1,13 @@
 2005-05-14  Paul Eggert  <eggert@cs.ucla.edu>
 
+	Port to Solaris 10's treatment of unlinking directories.
+	* gnulib-modules: Add unlinkdir.
+	* lib/.cvsignore: Add unlinkdir.h, unlinkdir.c.
+	* src/common.h (we_are_root): Remove extern decl; it's now static.
+	* src/extract.c (we_are_root): Now static.
+	* src/misc.c: Include <unlinkdir.h>.
+	(remove_any_file): Use cannot_unlink_dir () rather than	we_are_root.
+
 	* ChangeLog, ChangeLog.1, Makefile.am, NEWS, PORTS, README,
 	README-alpha, TODO, bootstrap, configure.ac, doc/Makefile.am,
 	doc/convtexi.pl, doc/fdl.texi, doc/gendocs_template,

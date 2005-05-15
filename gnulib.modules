@@ -37,6 +37,7 @@ stpcpy
 strtol
 strtoul
 timespec
+unlinkdir
 unlocked-io
 utime
 xalloc

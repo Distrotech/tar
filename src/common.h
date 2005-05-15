@@ -441,7 +441,6 @@ void verify_volume (void);
 
 /* Module extract.c.  */
 
-extern bool we_are_root;
 void extr_init (void);
 void extract_archive (void);
 void extract_finish (void);

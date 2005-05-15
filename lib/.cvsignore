@@ -145,6 +145,8 @@ time_r.c
 time_r.h
 timespec.h
 unistd-safer.h
+unlinkdir.c
+unlinkdir.h
 unlocked-io.h
 unsetenv.c
 utime.c
@@ -163,4 +165,3 @@ xstrtol.c
 xstrtol.h
 xstrtoul.c
 xstrtoumax.c
-

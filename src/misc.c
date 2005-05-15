@@ -22,6 +22,7 @@
 #include "common.h"
 #include <quotearg.h>
 #include <save-cwd.h>
+#include <unlinkdir.h>
 
 static void call_arg_fatal (char const *, char const *)
      __attribute__ ((noreturn));
@@ -127,7 +128,7 @@ unquote_string (char *string)
 	  *destination++ = '\a';
 	  source++;
 	  break;
-	  
+
 	case 'b':
 	  *destination++ = '\b';
 	  source++;
@@ -157,7 +158,7 @@ unquote_string (char *string)
 	  *destination++ = '\v';
 	  source++;
 	  break;
-	  
+
 	case '?':
 	  *destination++ = 0177;
 	  source++;
@@ -224,7 +225,7 @@ must_be_dot_or_slash (char const *file_name)
       for (;;)
 	if (ISSLASH (file_name[1]))
 	  file_name++;
-	else if (file_name[1] == '.' 
+	else if (file_name[1] == '.'
                  && ISSLASH (file_name[2 + (file_name[2] == '.')]))
 	  file_name += 2 + (file_name[2] == '.');
 	else
@@ -258,7 +259,7 @@ safer_rmdir (const char *file_name)
   return rmdir (file_name);
 }
 
-/* Remove FILE_NAME, returning 1 on success.  If FILE_NAME is a directory, 
+/* Remove FILE_NAME, returning 1 on success.  If FILE_NAME is a directory,
    then if OPTION is RECURSIVE_REMOVE_OPTION is set remove FILE_NAME
    recursively; otherwise, remove it only if it is empty.  If FILE_NAME is
    a directory that cannot be removed (e.g., because it is nonempty)
@@ -268,9 +269,10 @@ safer_rmdir (const char *file_name)
 int
 remove_any_file (const char *file_name, enum remove_option option)
 {
-  /* Try unlink first if we are not root, as this saves us a system
-     call in the common case where we're removing a non-directory.  */
-  if (! we_are_root)
+  /* Try unlink first if we cannot unlink directories, as this saves
+     us a system call in the common case where we're removing a
+     non-directory.  */
+  if (cannot_unlink_dir ())
     {
       if (unlink (file_name) == 0)
 	return 1;
@@ -288,7 +290,7 @@ remove_any_file (const char *file_name, enum remove_option option)
   switch (errno)
     {
     case ENOTDIR:
-      return we_are_root && unlink (file_name) == 0;
+      return cannot_unlink_dir () && unlink (file_name) == 0;
 
     case 0:
     case EEXIST:
@@ -317,7 +319,7 @@ remove_any_file (const char *file_name, enum remove_option option)
 		 entry += entrylen + 1)
 	      {
 		char *file_name_buffer = new_name (file_name, entry);
-		int r = remove_any_file (file_name_buffer, 
+		int r = remove_any_file (file_name_buffer,
                                          RECURSIVE_REMOVE_OPTION);
 		int e = errno;
 		free (file_name_buffer);
