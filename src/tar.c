@@ -17,7 +17,7 @@
 
    You should have received a copy of the GNU General Public License along
    with this program; if not, write to the Free Software Foundation, Inc.,
-   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
+   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
 
@@ -634,8 +634,8 @@ for complete list of authors.\n"));
     "   GNU General Public License for more details.\n"
     "\n"
     "   You should have received a copy of the GNU General Public License\n"
-    "   along with GNU tar; if not, write to the Free Software\n"
-    "   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA\n\n"));
+    "   along with GNU tar; if not, write to the Free Software Foundation,\n"
+    "   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA\n\n"));
   exit (0);
 }
 

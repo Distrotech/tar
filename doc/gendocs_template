@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!-- $Id: gendocs_template,v 1.1 2005/01/12 00:07:49 gray Exp $ -->
+<!-- $Id: gendocs_template,v 1.2 2005/05/15 03:59:09 eggert Exp $ -->
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 
 <head>
@@ -90,7 +90,7 @@ Please send broken links and other corrections (or suggestions) to
 
 <p>
 Copyright (C) 2004 Free Software Foundation, Inc.,
-59 Temple Place - Suite 330, Boston, MA 02111, USA
+51 Franklin Street, Fifth Floor, Boston, MA 02111, USA
 <br />
 Verbatim copying and distribution of this entire article is
 permitted in any medium, provided this notice is preserved.
@@ -99,7 +99,7 @@ permitted in any medium, provided this notice is preserved.
 <p>
 Updated:
 <!-- timestamp start -->
-$Date: 2005/01/12 00:07:49 $ $Author: gray $
+$Date: 2005/05/15 03:59:09 $ $Author: eggert $
 <!-- timestamp end -->
 </p>
 </div>
