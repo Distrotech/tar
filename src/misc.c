@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -272,7 +272,9 @@ remove_any_file (const char *file_name, enum remove_option option)
   /* Try unlink first if we cannot unlink directories, as this saves
      us a system call in the common case where we're removing a
      non-directory.  */
-  if (cannot_unlink_dir ())
+  bool try_unlink_first = cannot_unlink_dir ();
+
+  if (try_unlink_first)
     {
       if (unlink (file_name) == 0)
 	return 1;
@@ -290,7 +292,7 @@ remove_any_file (const char *file_name, enum remove_option option)
   switch (errno)
     {
     case ENOTDIR:
-      return cannot_unlink_dir () && unlink (file_name) == 0;
+      return !try_unlink_first && unlink (file_name) == 0;
 
     case 0:
     case EEXIST:
