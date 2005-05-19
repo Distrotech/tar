@@ -50,31 +50,10 @@
 # define GLOBAL extern
 #endif
 
-/* Exit status for GNU tar.  Let's try to keep this list as simple as
-   possible.  -d option strongly invites a status different for unequal
-   comparison and other errors.  */
-GLOBAL int exit_status;
+#define TAREXIT_SUCCESS PAXEXIT_SUCCESS
+#define TAREXIT_DIFFERS PAXEXIT_DIFFERS
+#define TAREXIT_FAILURE PAXEXIT_FAILURE
 
-#define TAREXIT_SUCCESS 0
-#define TAREXIT_DIFFERS 1
-#define TAREXIT_FAILURE 2
-
-/* Both WARN and ERROR write a message on stderr and continue processing,
-   however ERROR manages so tar will exit unsuccessfully.  FATAL_ERROR
-   writes a message on stderr and aborts immediately, with another message
-   line telling so.  USAGE_ERROR works like FATAL_ERROR except that the
-   other message line suggests trying --help.  All four macros accept a
-   single argument of the form ((0, errno, _("FORMAT"), Args...)).  errno
-   is zero when the error is not being detected by the system.  */
-
-#define WARN(Args) \
-  error Args
-#define ERROR(Args) \
-  (error Args, exit_status = TAREXIT_FAILURE)
-#define FATAL_ERROR(Args) \
-  (error Args, fatal_exit ())
-#define USAGE_ERROR(Args) \
-  (error Args, usage (TAREXIT_FAILURE))
 
 #include "arith.h"
 #include <backupfile.h>
@@ -87,6 +66,8 @@ GLOBAL int exit_status;
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 #include <obstack.h>
+
+#include <paxerror.h>
 
 /* Log base 2 of common values.  */
 #define LG_8 3
@@ -444,7 +425,6 @@ void verify_volume (void);
 void extr_init (void);
 void extract_archive (void);
 void extract_finish (void);
-void fatal_exit (void) __attribute__ ((noreturn));
 
 /* Module delete.c.  */
 
@@ -484,9 +464,6 @@ extern size_t recent_long_link_blocks;
 
 void decode_header (union block *, struct tar_stat_info *,
 		    enum archive_format *, int);
-#define STRINGIFY_BIGINT(i, b) \
-  stringify_uintmax_t_backwards ((uintmax_t) (i), (b) + UINTMAX_STRSIZE_BOUND)
-char *stringify_uintmax_t_backwards (uintmax_t, char *);
 char const *tartime (time_t);
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
@@ -553,51 +530,13 @@ int deref_stat (bool, char const *, struct stat *);
 int chdir_arg (char const *);
 void chdir_do (int);
 
-void decode_mode (mode_t, char *);
-
-void chdir_fatal (char const *) __attribute__ ((noreturn));
-void chmod_error_details (char const *, mode_t);
-void chown_error_details (char const *, uid_t, gid_t);
-void close_error (char const *);
-void close_warn (char const *);
 void close_diag (char const *name);
-void exec_fatal (char const *) __attribute__ ((noreturn));
-void link_error (char const *, char const *);
-void mkdir_error (char const *);
-void mkfifo_error (char const *);
-void mknod_error (char const *);
-void open_error (char const *);
-void open_fatal (char const *) __attribute__ ((noreturn));
-void open_warn (char const *);
 void open_diag (char const *name);
-void read_error (char const *);
-void read_error_details (char const *, off_t, size_t);
-void read_fatal (char const *) __attribute__ ((noreturn));
-void read_fatal_details (char const *, off_t, size_t) __attribute__ ((noreturn));
-void read_warn_details (char const *, off_t, size_t);
 void read_diag_details (char const *name, off_t offset, size_t size);
-void readlink_error (char const *);
-void readlink_warn (char const *);
 void readlink_diag (char const *name);
-void savedir_error (char const *);
-void savedir_warn (char const *);
 void savedir_diag (char const *name);
-void seek_error (char const *);
-void seek_error_details (char const *, off_t);
-void seek_warn (char const *);
-void seek_warn_details (char const *, off_t);
 void seek_diag_details (char const *, off_t);
-void stat_fatal (char const *);
-void stat_error (char const *);
-void stat_warn (char const *);
 void stat_diag (char const *name);
-void symlink_error (char const *, char const *);
-void truncate_error (char const *);
-void truncate_warn (char const *);
-void unlink_error (char const *);
-void utime_error (char const *);
-void waitpid_error (char const *);
-void write_error (char const *);
 void write_error_details (char const *, size_t, size_t);
 void write_fatal (char const *) __attribute__ ((noreturn));
 void write_fatal_details (char const *, ssize_t, size_t)

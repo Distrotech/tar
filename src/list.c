@@ -920,18 +920,6 @@ uintmax_from_header (const char *p, size_t s)
 }
 
 
-/* Format O as a null-terminated decimal string into BUF _backwards_;
-   return pointer to start of result.  */
-char *
-stringify_uintmax_t_backwards (uintmax_t o, char *buf)
-{
-  *--buf = '\0';
-  do
-    *--buf = '0' + (int) (o % 10);
-  while ((o /= 10) != 0);
-  return buf;
-}
-
 /* Return a printable representation of T.  The result points to
    static storage that can be reused in the next call to this
    function, to ctime, or to asctime.  */
@@ -1092,7 +1080,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  break;
 	}
 
-      decode_mode (st->stat.st_mode, modes + 1);
+      pax_decode_mode (st->stat.st_mode, modes + 1);
 
       /* Time stamp.  */
 
@@ -1251,7 +1239,7 @@ print_for_mkdir (char *dirname, int length, mode_t mode)
       /* File type and modes.  */
 
       modes[0] = 'd';
-      decode_mode (mode, modes + 1);
+      pax_decode_mode (mode, modes + 1);
 
       if (block_number_option)
 	{
