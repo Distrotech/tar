@@ -115,19 +115,6 @@ AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([time],,, [#include <time.h>])
 
-# Set LIB_SETSOCKOPT to -lnsl -lsocket if necessary.
-tar_save_LIBS=$LIBS
-  LIB_SETSOCKOPT=
-  AC_SEARCH_LIBS(setsockopt, [socket], ,
-    [AC_SEARCH_LIBS(setsockopt, [socket], , , [-lnsl])])
-  AC_SEARCH_LIBS(setsockopt, [nsl])
-
-  case "$ac_cv_search_setsockopt" in
-    -l*) LIB_SETSOCKOPT=$ac_cv_search_setsockopt
-  esac
-  AC_SUBST(LIB_SETSOCKOPT)
-LIBS=$tar_save_LIBS
-
 AC_REPLACE_FUNCS(waitpid)
 
 AC_CACHE_CHECK(for remote shell, tar_cv_path_RSH,
