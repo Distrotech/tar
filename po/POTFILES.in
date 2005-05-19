@@ -26,6 +26,10 @@ lib/quotearg.c
 lib/xmalloc.c
 lib/rtapelib.c
 lib/argp-help.c
+lib/paxconvert.c
+lib/paxerror.c
+lib/paxexit.c
+
 rmt/rmt.c
 
 # Package source files
