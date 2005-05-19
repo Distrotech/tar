@@ -1,3 +1,18 @@
+2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* bootstrap (copy_files): Accept optional third argument: a prefix
+	to be appended to destination file names.
+	Import paxutils/paxlib files.
+	* configure.ac: Remove checking for LIB_SETSOCKOPT, it is handled
+	by paxutils.
+	* lib/Makefile.tmpl (libtar_a_SOURCES): Add paxerror.c paxexit.c
+	paxconvert.c
+	* po/POTFILES.in: Likewise.
+	* src/common.h: Remove defines and declarations imported from
+	paxutils
+	* src/misc.c: Likewise
+	* src/list.c (stringify_uintmax_t_backwards): Moved to paxutils
+	
 2005-05-17  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/misc.c (remove_any_file): Fix typo in previous change.
