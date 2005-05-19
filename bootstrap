@@ -191,8 +191,15 @@ copy_files() {
     case $file in
     "#*")  continue;;
     esac
-    echo "$0: Copying file $1/$file"
-    cp -p $1/$file $2/`expr $file : '.*/\(.*\)'`
+    dst=`echo $file | sed 's^.*/^^'`
+    if [ $# -eq 3 ]; then
+      case $dst in  
+      ${3}*) ;;
+      *) dst=${3}$dst;;
+      esac
+    fi	 
+    echo "$0: Copying file $1/$file to $2/$dst"
+    cp -p $1/$file $2/$dst
   done
 }
 
@@ -214,6 +221,8 @@ for dir in doc rmt lib tests
 do
 	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
 done
+
+copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
 
 # Get gnulib files.
 
