@@ -67,7 +67,7 @@
 #define obstack_chunk_free free
 #include <obstack.h>
 
-#include <paxerror.h>
+#include <paxlib.h>
 
 /* Log base 2 of common values.  */
 #define LG_8 3
@@ -570,7 +570,6 @@ struct name *name_scan (const char *);
 char *name_from_list (void);
 void blank_name_list (void);
 char *new_name (const char *, const char *);
-char *safer_name_suffix (char const *, bool);
 size_t stripped_prefix_len (char const *file_name, size_t num);
 bool all_names_found (struct tar_stat_info *);
 
@@ -581,8 +580,6 @@ bool is_avoided_name (char const *);
 bool is_individual_file (char const *);
 
 bool contains_dot_dot (char const *);
-
-bool removed_prefixes_p (void);
 
 #define ISFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
                     (c)->found_count == occurrence_option)
