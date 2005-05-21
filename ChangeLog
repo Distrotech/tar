@@ -1,3 +1,19 @@
+2005-05-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* lib/.cvsignore: Updated
+	* lib/Makefile.tmpl: Add new paxutils files
+	* po/POTFILES.in: Likewise
+	* src/buffer.c: Update invocations of safer_name_suffix()
+	* src/create.c: Likewise
+	* src/extract.c: Likewise
+	* src/xheader.c: Likewise
+	* src/common.h: Include paxlib.h instead of paxerror.h
+	(safer_name_suffix,removed_prefixes_p): Removed. The functions are
+	imported from paxutils
+	* src/names.c (hash_string_hasher,hash_string_compare)
+	(hash_string_insert,hash_string_lookup,removed_prefixes_p)
+	(safer_name_suffix): Moved to paxutils
+
 2005-05-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* bootstrap (copy_files): Accept optional third argument: a prefix
