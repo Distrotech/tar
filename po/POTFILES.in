@@ -29,6 +29,7 @@ lib/argp-help.c
 lib/paxconvert.c
 lib/paxerror.c
 lib/paxexit.c
+lib/paxnames.c
 
 rmt/rmt.c
 
