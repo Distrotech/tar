@@ -93,6 +93,11 @@ obstack.h
 openat.c
 openat.h
 pathmax.h
+paxconvert.c
+paxerror.c
+paxexit.c
+paxlib.h
+paxnames.c
 printf-args.c
 printf-args.h
 printf-parse.c
