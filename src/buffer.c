@@ -587,7 +587,9 @@ flush_write (void)
 	{
 	  if (save_name)
 	    {
-	      assign_string (&real_s_name, safer_name_suffix (save_name, false));
+	      assign_string (&real_s_name, 
+	                     safer_name_suffix (save_name, false, 
+	                                        absolute_names_option));
 	      real_s_totsize = save_totsize;
 	      real_s_sizeleft = save_sizeleft;
 	    }
@@ -693,7 +695,9 @@ flush_write (void)
 	assign_string (&real_s_name, 0);
       else
 	{
-	  assign_string (&real_s_name, safer_name_suffix (save_name, false));
+	  assign_string (&real_s_name, 
+	                 safer_name_suffix (save_name, false,
+	                                    absolute_names_option));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}
@@ -821,7 +825,9 @@ flush_read (void)
     {
       if (save_name)
 	{
-	  assign_string (&real_s_name, safer_name_suffix (save_name, false));
+	  assign_string (&real_s_name, 
+	                 safer_name_suffix (save_name, false,
+	                                    absolute_names_option));
 	  real_s_sizeleft = save_sizeleft;
 	  real_s_totsize = save_totsize;
 	}

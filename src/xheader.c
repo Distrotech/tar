@@ -246,7 +246,8 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	case 'd':
 	  if (st)
 	    {
-	      dir = safer_name_suffix (dir_name (st->orig_file_name), false);
+	      dir = safer_name_suffix (dir_name (st->orig_file_name), 
+	                               false, absolute_names_option);
 	      len += strlen (dir) - 1;
 	    }
 	  break;

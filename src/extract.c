@@ -778,7 +778,8 @@ extract_file (char *file_name, int typeflag)
 static int
 extract_link (char *file_name, int typeflag)
 {
-  char const *link_name = safer_name_suffix (current_stat_info.link_name, true);
+  char const *link_name = safer_name_suffix (current_stat_info.link_name, 
+                                             true, absolute_names_option);
   int interdir_made = 0;
 
   do
@@ -1133,7 +1134,8 @@ extract_archive (void)
   if (verbose_option)
     print_header (&current_stat_info, -1);
 
-  file_name = safer_name_suffix (current_stat_info.file_name, false);
+  file_name = safer_name_suffix (current_stat_info.file_name, 
+                                 false, absolute_names_option);
   if (strip_name_components)
     {
       size_t prefix_len = stripped_prefix_len (file_name, strip_name_components);
