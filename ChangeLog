@@ -1,3 +1,12 @@
+2005-05-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* scripts/backup.in: Minor fixes
+	* scripts/backup.sh.in (mt_begin,mt_rewind)
+	(mt_offline,mt_status):	Use $MT to invoke mt
+	(init_common): Set --rsh-command option for mt if TAPE_FILE is a
+	remote archive.
+	* doc/tar.texi: Document new backup scripts behavior
+	
 2005-05-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* lib/.cvsignore: Updated
