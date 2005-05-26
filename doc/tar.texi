@@ -4929,8 +4929,12 @@ using @option{--time} option (@pxref{Scripted Backups}).
 @end defvr
 
 @defvr {Backup variable} TAPE_FILE
-The device @command{tar} writes the archive to.  This device should be
-attached to the host on which the dump scripts are run.
+
+The device @command{tar} writes the archive to. If @var{TAPE_FILE}
+is a remote archive (@pxref{remote-dev}), backup script will suppose
+that your @command{mt} is able to access remote devices. If @var{RSH}
+(@pxref{RSH}) is set, @option{--rsh-command} option will be added to
+invocations of @command{mt}. 
 @end defvr
 
 @defvr {Backup variable} BLOCKING
@@ -4987,17 +4991,23 @@ A path to the file containing the list of the individual files to backup
 or restore. By default it is @file{/etc/backup/files}.
 @end defvr
 
-@defvr {Backup variable} RSH
+@defvr {Backup variable} MT
 
-Path to @code{rsh} binary or its equivalent. You may wish to
+Full file name of @command{mt} binary.
+@end defvr
+
+@defvr {Backup variable} RSH
+@anchor{RSH}
+Full file name of @command{rsh} binary or its equivalent. You may wish to
 set it to @code{ssh}, to improve security. In this case you will have
 to use public key authentication.
 @end defvr
 
 @defvr {Backup variable} RSH_COMMAND
 
-Path to rsh binary on remote mashines. This will be passed via
-@option{--rsh-command} option to the remote invocation of @GNUTAR{}.
+Full file name of @command{rsh} binary on remote mashines. This will
+be passed via @option{--rsh-command} option to the remote invocation
+of @GNUTAR{}. 
 @end defvr
 
 @defvr {Backup variable} VOLNO_FILE
@@ -5042,7 +5052,7 @@ this will just be some literal text.
 
 @defvr {Backup variable} TAR
 
-Pathname of the @GNUTAR{} executable. If this is not set, backup
+Full file name of the @GNUTAR{} executable. If this is not set, backup
 scripts will search @command{tar} in the current shell path.
 @end defvr
 
@@ -5481,6 +5491,7 @@ $ @kbd{cd sourcedir; tar -cf - . | (cd targetdir; tar -xf -)}
 
 @cindex Standard input and output
 @cindex tar to standard input and output
+@anchor{remote-dev}
 To specify an archive file on a device attached to a remote machine,
 use the following:
 
