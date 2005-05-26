@@ -1,6 +1,6 @@
 #! /bin/sh
 # This program is part of GNU tar
-# Copyright 2004, Free Software Foundation
+# Copyright 2004, 2005, Free Software Foundation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -199,7 +199,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      else
          flush_level_log ${remotehost} ${fsname}
      fi
-     ${MT_STATUS} $TAPE_FILE
+     ${MT_STATUS} "$TAPE_FILE"
      ${DUMP_END-:} $DUMP_LEVEL $remotehost $fs $fsname
      echo "sleeping ${SLEEP_TIME} seconds"
      sleep ${SLEEP_TIME}
@@ -235,7 +235,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
      else
 	 flush_level_log $localhost MISC
      fi
-     ${MT_STATUS} $TAPE_FILE
+     ${MT_STATUS} "$TAPE_FILE"
      ${DUMP_END-:} $DUMP_LEVEL $localhost MISC MISC
  else
      echo "No miscellaneous files specified"
