@@ -1,6 +1,6 @@
 #! /bin/sh
 # This program is part of GNU tar
-# Copyright 2004, Free Software Foundation
+# Copyright 2004, 2005, Free Software Foundation
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,19 +27,19 @@ LOGPATH=${CONFIGPATH}/log
 
 # Default functions for running various magnetic tape commands
 mt_begin() {
-    mt -f "$1" retension
+    $MT -f "$1" retension
 }
 
 mt_rewind() {
-    mt -f "$1" rewind
+    $MT -f "$1" rewind
 }
 
 mt_offline() {
-    mt -f "$1" offl
+    $MT -f "$1" offl
 }
 
 mt_status() {
-    mt -f "$1" status
+    $MT -f "$1" status
 }
 
 # The main configuration file may override any of these variables
@@ -172,9 +172,22 @@ init_common() {
     if [ \( x"$BACKUP_DIRS" = x \) -a \( x"$BACKUP_FILES" = x \) ]; then
 	bailout "Neither BACKUP_DIRS nor BACKUP_FILES specified"
     fi
-    if [ "$RSH" = "" ]; then
+    if [ -n "$RSH" ]; then
 	RSH=rsh
+	MT_RSH_OPTION=
+    else
+	MT_RSH_OPTION="--rsh-command=$RSH"
     fi
+    if [ -n $TAPE_FILE ]; then
+	TAPE_FILE=/dev/tape
+    fi
+
+    # If TAPE_FILE is a remote device, update mt invocation accordingly
+    case $TAPE_FILE in
+    *:*) MT="$MT $MT_RSH_OPTION";;
+    *)   ;;
+    esac
+
     POSIXLY_CORRECT=1
     export POSIXLY_CORRECT
 }
