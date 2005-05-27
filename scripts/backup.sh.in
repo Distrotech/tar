@@ -172,17 +172,18 @@ init_common() {
     if [ \( x"$BACKUP_DIRS" = x \) -a \( x"$BACKUP_FILES" = x \) ]; then
 	bailout "Neither BACKUP_DIRS nor BACKUP_FILES specified"
     fi
-    if [ -n "$RSH" ]; then
+    if [ -z "$RSH" ]; then
 	RSH=rsh
 	MT_RSH_OPTION=
     else
 	MT_RSH_OPTION="--rsh-command=$RSH"
     fi
-    if [ -n $TAPE_FILE ]; then
+    if [ -z "$TAPE_FILE" ]; then
 	TAPE_FILE=/dev/tape
     fi
 
     # If TAPE_FILE is a remote device, update mt invocation accordingly
+    : ${MT:=mt}
     case $TAPE_FILE in
     *:*) MT="$MT $MT_RSH_OPTION";;
     *)   ;;
