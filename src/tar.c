@@ -641,23 +641,37 @@ for complete list of authors.\n"));
 
 static volatile int _argp_hang;
 
-static bool
+enum read_file_list_state  /* Result of reading file name from the list file */
+  {
+    file_list_success,     /* OK, name read successfully */
+    file_list_end,         /* End of list file */
+    file_list_zero         /* Zero separator encountered where it should not */
+  };
+
+/* Read from FP a sequence of characters up to FILENAME_TERMINATOR and put them
+   into STK.
+ */
+static enum read_file_list_state
 read_name_from_file (FILE *fp, struct obstack *stk)
 {
   int c;
   size_t counter = 0;
-
+  
   for (c = getc (fp); c != EOF && c != filename_terminator; c = getc (fp))
     {
       if (c == 0)
-	FATAL_ERROR((0, 0, N_("file name contains null character")));
+	{
+	  /* We have read a zero separator. The file possibly is zero-separated */
+	  /* FATAL_ERROR((0, 0, N_("file name contains null character"))); */
+	  return file_list_zero;
+	}
       obstack_1grow (stk, c);
       counter++;
     }
 
   obstack_1grow (stk, 0);
 
-  return !(counter == 0 && c == EOF);
+  return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
 }
 
 
@@ -706,7 +720,8 @@ update_argv (const char *filename, struct argp_state *state)
   char **new_argv;
   size_t new_argc;
   bool is_stdin = false;
-
+  enum read_file_list_state read_state;
+  
   if (!strcmp (filename, "-"))
     {
       is_stdin = true;
@@ -720,8 +735,32 @@ update_argv (const char *filename, struct argp_state *state)
 	open_fatal (filename);
     }
 
-  while (read_name_from_file (fp, &argv_stk))
+  while ((read_state = read_name_from_file (fp, &argv_stk)) == file_list_success)
     count++;
+
+  if (read_state == file_list_zero)
+    {
+      size_t size;
+      
+      WARN ((0, 0, N_("%s: file name read contains nul character"),
+	     quotearg_colon (filename)));
+
+      /* Prepare new stack contents */
+      size = obstack_object_size (&argv_stk);
+      p = obstack_finish (&argv_stk);
+      for (; size > 0; size--, p++)
+	if (*p)
+	  obstack_1grow (&argv_stk, *p);
+        else 
+	  obstack_1grow (&argv_stk, '\n');
+      obstack_1grow (&argv_stk, 0);
+      count = 1;
+
+      /* Read rest of files using new filename terminator */
+      filename_terminator = 0;
+      while (read_name_from_file (fp, &argv_stk) == file_list_success)
+	count++;
+    }
 
   if (!is_stdin)
     fclose (fp);
