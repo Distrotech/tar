@@ -1,3 +1,9 @@
+2005-05-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/tar.c (read_name_from_file,update_argv): Automatically
+	detect nul-terminated list files.
+	* NEWS: Updated
+
 2005-05-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* scripts/backup.sh.in: Bugfixes.

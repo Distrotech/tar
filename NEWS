@@ -18,6 +18,9 @@ as option name within the file list file. Now any file whose name
 starts with - is handled as option. To insert file names starting with
 dash, use --add-file option.
 
+* List files containing null-separated file names are detected and processed
+automatically. It is not necessary to give --null option.
+
 * New option --no-unquote disables unquoting input file names. This
 is useful e.g. for processing output from `find dir -print0'.
 An orthogonal option --unquote is provided as well.
