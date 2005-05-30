@@ -1,3 +1,7 @@
+2005-05-27  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* scripts/backup.sh.in: Bugfixes.
+
 2005-05-26  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* scripts/backup.in: Minor fixes
