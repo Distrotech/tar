@@ -1,3 +1,8 @@
+2005-06-02  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/names.c (excluded_name): excluded_filename ->
+	excluded_file_name, because the name was changed in gnulib.
+
 2005-05-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/tar.c (read_name_from_file,update_argv): Automatically
@@ -16,7 +21,7 @@
 	(init_common): Set --rsh-command option for mt if TAPE_FILE is a
 	remote archive.
 	* doc/tar.texi: Document new backup scripts behavior
-	
+
 2005-05-22  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* lib/.cvsignore: Updated
@@ -47,7 +52,7 @@
 	paxutils
 	* src/misc.c: Likewise
 	* src/list.c (stringify_uintmax_t_backwards): Moved to paxutils
-	
+
 2005-05-17  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/misc.c (remove_any_file): Fix typo in previous change.

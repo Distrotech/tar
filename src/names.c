@@ -861,7 +861,7 @@ new_name (const char *file_name, const char *name)
 bool
 excluded_name (char const *name)
 {
-  return excluded_filename (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
+  return excluded_file_name (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
 }
 
 /* Names to avoid dumping.  */
