@@ -1,5 +1,14 @@
 2005-06-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/create.c (dump_file0): Check for is_avoided_name()
+	first. Fixes bug reported by Martin Lohmeier
+	<martin@mein-horde.de>
+	* tests/update.at: New file
+	* tests/Makefile.am (TESTSUITE_AT): Add update.at
+	* tests/testsuite.at: Likewise
+	
+2005-06-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
 	* configure.ac (AC_STRUCT_ST_BLKSIZE)
 	(AC_STRUCT_ST_BLOCKS): Removed. Handled by system.m4.
 
