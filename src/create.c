@@ -1414,6 +1414,8 @@ dump_file0 (struct tar_stat_info *st, char *p,
       return;
     }
 
+  if (is_avoided_name (p))
+    return;
   if (S_ISDIR (st->stat.st_mode))
     {
       dump_dir (st, top_level, parent_device);
@@ -1421,8 +1423,6 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	utime (p, &restore_times);
       return;
     }
-  else if (is_avoided_name (p))
-    return;
   else
     {
       /* Check for multiple links.  */
