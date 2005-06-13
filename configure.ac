@@ -53,8 +53,7 @@ AC_HEADER_DIRENT
 AC_HEADER_MAJOR
 AC_HEADER_STAT
 AC_HEADER_STDC
-AC_STRUCT_ST_BLKSIZE
-AC_STRUCT_ST_BLOCKS
+
 AC_MSG_CHECKING([for st_fstype string in struct stat])
 AC_CACHE_VAL(diff_cv_st_fstype_string,
   [AC_TRY_COMPILE([#include <sys/types.h>
