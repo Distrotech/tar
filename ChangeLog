@@ -1,3 +1,8 @@
+2005-06-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac (AC_STRUCT_ST_BLKSIZE)
+	(AC_STRUCT_ST_BLOCKS): Removed. Handled by system.m4.
+
 2005-06-02  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/names.c (excluded_name): excluded_filename ->
