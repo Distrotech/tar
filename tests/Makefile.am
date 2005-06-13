@@ -83,6 +83,7 @@ TESTSUITE_AT = \
  sparse01.at\
  sparse02.at\
  truncate.at\
+ update.at\
  volume.at\
  version.at\
  star/gtarfail.at\
