@@ -354,6 +354,8 @@ read_directory_file (void)
 		_("Time stamp out of range")));
       else
 	{
+	  /* FIXME: This should also input nanoseconds, but that will be a
+	     change in file format.  */
 	  newer_mtime_option.tv_sec = t;
 	  newer_mtime_option.tv_nsec = 0;
 	}
@@ -444,7 +446,9 @@ write_directory_file (void)
   if (sys_truncate (fileno (fp)) != 0)
     truncate_error (listed_incremental_option);
 
-  fprintf (fp, "%lu\n", (unsigned long) start_time);
+  /* FIXME: This should also output nanoseconds, but that will be a
+     change in file format.  */
+  fprintf (fp, "%lu\n", (unsigned long int) start_time.tv_sec);
   if (! ferror (fp) && directory_table)
     hash_do_for_each (directory_table, write_directory_file_entry, fp);
   if (ferror (fp))

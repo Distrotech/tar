@@ -22,30 +22,6 @@
 #include <rmt.h>
 #include <signal.h>
 
-void
-sys_stat_nanoseconds (struct tar_stat_info *st)
-{
-#if defined(HAVE_STRUCT_STAT_ST_SPARE1)
-  st->atime_nsec = st->stat.st_spare1 * 1000;
-  st->mtime_nsec = st->stat.st_spare2 * 1000;
-  st->ctime_nsec = st->stat.st_spare3 * 1000;
-#elif defined(HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC)
-  st->atime_nsec = st->stat.st_atim.tv_nsec;
-  st->mtime_nsec = st->stat.st_mtim.tv_nsec;
-  st->ctime_nsec = st->stat.st_ctim.tv_nsec;
-#elif defined(HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC)
-  st->atime_nsec = st->stat.st_atimespec.tv_nsec;
-  st->mtime_nsec = st->stat.st_mtimespec.tv_nsec;
-  st->ctime_nsec = st->stat.st_ctimespec.tv_nsec;
-#elif defined(HAVE_STRUCT_STAT_ST_ATIMENSEC)
-  st->atime_nsec = st->stat.st_atimensec;
-  st->mtime_nsec = st->stat.st_mtimensec;
-  st->ctime_nsec = st->stat.st_ctimensec;
-#else
-  st->atime_nsec  = st->mtime_nsec = st->ctime_nsec = 0;
-#endif
-}
-
 #if MSDOS
 
 bool
@@ -642,7 +618,7 @@ static void
 oct_to_env (char *envar, unsigned long num)
 {
   char buf[1+1+(sizeof(unsigned long)*CHAR_BIT+2)/3];
-  
+
   snprintf (buf, sizeof buf, "0%lo", num);
   setenv (envar, buf, 1);
 }
@@ -679,7 +655,7 @@ stat_to_env (char *name, char type, struct tar_stat_info *st)
   dec_to_env ("TAR_CTIME", st->stat.st_ctime);
   dec_to_env ("TAR_SIZE", st->stat.st_size);
   dec_to_env ("TAR_UID", st->stat.st_uid);
-  dec_to_env ("TAR_GID", st->stat.st_gid);     
+  dec_to_env ("TAR_GID", st->stat.st_gid);
 
   switch (type)
     {
@@ -713,7 +689,7 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
 {
   int p[2];
   char *argv[4];
-  
+
   xpipe (p);
   pipe_handler = signal (SIGPIPE, SIG_IGN);
   pid = xfork ();
@@ -727,7 +703,7 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
   /* Child */
   xdup2 (p[PREAD], STDIN_FILENO);
   xclose (p[PWRITE]);
-  
+
   stat_to_env (file_name, typechar, st);
 
   argv[0] = "/bin/sh";
@@ -744,7 +720,7 @@ void
 sys_wait_command (void)
 {
   int status;
-  
+
   if (pid < 0)
     return;
 
@@ -776,4 +752,3 @@ sys_wait_command (void)
 }
 
 #endif /* not MSDOS */
-

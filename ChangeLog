@@ -1,3 +1,105 @@
+2005-06-21  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Further improvements inspired by Jim Meyering's fixes.
+
+	* NEWS: Better support for full-resolution time stamps.
+	The -v option now prints time stamps only to 1-minute resolution.
+	* gnulib.modules: Add utimens.
+	* lib/.cvsignore: Add imaxtostr.c, inttostr.c, inttostr.h,
+	offtostr.c, umaxtostr.c, utimens.c, utimens.h.  Remove paxconvert.c.
+	* lib/Makefile.tmpl (libtar_a_SOURCES): Remove paxconvert.c.
+	* lib/paxconvert.c: Remove; superseded by umaxtostr.c.
+	* po/POTFILES.in: Remove lib/paxconvert.c.  Add lib/xalloc-die.c,
+	lib/obstack.c.
+	* src/buffer.c (set_start_time, compute_duration, start_time):
+	Use gettime rather than rolling our own code.
+	* src/common.h (OLDGNU_NAME_FIELD_SIZE, MAXOCTAL11, MAXOCTAL7): Remove.
+	(newer_ctime_option): Remove.
+	(timespec_lt): New function.
+	(OLDER_STAT_TIME): Use it.
+	(string_to_chars): First arg is char const *, not char *.
+	(tartime): Time arg is now struct timespec.  New bool arg.
+	All callers changed.
+	(code_ns_fraction): New decl.
+	(sys_stat_nanoseconds): Remove decl.
+	(get_stat_atime, get_stat_ctime, get_stat_mtime): New functions.
+	(set_stat_atime, set_stat_ctime, set_stat_mtime): New functions.
+	* src/compare.c: Include utimens.h rather than rolling our own.
+	(diff_dir, diff_file, diff_link, diff_symlink, diff_special):
+	Prototype.
+	(diff_dumpdir, diff_multivol): Prototype.
+	(diff_file): Support higher-resolution time stamps.
+	* src/create.c: Include utimens.h rather than rolling our own.
+	(MAX_OCTAL_VAL): New macro.
+	(tar_copy_str, string_to_chars): Don't bother to zero-fill;
+	the destination is already zeroed.
+	(string_to_chars): First arg is char const *.
+	(start_private_header): Use MINOR_TO_CHARS, not MAJOR_TO_CHARS,
+	for minor device number.
+	(write_header_name, dump_hard_link, dump_file0):
+	Simplify test for old GNU format.
+	(start_header): Put in placeholders for uid, etc., even when
+	using extended headers, for benefit of older "tar" implementations.
+	Don't assume uintmax_t is wider than 32 bits.
+	Output extended header for mtime if needed.
+	(dump_regular_finish, dump_file0):
+	Support extended time stamp resolution.
+	* src/extract.c: Include utimens.h rather than rolling our own.
+	(check_time): Support extended time stamp resolution.
+	* src/list.c: Include <inttostr.h>.
+	(tartime): Use umaxtostr rather than stringify_uintmax_t_backwards.
+	* src/xheader.c: Include <inttostr.h>.
+	Do not include <xstrtol.h>.
+	(strtoimax) [!HAVE_DECL_STRTOIMAX && !defined strtoimax]: New decl.
+	(strtoumax) [!HAVE_DECL_STRTOUMAX && !defined strtoumax]: New decl.
+	(BILLION, LOG10_BILLION): New constants.
+	(to_decimal): Remove; superseded by inttostr.  All callers changed
+	to use umaxtostr.
+	(xheader_format_name): Don't assume pids and uintmax_t values
+	fit in 63 bytes (!) when printed.
+	(decode_record): Don't bother to check for ERANGE; an out of range
+	value must be treater than len_max anyway.
+	If the length is out of range, output it in the diagnostic.
+	(format_uintmax): Remove; all callers changed to use umaxtostr.
+	(xheader_print): Don't assume sizes can be printed in 99 bytes (!).
+	(out_of_range_header): New function.
+	(decode_time): Use it.
+	(code_time): Accept struct timespec, not time_t and unsigned long.
+	All callers changed.  Size sbuf properly, and remove unnecessary check.
+	Don't assume time stamps can fit in 199 bytes.
+	Handle negative time stamps.  Handle fractional time stamps
+	more consistently.  Don't output unnecessary trailing zeros.
+	(decode_time): Yield struct timespec, not time_t and unsigned long.
+	All callers changed.
+	Handle negative time stamps.  Truncate towards minus infinity
+	consistently.  Improve overflow checks, and output a better
+	diagnostic on overflow.
+	(code_num): Don't assume uintmax_t can be printed in 99 bytes (!).
+	(decode_num): New function, for better diagnostics.
+	(atime_coder, atime_decoder, gid_decoder, ctime_coder):
+	(ctime_decoder, mtime_coder, mtime_decoder, size_decoder):
+	(uid_decoder, sparse_size_decoder, sparse_numblocks_decoder):
+	(sparse_offset_decoder, sparse_numbytes_decoder):
+	Use decode_num, etc., instead of xstrtoumax, etc.
+
+2005-06-21  Jim Meyering  <jim@meyering.net>
+
+	Carefully crafted invalid headers can cause buffer overrun.
+	Invalid header fields go undiagnosed.
+	Some valid time strings are ignored.
+
+	* src/xheader.c (sparse_numblocks_decoder): Remove unchecked use
+	of `calloc'.  Use xcalloc instead.
+	(decode_time, gid_decoder, size_decoder, uid_decoder):
+	(sparse_size_decoder, sparse_offset_decoder, sparse_numblocks_decoder):
+	Ensure that the result of calling xstrtoumax is no larger than
+	the maximum value for the target type.  Upon any failure, exit with
+	a diagnostic.
+	(sparse_numblocks_decoder): Avoid buffer overrun/heap corruption:
+	use x2nrealloc, rather than `n *= 2' and xrealloc(p, n,....
+	(decode_time): Rewrite to accept time strings like
+	1119018481.000000000.  Before, such strings were always ignored.
+
 2005-06-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/create.c (dump_file0): Check for is_avoided_name()
@@ -6,7 +108,7 @@
 	* tests/update.at: New file
 	* tests/Makefile.am (TESTSUITE_AT): Add update.at
 	* tests/testsuite.at: Likewise
-	
+
 2005-06-13  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* configure.ac (AC_STRUCT_ST_BLKSIZE)

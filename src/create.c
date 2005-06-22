@@ -21,17 +21,8 @@
 
 #include <system.h>
 
-#if HAVE_UTIME_H
-# include <utime.h>
-#else
-struct utimbuf
-  {
-    long actime;
-    long modtime;
-  };
-#endif
-
 #include <quotearg.h>
+#include <utimens.h>
 
 #include "common.h"
 #include <hash.h>
@@ -51,6 +42,10 @@ struct link
     ? ((uintmax_t) 1 << ((digits) * (bits_per_digit))) - 1 \
     : (uintmax_t) -1)
 
+/* The maximum uintmax_t value that can be represented with octal
+   digits and a trailing NUL in BUFFER.  */
+#define MAX_OCTAL_VAL(buffer) MAX_VAL_WITH_DIGITS (sizeof (buffer) - 1, LG_8)
+
 /* Convert VALUE to an octal representation suitable for tar headers.
    Output to buffer WHERE with size SIZE.
    The result is undefined if SIZE is 0 or if VALUE is too large to fit.  */
@@ -67,6 +62,29 @@ to_octal (uintmax_t value, char *where, size_t size)
       v >>= LG_8;
     }
   while (i);
+}
+
+/* Copy at most LEN bytes from the string SRC to DST.  Terminate with
+   NUL unless SRC is LEN or more bytes long.  */
+
+static void
+tar_copy_str (char *dst, const char *src, size_t len)
+{
+  size_t i;
+  for (i = 0; i < len; i++)
+    if (! (dst[i] = src[i]))
+      break;
+}
+
+/* Same as tar_copy_str, but always terminate with NUL if using
+   is OLDGNU format */
+
+static void
+tar_name_copy_str (char *dst, const char *src, size_t len)
+{
+  tar_copy_str (dst, src, len);
+  if (archive_format == OLDGNU_FORMAT)
+    dst[len-1] = 0;
 }
 
 /* Convert NEGATIVE VALUE to a base-256 representation suitable for
@@ -325,10 +343,10 @@ uintmax_to_chars (uintmax_t v, char *p, size_t s)
 }
 
 void
-string_to_chars (char *str, char *p, size_t s)
+string_to_chars (char const *str, char *p, size_t s)
 {
-  strncpy (p, str, s);
-  p[s-1] = 0;
+  tar_copy_str (p, str, s);
+  p[s - 1] = '\0';
 }
 
 
@@ -361,25 +379,6 @@ write_eot (void)
   set_next_block_after (pointer);
 }
 
-/* Copy at most LEN bytes from SRC to DST. Terminate with NUL unless
-   SRC is LEN characters long */
-static void
-tar_copy_str (char *dst, const char *src, size_t len)
-{
-  dst[len-1] = 0;
-  strncpy (dst, src, len);
-}
-
-/* Same as tar_copy_str, but always terminate with NUL if using
-   is OLDGNU format */
-static void
-tar_name_copy_str (char *dst, const char *src, size_t len)
-{
-  tar_copy_str (dst, src, len);
-  if (archive_format == OLDGNU_FORMAT)
-    dst[len-1] = 0;
-}
-
 /* Write a "private" header */
 union block *
 start_private_header (const char *name, size_t size)
@@ -398,7 +397,7 @@ start_private_header (const char *name, size_t size)
   UID_TO_CHARS (getuid (), header->header.uid);
   GID_TO_CHARS (getgid (), header->header.gid);
   MAJOR_TO_CHARS (0, header->header.devmajor);
-  MAJOR_TO_CHARS (0, header->header.devminor);
+  MINOR_TO_CHARS (0, header->header.devminor);
   strncpy (header->header.magic, TMAGIC, TMAGLEN);
   strncpy (header->header.version, TVERSION, TVERSLEN);
   return header;
@@ -600,9 +599,8 @@ write_header_name (struct tar_stat_info *st)
       xheader_store ("path", st, NULL);
       return write_short_name (st);
     }
-  else if ((archive_format == OLDGNU_FORMAT
-	    && OLDGNU_NAME_FIELD_SIZE < strlen (st->file_name))
-	   || NAME_FIELD_SIZE < strlen (st->file_name))
+  else if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT)
+	   < strlen (st->file_name))
     return write_long_name (st);
   else
     return write_short_name (st);
@@ -662,39 +660,74 @@ start_header (struct tar_stat_info *st)
   else
     MODE_TO_CHARS (st->stat.st_mode, header->header.mode);
 
-  if (st->stat.st_uid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-    xheader_store ("uid", st, NULL);
-  else
-    UID_TO_CHARS (st->stat.st_uid, header->header.uid);
+  {
+    uid_t uid = st->stat.st_uid;
+    if (archive_format == POSIX_FORMAT
+	&& MAX_OCTAL_VAL (header->header.uid) < uid)
+      {
+	xheader_store ("uid", st, NULL);
+	uid = 0;
+      }
+    UID_TO_CHARS (uid, header->header.uid);
+  }
 
-  if (st->stat.st_gid > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-    xheader_store ("gid", st, NULL);
-  else
-    GID_TO_CHARS (st->stat.st_gid, header->header.gid);
+  {
+    gid_t gid = st->stat.st_gid;
+    if (archive_format == POSIX_FORMAT
+	&& MAX_OCTAL_VAL (header->header.gid) < gid)
+      {
+	xheader_store ("gid", st, NULL);
+	gid = 0;
+      }
+    GID_TO_CHARS (gid, header->header.gid);
+  }
 
-  if (st->stat.st_size > MAXOCTAL11 && archive_format == POSIX_FORMAT)
-    xheader_store ("size", st, NULL);
-  else
-    OFF_TO_CHARS (st->stat.st_size, header->header.size);
+  {
+    off_t size = st->stat.st_size;
+    if (archive_format == POSIX_FORMAT
+	&& MAX_OCTAL_VAL (header->header.size) < size)
+      {
+	xheader_store ("size", st, NULL);
+	size = 0;
+      }
+    OFF_TO_CHARS (size, header->header.size);
+  }
 
-  TIME_TO_CHARS (st->stat.st_mtime, header->header.mtime);
+  {
+    struct timespec mtime = get_stat_mtime (&st->stat);
+    if (archive_format == POSIX_FORMAT)
+      {
+	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec
+	    || mtime.tv_nsec != 0)
+	  xheader_store ("mtime", st, NULL);
+	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec)
+	  mtime.tv_sec = 0;
+      }
+    TIME_TO_CHARS (mtime.tv_sec, header->header.mtime);
+  }
 
   /* FIXME */
   if (S_ISCHR (st->stat.st_mode)
       || S_ISBLK (st->stat.st_mode))
     {
-      st->devmajor = major (st->stat.st_rdev);
-      st->devminor = minor (st->stat.st_rdev);
+      major_t devmajor = major (st->stat.st_rdev);
+      minor_t devminor = minor (st->stat.st_rdev);
 
-      if (st->devmajor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-	xheader_store ("devmajor", st, NULL);
-      else
-	MAJOR_TO_CHARS (st->devmajor, header->header.devmajor);
+      if (archive_format == POSIX_FORMAT
+	  && MAX_OCTAL_VAL (header->header.devmajor) < devmajor)
+	{
+	  xheader_store ("devmajor", st, NULL);
+	  devmajor = 0;
+	}
+      MAJOR_TO_CHARS (devmajor, header->header.devmajor);
 
-      if (st->devminor > MAXOCTAL7 && archive_format == POSIX_FORMAT)
-	xheader_store ("devminor", st, NULL);
-      else
-	MAJOR_TO_CHARS (st->devminor, header->header.devminor);
+      if (archive_format == POSIX_FORMAT
+	  && MAX_OCTAL_VAL (header->header.devminor) < devminor)
+	{
+	  xheader_store ("devminor", st, NULL);
+	  devminor = 0;
+	}
+      MINOR_TO_CHARS (devminor, header->header.devminor);
     }
   else if (archive_format != GNU_FORMAT && archive_format != OLDGNU_FORMAT)
     {
@@ -750,15 +783,13 @@ start_header (struct tar_stat_info *st)
 	  && (strlen (st->uname) > UNAME_FIELD_SIZE
 	      || !string_ascii_p (st->uname)))
 	xheader_store ("uname", st, NULL);
-      else
-	UNAME_TO_CHARS (st->uname, header->header.uname);
+      UNAME_TO_CHARS (st->uname, header->header.uname);
 
       if (archive_format == POSIX_FORMAT
 	  && (strlen (st->gname) > GNAME_FIELD_SIZE
 	      || !string_ascii_p (st->gname)))
 	xheader_store ("gname", st, NULL);
-      else
-	GNAME_TO_CHARS (st->gname, header->header.gname);
+      GNAME_TO_CHARS (st->gname, header->header.gname);
     }
 
   return header;
@@ -888,7 +919,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
       size_left -= count;
       if (count)
 	set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
-      
+
       if (count != bufsize)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
@@ -909,7 +940,8 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 }
 
 static void
-dump_regular_finish (int fd, struct tar_stat_info *st, time_t original_ctime)
+dump_regular_finish (int fd, struct tar_stat_info *st,
+		     struct timespec original_ctime)
 {
   if (fd >= 0)
     {
@@ -918,7 +950,9 @@ dump_regular_finish (int fd, struct tar_stat_info *st, time_t original_ctime)
 	{
 	  stat_diag (st->orig_file_name);
 	}
-      else if (final_stat.st_ctime != original_ctime)
+      else if (final_stat.st_ctime != original_ctime.tv_sec
+	       || (get_stat_ctime (&final_stat).tv_nsec
+		   != original_ctime.tv_nsec))
 	{
 	  WARN ((0, 0, _("%s: file changed as we read it"),
 		 quotearg_colon (st->orig_file_name)));
@@ -1270,9 +1304,8 @@ dump_hard_link (struct tar_stat_info *st)
 
 	  block_ordinal = current_block_ordinal ();
 	  assign_string (&st->link_name, link_name);
-	  if ((archive_format == OLDGNU_FORMAT
-	       && OLDGNU_NAME_FIELD_SIZE < strlen (link_name))
-	      || NAME_FIELD_SIZE < strlen (link_name))
+	  if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT)
+	      < strlen (link_name))
 	    write_long_link (st);
 
 	  st->stat.st_size = 0;
@@ -1354,15 +1387,15 @@ dump_file0 (struct tar_stat_info *st, char *p,
 {
   union block *header;
   char type;
-  time_t original_ctime;
-  struct utimbuf restore_times;
+  struct timespec original_ctime;
+  struct timespec restore_times[2];
   off_t block_ordinal = -1;
 
   if (interactive_option && !confirm ("add", p))
     return;
 
   assign_string (&st->orig_file_name, p);
-  assign_string (&st->file_name, 
+  assign_string (&st->file_name,
                  safer_name_suffix (p, false, absolute_names_option));
 
   if (deref_stat (dereference_option, p, &st->stat) != 0)
@@ -1371,10 +1404,9 @@ dump_file0 (struct tar_stat_info *st, char *p,
       return;
     }
   st->archive_file_size = st->stat.st_size;
-  sys_stat_nanoseconds (st);
-  original_ctime = st->stat.st_ctime;
-  restore_times.actime = st->stat.st_atime;
-  restore_times.modtime = st->stat.st_mtime;
+  original_ctime = get_stat_ctime (&st->stat);
+  restore_times[0] = get_stat_atime (&st->stat);
+  restore_times[1] = get_stat_mtime (&st->stat);
 
 #ifdef S_ISHIDDEN
   if (S_ISHIDDEN (st->stat.st_mode))
@@ -1420,7 +1452,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
     {
       dump_dir (st, top_level, parent_device);
       if (atime_preserve_option)
-	utime (p, &restore_times);
+	utimens (p, restore_times);
       return;
     }
   else
@@ -1486,7 +1518,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	    }
 
 	  if (atime_preserve_option)
-	    utime (st->orig_file_name, &restore_times);
+	    utimens (st->orig_file_name, restore_times);
 	  file_count_links (st);
 	  return;
 	}
@@ -1507,8 +1539,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	    }
 	  buffer[size] = '\0';
 	  assign_string (&st->link_name, buffer);
-	  if ((archive_format == OLDGNU_FORMAT && size > OLDGNU_NAME_FIELD_SIZE)
-	      || size > NAME_FIELD_SIZE)
+	  if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
 	    write_long_link (st);
 
 	  block_ordinal = current_block_ordinal ();

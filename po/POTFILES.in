@@ -1,6 +1,7 @@
 # List of files which contain translatable strings.
 
-# Copyright (C) 1996, 1999, 2000, 2003 Free Software Foundation, Inc.
+# Copyright (C) 1996, 1999, 2000, 2003, 2004, 2005 Free Software
+# Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,17 +20,19 @@
 
 # Library files
 lib/argmatch.c
+lib/argp-help.c
+lib/argp-parse.c
 lib/error.c
 lib/getopt.c
 lib/human.c
-lib/quotearg.c
-lib/xmalloc.c
-lib/rtapelib.c
-lib/argp-help.c
-lib/paxconvert.c
+lib/obstack.c
 lib/paxerror.c
 lib/paxexit.c
 lib/paxnames.c
+lib/quotearg.c
+lib/rtapelib.c
+lib/xalloc-die.c
+lib/xmalloc.c
 
 rmt/rmt.c
 
@@ -51,4 +54,3 @@ src/xheader.c
 
 # Testsuite
 tests/genfile.c
-

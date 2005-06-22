@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004 Free Software Foundation, Inc.
+   2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -21,21 +21,12 @@
 
 #include <system.h>
 
-#if HAVE_UTIME_H
-# include <utime.h>
-#else
-struct utimbuf
-  {
-    long actime;
-    long modtime;
-  };
-#endif
-
 #if HAVE_LINUX_FD_H
 # include <linux/fd.h>
 #endif
 
 #include <quotearg.h>
+#include <utimens.h>
 
 #include "common.h"
 #include <rmt.h>
@@ -196,7 +187,7 @@ get_stat_data (char const *file_name, struct stat *stat_data)
 
 
 static void
-diff_dir ()
+diff_dir (void)
 {
   struct stat stat_data;
 
@@ -211,7 +202,7 @@ diff_dir ()
 }
 
 static void
-diff_file ()
+diff_file (void)
 {
   struct stat stat_data;
 
@@ -254,10 +245,6 @@ diff_file ()
 	  else
 	    {
 	      int status;
-	      struct utimbuf restore_times;
-	      
-	      restore_times.actime = stat_data.st_atime;
-	      restore_times.modtime = stat_data.st_mtime;
 
 	      if (current_stat_info.is_sparse)
 		sparse_diff_file (diff_handle, &current_stat_info);
@@ -265,7 +252,7 @@ diff_file ()
 		{
 		  if (multi_volume_option)
 		    {
-		      assign_string (&save_name, 
+		      assign_string (&save_name,
                                      current_stat_info.orig_file_name);
 		      save_totsize = current_stat_info.stat.st_size;
 		      /* save_sizeleft is set in read_and_process.  */
@@ -283,14 +270,20 @@ diff_file ()
 		close_error (current_stat_info.file_name);
 
 	      if (atime_preserve_option)
-		utime (current_stat_info.file_name, &restore_times);
+		{
+		  struct timespec ts[2];
+		  ts[0] = get_stat_atime (&stat_data);
+		  ts[1] = get_stat_mtime (&stat_data);
+		  if (utimens (current_stat_info.file_name, ts) != 0)
+		    utime_error (current_stat_info.file_name);
+		}
 	    }
 	}
     }
 }
 
 static void
-diff_link ()
+diff_link (void)
 {
   struct stat file_data;
   struct stat link_data;
@@ -305,7 +298,7 @@ diff_link ()
 
 #ifdef HAVE_READLINK
 static void
-diff_symlink ()
+diff_symlink (void)
 {
   size_t len = strlen (current_stat_info.link_name);
   char *linkbuf = alloca (len + 1);
@@ -327,7 +320,7 @@ diff_symlink ()
 #endif
 
 static void
-diff_special ()
+diff_special (void)
 {
   struct stat stat_data;
 
@@ -361,7 +354,7 @@ diff_special ()
 }
 
 static void
-diff_dumpdir ()
+diff_dumpdir (void)
 {
   char *dumpdir_buffer = get_directory_contents (current_stat_info.file_name,
 						 0);
@@ -387,7 +380,7 @@ diff_dumpdir ()
 }
 
 static void
-diff_multivol ()
+diff_multivol (void)
 {
   struct stat stat_data;
   int fd, status;
@@ -398,7 +391,7 @@ diff_multivol ()
       diff_dir ();
       return;
     }
-  
+
   if (!get_stat_data (current_stat_info.file_name, &stat_data))
     return;
 
@@ -418,7 +411,7 @@ diff_multivol ()
     }
 
   fd = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
-  
+
   if (fd < 0)
     {
       open_error (current_stat_info.file_name);
@@ -445,7 +438,7 @@ diff_multivol ()
 
   if (multi_volume_option)
     assign_string (&save_name, 0);
-  
+
   status = close (fd);
   if (status != 0)
     close_error (current_stat_info.file_name);
@@ -498,7 +491,7 @@ diff_archive (void)
       diff_symlink ();
       break;
 #endif
-      
+
     case CHRTYPE:
     case BLKTYPE:
     case FIFOTYPE:
@@ -508,7 +501,7 @@ diff_archive (void)
     case GNUTYPE_DUMPDIR:
       diff_dumpdir ();
       /* Fall through.  */
-      
+
     case DIRTYPE:
       diff_dir ();
       break;

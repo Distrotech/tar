@@ -125,23 +125,16 @@ double duration;
 void
 set_start_time ()
 {
-#if HAVE_CLOCK_GETTIME
-  if (clock_gettime (CLOCK_REALTIME, &start_timespec) != 0)
-#endif
-    start_time = time (0);
+  gettime (&start_time);
 }
 
 void
 compute_duration ()
 {
-#if HAVE_CLOCK_GETTIME
   struct timespec now;
-  if (clock_gettime (CLOCK_REALTIME, &now) == 0)
-    duration += ((now.tv_sec - start_timespec.tv_sec)
-		 + (now.tv_nsec - start_timespec.tv_nsec) / 1e9);
-  else
-#endif
-    duration += time (NULL) - start_time;
+  gettime (&now);
+  duration += ((now.tv_sec - start_time.tv_sec)
+	       + (now.tv_nsec - start_time.tv_nsec) / 1e9);
   set_start_time ();
 }
 
@@ -542,7 +535,7 @@ open_archive (enum access_mode wanted_access)
 	    strip_trailing_slashes (current_stat_info.file_name);
 
 	  record_start->header.typeflag = GNUTYPE_VOLHDR;
-	  TIME_TO_CHARS (start_time, record_start->header.mtime);
+	  TIME_TO_CHARS (start_time.tv_sec, record_start->header.mtime);
 	  finish_header (&current_stat_info, record_start, -1);
 	}
       break;
@@ -587,8 +580,8 @@ flush_write (void)
 	{
 	  if (save_name)
 	    {
-	      assign_string (&real_s_name, 
-	                     safer_name_suffix (save_name, false, 
+	      assign_string (&real_s_name,
+	                     safer_name_suffix (save_name, false,
 	                                        absolute_names_option));
 	      real_s_totsize = save_totsize;
 	      real_s_sizeleft = save_sizeleft;
@@ -636,7 +629,7 @@ flush_write (void)
       memset (record_start, 0, BLOCKSIZE);
       sprintf (record_start->header.name, "%s Volume %d",
 	       volume_label_option, volno);
-      TIME_TO_CHARS (start_time, record_start->header.mtime);
+      TIME_TO_CHARS (start_time.tv_sec, record_start->header.mtime);
       record_start->header.typeflag = GNUTYPE_VOLHDR;
       finish_header (&current_stat_info, record_start, -1);
     }
@@ -695,7 +688,7 @@ flush_write (void)
 	assign_string (&real_s_name, 0);
       else
 	{
-	  assign_string (&real_s_name, 
+	  assign_string (&real_s_name,
 	                 safer_name_suffix (save_name, false,
 	                                    absolute_names_option));
 	  real_s_sizeleft = save_sizeleft;
@@ -825,7 +818,7 @@ flush_read (void)
     {
       if (save_name)
 	{
-	  assign_string (&real_s_name, 
+	  assign_string (&real_s_name,
 	                 safer_name_suffix (save_name, false,
 	                                    absolute_names_option));
 	  real_s_sizeleft = save_sizeleft;

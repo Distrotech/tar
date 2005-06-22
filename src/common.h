@@ -23,18 +23,11 @@
 /* The checksum field is filled with this while the checksum is computed.  */
 #define CHKBLANKS	"        "	/* 8 blanks, no null */
 
-/* Old GNU stores zero-terminated file name */
-#define OLDGNU_NAME_FIELD_SIZE   99
-
 /* Some constants from POSIX are given names.  */
 #define NAME_FIELD_SIZE   100
 #define PREFIX_FIELD_SIZE 155
 #define UNAME_FIELD_SIZE   32
 #define GNAME_FIELD_SIZE   32
-
-/* FIXME */
-#define MAXOCTAL11      017777777777L
-#define MAXOCTAL7       07777777
 
 
 
@@ -185,10 +178,6 @@ GLOBAL mode_t initial_umask;
 
 GLOBAL bool multi_volume_option;
 
-/* The same variable holds the time, whether mtime or ctime.  Just fake a
-   non-existing option, for making the code clearer, elsewhere.  */
-#define newer_ctime_option newer_mtime_option
-
 /* Specified threshold date and time.  Files having an older time stamp
    do not get archived (also see after_date_option above).  */
 GLOBAL struct timespec newer_mtime_option;
@@ -199,9 +188,14 @@ GLOBAL struct timespec newer_mtime_option;
 /* Return true if the struct stat ST's M time is less than
    newer_mtime_option.  */
 #define OLDER_STAT_TIME(st, m) \
-  ((st).st_##m##time < newer_mtime_option.tv_sec \
-   || ((st).st_##m##time == newer_mtime_option.tv_sec \
-       && TIMESPEC_NS ((st).st_##m##tim) < newer_mtime_option.tv_nsec))
+  timespec_lt (get_stat_##m##time (&st), newer_mtime_option)
+
+/* Return true if A < B.  */
+static inline
+timespec_lt (struct timespec a, struct timespec b)
+{
+  return a.tv_sec < b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec);
+}
 
 /* Zero if there is no recursion, otherwise FNM_LEADING_DIR.  */
 GLOBAL int recursion_option;
@@ -281,12 +275,7 @@ GLOBAL int archive;
 GLOBAL bool dev_null_output;
 
 /* Timestamp for when we started execution.  */
-#if HAVE_CLOCK_GETTIME
-  GLOBAL struct timespec start_timespec;
-# define start_time (start_timespec.tv_sec)
-#else
-  GLOBAL time_t start_time;
-#endif
+GLOBAL struct timespec start_time;
 
 GLOBAL struct tar_stat_info current_stat_info;
 
@@ -410,7 +399,7 @@ void size_to_chars (size_t, char *, size_t);
 void time_to_chars (time_t, char *, size_t);
 void uid_to_chars (uid_t, char *, size_t);
 void uintmax_to_chars (uintmax_t, char *, size_t);
-void string_to_chars (char *, char *, size_t);
+void string_to_chars (char const *, char *, size_t);
 
 /* Module diffarch.c.  */
 
@@ -464,7 +453,7 @@ extern size_t recent_long_link_blocks;
 
 void decode_header (union block *, struct tar_stat_info *,
 		    enum archive_format *, int);
-char const *tartime (time_t);
+char const *tartime (struct timespec, bool);
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
@@ -504,6 +493,8 @@ void extract_mangle (void);
 void assign_string (char **, const char *);
 char *quote_copy_string (const char *);
 int unquote_string (char *);
+
+void code_ns_fraction (int, char *);
 
 size_t dot_dot_prefix_len (char const *);
 
@@ -621,7 +612,6 @@ void xheader_set_option (char *string);
 
 /* Module system.c */
 
-void sys_stat_nanoseconds (struct tar_stat_info *);
 void sys_detect_dev_null_output (void);
 void sys_save_archive_dev_ino (void);
 void sys_drain_input_pipe (void);
@@ -654,3 +644,120 @@ bool sparse_diff_file (int, struct tar_stat_info *);
 /* Module utf8.c */
 bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
+
+
+/* FIXME: The following should get moved into gnulib.  */
+
+static inline struct timespec
+get_stat_atime (struct stat const *st)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  return st->st_atim;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  return st->st_atimespec;
+#else
+  struct timespec t;
+  t.tv_sec = st->st_atime;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  t.tv_nsec = st->stat.st_atimensec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  t.tv_nsec = st->stat.st_spare1 * 1000;
+# else
+  t.tv_nsec = 0;
+# endif
+  return t;
+#endif
+}
+
+static inline struct timespec
+get_stat_ctime (struct stat const *st)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  return st->st_ctim;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  return st->st_ctimespec;
+#else
+  struct timespec t;
+  t.tv_sec = st->st_ctime;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  t.tv_nsec = st->stat.st_ctimensec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  t.tv_nsec = st->stat.st_spare1 * 1000;
+# else
+  t.tv_nsec = 0;
+# endif
+  return t;
+#endif
+}
+
+static inline struct timespec
+get_stat_mtime (struct stat const *st)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  return st->st_mtim;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  return st->st_mtimespec;
+#else
+  struct timespec t;
+  t.tv_sec = st->st_mtime;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  t.tv_nsec = st->stat.st_mtimensec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  t.tv_nsec = st->stat.st_spare1 * 1000;
+# else
+  t.tv_nsec = 0;
+# endif
+  return t;
+#endif
+}
+
+static inline void
+set_stat_atime (struct stat *st, struct timespec t)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  st->st_atim = t;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  st->st_atimespec = t;
+#else
+  st->st_atime = t.tv_sec;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  st->stat.st_atimensec = t.tv_nsec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  st->stat.st_spare1 = t.tv_nsec / 1000;
+# endif
+#endif
+}
+
+static inline void
+set_stat_ctime (struct stat *st, struct timespec t)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  st->st_ctim = t;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  st->st_ctimespec = t;
+#else
+  st->st_ctime = t.tv_sec;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  st->stat.st_ctimensec = t.tv_nsec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  st->stat.st_spare1 = t.tv_nsec / 1000;
+# endif
+#endif
+}
+
+static inline void
+set_stat_mtime (struct stat *st, struct timespec t)
+{
+#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
+  st->st_mtim = t;
+#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
+  st->st_mtimespec = t;
+#else
+  st->st_mtime = t.tv_sec;
+# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
+  st->stat.st_mtimensec = t.tv_nsec;
+# elif defined HAVE_STRUCT_STAT_ST_SPARE1
+  st->stat.st_spare1 = t.tv_nsec / 1000;
+# endif
+#endif
+}

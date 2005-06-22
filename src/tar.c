@@ -656,7 +656,7 @@ read_name_from_file (FILE *fp, struct obstack *stk)
 {
   int c;
   size_t counter = 0;
-  
+
   for (c = getc (fp); c != EOF && c != filename_terminator; c = getc (fp))
     {
       if (c == 0)
@@ -721,7 +721,7 @@ update_argv (const char *filename, struct argp_state *state)
   size_t new_argc;
   bool is_stdin = false;
   enum read_file_list_state read_state;
-  
+
   if (!strcmp (filename, "-"))
     {
       is_stdin = true;
@@ -741,7 +741,7 @@ update_argv (const char *filename, struct argp_state *state)
   if (read_state == file_list_zero)
     {
       size_t size;
-      
+
       WARN ((0, 0, N_("%s: file name read contains nul character"),
 	     quotearg_colon (filename)));
 
@@ -751,7 +751,7 @@ update_argv (const char *filename, struct argp_state *state)
       for (; size > 0; size--, p++)
 	if (*p)
 	  obstack_1grow (&argv_stk, *p);
-        else 
+        else
 	  obstack_1grow (&argv_stk, '\n');
       obstack_1grow (&argv_stk, 0);
       count = 1;
@@ -973,15 +973,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	      stat_error (arg);
 	      USAGE_ERROR ((0, 0, _("Date sample file not found")));
 	    }
-	  newer_mtime_option.tv_sec = st.st_mtime;
-	  newer_mtime_option.tv_nsec = TIMESPEC_NS (st.st_mtim);
+	  newer_mtime_option = get_stat_mtime (&st);
 	}
       else
 	{
 	  if (! get_date (&newer_mtime_option, arg, NULL))
 	    {
 	      WARN ((0, 0, _("Substituting %s for unknown date format %s"),
-		     tartime (newer_mtime_option.tv_sec), quote (arg)));
+		     tartime (newer_mtime_option, false), quote (arg)));
 	      newer_mtime_option.tv_nsec = 0;
 	    }
 	  else
@@ -1819,16 +1818,10 @@ decode_options (int argc, char **argv)
 
   if (verbose_option && args.textual_date_option)
     {
-      /* FIXME: tartime should support nanoseconds, too, so that this
-	 comparison doesn't complain about lost nanoseconds.  */
-      char const *treated_as = tartime (newer_mtime_option.tv_sec);
+      char const *treated_as = tartime (newer_mtime_option, true);
       if (strcmp (args.textual_date_option, treated_as) != 0)
-	WARN ((0, 0,
-	       ngettext ("Treating date `%s' as %s + %ld nanosecond",
-			 "Treating date `%s' as %s + %ld nanoseconds",
-			 newer_mtime_option.tv_nsec),
-	       args.textual_date_option, treated_as,
-	       newer_mtime_option.tv_nsec));
+	WARN ((0, 0, _("Treating date `%s' as %s"),
+	       args.textual_date_option, treated_as));
     }
 }
 

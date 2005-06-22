@@ -206,6 +206,40 @@ unquote_string (char *string)
   return result;
 }
 
+/* Handling numbers.  */
+
+/* Output fraction and trailing digits appropriate for a nanoseconds
+   count equal to NS, but don't output unnecessary '.' or trailing
+   zeros.  */
+
+void
+code_ns_fraction (int ns, char *p)
+{
+  if (ns == 0)
+    *p = '\0';
+  else
+    {
+      int i = 9;
+      *p++ = '.';
+
+      while (ns % 10 == 0)
+	{
+	  ns /= 10;
+	  i--;
+	}
+
+      p[i] = '\0';
+
+      for (;;)
+	{
+	  p[--i] = '0' + ns % 10;
+	  if (i == 0)
+	    break;
+	  ns /= 10;
+	}
+    }
+}
+
 /* File handling.  */
 
 /* Saved names in case backup needs to be undone.  */

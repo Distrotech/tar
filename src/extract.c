@@ -1,7 +1,7 @@
 /* Extract files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -21,18 +21,9 @@
 
 #include <system.h>
 #include <quotearg.h>
+#include <utimens.h>
 #include <errno.h>
 #include <xgetcwd.h>
-
-#if HAVE_UTIME_H
-# include <utime.h>
-#else
-struct utimbuf
-  {
-    long actime;
-    long modtime;
-  };
-#endif
 
 #include "common.h"
 
@@ -201,15 +192,30 @@ set_mode (char const *file_name,
 
 /* Check time after successfully setting FILE_NAME's time stamp to T.  */
 static void
-check_time (char const *file_name, time_t t)
+check_time (char const *file_name, struct timespec t)
 {
-  time_t now;
-  if (t <= 0)
+  if (t.tv_sec <= 0)
     WARN ((0, 0, _("%s: implausibly old time stamp %s"),
-	   file_name, tartime (t)));
-  else if (start_time < t && (now = time (0)) < t)
-    WARN ((0, 0, _("%s: time stamp %s is %lu s in the future"),
-	   file_name, tartime (t), (unsigned long) (t - now)));
+	   file_name, tartime (t, true)));
+  else if (timespec_lt (start_time, t))
+    {
+      struct timespec now;
+      gettime (&now);
+      if (timespec_lt (now, t))
+	{
+	  unsigned long int ds = t.tv_sec - now.tv_sec;
+	  int dns = t.tv_nsec - now.tv_nsec;
+	  char dnsbuf[sizeof ".FFFFFFFFF"];
+	  if (dns < 0)
+	    {
+	      dns += 1000000000;
+	      ds--;
+	    }
+	  code_ns_fraction (dns, dnsbuf);
+	  WARN ((0, 0, _("%s: time stamp %s is %lu%s s in the future"),
+		 file_name, tartime (t, true), ds, dnsbuf));
+	}
+    }
 }
 
 /* Restore stat attributes (owner, group, mode and times) for
@@ -233,8 +239,6 @@ set_stat (char const *file_name,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
-  struct utimbuf utimbuf;
-
   if (typeflag != SYMTYPE)
     {
       /* We do the utime before the chmod because some versions of utime are
@@ -248,19 +252,16 @@ set_stat (char const *file_name,
 
 	  /* FIXME: incremental_option should set ctime too, but how?  */
 
-	  if (incremental_option)
-	    utimbuf.actime = stat_info->st_atime;
-	  else
-	    utimbuf.actime = start_time;
+	  struct timespec ts[2];
+	  ts[0] = incremental_option ? get_stat_atime (stat_info) : start_time;
+	  ts[1] = get_stat_mtime (stat_info);
 
-	  utimbuf.modtime = stat_info->st_mtime;
-
-	  if (utime (file_name, &utimbuf) < 0)
+	  if (utimens (file_name, ts) != 0)
 	    utime_error (file_name);
 	  else
 	    {
-	      check_time (file_name, utimbuf.actime);
-	      check_time (file_name, utimbuf.modtime);
+	      check_time (file_name, ts[0]);
+	      check_time (file_name, ts[1]);
 	    }
 	}
 
@@ -778,7 +779,7 @@ extract_file (char *file_name, int typeflag)
 static int
 extract_link (char *file_name, int typeflag)
 {
-  char const *link_name = safer_name_suffix (current_stat_info.link_name, 
+  char const *link_name = safer_name_suffix (current_stat_info.link_name,
                                              true, absolute_names_option);
   int interdir_made = 0;
 
@@ -1134,7 +1135,7 @@ extract_archive (void)
   if (verbose_option)
     print_header (&current_stat_info, -1);
 
-  file_name = safer_name_suffix (current_stat_info.file_name, 
+  file_name = safer_name_suffix (current_stat_info.file_name,
                                  false, absolute_names_option);
   if (strip_name_components)
     {

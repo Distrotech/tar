@@ -25,6 +25,15 @@ automatically. It is not necessary to give --null option.
 is useful e.g. for processing output from `find dir -print0'.
 An orthogonal option --unquote is provided as well.
 
+* Better support for full-resolution time stamps.  Tar cannot restore
+time stamps to full nanosecond resolution, though, until the kernel
+guys get their act together and give us a system call to set file time
+stamps to nanosecond resolution.
+
+* The -v option now prints time stamps only to 1-minute resolution,
+not full resolution, to avoid using up too many output columns.
+Nanosecond resolution is now supported, but that would be too much.
+
 * Bugfixes
 
 ** Allow non-option arguments to be interspersed with options.
