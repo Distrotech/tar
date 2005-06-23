@@ -1,3 +1,7 @@
+2005-06-22  Jim Meyering  <jim@meyering.net>
+
+	* src/common.h (timespec_lt): Add a return type: bool.
+
 2005-06-21  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Further improvements inspired by Jim Meyering's fixes.

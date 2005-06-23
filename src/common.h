@@ -191,10 +191,11 @@ GLOBAL struct timespec newer_mtime_option;
   timespec_lt (get_stat_##m##time (&st), newer_mtime_option)
 
 /* Return true if A < B.  */
-static inline
+static inline bool
 timespec_lt (struct timespec a, struct timespec b)
 {
-  return a.tv_sec < b.tv_sec || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec);
+  return (a.tv_sec < b.tv_sec
+	  || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec));
 }
 
 /* Zero if there is no recursion, otherwise FNM_LEADING_DIR.  */
