@@ -110,6 +110,7 @@ m4_include([shortrec.at])
 
 m4_include([sparse01.at])
 m4_include([sparse02.at])
+m4_include([sparse03.at])
 
 m4_include([update.at])
 

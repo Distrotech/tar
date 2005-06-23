@@ -82,6 +82,7 @@ TESTSUITE_AT = \
  shortrec.at\
  sparse01.at\
  sparse02.at\
+ sparse03.at\
  truncate.at\
  update.at\
  volume.at\
