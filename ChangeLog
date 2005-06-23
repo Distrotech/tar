@@ -1,5 +1,7 @@
 2005-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/xheader.c (size_decoder): Do not set archive_file_size.
+
 	Fix bugs introduced yesterday:
 	
 	* src/sparse.c (tar_sparse_init):  Initialize
