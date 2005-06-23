@@ -1,3 +1,41 @@
+2005-06-22  Paul Eggert  <eggert@cs.ucla.edu>
+
+	A sweep of the sparse code prompted by a bug report by Jim Meyering.
+	* src/sparse.c: Include <inttostr.h>.
+	(struct tar_sparse_file): offset and dumped_size are off_t, not
+	size_t.  optab is now const *.
+	(dump_zeros): Return bool success flag, not off_t.
+	All callers changed.
+	Use a constant-zero buffer rather than clearing a buffer each time.
+	Don't mess up if write fails.
+	(dump_zeros, check_sparse_region):
+	Don't assume off_t is no wider than size_t.
+	(tar_sparse_init): Don't bother clearing a field that is already clear.
+	(zero_block_p): First arg is const *, not *.
+	(clear_block, SPARSES_INIT_COUNT): Remove.
+	(sparse_add_map): First arg is now struct start_stat_info *, not
+	struct tar_sparse_file *.  All callers changed.
+	Use x2nrealloc to check for size_t overflow.
+	(parse_scan_file): Cache commonly-used parts of file.
+	Use an auto buffer, not a static one.
+	Don't bother clearing the buffer; not needed.
+	Don't bother clearing items that are already clear.
+	(oldgnu_optab, star_optab, pax_optab): Now const.
+	(sparse_dump_region): Don't bother clearing the buffer before
+	reading into it; just clear the parts that aren't read into.
+	(sparse_dump_file): Clear the whole local variable 'file'.
+	(diff_buffer): Remove; now a local var.
+	(check_sparse_region): Don't bother clearing buffer before
+	reading into it.  Don't assume off_t is promoted to long.
+	(oldgnu_get_sparse_info, star_get_sparse_info):
+	Use an auto status, not static.
+	* src/tar.h (struct tar_stat_info): had_trailing_slash is
+	now bool, not int.
+	* src/xheader.c (sparse_offset_coder, sparse_numbytes_coder):
+	Rewrite to avoid cast.
+	(sparse_offset_decoder, sparse_numbytes_decoder):
+	Diagnose excess entries rather than crashing.
+
 2005-06-22  Jim Meyering  <jim@meyering.net>
 
 	* src/common.h (timespec_lt): Add a return type: bool.

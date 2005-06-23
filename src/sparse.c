@@ -17,6 +17,7 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
+#include <inttostr.h>
 #include <quotearg.h>
 #include "common.h"
 
@@ -47,47 +48,47 @@ struct tar_sparse_file
 {
   int fd;                           /* File descriptor */
   bool seekable;                    /* Is fd seekable? */
-  size_t offset;                    /* Current offset in fd if seekable==false.
+  off_t offset;                     /* Current offset in fd if seekable==false.
 				       Otherwise unused */
-  size_t dumped_size;               /* Number of bytes actually written
+  off_t dumped_size;                /* Number of bytes actually written
 				       to the archive */
   struct tar_stat_info *stat_info;  /* Information about the file */
-  struct tar_sparse_optab *optab;
+  struct tar_sparse_optab const *optab;
   void *closure;                    /* Any additional data optab calls might
-				       reqiure */
+				       require */
 };
 
 /* Dump zeros to file->fd until offset is reached. It is used instead of
    lseek if the output file is not seekable */
-static long
+static bool
 dump_zeros (struct tar_sparse_file *file, off_t offset)
 {
-  char buf[BLOCKSIZE];
-  
-  if (offset - file->offset < 0)
+  static char const zero_buf[BLOCKSIZE];
+
+  if (offset < file->offset)
     {
       errno = EINVAL;
-      return -1;
+      return false;
     }
 
-  memset (buf, 0, sizeof buf);
   while (file->offset < offset)
     {
-      size_t size = offset - file->offset;
-      size_t wrbytes;
-      
-      if (size > sizeof buf)
-	size = sizeof buf;
-      wrbytes = write (file->fd, buf, size);
+      size_t size = (BLOCKSIZE < offset - file->offset
+		     ? BLOCKSIZE
+		     : offset - file->offset);
+      ssize_t wrbytes;
+
+      wrbytes = write (file->fd, zero_buf, size);
       if (wrbytes <= 0)
 	{
 	  if (wrbytes == 0)
 	    errno = EINVAL;
-	  return -1;
+	  return false;
 	}
       file->offset += wrbytes;
     }
-  return file->offset;
+
+  return true;
 }
 
 static bool
@@ -101,7 +102,6 @@ tar_sparse_member_p (struct tar_sparse_file *file)
 static bool
 tar_sparse_init (struct tar_sparse_file *file)
 {
-  file->dumped_size = 0;
   if (file->optab->init)
     return file->optab->init (file);
   return true;
@@ -168,14 +168,9 @@ tar_sparse_fixup_header (struct tar_sparse_file *file)
 static bool
 lseek_or_error (struct tar_sparse_file *file, off_t offset)
 {
-  off_t off;
-
-  if (file->seekable)
-    off = lseek (file->fd, offset, SEEK_SET);
-  else
-    off = dump_zeros (file, offset);
-  
-  if (off < 0)
+  if (file->seekable
+      ? lseek (file->fd, offset, SEEK_SET) < 0
+      : ! dump_zeros (file, offset))
     {
       seek_diag_details (file->stat_info->orig_file_name, offset);
       return false;
@@ -187,7 +182,7 @@ lseek_or_error (struct tar_sparse_file *file, off_t offset)
    it's made *entirely* of zeros, returning a 0 the instant it finds
    something that is a nonzero, i.e., useful data.  */
 static bool
-zero_block_p (char *buffer, size_t size)
+zero_block_p (char const *buffer, size_t size)
 {
   while (size--)
     if (*buffer++)
@@ -195,58 +190,44 @@ zero_block_p (char *buffer, size_t size)
   return true;
 }
 
-#define clear_block(p) memset (p, 0, BLOCKSIZE);
-
-#define SPARSES_INIT_COUNT SPARSES_IN_SPARSE_HEADER
-
 static void
-sparse_add_map (struct tar_sparse_file *file, struct sp_array *sp)
+sparse_add_map (struct tar_stat_info *st, struct sp_array const *sp)
 {
-  if (file->stat_info->sparse_map == NULL)
-    {
-      file->stat_info->sparse_map =
-	xmalloc (SPARSES_INIT_COUNT * sizeof file->stat_info->sparse_map[0]);
-      file->stat_info->sparse_map_size = SPARSES_INIT_COUNT;
-    }
-  else if (file->stat_info->sparse_map_avail == file->stat_info->sparse_map_size)
-    {
-      file->stat_info->sparse_map_size *= 2;
-      file->stat_info->sparse_map =
-	xrealloc (file->stat_info->sparse_map,
-		  file->stat_info->sparse_map_size
-		  * sizeof file->stat_info->sparse_map[0]);
-    }
-  file->stat_info->sparse_map[file->stat_info->sparse_map_avail++] = *sp;
+  struct sp_array *sparse_map = st->sparse_map;
+  size_t avail = st->sparse_map_avail;
+  if (avail == st->sparse_map_size)
+    st->sparse_map = sparse_map =
+      x2nrealloc (sparse_map, &st->sparse_map_size, sizeof *sparse_map);
+  sparse_map[avail] = *sp;
+  st->sparse_map_avail = avail + 1;
 }
 
 /* Scan the sparse file and create its map */
 static bool
 sparse_scan_file (struct tar_sparse_file *file)
 {
-  static char buffer[BLOCKSIZE];
+  struct tar_stat_info *st = file->stat_info;
+  int fd = file->fd;
+  char buffer[BLOCKSIZE];
   size_t count;
   off_t offset = 0;
   struct sp_array sp = {0, 0};
 
   if (!lseek_or_error (file, 0))
     return false;
-  clear_block (buffer);
-
-  file->stat_info->sparse_map_avail = 0;
-  file->stat_info->archive_file_size = 0;
 
   if (!tar_sparse_scan (file, scan_begin, NULL))
     return false;
 
-  while ((count = safe_read (file->fd, buffer, sizeof buffer)) != 0
+  while ((count = safe_read (fd, buffer, sizeof buffer)) != 0
 	 && count != SAFE_READ_ERROR)
     {
-      /* Analize the block */
+      /* Analyze the block.  */
       if (zero_block_p (buffer, count))
 	{
 	  if (sp.numbytes)
 	    {
-	      sparse_add_map (file, &sp);
+	      sparse_add_map (st, &sp);
 	      sp.numbytes = 0;
 	      if (!tar_sparse_scan (file, scan_block, NULL))
 		return false;
@@ -257,26 +238,25 @@ sparse_scan_file (struct tar_sparse_file *file)
 	  if (sp.numbytes == 0)
 	    sp.offset = offset;
 	  sp.numbytes += count;
-	  file->stat_info->archive_file_size += count;
+	  st->archive_file_size += count;
 	  if (!tar_sparse_scan (file, scan_block, buffer))
 	    return false;
 	}
 
       offset += count;
-      clear_block (buffer);
     }
 
   if (sp.numbytes == 0)
     sp.offset = offset;
 
-  sparse_add_map (file, &sp);
-  file->stat_info->archive_file_size += count;
+  sparse_add_map (st, &sp);
+  st->archive_file_size += count;
   return tar_sparse_scan (file, scan_end, NULL);
 }
 
-static struct tar_sparse_optab oldgnu_optab;
-static struct tar_sparse_optab star_optab;
-static struct tar_sparse_optab pax_optab;
+static struct tar_sparse_optab const oldgnu_optab;
+static struct tar_sparse_optab const star_optab;
+static struct tar_sparse_optab const pax_optab;
 
 static bool
 sparse_select_optab (struct tar_sparse_file *file)
@@ -321,18 +301,18 @@ sparse_dump_region (struct tar_sparse_file *file, size_t i)
       size_t bytes_read;
 
       blk = find_next_block ();
-      memset (blk->buffer, 0, BLOCKSIZE);
       bytes_read = safe_read (file->fd, blk->buffer, bufsize);
       if (bytes_read == SAFE_READ_ERROR)
 	{
           read_diag_details (file->stat_info->orig_file_name,
-	                     file->stat_info->sparse_map[i].offset
-	                         + file->stat_info->sparse_map[i].numbytes
-	                         - bytes_left,
-	             bufsize);
+	                     (file->stat_info->sparse_map[i].offset
+			      + file->stat_info->sparse_map[i].numbytes
+			      - bytes_left),
+			     bufsize);
 	  return false;
 	}
 
+      memset (blk->buffer + bytes_read, 0, BLOCKSIZE - bytes_read);
       bytes_left -= bytes_read;
       file->dumped_size += bytes_read;
       set_next_block_after (blk);
@@ -389,13 +369,12 @@ enum dump_status
 sparse_dump_file (int fd, struct tar_stat_info *st)
 {
   bool rc;
-  struct tar_sparse_file file;
+  struct tar_sparse_file file = { 0, };
 
   file.stat_info = st;
   file.fd = fd;
   file.seekable = true; /* File *must* be seekable for dump to work */
-  file.offset = 0;
-  
+
   if (!sparse_select_optab (&file)
       || !tar_sparse_init (&file))
     return dump_status_not_implemented;
@@ -414,7 +393,7 @@ sparse_dump_file (int fd, struct tar_stat_info *st)
 	}
     }
 
-  pad_archive(file.stat_info->archive_file_size - file.dumped_size);
+  pad_archive (file.stat_info->archive_file_size - file.dumped_size);
   return (tar_sparse_done (&file) && rc) ? dump_status_ok : dump_status_short;
 }
 
@@ -460,7 +439,7 @@ sparse_extract_file (int fd, struct tar_stat_info *st, off_t *size)
   file.fd = fd;
   file.seekable = lseek (fd, 0, SEEK_SET) == 0;
   file.offset = 0;
-  
+
   if (!sparse_select_optab (&file)
       || !tar_sparse_init (&file))
     return dump_status_not_implemented;
@@ -491,8 +470,6 @@ sparse_skip_file (struct tar_stat_info *st)
 }
 
 
-static char diff_buffer[BLOCKSIZE];
-
 static bool
 check_sparse_region (struct tar_sparse_file *file, off_t beg, off_t end)
 {
@@ -502,11 +479,9 @@ check_sparse_region (struct tar_sparse_file *file, off_t beg, off_t end)
   while (beg < end)
     {
       size_t bytes_read;
-      size_t rdsize = end - beg;
+      size_t rdsize = BLOCKSIZE < end - beg ? BLOCKSIZE : end - beg;
+      char diff_buffer[BLOCKSIZE];
 
-      if (rdsize > BLOCKSIZE)
-	rdsize = BLOCKSIZE;
-      clear_block (diff_buffer);
       bytes_read = safe_read (file->fd, diff_buffer, rdsize);
       if (bytes_read == SAFE_READ_ERROR)
 	{
@@ -517,8 +492,10 @@ check_sparse_region (struct tar_sparse_file *file, off_t beg, off_t end)
 	}
       if (!zero_block_p (diff_buffer, bytes_read))
 	{
+	  char begbuf[INT_BUFSIZE_BOUND (off_t)];
  	  report_difference (file->stat_info,
-			     _("File fragment at %lu is not a hole"), beg);
+			     _("File fragment at %s is not a hole"),
+			     offtostr (beg, begbuf));
 	  return false;
 	}
 
@@ -539,6 +516,7 @@ check_data_region (struct tar_sparse_file *file, size_t i)
     {
       size_t bytes_read;
       size_t rdsize = (size_left > BLOCKSIZE) ? BLOCKSIZE : size_left;
+      char diff_buffer[BLOCKSIZE];
 
       union block *blk = find_next_block ();
       if (!blk)
@@ -551,9 +529,9 @@ check_data_region (struct tar_sparse_file *file, size_t i)
       if (bytes_read == SAFE_READ_ERROR)
 	{
           read_diag_details (file->stat_info->orig_file_name,
-			     file->stat_info->sparse_map[i].offset
-	                         + file->stat_info->sparse_map[i].numbytes
-			         - size_left,
+			     (file->stat_info->sparse_map[i].offset
+			      + file->stat_info->sparse_map[i].numbytes
+			      - size_left),
 			     rdsize);
 	  return false;
 	}
@@ -647,7 +625,7 @@ oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
       || file->stat_info->archive_file_size < 0)
     return add_fail;
 
-  sparse_add_map (file, &sp);
+  sparse_add_map (file->stat_info, &sp);
   return add_ok;
 }
 
@@ -658,7 +636,7 @@ oldgnu_fixup_header (struct tar_sparse_file *file)
      which actually contains archived size. The following fixes it */
   file->stat_info->archive_file_size = file->stat_info->stat.st_size;
   file->stat_info->stat.st_size =
-                OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
+    OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
   return true;
 }
 
@@ -669,7 +647,7 @@ oldgnu_get_sparse_info (struct tar_sparse_file *file)
   size_t i;
   union block *h = current_header;
   int ext_p;
-  static enum oldgnu_add_status rc;
+  enum oldgnu_add_status rc;
 
   file->stat_info->sparse_map_avail = 0;
   for (i = 0; i < SPARSES_IN_OLDGNU_HEADER; i++)
@@ -756,7 +734,7 @@ oldgnu_dump_header (struct tar_sparse_file *file)
   return true;
 }
 
-static struct tar_sparse_optab oldgnu_optab = {
+static struct tar_sparse_optab const oldgnu_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
   oldgnu_sparse_member_p,
@@ -795,7 +773,7 @@ star_get_sparse_info (struct tar_sparse_file *file)
   size_t i;
   union block *h = current_header;
   int ext_p;
-  static enum oldgnu_add_status rc;
+  enum oldgnu_add_status rc = add_ok;
 
   file->stat_info->sparse_map_avail = 0;
 
@@ -837,7 +815,7 @@ star_get_sparse_info (struct tar_sparse_file *file)
 }
 
 
-static struct tar_sparse_optab star_optab = {
+static struct tar_sparse_optab const star_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
   star_sparse_member_p,
@@ -890,7 +868,7 @@ pax_dump_header (struct tar_sparse_file *file)
   return true;
 }
 
-static struct tar_sparse_optab pax_optab = {
+static struct tar_sparse_optab const pax_optab = {
   NULL,  /* No init function */
   NULL,  /* No done function */
   pax_sparse_member_p,
@@ -901,4 +879,3 @@ static struct tar_sparse_optab pax_optab = {
   sparse_dump_region,
   sparse_extract_region,
 };
-

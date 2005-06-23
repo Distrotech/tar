@@ -273,7 +273,7 @@ struct tar_stat_info
   char *orig_file_name;     /* name of file read from the archive header */
   char *file_name;          /* name of file for the current archive entry
 			       after being normalized.  */
-  int had_trailing_slash;   /* nonzero if the current archive entry had a
+  bool had_trailing_slash;  /* true if the current archive entry had a
 			       trailing slash before it was normalized. */
   char *link_name;          /* name of link for the current archive entry.  */
 
