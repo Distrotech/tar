@@ -1,5 +1,9 @@
 2005-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* tests/sparse03.at: New test. 
+	* tests/Makefile.am: Add sparse03.at
+	* tests/testsuite.at: Likewise
+
 	* src/xheader.c (size_decoder): Do not set archive_file_size.
 
 	Fix bugs introduced yesterday:
