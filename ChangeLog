@@ -1,5 +1,15 @@
 2005-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
+	* src/sparse.c (pax_sparse_member_p): Checking member size
+	vs. file size is not reliable enough. Use sparse_map_avail.
+
+	* tests/star/gtarfail.at: Adapt to the new output format
+	* tests/star/gtarfail2.at: Likewise
+	* tests/star/multi-fail.at: Likewise
+	* tests/star/pax-big-10g.at: Likewise
+	* tests/star/ustar-big-2g.at: Likewise
+	* tests/star/ustar-big-8g.at: Likewise
+
 	* tests/sparse03.at: New test. 
 	* tests/Makefile.am: Add sparse03.at
 	* tests/testsuite.at: Likewise
