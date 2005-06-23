@@ -1009,7 +1009,7 @@ size_decoder (struct tar_stat_info *st, char const *arg)
 {
   uintmax_t u;
   if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), "size"))
-    st->archive_file_size = st->stat.st_size = u;
+    st->stat.st_size = u;
 }
 
 static void
