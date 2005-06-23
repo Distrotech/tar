@@ -102,6 +102,7 @@ tar_sparse_member_p (struct tar_sparse_file *file)
 static bool
 tar_sparse_init (struct tar_sparse_file *file)
 {
+  file->dumped_size = 0;
   if (file->optab->init)
     return file->optab->init (file);
   return true;
