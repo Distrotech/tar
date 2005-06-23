@@ -30,8 +30,8 @@ AT_STAR_PREREQ([pax-big-10g.tar.bz2])
 tar --utc -tvjf $STAR_TESTSCRIPTS/pax-big-10g.tar.bz2
 ],
 [0],
-[-rw------- jes/glone 10737418240 2002-06-15 21:18:47 10g
--rw-r--r-- jes/glone           0 2002-06-15 14:53:32 file
+[-rw------- jes/glone 10737418240 2002-06-15 21:18 10g
+-rw-r--r-- jes/glone           0 2002-06-15 14:53 file
 ],
 [stderr])
 
