@@ -1,7 +1,12 @@
 2005-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
-	* src/sparse.c (tar_sparse_init): Fix recent bugfixes: Initialize
+	Fix bugs introduced yesterday:
+	
+	* src/sparse.c (tar_sparse_init):  Initialize
 	dimped_size to 0. 
+	(sparse_scan_file): Initialize archive_file_size to 0. The
+	variable keeps size of the file *as stored in the archive*, not
+	the size reported by stat.
 
 2005-06-22  Paul Eggert  <eggert@cs.ucla.edu>
 
