@@ -845,7 +845,7 @@ static struct tar_sparse_optab const star_optab = {
 static bool
 pax_sparse_member_p (struct tar_sparse_file *file)
 {
-  return file->stat_info->archive_file_size != file->stat_info->stat.st_size;
+  return file->stat_info->sparse_map_avail > 0;
 }
 
 static bool
