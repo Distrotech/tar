@@ -217,6 +217,8 @@ sparse_scan_file (struct tar_sparse_file *file)
   if (!lseek_or_error (file, 0))
     return false;
 
+  st->archive_file_size = 0;
+  
   if (!tar_sparse_scan (file, scan_begin, NULL))
     return false;
 
