@@ -1,3 +1,9 @@
+2005-06-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* src/sparse.c (tar_sparse_init): Fill structure with zeros. Call
+	sparse_select_optab(). All callers updated.
+	(sparse_member_p, sparse_fixup_header): Use tar_sparse_init().
+
 2005-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c (pax_sparse_member_p): Checking member size
