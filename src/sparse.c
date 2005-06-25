@@ -22,6 +22,7 @@
 #include "common.h"
 
 struct tar_sparse_file;
+static bool sparse_select_optab (struct tar_sparse_file *file);
 
 enum sparse_scan_state
   {
@@ -102,9 +103,14 @@ tar_sparse_member_p (struct tar_sparse_file *file)
 static bool
 tar_sparse_init (struct tar_sparse_file *file)
 {
-  file->dumped_size = 0;
+  memset (file, 0, sizeof *file);
+
+  if (!sparse_select_optab (file))
+    return false;
+
   if (file->optab->init)
     return file->optab->init (file);
+
   return true;
 }
 
@@ -372,15 +378,14 @@ enum dump_status
 sparse_dump_file (int fd, struct tar_stat_info *st)
 {
   bool rc;
-  struct tar_sparse_file file = { 0, };
+  struct tar_sparse_file file;
+
+  if (!tar_sparse_init (&file))
+    return dump_status_not_implemented;
 
   file.stat_info = st;
   file.fd = fd;
   file.seekable = true; /* File *must* be seekable for dump to work */
-
-  if (!sparse_select_optab (&file)
-      || !tar_sparse_init (&file))
-    return dump_status_not_implemented;
 
   rc = sparse_scan_file (&file);
   if (rc && file.optab->dump_region)
@@ -414,7 +419,7 @@ sparse_member_p (struct tar_stat_info *st)
 {
   struct tar_sparse_file file;
 
-  if (!sparse_select_optab (&file))
+  if (!tar_sparse_init (&file))
     return false;
   file.stat_info = st;
   return tar_sparse_member_p (&file);
@@ -425,7 +430,7 @@ sparse_fixup_header (struct tar_stat_info *st)
 {
   struct tar_sparse_file file;
 
-  if (!sparse_select_optab (&file))
+  if (!tar_sparse_init (&file))
     return false;
   file.stat_info = st;
   return tar_sparse_fixup_header (&file);
@@ -438,14 +443,13 @@ sparse_extract_file (int fd, struct tar_stat_info *st, off_t *size)
   struct tar_sparse_file file;
   size_t i;
 
+  if (!tar_sparse_init (&file))
+    return dump_status_not_implemented;
+
   file.stat_info = st;
   file.fd = fd;
   file.seekable = lseek (fd, 0, SEEK_SET) == 0;
   file.offset = 0;
-
-  if (!sparse_select_optab (&file)
-      || !tar_sparse_init (&file))
-    return dump_status_not_implemented;
 
   rc = tar_sparse_decode_header (&file);
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
@@ -460,12 +464,11 @@ sparse_skip_file (struct tar_stat_info *st)
   bool rc = true;
   struct tar_sparse_file file;
 
+  if (!tar_sparse_init (&file))
+    return dump_status_not_implemented;
+
   file.stat_info = st;
   file.fd = -1;
-
-  if (!sparse_select_optab (&file)
-      || !tar_sparse_init (&file))
-    return dump_status_not_implemented;
 
   rc = tar_sparse_decode_header (&file);
   skip_file (file.stat_info->archive_file_size);
@@ -557,12 +560,11 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
   size_t i;
   off_t offset = 0;
 
+  if (!tar_sparse_init (&file))
+    return dump_status_not_implemented;
+
   file.stat_info = st;
   file.fd = fd;
-
-  if (!sparse_select_optab (&file)
-      || !tar_sparse_init (&file))
-    return dump_status_not_implemented;
 
   rc = tar_sparse_decode_header (&file);
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
