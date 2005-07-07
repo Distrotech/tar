@@ -1,3 +1,7 @@
+2005-07-07  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* tests/pipe.at: Pipe the output from `tar xfv' through sort.
+
 2005-06-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* src/sparse.c (tar_sparse_init): Fill structure with zeros. Call
