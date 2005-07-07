@@ -36,7 +36,7 @@ genfile --length 10240 --pattern zeros > directory/file1
 genfile --length 13 > directory/file2
 tar cf archive directory|sort 2>/dev/null
 mv directory orig
-cat archive | tar xfv -
+cat archive | tar xfv - | sort 2>/dev/null
 echo "separator"
 cmp orig/file1 directory/file1
 echo "separator"
