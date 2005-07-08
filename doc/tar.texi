@@ -6726,7 +6726,7 @@ it issues a warning, as these time stamps are nonstandard and unportable.
 @cindex Storing archives in compressed format
 
 @GNUTAR{} is able to create and read compressed archives. It supports
-@command{gzip} and @command{bzip2} compression programms. For backward
+@command{gzip} and @command{bzip2} compression programs. For backward
 compatibilty, it also supports @command{compress} command, although
 we strongly recommend against using it, since there is a patent
 covering the algorithm it uses and you could be sued for patent
