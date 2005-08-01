@@ -350,16 +350,20 @@ string_to_chars (char const *str, char *p, size_t s)
 }
 
 
-/* A file is not dumpable if
+/* A file is considered dumpable if it is sparse and both --sparse and --totals
+   are specified.
+   Otherwise, it is dumpable unless any of the following conditions occur:
+   
    a) it is empty *and* world-readable, or
    b) current archive is /dev/null */
 
 bool
 file_dumpable_p (struct tar_stat_info *st)
 {
-  return !(dev_null_output
-	   || (st->archive_file_size == 0
-	       && (st->stat.st_mode & MODE_R) == MODE_R));
+  if (dev_null_output)
+    return totals_option && sparse_option && sparse_file_p (st);
+  return !(st->archive_file_size == 0
+	   && (st->stat.st_mode & MODE_R) == MODE_R);
 }
 
 
@@ -1486,7 +1490,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	  else
 	    fd = -1;
 
-	  if (sparse_option && sparse_file_p (st))
+	  if (fd != -1 && sparse_option && sparse_file_p (st))
 	    {
 	      status = sparse_dump_file (fd, st);
 	      if (status == dump_status_not_implemented)
