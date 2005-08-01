@@ -36,7 +36,7 @@ tar cf archive directory || exit 1
 echo separator
 tar uf archive directory || exit 1
 echo separator
-tar tf archive || exit 1
+tar tf archive | sort 2>/dev/null || exit 1
 ],
 [0],
 [separator
