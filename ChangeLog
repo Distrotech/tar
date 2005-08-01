@@ -1,3 +1,9 @@
+2005-07-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (file_dumpable_p,dump_file0): Fix handling of
+	sparse files to /dev/null with --totals option. 
+	* tests/update.at: Remove dependency on file order.
+
 2005-07-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* doc/tar.texi: Fix typo.
