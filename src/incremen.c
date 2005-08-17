@@ -344,12 +344,13 @@ read_directory_file (void)
       char *ebuf;
       int n;
       long lineno = 1;
-      unsigned long u = (errno = 0, strtoul (buf, &ebuf, 10));
+      uintmax_t u = (errno = 0, strtoumax (buf, &ebuf, 10));
       time_t t = u;
+      
       if (buf == ebuf || (u == 0 && errno == EINVAL))
 	ERROR ((0, 0, "%s:1: %s", quotearg_colon (listed_incremental_option),
 		_("Invalid time stamp")));
-      else if (t != u || (u == -1 && errno == ERANGE))
+      else if (t != u)
 	ERROR ((0, 0, "%s:1: %s", quotearg_colon (listed_incremental_option),
 		_("Time stamp out of range")));
       else
@@ -373,24 +374,24 @@ read_directory_file (void)
 	    buf[n - 1] = '\0';
 
 	  errno = 0;
-	  dev = u = strtoul (strp, &ebuf, 10);
-	  if (strp == ebuf || (u == 0 && errno == EINVAL))
+	  dev = u = strtoumax (strp, &ebuf, 10);
+	  if (!isspace (*ebuf))
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Invalid device number")));
-	  else if (dev != u || (u == -1 && errno == ERANGE))
+	  else if (dev != u) 
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Device number out of range")));
 	  strp = ebuf;
 
 	  errno = 0;
-	  ino = u = strtoul (strp, &ebuf, 10);
-	  if (strp == ebuf || (u == 0 && errno == EINVAL))
+	  ino = u = strtoumax (strp, &ebuf, 10);
+	  if (!isspace (*ebuf))
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Invalid inode number")));
-	  else if (ino != u || (u == -1 && errno == ERANGE))
+	  else if (ino != u)
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Inode number out of range")));
@@ -419,11 +420,15 @@ write_directory_file_entry (void *entry, void *data)
   if (directory->found)
     {
       int e;
+      char buf[UINTMAX_STRSIZE_BOUND];
       char *str = quote_copy_string (directory->name);
-      fprintf (fp, "+%lu %lu %s\n" + ! directory->nfs,
-	       (unsigned long) directory->device_number,
-	       (unsigned long) directory->inode_number,
-	       str ? str : directory->name);
+      
+      if (directory->nfs)
+	fprintf (fp, "+");
+      fprintf (fp, "%s ", umaxtostr (directory->device_number, buf));
+      fprintf (fp, "%s ", umaxtostr (directory->inode_number, buf));
+      fprintf (fp, "%s\n", str ? str : directory->name);
+	       
       e = errno;
       if (str)
 	free (str);
