@@ -524,7 +524,7 @@ purge_directory (char const *directory_name)
 	  struct stat st;
 	  char *p = new_name (directory_name, cur);
 
-	  if (deref_stat (true, p, &st))
+	  if (deref_stat (false, p, &st))
 	    {
 	      stat_diag (p);
 	      WARN((0, 0, _("%s: Not purging directory: unable to stat"),
