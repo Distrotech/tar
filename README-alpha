@@ -16,6 +16,12 @@ that you have the latest stable version.
 - M4 <http://www.gnu.org/software/m4/>
 - Wget <http://www.gnu.org/software/wget/>
 
+As of this writing, the latest stable version of Gzip is 1.2.4 but we
+suggest using test version 1.3.5 (or later, if one becomes available).
+
+Valgrind <http://valgrind.org/> is also highly recommended, if
+Valgrind supports your architecture.
+
 Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
 site and prepares the source directory for building.
