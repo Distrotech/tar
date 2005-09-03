@@ -5,20 +5,16 @@ Please send comments and problem reports to <bug-tar@gnu.org>.
 
 If you have taken the sources from CVS you will need the following
 packages (or later) to build GNU tar.  We don't make any extra effort
-to accommodate older versions of these packages.  If we discover that
-newer versions are needed to bootstrap, we'll update the version
-numbers in this list.
+to accommodate older versions of these packages, so please make sure
+that you have the latest stable version.
 
-autoconf 2.59
-automake 1.8
-bison 1.875
-gettext 0.12.1
-m4 1.4
-wget 1.7
-
-For GNU m4 1.4, we recommend also installing the `translit' patch; see
-Debian bug 211477 <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=211477>.
-This patch is bundled into Debian m4 1.4-17 or later.
+- Automake <http://www.gnu.org/software/automake/>
+- Autoconf <http://www.gnu.org/software/autoconf/>
+- Bison <http://www.gnu.org/software/bison/>
+- Gettext <http://www.gnu.org/software/gettext/>
+- Gzip <http://www.gnu.org/software/gzip/>
+- M4 <http://www.gnu.org/software/m4/>
+- Wget <http://www.gnu.org/software/wget/>
 
 Before building the package, run "bootstrap".  It obtains various
 additional files from the CVS repository and the Translation Project
@@ -59,7 +55,7 @@ some other value.
 
 
 
-Copyright (C) 2001, 2003, 2004 Free Software Foundation, Inc.
+Copyright (C) 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 
@@ -77,4 +73,3 @@ You should have received a copy of the GNU General Public License
 along with tar; see the file COPYING.  If not, write to
 the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 Boston, MA 02110-1301, USA.
-

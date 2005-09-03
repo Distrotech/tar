@@ -1,3 +1,8 @@
+2005-09-03  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* README-alpha: Modernize description of software required for
+	developers.
+
 2005-09-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* gnulib.modules: Add strdup
@@ -7,7 +12,7 @@
 	* tests/incr01.at: New test.
 	* tests/Makefile.am: Add incr01.at
 	* tests/testsuite.at: Likewise
-	* THANKS: Updated 
+	* THANKS: Updated
 
 2005-08-17  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -18,7 +23,7 @@
 2005-07-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/create.c (file_dumpable_p,dump_file0): Fix handling of
-	sparse files to /dev/null with --totals option. 
+	sparse files to /dev/null with --totals option.
 	* tests/update.at: Remove dependency on file order.
 
 2005-07-08  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
@@ -47,16 +52,16 @@
 	* tests/star/ustar-big-2g.at: Likewise
 	* tests/star/ustar-big-8g.at: Likewise
 
-	* tests/sparse03.at: New test. 
+	* tests/sparse03.at: New test.
 	* tests/Makefile.am: Add sparse03.at
 	* tests/testsuite.at: Likewise
 
 	* src/xheader.c (size_decoder): Do not set archive_file_size.
 
 	Fix bugs introduced yesterday:
-	
+
 	* src/sparse.c (tar_sparse_init):  Initialize
-	dimped_size to 0. 
+	dimped_size to 0.
 	(sparse_scan_file): Initialize archive_file_size to 0. The
 	variable keeps size of the file *as stored in the archive*, not
 	the size reported by stat.
