@@ -48,8 +48,8 @@ enum permstatus
 /* List of directories whose statuses we need to extract after we've
    finished extracting their subsidiary files.  If you consider each
    contiguous subsequence of elements of the form [D]?[^D]*, where [D]
-   represents an element where AFTER_SYMLINKS is nonzero and [^D]
-   represents an element where AFTER_SYMLINKS is zero, then the head
+   represents an element where AFTER_LINKS is nonzero and [^D]
+   represents an element where AFTER_LINKS is zero, then the head
    of the subsequence has the longest name, and each non-head element
    in the prefix is an ancestor (in the directory hierarchy) of the
    preceding element.  */
@@ -61,28 +61,31 @@ struct delayed_set_stat
     size_t file_name_len;
     mode_t invert_permissions;
     enum permstatus permstatus;
-    bool after_symlinks;
+    bool after_links;
     char file_name[1];
   };
 
 static struct delayed_set_stat *delayed_set_stat_head;
 
-/* List of symbolic links whose creation we have delayed.  */
-struct delayed_symlink
+/* List of links whose creation we have delayed.  */
+struct delayed_link
   {
-    /* The next delayed symbolic link in the list.  */
-    struct delayed_symlink *next;
+    /* The next delayed link in the list.  */
+    struct delayed_link *next;
 
     /* The device, inode number and last-modified time of the placeholder.  */
     dev_t dev;
     ino_t ino;
     time_t mtime;
 
-    /* The desired owner and group of the symbolic link.  */
+    /* True if the link is symbolic.  */
+    bool is_symlink;
+
+    /* The desired owner and group of the link, if it is a symlink.  */
     uid_t uid;
     gid_t gid;
 
-    /* A list of sources for this symlink.  The sources are all to be
+    /* A list of sources for this link.  The sources are all to be
        hard-linked together.  */
     struct string_list *sources;
 
@@ -90,7 +93,7 @@ struct delayed_symlink
     char target[1];
   };
 
-static struct delayed_symlink *delayed_symlink_head;
+static struct delayed_link *delayed_link_head;
 
 struct string_list
   {
@@ -322,7 +325,7 @@ delay_set_stat (char const *file_name, struct stat const *stat_info,
   strcpy (data->file_name, file_name);
   data->invert_permissions = invert_permissions;
   data->permstatus = permstatus;
-  data->after_symlinks = 0;
+  data->after_links = 0;
   data->stat_info = *stat_info;
   data->next = delayed_set_stat_head;
   delayed_set_stat_head = data;
@@ -361,7 +364,7 @@ repair_delayed_set_stat (char const *dir,
 	  quotearg_colon (dir)));
 }
 
-/* After a file/link/symlink/directory creation has failed, see if
+/* After a file/link/directory creation has failed, see if
    it's because some required directory was not present, and if so,
    create all required directories.  Return non-zero if a directory
    was created.  */
@@ -513,12 +516,12 @@ maybe_recoverable (char *file_name, int *interdir_made)
 }
 
 /* Fix the statuses of all directories whose statuses need fixing, and
-   which are not ancestors of FILE_NAME.  If AFTER_SYMLINKS is
+   which are not ancestors of FILE_NAME.  If AFTER_LINKS is
    nonzero, do this for all such directories; otherwise, stop at the
    first directory that is marked to be fixed up only after delayed
-   symlinks are applied.  */
+   links are applied.  */
 static void
-apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
+apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 {
   size_t file_name_len = strlen (file_name);
   bool check_for_renamed_directories = 0;
@@ -530,9 +533,9 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_symlinks)
       struct stat st;
       struct stat const *cur_info = 0;
 
-      check_for_renamed_directories |= data->after_symlinks;
+      check_for_renamed_directories |= data->after_links;
 
-      if (after_symlinks < data->after_symlinks
+      if (after_links < data->after_links
 	  || (data->file_name_len < file_name_len
 	      && file_name[data->file_name_len]
 	      && (ISSLASH (file_name[data->file_name_len])
@@ -776,12 +779,91 @@ extract_file (char *file_name, int typeflag)
   return status;
 }
 
+/* Create a placeholder file with name FILE_NAME, which will be
+   replaced after other extraction is done by a symbolic link if
+   IS_SYMLINK is true, and by a hard link otherwise.  Set
+   *INTERDIR_MADE if an intermediate directory is made in the
+   process.  */
+
+static int
+create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
+{
+  int fd;
+  struct stat st;
+
+  while ((fd = open (file_name, O_WRONLY | O_CREAT | O_EXCL, 0)) < 0)
+    if (! maybe_recoverable (file_name, interdir_made))
+      break;
+
+  if (fd < 0)
+    open_error (file_name);
+  else if (fstat (fd, &st) != 0)
+    {
+      stat_error (file_name);
+      close (fd);
+    }
+  else if (close (fd) != 0)
+    close_error (file_name);
+  else
+    {
+      struct delayed_set_stat *h;
+      struct delayed_link *p =
+	xmalloc (offsetof (struct delayed_link, target)
+		 + strlen (current_stat_info.link_name)
+		 + 1);
+      p->next = delayed_link_head;
+      delayed_link_head = p;
+      p->dev = st.st_dev;
+      p->ino = st.st_ino;
+      p->mtime = st.st_mtime;
+      p->is_symlink = is_symlink;
+      if (is_symlink)
+	{
+	  p->uid = current_stat_info.stat.st_uid;
+	  p->gid = current_stat_info.stat.st_gid;
+	}
+      p->sources = xmalloc (offsetof (struct string_list, string)
+			    + strlen (file_name) + 1);
+      p->sources->next = 0;
+      strcpy (p->sources->string, file_name);
+      strcpy (p->target, current_stat_info.link_name);
+
+      h = delayed_set_stat_head;
+      if (h && ! h->after_links
+	  && strncmp (file_name, h->file_name, h->file_name_len) == 0
+	  && ISSLASH (file_name[h->file_name_len])
+	  && (base_name (file_name) == file_name + h->file_name_len + 1))
+	{
+	  do
+	    {
+	      h->after_links = 1;
+
+	      if (stat (h->file_name, &st) != 0)
+		stat_error (h->file_name);
+	      else
+		{
+		  h->stat_info.st_dev = st.st_dev;
+		  h->stat_info.st_ino = st.st_ino;
+		}
+	    }
+	  while ((h = h->next) && ! h->after_links);
+	}
+
+      return 0;
+    }
+
+  return -1;
+}
+
 static int
 extract_link (char *file_name, int typeflag)
 {
   char const *link_name = safer_name_suffix (current_stat_info.link_name,
                                              true, absolute_names_option);
   int interdir_made = 0;
+
+  if (! absolute_names_option && contains_dot_dot (link_name))
+    return create_placeholder_file (file_name, false, &interdir_made);
 
   do
     {
@@ -792,7 +874,7 @@ extract_link (char *file_name, int typeflag)
 
       if (status == 0)
 	{
-	  struct delayed_symlink *ds = delayed_symlink_head;
+	  struct delayed_link *ds = delayed_link_head;
 	  if (ds && lstat (link_name, &st1) == 0)
 	    for (; ds; ds = ds->next)
 	      if (ds->dev == st1.st_dev
@@ -831,87 +913,22 @@ static int
 extract_symlink (char *file_name, int typeflag)
 {
 #ifdef HAVE_SYMLINK
-  int status, fd;
+  int status;
   int interdir_made = 0;
 
-  if (absolute_names_option
-      || ! (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
-	    || contains_dot_dot (current_stat_info.link_name)))
-    {
-      while ((status = symlink (current_stat_info.link_name, file_name)))
-	if (!maybe_recoverable (file_name, &interdir_made))
-	  break;
+  if (! absolute_names_option
+      && (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
+	  || contains_dot_dot (current_stat_info.link_name)))
+    return create_placeholder_file (file_name, true, &interdir_made);
 
-      if (status == 0)
-	set_stat (file_name, &current_stat_info.stat, 0, 0, 0, SYMTYPE);
-      else
-	symlink_error (current_stat_info.link_name, file_name);
-    }
+  while ((status = symlink (current_stat_info.link_name, file_name)))
+    if (!maybe_recoverable (file_name, &interdir_made))
+      break;
+
+  if (status == 0)
+    set_stat (file_name, &current_stat_info.stat, 0, 0, 0, SYMTYPE);
   else
-    {
-      /* This symbolic link is potentially dangerous.  Don't
-	 create it now; instead, create a placeholder file, which
-	 will be replaced after other extraction is done.  */
-      struct stat st;
-
-      while ((fd = open (file_name, O_WRONLY | O_CREAT | O_EXCL, 0)) < 0)
-	if (! maybe_recoverable (file_name, &interdir_made))
-	  break;
-
-      status = -1;
-      if (fd < 0)
-	open_error (file_name);
-      else if (fstat (fd, &st) != 0)
-	{
-	  stat_error (file_name);
-	  close (fd);
-	}
-      else if (close (fd) != 0)
-	close_error (file_name);
-      else
-	{
-	  struct delayed_set_stat *h;
-	  struct delayed_symlink *p = xmalloc (offsetof (struct delayed_symlink, target)
-					       + strlen (current_stat_info.link_name)
-					       + 1);
-	  p->next = delayed_symlink_head;
-	  delayed_symlink_head = p;
-	  p->dev = st.st_dev;
-	  p->ino = st.st_ino;
-	  p->mtime = st.st_mtime;
-	  p->uid = current_stat_info.stat.st_uid;
-	  p->gid = current_stat_info.stat.st_gid;
-	  p->sources = xmalloc (offsetof (struct string_list, string)
-				+ strlen (file_name) + 1);
-	  p->sources->next = 0;
-	  strcpy (p->sources->string, file_name);
-	  strcpy (p->target, current_stat_info.link_name);
-
-	  h = delayed_set_stat_head;
-	  if (h && ! h->after_symlinks
-	      && strncmp (file_name, h->file_name, h->file_name_len) == 0
-	      && ISSLASH (file_name[h->file_name_len])
-	      && (base_name (file_name) == file_name + h->file_name_len + 1))
-	    {
-	      do
-		{
-		  h->after_symlinks = 1;
-
-		  if (stat (h->file_name, &st) != 0)
-		    stat_error (h->file_name);
-		  else
-		    {
-		      h->stat_info.st_dev = st.st_dev;
-		      h->stat_info.st_ino = st.st_ino;
-		    }
-		}
-	      while ((h = h->next) && ! h->after_symlinks);
-	    }
-
-	  status = 0;
-	}
-    }
-
+    symlink_error (current_stat_info.link_name, file_name);
   return status;
 
 #else
@@ -1180,11 +1197,11 @@ extract_archive (void)
 
 /* Extract the symbolic links whose final extraction were delayed.  */
 static void
-apply_delayed_symlinks (void)
+apply_delayed_links (void)
 {
-  struct delayed_symlink *ds;
+  struct delayed_link *ds;
 
-  for (ds = delayed_symlink_head; ds; )
+  for (ds = delayed_link_head; ds; )
     {
       struct string_list *sources = ds->sources;
       char const *valid_source = 0;
@@ -1195,7 +1212,7 @@ apply_delayed_symlinks (void)
 	  struct stat st;
 
 	  /* Make sure the placeholder file is still there.  If not,
-	     don't create a symlink, as the placeholder was probably
+	     don't create a link, as the placeholder was probably
 	     removed by a later extraction.  */
 	  if (lstat (source, &st) == 0
 	      && st.st_dev == ds->dev
@@ -1208,6 +1225,11 @@ apply_delayed_symlinks (void)
 		unlink_error (source);
 	      else if (valid_source && link (valid_source, source) == 0)
 		;
+	      else if (!ds->is_symlink)
+		{
+		  if (link (ds->target, source) != 0)
+		    link_error (ds->target, source);
+		}
 	      else if (symlink (ds->target, source) != 0)
 		symlink_error (ds->target, source);
 	      else
@@ -1228,13 +1250,13 @@ apply_delayed_symlinks (void)
 	}
 
       {
-	struct delayed_symlink *next = ds->next;
+	struct delayed_link *next = ds->next;
 	free (ds);
 	ds = next;
       }
     }
 
-  delayed_symlink_head = 0;
+  delayed_link_head = 0;
 }
 
 /* Finish the extraction of an archive.  */
@@ -1244,12 +1266,12 @@ extract_finish (void)
   /* First, fix the status of ordinary directories that need fixing.  */
   apply_nonancestor_delayed_set_stat ("", 0);
 
-  /* Then, apply delayed symlinks, so that they don't affect delayed
+  /* Then, apply delayed links, so that they don't affect delayed
      directory status-setting for ordinary directories.  */
-  apply_delayed_symlinks ();
+  apply_delayed_links ();
 
   /* Finally, fix the status of directories that are ancestors
-     of delayed symlinks.  */
+     of delayed links.  */
   apply_nonancestor_delayed_set_stat ("", 1);
 }
 
