@@ -1,3 +1,24 @@
+2005-09-12  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/.cvsignore: Adjust to current gnulib and modules used.
+	Add getdelim.c, getdelim.h, mbchar.c, mbchar.h, mbuiter.h, memchr.c,
+	pipe-safer.c, size_max.h, strdup.c, strdup.h, strnlen.h, strnlen1.c,
+	strnlen1.h, unistd--.h.
+	Remove getndelim2.c, getndelim2.h, pathmax.h, sysexits.h, xstrdup.c.
+
+	Treat fishy-looking hard links like fishy-looking symlinks.
+	* src/extract.c (struct delayed_set_stat): Rename after_symlinks
+	member to after_links.  All uses changed.
+	(struct delayed_link): Renamed from struct delayed_symlink.
+	All uses changed.  New member is_symlink.
+	(delayed_link_head): Renamed from delayed_symlink_head.  All uses
+	changed.
+	(create_placeholder_file): New function, taken from extract_symlink.
+	(extract_link): Create placeholders for fishy-looking hard links.
+	(extract_symlink): Move code into create_placeholder_file.
+	(apply_delayed_links): Renamed from apply_delayed_symlinks.
+	All uses changed.  Create both hard links and symlinks.
+
 2005-09-03  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* README-alpha: Modernize description of software required for
