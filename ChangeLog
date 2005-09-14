@@ -1,3 +1,12 @@
+2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (list_dumpdir): New function. Used to dump
+	contents of GNUTYPE_DUMPDIR blocks.
+	* src/common.h (list_dumpdir): Likewise.
+	* src/list.c (list_archive): Use list_dumpdir() to display
+	GNUTYPE_DUMPDIR blocks. Do that only if two or more -v options are
+	given.
+
 2005-09-12  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* lib/.cvsignore: Adjust to current gnulib and modules used.
