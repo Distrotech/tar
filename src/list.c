@@ -236,23 +236,15 @@ list_archive (void)
 	  written = available_space_after (data_block);
 	  if (written > size)
 	    written = size;
-	  errno = 0;
-	  check = fwrite (data_block->buffer, sizeof (char), written, stdlis);
 	  set_next_block_after ((union block *)
 				(data_block->buffer + written - 1));
-	  if (check != written)
-	    {
-	      write_error_details (current_stat_info.file_name, check, written);
-	      skip_file (size - written);
-	      break;
-	    }
+	  if (verbose_option > 2)
+	    list_dumpdir (data_block->buffer, written);
 	}
       if (multi_volume_option)
 	assign_string (&save_name, 0);
-      fputc ('\n', stdlis);
-      fflush (stdlis);
+      
       return;
-
     }
 
   if (multi_volume_option)
