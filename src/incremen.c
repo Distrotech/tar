@@ -557,3 +557,32 @@ purge_directory (char const *directory_name)
   free (current_dir);
   free (archive_dir);
 }
+
+void
+list_dumpdir (char *buffer, size_t size)
+{
+  while (size)
+    {
+      switch (*buffer)
+	{
+	case 'Y':
+	case 'N':
+	case 'D':
+	  fprintf (stdlis, "%c ", *buffer);
+	  buffer++;
+	  size--;
+	  break;
+	  
+	case 0:
+	  fputc ('\n', stdlis);
+	  buffer++;
+	  size--;
+	  break;
+	  
+	default:
+	  fputc (*buffer, stdlis);
+	  buffer++;
+	  size--;
+	}
+    }
+}
