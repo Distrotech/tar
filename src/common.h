@@ -426,6 +426,7 @@ char *get_directory_contents (char *, dev_t);
 void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *);
+void list_dumpdir (char *buffer, size_t size);
 
 /* Module list.c.  */
 
