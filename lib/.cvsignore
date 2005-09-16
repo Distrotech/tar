@@ -132,6 +132,7 @@ setenv.c
 setenv.h
 size_max.h
 stat-macros.h
+stat-time.h
 stdbool.h
 stdbool_.h
 stpcpy.c

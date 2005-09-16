@@ -200,11 +200,11 @@ check_time (char const *file_name, struct timespec t)
   if (t.tv_sec <= 0)
     WARN ((0, 0, _("%s: implausibly old time stamp %s"),
 	   file_name, tartime (t, true)));
-  else if (timespec_lt (start_time, t))
+  else if (timespec_cmp (start_time, t) < 0)
     {
       struct timespec now;
       gettime (&now);
-      if (timespec_lt (now, t))
+      if (timespec_cmp (now, t) < 0)
 	{
 	  unsigned long int ds = t.tv_sec - now.tv_sec;
 	  int dns = t.tv_nsec - now.tv_nsec;

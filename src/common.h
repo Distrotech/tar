@@ -55,6 +55,7 @@
 #include <modechange.h>
 #include <quote.h>
 #include <safe-read.h>
+#include <stat-time.h>
 #include <timespec.h>
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
@@ -188,15 +189,7 @@ GLOBAL struct timespec newer_mtime_option;
 /* Return true if the struct stat ST's M time is less than
    newer_mtime_option.  */
 #define OLDER_STAT_TIME(st, m) \
-  timespec_lt (get_stat_##m##time (&st), newer_mtime_option)
-
-/* Return true if A < B.  */
-static inline bool
-timespec_lt (struct timespec a, struct timespec b)
-{
-  return (a.tv_sec < b.tv_sec
-	  || (a.tv_sec == b.tv_sec && a.tv_nsec < b.tv_nsec));
-}
+  (timespec_cmp (get_stat_##m##time (&st), newer_mtime_option) < 0)
 
 /* Zero if there is no recursion, otherwise FNM_LEADING_DIR.  */
 GLOBAL int recursion_option;
@@ -646,120 +639,3 @@ bool sparse_diff_file (int, struct tar_stat_info *);
 /* Module utf8.c */
 bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
-
-
-/* FIXME: The following should get moved into gnulib.  */
-
-static inline struct timespec
-get_stat_atime (struct stat const *st)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  return st->st_atim;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  return st->st_atimespec;
-#else
-  struct timespec t;
-  t.tv_sec = st->st_atime;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  t.tv_nsec = st->stat.st_atimensec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  t.tv_nsec = st->stat.st_spare1 * 1000;
-# else
-  t.tv_nsec = 0;
-# endif
-  return t;
-#endif
-}
-
-static inline struct timespec
-get_stat_ctime (struct stat const *st)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  return st->st_ctim;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  return st->st_ctimespec;
-#else
-  struct timespec t;
-  t.tv_sec = st->st_ctime;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  t.tv_nsec = st->stat.st_ctimensec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  t.tv_nsec = st->stat.st_spare1 * 1000;
-# else
-  t.tv_nsec = 0;
-# endif
-  return t;
-#endif
-}
-
-static inline struct timespec
-get_stat_mtime (struct stat const *st)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  return st->st_mtim;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  return st->st_mtimespec;
-#else
-  struct timespec t;
-  t.tv_sec = st->st_mtime;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  t.tv_nsec = st->stat.st_mtimensec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  t.tv_nsec = st->stat.st_spare1 * 1000;
-# else
-  t.tv_nsec = 0;
-# endif
-  return t;
-#endif
-}
-
-static inline void
-set_stat_atime (struct stat *st, struct timespec t)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  st->st_atim = t;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  st->st_atimespec = t;
-#else
-  st->st_atime = t.tv_sec;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  st->stat.st_atimensec = t.tv_nsec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  st->stat.st_spare1 = t.tv_nsec / 1000;
-# endif
-#endif
-}
-
-static inline void
-set_stat_ctime (struct stat *st, struct timespec t)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  st->st_ctim = t;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  st->st_ctimespec = t;
-#else
-  st->st_ctime = t.tv_sec;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  st->stat.st_ctimensec = t.tv_nsec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  st->stat.st_spare1 = t.tv_nsec / 1000;
-# endif
-#endif
-}
-
-static inline void
-set_stat_mtime (struct stat *st, struct timespec t)
-{
-#if defined HAVE_STRUCT_STAT_ST_ATIM_TV_NSEC
-  st->st_mtim = t;
-#elif defined HAVE_STRUCT_STAT_ST_ATIMESPEC_TV_NSEC
-  st->st_mtimespec = t;
-#else
-  st->st_mtime = t.tv_sec;
-# if defined HAVE_STRUCT_STAT_ST_ATIMENSEC
-  st->stat.st_mtimensec = t.tv_nsec;
-# elif defined HAVE_STRUCT_STAT_ST_SPARE1
-  st->stat.st_spare1 = t.tv_nsec / 1000;
-# endif
-#endif
-}

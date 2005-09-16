@@ -1,3 +1,18 @@
+2005-09-16  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Merge changes from gnulib for file system sub-second time stamps.
+	* configure.ac: Remove checks for struct stat.st_spare1, struct
+	stat.st_atim.tv_nsec, struct stat.st_atimespec.tv_nsec, struct
+	stat.st_atimensec, as gnulib now does this for us.
+	Similarly for LIB_CLOCK_GETTIME.
+	* gnulib.modules: Add stat-time.
+	* lib/.cvsignore: Add stat-time.h.
+	* src/common.h: Include stat-time.h.
+	(timespec_lt): Remove.  All callers changed to use timespec_cmp.
+	(get_stat_atime, get_stat_ctime, get_stat_mtime):
+	(set_stat_atime, set_stat_ctime, set_stat_mtime):
+	Remove; now defined by stat-time.h.
+
 2005-09-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (list_dumpdir): New function. Used to dump

@@ -88,27 +88,6 @@ tar_GNULIB
 # paxutils modules
 tar_PAXUTILS
 
-AC_CHECK_MEMBERS([struct stat.st_spare1, struct stat.st_atim.tv_nsec, struct stat.st_atimespec.tv_nsec, struct stat.st_atimensec], , ,
-                 [
-#include <sys/types.h>
-#include <sys/stat.h>])
-
-# Save and restore LIBS so e.g., -lrt, isn't added to it.  Otherwise, *all*
-# programs in the package would end up linked with that potentially-shared
-# library, inducing unnecessary run-time overhead.
-
-# Solaris 2.5.1 needs -lposix4 to get the clock_gettime function.
-# Solaris 7 prefers the library name -lrt to the obsolescent name -lposix4.
-tar_save_LIBS=$LIBS
-  LIB_CLOCK_GETTIME=
-  AC_SEARCH_LIBS(clock_gettime, [rt posix4])
-  case "$ac_cv_search_clock_gettime" in
-    -l*) LIB_CLOCK_GETTIME=$ac_cv_search_clock_gettime;;
-  esac
-  AC_SUBST(LIB_CLOCK_GETTIME)
-  AC_CHECK_FUNCS(clock_gettime)
-LIBS=$tar_save_LIBS
-
 AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale utimes)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])

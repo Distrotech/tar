@@ -32,6 +32,7 @@ safe-read
 save-cwd
 savedir
 setenv
+stat-time
 stdbool
 stpcpy
 strdup
