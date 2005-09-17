@@ -611,7 +611,16 @@ dec_to_env (char *envar, uintmax_t num)
   char *numstr;
 
   numstr = STRINGIFY_BIGINT (num, buf);
-  setenv (envar, numstr, 1);
+  if (setenv (envar, numstr, 1) != 0)
+    xalloc_die ();
+}
+
+static void
+time_to_env (char *envar, struct timespec t)
+{
+  char buf[TIMESPEC_STRSIZE_BOUND];
+  if (setenv (envar, code_timespec (t, buf), 1) != 0)
+    xalloc_die ();
 }
 
 static void
@@ -620,14 +629,18 @@ oct_to_env (char *envar, unsigned long num)
   char buf[1+1+(sizeof(unsigned long)*CHAR_BIT+2)/3];
 
   snprintf (buf, sizeof buf, "0%lo", num);
-  setenv (envar, buf, 1);
+  if (setenv (envar, buf, 1) != 0)
+    xalloc_die ();
 }
 
 static void
 str_to_env (char *envar, char const *str)
 {
   if (str)
-    setenv (envar, str, 1);
+    {
+      if (setenv (envar, str, 1) != 0)
+	xalloc_die ();
+    }
   else
     unsetenv (envar);
 }
@@ -638,7 +651,8 @@ chr_to_env (char *envar, char c)
   char buf[2];
   buf[0] = c;
   buf[1] = 0;
-  setenv (envar, buf, 1);
+  if (setenv (envar, buf, 1) != 0)
+    xalloc_die ();
 }
 
 static void
@@ -650,9 +664,9 @@ stat_to_env (char *name, char type, struct tar_stat_info *st)
   str_to_env ("TAR_REALNAME", st->file_name);
   str_to_env ("TAR_UNAME", st->uname);
   str_to_env ("TAR_GNAME", st->gname);
-  dec_to_env ("TAR_MTIME", st->stat.st_mtime);
-  dec_to_env ("TAR_ATIME", st->stat.st_atime);
-  dec_to_env ("TAR_CTIME", st->stat.st_ctime);
+  time_to_env ("TAR_ATIME", st->atime);
+  time_to_env ("TAR_MTIME", st->mtime);
+  time_to_env ("TAR_CTIME", st->ctime);
   dec_to_env ("TAR_SIZE", st->stat.st_size);
   dec_to_env ("TAR_UID", st->stat.st_uid);
   dec_to_env ("TAR_GID", st->stat.st_gid);

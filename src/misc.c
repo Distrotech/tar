@@ -239,6 +239,27 @@ code_ns_fraction (int ns, char *p)
 	}
     }
 }
+
+char const *
+code_timespec (struct timespec t, char sbuf[TIMESPEC_STRSIZE_BOUND])
+{
+  time_t s = t.tv_sec;
+  int ns = t.tv_nsec;
+  char *np;
+  bool negative = s < 0;
+
+  if (negative && ns != 0)
+    {
+      s++;
+      ns = BILLION - ns;
+    }
+
+  np = umaxtostr (negative ? - (uintmax_t) s : (uintmax_t) s, sbuf + 1);
+  if (negative)
+    *--np = '-';
+  code_ns_fraction (ns, sbuf + UINTMAX_STRSIZE_BOUND);
+  return np;
+}
 
 /* File handling.  */
 

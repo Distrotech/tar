@@ -57,8 +57,6 @@ static size_t global_header_count;
 
    However it should wait until buffer.c is finally rewritten */
 
-enum { BILLION = 1000000000, LOG10_BILLION = 9 };
-
 
 /* Keyword options */
 
@@ -747,23 +745,8 @@ decode_string (char **string, char const *arg)
 static void
 code_time (struct timespec t, char const *keyword, struct xheader *xhdr)
 {
-  time_t s = t.tv_sec;
-  int ns = t.tv_nsec;
-  char sbuf[1/*"-"*/ + UINTMAX_STRSIZE_BOUND + 1/*"."*/ + LOG10_BILLION];
-  char *np;
-  bool negative = s < 0;
-
-  if (negative && ns != 0)
-    {
-      s++;
-      ns = BILLION - ns;
-    }
-
-  np = umaxtostr (negative ? - (uintmax_t) s : (uintmax_t) s, sbuf + 1);
-  if (negative)
-    *--np = '-';
-  code_ns_fraction (ns, sbuf + UINTMAX_STRSIZE_BOUND);
-  xheader_print (xhdr, keyword, np);
+  char buf[TIMESPEC_STRSIZE_BOUND];
+  xheader_print (xhdr, keyword, code_timespec (t, buf));
 }
 
 static bool
@@ -900,7 +883,7 @@ static void
 atime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
-  code_time (get_stat_atime (&st->stat), keyword, xhdr);
+  code_time (st->atime, keyword, xhdr);
 }
 
 static void
@@ -908,7 +891,7 @@ atime_decoder (struct tar_stat_info *st, char const *arg)
 {
   struct timespec ts;
   if (decode_time (&ts, arg, "atime"))
-    set_stat_atime (&st->stat, ts);
+    st->atime = ts;
 }
 
 static void
@@ -956,7 +939,7 @@ static void
 ctime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
-  code_time (get_stat_ctime (&st->stat), keyword, xhdr);
+  code_time (st->ctime, keyword, xhdr);
 }
 
 static void
@@ -964,14 +947,14 @@ ctime_decoder (struct tar_stat_info *st, char const *arg)
 {
   struct timespec ts;
   if (decode_time (&ts, arg, "ctime"))
-    set_stat_ctime (&st->stat, ts);
+    st->ctime = ts;
 }
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void *data __attribute__ ((unused)))
 {
-  code_time (get_stat_mtime (&st->stat), keyword, xhdr);
+  code_time (st->mtime, keyword, xhdr);
 }
 
 static void
@@ -979,7 +962,7 @@ mtime_decoder (struct tar_stat_info *st, char const *arg)
 {
   struct timespec ts;
   if (decode_time (&ts, arg, "mtime"))
-    set_stat_mtime (&st->stat, ts);
+    st->mtime = ts;
 }
 
 static void

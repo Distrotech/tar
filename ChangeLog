@@ -1,5 +1,44 @@
 2005-09-16  Paul Eggert  <eggert@cs.ucla.edu>
 
+	Don't filter time stamps through the resolution supported
+	by struct stat; keep them to full nanosecond resolution.
+	This affects behavior only on older hosts or file systems
+	that have lower-resolution time stamps.
+	* src/common.h (OLDER_STAT_TIME): Parenthesize arg.
+	(OLDER_TAR_STAT_TIME): New macro.
+	(code_timespec): New function.
+	(BILLION, LOG10_BILLION, TIMESPEC_STRSIZE_BOUND): New constants.
+	* src/compare.c (diff_file): Use full time stamp resolution.
+	* src/create.c (start_header, dump_file0): Likewise.
+	(start_header, dump_file0): Adjust to new structure layout.
+	(dump_regular_finish): Simplify by using timespec_cmp.
+	* src/extract.c (struct delayed_set_stat): Don't store stat info
+	that we don't need, to save space.  All uses changed.
+	(struct delayed_set_stat, struct delayed_link, file_newer_p):
+	(create_placeholder_file, extract_link, apply_delayed_links):
+	Use full time stamp resolution.
+	(check_time): Use code_timespec rather than rolling our own code.
+	(set_stat, delay_set_stat): Arg now points to tar_stat_info to
+	avoid losing time information.  All callers changed.
+	* src/list.c (read_and, decode_header, print_heaeder):
+	Use full time stamp resolution.
+	* src/misc.c (code_timespec): New function.
+	* src/tar.h (struct tar_stat_info): Record atime, mtime, ctime
+	separately, for benefit of hosts with lower resolution.
+	* src/update.c (update_archive): Use full time stamp resolution.
+	* src/xheader.c (code_time): Use new code_timespec function
+	to simplify code.
+	(atime_coder, atime_decoder, ctime_coder, ctime_decoder):
+	(mtime_coder, mtime_decoder): Use full time stamp resolution.
+
+	Report time stamps to full resolution in environment.
+	Report memory allocation failures rather than ignoring them.
+	* src/system.c (time_to_env): New function.
+	(oct_to_env, str_to_env, chr_to_env): Report memory allocation failures.
+	(stat_to_env): Report full resolution in time stamps.
+
+2005-09-16  Paul Eggert  <eggert@cs.ucla.edu>
+
 	Merge changes from gnulib for file system sub-second time stamps.
 	* configure.ac: Remove checks for struct stat.st_spare1, struct
 	stat.st_atim.tv_nsec, struct stat.st_atimespec.tv_nsec, struct

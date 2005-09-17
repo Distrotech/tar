@@ -281,6 +281,12 @@ struct tar_stat_info
   char          *gname;     /* group name of owner */
   struct stat   stat;       /* regular filesystem stat */
 
+  /* STAT doesn't always have access, data modification, and status
+     change times in a convenient form, so store them separately.  */
+  struct timespec atime;
+  struct timespec mtime;
+  struct timespec ctime;
+
   off_t archive_file_size;  /* Size of file as stored in the archive.
 			       Equals stat.st_size for non-sparse files */
 

@@ -353,7 +353,7 @@ string_to_chars (char const *str, char *p, size_t s)
 /* A file is considered dumpable if it is sparse and both --sparse and --totals
    are specified.
    Otherwise, it is dumpable unless any of the following conditions occur:
-   
+
    a) it is empty *and* world-readable, or
    b) current archive is /dev/null */
 
@@ -698,7 +698,7 @@ start_header (struct tar_stat_info *st)
   }
 
   {
-    struct timespec mtime = get_stat_mtime (&st->stat);
+    struct timespec mtime = st->mtime;
     if (archive_format == POSIX_FORMAT)
       {
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec
@@ -747,8 +747,8 @@ start_header (struct tar_stat_info *st)
   else if (incremental_option)
     if (archive_format == OLDGNU_FORMAT || archive_format == GNU_FORMAT)
       {
-	TIME_TO_CHARS (st->stat.st_atime, header->oldgnu_header.atime);
-	TIME_TO_CHARS (st->stat.st_ctime, header->oldgnu_header.ctime);
+	TIME_TO_CHARS (st->atime.tv_sec, header->oldgnu_header.atime);
+	TIME_TO_CHARS (st->ctime.tv_sec, header->oldgnu_header.ctime);
       }
 
   header->header.typeflag = archive_format == V7_FORMAT ? AREGTYPE : REGTYPE;
@@ -954,9 +954,8 @@ dump_regular_finish (int fd, struct tar_stat_info *st,
 	{
 	  stat_diag (st->orig_file_name);
 	}
-      else if (final_stat.st_ctime != original_ctime.tv_sec
-	       || (get_stat_ctime (&final_stat).tv_nsec
-		   != original_ctime.tv_nsec))
+      else if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime)
+	       != 0)
 	{
 	  WARN ((0, 0, _("%s: file changed as we read it"),
 		 quotearg_colon (st->orig_file_name)));
@@ -1408,9 +1407,9 @@ dump_file0 (struct tar_stat_info *st, char *p,
       return;
     }
   st->archive_file_size = st->stat.st_size;
-  original_ctime = get_stat_ctime (&st->stat);
-  restore_times[0] = get_stat_atime (&st->stat);
-  restore_times[1] = get_stat_mtime (&st->stat);
+  st->atime = restore_times[0] = get_stat_atime (&st->stat);
+  st->mtime = restore_times[1] = get_stat_mtime (&st->stat);
+  st->ctime = original_ctime = get_stat_ctime (&st->stat);
 
 #ifdef S_ISHIDDEN
   if (S_ISHIDDEN (st->stat.st_mode))
@@ -1433,8 +1432,8 @@ dump_file0 (struct tar_stat_info *st, char *p,
 
   if (!(incremental_option && !is_individual_file (p))
       && !S_ISDIR (st->stat.st_mode)
-      && OLDER_STAT_TIME (st->stat, m)
-      && (!after_date_option || OLDER_STAT_TIME (st->stat, c)))
+      && OLDER_TAR_STAT_TIME (*st, m)
+      && (!after_date_option || OLDER_TAR_STAT_TIME (*st, c)))
     {
       if (!incremental_option && verbose_option)
 	WARN ((0, 0, _("%s: file is unchanged; not dumped"),

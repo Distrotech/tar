@@ -57,7 +57,13 @@ enum permstatus
 struct delayed_set_stat
   {
     struct delayed_set_stat *next;
-    struct stat stat_info;
+    dev_t dev;
+    ino_t ino;
+    mode_t mode;
+    uid_t uid;
+    gid_t gid;
+    struct timespec atime;
+    struct timespec mtime;
     size_t file_name_len;
     mode_t invert_permissions;
     enum permstatus permstatus;
@@ -76,7 +82,7 @@ struct delayed_link
     /* The device, inode number and last-modified time of the placeholder.  */
     dev_t dev;
     ino_t ino;
-    time_t mtime;
+    struct timespec mtime;
 
     /* True if the link is symbolic.  */
     bool is_symlink;
@@ -206,23 +212,23 @@ check_time (char const *file_name, struct timespec t)
       gettime (&now);
       if (timespec_cmp (now, t) < 0)
 	{
-	  unsigned long int ds = t.tv_sec - now.tv_sec;
-	  int dns = t.tv_nsec - now.tv_nsec;
-	  char dnsbuf[sizeof ".FFFFFFFFF"];
-	  if (dns < 0)
+	  char buf[TIMESPEC_STRSIZE_BOUND];
+	  struct timespec diff;
+	  diff.tv_sec = t.tv_sec - now.tv_sec;
+	  diff.tv_nsec = t.tv_nsec - now.tv_nsec;
+	  if (diff.tv_nsec < 0)
 	    {
-	      dns += 1000000000;
-	      ds--;
+	      diff.tv_nsec += BILLION;
+	      diff.tv_sec--;
 	    }
-	  code_ns_fraction (dns, dnsbuf);
-	  WARN ((0, 0, _("%s: time stamp %s is %lu%s s in the future"),
-		 file_name, tartime (t, true), ds, dnsbuf));
+	  WARN ((0, 0, _("%s: time stamp %s is %s s in the future"),
+		 file_name, tartime (t, true), code_timespec (diff, buf)));
 	}
     }
 }
 
 /* Restore stat attributes (owner, group, mode and times) for
-   FILE_NAME, using information given in *STAT_INFO.
+   FILE_NAME, using information given in *ST.
    If CUR_INFO is nonzero, *CUR_INFO is the
    file's currernt status.
    If not restoring permissions, invert the
@@ -237,7 +243,7 @@ check_time (char const *file_name, struct timespec t)
 
 static void
 set_stat (char const *file_name,
-	  struct stat const *stat_info,
+	  struct tar_stat_info const *st,
 	  struct stat const *cur_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
@@ -256,8 +262,8 @@ set_stat (char const *file_name,
 	  /* FIXME: incremental_option should set ctime too, but how?  */
 
 	  struct timespec ts[2];
-	  ts[0] = incremental_option ? get_stat_atime (stat_info) : start_time;
-	  ts[1] = get_stat_mtime (stat_info);
+	  ts[0] = incremental_option ? st->atime : start_time;
+	  ts[1] = st->mtime;
 
 	  if (utimens (file_name, ts) != 0)
 	    utime_error (file_name);
@@ -272,7 +278,7 @@ set_stat (char const *file_name,
 	 done, it is not possible anymore to change file permissions, so we
 	 have to set permissions prior to possibly giving files away.  */
 
-      set_mode (file_name, stat_info, cur_info,
+      set_mode (file_name, &st->stat, cur_info,
 		invert_permissions, permstatus, typeflag);
     }
 
@@ -286,48 +292,54 @@ set_stat (char const *file_name,
       if (typeflag == SYMTYPE)
 	{
 #if HAVE_LCHOWN
-	  if (lchown (file_name, stat_info->st_uid, stat_info->st_gid) < 0)
+	  if (lchown (file_name, st->stat.st_uid, st->stat.st_gid) < 0)
 	    chown_error_details (file_name,
-				 stat_info->st_uid, stat_info->st_gid);
+				 st->stat.st_uid, st->stat.st_gid);
 #endif
 	}
       else
 	{
-	  if (chown (file_name, stat_info->st_uid, stat_info->st_gid) < 0)
+	  if (chown (file_name, st->stat.st_uid, st->stat.st_gid) < 0)
 	    chown_error_details (file_name,
-				 stat_info->st_uid, stat_info->st_gid);
+				 st->stat.st_uid, st->stat.st_gid);
 
 	  /* On a few systems, and in particular, those allowing to give files
 	     away, changing the owner or group destroys the suid or sgid bits.
 	     So let's attempt setting these bits once more.  */
-	  if (stat_info->st_mode & (S_ISUID | S_ISGID | S_ISVTX))
-	    set_mode (file_name, stat_info, 0,
+	  if (st->stat.st_mode & (S_ISUID | S_ISGID | S_ISVTX))
+	    set_mode (file_name, &st->stat, 0,
 		      invert_permissions, permstatus, typeflag);
 	}
     }
 }
 
 /* Remember to restore stat attributes (owner, group, mode and times)
-   for the directory FILE_NAME, using information given in *STAT_INFO,
+   for the directory FILE_NAME, using information given in *ST,
    once we stop extracting files into that directory.
    If not restoring permissions, remember to invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.  */
 static void
-delay_set_stat (char const *file_name, struct stat const *stat_info,
+delay_set_stat (char const *file_name, struct tar_stat_info const *st,
 		mode_t invert_permissions, enum permstatus permstatus)
 {
   size_t file_name_len = strlen (file_name);
   struct delayed_set_stat *data =
     xmalloc (offsetof (struct delayed_set_stat, file_name)
 	     + file_name_len + 1);
+  data->next = delayed_set_stat_head;
+  data->dev = st->stat.st_dev;
+  data->ino = st->stat.st_ino;
+  data->mode = st->stat.st_mode;
+  data->uid = st->stat.st_uid;
+  data->gid = st->stat.st_gid;
+  data->atime = st->atime;
+  data->mtime = st->mtime;
   data->file_name_len = file_name_len;
-  strcpy (data->file_name, file_name);
   data->invert_permissions = invert_permissions;
   data->permstatus = permstatus;
   data->after_links = 0;
-  data->stat_info = *stat_info;
-  data->next = delayed_set_stat_head;
+  strcpy (data->file_name, file_name);
   delayed_set_stat_head = data;
 }
 
@@ -352,7 +364,13 @@ repair_delayed_set_stat (char const *dir,
       if (st.st_dev == dir_stat_info->st_dev
 	  && st.st_ino == dir_stat_info->st_ino)
 	{
-	  data->stat_info = current_stat_info.stat;
+	  data->dev = current_stat_info.stat.st_dev;
+	  data->ino = current_stat_info.stat.st_ino;
+	  data->mode = current_stat_info.stat.st_mode;
+	  data->uid = current_stat_info.stat.st_uid;
+	  data->gid = current_stat_info.stat.st_gid;
+	  data->atime = current_stat_info.atime;
+	  data->mtime = current_stat_info.mtime;
 	  data->invert_permissions =
 	    (MODE_RWX & (current_stat_info.stat.st_mode ^ st.st_mode));
 	  data->permstatus = ARCHIVED_PERMSTATUS;
@@ -408,7 +426,7 @@ make_directories (char *file_name)
 	     invert_permissions is zero, because
 	     repair_delayed_set_stat may need to update the struct.  */
 	  delay_set_stat (file_name,
-			  &current_stat_info.stat /* ignored */,
+			  &current_stat_info /* ignored */,
 			  invert_permissions, INTERDIR_PERMSTATUS);
 
 	  print_for_mkdir (file_name, cursor - file_name, mode);
@@ -448,7 +466,7 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
       return errno != ENOENT;
     }
   if (!S_ISDIR (st.st_mode)
-      && st.st_mtime >= tar_stat->stat.st_mtime)
+      && timespec_cmp (tar_stat->mtime, get_stat_mtime (&st)) <= 0)
     {
       return true;
     }
@@ -551,8 +569,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	      stat_error (data->file_name);
 	      skip_this_one = 1;
 	    }
-	  else if (! (st.st_dev == data->stat_info.st_dev
-		      && (st.st_ino == data->stat_info.st_ino)))
+	  else if (! (st.st_dev == data->dev && st.st_ino == data->ino))
 	    {
 	      ERROR ((0, 0,
 		      _("%s: Directory renamed before its status could be extracted"),
@@ -562,8 +579,16 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	}
 
       if (! skip_this_one)
-	set_stat (data->file_name, &data->stat_info, cur_info,
-		  data->invert_permissions, data->permstatus, DIRTYPE);
+	{
+	  struct tar_stat_info st;
+	  st.stat.st_mode = data->mode;
+	  st.stat.st_uid = data->uid;
+	  st.stat.st_gid = data->gid;
+	  st.atime = data->atime;
+	  st.mtime = data->mtime;
+	  set_stat (data->file_name, &st, cur_info,
+		    data->invert_permissions, data->permstatus, DIRTYPE);
+	}
 
       delayed_set_stat_head = data->next;
       free (data);
@@ -627,7 +652,7 @@ extract_dir (char *file_name, int typeflag)
   if (status == 0
       || old_files_option == DEFAULT_OLD_FILES
       || old_files_option == OVERWRITE_OLD_FILES)
-    delay_set_stat (file_name, &current_stat_info.stat,
+    delay_set_stat (file_name, &current_stat_info,
 		    MODE_RWX & (mode ^ current_stat_info.stat.st_mode),
 		    (status == 0
 		     ? ARCHIVED_PERMSTATUS
@@ -771,7 +796,7 @@ extract_file (char *file_name, int typeflag)
   if (to_command_option)
     sys_wait_command ();
   else
-    set_stat (file_name, &current_stat_info.stat, 0, 0,
+    set_stat (file_name, &current_stat_info, NULL, 0,
 	      (old_files_option == OVERWRITE_OLD_FILES ?
 	       UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
 	      typeflag);
@@ -815,7 +840,7 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
       delayed_link_head = p;
       p->dev = st.st_dev;
       p->ino = st.st_ino;
-      p->mtime = st.st_mtime;
+      p->mtime = get_stat_mtime (&st);
       p->is_symlink = is_symlink;
       if (is_symlink)
 	{
@@ -842,8 +867,8 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
 		stat_error (h->file_name);
 	      else
 		{
-		  h->stat_info.st_dev = st.st_dev;
-		  h->stat_info.st_ino = st.st_ino;
+		  h->dev = st.st_dev;
+		  h->ino = st.st_ino;
 		}
 	    }
 	  while ((h = h->next) && ! h->after_links);
@@ -879,7 +904,7 @@ extract_link (char *file_name, int typeflag)
 	    for (; ds; ds = ds->next)
 	      if (ds->dev == st1.st_dev
 		  && ds->ino == st1.st_ino
-		  && ds->mtime == st1.st_mtime)
+		  && timespec_cmp (ds->mtime, get_stat_mtime (&st1)) == 0)
 		{
 		  struct string_list *p =  xmalloc (offsetof (struct string_list, string)
 						    + strlen (file_name) + 1);
@@ -926,7 +951,7 @@ extract_symlink (char *file_name, int typeflag)
       break;
 
   if (status == 0)
-    set_stat (file_name, &current_stat_info.stat, 0, 0, 0, SYMTYPE);
+    set_stat (file_name, &current_stat_info, NULL, 0, 0, SYMTYPE);
   else
     symlink_error (current_stat_info.link_name, file_name);
   return status;
@@ -958,7 +983,8 @@ extract_node (char *file_name, int typeflag)
   if (status != 0)
     mknod_error (file_name);
   else
-    set_stat (file_name, &current_stat_info.stat, 0, 0, ARCHIVED_PERMSTATUS, typeflag);
+    set_stat (file_name, &current_stat_info, NULL, 0,
+	      ARCHIVED_PERMSTATUS, typeflag);
   return status;
 }
 #endif
@@ -975,7 +1001,7 @@ extract_fifo (char *file_name, int typeflag)
       break;
 
   if (status == 0)
-    set_stat (file_name, &current_stat_info.stat, NULL, 0,
+    set_stat (file_name, &current_stat_info, NULL, 0,
 	      ARCHIVED_PERMSTATUS, typeflag);
   else
     mkfifo_error (file_name);
@@ -1217,7 +1243,7 @@ apply_delayed_links (void)
 	  if (lstat (source, &st) == 0
 	      && st.st_dev == ds->dev
 	      && st.st_ino == ds->ino
-	      && st.st_mtime == ds->mtime)
+	      && timespec_cmp (get_stat_mtime (&st), ds->mtime) == 0)
 	    {
 	      /* Unlink the placeholder, then create a hard link if possible,
 		 a symbolic link otherwise.  */
@@ -1234,10 +1260,11 @@ apply_delayed_links (void)
 		symlink_error (ds->target, source);
 	      else
 		{
+		  struct tar_stat_info st1;
+		  st1.stat.st_uid = ds->uid;
+		  st1.stat.st_gid = ds->gid;
+		  set_stat (source, &st1, NULL, 0, 0, SYMTYPE);
 		  valid_source = source;
-		  st.st_uid = ds->uid;
-		  st.st_gid = ds->gid;
-		  set_stat (source, &st, 0, 0, 0, SYMTYPE);
 		}
 	    }
 	}

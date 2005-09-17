@@ -129,7 +129,7 @@ update_archive (void)
 	    decode_header (current_header, &current_stat_info,
 			   &current_format, 0);
 	    archive_format = current_format;
-	    
+
 	    if (subcommand_option == UPDATE_SUBCOMMAND
 		&& (name = name_scan (current_stat_info.file_name)) != NULL)
 	      {
@@ -138,7 +138,9 @@ update_archive (void)
 		chdir_do (name->change_dir);
 		if (deref_stat (dereference_option,
 				current_stat_info.file_name, &s) == 0
-		    && s.st_mtime <= current_stat_info.stat.st_mtime)
+		    && (timespec_cmp (get_stat_mtime (&s),
+				      current_stat_info.mtime)
+			<= 0))
 		  add_avoided_name (current_stat_info.file_name);
 	      }
 

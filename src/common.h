@@ -189,7 +189,11 @@ GLOBAL struct timespec newer_mtime_option;
 /* Return true if the struct stat ST's M time is less than
    newer_mtime_option.  */
 #define OLDER_STAT_TIME(st, m) \
-  (timespec_cmp (get_stat_##m##time (&st), newer_mtime_option) < 0)
+  (timespec_cmp (get_stat_##m##time (&(st)), newer_mtime_option) < 0)
+
+/* Likewise, for struct tar_stat_info ST.  */
+#define OLDER_TAR_STAT_TIME(st, m) \
+  (timespec_cmp ((st).m##time, newer_mtime_option) < 0)
 
 /* Zero if there is no recursion, otherwise FNM_LEADING_DIR.  */
 GLOBAL int recursion_option;
@@ -490,6 +494,10 @@ char *quote_copy_string (const char *);
 int unquote_string (char *);
 
 void code_ns_fraction (int, char *);
+char const *code_timespec (struct timespec, char *);
+enum { BILLION = 1000000000, LOG10_BILLION = 9 };
+enum { TIMESPEC_STRSIZE_BOUND =
+         UINTMAX_STRSIZE_BOUND + LOG10_BILLION + sizeof "-." - 1 };
 
 size_t dot_dot_prefix_len (char const *);
 

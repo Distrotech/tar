@@ -99,8 +99,8 @@ read_and (void (*do_something) (void))
 		      /* FIXME: Grab fractional time stamps from
 			 extended header.  */
 		      mtime.tv_nsec = 0,
-		      set_stat_mtime (&current_stat_info.stat, mtime),
-		      OLDER_STAT_TIME (current_stat_info.stat, m)))
+		      current_stat_info.mtime = mtime,
+		      OLDER_TAR_STAT_TIME (current_stat_info, m)))
 	      || excluded_name (current_stat_info.file_name))
 	    {
 	      switch (current_header->header.typeflag)
@@ -243,7 +243,7 @@ list_archive (void)
 	}
       if (multi_volume_option)
 	assign_string (&save_name, 0);
-      
+
       return;
     }
 
@@ -512,9 +512,6 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	       enum archive_format *format_pointer, int do_user_group)
 {
   enum archive_format format;
-  struct timespec atime;
-  struct timespec ctime;
-  struct timespec mtime;
 
   if (strcmp (header->header.magic, TMAGIC) == 0)
     {
@@ -536,9 +533,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   *format_pointer = format;
 
   stat_info->stat.st_mode = MODE_FROM_HEADER (header->header.mode);
-  mtime.tv_sec = TIME_FROM_HEADER (header->header.mtime);
-  mtime.tv_nsec = 0;
-  set_stat_mtime (&stat_info->stat, mtime);
+  stat_info->mtime.tv_sec = TIME_FROM_HEADER (header->header.mtime);
+  stat_info->mtime.tv_nsec = 0;
   assign_string (&stat_info->uname,
 		 header->header.uname[0] ? header->header.uname : NULL);
   assign_string (&stat_info->gname,
@@ -546,21 +542,18 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 
   if (format == OLDGNU_FORMAT && incremental_option)
     {
-      atime.tv_sec = TIME_FROM_HEADER (header->oldgnu_header.atime);
-      ctime.tv_sec = TIME_FROM_HEADER (header->oldgnu_header.ctime);
-      atime.tv_nsec = ctime.tv_nsec = 0;
+      stat_info->atime.tv_sec = TIME_FROM_HEADER (header->oldgnu_header.atime);
+      stat_info->ctime.tv_sec = TIME_FROM_HEADER (header->oldgnu_header.ctime);
+      stat_info->atime.tv_nsec = stat_info->ctime.tv_nsec = 0;
     }
   else if (format == STAR_FORMAT)
     {
-      atime.tv_sec = TIME_FROM_HEADER (header->star_header.atime);
-      ctime.tv_sec = TIME_FROM_HEADER (header->star_header.ctime);
-      atime.tv_nsec = ctime.tv_nsec = 0;
+      stat_info->atime.tv_sec = TIME_FROM_HEADER (header->star_header.atime);
+      stat_info->ctime.tv_sec = TIME_FROM_HEADER (header->star_header.ctime);
+      stat_info->atime.tv_nsec = stat_info->ctime.tv_nsec = 0;
     }
   else
-    atime = ctime = start_time;
-
-  set_stat_atime (&stat_info->stat, atime);
-  set_stat_ctime (&stat_info->stat, ctime);
+    stat_info->atime = stat_info->ctime = start_time;
 
   if (format == V7_FORMAT)
     {
@@ -1094,7 +1087,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 
       /* Time stamp.  */
 
-      time_stamp = tartime (get_stat_mtime (&st->stat), false);
+      time_stamp = tartime (st->mtime, false);
       time_stamp_len = strlen (time_stamp);
       if (datewidth < time_stamp_len)
 	datewidth = time_stamp_len;
