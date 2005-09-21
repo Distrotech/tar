@@ -106,7 +106,7 @@ atconfig: $(top_builddir)/config.status
 	cd $(top_builddir) && ./config.status tests/$@
 
 clean-local:
-	$(SHELL) $(TESTSUITE) --clean
+	test ! -f $(TESTSUITE) || $(SHELL) $(TESTSUITE) --clean
 
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) $(TESTSUITE)
@@ -130,4 +130,3 @@ localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
 
 LDADD = ../lib/libtar.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
-

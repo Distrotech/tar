@@ -1,3 +1,9 @@
+2005-09-21  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* tests/Makefile.am (clean-local): Don't attempt to run
+	$(TESTSUITE) if it doesn't exist.  Problem reported by
+	Eric Blake.
+
 2005-09-16  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Don't filter time stamps through the resolution supported
