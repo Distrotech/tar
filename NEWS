@@ -25,6 +25,19 @@ automatically. It is not necessary to give --null option.
 is useful e.g. for processing output from `find dir -print0'.
 An orthogonal option --unquote is provided as well.
 
+* New option --test-label tests the archive volume label.
+If an argument is specified, the label is compared against its value.
+Tar exits with code 0 if the two strings match, and with code 2 if
+they do not.
+
+If no argument is given, --verbose option is implied. In this case,
+tar prints the label name, if it is present and exits with code 0.
+
+* New option --show-stored-names. When creating archive in verbose mode,
+lists member names as stored in the archive, i.e. with any eventual
+prefixes removed. The option is useful, for example, while comparing
+`tar cv' and `tar tv' outputs.	
+
 * Better support for full-resolution time stamps.  Tar cannot restore
 time stamps to full nanosecond resolution, though, until the kernel
 guys get their act together and give us a system call to set file time

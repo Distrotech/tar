@@ -1,5 +1,12 @@
 2005-09-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Updated
+	* src/common.h (show_stored_names_option): New variable
+	* src/list.c (print_header): If show_stored_names_option is given,
+	list member names as stored in the archive. Patch proposed by Erik
+	Cumps <erik.cumps@icos.be>
+	* src/tar.c: Implement --show-stored-names option
+
 	* src/common.h (test_label_option): New variable;
 	* src/list.c (print_header): Special handling if test_label_option
 	is set.
