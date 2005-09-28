@@ -228,6 +228,7 @@ enum
   SAME_OWNER_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
+  SHOW_STORED_NAMES_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TEST_LABEL_OPTION,
@@ -296,6 +297,8 @@ static struct argp_option options[] = {
   {"concatenate", 0, 0, OPTION_ALIAS, NULL, 10},
   {"delete", DELETE_OPTION, 0, 0,
    N_("delete from the archive (not on mag tapes!)"), 10 },
+  {"test-label", TEST_LABEL_OPTION, NULL, 0,
+   N_("Test archive volume label and exit"), 10 },
 
   {NULL, 0, NULL, 0,
    N_("Operation modifiers:"), 20},
@@ -311,10 +314,7 @@ static struct argp_option options[] = {
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
   {"seek", 'n', NULL, 0,
-   N_("archive is seekable"), 21 },
-  {"test-label", TEST_LABEL_OPTION, NULL, 0,
-   N_("List volume label and exit"), 21 },
-    
+   N_("archive is seekable"), 21 },    
 
   {NULL, 0, NULL, 0,
    N_("Overwrite control:"), 30},
@@ -554,7 +554,10 @@ static struct argp_option options[] = {
    N_("Show tar defaults"), 102 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
    N_("When listing or extracting, list each directory that does not match search criteria"), 102 },
-
+  {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
+   N_("When creating archive in verbose mode, list member names as stored in the archive"),
+   102 },
+    
   {NULL, 0, NULL, 0,
    N_("Compatibility options:"), 110 },
 
@@ -1317,6 +1320,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       show_omitted_dirs_option = true;
       break;
 
+    case SHOW_STORED_NAMES_OPTION:
+      show_stored_names_option = true;
+      break;
+      
     case SUFFIX_OPTION:
       backup_option = true;
       args->backup_suffix_string = arg;
