@@ -1011,6 +1011,24 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 
   if (test_label_option && current_header->header.typeflag != GNUTYPE_VOLHDR)
     return;
+
+  if (show_stored_names_option)
+    {
+      switch (subcommand_option)
+	{
+	case CAT_SUBCOMMAND:
+	case UPDATE_SUBCOMMAND:
+	case APPEND_SUBCOMMAND:
+	case CREATE_SUBCOMMAND:
+	  temp_name = st->file_name ? st->file_name : st->orig_file_name;
+	  break;
+
+	default:
+	  temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
+	}
+    }
+  else
+    temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
   
   if (block_number_option)
     {
