@@ -313,6 +313,9 @@ GLOBAL dev_t root_device;
 
 /* Unquote filenames */
 GLOBAL bool unquote_option;
+
+GLOBAL bool test_label_option;
+
 
 /* Declarations for each module.  */
 
