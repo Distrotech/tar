@@ -314,7 +314,10 @@ GLOBAL dev_t root_device;
 /* Unquote filenames */
 GLOBAL bool unquote_option;
 
-GLOBAL bool test_label_option;
+GLOBAL bool test_label_option; /* Test archive volume label and exit */
+
+GLOBAL bool show_stored_names_option; /* When creating archive in verbose mode,
+					 list member names as stored in the archive */
 
 
 /* Declarations for each module.  */
