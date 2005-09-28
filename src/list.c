@@ -210,7 +210,7 @@ list_archive (void)
   decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
     print_header (&current_stat_info, -1);
-
+  
   if (incremental_option && current_header->header.typeflag == GNUTYPE_DUMPDIR)
     {
       off_t size;
@@ -1009,6 +1009,9 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
   int pad;
   int sizelen;
 
+  if (test_label_option && current_header->header.typeflag != GNUTYPE_VOLHDR)
+    return;
+  
   if (block_number_option)
     {
       char buf[UINTMAX_STRSIZE_BOUND];
