@@ -538,6 +538,8 @@ all_names_found (struct tar_stat_info *p)
   struct name const *cursor;
   size_t len;
 
+  if (test_label_option)
+    return true;
   if (!p->file_name || occurrence_option == 0 || p->had_trailing_slash)
     return false;
   len = strlen (p->file_name);
