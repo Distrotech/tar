@@ -230,6 +230,7 @@ enum
   SHOW_OMITTED_DIRS_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
+  TEST_LABEL_OPTION,
   TO_COMMAND_OPTION,
   TOTALS_OPTION,
   UNQUOTE_OPTION,
@@ -311,6 +312,9 @@ static struct argp_option options[] = {
    N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
   {"seek", 'n', NULL, 0,
    N_("archive is seekable"), 21 },
+  {"test-label", TEST_LABEL_OPTION, NULL, 0,
+   N_("List volume label and exit"), 21 },
+    
 
   {NULL, 0, NULL, 0,
    N_("Overwrite control:"), 30},
@@ -1036,6 +1040,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       verbose_option++;
       break;
 
+    case TEST_LABEL_OPTION:
+      set_subcommand_option (LIST_SUBCOMMAND);
+      test_label_option = true;
+      break;
+      
     case 'T':
       update_argv (arg, state);
       /* Indicate we've been given -T option. This is for backward
@@ -1762,7 +1771,15 @@ decode_options (int argc, char **argv)
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
 
-  if (utc_option)
+
+  if (test_label_option)
+    {
+      /* --test-label is silent if the user has specified the label name to
+	 compare against. */
+      if (args.input_files == 0)
+	verbose_option++;
+    }
+  else if (utc_option)
     verbose_option = 2;
 
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
