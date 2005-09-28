@@ -1,3 +1,13 @@
+2005-09-28  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (test_label_option): New variable;
+	* src/list.c (print_header): Special handling if test_label_option
+	is set.
+	* src/names.c (all_names_found): If test_label_option is set
+	return true.
+	* src/tar.c: New option --test-label tests the archive volume
+	label. The option proposed by Wouter Verhelst <wouter@nixsys.be>
+
 2005-09-21  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* tests/Makefile.am (clean-local): Don't attempt to run
