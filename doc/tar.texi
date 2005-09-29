@@ -63,6 +63,7 @@ developing GNU and promoting software freedom.''
 @subtitle @value{RENDITION} @value{VERSION}, @value{UPDATED}
 @author Melissa Weisshaus, Jay Fenlason,
 @author Thomas Bushnell, n/BSG, Amy Gorin
+@author Sergey Poznyakoff
 @c he said to remove it: Fran@,{c}ois Pinard
 @c i'm thinking about how the author page *should* look. -mew 2may96
 
@@ -823,7 +824,7 @@ forms), as well as a brief description of their meanings.  The rest of
 this chapter will cover how to use these operations in detail.  We will
 present the rest of the operations in the next chapter.
 
-@table @kbd
+@table @option
 @item --create
 @itemx -c
 Create a new @command{tar} archive.
@@ -854,7 +855,7 @@ useful in making things more clear and helping you avoid errors.)
 @node file tutorial
 @unnumberedsubsec The @option{--file} Option
 
-@table @kbd
+@table @option
 @item --file=@var{archive-name}
 @itemx -f @var{archive-name}
 Specify the name of an archive file.
@@ -884,7 +885,7 @@ For more information on using the @value{op-file} option, see
 @node verbose tutorial
 @unnumberedsubsec The @option{--verbose} Option
 
-@table @kbd
+@table @option
 @item --verbose
 @itemx -v
 Show the files being worked on as @command{tar} is running.
@@ -903,9 +904,9 @@ clear, and we will give many examples both using and not using
 
 Sometimes, a single instance of @option{--verbose} on the command line
 will show a full, @samp{ls} style listing of an archive or files,
-@c FIXME: Describe the exact output format, e.g., how hard links are displayed.
-giving sizes, owners, and similar information.  Other times,
-@option{--verbose} will only show files or members that the particular
+giving sizes, owners, and similar information. @FIXME{Describe the
+exact output format, e.g., how hard links are displayed.} 
+Other times, @option{--verbose} will only show files or members that the particular
 operation is operating on at the time.  In the latter case, you can
 use @option{--verbose} twice in a command to get a listing such as that
 in the former case.  For example, instead of saying
@@ -939,7 +940,7 @@ Later in the tutorial, we will give examples using @w{@option{--verbose
 @node help tutorial
 @unnumberedsubsec Getting Help: Using the @option{--help} Option
 
-@table @kbd
+@table @option
 @item --help
 
 The @option{--help} option to @command{tar} prints out a very brief list of
@@ -1040,7 +1041,7 @@ easiest to understand (and we encourage you to do the same when you use
 @command{tar}, to avoid errors).
 
 Note that the part of the command which says,
-@w{@kbd{--file=collection.tar}} is considered to be @emph{one} argument.
+@w{@option{--file=collection.tar}} is considered to be @emph{one} argument.
 If you substituted any other string of characters for
 @kbd{collection.tar},  then that string would become the name of the
 archive file you create.
@@ -1066,7 +1067,7 @@ When you create an archive, you @emph{must} specify which files you
 want placed in the archive.  If you do not specify any archive
 members, @GNUTAR{} will complain.
 
-If you now list the contents of the working directory (@kbd{ls}), you will
+If you now list the contents of the working directory (@command{ls}), you will
 find the archive file listed as well as the files you saw previously:
 
 @smallexample
@@ -1320,6 +1321,42 @@ like:
 $ @kbd{tar --list --verbose --file=collection.tar folk}
 -rw-rw-rw- myself user 62 1990-05-23 10:55 folk
 @end smallexample
+
+@cindex listing member and file names
+@anchor{listing member and file names}
+It is important to notice that the output of @kbd{tar --list
+--verbose} does not necessarily match that produced by @kbd{tar
+--create --verbose} while creating the archive. It is because
+@GNUTAR{}, unless told explicitly not to do so, removes some directory
+prefixes from file names before storing them in the archive
+(@xref{absolute}, for more information). In other 
+words, in verbose mode @GNUTAR{} shows @dfn{file names} when creating
+an archive and @dfn{member names} when listing it. Consider this
+example:
+
+@smallexample
+@group
+$ @kbd{tar cfv archive /etc/mail}
+tar: Removing leading `/' from member names
+/etc/mail/
+/etc/mail/sendmail.cf
+/etc/mail/aliases
+$ @kbd{tar tf archive}
+etc/mail/
+etc/mail/sendmail.cf
+etc/mail/aliases
+@end group
+@end smallexample
+
+@cindex @option{--show-stored-names} described
+  This default behavior can sometimes be inconvenient. You can force
+@GNUTAR{} show member names when creating archive by supplying
+@option{--show-stored-names} option.
+
+@table @option
+@item --show-stored-names
+Print member (not @emph{file}) names when creating the archive.
+@end table
 
 @cindex File name arguments, using @option{--list} with
 @cindex @option{--list} with file name arguments
@@ -2090,7 +2127,7 @@ a reference for deciphering @command{tar} commands in scripts.
 @node Operation Summary
 @subsection Operations
 
-@table @kbd
+@table @option
 
 @item --append
 @itemx -r
@@ -2161,7 +2198,7 @@ archive, or if they do not already exist in the archive.
 @node Option Summary
 @subsection @command{tar} Options
 
-@table @kbd
+@table @option
 
 @item --absolute-names
 @itemx -P
@@ -2504,7 +2541,7 @@ Wildcards do not match @samp{/} when excluding files.
 @item --null
 
 When @command{tar} is using the @option{--files-from} option, this option
-instructs @command{tar} to expect filenames terminated with @kbd{NUL}, so
+instructs @command{tar} to expect filenames terminated with @option{NUL}, so
 @command{tar} can correctly work with file names that contain newlines.
 @FIXME-xref{}
 
@@ -2619,7 +2656,7 @@ ustar header blocks for the extended headers. The name is obtained
 from @var{string} after substituting the following meta-characters:
 
 @multitable @columnfractions .30 .70
-@item Meta-character @tab Replaced By
+@headitem Meta-character @tab Replaced By
 @item %d @tab  The directory name of the file, equivalent to the
 result of the @command{dirname} utility on the translated pathname.
 @item %f @tab  The filename of the file, equivalent to the result
@@ -2645,7 +2682,7 @@ shall will be obtained from the contents of @var{string}, after the
 following character substitutions have been made:
 
 @multitable @columnfractions .30 .70
-@item Meta-character @tab Replaced By
+@headitem Meta-character @tab Replaced By
 @item %n @tab An integer that represents the
 sequence number of the global extended header record in the archive,
 starting at 1.
@@ -2795,6 +2832,13 @@ $ tar --show-defaults
 Instructs @command{tar} to mention directories its skipping over when
 operating on a @command{tar} archive.  @FIXME-xref{}
 
+@item --show-stored-names
+
+This option has effect only when used in conjunction with one of
+archive creation operations. It instructs tar to list the member names 
+stored in the archive, as opposed to the actual file
+names. @xref{listing member and file names}. 
+
 @item --sparse
 @itemx -S
 
@@ -2831,6 +2875,11 @@ Alters the suffix @command{tar} uses when backing up files from the default
 
 Specifies the length of tapes that @command{tar} is writing as being
 @w{@var{num} x 1024} bytes long.  @FIXME-xref{}
+
+@item --test-label
+
+Reads the volume label. If an argument is specified, test whether it
+matches the volume label. @xref{--test-label option}.
 
 @item --to-stdout
 @itemx -O
@@ -2914,7 +2963,7 @@ Wildcards match @samp{/} when excluding files.
 Here is an alphabetized list of all of the short option forms, matching
 them with the equivalent long option.
 
-@table @kbd
+@table @option
 
 @item -A
 
@@ -3452,7 +3501,7 @@ where the last chapter left them.)
 
 The five operations that we will cover in this chapter are:
 
-@table @kbd
+@table @option
 @item --append
 @itemx -r
 Add new entries to an archive that already exists.
@@ -3957,7 +4006,7 @@ The previous chapter described the basics of how to use
 @node Ignore Failed Read
 @subsection Ignore Fail Read
 
-@table @kbd
+@table @option
 @item --ignore-failed-read
 Do not exit with nonzero on unreadable files or directories.
 @end table
@@ -4029,7 +4078,7 @@ of an archive.  @value{xref-blocking-factor}.
 
 @FIXME{need sentence or so of intro here}
 
-@table @kbd
+@table @option
 @item --read-full-records
 @item -B
 Use in conjunction with @value{op-extract} to read an archive which
@@ -4053,7 +4102,7 @@ since that part of the media is never supposed to be read.  @GNUTAR{}
 does not write after the end of an archive, but seeks to
 maintain compatiblity among archiving utilities.
 
-@table @kbd
+@table @option
 @item --ignore-zeros
 @itemx -i
 To ignore blocks of zeros (ie.@: end-of-archive entries) which may be
@@ -4135,7 +4184,7 @@ before extracting them.
 @node Overwrite Old Files
 @unnumberedsubsubsec Overwrite Old Files
 
-@table @kbd
+@table @option
 @item --overwrite
 Overwrite existing files and directory metadata when extracting files
 from an archive.
@@ -4166,7 +4215,7 @@ archive, but remove other files before extracting.
 @node Keep Old Files
 @unnumberedsubsubsec Keep Old Files
 
-@table @kbd
+@table @option
 @item --keep-old-files
 @itemx -k
 Do not replace existing files from archive.  The
@@ -4180,7 +4229,7 @@ extraction.
 @node Keep Newer Files
 @unnumberedsubsubsec Keep Newer Files
 
-@table @kbd
+@table @option
 @item --keep-newer-files
 Do not replace existing files that are newer than their archive
 copies. This option is meaningless with @value{op-list}.
@@ -4189,7 +4238,7 @@ copies. This option is meaningless with @value{op-list}.
 @node Unlink First
 @unnumberedsubsubsec Unlink First
 
-@table @kbd
+@table @option
 @item --unlink-first
 @itemx -U
 Remove files before extracting over them.
@@ -4201,7 +4250,7 @@ slows @command{tar} down slightly, so it is disabled by default.
 @node Recursive Unlink
 @unnumberedsubsubsec Recursive Unlink
 
-@table @kbd
+@table @option
 @item --recursive-unlink
 When this option is specified, try removing files and directory hierarchies
 before extracting over them.  @emph{This is a dangerous option!}
@@ -4224,7 +4273,7 @@ To set the modification times of extracted files to the time when
 the files were extracted, use the @value{op-touch} option in
 conjunction with @value{op-extract}.
 
-@table @kbd
+@table @option
 @item --touch
 @itemx -m
 Sets the modification time of extracted archive members to the time
@@ -4240,7 +4289,7 @@ recorded for those files in the archive, use @option{--same-permissions}
 in conjunction with the @value{op-extract} operation.  @FIXME{Should be
 aliased to ignore-umask.}
 
-@table @kbd
+@table @option
 @item --preserve-permission
 @itemx --same-permission
 @itemx --ignore-umask
@@ -4265,7 +4314,7 @@ preserve them in the file system.  If you extract multiple members,
 they appear on standard output concatenated, in the order they are
 found in the archive.
 
-@table @kbd
+@table @option
 @item --to-stdout
 @itemx -O
 Writes files to the standard output.  Used in conjunction with
@@ -4297,7 +4346,7 @@ tar -xOzf foo.tgz bigfile1 bigfile2 | process
 option goes in this section.  i have no idea; i only know it's nowhere
 else in the book...}
 
-@table @kbd
+@table @option
 @item --remove-files
 Remove files after adding them to the archive.
 @end table
@@ -4318,7 +4367,7 @@ Remove files after adding them to the archive.
 @node Starting File
 @unnumberedsubsubsec Starting File
 
-@table @kbd
+@table @option
 @item --starting-file=@var{name}
 @itemx -K @var{name}
 Starts an operation in the middle of an archive.  Use in conjunction
@@ -4338,7 +4387,7 @@ and @value{ref-exclude}.)
 @node Same Order
 @unnumberedsubsubsec Same Order
 
-@table @kbd
+@table @option
 @item --same-order
 @itemx --preserve-order
 @itemx -s
@@ -5440,7 +5489,7 @@ most users are concerned.  As a result, you will usually want to tell
 option allows you to either specify or name a file to use as the archive
 instead of the default archive file location.
 
-@table @kbd
+@table @option
 @item --file=@var{archive-name}
 @itemx -f @var{archive-name}
 Name the archive to create or operate on.  Use in conjunction with
@@ -5582,7 +5631,7 @@ which contains the list of files to include as the argument to
 newlines. You will frequently use this option when you have generated
 the list of files to archive with the @command{find} utility.
 
-@table @kbd
+@table @option
 @item --files-from=@var{file name}
 @itemx -T @var{file name}
 Get names to extract or create from file @var{file name}.
@@ -5698,17 +5747,17 @@ being recognized as an option. For example: @code{--add-file --my-file}.
 @end menu
 
 @node nul
-@subsection @kbd{NUL} Terminated File Names
+@subsection @code{NUL} Terminated File Names
 
-@cindex File names, terminated by @kbd{NUL}
-@cindex @kbd{NUL} terminated file names
+@cindex File names, terminated by @code{NUL}
+@cindex @code{NUL} terminated file names
 The @value{op-null} option causes @value{op-files-from} to read file
 names terminated by a @code{NUL} instead of a newline, so files whose
 names contain newlines can be archived using @option{--files-from}.
 
-@table @kbd
+@table @option
 @item --null
-Only consider @kbd{NUL} terminated file names, instead of files that
+Only consider @code{NUL} terminated file names, instead of files that
 terminate in a newline.
 @end table
 
@@ -5721,12 +5770,12 @@ file names that begin with dash.
 This example shows how to use @command{find} to generate a list of files
 larger than 800K in length and put that list into a file called
 @file{long-files}.  The @option{-print0} option to @command{find} is just 
-like @option{-print}, except that it separates files with a @kbd{NUL}
+like @option{-print}, except that it separates files with a @code{NUL}
 rather than with a newline.  You can then run @command{tar} with both the
 @option{--null} and @option{-T} options to specify that @command{tar} get the
 files from that file, @file{long-files}, to create the archive
 @file{big.tgz}.  The @option{--null} option to @command{tar} will cause
-@command{tar} to recognize the @kbd{NUL} separator between files.
+@command{tar} to recognize the @code{NUL} separator between files.
 
 @smallexample
 $ @kbd{find . -size +800 -print0 > long-files}
@@ -5745,7 +5794,7 @@ $ @kbd{tar -c -v --null --files-from=long-files --file=big.tar}
 To avoid operating on files whose names match a particular pattern,
 use the @value{op-exclude} or @value{op-exclude-from} options.
 
-@table @kbd
+@table @option
 @item --exclude=@var{pattern}
 Causes @command{tar} to ignore files that match the @var{pattern}.
 @end table
@@ -5759,7 +5808,7 @@ command @samp{tar -cf src.tar --exclude='*.o' src}.
 
 You may give multiple @option{--exclude} options.
 
-@table @kbd
+@table @option
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 Causes @command{tar} to ignore files that match the patterns listed in
@@ -5777,7 +5826,7 @@ added to the archive.
 @FIXME{do the exclude options files need to have stuff separated by
 newlines the same as the files-from option does?}
 
-@table @kbd
+@table @option
 @item --exclude-caches
 Causes @command{tar} to ignore directories containing a cache directory tag.
 @end table
@@ -5994,7 +6043,7 @@ differ from the @value{op-update} operation in that they allow you to
 specify a particular date against which @command{tar} can compare when
 deciding whether or not to archive the files.
 
-@table @kbd
+@table @option
 @item --after-date=@var{date}
 @itemx --newer=@var{date}
 @itemx -N @var{date}
@@ -6069,7 +6118,7 @@ construct a list of file names which you could then pass to @command{tar}.
 archive; see @ref{files} for more information on using @command{find} with
 @command{tar}, or look.
 
-@table @kbd
+@table @option
 @item --no-recursion
 Prevents @command{tar} from recursively descending directories.
 
@@ -6128,7 +6177,7 @@ archived because they are in a directory that is being archived;
 @command{tar} will still archive files explicitly named on the command line
 or through @value{op-files-from}, regardless of where they reside.
 
-@table @kbd
+@table @option
 @item --one-file-system
 @itemx -l
 Prevents @command{tar} from crossing file system boundaries when
@@ -6172,7 +6221,7 @@ either on the command line or in a file specified using
 working directory to the directory @var{directory} after that point in
 the list.
 
-@table @kbd
+@table @option
 @item --directory=@var{directory}
 @itemx -C @var{directory}
 Changes the working directory in the middle of a command line.
@@ -6270,7 +6319,7 @@ The interpretation of @value{op-directory} is disabled by
 @subsection Absolute File Names
 @UNREVISED
 
-@table @kbd
+@table @option
 @item -P
 @itemx --absolute-names
 Do not strip leading slashes from file names, and permit file names
@@ -6301,7 +6350,12 @@ program to use.  Therefore, @GNUTAR{} also strips
 leading slashes from member names when putting members into the
 archive.  For example, if you ask @command{tar} to add the file
 @file{/bin/ls} to an archive, it will do so, but the member name will
-be @file{bin/ls}.
+be @file{bin/ls}.@footnote{A side effect of this is that when
+@option{--create} is used with @option{--verbose} the resulting output
+is not, generally speaking, the same as the one you'd get running
+@kbd{tar --list} command. This may be important if you use some
+scripts for comparing both outputs. @xref{listing member and file names},
+for the information on how to handle this case.}
 
 If you use the @value{op-absolute-names} option, @command{tar} will do
 none of these transformations.
@@ -6324,7 +6378,7 @@ to transfer files between systems.}
 
 @FIXME{Is write access an issue?}
 
-@table @kbd
+@table @option
 @item --absolute-names
 Preserves full file names (including superior directory names) when
 archiving files.  Preserves leading slash when extracting files.
@@ -6448,7 +6502,7 @@ The following table summarizes the limitations of each of these
 formats:
 
 @multitable @columnfractions .10 .20 .20 .20 .20
-@item Format @tab UID @tab File Size @tab Path Name @tab Devn
+@headitem Format @tab UID @tab File Size @tab Path Name @tab Devn
 @item gnu    @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
 @item oldgnu @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
 @item v7     @tab 2097151 @tab 8GB @tab 99 @tab n/a
@@ -6785,7 +6839,7 @@ compressed.
 
 The following table summarizes compression options used by @GNUTAR{}.
 
-@table @kbd
+@table @option
 @item -z
 @itemx --gzip
 @itemx --ungzip
@@ -6892,7 +6946,7 @@ end up with less space on the tape.}
 @cindex Sparse Files
 @UNREVISED
 
-@table @kbd
+@table @option
 @item -S
 @itemx --sparse
 Handle sparse files efficiently.
@@ -6953,7 +7007,7 @@ hundreds of tapes).  @FIXME-xref{incremental when node name is set.}
 
 @command{tar} ignores the @value{op-sparse} option when reading an archive.
 
-@table @kbd
+@table @option
 @item --sparse
 @itemx -S
 Files stored sparsely in the file system are represented sparsely in
@@ -7013,7 +7067,7 @@ back to what they were before they were read, use the
 
 Handling of file attributes
 
-@table @kbd
+@table @option
 @item --atime-preserve
 Preserve access times on files that are read.
 This doesn't work for files that
@@ -7589,7 +7643,7 @@ not a good idea.
 @section Device Selection and Switching
 @UNREVISED
 
-@table @kbd
+@table @option
 @item -f [@var{hostname}:]@var{file}
 @itemx --file=[@var{hostname}:]@var{file}
 Use archive file or device @var{file} on @var{hostname}.
@@ -7606,7 +7660,7 @@ input, and will write the entire new archive to its standard output.
 
 If the file name contains a @samp{:}, it is interpreted as
 @samp{hostname:file name}.  If the @var{hostname} contains an @dfn{at}
-sign (@kbd{@@}), it is treated as @samp{user@@hostname:file name}.  In
+sign (@samp{@@}), it is treated as @samp{user@@hostname:file name}.  In
 either case, @command{tar} will invoke the command @command{rsh} (or
 @command{remsh}) to start up an @command{/usr/libexec/rmt} on the remote
 machine. If you give an alternate login name, it will be given to the
@@ -7657,7 +7711,7 @@ character devices.  Most probably, block devices are more efficient
 too.  The installer could also check for @samp{DEFTAPE} in
 @file{<sys/mtio.h>}.
 
-@table @kbd
+@table @option
 @item --force-local
 Archive file is local even if it contains a colon.
 
@@ -8016,7 +8070,7 @@ specifying a blocking factor larger then the blocking factor of the archive
 @xref{list}, for more information on the @value{op-list}
 operation.  @xref{Reading}, for a more detailed explanation of that option.
 
-@table @kbd
+@table @option
 @item --blocking-factor=@var{number}
 @itemx -b @var{number}
 Specifies the blocking factor of an archive.  Can be used with any
@@ -8025,7 +8079,7 @@ operation, but is usually not necessary with @value{op-list}.
 
 Device blocking
 
-@table @kbd
+@table @option
 @item -b @var{blocks}
 @itemx --blocking-factor=@var{blocks}
 Set record size to @math{@var{blocks} * 512} bytes.
@@ -8365,7 +8419,7 @@ and @var{operation} is one of the following:
 
 @FIXME{is there any use for record operations?}
 
-@table @kbd
+@table @option
 @item eof
 @itemx weof
 Writes @var{number} tape marks at the current position on the tape.
@@ -8397,20 +8451,6 @@ variable @env{TAPE}; if @env{TAPE} is not set, @command{mt} uses the device
 @command{mt} returns a 0 exit status when the operation(s) were
 successful, 1 if the command was unrecognized, and 2 if an operation
 failed.
-
-@FIXME{New node on how to find an archive?}
-
-If you use @value{op-extract} with the @value{op-label} option specified,
-@command{tar} will read an archive label (the tape head has to be positioned
-on it) and print an error if the archive label doesn't match the
-@var{archive-name} specified.  @var{archive-name} can be any regular
-expression.  If the labels match, @command{tar} extracts the archive.
-@value{xref-label}.
-@FIXME-xref{Matching Format Parameters}@FIXME{fix cross
-references}@samp{tar --list --label} will cause @command{tar} to print the
-label.
-
-@FIXME{Program to list all the labels on a tape?}
 
 @node Using Multiple Tapes
 @section Using Multiple Tapes
@@ -8580,7 +8620,7 @@ volumes, specify @value{op-label} again in conjunction with the
 @FIXME{There should be a sample program here, including an exit
 before end.  Is the exit status even checked in tar? :-(}
 
-@table @kbd
+@table @option
 @item --multi-volume
 @itemx -M
 Creates a multi-volume archive, when used in conjunction with
@@ -8645,84 +8685,127 @@ or such, for pushing a common date in all volumes or an archive set.
 @cindex Labels on the archive media
 @UNREVISED
 
-@table @kbd
-@item -V @var{name}
-@itemx --label=@var{name}
-Create archive with volume name @var{name}.
-@end table
-
-This option causes @command{tar} to write out a @dfn{volume header} at
-the beginning of the archive.  If @value{op-multi-volume} is used, each
-volume of the archive will have a volume header of @samp{@var{name}
-Volume @var{n}}, where @var{n} is 1 for the first volume, 2 for the
-next, and so on.
-
-@FIXME{Should the arg to --label be a quoted string??  No.}
-
-To avoid problems caused by misplaced paper labels on the archive
+@cindex @option{--label} option introduced
+@cindex @option{-V} option introduced
+  To avoid problems caused by misplaced paper labels on the archive
 media, you can include a @dfn{label} entry---an archive member which
 contains the name of the archive---in the archive itself.  Use the
 @value{op-label} option in conjunction with the @value{op-create} operation
 to include a label entry in the archive as it is being created.
 
-If you create an archive using both @value{op-label} and
+@table @option
+@item --label=@var{archive-label}
+@itemx -V @var{archive-label}
+Includes an @dfn{archive-label} at the beginning of the archive when
+the archive is being created, when used in conjunction with the
+@value{op-create} operation.  Checks to make sure the archive label
+matches the one specified (when used in conjunction with any other
+operation.
+@end table
+
+  If you create an archive using both @value{op-label} and
 @value{op-multi-volume}, each volume of the archive will have an
 archive label of the form @samp{@var{archive-label} Volume @var{n}},
 where @var{n} is 1 for the first volume, 2 for the next, and so on.
 @FIXME-xref{Multi-Volume Archives, for information on creating multiple
 volume archives.}
 
-If you list or extract an archive using @value{op-label}, @command{tar} will
-print an error if the archive label doesn't match the @var{archive-label}
-specified, and will then not list nor extract the archive.  In those cases,
-@var{archive-label} argument is interpreted as a globbing-style pattern
-which must match the actual magnetic volume label.  @xref{exclude}, for
-a precise description of how match is attempted@footnote{Previous versions
-of @command{tar} used full regular expression matching, or before that, only
-exact string matching, instead of wildcard matchers.  We decided for the
-sake of simplicity to use a uniform matching device through @command{tar}.}.
-If the switch @value{op-multi-volume} is being used, the volume label
-matcher will also suffix @var{archive-label} by @w{@samp{ Volume [1-9]*}}
-if the initial match fails, before giving up.  Since the volume numbering
-is automatically added in labels at creation time, it sounded logical to
-equally help the user taking care of it when the archive is being read.
-
-The @value{op-label} was once called @option{--volume}, but is not available
-under that name anymore.
-
-To find out an archive's label entry (or to find out if an archive has
-a label at all), use @samp{tar --list --verbose}.  @command{tar} will
-print the label first, and then print archive member information, as
-in the example below:
+@cindex Volume label, listing
+@cindex Listing volume label
+  The volume label will be displayed by @option{--list} along with
+the file contents. If verbose display is requested, it will also be
+explicitely marked as in the example below:
 
 @smallexample
+@group
 $ @kbd{tar --verbose --list --file=iamanarchive}
 V--------- 0 0        0 1992-03-07 12:01 iamalabel--Volume Header--
 -rw-rw-rw- ringo user 40 1990-05-21 13:30 iamafilename
+@end group
 @end smallexample
 
-@table @kbd
-@item --label=@var{archive-label}
-@itemx -V @var{archive-label}
-Includes an @dfn{archive-label} at the beginning of the archive when
-the archive is being created, when used in conjunction with the
-@value{op-create} option.  Checks to make sure the archive label
-matches the one specified (when used in conjunction with the
-@value{op-extract} option.
-@end table
+@cindex @option{--test-label} option introduced
+@anchor{--test-label option}
+  However, @option{--list} option will cause listing entire
+contents of the archive, which may be undesirable (for example, if the
+archive is stored on a tape). You can request checking only the volume
+by specifying @option{--test-label} option. This option reads only the
+first block of an archive, so it can be used with slow storage
+devices. For example:
 
-To get a common information on all tapes of a series, use the
-@value{op-label} option.  For having this information different in each
+@smallexample
+@group
+$ @kbd{tar --test-label --file=iamanarchive}
+iamalabel
+@end group
+@end smallexample
+
+  If @option{--test-label} is used with a single command line
+argument, @command{tar} compares the volume label with the
+argument. It exits with code 0 if the two strings match, and with code
+2 otherwise. In this case no output is displayed. For example:
+
+@smallexample
+@group
+$ @kbd{tar --test-label --file=iamanarchive 'iamalable'}
+@result{} 0
+$ @kbd{tar --test-label --file=iamanarchive 'iamalable' alabel}
+@result{} 1
+@end group
+@end smallexample
+
+  If you request any operation, other than @option{--create}, along
+with using @option{--label} option, @command{tar} will first check if
+the archive label matches the one specified and will refuse to proceed
+if it does not. Use this as a safety precaution to avoid accidentally
+overwriting existing archives. For example, if you wish to add files
+to @file{archive}, presumably labelled with string @samp{My volume},
+you will get:
+
+@smallexample
+@group
+$ @kbd{tar -rf archive --label 'My volume' .}
+tar: Archive not labeled to match `My volume'
+@end group
+@end smallexample
+
+@noindent
+in case its label does not match. This will work even if
+@file{archive} is not labelled at all.
+
+  Similarly, @command{tar} will refuse to list or extract the
+archive if its label doesn't match the @var{archive-label}
+specified. In those cases, @var{archive-label} argument is interpreted
+as a globbing-style pattern which must match the actual magnetic
+volume label.  @xref{exclude}, for a precise description of how match
+is attempted@footnote{Previous versions of @command{tar} used full
+regular expression matching, or before that, only exact string
+matching, instead of wildcard matchers.  We decided for the sake of
+simplicity to use a uniform matching device through
+@command{tar}.}. If the switch @value{op-multi-volume} is being used,
+the volume label matcher will also suffix @var{archive-label} by
+@w{@samp{ Volume [1-9]*}} if the initial match fails, before giving
+up.  Since the volume numbering is automatically added in labels at
+creation time, it sounded logical to equally help the user taking care
+of it when the archive is being read. 
+
+  The @value{op-label} was once called @option{--volume}, but is not available
+under that name anymore.
+
+  You can also use @option{--label} to get a common information on
+all tapes of a series.  For having this information different in each
 series created through a single script used on a regular basis, just
 manage to get some date string as part of the label.  For example:
 
 @smallexample
+@group
 $ @kbd{tar cfMV /dev/tape "Daily backup for `date +%Y-%m-%d`"}
 $ @kbd{tar --create --file=/dev/tape --multi-volume \
      --volume="Daily backup for `date +%Y-%m-%d`"}
+@end group
 @end smallexample
 
-Also note that each label has its own date and time, which corresponds
+  Also note that each label has its own date and time, which corresponds
 to when @GNUTAR{} initially attempted to write it,
 often soon after the operator launches @command{tar} or types the
 carriage return telling that the next tape is ready.  Comparing date
@@ -8730,14 +8813,12 @@ labels does give an idea of tape throughput only if the delays for
 rewinding tapes and the operator switching them were negligible, which
 is usually not the case.
 
-@FIXME{was --volume}
-
 @node verify
 @section Verifying Data as It is Stored
 @cindex Verifying a write operation
 @cindex Double-checking a write operation
 
-@table @kbd
+@table @option
 @item -W
 @itemx --verify
 Attempt to verify the archive after writing.
