@@ -1,3 +1,8 @@
+2005-09-29  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Use @option and @kbd consistently.
+	Document new options.
+
 2005-09-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Updated
