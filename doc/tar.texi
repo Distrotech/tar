@@ -61,11 +61,7 @@ developing GNU and promoting software freedom.''
 @titlepage
 @title @acronym{GNU} tar: an archiver tool
 @subtitle @value{RENDITION} @value{VERSION}, @value{UPDATED}
-@author Melissa Weisshaus, Jay Fenlason,
-@author Thomas Bushnell, n/BSG, Amy Gorin
-@author Sergey Poznyakoff
-@c he said to remove it: Fran@,{c}ois Pinard
-@c i'm thinking about how the author page *should* look. -mew 2may96
+@author John Gilmore, Jay Fenlason et al.
 
 @page
 @vskip 0pt plus 1filll
