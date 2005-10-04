@@ -1,3 +1,8 @@
+2005-10-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/tar.c (decode_options): Report error if -A or -r is used
+	together with compression option.
+
 2005-09-29  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Use @option and @kbd consistently.
