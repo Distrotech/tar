@@ -39,7 +39,7 @@ mkdir directory/test1
 mkdir directory/test2
 
 echo TEST > directory/test1/test.txt
-ln directory/test1/test.txt directory/test2/test.txt
+ln directory/test1/test.txt directory/test2/test.txt || AT_SKIP_TEST
 
 tar cf archive directory/test1/test.txt directory/test1/test.txt
 
