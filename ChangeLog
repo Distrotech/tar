@@ -1,3 +1,13 @@
+2005-10-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/compare.c (diff_dumpdir): Pass a valid device number to
+	get_directory_contents. 
+
+	* THANKS: Add John Thomas McDole
+
+	* bootstrap: If file `.bootstrap' exists in the cwd and is
+	readable, prepend its contents to the command line
+
 2005-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/link01.at: Skip test if ln fails (suppose the OS does
