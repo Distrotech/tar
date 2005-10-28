@@ -356,8 +356,21 @@ diff_special (void)
 static void
 diff_dumpdir (void)
 {
-  char *dumpdir_buffer = get_directory_contents (current_stat_info.file_name,
-						 0);
+  char *dumpdir_buffer;
+  dev_t dev = 0;
+  struct stat stat;
+
+  if (deref_stat (true, current_stat_info.file_name, &stat))
+    {
+      if (errno == ENOENT)
+	stat_warn (current_stat_info.file_name);
+      else
+	stat_error (current_stat_info.file_name);
+    }
+  else
+    dev = stat.st_dev;
+      
+  dumpdir_buffer = get_directory_contents (current_stat_info.file_name, dev);
 
   if (multi_volume_option)
     {
