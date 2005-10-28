@@ -52,6 +52,10 @@ usage() {
  --no-po                      Do not download po files.
  --update-po[=LANG]           Update po file(s) and exit.
 
+If the file `.bootstrap' exists in the current working directory, its
+contents is read, comments and empty lines removed, shell variables expanded
+and the result is prepended to the command line options.
+
 Running without arguments will suffice in most cases. It is equivalent
 to
 
@@ -78,6 +82,12 @@ update_po() {
     ) || exit
   fi
 }
+
+# Read configuration file
+if [ -r .bootstrap ]; then
+  echo "$0: Reading configuration file .bootstrap"
+  eval set -- "`sed 's/#.*$//;/^$/d' .bootstrap | tr '\n' ' '` $*"
+fi
 
 # Parse options.
 
