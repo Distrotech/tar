@@ -1,7 +1,13 @@
+2005-11-02  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/.cvsignore: Add creat-safer.c, fcntl--.h, fcntl-safer.h,
+	open-safer.c, openat-die.c, verify.h, to accommodate recent gnulib
+	changes.
+
 2005-10-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/compare.c (diff_dumpdir): Pass a valid device number to
-	get_directory_contents. 
+	get_directory_contents.
 
 	* THANKS: Add John Thomas McDole
 
