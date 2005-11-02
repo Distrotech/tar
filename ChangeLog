@@ -1,5 +1,9 @@
 2005-11-02  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* doc/tar.texi: Consistently put two spaces after sentences,
+	and put commas after "i.e." and "e.g.".  This is the usual GNU
+	style in manuals.
+
 	* lib/.cvsignore: Add creat-safer.c, fcntl--.h, fcntl-safer.h,
 	open-safer.c, openat-die.c, verify.h, to accommodate recent gnulib
 	changes.
