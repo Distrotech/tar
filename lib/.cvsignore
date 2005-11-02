@@ -31,6 +31,7 @@ chdir-long.c
 chdir-long.h
 chown.c
 config.charset
+creat-safer.c
 dirname.c
 dirname.h
 dup-safer.c
@@ -42,6 +43,8 @@ exit.h
 exitfail.c
 exitfail.h
 fchown-stub.c
+fcntl--.h
+fcntl-safer.h
 fd-safer.c
 fileblocks.c
 fnmatch.c
@@ -98,6 +101,8 @@ modechange.h
 obstack.c
 obstack.h
 offtostr.c
+open-safer.c
+openat-die.c
 openat.c
 openat.h
 paxerror.c
@@ -174,6 +179,7 @@ utimens.c
 utimens.h
 vasnprintf.c
 vasnprintf.h
+verify.h
 vsnprintf.c
 vsnprintf.h
 xalloc-die.c
