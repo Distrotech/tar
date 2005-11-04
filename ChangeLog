@@ -1,3 +1,11 @@
+2005-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Fix quoting in help output.
+	(update_po): Use backward-compatible wget option --cache instead
+	of deprecated -C to accomodate for wget 1.10.
+	Changes proposed by Eric Blake
+	* THANKS: Add Eric Blake
+
 2005-11-02  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* doc/tar.texi: Consistently put two spaces after sentences,
