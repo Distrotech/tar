@@ -262,7 +262,10 @@ set_stat (char const *file_name,
 	  /* FIXME: incremental_option should set ctime too, but how?  */
 
 	  struct timespec ts[2];
-	  ts[0] = incremental_option ? st->atime : start_time;
+	  if (incremental_option)
+	    ts[0] = st->atime;
+	  else
+	    ts[0] = start_time;
 	  ts[1] = st->mtime;
 
 	  if (utimens (file_name, ts) != 0)
