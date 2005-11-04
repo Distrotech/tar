@@ -52,7 +52,7 @@ usage() {
  --no-po                      Do not download po files.
  --update-po[=LANG]           Update po file(s) and exit.
 
-If the file `.bootstrap' exists in the current working directory, its
+If the file \`.bootstrap' exists in the current working directory, its
 contents is read, comments and empty lines removed, shell variables expanded
 and the result is prepended to the command line options.
 
@@ -71,7 +71,7 @@ update_po() {
     *)     POFILE=${1}.po;;
     esac
     echo "$0: getting translation for $1..."
-    wget -r -C off $TP_URL/$POFILE
+    wget -r --cache=off $TP_URL/$POFILE
   else
     echo "$0: getting translations into po..."
     (cd po &&
