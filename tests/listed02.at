@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -52,15 +52,7 @@ sleep 1
 echo Modifying filesystem
 rm tart/a1
 
-# Current incremental backup algorithm is not able to cope with
-# renamed files on filesystems that do not change ctime when
-# renaming. So, if we're on such filesystem, we skip this test.
-CTIME=`genfile --stat=ctime tart/b1`
 mv tart/b1 tart/b2
-if test $CTIME -eq `genfile --stat=ctime tart/b2`; then
-  AT_SKIP_TEST
-fi
-# 
 mv tart/c1 tart/c2
 touch tart/c2/ca3
 
