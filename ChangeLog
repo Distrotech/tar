@@ -1,3 +1,19 @@
+2005-11-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Improve listed incremental format:
+	
+	* src/common.h (update_parent_directory): New prototype.
+	* src/create.c (dump_file): Call update_parent_directory.
+	* src/incremen.c (struct directory.mtime): New member.
+	(note_directory): Take additional arguments. All callers updated.
+	(scan_directory): Updated to use more metadata. In particular,
+	this allows to correctly detect renamed files.
+	(read_directory_file,write_directory_file)
+	(write_directory_file_entry): Support new directory file format. 
+	* tests/listed01.at: Sleep 1 sec before creating second file.
+	* tests/listed02.at: Never skip the test. It should work on any
+	filesystem.
+
 2005-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Fix quoting in help output.
