@@ -430,6 +430,7 @@ void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *);
 void list_dumpdir (char *buffer, size_t size);
+void update_parent_directory (const char *name);
 
 /* Module list.c.  */
 
