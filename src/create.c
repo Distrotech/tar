@@ -1622,5 +1622,7 @@ dump_file (char *p, int top_level, dev_t parent_device)
   struct tar_stat_info st;
   tar_stat_init (&st);
   dump_file0 (&st, p, top_level, parent_device);
+  if (listed_incremental_option)
+    update_parent_directory (p);
   tar_stat_destroy (&st);
 }
