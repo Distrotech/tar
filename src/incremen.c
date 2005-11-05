@@ -31,6 +31,7 @@ enum children {NO_CHILDREN, CHANGED_CHILDREN, ALL_CHILDREN};
 /* Directory attributes.  */
 struct directory
   {
+    struct timespec mtime;      /* Modification time */
     dev_t device_number;	/* device number for directory */
     ino_t inode_number;		/* inode number for directory */
     enum children children;
@@ -71,11 +72,13 @@ compare_directories (void const *entry1, void const *entry2)
    whether it is an NFS device and FOUND indicating whether we have
    found that the directory exists.  */
 static struct directory *
-note_directory (char const *name, dev_t dev, ino_t ino, bool nfs, bool found)
+note_directory (char const *name, struct timespec mtime,
+		dev_t dev, ino_t ino, bool nfs, bool found)
 {
   size_t size = offsetof (struct directory, name) + strlen (name) + 1;
   struct directory *directory = xmalloc (size);
 
+  directory->mtime = mtime;
   directory->device_number = dev;
   directory->inode_number = ino;
   directory->children = CHANGED_CHILDREN;
@@ -107,12 +110,107 @@ find_directory (char *name)
     }
 }
 
+void
+update_parent_directory (const char *name)
+{
+  struct directory *directory;
+  char *p, *name_buffer;
+  
+  p = dir_name (name);
+  name_buffer = xmalloc (strlen (p) + 2);
+  strcpy (name_buffer, p);
+  if (! ISSLASH (p[strlen (p) - 1]))
+    strcat (name_buffer, "/");
+  
+  directory = find_directory (name_buffer);
+  free (name_buffer);
+  if (directory)
+    {
+      struct stat st;
+      if (deref_stat (dereference_option, p, &st) != 0)
+	stat_diag (name);
+      else
+	directory->mtime = get_stat_mtime (&st);
+    }
+  free (p);
+}
+
 static int
 compare_dirents (const void *first, const void *second)
 {
   return strcmp ((*(char *const *) first) + 1,
 		 (*(char *const *) second) + 1);
 }
+
+enum children 
+procdir (char *name_buffer, struct stat *stat_data,
+	 dev_t device,
+	 enum children children,
+	 bool verbose)
+{ 
+  struct directory *directory;
+  bool nfs = NFS_FILE_STAT (*stat_data);
+  
+  if ((directory = find_directory (name_buffer)) != NULL)
+    {
+      /* With NFS, the same file can have two different devices
+	 if an NFS directory is mounted in multiple locations,
+	 which is relatively common when automounting.
+	 To avoid spurious incremental redumping of
+	 directories, consider all NFS devices as equal,
+	 relying on the i-node to establish differences.  */
+      
+      if (! (((directory->nfs & nfs)
+	      || directory->device_number == stat_data->st_dev)
+	     && directory->inode_number == stat_data->st_ino))
+	{
+	  if (verbose)
+	    WARN ((0, 0, _("%s: Directory has been renamed"),
+		   quotearg_colon (name_buffer)));
+	  directory->children = ALL_CHILDREN;
+	  directory->nfs = nfs;
+	  directory->device_number = stat_data->st_dev;
+	  directory->inode_number = stat_data->st_ino;
+	}
+      else if (listed_incremental_option)
+	/* Newer modification time can mean that new files were
+	   created in the directory or some of the existing files
+	   were renamed. */
+	directory->children =
+	  timespec_cmp (get_stat_mtime (stat_data), directory->mtime) > 0
+	  ? ALL_CHILDREN : CHANGED_CHILDREN;
+
+      directory->found = true;
+    }
+  else
+    {
+      if (verbose)
+	WARN ((0, 0, _("%s: Directory is new"),
+	       quotearg_colon (name_buffer)));
+      directory = note_directory (name_buffer,
+				  get_stat_mtime(stat_data),
+				  stat_data->st_dev,
+				  stat_data->st_ino,
+				  nfs,
+				  true);
+
+      directory->children =
+	(listed_incremental_option
+	 || (OLDER_STAT_TIME (*stat_data, m)
+	     || (after_date_option
+		 && OLDER_STAT_TIME (*stat_data, c))))
+	? ALL_CHILDREN
+	: CHANGED_CHILDREN;
+    }
+  
+  if (one_file_system_option && device != stat_data->st_dev)
+    directory->children = NO_CHILDREN;
+  else if (children == ALL_CHILDREN)
+    directory->children = ALL_CHILDREN;
+  
+  return directory->children;
+}
+
 
 /* Recursively scan the given directory. */
 static void
@@ -124,14 +222,11 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
   char *name_buffer;		/* directory, `/', and directory member */
   size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
   size_t name_length;		/* used length in name_buffer */
-  struct directory *directory;  /* for checking if already seen */
   enum children children;
+  struct stat stat_data;
 
   if (! dirp)
-    {
-      savedir_error (dir_name);
-    }
-  errno = 0;
+    savedir_error (dir_name);
 
   name_buffer_size = strlen (dir_name) + NAME_FIELD_SIZE;
   name_buffer = xmalloc (name_buffer_size + 2);
@@ -140,9 +235,14 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
     strcat (name_buffer, "/");
   name_length = strlen (name_buffer);
 
-  directory = find_directory (dir_name);
-  children = directory ? directory->children : CHANGED_CHILDREN;
-
+  if (deref_stat (dereference_option, name_buffer, &stat_data))
+    {
+      stat_diag (name_buffer);
+      children = CHANGED_CHILDREN;
+    }
+  else
+    children = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
+  
   if (dirp && children != NO_CHILDREN)
     for (entry = dirp;
 	 (entrylen = strlen (entry)) != 0;
@@ -161,7 +261,6 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
 	  obstack_1grow (stk, 'N');
 	else
 	  {
-	    struct stat stat_data;
 
 	    if (deref_stat (dereference_option, name_buffer, &stat_data))
 	      {
@@ -171,53 +270,8 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
 
 	    if (S_ISDIR (stat_data.st_mode))
 	      {
-		bool nfs = NFS_FILE_STAT (stat_data);
-
-		if ((directory = find_directory (name_buffer)) != NULL)
-		  {
-		    /* With NFS, the same file can have two different devices
-		       if an NFS directory is mounted in multiple locations,
-		       which is relatively common when automounting.
-		       To avoid spurious incremental redumping of
-		       directories, consider all NFS devices as equal,
-		       relying on the i-node to establish differences.  */
-
-		    if (! (((directory->nfs & nfs)
-			    || directory->device_number == stat_data.st_dev)
-			   && directory->inode_number == stat_data.st_ino))
-			{
-			  if (verbose_option)
-			    WARN ((0, 0, _("%s: Directory has been renamed"),
-				   quotearg_colon (name_buffer)));
-			  directory->children = ALL_CHILDREN;
-			  directory->nfs = nfs;
-			  directory->device_number = stat_data.st_dev;
-			  directory->inode_number = stat_data.st_ino;
-			}
-		    directory->found = 1;
-		  }
-		else
-		  {
-		    if (verbose_option)
-		      WARN ((0, 0, _("%s: Directory is new"),
-			     quotearg_colon (name_buffer)));
-		    directory = note_directory (name_buffer,
-						stat_data.st_dev,
-						stat_data.st_ino, nfs, 1);
-		    directory->children =
-		      ((listed_incremental_option
-			|| OLDER_STAT_TIME (stat_data, m)
-			|| (after_date_option
-			    && OLDER_STAT_TIME (stat_data, c)))
-		       ? ALL_CHILDREN
-		       : CHANGED_CHILDREN);
-		  }
-
-		if (one_file_system_option && device != stat_data.st_dev)
-		  directory->children = NO_CHILDREN;
-		else if (children == ALL_CHILDREN)
-		  directory->children = ALL_CHILDREN;
-
+		procdir (name_buffer, &stat_data, device, children,
+			 verbose_option);
 		obstack_1grow (stk, 'D');
 	      }
 
@@ -311,6 +365,22 @@ get_directory_contents (char *dir_name, dev_t device)
 
 static FILE *listed_incremental_stream;
 
+/* Version of incremental format snapshots (directory files) used by this
+   tar. Currently it is supposed to be a single decimal number. 0 means
+   incremental snapshots as per tar version before 1.15.2.
+
+   The current tar version supports incremental versions from
+   0 up to TAR_INCREMENTAL_VERSION, inclusive.
+   It is able to create only snapshots of TAR_INCREMENTAL_VERSION */
+
+#define TAR_INCREMENTAL_VERSION 1
+
+/* Read incremental snapshot file (directory file).
+   If the file has older incremental version, make sure that it is processed
+   correctly and that tar will use the most conservative backup method among
+   possible alternatives (i.e. prefer ALL_CHILDREN over CHANGED_CHILDREN,
+   etc.) This ensures that the snapshots are updated to the recent version
+   without any loss of data. */ 
 void
 read_directory_file (void)
 {
@@ -344,19 +414,66 @@ read_directory_file (void)
       char *ebuf;
       int n;
       long lineno = 1;
-      uintmax_t u = (errno = 0, strtoumax (buf, &ebuf, 10));
+      uintmax_t u;
       time_t t = u;
+      int incremental_version;
       
+      if (strncmp (buf, PACKAGE_NAME, sizeof PACKAGE_NAME - 1) == 0)
+	{
+	  ebuf = buf + sizeof PACKAGE_NAME - 1;
+	  if (*ebuf++ != '-')
+	    ERROR((1, 0, _("Bad incremental file format")));
+	  for (; *ebuf != '-'; ebuf++)
+	    if (!*ebuf)
+	      ERROR((1, 0, _("Bad incremental file format")));
+	  
+	  incremental_version = (errno = 0, strtoumax (ebuf+1, &ebuf, 10));
+	  if (getline (&buf, &bufsize, fp) <= 0)
+	    {
+	      read_error (listed_incremental_option);
+	      free (buf);
+	      return;
+	    }
+	  ++lineno;
+	}
+      else
+	incremental_version = 0;
+
+      if (incremental_version > TAR_INCREMENTAL_VERSION)
+	ERROR((1, 0, _("Unsupported incremental format version: %s"),
+	       incremental_version));
+      
+      t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
       if (buf == ebuf || (u == 0 && errno == EINVAL))
-	ERROR ((0, 0, "%s:1: %s", quotearg_colon (listed_incremental_option),
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option),
+		lineno,
 		_("Invalid time stamp")));
       else if (t != u)
-	ERROR ((0, 0, "%s:1: %s", quotearg_colon (listed_incremental_option),
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option),
+		lineno,
 		_("Time stamp out of range")));
+      else if (incremental_version == 1)
+	{
+	  newer_mtime_option.tv_sec = t;
+	  
+	  t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
+	  if (buf == ebuf || (u == 0 && errno == EINVAL))
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option),
+		    lineno,
+		    _("Invalid time stamp")));
+	  else if (t != u)
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option),
+		    lineno,
+		    _("Time stamp out of range")));
+	  newer_mtime_option.tv_nsec = t;
+	}
       else
 	{
-	  /* FIXME: This should also input nanoseconds, but that will be a
-	     change in file format.  */
+	  /* pre-1 incremental format does not contain nanoseconds */
 	  newer_mtime_option.tv_sec = t;
 	  newer_mtime_option.tv_nsec = 0;
 	}
@@ -367,12 +484,42 @@ read_directory_file (void)
 	  ino_t ino;
 	  bool nfs = buf[0] == '+';
 	  char *strp = buf + nfs;
+	  struct timespec mtime;
 
 	  lineno++;
 
 	  if (buf[n - 1] == '\n')
 	    buf[n - 1] = '\0';
 
+	  if (incremental_version == 1)
+	    {
+	      errno = 0;
+	      mtime.tv_sec = u = strtoumax (strp, &ebuf, 10);
+	      if (!isspace (*ebuf))
+		ERROR ((0, 0, "%s:%ld: %s",
+			quotearg_colon (listed_incremental_option), lineno,
+			_("Invalid modification time (seconds)")));
+	      else if (mtime.tv_sec != u) 
+		ERROR ((0, 0, "%s:%ld: %s",
+			quotearg_colon (listed_incremental_option), lineno,
+			_("Modification time (seconds) out of range")));
+	      strp = ebuf;
+	  
+	      errno = 0;
+	      mtime.tv_nsec = u = strtoumax (strp, &ebuf, 10);
+	      if (!isspace (*ebuf))
+		ERROR ((0, 0, "%s:%ld: %s",
+			quotearg_colon (listed_incremental_option), lineno,
+			_("Invalid modification time (nanoseconds)")));
+	      else if (mtime.tv_nsec != u) 
+		ERROR ((0, 0, "%s:%ld: %s",
+			quotearg_colon (listed_incremental_option), lineno,
+			_("Modification time (nanoseconds) out of range")));
+	      strp = ebuf;
+	    }
+	  else
+	    memset (&mtime, 0, sizeof mtime);
+	  
 	  errno = 0;
 	  dev = u = strtoumax (strp, &ebuf, 10);
 	  if (!isspace (*ebuf))
@@ -399,7 +546,7 @@ read_directory_file (void)
 
 	  strp++;
 	  unquote_string (strp);
-	  note_directory (strp, dev, ino, nfs, 0);
+	  note_directory (strp, mtime, dev, ino, nfs, 0);
 	}
     }
 
@@ -425,6 +572,8 @@ write_directory_file_entry (void *entry, void *data)
       
       if (directory->nfs)
 	fprintf (fp, "+");
+      fprintf (fp, "%s ", umaxtostr (directory->mtime.tv_sec, buf));
+      fprintf (fp, "%s ", umaxtostr (directory->mtime.tv_nsec, buf));
       fprintf (fp, "%s ", umaxtostr (directory->device_number, buf));
       fprintf (fp, "%s ", umaxtostr (directory->inode_number, buf));
       fprintf (fp, "%s\n", str ? str : directory->name);
@@ -451,9 +600,12 @@ write_directory_file (void)
   if (sys_truncate (fileno (fp)) != 0)
     truncate_error (listed_incremental_option);
 
-  /* FIXME: This should also output nanoseconds, but that will be a
-     change in file format.  */
-  fprintf (fp, "%lu\n", (unsigned long int) start_time.tv_sec);
+  fprintf (fp, "%s-%s-%d\n", PACKAGE_NAME, PACKAGE_VERSION,
+	   TAR_INCREMENTAL_VERSION);
+  
+  fprintf (fp, "%lu %lu\n",
+	   (unsigned long int) start_time.tv_sec,
+	   (unsigned long int) start_time.tv_nsec);
   if (! ferror (fp) && directory_table)
     hash_do_for_each (directory_table, write_directory_file_entry, fp);
   if (ferror (fp))
