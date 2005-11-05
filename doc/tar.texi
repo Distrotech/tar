@@ -98,6 +98,7 @@ document.  The rest of the menu lists all the lower level nodes.
 Appendices
 
 * Genfile::
+* Snapshot Files::
 * Free Software Needs Free Documentation::
 * Copying This Manual::
 * Index::
@@ -340,9 +341,10 @@ Using Multiple Tapes
 * Multi-Volume Archives::       Archives Longer than One Tape or Disk
 * Tape Files::                  Tape Files
 
-GNU tar test suite
+GNU tar internals and development
 
 * Genfile::
+* Snapshot Files::
 
 Copying This Manual
 
@@ -2400,7 +2402,8 @@ archive, which normally signals EOF.  @xref{Reading}.
 
 Used to inform @command{tar} that it is working with an old
 @acronym{GNU}-format incremental backup archive.  It is intended
-primarily for backwards compatibility only.  @FIXME-xref{}
+primarily for backwards compatibility only.  @FIXME{incremental and
+listed-incremental}. 
 
 @item --index-file=@var{file}
 
@@ -2448,7 +2451,7 @@ During a @option{--create} operation, specifies that the archive that
 @command{tar} creates is a new @acronym{GNU}-format incremental
 backup, using @var{snapshot-file} to determine which files to backup.
 With other operations, informs @command{tar} that the archive is in
-incremental format.  @FIXME-xref{}
+incremental format.  @FIXME{incremental and listed-incremental}.
 
 @item --mode=@var{permissions}
 
@@ -4833,16 +4836,17 @@ the file system to that which obtained when the backup was made.  If
 @value{op-incremental} isn't specified, the file system will probably
 fill up with files that shouldn't exist any more.
 
-@value{op-incremental} in conjunction with @value{op-list} causes
-@command{tar} to print, for each directory in the archive, the list of
-files in that directory at the time the archive was created.  This
-information is put out in a format that is not easy for humans to
-read, but which is unambiguous for a program: each file name is
-preceded by either a @samp{Y} if the file is present in the archive,
-an @samp{N} if the file is not included in the archive, or a @samp{D}
-if the file is a directory (and is included in the archive).  Each
-file name is terminated by a null character.  The last file is followed
-by an additional null and a newline to indicate the end of the data.
+@value{op-incremental} in conjunction with @value{op-list} and two
+@value{op-verbose} options causes @command{tar} to print, for each
+directory in the archive, the list of files in that directory at the
+time the archive was created.  This information is put out in a format
+that is not easy for humans to read, but which is unambiguous for a
+program: each file name is preceded by either a @samp{Y} if the file
+is present in the archive, an @samp{N} if the file is not included in
+the archive, or a @samp{D} if the file is a directory (and is included
+in the archive).  Each file name is terminated by a newline character.
+The last file is followed by an additional newline to
+indicate the end of the data. 
 
 @value{op-listed-incremental} acts like @value{op-incremental}, but when
 used in conjunction with @value{op-create} will also cause @command{tar}
@@ -4859,7 +4863,7 @@ directory names.  @command{tar} will archive files with newer mod dates
 or inode change times, and directories with an unchanged inode number
 and device but a changed directory name.  The file is updated after
 the files to be archived are determined, but before the new archive is
-actually created.
+actually created.@FIXME-xref{to the description of the file format}.
 
 Incremental dumps depend crucially on time stamps, so the results are
 unreliable if you modify a file's time stamps during dumping (e.g.,
@@ -8902,6 +8906,10 @@ changeable feature.
 @node Genfile
 @appendix Genfile
 @include genfile.texi
+
+@node Snapshot Files
+@appendix Format of the Incremental Snapshot Files
+@include snapshot.texi
 
 @node Copying This Manual
 @appendix Copying This Manual

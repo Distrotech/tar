@@ -18,7 +18,15 @@
 ## Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 info_TEXINFOS = tar.texi
-tar_TEXINFOS = fdl.texi freemanuals.texi getdate.texi header.texi rendition.texi value.texi genfile.texi
+tar_TEXINFOS = \
+ fdl.texi\
+ freemanuals.texi\
+ genfile.texi\
+ getdate.texi\
+ header.texi\
+ rendition.texi\
+ snapshot.texi\
+ value.texi
 EXTRA_DIST = convtexi.pl gendocs_template 
 DISTCLEANFILES=*.info* 
 
