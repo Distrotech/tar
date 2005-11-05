@@ -14,6 +14,10 @@
 	* tests/listed02.at: Never skip the test. It should work on any
 	filesystem.
 
+	* doc/snapshot.texi: New file
+	* doc/tar.texi: Update.
+	* doc/Makefile.am: Update.
+	
 2005-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Fix quoting in help output.
