@@ -5,7 +5,7 @@
 @c published by the Free Software Foundation.
 
   A @dfn{snapshot file} (or @dfn{directory file}) is created during
-incremental backups (@pxref{incremental and listed-incremental}).  It
+incremental backups (@pxref{Incremental Dumps}).  It
 contains the status of the filesystem at the time of the dump and is
 used to determine which files were modified since the last backup.
 

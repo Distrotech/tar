@@ -240,8 +240,7 @@ Coping with Scarce Resources
 Performing Backups and Restoring Files
 
 * Full Dumps::                  Using @command{tar} to Perform Full Dumps
-* Inc Dumps::                   Using @command{tar} to Perform Incremental Dumps
-* incremental and listed-incremental::  The Incremental Options
+* Incremental Dumps::           Using @command{tar} to Perform Incremental Dumps
 * Backup Levels::               Levels of Backups
 * Backup Parameters::           Setting Parameters for Backups and Restoration
 * Scripted Backups::            Using the Backup Scripts
@@ -2203,7 +2202,7 @@ archive, or if they do not already exist in the archive.
 
 Normally when creating an archive, @command{tar} strips an initial
 @samp{/} from member names.  This option disables that behavior.
-@FIXME-xref{}
+@xref{absolute}.
 
 @item --after-date
 
@@ -4592,48 +4591,52 @@ http://www.cs.umd.edu/projects/amanda/amanda.html
 ftp://ftp.cs.umd.edu/pub/amanda
 @end smallexample
 
-@ifclear PUBLISH
+@FIXME{
 
 Here is a possible plan for a future documentation about the backuping
 scripts which are provided within the @GNUTAR{}
 distribution.
 
-@smallexample
-.* dumps
-.  + what are dumps
-
-.  + different levels of dumps
-.  - full dump = dump everything
-.  - level 1, level 2 dumps etc, -
-        A level n dump dumps everything changed since the last level
-        n-1 dump (?)
-
-.  + how to use scripts for dumps  (ie, the concept)
-.  - scripts to run after editing backup specs (details)
-
-.  + Backup Specs, what is it.
-.  - how to customize
-.  - actual text of script  [/sp/dump/backup-specs]
-
-.  + Problems
-.  - rsh doesn't work
-.  - rtape isn't installed
-.  - (others?)
-
-.  + the --incremental option of tar
-
-.  + tapes
-.  - write protection
-.  - types of media
-.   : different sizes and types, useful for different things
-.  - files and tape marks
+@itemize @bullet
+@item dumps
+ @itemize @minus
+ @item what are dumps
+ @item different levels of dumps
+  @itemize +
+  @item full dump = dump everything
+  @item level 1, level 2 dumps etc
+        A level @var{n} dump dumps everything changed since the last level
+        @var{n}-1 dump (?)
+  @end itemize
+ @item how to use scripts for dumps  (ie, the concept)
+  @itemize +
+  @item scripts to run after editing backup specs (details)
+  @end itemize
+ @item Backup Specs, what is it.
+  @itemize +
+  @item how to customize
+  @item actual text of script  [/sp/dump/backup-specs]
+  @end itemize
+ @item Problems
+  @itemize +
+   @item rsh doesn't work
+   @item rtape isn't installed
+   @item (others?)
+  @end itemize
+ @item the @option{--incremental} option of tar
+ @item tapes
+  @itemize +
+  @item write protection
+  @item types of media, different sizes and types, useful for different things
+  @item files and tape marks
      one tape mark between files, two at end.
-.  - positioning the tape
+  @item positioning the tape
      MT writes two at end of write,
-       backspaces over one when writing again.
-@end smallexample
-
-@end ifclear
+     backspaces over one when writing again.
+  @end itemize
+ @end itemize
+@end itemize
+}
 
 This chapter documents both the provided shell scripts and @command{tar}
 options which are more specific to usage as a backup tool.
@@ -4646,8 +4649,7 @@ called @dfn{dumps}.
 
 @menu
 * Full Dumps::                  Using @command{tar} to Perform Full Dumps
-* Inc Dumps::                   Using @command{tar} to Perform Incremental Dumps
-* incremental and listed-incremental::  The Incremental Options
+* Incremental Dumps::           Using @command{tar} to Perform Incremental Dumps
 * Backup Levels::               Levels of Backups
 * Backup Parameters::           Setting Parameters for Backups and Restoration
 * Scripted Backups::            Using the Backup Scripts
@@ -4681,9 +4683,10 @@ If you want to dump each filesystem separately you will need to use
 the @value{op-one-file-system} option to prevent @command{tar} from crossing
 filesystem boundaries when storing (sub)directories.
 
-The @value{op-incremental} option is not needed, since this is a complete
-copy of everything in the filesystem, and a full restore from this
-backup would only be done onto a completely empty disk.
+The @value{op-incremental} (@FIXME-pxref{}) option is not needed,
+since this is a complete copy of everything in the filesystem, and a
+full restore from this backup would only be done onto a completely
+empty disk. 
 
 Unless you are in a hurry, and trust the @command{tar} program (and your
 tapes), it is a good idea to use the @value{op-verify} option, to make
@@ -4692,199 +4695,183 @@ also detect cases where the file was modified while (or just after)
 it was being archived.  Not all media (notably cartridge tapes) are
 capable of being verified, unfortunately.
 
-@value{op-listed-incremental} take a file name argument always.  If the
-file doesn't exist, run a level zero dump, creating the file.  If the
-file exists, uses that file to see what has changed.
-
-@value{op-incremental} @FIXME{look it up}
-
-@value{op-incremental} handle old @acronym{GNU}-format incremental backup.
-
-This option should only be used when creating an incremental backup of
-a filesystem.  When the @value{op-incremental} option is used, @command{tar}
-writes, at the beginning of the archive, an entry for each of the
-directories that will be operated on.  The entry for a directory
-includes a list of all the files in the directory at the time the
-dump was done, and a flag for each file indicating whether the file
-is going to be put in the archive.  This information is used when
-doing a complete incremental restore.
-
-Note that this option causes @command{tar} to create a non-standard
-archive that may not be readable by non-@acronym{GNU} versions of the
-@command{tar} program.
-
-The @value{op-incremental} option means the archive is an incremental
-backup.  Its meaning depends on the command that it modifies.
-
-If the @value{op-incremental} option is used with @value{op-list},
-@command{tar} will list, for each directory in the archive, the list
-of files in that directory at the time the archive was created.  This
-information is put out in a format that is not easy for humans to
-read, but which is unambiguous for a program: each file name is
-preceded by either a @samp{Y} if the file is present in the archive,
-an @samp{N} if the file is not included in the archive, or a @samp{D}
-if the file is a directory (and is included in the archive).  Each
-file name is terminated by a null character.  The last file is
-followed by an additional null and a newline to indicate the end of
-the data.
-
-If the @value{op-incremental} option is used with @value{op-extract}, then
-when the entry for a directory is found, all files that currently
-exist in that directory but are not listed in the archive @emph{are
-deleted from the directory}.
-
-This behavior is convenient when you are restoring a damaged file
-system from a succession of incremental backups: it restores the
-entire state of the file system to that which obtained when the backup
-was made.  If you don't use @value{op-incremental}, the file system will
-probably fill up with files that shouldn't exist any more.
-
-@value{op-listed-incremental} handle new @acronym{GNU}-format
-incremental backup.  This option handles new @acronym{GNU}-format
-incremental backup.  It has much the same effect as
-@value{op-incremental}, but also the time when the dump is done and
-the list of directories dumped is written to the given
-@var{file}.  When restoring, only files newer than the saved time are
-restored, and the directory list is used to speed up operations.
-
-@value{op-listed-incremental} acts like @value{op-incremental}, but when
-used in conjunction with @value{op-create} will also cause @command{tar} to
-use the file @var{file}, which contains information about the state
-of the filesystem at the time of the last backup, to decide which
-files to include in the archive being created.  That file will then
-be updated by @command{tar}.  If the file @var{file} does not exist when
-this option is specified, @command{tar} will create it, and include all
-appropriate files in the archive.
-
-The file, which is archive independent, contains the date it was last
-modified and a list of devices, inode numbers and directory names.
-@command{tar} will archive files with newer mod dates or inode change
-times, and directories with an unchanged inode number and device but
-a changed directory name.  The file is updated after the files to
-be archived are determined, but before the new archive is actually
-created.
-
-@node Inc Dumps
+@node Incremental Dumps
 @section Using @command{tar} to Perform Incremental Dumps
-@UNREVISED
 
-@cindex incremental dumps
-@cindex dumps, incremental
+@dfn{Incremental backup} is a special form of @GNUTAR{} archive that
+stores additional metadata so that exact state of the filesystem
+can be restored when extracting the archive. 
 
-Performing incremental dumps is similar to performing full dumps,
-although a few more options will usually be needed.
+@GNUTAR{} currently offers two options for handling incremental
+backups: @value{op-listed-incremental} and @value{op-incremental}.  
 
-A standard scheme is to do a @emph{monthly} (full) dump once a month,
-a @emph{weekly} dump once a week of everything since the last monthly
-and a @emph{daily} every day of everything since the last (weekly or
-monthly) dump.
+The option @option{--listed-incremental} instructs tar to operate on
+an incremental archive with additional metadata stored in a standalone
+file, called @dfn{snapshot file}.  The purpose of this file is to help
+determine what files have been changed, added or deleted since the
+last backup, so that the next incremental backup will contain only
+modified files.  The name of the snapshot file is given as an argument
+to the option:
 
-Here is a sample script to dump the directory hierarchies @samp{/usr}
-and @samp{/var}.
+@table @option
+@item --listed-incremental=@var{file}
+@itemx -g @var{file}
+  Handle incremental backups with snapshot data in @var{file}.
+@end table
+
+To create an incremental backup, you would use
+@option{--listed-incremental} together with @option{--create}
+(@pxref{create}).  For example:
 
 @smallexample
-#!  /bin/sh
-tar --create \
- --blocking-factor=126 \
- --file=/dev/rmt/0 \
- --label="`hostname` /usr /var `date +%Y-%m-%d`" \
- --listed-incremental=/var/log/usr-var.snar \
- --verbose \
- /usr /var
+$ @kbd{tar --create \
+           --file=archive.1.tar \
+           --listed-incremental=/var/log/usr.snar \
+           /usr}
 @end smallexample
 
-This script uses the file @file{/var/log/usr-var.snar} as a snapshot to
-store information about the previous tar dump.
+This will create in @file{archive.1.tar} an incremental backup of
+@file{/usr} filesystem, storing additional metadata in the file
+@file{/var/log/usr.snar}.  If this file does not exist, it will be
+created.  The created archive will then be called @dfn{level 0 backup}
+(see the next section for more info on backup levels).
 
-The blocking factor 126 is an attempt to make the tape drive stream.
-Some tape devices cannot handle 64 kB blocks or larger, and require the
-block size to be a multiple of 1 kB; for these devices, 126 is the
-largest blocking factor that can be used.
+Otherwise, if the file @file{/var/log/usr.snar} exists, it is used to
+determine the modified files.  In this case only these files will be
+stored in the archive.  Suppose, for example, that after running the
+above command, you delete file @file{/usr/doc/old} and create
+directory @file{/usr/local/db} with the following contents:
 
-@node incremental and listed-incremental
-@section The Incremental Options
-@UNREVISED
+@smallexample
+$ @kbd{ls /usr/local/db}
+/usr/local/db/data
+/usr/local/db/index
+@end smallexample
 
-@value{op-incremental} is used in conjunction with @value{op-create},
-@value{op-extract} or @value{op-list} when backing up and restoring file
-systems.  An archive cannot be extracted or listed with the
-@value{op-incremental} option specified unless it was created with the
-option specified.  This option should only be used by a script, not by
-the user, and is usually disregarded in favor of
-@value{op-listed-incremental}, which is described below.
+Some time later you create another incremental backup. You will
+then see:
 
-@value{op-incremental} in conjunction with @value{op-create} causes
-@command{tar} to write, at the beginning of the archive, an entry for
-each of the directories that will be archived.  The entry for a
-directory includes a list of all the files in the directory at the
-time the archive was created and a flag for each file indicating
-whether or not the file is going to be put in the archive.
+@smallexample
+$ @kbd{tar --create \
+           --file=archive.2.tar \
+           --listed-incremental=/var/log/usr.snar \
+           /usr}
+tar: usr/local/db: Directory is new
+usr/local/db/
+usr/local/db/data
+usr/local/db/index
+@end smallexample
 
-Note that this option causes @command{tar} to create a non-standard
-archive that may not be readable by non-@acronym{GNU} versions of the
-@command{tar} program.
+@noindent
+The created archive @file{archive.2.tar} will contain only these
+three members.  This archive is called @dfn{level 1 backup}.  Notice,
+that @file{/var/log/usr.snar} will be updated with the new data, so if
+you plan to create more @samp{level 1} backups, it is necessary to
+create a working copy of the snapshot file before running
+@command{tar}.  The above example will then be modified as follows:
 
-@value{op-incremental} in conjunction with @value{op-extract} causes
-@command{tar} to read the lists of directory contents previously stored
-in the archive, @emph{delete} files in the file system that did not
-exist in their directories when the archive was created, and then
-extract the files in the archive.
-
-This behavior is convenient when restoring a damaged file system from
-a succession of incremental backups: it restores the entire state of
-the file system to that which obtained when the backup was made.  If
-@value{op-incremental} isn't specified, the file system will probably
-fill up with files that shouldn't exist any more.
-
-@value{op-incremental} in conjunction with @value{op-list} and two
-@value{op-verbose} options causes @command{tar} to print, for each
-directory in the archive, the list of files in that directory at the
-time the archive was created.  This information is put out in a format
-that is not easy for humans to read, but which is unambiguous for a
-program: each file name is preceded by either a @samp{Y} if the file
-is present in the archive, an @samp{N} if the file is not included in
-the archive, or a @samp{D} if the file is a directory (and is included
-in the archive).  Each file name is terminated by a newline character.
-The last file is followed by an additional newline to
-indicate the end of the data. 
-
-@value{op-listed-incremental} acts like @value{op-incremental}, but when
-used in conjunction with @value{op-create} will also cause @command{tar}
-to use the file @var{snapshot-file}, which contains information about
-the state of the file system at the time of the last backup, to decide
-which files to include in the archive being created.  That file will
-then be updated by @command{tar}.  If the file @var{file} does not exist
-when this option is specified, @command{tar} will create it, and include
-all appropriate files in the archive.
-
-The file @var{file}, which is archive independent, contains the date
-it was last modified and a list of devices, inode numbers and
-directory names.  @command{tar} will archive files with newer mod dates
-or inode change times, and directories with an unchanged inode number
-and device but a changed directory name.  The file is updated after
-the files to be archived are determined, but before the new archive is
-actually created.@FIXME-xref{to the description of the file format}.
+@smallexample
+$ @kbd{cp /var/log/usr.snar /var/log/usr.snar-1}
+$ @kbd{tar --create \
+           --file=archive.2.tar \
+           --listed-incremental=/var/log/usr.snar-1 \
+           /usr}
+@end smallexample
 
 Incremental dumps depend crucially on time stamps, so the results are
 unreliable if you modify a file's time stamps during dumping (e.g.,
 with the @option{--atime-preserve} option), or if you set the clock
 backwards.
 
-Despite it should be obvious that a device has a non-volatile value, NFS
-devices have non-dependable values when an automounter gets in the picture.
-This led to a great deal of spurious redumping in incremental dumps,
-so it is somewhat useless to compare two NFS devices numbers over time.
-So @command{tar} now considers all NFS devices as being equal when it comes
-to comparing directories; this is fairly gross, but there does not seem
+Metadata stored in snapshot files include device numbers, which,
+obviously is supposed to be a non-volatile value.  However, it turns
+out that NFS devices have non-dependable values when an automounter
+gets in the picture.  This can lead to a great deal of spurious
+redumping in incremental dumps, so it is somewhat useless to compare
+two NFS devices numbers over time.  The solution implemented currently
+is to considers all NFS devices as being equal when it comes to
+comparing directories; this is fairly gross, but there does not seem 
 to be a better way to go.
 
-@command{tar} doesn't access @var{snapshot-file} when
-@value{op-extract} or @value{op-list} are specified, but the
-@value{op-listed-incremental} option must still be given.  A
-placeholder @var{snapshot-file} can be specified, e.g.,
-@file{/dev/null}.
+Note that incremental archives use @command{tar} extensions and may
+not be readable by non-@acronym{GNU} versions of the @command{tar} program.
 
-@FIXME{this section needs to be written}
+To extract from the incremental dumps, use
+@option{--listed-incremental} together with @option{--extract}
+option (@pxref{extracting files}). In this case, @command{tar} does
+not need to access snapshot file, since all the data necessary for
+extraction are stored in the archive itself. So, when extracting, you
+can give whatever argument to @option{--listed-incremental}, the usual
+practice is to use @option{--listed-incremental=/dev/null}.
+Alternatively, you can use @option{--incremental}, which needs no
+arguments.  In general, @option{--incremental} (@option{-G}) can be
+used as a shortcut for @option{--listed-incremental} when listing or
+extracting incremental backups (for more information, regarding this
+option, @pxref{incremental-op}).
+
+When extracting from the incremental backup @GNUTAR{} attempts to
+restore the exact state the file system had when the archive was
+created.  In particular, it will @emph{delete} those files in the file
+system that did not exist in their directories when the archive was
+created.  If you have created several levels of incremental files,
+then in order to restore the exact contents the file system  had when
+the last level was created, you will need to restore from all backups
+in turn. Continuing our example, to restore the state of @file{/usr}
+file system, one would do@footnote{Notice, that since both archives
+were created withouth @option{-P} option (@pxref{absolute}), these
+commands should be run from the root filesystem.}: 
+
+@smallexample
+$ @kbd{tar --extract \
+           --listed-incremental=/dev/null \
+           --file archive.1.tar}
+$ @kbd{tar --extract \
+           --listed-incremental=/dev/null \
+           --file archive.2.tar}
+@end smallexample
+
+To list the contents of an incremental archive, use @option{--list}
+(@pxref{list}), as usual. To obtain more information about the
+archive, use @option{--listed-incremental} or @option{--incremental}
+combined with two @option{--verbose} options@footnote{Two
+@option{--verbose} options were selected to avoid breaking usual
+verbose listing output (@option{--list --verbose}) when using in
+scripts.
+
+Versions of @GNUTAR{} up to 1.15.1 used to dump verbatim binary
+contents of the DUMPDIR header (with terminating nulls) when
+@option{--incremental} or @option{--listed-incremental} option was
+given, no matter what the verbosity level.  This behavior, and,
+especially, the binary output it produced were considered incovenient
+and were changed in version 1.16}:
+
+@smallexample
+@kbd{tar --list --incremental --verbose --verbose archive.tar}
+@end smallexample
+
+This command will print, for each directory in the archive, the list
+of files in that directory at the time the archive was created.  This
+information is put out in a format which is both human-readable and
+unambiguous for a program: each file name is printed as
+
+@smallexample
+@var{x} @var{file}
+@end smallexample
+
+@noindent
+where @var{x} is a letter describing the status of the file: @samp{Y}
+if the file  is present in the archive, @samp{N} if the file is not
+included in the archive, or a @samp{D} if the file is a directory (and
+is included in the archive).@FIXME-xref{dumpdir format}.  Each such
+line is terminated by a newline character.  The last line is followed
+by an additional newline to indicate the end of the data.          
+
+@anchor{incremental-op}The option @option{--incremental} (@option{-G})
+gives the same behavior as @option{--listed-incremental} when used
+with @option{--list} and @option{--extract} options.  When used with
+@option{--create} option, it creates an incremental archive without
+creating snapshot file.  Thus, it is impossible to create several
+levels of incremental backups with @option{--incremental} option.
 
 @node Backup Levels
 @section Levels of Backups
@@ -4930,8 +4917,8 @@ their use in detail.
 designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
-it is easier to use the scripts.  @value{xref-incremental}, and
-@value{xref-listed-incremental}, before making such an attempt.
+it is easier to use the scripts.  @value{xref-incremental}, before
+making such an attempt. 
 
 @node Backup Parameters
 @section Setting Parameters for Backups and Restoration
@@ -5442,8 +5429,8 @@ positioning.}
 system if they were not in the file system when the archive was made.
 @end quotation
 
-@value{xref-incremental}, and @value{ref-listed-incremental},
-for an explanation of how the script makes that determination.
+@value{xref-incremental}, for an explanation of how the script makes
+that determination. 
 
 @node Choosing
 @chapter Choosing Files and Names for @command{tar}
@@ -6087,7 +6074,7 @@ arguments.
 @strong{Please Note:} @value{op-after-date} and @value{op-newer-mtime}
 should not be used for incremental backups.  Some files (such as those
 in renamed directories) are not selected properly by these options.
-@xref{incremental and listed-incremental}.
+@xref{Incremental Dumps}.
 @end quotation
 
 @noindent

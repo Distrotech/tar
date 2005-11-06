@@ -155,9 +155,9 @@
 @set pxref-ignore-zeros @pxref{Reading}
 
 @set op-incremental @option{--incremental} (@option{-G})
-@set ref-incremental @ref{Inc Dumps}
-@set xref-incremental @xref{Inc Dumps}
-@set pxref-incremental @pxref{Inc Dumps}
+@set ref-incremental @ref{Incremental Dumps}
+@set xref-incremental @xref{Incremental Dumps}
+@set pxref-incremental @pxref{Incremental Dumps}
 
 @set op-info-script @option{--info-script=@var{script-name}} (@option{--new-volume-script=@var{script-name}}, @option{-F @var{script-name}})
 @set ref-info-script @ref{Multi-Volume Archives}
@@ -190,9 +190,7 @@
 @set pxref-list @pxref{list}
 
 @set op-listed-incremental @option{--listed-incremental=@var{snapshot-file}} (@option{-g @var{snapshot-file}})
-@set ref-listed-incremental @ref{Inc Dumps}
-@set xref-listed-incremental @xref{Inc Dumps}
-@set pxref-listed-incremental @pxref{Inc Dumps}
+@c No special refs for this option, use {*ref-incremental} instead.
 
 @set op-mode @option{--mode=@var{permissions}}
 @set ref-mode @ref{Option Summary}
