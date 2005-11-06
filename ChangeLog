@@ -1,3 +1,9 @@
+2005-11-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Properly document incremental dumps
+	* doc/value.texi: Likewise.
+	* doc/snapshot.texi: Likewise.
+
 2005-11-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Improve listed incremental format:
