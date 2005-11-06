@@ -28,13 +28,6 @@
 
 #include <fnmatch.h>
 
-#if !HAVE_DECL_STRTOIMAX && !defined strtoimax
-intmax_t strtoimax ();
-#endif
-#if !HAVE_DECL_STRTOUMAX && !defined strtoumax
-uintmax_t strtoumax ();
-#endif
-
 static bool xheader_protected_pattern_p (char const *pattern);
 static bool xheader_protected_keyword_p (char const *keyword);
 static void xheader_set_single_keyword (char *) __attribute__ ((noreturn));

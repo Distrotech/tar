@@ -1,3 +1,8 @@
+2005-11-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/xheader.c (strtoimax, strtoumax): Remove decls; now done
+	in system.h.
+
 2005-11-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Properly document incremental dumps
@@ -7,7 +12,7 @@
 2005-11-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Improve listed incremental format:
-	
+
 	* src/common.h (update_parent_directory): New prototype.
 	* src/create.c (dump_file): Call update_parent_directory.
 	* src/incremen.c (struct directory.mtime): New member.
@@ -15,7 +20,7 @@
 	(scan_directory): Updated to use more metadata. In particular,
 	this allows to correctly detect renamed files.
 	(read_directory_file,write_directory_file)
-	(write_directory_file_entry): Support new directory file format. 
+	(write_directory_file_entry): Support new directory file format.
 	* tests/listed01.at: Sleep 1 sec before creating second file.
 	* tests/listed02.at: Never skip the test. It should work on any
 	filesystem.
@@ -23,7 +28,12 @@
 	* doc/snapshot.texi: New file
 	* doc/tar.texi: Update.
 	* doc/Makefile.am: Update.
-	
+
+2005-11-04  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/extract.c (set_stat): Rewrite to avoid bug in Forte
+	Developer 7 C 5.4 Patch 111708-09 (2004-02-19).
+
 2005-11-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Fix quoting in help output.
