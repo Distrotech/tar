@@ -615,7 +615,8 @@ extended_header_init (void)
 }
 
 void
-xheader_store (char const *keyword, struct tar_stat_info const *st, void *data)
+xheader_store (char const *keyword, struct tar_stat_info const *st,
+	       void const *data)
 {
   struct xhdr_tab const *t;
 
