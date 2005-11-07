@@ -55,6 +55,6 @@ separator
 structure/
 structure/file
 ],
-[],[],[],[gnu,oldgnu])
+[],[],[],[gnu,oldgnu,posix])
 
 AT_CLEANUP
