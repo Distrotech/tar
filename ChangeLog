@@ -1,3 +1,52 @@
+2005-11-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Support for incremental formats in pax archives.
+	Fixed POSIX compatibility of `sparse' extended header keywords.
+	
+	* src/common.h (dumpdir_size,get_gnu_dumpdir)
+	(xheader_string_begin,xheader_string_add)
+	(xheader_string_end): New functions.
+	* src/create.c (dump_dir0): Handle incremental backups in pax
+	archives.
+	* src/incremen.c (dumpdir_size, get_gnu_dumpdir): New functions.
+	(purge_directory): Use stat_info.dumpdir instead of getting its
+	value explicitely.
+	* src/list.c (list_archive): Handle incremental backups in pax
+	format.
+	(decode_header): Initialize stat_info.dumpdir
+	* src/sparse.c (sparse_diff_file): Bugfix: set seekable.
+	(pax_dump_header): Store sparse map in GNU.sparse.map. If this
+	variable has been explicitely deleted, use GNU.sparse.offset/
+	GNU.sparse.numbytes variables.
+	* src/tar.c (decode_options): Incremental options are allowed with
+	--format=pax
+	(tar_stat_destroy): Free dumpdir
+	* src/tar.h (struct tar_stat_info.dumpdir): New member.
+	* src/xheader.c (xheader_keyword_deleted_p): Remove static
+	qualifier.
+	(struct xhdr_tab.decoder): Change prototype. POSIX allows string
+	values to contain embedded nulls, so take an extra argument
+	specifying the length of the string.
+	(decx,decg,dummy_decoder,atime_decoder,gid_decoder)
+	(gname_decoder,linkpath_decoder,ctime_decoder,mtime_decoder)
+	(path_decoder,size_decoder,uid_decoder,uname_decoder)
+	(sparse_size_decoder,sparse_numblocks_decoder)
+	(sparse_offset_decoder,sparse_numbytes_decoder): Likewise.
+	(decode_record): Pass value length to the handler
+	(run_override_list): Pass value length to the decoder
+	(xheader_print_n): New function
+	(xheader_print): Rewritten using xheader_print_n
+	(xheader_finish): Do not rely om strlen to compute the length of
+	the collected string: it can contain embedded nulls
+	(xheader_string_begin,xheader_string_add,xheader_string_end): New
+	functions. 
+	(sparse_map_decoder,dumpdir_coder,dumpdir_decoder): New
+	functions. Handle GNU.sparse.map and GNU.dumpdir variables.
+	(xhdr_tab): Add new variables.
+
+	* tests/incr01.at: Test gnu, oldgnu, and posix formats
+	* tests/incremental.at: Likewise
+	
 2005-11-06  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/xheader.c (strtoimax, strtoumax): Remove decls; now done
