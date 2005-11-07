@@ -1672,9 +1672,14 @@ decode_options (int argc, char **argv)
 		   | FORMAT_MASK (GNU_FORMAT));
 
 
-  if (incremental_option || multi_volume_option)
-    assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
+  if (incremental_option)
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
+		   | FORMAT_MASK (GNU_FORMAT)
+		   | FORMAT_MASK (POSIX_FORMAT));
 
+  if (multi_volume_option)
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
+  
   if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
@@ -1973,5 +1978,6 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->uname);
   free (st->gname);
   free (st->sparse_map);
+  free (st->dumpdir);
   memset (st, 0, sizeof (*st));
 }
