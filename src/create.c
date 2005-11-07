@@ -1029,7 +1029,7 @@ dump_dir0 (char *directory,
       if (!blk)
 	return;
 
-      if (incremental_option)
+      if (incremental_option && archive_format != POSIX_FORMAT)
 	blk->header.typeflag = GNUTYPE_DUMPDIR;
       else /* if (standard_option) */
 	blk->header.typeflag = DIRTYPE;
@@ -1040,51 +1040,54 @@ dump_dir0 (char *directory,
 	finish_header (st, blk, block_ordinal);
       else if (gnu_list_name->dir_contents)
 	{
-	  off_t size_left;
-	  off_t totsize;
-	  size_t bufsize;
-	  ssize_t count;
-	  const char *buffer, *p_buffer;
-
-	  block_ordinal = current_block_ordinal ();
-	  buffer = gnu_list_name->dir_contents; /* FOO */
-	  totsize = 0;
-	  if (buffer)
-	    for (p_buffer = buffer; *p_buffer; )
-	      {
-		size_t size = strlen (p_buffer) + 1;
-		totsize += size;
-		p_buffer += size;
-	      }
-	  totsize++;
-	  OFF_TO_CHARS (totsize, blk->header.size);
-	  finish_header (st, blk, block_ordinal);
-	  p_buffer = buffer;
-	  size_left = totsize;
-	  while (size_left > 0)
+	  if (archive_format == POSIX_FORMAT)
 	    {
-	      if (multi_volume_option)
-		{
-		  assign_string (&save_name, st->orig_file_name);
-		  save_sizeleft = size_left;
-		  save_totsize = totsize;
-		}
-	      blk = find_next_block ();
-	      bufsize = available_space_after (blk);
-	      if (size_left < bufsize)
-		{
-		  bufsize = size_left;
-		  count = bufsize % BLOCKSIZE;
-		  if (count)
-		    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
-		}
-	      memcpy (blk->buffer, p_buffer, bufsize);
-	      size_left -= bufsize;
-	      p_buffer += bufsize;
-	      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
+	      xheader_store ("GNU.dumpdir", st, gnu_list_name->dir_contents);
+	      finish_header (st, blk, block_ordinal);
 	    }
-	  if (multi_volume_option)
-	    assign_string (&save_name, 0);
+	  else
+	    {
+	      off_t size_left;
+	      off_t totsize;
+	      size_t bufsize;
+	      ssize_t count;
+	      const char *buffer, *p_buffer;
+	      
+	      block_ordinal = current_block_ordinal ();
+	      buffer = gnu_list_name->dir_contents; /* FOO */
+	      if (buffer)
+		totsize = dumpdir_size (buffer);
+	      else
+		totsize = 0;
+	      OFF_TO_CHARS (totsize, blk->header.size);
+	      finish_header (st, blk, block_ordinal);
+	      p_buffer = buffer;
+	      size_left = totsize;
+	      while (size_left > 0)
+		{
+		  if (multi_volume_option)
+		    {
+		      assign_string (&save_name, st->orig_file_name);
+		      save_sizeleft = size_left;
+		      save_totsize = totsize;
+		    }
+		  blk = find_next_block ();
+		  bufsize = available_space_after (blk);
+		  if (size_left < bufsize)
+		    {
+		      bufsize = size_left;
+		      count = bufsize % BLOCKSIZE;
+		      if (count)
+			memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
+		    }
+		  memcpy (blk->buffer, p_buffer, bufsize);
+		  size_left -= bufsize;
+		  p_buffer += bufsize;
+		  set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
+		}
+	      if (multi_volume_option)
+		assign_string (&save_name, 0);
+	    }
 	  return;
 	}
     }
