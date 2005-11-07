@@ -432,6 +432,9 @@ void purge_directory (char const *);
 void list_dumpdir (char *buffer, size_t size);
 void update_parent_directory (const char *name);
 
+size_t dumpdir_size (const char *p);
+void get_gnu_dumpdir (void);
+
 /* Module list.c.  */
 
 enum read_header
@@ -619,6 +622,10 @@ char *xheader_ghdr_name (void);
 void xheader_write (char, char *, struct xheader *);
 void xheader_write_global (void);
 void xheader_set_option (char *string);
+void xheader_string_begin (void);
+void xheader_string_add (char const *s);
+void xheader_string_end (char const *keyword);
+bool xheader_keyword_deleted_p (const char *kw);
 
 /* Module system.c */
 
