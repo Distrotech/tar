@@ -361,6 +361,20 @@ get_directory_contents (char *dir_name, dev_t device)
   return buffer;
 }
 
+size_t
+dumpdir_size (const char *p)
+{
+  size_t totsize = 0;
+
+  while (*p)
+    {
+      size_t size = strlen (p) + 1;
+      totsize += size;
+      p += size;
+    }
+  return totsize + 1;  
+}
+
 
 
 static FILE *listed_incremental_stream;
@@ -617,18 +631,59 @@ write_directory_file (void)
 
 /* Restoration of incremental dumps.  */
 
+void
+get_gnu_dumpdir ()
+{
+  size_t size;
+  size_t copied;
+  union block *data_block;
+  char *to;
+  char *archive_dir;
+  
+  size = current_stat_info.stat.st_size;
+  if (size != current_stat_info.stat.st_size)
+    xalloc_die ();
+
+  archive_dir = xmalloc (size);
+  to = archive_dir;
+
+  set_next_block_after (current_header);
+  if (multi_volume_option)
+    {
+      assign_string (&save_name, current_stat_info.orig_file_name);
+      save_totsize = current_stat_info.stat.st_size;
+    }
+  for (; size > 0; size -= copied)
+    {
+      if (multi_volume_option)
+	save_sizeleft = size;
+      data_block = find_next_block ();
+      if (!data_block)
+	ERROR ((1, 0, _("Unexpected EOF in archive")));
+      copied = available_space_after (data_block);
+      if (copied > size)
+	copied = size;
+      memcpy (to, data_block->buffer, copied);
+      to += copied;
+      set_next_block_after ((union block *)
+			    (data_block->buffer + copied - 1));
+    }
+  if (multi_volume_option)
+    assign_string (&save_name, 0);
+  
+  current_stat_info.stat.st_size = 0; /* For skip_member() and friends
+					 to work correctly */
+  current_stat_info.dumpdir = archive_dir;
+}
+
+
 /* Examine the directories under directory_name and delete any
    files that were not there at the time of the back-up. */
 void
 purge_directory (char const *directory_name)
 {
-  char *archive_dir;
   char *current_dir;
   char *cur, *arc;
-  size_t size;
-  size_t copied;
-  union block *data_block;
-  char *to;
 
   current_dir = savedir (directory_name);
 
@@ -641,31 +696,9 @@ purge_directory (char const *directory_name)
       return;
     }
 
-  size = current_stat_info.stat.st_size;
-  if (size != current_stat_info.stat.st_size)
-    xalloc_die ();
-  archive_dir = xmalloc (size);
-  to = archive_dir;
-  for (; size > 0; size -= copied)
-    {
-      data_block = find_next_block ();
-      if (!data_block)
-	{
-	  ERROR ((0, 0, _("Unexpected EOF in archive")));
-	  break;		/* FIXME: What happens then?  */
-	}
-      copied = available_space_after (data_block);
-      if (copied > size)
-	copied = size;
-      memcpy (to, data_block->buffer, copied);
-      to += copied;
-      set_next_block_after ((union block *)
-			    (data_block->buffer + copied - 1));
-    }
-
   for (cur = current_dir; *cur; cur += strlen (cur) + 1)
     {
-      for (arc = archive_dir; *arc; arc += strlen (arc) + 1)
+      for (arc = current_stat_info.dumpdir; *arc; arc += strlen (arc) + 1)
 	{
 	  arc++;
 	  if (!strcmp (arc, cur))
@@ -707,7 +740,6 @@ purge_directory (char const *directory_name)
 
     }
   free (current_dir);
-  free (archive_dir);
 }
 
 void
