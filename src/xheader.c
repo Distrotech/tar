@@ -424,7 +424,7 @@ struct xhdr_tab
 {
   char const *keyword;
   void (*coder) (struct tar_stat_info const *, char const *,
-		 struct xheader *, void *data);
+		 struct xheader *, void const *data);
   void (*decoder) (struct tar_stat_info *, char const *, size_t);
   bool protect;
 };
@@ -742,7 +742,7 @@ xheader_string_add (char const *s)
 
 void
 xheader_string_end (char const *keyword)
-{  
+{
   size_t len;
   size_t p;
   size_t n = 0;
@@ -753,9 +753,9 @@ xheader_string_end (char const *keyword)
   if (extended_header.buffer)
     return;
   extended_header_init ();
-  
+
   len = strlen (keyword) + string_length + 3; /* ' ' + '=' + '\n' */
-  
+
   do
     {
       p = n;
@@ -950,7 +950,7 @@ static void
 dummy_coder (struct tar_stat_info const *st __attribute__ ((unused)),
 	     char const *keyword __attribute__ ((unused)),
 	     struct xheader *xhdr __attribute__ ((unused)),
-	     void *data __attribute__ ((unused)))
+	     void const *data __attribute__ ((unused)))
 {
 }
 
@@ -963,7 +963,7 @@ dummy_decoder (struct tar_stat_info *st __attribute__ ((unused)),
 
 static void
 atime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_time (st->atime, keyword, xhdr);
 }
@@ -979,7 +979,7 @@ atime_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 gid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr, void *data __attribute__ ((unused)))
+	   struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_gid, keyword, xhdr);
 }
@@ -995,7 +995,7 @@ gid_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 gname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_string (st->gname, keyword, xhdr);
 }
@@ -1009,7 +1009,7 @@ gname_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 linkpath_coder (struct tar_stat_info const *st, char const *keyword,
-		struct xheader *xhdr, void *data __attribute__ ((unused)))
+		struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_string (st->link_name, keyword, xhdr);
 }
@@ -1023,7 +1023,7 @@ linkpath_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 ctime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_time (st->ctime, keyword, xhdr);
 }
@@ -1039,7 +1039,7 @@ ctime_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_time (st->mtime, keyword, xhdr);
 }
@@ -1055,7 +1055,7 @@ mtime_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 path_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr, void *data __attribute__ ((unused)))
+	    struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_string (st->file_name, keyword, xhdr);
 }
@@ -1071,7 +1071,7 @@ path_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 size_coder (struct tar_stat_info const *st, char const *keyword,
-	    struct xheader *xhdr, void *data __attribute__ ((unused)))
+	    struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_size, keyword, xhdr);
 }
@@ -1087,7 +1087,7 @@ size_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 uid_coder (struct tar_stat_info const *st, char const *keyword,
-	   struct xheader *xhdr, void *data __attribute__ ((unused)))
+	   struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_num (st->stat.st_uid, keyword, xhdr);
 }
@@ -1103,7 +1103,7 @@ uid_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 uname_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
   code_string (st->uname, keyword, xhdr);
 }
@@ -1117,7 +1117,7 @@ uname_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 sparse_size_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void *data)
+	     struct xheader *xhdr, void const *data)
 {
   size_coder (st, keyword, xhdr, data);
 }
@@ -1134,7 +1134,7 @@ sparse_size_decoder (struct tar_stat_info *st, char const *arg,
 static void
 sparse_numblocks_coder (struct tar_stat_info const *st, char const *keyword,
 			struct xheader *xhdr,
-			void *data __attribute__ ((unused)))
+			void const *data __attribute__ ((unused)))
 {
   code_num (st->sparse_map_avail, keyword, xhdr);
 }
@@ -1154,9 +1154,9 @@ sparse_numblocks_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 sparse_offset_coder (struct tar_stat_info const *st, char const *keyword,
-		     struct xheader *xhdr, void *data)
+		     struct xheader *xhdr, void const *data)
 {
-  size_t *pi = data;
+  size_t const *pi = data;
   code_num (st->sparse_map[*pi].offset, keyword, xhdr);
 }
 
@@ -1177,9 +1177,9 @@ sparse_offset_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 sparse_numbytes_coder (struct tar_stat_info const *st, char const *keyword,
-		       struct xheader *xhdr, void *data)
+		       struct xheader *xhdr, void const *data)
 {
-  size_t *pi = data;
+  size_t const *pi = data;
   code_num (st->sparse_map[*pi].numbytes, keyword, xhdr);
 }
 
@@ -1204,14 +1204,14 @@ sparse_map_decoder (struct tar_stat_info *st, char const *arg,
 {
   int offset = 1;
   static char *keyword = "GNU.sparse.map";
-  
+
   st->sparse_map_avail = 0;
   while (1)
     {
       uintmax_t u;
       char *delim;
       struct sp_array e;
-      
+
       if (!ISDIGIT (*arg))
 	{
 	  ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
@@ -1247,7 +1247,7 @@ sparse_map_decoder (struct tar_stat_info *st, char const *arg,
 	      return;
 	    }
 	}
-	    
+
       offset = !offset;
 
       if (*delim == 0)
@@ -1271,7 +1271,7 @@ sparse_map_decoder (struct tar_stat_info *st, char const *arg,
 
 static void
 dumpdir_coder (struct tar_stat_info const *st, char const *keyword,
-	       struct xheader *xhdr, void *data)
+	       struct xheader *xhdr, void const *data)
 {
   xheader_print_n (xhdr, keyword, data, dumpdir_size (data));
 }
@@ -1316,7 +1316,7 @@ struct xhdr_tab const xhdr_tab[] = {
 
   { "GNU.dumpdir",           dumpdir_coder, dumpdir_decoder,
     true },
-  
+
 #if 0 /* GNU private keywords (not yet implemented) */
 
   /* Keeps the tape/volume header. May be present only in the global headers.
