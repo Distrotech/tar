@@ -54,7 +54,7 @@ struct tar_sparse_file
   off_t dumped_size;                /* Number of bytes actually written
 				       to the archive */
   struct tar_stat_info *stat_info;  /* Information about the file */
-  struct tar_sparse_optab const *optab;
+  struct tar_sparse_optab const *optab; /* Operation table */
   void *closure;                    /* Any additional data optab calls might
 				       require */
 };
@@ -565,13 +565,14 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
 
   file.stat_info = st;
   file.fd = fd;
-
+  file.seekable = true; /* File *must* be seekable for compare to work */
+  
   rc = tar_sparse_decode_header (&file);
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
     {
       rc = check_sparse_region (&file,
 				offset, file.stat_info->sparse_map[i].offset)
-	&& check_data_region (&file, i);
+	    && check_data_region (&file, i);
       offset = file.stat_info->sparse_map[i].offset
 	        + file.stat_info->sparse_map[i].numbytes;
     }
@@ -838,10 +839,28 @@ static struct tar_sparse_optab const star_optab = {
 
    GNU.sparse.size      Real size of the stored file
    GNU.sparse.numblocks Number of blocks in the sparse map
+   GNU.sparse.map       Map of non-null data chunks. A string consisting
+                       of comma-separated values "offset,size[,offset,size]..."
+
+   Tar versions 1.14-1.15.1 instead of the latter used:
+   
    repeat numblocks time
      GNU.sparse.offset    Offset of the next data block
      GNU.sparse.numbytes  Size of the next data block
    end repeat
+
+   This has been reported as conflicting with the POSIX specs. The reason is
+   that offsets and sizes of non-zero data blocks were stored in multiple
+   instances of GNU.sparse.offset/GNU.sparse.numbytes variables. However,
+   POSIX requires the latest occurrence of the variable to override all
+   previous occurrences.
+     
+   To avoid this incompatibility new keyword GNU.sparse.map was introduced
+   in tar 1.15.2. Some people might still need the 1.14 way of handling
+   sparse files for the compatibility reasons: it can be achieved by
+   specifying `--pax-option delete=GNU.sparse.map' in the command line.
+
+   See FIXME-1.14-1.15.1-1.20, below.
 */
 
 static bool
@@ -856,16 +875,40 @@ pax_dump_header (struct tar_sparse_file *file)
   off_t block_ordinal = current_block_ordinal ();
   union block *blk;
   size_t i;
-
+  char nbuf[UINTMAX_STRSIZE_BOUND];
+  struct sp_array *map = file->stat_info->sparse_map;
+    
   /* Store the real file size */
   xheader_store ("GNU.sparse.size", file->stat_info, NULL);
   xheader_store ("GNU.sparse.numblocks", file->stat_info, NULL);
-  for (i = 0; i < file->stat_info->sparse_map_avail; i++)
-    {
-      xheader_store ("GNU.sparse.offset", file->stat_info, &i);
-      xheader_store ("GNU.sparse.numbytes", file->stat_info, &i);
-    }
 
+  /* FIXME-1.14-1.15.1-1.20: See the comment above.
+     Starting with 1.17 this should display a warning about POSIX-incompatible
+     keywords being generated. In 1.20, the true branch of the if block below
+     will be removed and GNU.sparse.map will be marked in xhdr_tab as
+     protected. */
+  
+  if (xheader_keyword_deleted_p ("GNU.sparse.map"))
+    {
+      for (i = 0; i < file->stat_info->sparse_map_avail; i++)
+	{
+	  xheader_store ("GNU.sparse.offset", file->stat_info, &i);
+	  xheader_store ("GNU.sparse.numbytes", file->stat_info, &i);
+	}
+    }
+  else
+    {
+      xheader_string_begin ();
+      for (i = 0; i < file->stat_info->sparse_map_avail; i++)
+	{
+	  if (i)
+	    xheader_string_add (",");
+	  xheader_string_add (umaxtostr (map[i].offset, nbuf));
+	  xheader_string_add (",");
+	  xheader_string_add (umaxtostr (map[i].numbytes, nbuf));
+	}
+      xheader_string_end ("GNU.sparse.map");
+    }
   blk = start_header (file->stat_info);
   /* Store the effective (shrunken) file size */
   OFF_TO_CHARS (file->stat_info->archive_file_size, blk->header.size);
