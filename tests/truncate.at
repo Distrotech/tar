@@ -31,7 +31,8 @@ AT_KEYWORDS([truncated files])
 AT_TAR_CHECK([
 genfile --file foo --length 50000k
 genfile --file baz
-genfile --run 'tar -H pax -vcf bar foo baz' --checkpoint 10 --length 49995k --truncate foo
+touch -t 197001030000 baz # avoid subsecond resolution
+genfile --run 'tar -vcf bar foo baz' --checkpoint 10 --length 49995k --truncate foo
 echo separator
 sleep 1
 dd if=/dev/zero of=foo bs=1k seek=49995 count=5 >/dev/null 2>&1

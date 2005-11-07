@@ -31,8 +31,9 @@ AT_TAR_CHECK([
 mkdir directory
 genfile --length 10240 --pattern zeros --file directory/file1
 genfile --length 10240 --pattern default --file directory/file2
+touch -t 197001030000 directory directory/* # avoid subsecond resolution
 
-tar -H pax -cf archive directory || exit 1
+tar cf archive directory || exit 1
 echo separator
 tar uf archive directory || exit 1
 echo separator
