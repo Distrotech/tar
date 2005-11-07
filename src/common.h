@@ -611,7 +611,7 @@ void update_archive (void);
 
 void xheader_decode (struct tar_stat_info *);
 void xheader_decode_global (void);
-void xheader_store (char const *, struct tar_stat_info const *, void *);
+void xheader_store (char const *, struct tar_stat_info const *, void const *);
 void xheader_read (union block *, size_t);
 void xheader_write (char type, char *name, struct xheader *xhdr);
 void xheader_write_global (void);
