@@ -10,19 +10,19 @@ version 1.15.2 (CVS version -- unreleased)
 
 * New features
 
-* Any number of -T (--files-from) options may be used in command line.
+* Any number of -T (--files-from) options may be used in the command line.
 The file specified with -T may include any valid `tar' options,
 including another -T option.
 Compatibility note: older versions of tar would only recognize -C
-as option name within the file list file. Now any file whose name
-starts with - is handled as option. To insert file names starting with
-dash, use --add-file option.
+as an option name within the file list file.  Now any file whose name
+starts with - is handled as an option.  To insert file names starting with
+dash, use the --add-file option.
 
 * List files containing null-separated file names are detected and processed
-automatically. It is not necessary to give --null option.
+automatically.  It is no longer necessary to give the --null option.
 
-* New option --no-unquote disables unquoting input file names. This
-is useful e.g. for processing output from `find dir -print0'.
+* New option --no-unquote disables the unquoting of input file names.
+This is useful for processing output from `find dir -print0'.
 An orthogonal option --unquote is provided as well.
 
 * New option --test-label tests the archive volume label.
@@ -30,13 +30,13 @@ If an argument is specified, the label is compared against its value.
 Tar exits with code 0 if the two strings match, and with code 2 if
 they do not.
 
-If no argument is given, --verbose option is implied. In this case,
-tar prints the label name, if it is present and exits with code 0.
+If no argument is given, the --verbose option is implied.  In this case,
+tar prints the label name if present and exits with code 0.
 
-* New option --show-stored-names. When creating archive in verbose mode,
-lists member names as stored in the archive, i.e. with any eventual
-prefixes removed. The option is useful, for example, while comparing
-`tar cv' and `tar tv' outputs.	
+* New option --show-stored-names.  When creating an archive in verbose mode,
+it lists member names as stored in the archive, i.e., with any eventual
+prefixes removed.  The option is useful, for example, while comparing
+`tar cv' and `tar tv' outputs.
 
 * Better support for full-resolution time stamps.  Tar cannot restore
 time stamps to full nanosecond resolution, though, until the kernel
@@ -47,7 +47,7 @@ stamps to nanosecond resolution.
 not full resolution, to avoid using up too many output columns.
 Nanosecond resolution is now supported, but that would be too much.
 
-* Bugfixes
+* Bug fixes
 
 ** Allow non-option arguments to be interspersed with options.
 ** When extracting or listing archives in old GNU format, tar
@@ -69,7 +69,7 @@ tar to refuse to extract files from standard input.
 version 1.15 - Sergey Poznyakoff, 2004-12-20
 
 * Compressed archives are recognised automatically, it is no longer
-necessary to specify -Z, -z, or -j options to read them. Thus, you can
+necessary to specify -Z, -z, or -j options to read them.  Thus, you can
 now run `tar tf archive.tar.gz'.
 
 * When restoring incremental dumps, --one-file-system option
@@ -79,7 +79,7 @@ from being purged.
 With the previous versions of tar it was dangerous to create
 incremental dumps with --one-file-system option, since they
 would recursively remove mount points when restoring from the
-back up. This change fixes the bug.
+back up.  This change fixes the bug.
 
 * Renamed --strip-path to --strip-components for consistency with
 the GNU convention.
@@ -88,28 +88,28 @@ the GNU convention.
 seeks.
 
 * Restore script starts restoring only if it is given --all (-a) option,
-or some patterns. This is to prevent accidental restores.
+or some patterns.  This is to prevent accidental restores.
 
 * `tar --verify' prints a warning if during archive creation some of
 the file names had their prefixes stripped off.
 
 * New option --exclude-caches instructs tar to exclude cache directories
-automatically on archive creation. Cache directories are those
+automatically on archive creation.  Cache directories are those
 containing a standardized tag file, as specified at:
 
 	http://www.brynosaurus.com/cachedir/spec.html
 
 * New configure option --with-rmt allows to specify full path name to
-the `rmt' utility. This supercedes DEFAULT_RMT_COMMAND variable
+the `rmt' utility.  This supersedes DEFAULT_RMT_COMMAND variable
 introduced in version 1.14
 
 * New configure variable DEFAULT_RMT_DIR allows to specify the directory
-where to install `rmt' utility. This is necessary since modifying
+where to install `rmt' utility.  This is necessary since modifying
 --libexecdir as was suggested for version 1.14 produced a side effect: it
 also modified installation prefix for backup scripts (if
 --enable-backup-scripts was given).
 
-* Bugfixes:
+* Bug fixes:
 ** Fixed flow in recognizing files to be included in incremental dumps.
 ** Correctly recognize sparse archive members when used with -T option.
 ** GNU multivolume headers cannot store filenames longer than 100 characters.
@@ -117,7 +117,7 @@ Do not allow multivolume archives to begin with such filenames.
 ** If a member with link count > 2 was stored in the archive twice,
 previous versions of tar were not able to extract it, since they
 were trying to link the file to itself, which always failed and
-lead to removing the already extracted copy. Preserve the first
+lead to removing the already extracted copy.  Preserve the first
 extracted copy in such cases.
 ** Restore script was passing improper argument to tar --listed option (which
 didn't affect the functionality, but was logically incorrect).
@@ -142,28 +142,28 @@ version 1.14 - Sergey Poznyakoff, 2004-05-11
   option is now the default; use --no-overwrite-dir if you prefer
   the previous default behavior.
 
-* The semantics of -o option is changed. When extracting, it
-  does the same as --no-same-owner GNU tar option. This is compatible
-  with UNIX98 tar. Otherwise, its effect is the same as that of
-  --old-archive option. This latter is deprecated and will be removed
+* The semantics of -o option is changed.  When extracting, it
+  does the same as --no-same-owner GNU tar option.  This is compatible
+  with UNIX98 tar.  Otherwise, its effect is the same as that of
+  --old-archive option.  This latter is deprecated and will be removed
   in future.
 
 * New option --check-links prints a message if not all links are dumped
-  for a file being archived. This corresponds to the UNIX98 -l option.
+  for a file being archived.  This corresponds to the UNIX98 -l option.
   The current semantics of the -l option is retained for compatibility
   with previous releases, however such usage is strongly deprecated as
   the option will change to its UNIX98 semantics in the future releases.
 
 * New option --occurrence[=N] can be used in conjunction with one of
   the subcommands --delete, --diff, --extract or --list when a list of
-  files is given either on the command line or via -T option. This
+  files is given either on the command line or via -T option.  This
   option instructs tar to process only the Nth occurrence of each named
-  file. N defaults to 1, so `tar -x -f archive --occurrence filename'
+  file.  N defaults to 1, so `tar -x -f archive --occurrence filename'
   extracts the first occurrence of `filename' from `archive'
   and terminates without scanning to the end of the archive.
 
 * New option --pax-option allows to control the handling of POSIX
-  keywords in `pax' extended headers. It is equivalent to `pax'
+  keywords in `pax' extended headers.  It is equivalent to `pax'
   -o option.
 
 * --incremental and --listed-incremental options work correctly on
@@ -175,12 +175,12 @@ option is given to configure.
 
 * By default tar searches "rmt" utility in "$prefix/libexec/rmt",
 which is consistent with the location where the version of "rmt"
-included in the package is installed. Previous versions of tar
-used "/etc/rmt". To install "rmt" to its traditional location,
-run configure with option --libexecdir=/etc. Otherwise, if you
+included in the package is installed.  Previous versions of tar
+used "/etc/rmt".  To install "rmt" to its traditional location,
+run configure with option --libexecdir=/etc.  Otherwise, if you
 already have rmt installed and wish to use it, instead of the
 shipped in version, set the variable DEFAULT_RMT_COMMAND to
-the full path name of the utility, e.g. ./configure
+the full path name of the utility, e.g., ./configure
 DEFAULT_RMT_COMMAND=/etc/rmt.
 
 Notice also that the full path name of the "rmt" utility to
@@ -326,7 +326,7 @@ version 1.13.16 - Paul Eggert, 1999-12-13.
   when extracting, and warns about such file names when creating an archive.
   To enable the old behavior, use the -P or --absolute-names option.
 
-* Tar now handles file names with multibyte encodings (e.g. UTF-8, Shift-JIS)
+* Tar now handles file names with multibyte encodings (e.g., UTF-8, Shift-JIS)
   correctly.  It relies on the mbrtowc function to handle multibyte characters.
 
 * The file generated by -g or --listed-incremental now uses a format
@@ -341,7 +341,7 @@ version 1.13.16 - Paul Eggert, 1999-12-13.
   `quoted like this' (in the default C locale) or are followed by
   colon, newline, or space, depending on context.  Unprintable
   characters are escaped with a C-like backslash conventions.
-  Terminating characters (e.g. close-quote, colon, newline)
+  Terminating characters (e.g., close-quote, colon, newline)
   are also escaped as needed.
 
 * tar now ignores socket files when creating an archive.
@@ -464,7 +464,7 @@ version 1.13.6 - Paul Eggert, 1999-08-11.
 
 * The protocol for talking to rmt has been extended slightly.
   Open flags are now communicated in symbolic format as well as numeric.
-  The symbolic format (e.g. "O_WRONLY|O_CREAT|O_TRUNC") is for portability
+  The symbolic format (e.g., "O_WRONLY|O_CREAT|O_TRUNC") is for portability
   when rmt is operating on a different operating system from tar.
   The numeric format is retained, and rmt uses it if symbolic format is absent,
   for backward compatibility with older versions of tar and rmt.
@@ -512,7 +512,7 @@ version 1.13.1 - Paul Eggert, 1999-07-12.
 
 version 1.13 - Paul Eggert, 1999-07-08.
 
-* Support for large files, e.g. files larger than 2 GB on many 32-bit hosts.
+* Support for large files, e.g., files larger than 2 GB on many 32-bit hosts.
   Also, support for larger uids, device ids, etc.
 * Many bug fixes and porting fixes.
 * This release is only for fixes.  A more ambitious test release,
