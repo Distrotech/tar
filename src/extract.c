@@ -469,7 +469,7 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
       return errno != ENOENT;
     }
   if (!S_ISDIR (st.st_mode)
-      && timespec_cmp (tar_stat->mtime, get_stat_mtime (&st)) <= 0)
+      && tar_timespec_cmp (tar_stat->mtime, get_stat_mtime (&st)) <= 0)
     {
       return true;
     }

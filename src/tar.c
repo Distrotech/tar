@@ -162,7 +162,7 @@ archive_format_string (enum archive_format fmt)
 static void
 assert_format(unsigned fmt_mask)
 {
-  if ((FORMAT_MASK(archive_format) & fmt_mask) == 0)
+  if ((FORMAT_MASK (archive_format) & fmt_mask) == 0)
     USAGE_ERROR ((0, 0,
 		  _("GNU features wanted on incompatible archive format")));
 }
@@ -314,7 +314,7 @@ static struct argp_option options[] = {
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
   {"seek", 'n', NULL, 0,
-   N_("archive is seekable"), 21 },    
+   N_("archive is seekable"), 21 },
 
   {NULL, 0, NULL, 0,
    N_("Overwrite control:"), 30},
@@ -557,7 +557,7 @@ static struct argp_option options[] = {
   {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
    N_("When creating archive in verbose mode, list member names as stored in the archive"),
    102 },
-    
+
   {NULL, 0, NULL, 0,
    N_("Compatibility options:"), 110 },
 
@@ -1047,7 +1047,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (LIST_SUBCOMMAND);
       test_label_option = true;
       break;
-      
+
     case 'T':
       update_argv (arg, state);
       /* Indicate we've been given -T option. This is for backward
@@ -1323,7 +1323,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case SHOW_STORED_NAMES_OPTION:
       show_stored_names_option = true;
       break;
-      
+
     case SUFFIX_OPTION:
       backup_option = true;
       args->backup_suffix_string = arg;
@@ -1679,7 +1679,7 @@ decode_options (int argc, char **argv)
 
   if (multi_volume_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
-  
+
   if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
@@ -1980,4 +1980,18 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->sparse_map);
   free (st->dumpdir);
   memset (st, 0, sizeof (*st));
+}
+
+/* Format mask for all available formats that support nanosecond
+   timestamp resolution. */
+#define NS_PRECISION_FORMAT_MASK FORMAT_MASK (POSIX_FORMAT)
+
+/* Same as timespec_cmp, but ignore nanoseconds if current archive
+   format does not provide sufficient resolution.  */
+int
+tar_timespec_cmp (struct timespec a, struct timespec b)
+{
+  if (!(FORMAT_MASK (current_format) & NS_PRECISION_FORMAT_MASK))
+    a.tv_nsec = b.tv_nsec = 0;
+  return timespec_cmp (a, b);
 }

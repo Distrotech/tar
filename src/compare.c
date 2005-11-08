@@ -224,7 +224,8 @@ diff_file (void)
       if (!sys_compare_gid (&stat_data, &current_stat_info.stat))
 	report_difference (&current_stat_info, _("Gid differs"));
 
-      if (timespec_cmp (get_stat_mtime (&stat_data), current_stat_info.mtime))
+      if (tar_timespec_cmp (get_stat_mtime (&stat_data), 
+                            current_stat_info.mtime))
 	report_difference (&current_stat_info, _("Mod time differs"));
       if (current_header->header.typeflag != GNUTYPE_SPARSE &&
 	  stat_data.st_size != current_stat_info.stat.st_size)

@@ -600,6 +600,7 @@ void request_stdin (const char *);
 void tar_stat_init (struct tar_stat_info *st);
 void tar_stat_destroy (struct tar_stat_info *st);
 void usage (int) __attribute__ ((noreturn));
+int tar_timespec_cmp (struct timespec a, struct timespec b);
 
 /* Module update.c.  */
 
