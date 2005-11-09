@@ -1,3 +1,49 @@
+2005-11-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c: Rewritten in a more modular fashion to provide
+	GNU extensions (multi-volume archives and archive labels) in
+	pax format.
+	NOTICE, that some of the aspects (e.g. splitting the archive
+	on the extended header boundary) are still not solved, others
+	(splitting a sparse file between the volume) require additional
+	testing. Wait for the next commit.
+	
+	(volume_label,continued_file_name,continued_file_size)
+	(continued_file_offset): New globals.
+	(save_name,save_totsize,save_sizeleft): Make static
+	(mv_begin,mv_end,mv_total_size,mv_size_left): New functions
+	(open_archive,flush_write,flush_read): Rewritten
+	
+	* src/common.h (save_name,save_sizeleft,save_totsize): Remove
+	globals.
+	(volume_label,continued_file_name,continued_file_size): New
+	variables.
+	(flush_read,flush_write): Pointers to functions
+	(mv_begin,mv_end,mv_total_size,mv_size_left): New functions
+	(write_extended): New function.
+
+	* src/compare.c, src/create.c, src/extract.c, src/incremen.c,
+	src/list.c: Use mv_.* functions uniformly instead of fiddling
+	with the global variables.
+	* src/sparse.c: Use mv_.* functions where necessary.
+	* src/tar.c (decode_options): Allow to use --multi-volume and
+	--label with pax archives.
+	* src/xheader.c (xhdr_tab): Support for new GNU keywords.
+
+	* tests/delete01.at, tests/delete02.at, tests/delete03.at,
+	tests/delete04.at, tests/delete05.at, tests/extrac01.at,
+	tests/extrac02.at, tests/extrac03.at, tests/extrac04.at,
+	tests/extrac05.at, tests/incr01.at, tests/incremental.at,
+	tests/listed01.at, tests/listed02.at, tests/long01.at,
+	tests/longv7.at, tests/multiv01.at, tests/multiv02.at,
+	tests/multiv03.at, tests/multiv04.at, tests/options.at,
+	tests/options02.at, tests/same-order01.at, tests/same-order02.at,
+	tests/sparse01.at, tests/sparse02.at, tests/sparse03.at,
+	tests/star/multi-fail.at (AT_KEYWORDS): Improve to allow execution
+	of related tests in groups.
+
+	* doc/tar.texi: Update
+	
 2005-11-07  Sergey Poznyakoff  <gray@gnu.org.ua>
        and  Paul Eggert  <eggert@cs.ucla.edu>
 
