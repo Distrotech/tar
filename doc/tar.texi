@@ -6528,6 +6528,9 @@ archives to contain only regular files and directories, avoiding
 other kind of special files.  Do not attempt to save sparse files or
 contiguous files as such.  Let's discuss a few more problems, in turn.
 
+@FIXME{Discuss GNU extensions (incremental backups, multi-volume
+archives and archive labels) in GNU and PAX formats.}
+
 @menu
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
@@ -6644,19 +6647,6 @@ we plan to make @samp{posix} format the default.
 To force creation a @GNUTAR{} archive, use option
 @value{op-format-gnu}.
 
-Some @command{tar} options are currently basing on @GNUTAR{}
-format, and can therefore be used only with @samp{gnu}
-or @samp{oldgnu} archive formats.  The list of such options follows:
-
-@itemize @bullet
-@item @value{op-label}, when used with @value{op-create}.
-@item @value{op-incremental}
-@item @value{op-multi-volume}
-@end itemize
-
-These options will be re-implemented for the @samp{posix} archive
-format in the future.
-
 @node posix
 @subsection @GNUTAR{} and @acronym{POSIX} @command{tar}
 
@@ -6665,17 +6655,6 @@ to read and create archives conforming to @acronym{POSIX.1-2001} standard.
 
 A @acronym{POSIX} conformant archive will be created if @command{tar}
 was given @value{op-format-posix} option.
-Notice, that currently @acronym{GNU} extensions are not
-allowed with this format.  Following is the list of options that
-cannot be used with @value{op-format-posix}:
-
-@itemize @bullet
-@item @value{op-label}, when used with @value{op-create}.
-@item @value{op-incremental}
-@item @value{op-multi-volume}
-@end itemize
-
-This restriction will disappear in the future versions.
 
 @node Checksumming
 @subsection Checksumming Problems
