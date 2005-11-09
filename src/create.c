@@ -452,7 +452,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   finish_header (st, header, -1);
 
   header = find_next_block ();
-
+  
   bufsize = available_space_after (header);
 
   while (bufsize < size)
@@ -576,8 +576,8 @@ write_long_name (struct tar_stat_info *st)
   return write_short_name (st);
 }
 
-static union block *
-write_extended (struct tar_stat_info *st, union block *old_header)
+union block *
+write_extended (char type, struct tar_stat_info *st, union block *old_header)
 {
   union block *header, hp;
   char *p;
@@ -588,7 +588,7 @@ write_extended (struct tar_stat_info *st, union block *old_header)
   xheader_finish (&extended_header);
   memcpy (hp.buffer, old_header, sizeof (hp));
   p = xheader_xhdr_name (st);
-  xheader_write (XHDTYPE, p, &extended_header);
+  xheader_write (type, p, &extended_header);
   free (p);
   header = find_next_block ();
   memcpy (header, &hp.buffer, sizeof (hp.buffer));
@@ -852,7 +852,7 @@ finish_header (struct tar_stat_info *st,
       print_header (st, block_ordinal);
     }
 
-  header = write_extended (st, header);
+  header = write_extended (XHDTYPE, st, header);
   simple_finish_header (header);
 }
 
@@ -863,7 +863,7 @@ pad_archive (off_t size_left)
   union block *blk;
   while (size_left > 0)
     {
-      save_sizeleft = size_left;
+      mv_size_left (size_left);
       blk = find_next_block ();
       memset (blk->buffer, 0, BLOCKSIZE);
       set_next_block_after (blk);
@@ -889,16 +889,13 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 
   finish_header (st, blk, block_ordinal);
 
+  mv_begin (st);
   while (size_left > 0)
     {
       size_t bufsize, count;
 
-      if (multi_volume_option)
-	{
-	  assign_string (&save_name, st->orig_file_name);
-	  save_sizeleft = size_left;
-	  save_totsize = st->stat.st_size;
-	}
+      mv_size_left (size_left);
+
       blk = find_next_block ();
 
       bufsize = available_space_after (blk);
@@ -1054,7 +1051,7 @@ dump_dir0 (char *directory,
 	      const char *buffer, *p_buffer;
 	      
 	      block_ordinal = current_block_ordinal ();
-	      buffer = gnu_list_name->dir_contents; /* FOO */
+	      buffer = gnu_list_name->dir_contents; 
 	      if (buffer)
 		totsize = dumpdir_size (buffer);
 	      else
@@ -1063,14 +1060,12 @@ dump_dir0 (char *directory,
 	      finish_header (st, blk, block_ordinal);
 	      p_buffer = buffer;
 	      size_left = totsize;
+	      
+	      mv_begin (st);
+	      mv_total_size (totsize);
 	      while (size_left > 0)
 		{
-		  if (multi_volume_option)
-		    {
-		      assign_string (&save_name, st->orig_file_name);
-		      save_sizeleft = size_left;
-		      save_totsize = totsize;
-		    }
+		  mv_size_left (size_left);
 		  blk = find_next_block ();
 		  bufsize = available_space_after (blk);
 		  if (size_left < bufsize)
@@ -1085,8 +1080,7 @@ dump_dir0 (char *directory,
 		  p_buffer += bufsize;
 		  set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
 		}
-	      if (multi_volume_option)
-		assign_string (&save_name, 0);
+	      mv_end ();
 	    }
 	  return;
 	}
@@ -1504,14 +1498,12 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	  switch (status)
 	    {
 	    case dump_status_ok:
-	      if (multi_volume_option)
-		assign_string (&save_name, 0);
+	      mv_end ();
 	      dump_regular_finish (fd, st, original_ctime);
 	      break;
 
 	    case dump_status_short:
-	      if (multi_volume_option)
-		assign_string (&save_name, 0);
+	      mv_end ();
 	      close (fd);
 	      break;
 

@@ -222,13 +222,11 @@ list_archive (void)
 	}
     }
 
-  if (multi_volume_option)
-    assign_string (&save_name, current_stat_info.orig_file_name);
+  mv_begin (&current_stat_info);
 
   skip_member ();
 
-  if (multi_volume_option)
-    assign_string (&save_name, 0);
+  mv_end ();
 }
 
 /* Check header checksum */
@@ -400,6 +398,7 @@ read_header (bool raw_extended_headers)
 	    {
 	      xheader_read (header, OFF_FROM_HEADER (header->header.size));
 	      xheader_decode_global ();
+	      xheader_destroy (&extended_header);
 	    }
 
 	  /* Loop!  */
@@ -1269,25 +1268,19 @@ skip_file (off_t size)
 {
   union block *x;
 
-  if (multi_volume_option)
-    {
-      save_totsize = size;
-      save_sizeleft = size;
-    }
+  /* FIXME: Make sure mv_begin is always called before it */
 
   if (seekable_archive)
     {
       off_t nblk = seek_archive (size);
       if (nblk >= 0)
-	{
-	  size -= nblk * BLOCKSIZE;
-	  if (multi_volume_option) /* Argh.. */
-	    save_sizeleft -= nblk * BLOCKSIZE;
-	}
+	size -= nblk * BLOCKSIZE;
       else
 	seekable_archive = false;
     }
 
+  mv_size_left (size);
+  
   while (size > 0)
     {
       x = find_next_block ();
@@ -1296,8 +1289,7 @@ skip_file (off_t size)
 
       set_next_block_after (x);
       size -= BLOCKSIZE;
-      if (multi_volume_option)
-	save_sizeleft -= BLOCKSIZE;
+      mv_size_left (size);
     }
 }
 
@@ -1309,10 +1301,12 @@ skip_member (void)
   char save_typeflag = current_header->header.typeflag;
   set_next_block_after (current_header);
 
-  assign_string (&save_name, current_stat_info.orig_file_name);
+  mv_begin (&current_stat_info);
 
   if (current_stat_info.is_sparse)
     sparse_skip_file (&current_stat_info);
   else if (save_typeflag != DIRTYPE)
     skip_file (current_stat_info.stat.st_size);
+
+  mv_end ();
 }

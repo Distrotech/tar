@@ -134,14 +134,15 @@ process_dumpdir (size_t bytes, char *buffer)
    address of the chunk it can work with.  The PROCESSOR should return
    nonzero for success.  It it return error once, continue skipping
    without calling PROCESSOR anymore.  */
+
 static void
-read_and_process (off_t size, int (*processor) (size_t, char *))
+read_and_process (struct tar_stat_info *st, int (*processor) (size_t, char *))
 {
   union block *data_block;
   size_t data_size;
-
-  if (multi_volume_option)
-    save_sizeleft = size;
+  size_t size = st->stat.st_size;
+  
+  mv_begin (st);
   while (size)
     {
       data_block = find_next_block ();
@@ -159,9 +160,9 @@ read_and_process (off_t size, int (*processor) (size_t, char *))
       set_next_block_after ((union block *)
 			    (data_block->buffer + data_size - 1));
       size -= data_size;
-      if (multi_volume_option)
-	save_sizeleft -= data_size;
+      mv_size_left (size);
     }
+  mv_end ();
 }
 
 /* Call either stat or lstat over STAT_DATA, depending on
@@ -250,21 +251,7 @@ diff_file (void)
 	      if (current_stat_info.is_sparse)
 		sparse_diff_file (diff_handle, &current_stat_info);
 	      else
-		{
-		  if (multi_volume_option)
-		    {
-		      assign_string (&save_name,
-                                     current_stat_info.orig_file_name);
-		      save_totsize = current_stat_info.stat.st_size;
-		      /* save_sizeleft is set in read_and_process.  */
-		    }
-
-		  read_and_process (current_stat_info.stat.st_size,
-				    process_rawdata);
-
-		  if (multi_volume_option)
-		    assign_string (&save_name, 0);
-		}
+		read_and_process (&current_stat_info, process_rawdata);
 
 	      status = close (diff_handle);
 	      if (status != 0)
@@ -373,24 +360,14 @@ diff_dumpdir (void)
       
   dumpdir_buffer = get_directory_contents (current_stat_info.file_name, dev);
 
-  if (multi_volume_option)
-    {
-      assign_string (&save_name, current_stat_info.orig_file_name);
-      save_totsize = current_stat_info.stat.st_size;
-      /* save_sizeleft is set in read_and_process.  */
-    }
-
   if (dumpdir_buffer)
     {
       dumpdir_cursor = dumpdir_buffer;
-      read_and_process (current_stat_info.stat.st_size, process_dumpdir);
+      read_and_process (&current_stat_info, process_dumpdir);
       free (dumpdir_buffer);
     }
   else
-    read_and_process (current_stat_info.stat.st_size, process_noop);
-
-  if (multi_volume_option)
-    assign_string (&save_name, 0);
+    read_and_process (&current_stat_info, process_noop);
 }
 
 static void
@@ -441,18 +418,8 @@ diff_multivol (void)
       return;
     }
 
-  if (multi_volume_option)
-    {
-      assign_string (&save_name, current_stat_info.orig_file_name);
-      save_totsize = stat_data.st_size;
-      /* save_sizeleft is set in read_and_process.  */
-    }
-
-  read_and_process (current_stat_info.stat.st_size, process_rawdata);
-
-  if (multi_volume_option)
-    assign_string (&save_name, 0);
-
+  read_and_process (&current_stat_info, process_rawdata);
+  
   status = close (fd);
   if (status != 0)
     close_error (current_stat_info.file_name);

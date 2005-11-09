@@ -648,15 +648,11 @@ get_gnu_dumpdir ()
   to = archive_dir;
 
   set_next_block_after (current_header);
-  if (multi_volume_option)
-    {
-      assign_string (&save_name, current_stat_info.orig_file_name);
-      save_totsize = current_stat_info.stat.st_size;
-    }
+  mv_begin (&current_stat_info);
+
   for (; size > 0; size -= copied)
     {
-      if (multi_volume_option)
-	save_sizeleft = size;
+      mv_size_left (size);
       data_block = find_next_block ();
       if (!data_block)
 	ERROR ((1, 0, _("Unexpected EOF in archive")));
@@ -668,8 +664,8 @@ get_gnu_dumpdir ()
       set_next_block_after ((union block *)
 			    (data_block->buffer + copied - 1));
     }
-  if (multi_volume_option)
-    assign_string (&save_name, 0);
+
+  mv_end ();
   
   current_stat_info.stat.st_size = 0; /* For skip_member() and friends
 					 to work correctly */
