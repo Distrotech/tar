@@ -317,7 +317,8 @@ GLOBAL bool unquote_option;
 GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
 GLOBAL bool show_stored_names_option; /* When creating archive in verbose mode,
-					 list member names as stored in the archive */
+					 list member names as stored in the
+					 archive */
 
 
 /* Declarations for each module.  */
@@ -336,18 +337,19 @@ extern enum access_mode access_mode;
 /* Module buffer.c.  */
 
 extern FILE *stdlis;
-extern char *save_name;
-extern off_t save_sizeleft;
-extern off_t save_totsize;
 extern bool write_archive_to_stdout;
+extern char *volume_label;
+extern char *continued_file_name;
+extern uintmax_t continued_file_size;
+extern uintmax_t continued_file_offset;
 
 size_t available_space_after (union block *);
 off_t current_block_ordinal (void);
 void close_archive (void);
 void closeout_volume_number (void);
 union block *find_next_block (void);
-void flush_read (void);
-void flush_write (void);
+void (*flush_read) (void);
+void (*flush_write) (void);
 void flush_archive (void);
 void init_volume_number (void);
 void open_archive (enum access_mode);
@@ -360,6 +362,12 @@ void archive_write_error (ssize_t) __attribute__ ((noreturn));
 void archive_read_error (void);
 off_t seek_archive (off_t size);
 void set_start_time (void);
+
+void mv_begin (struct tar_stat_info *st);
+void mv_end (void);
+void mv_total_size (off_t size);
+void mv_size_left (off_t size);
+
 
 /* Module create.c.  */
 
@@ -378,6 +386,8 @@ void dump_file (char *, int, dev_t);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *, union block *, off_t);
 void simple_finish_header (union block *header);
+union block * write_extended (char type, struct tar_stat_info *st,
+			      union block *old_header);
 union block *start_private_header (const char *name, size_t size);
 void write_eot (void);
 void check_links (void);
