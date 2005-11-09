@@ -24,7 +24,7 @@
 # http://lists.gnu.org/archive/html/bug-tar/2004-05/msg00008.html
 
 AT_SETUP([same-order01])
-AT_KEYWORDS([same-order01])
+AT_KEYWORDS([same-order same-order01])
 
 AT_TAR_CHECK([
 genfile -l 1024 > file1

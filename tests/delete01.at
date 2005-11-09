@@ -21,7 +21,7 @@
 # Deleting a member after a big one was destroying the archive.
 
 AT_SETUP([deleting a member after a big one])
-AT_KEYWORDS([delete01])
+AT_KEYWORDS([delete delete01])
 
 AT_TAR_CHECK([
 genfile -l 50000 > file1

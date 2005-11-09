@@ -26,7 +26,7 @@
 # http://lists.gnu.org/archive/html/bug-tar/2004-08/msg00012.html
 
 AT_SETUP([MV archive & long filenames])
-AT_KEYWORDS([multiv03])
+AT_KEYWORDS([multivolume multiv multiv03])
 
 AT_TAR_CHECK([
 AFILE=`awk 'BEGIN { for (i = 0; i < 100; i++) printf "a"; exit; }'`

@@ -21,7 +21,7 @@
 # Paths going up and down were inducing extraction loops.
 
 AT_SETUP([extraction loops])
-AT_KEYWORDS([extract03])
+AT_KEYWORDS([extract extract03])
 
 AT_TAR_CHECK([
 mkdir directory

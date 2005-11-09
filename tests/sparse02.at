@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 AT_SETUP([Extracting sparse file over a pipe])
-AT_KEYWORDS([sparse02])
+AT_KEYWORDS([sparse sparse02])
 
 # Tar 1.14 - 1.15.1 was unable to extract sparse files to a pipe.
 # References: <16896.21739.460782.124775@jik.kamens.brookline.ma.us>

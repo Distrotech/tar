@@ -23,7 +23,7 @@
 # Test if we did not break the correct behavior.
 
 AT_SETUP([same-order02])
-AT_KEYWORDS([same-order02])
+AT_KEYWORDS([same-order same-order02])
 
 AT_TAR_CHECK([
 genfile -l 1024 > file1

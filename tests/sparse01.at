@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 AT_SETUP([Sparse files])
-AT_KEYWORDS([sparse01])
+AT_KEYWORDS([sparse sparse01])
 
 AT_TAR_CHECK([
 genfile --length 1000 > begin

@@ -22,7 +22,7 @@
 
 unset TAR_OPTIONS
 AT_SETUP([options])
-AT_KEYWORDS([options])
+AT_KEYWORDS([options options00])
 
 AT_CHECK([
 echo > file1

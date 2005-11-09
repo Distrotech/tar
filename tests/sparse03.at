@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 AT_SETUP([Storing sparse files > 8G])
-AT_KEYWORDS([sparse03])
+AT_KEYWORDS([sparse sparse03])
 
 # Tar 1.15.1 incorrectly computed sparse member size if the extended
 # PAX header contained size keyword.

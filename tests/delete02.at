@@ -21,7 +21,7 @@
 # Deleting a member with the archive from stdin was not working correctly.
 
 AT_SETUP([deleting a member from stdin archive])
-AT_KEYWORDS([delete02])
+AT_KEYWORDS([delete delete02])
 
 AT_TAR_CHECK([
 genfile -l 3073 -p zeros > 1

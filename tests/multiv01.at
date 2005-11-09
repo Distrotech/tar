@@ -21,7 +21,7 @@
 # Test multivolume dumps from pipes.
 
 AT_SETUP([multivolume dumps from pipes])
-AT_KEYWORDS([multiv01])
+AT_KEYWORDS([multivolume multiv multiv01])
 
 # Fixme: should be configurable
 #  TRUSS=truss -o /tmp/tr
@@ -52,7 +52,7 @@ cmp file1 extract-dir-pipe/file1
 cmp file2 extract-dir-pipe/file2
 ],
 [0],
-[],[],[],[],[gnu, oldgnu])
+[],[],[],[],[gnu, oldgnu, pax])
 
 AT_CLEANUP
 

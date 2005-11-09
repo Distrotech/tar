@@ -26,7 +26,7 @@
 # http://lists.gnu.org/archive/html/bug-tar/2004-04/msg00002.html
 
 AT_SETUP([skipping a straddling member])
-AT_KEYWORDS([multiv02])
+AT_KEYWORDS([multivolume multiv multiv02])
 
 AT_TAR_CHECK([
 genfile --length 10240 > en
@@ -42,6 +42,6 @@ tar -v -x -f A.tar -f B.tar -f C.tar -M en || exit 1
 [separator
 en
 ],
-[],[],[],[gnu, oldgnu])
+[],[],[],[gnu, oldgnu, pax])
 
 AT_CLEANUP

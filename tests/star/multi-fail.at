@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 AT_SETUP([multi-fail])
-AT_KEYWORDS([multi-fail])
+AT_KEYWORDS([multivolume multiv multi-fail])
 
 unset TAR_OPTIONS
 

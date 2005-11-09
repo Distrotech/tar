@@ -21,7 +21,7 @@
 # A directory older than the listed entry was skipped completely.
 
 AT_SETUP([incremental])
-AT_KEYWORDS([incremental])
+AT_KEYWORDS([incremental incr00])
 
 AT_TAR_CHECK([
 mkdir structure

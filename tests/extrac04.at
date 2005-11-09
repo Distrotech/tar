@@ -21,7 +21,7 @@
 # Check for fnmatch problems in glibc 2.1.95.
 
 AT_SETUP([extract + fnmatch])
-AT_KEYWORDS([extract04])
+AT_KEYWORDS([extract extract04])
 
 AT_TAR_CHECK([
 touch file1

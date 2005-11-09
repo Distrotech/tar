@@ -24,7 +24,7 @@
 # http://lists.gnu.org/archive/html/bug-tar/2005-01/msg00011.html
 
 AT_SETUP([options02])
-AT_KEYWORDS([options02])
+AT_KEYWORDS([options options02])
 
 AT_CHECK([
 echo > file1

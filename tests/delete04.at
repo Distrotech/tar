@@ -21,7 +21,7 @@
 # Deleting a large last member was destroying earlier members.
 
 AT_SETUP([deleting a large last member])
-AT_KEYWORDS([delete04])
+AT_KEYWORDS([delete delete04])
 
 AT_TAR_CHECK([
 genfile -l      3 >file1

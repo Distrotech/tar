@@ -26,7 +26,7 @@
 #             http://lists.gnu.org/archive/html/bug-tar/2005-01/msg00038.html
 
 AT_SETUP([long file names divisible by block size])
-AT_KEYWORDS([long512])
+AT_KEYWORDS([longname long512])
 
 dnl Create a directory structure with maximum diractory name length 512-16
 m4_define([NAME],[0123456789abcde])

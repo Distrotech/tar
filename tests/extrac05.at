@@ -28,7 +28,7 @@
 # http://lists.gnu.org/archive/html/bug-tar/2004-08/msg00008.html
 
 AT_SETUP([extracting selected members from pax])
-AT_KEYWORDS([extract05])
+AT_KEYWORDS([extract extract05])
 
 AT_DATA([list], 
 [jeden

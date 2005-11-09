@@ -21,7 +21,7 @@
 # There was a diagnostic when directory already exists.
 
 AT_SETUP([extract01])
-AT_KEYWORDS([extract01])
+AT_KEYWORDS([extract extract01])
 
 AT_TAR_CHECK([
 mkdir directory

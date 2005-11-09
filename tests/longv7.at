@@ -22,7 +22,7 @@
 # 99 characters
 
 AT_SETUP([V7 and long names])
-AT_KEYWORDS([longv7])
+AT_KEYWORDS([longname longv7])
 
 m4_define([DIR],[this_is_a_very_long_name_for_a_directory_which_causes_problems])
 m4_define([FILE],[this_is_a_very_long_file_name_which_raises_issues.c])
