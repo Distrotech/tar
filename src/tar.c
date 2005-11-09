@@ -1667,9 +1667,11 @@ decode_options (int argc, char **argv)
 	archive_format = DEFAULT_ARCHIVE_FORMAT;
     }
 
+  /* FIXME: Merge the four conditionals below */
   if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
-		   | FORMAT_MASK (GNU_FORMAT));
+		   | FORMAT_MASK (GNU_FORMAT)
+		   | FORMAT_MASK (POSIX_FORMAT));
 
 
   if (incremental_option)
@@ -1678,7 +1680,9 @@ decode_options (int argc, char **argv)
 		   | FORMAT_MASK (POSIX_FORMAT));
 
   if (multi_volume_option)
-    assert_format (FORMAT_MASK (OLDGNU_FORMAT) | FORMAT_MASK (GNU_FORMAT));
+    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
+		   | FORMAT_MASK (GNU_FORMAT)
+		   | FORMAT_MASK (POSIX_FORMAT));
 
   if (sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
