@@ -1285,6 +1285,52 @@ dumpdir_decoder (struct tar_stat_info *st, char const *arg,
   memcpy (st->dumpdir, arg, size);
 }
 
+static void
+volume_label_coder (struct tar_stat_info const *st, char const *keyword,
+		    struct xheader *xhdr, void const *data)
+{
+  code_string (data, keyword, xhdr);
+}
+
+static void
+volume_label_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+{
+  decode_string (&volume_label, arg);
+}
+
+static void
+volume_size_coder (struct tar_stat_info const *st, char const *keyword,
+		   struct xheader *xhdr, void const *data)
+{
+  off_t v = *(off_t*)data;
+  code_num (v, keyword, xhdr);
+}
+
+static void
+volume_size_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+{
+  uintmax_t u;
+  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), "GNU.volume.size"))
+    continued_file_size = u;
+}
+
+/* FIXME: Merge with volume_size_coder */
+static void
+volume_offset_coder (struct tar_stat_info const *st, char const *keyword,
+		   struct xheader *xhdr, void const *data)
+{
+  off_t v = *(off_t*)data;
+  code_num (v, keyword, xhdr);
+}
+
+static void
+volume_offset_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+{
+  uintmax_t u;
+  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), "GNU.volume.offset"))
+    continued_file_offset = u;
+}
+
 struct xhdr_tab const xhdr_tab[] = {
   { "atime",	atime_coder,	atime_decoder,	  false },
   { "comment",	dummy_coder,	dummy_decoder,	  false },
@@ -1318,11 +1364,9 @@ struct xhdr_tab const xhdr_tab[] = {
   { "GNU.dumpdir",           dumpdir_coder, dumpdir_decoder,
     true },
 
-#if 0 /* GNU private keywords (not yet implemented) */
-
-  /* Keeps the tape/volume header. May be present only in the global headers.
+  /* Keeps the tape/volume label. May be present only in the global headers.
      Equivalent to GNUTYPE_VOLHDR.  */
-  { "GNU.volume.header", volume_header_coder, volume_header_decoder, false },
+  { "GNU.volume.label", volume_label_coder, volume_label_decoder, true },
 
   /* These may be present in a first global header of the archive.
      They provide the same functionality as GNUTYPE_MULTIVOL header.
@@ -1332,7 +1376,6 @@ struct xhdr_tab const xhdr_tab[] = {
      otherwise kept in oldgnu_header.offset.  */
   { "GNU.volume.size", volume_size_coder, volume_size_decoder, false },
   { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder, false },
-#endif
 
   { NULL, NULL, NULL, false }
 };
