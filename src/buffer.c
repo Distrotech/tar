@@ -35,12 +35,13 @@
 
 /* Globbing pattern to append to volume label if initial match failed.  */
 #define VOLUME_LABEL_APPEND " Volume [1-9]*"
-
+
 /* Variables.  */
 
 static tarlong prev_written;	/* bytes written on previous volumes */
 static tarlong bytes_written;	/* bytes written on this volume */
-static void *record_buffer;	/* allocated memory */
+static void *record_buffer[2];	/* allocated memory */
+static int record_index;
 
 /* FIXME: The following variables should ideally be static to this
    module.  However, this cannot be done yet.  The cleanup continues!  */
@@ -58,7 +59,6 @@ static off_t record_start_block; /* block ordinal at record_start */
 FILE *stdlis;
 
 static void backspace_output (void);
-static bool new_volume (enum access_mode);
 
 /* PID of child program, if compress_option or remote archive access.  */
 static pid_t child_pid;
@@ -82,24 +82,19 @@ static bool read_full_records = false;
 */
 extern bool time_to_start_writing;
 
+bool write_archive_to_stdout;
+
+
+char *volume_label;
+char *continued_file_name;
+uintmax_t continued_file_size;
+uintmax_t continued_file_offset;
+
+
 static int volno = 1;		/* which volume of a multi-volume tape we're
 				   on */
 static int global_volno = 1;	/* volume number to print in external
 				   messages */
-
-/* The pointer save_name, which is set in function dump_file() of module
-   create.c, points to the original long filename instead of the new,
-   shorter mangled name that is set in start_header() of module create.c.
-   The pointer save_name is only used in multi-volume mode when the file
-   being processed is non-sparse; if a file is split between volumes, the
-   save_name is used in generating the LF_MULTIVOL record on the second
-   volume.  (From Pierce Cantrell, 1991-08-13.)  */
-
-char *save_name;		/* name of the file we are currently writing */
-off_t save_totsize;		/* total size of file we are writing, only
-				   valid if save_name is nonzero */
-off_t save_sizeleft;		/* where we are in the file we are writing,
-				   only valid if save_name is nonzero */
 
 bool write_archive_to_stdout;
 
@@ -108,6 +103,44 @@ bool write_archive_to_stdout;
 static char *real_s_name;
 static off_t real_s_totsize;
 static off_t real_s_sizeleft;
+
+
+/* Multi-volume tracking support */
+static char *save_name;		/* name of the file we are currently writing */
+static off_t save_totsize;	/* total size of file we are writing, only
+				   valid if save_name is nonzero */
+static off_t save_sizeleft;	/* where we are in the file we are writing,
+				   only valid if save_name is nonzero */
+
+void
+mv_begin (struct tar_stat_info *st)
+{
+  if (multi_volume_option)
+    {
+      assign_string (&save_name,  st->orig_file_name);
+      save_totsize = save_sizeleft = st->stat.st_size;
+    }
+}
+
+void
+mv_end ()
+{
+  if (multi_volume_option)
+    assign_string (&save_name, 0);
+}
+
+void
+mv_total_size (off_t size)
+{
+  save_totsize = size;
+}
+
+void
+mv_size_left (off_t size)
+{
+  save_sizeleft = size;
+}
+
 
 /* Functions.  */
 
@@ -327,38 +360,21 @@ xclose (int fd)
     close_error (_("(pipe)"));
 }
 
-/* Check the LABEL block against the volume label, seen as a globbing
-   pattern.  Return true if the pattern matches.  In case of failure,
-   retry matching a volume sequence number before giving up in
-   multi-volume mode.  */
-static bool
-check_label_pattern (union block *label)
+static void
+init_buffer ()
 {
-  char *string;
-  bool result;
-
-  if (! memchr (label->header.name, '\0', sizeof label->header.name))
-    return false;
-
-  if (fnmatch (volume_label_option, label->header.name, 0) == 0)
-    return true;
-
-  if (!multi_volume_option)
-    return false;
-
-  string = xmalloc (strlen (volume_label_option)
-		    + sizeof VOLUME_LABEL_APPEND + 1);
-  strcpy (string, volume_label_option);
-  strcat (string, VOLUME_LABEL_APPEND);
-  result = fnmatch (string, label->header.name, 0) == 0;
-  free (string);
-  return result;
+  if (!record_buffer[record_index])
+    page_aligned_alloc (&record_buffer[record_index], record_size);
+      
+  record_start = record_buffer[record_index];
+  current_block = record_start;
+  record_end = record_start + blocking_factor;
 }
 
 /* Open an archive file.  The argument specifies whether we are
    reading or writing, or both.  */
-void
-open_archive (enum access_mode wanted_access)
+static void
+_open_archive (enum access_mode wanted_access)
 {
   int backed_up_flag = 0;
 
@@ -381,15 +397,9 @@ open_archive (enum access_mode wanted_access)
   save_name = 0;
   real_s_name = 0;
 
-  record_start =
-    page_aligned_alloc (&record_buffer,
-			(record_size
-			 + (multi_volume_option ? 2 * BLOCKSIZE : 0)));
-  if (multi_volume_option)
-    record_start += 2;
-
-  current_block = record_start;
-  record_end = record_start + blocking_factor;
+  record_index = 0;
+  init_buffer ();
+  
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
@@ -503,50 +513,18 @@ open_archive (enum access_mode wanted_access)
 
     case ACCESS_READ:
       find_next_block ();	/* read it in, check for EOF */
-
-      if (volume_label_option)
-	{
-	  union block *label = find_next_block ();
-
-	  if (!label)
-	    FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
-			  quote (volume_label_option)));
-	  if (!check_label_pattern (label))
-	    FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
-			  quote_n (0, label->header.name),
-			  quote_n (1, volume_label_option)));
-	}
       break;
 
     case ACCESS_WRITE:
       records_written = 0;
-      if (volume_label_option)
-	{
-	  memset (record_start, 0, BLOCKSIZE);
-	  if (multi_volume_option)
-	    sprintf (record_start->header.name, "%s Volume 1",
-		     volume_label_option);
-	  else
-	    strcpy (record_start->header.name, volume_label_option);
-
-	  assign_string (&current_stat_info.file_name,
-			 record_start->header.name);
-	  current_stat_info.had_trailing_slash =
-	    strip_trailing_slashes (current_stat_info.file_name);
-
-	  record_start->header.typeflag = GNUTYPE_VOLHDR;
-	  TIME_TO_CHARS (start_time.tv_sec, record_start->header.mtime);
-	  finish_header (&current_stat_info, record_start, -1);
-	}
       break;
     }
 }
 
 /* Perform a write to flush the buffer.  */
-void
-flush_write (void)
+ssize_t
+_flush_write (void)
 {
-  int copy_back;
   ssize_t status;
 
   if (checkpoint_option && !(++checkpoint % 10))
@@ -565,137 +543,8 @@ flush_write (void)
     status = record_size;
   else
     status = sys_write_archive_buffer ();
-  if (status != record_size && !multi_volume_option)
-    archive_write_error (status);
 
-  if (status > 0)
-    {
-      records_written++;
-      bytes_written += status;
-    }
-
-  if (status == record_size)
-    {
-      if (multi_volume_option)
-	{
-	  if (save_name)
-	    {
-	      assign_string (&real_s_name,
-	                     safer_name_suffix (save_name, false,
-	                                        absolute_names_option));
-	      real_s_totsize = save_totsize;
-	      real_s_sizeleft = save_sizeleft;
-	    }
-	  else
-	    {
-	      assign_string (&real_s_name, 0);
-	      real_s_totsize = 0;
-	      real_s_sizeleft = 0;
-	    }
-	}
-      return;
-    }
-
-  /* We're multivol.  Panic if we didn't get the right kind of response.  */
-
-  /* ENXIO is for the UNIX PC.  */
-  if (status < 0 && errno != ENOSPC && errno != EIO && errno != ENXIO)
-    archive_write_error (status);
-
-  /* If error indicates a short write, we just move to the next tape.  */
-
-  if (!new_volume (ACCESS_WRITE))
-    return;
-
-  if (totals_option)
-    prev_written += bytes_written;
-  bytes_written = 0;
-
-  if (volume_label_option && real_s_name)
-    {
-      copy_back = 2;
-      record_start -= 2;
-    }
-  else if (volume_label_option || real_s_name)
-    {
-      copy_back = 1;
-      record_start--;
-    }
-  else
-    copy_back = 0;
-
-  if (volume_label_option)
-    {
-      memset (record_start, 0, BLOCKSIZE);
-      sprintf (record_start->header.name, "%s Volume %d",
-	       volume_label_option, volno);
-      TIME_TO_CHARS (start_time.tv_sec, record_start->header.mtime);
-      record_start->header.typeflag = GNUTYPE_VOLHDR;
-      finish_header (&current_stat_info, record_start, -1);
-    }
-
-  if (real_s_name)
-    {
-      int tmp;
-
-      if (volume_label_option)
-	record_start++;
-
-      if (strlen (real_s_name) > NAME_FIELD_SIZE)
-	WARN ((0, 0,
-	      _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
-		      quotearg_colon (real_s_name)));
-
-      memset (record_start, 0, BLOCKSIZE);
-
-      /* FIXME: Michael P Urban writes: [a long name file] is being written
-	 when a new volume rolls around [...]  Looks like the wrong value is
-	 being preserved in real_s_name, though.  */
-
-      strncpy (record_start->header.name, real_s_name, NAME_FIELD_SIZE);
-      record_start->header.typeflag = GNUTYPE_MULTIVOL;
-
-      OFF_TO_CHARS (real_s_sizeleft, record_start->header.size);
-      OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
-		    record_start->oldgnu_header.offset);
-
-      tmp = verbose_option;
-      verbose_option = 0;
-      finish_header (&current_stat_info, record_start, -1);
-      verbose_option = tmp;
-
-      if (volume_label_option)
-	record_start--;
-    }
-
-  status = sys_write_archive_buffer ();
-  if (status != record_size)
-    archive_write_error (status);
-
-  bytes_written += status;
-
-  if (copy_back)
-    {
-      record_start += copy_back;
-      memcpy (current_block,
-	      record_start + blocking_factor - copy_back,
-	      copy_back * BLOCKSIZE);
-      current_block += copy_back;
-
-      if (real_s_sizeleft >= copy_back * BLOCKSIZE)
-	real_s_sizeleft -= copy_back * BLOCKSIZE;
-      else if ((real_s_sizeleft + BLOCKSIZE - 1) / BLOCKSIZE <= copy_back)
-	assign_string (&real_s_name, 0);
-      else
-	{
-	  assign_string (&real_s_name,
-	                 safer_name_suffix (save_name, false,
-	                                    absolute_names_option));
-	  real_s_sizeleft = save_sizeleft;
-	  real_s_totsize = save_totsize;
-	}
-      copy_back = 0;
-    }
+  return status;
 }
 
 /* Handle write errors on the archive.  Write errors are always fatal.
@@ -789,8 +638,8 @@ short_read (size_t status)
 }
 
 /* Perform a read to flush the buffer.  */
-void
-flush_read (void)
+size_t
+_flush_read (void)
 {
   size_t status;		/* result from system call */
 
@@ -814,140 +663,11 @@ flush_read (void)
       if (status != record_size)
 	archive_write_error (status);
     }
-  if (multi_volume_option)
-    {
-      if (save_name)
-	{
-	  assign_string (&real_s_name,
-	                 safer_name_suffix (save_name, false,
-	                                    absolute_names_option));
-	  real_s_sizeleft = save_sizeleft;
-	  real_s_totsize = save_totsize;
-	}
-      else
-	{
-	  assign_string (&real_s_name, 0);
-	  real_s_totsize = 0;
-	  real_s_sizeleft = 0;
-	}
-    }
 
- error_loop:
   status = rmtread (archive, record_start->buffer, record_size);
   if (status == record_size)
-    {
-      records_read++;
-      return;
-    }
-
-  /* The condition below used to include
-	      || (status > 0 && !read_full_records)
-     This is incorrect since even if new_volume() succeeds, the
-     subsequent call to rmtread will overwrite the chunk of data
-     already read in the buffer, so the processing will fail */
-
-  if ((status == 0
-       || (status == SAFE_READ_ERROR && errno == ENOSPC))
-      && multi_volume_option)
-    {
-      union block *cursor;
-
-    try_volume:
-      switch (subcommand_option)
-	{
-	case APPEND_SUBCOMMAND:
-	case CAT_SUBCOMMAND:
-	case UPDATE_SUBCOMMAND:
-	  if (!new_volume (ACCESS_UPDATE))
-	    return;
-	  break;
-
-	default:
-	  if (!new_volume (ACCESS_READ))
-	    return;
-	  break;
-	}
-
-      while ((status = rmtread (archive, record_start->buffer, record_size))
-	     == SAFE_READ_ERROR)
-	archive_read_error ();
-
-      if (status != record_size)
-	short_read (status);
-
-      cursor = record_start;
-
-      if (cursor->header.typeflag == GNUTYPE_VOLHDR)
-	{
-	  if (volume_label_option)
-	    {
-	      if (!check_label_pattern (cursor))
-		{
-		  WARN ((0, 0, _("Volume %s does not match %s"),
-			 quote_n (0, cursor->header.name),
-			 quote_n (1, volume_label_option)));
-		  volno--;
-		  global_volno--;
-		  goto try_volume;
-		}
-	    }
-	  if (verbose_option)
-	    fprintf (stdlis, _("Reading %s\n"), quote (cursor->header.name));
-	  cursor++;
-	}
-      else if (volume_label_option)
-	WARN ((0, 0, _("WARNING: No volume header")));
-
-      if (real_s_name)
-	{
-	  uintmax_t s1, s2;
-	  if (cursor->header.typeflag != GNUTYPE_MULTIVOL
-	      || strncmp (cursor->header.name, real_s_name, NAME_FIELD_SIZE))
-	    {
-	      WARN ((0, 0, _("%s is not continued on this volume"),
-		     quote (real_s_name)));
-	      volno--;
-	      global_volno--;
-	      goto try_volume;
-	    }
-	  s1 = UINTMAX_FROM_HEADER (cursor->header.size);
-	  s2 = UINTMAX_FROM_HEADER (cursor->oldgnu_header.offset);
-	  if (real_s_totsize != s1 + s2 || s1 + s2 < s2)
-	    {
-	      char totsizebuf[UINTMAX_STRSIZE_BOUND];
-	      char s1buf[UINTMAX_STRSIZE_BOUND];
-	      char s2buf[UINTMAX_STRSIZE_BOUND];
-
-	      WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
-		     quote (cursor->header.name),
-		     STRINGIFY_BIGINT (save_totsize, totsizebuf),
-		     STRINGIFY_BIGINT (s1, s1buf),
-		     STRINGIFY_BIGINT (s2, s2buf)));
-	      volno--;
-	      global_volno--;
-	      goto try_volume;
-	    }
-	  if (real_s_totsize - real_s_sizeleft
-	      != OFF_FROM_HEADER (cursor->oldgnu_header.offset))
-	    {
-	      WARN ((0, 0, _("This volume is out of sequence")));
-	      volno--;
-	      global_volno--;
-	      goto try_volume;
-	    }
-	  cursor++;
-	}
-      current_block = cursor;
-      records_read++;
-      return;
-    }
-  else if (status == SAFE_READ_ERROR)
-    {
-      archive_read_error ();
-      goto error_loop;		/* try again */
-    }
-
-  short_read (status);
+    records_read++;
+  return status;
 }
 
 /*  Flush the current buffer to/from the archive.  */
@@ -1082,7 +802,8 @@ close_archive (void)
     free (save_name);
   if (real_s_name)
     free (real_s_name);
-  free (record_buffer);
+  free (record_buffer[0]);
+  free (record_buffer[1]);
 }
 
 /* Called to initialize the global volume number.  */
@@ -1124,6 +845,16 @@ closeout_volume_number (void)
     open_error (volno_file_option);
 }
 
+
+static void
+increase_volume_number ()
+{
+  global_volno++;
+  if (global_volno < 0)
+    FATAL_ERROR ((0, 0, _("Volume number overflow")));
+  volno++;
+}
+
 /* We've hit the end of the old volume.  Close it and open the next one.
    Return nonzero on success.
 */
@@ -1142,13 +873,13 @@ new_volume (enum access_mode mode)
   if (verify_option)
     verify_volume ();
 
+  assign_string (&volume_label, NULL);
+  assign_string (&continued_file_name, NULL);
+  continued_file_size = continued_file_offset = 0;
+  
   if (rmtclose (archive) != 0)
     close_warn (*archive_name_cursor);
 
-  global_volno++;
-  if (global_volno < 0)
-    FATAL_ERROR ((0, 0, _("Volume number overflow")));
-  volno++;
   archive_name_cursor++;
   if (archive_name_cursor == archive_name_array + archive_names)
     {
@@ -1177,7 +908,7 @@ new_volume (enum access_mode mode)
 	    fputc ('\007', stderr);
 	    fprintf (stderr,
 		     _("Prepare volume #%d for %s and hit return: "),
-		     global_volno, quote (*archive_name_cursor));
+		     global_volno + 1, quote (*archive_name_cursor));
 	    fflush (stderr);
 
 	    if (fgets (input_buffer, sizeof input_buffer, read_file) == 0)
@@ -1289,4 +1020,515 @@ new_volume (enum access_mode mode)
   SET_BINARY_MODE (archive);
 
   return true;
+}
+      
+bool
+try_new_volume ()
+{
+  size_t status;
+  enum read_header rc;
+  union block *block;
+  
+  switch (subcommand_option)
+    {
+    case APPEND_SUBCOMMAND:
+    case CAT_SUBCOMMAND:
+    case UPDATE_SUBCOMMAND:
+      if (!new_volume (ACCESS_UPDATE))
+	return true;
+      break;
+
+    default:
+      if (!new_volume (ACCESS_READ))
+	return true;
+      break;
+    }
+
+  while ((status = rmtread (archive, record_start->buffer, record_size))
+	 == SAFE_READ_ERROR)
+    archive_read_error ();
+
+  if (status != record_size)
+    short_read (status);
+
+ again:
+  block = current_block;
+  rc = read_header (true);
+  switch (rc)
+    {
+    case HEADER_SUCCESS_EXTENDED:
+      if (current_header->header.typeflag == XGLTYPE)
+	{
+	  struct tar_stat_info dummy;
+	  xheader_read (current_header,
+			OFF_FROM_HEADER (current_header->header.size));
+	  xheader_decode_global ();
+	  xheader_destroy (&extended_header);
+	  tar_stat_init (&dummy);
+	  xheader_decode (&dummy); /* decodes values from the global header */
+	  tar_stat_destroy (&dummy);
+	}
+      break;
+      
+    case HEADER_SUCCESS:
+      if (current_header->header.typeflag == GNUTYPE_VOLHDR)
+	assign_string (&volume_label, current_header->header.name);
+      else if (current_header->header.typeflag == GNUTYPE_MULTIVOL)
+	{
+	  assign_string (&continued_file_name, current_header->header.name);
+	  continued_file_size =
+	       UINTMAX_FROM_HEADER (current_header->header.size);
+	  continued_file_offset =
+	       UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
+	}
+      else
+	break;
+      set_next_block_after (current_header);
+      goto again;
+
+    case HEADER_ZERO_BLOCK:
+    case HEADER_END_OF_FILE:
+    case HEADER_FAILURE:
+      current_block = block;
+      break;
+
+    default:
+      abort ();
+    }
+
+  if (real_s_name)
+    {
+      uintmax_t s;
+      if (continued_file_name 
+	  && strcmp (continued_file_name, real_s_name))
+	{
+	  WARN ((0, 0, _("%s is not continued on this volume"),
+		 quote (real_s_name)));
+	  return false;
+	}
+
+      s = continued_file_size + continued_file_offset;
+
+      if (real_s_totsize != s || s < continued_file_offset)
+	{
+	  char totsizebuf[UINTMAX_STRSIZE_BOUND];
+	  char s1buf[UINTMAX_STRSIZE_BOUND];
+	  char s2buf[UINTMAX_STRSIZE_BOUND];
+
+	  WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
+		 quote (continued_file_name),
+		 STRINGIFY_BIGINT (save_totsize, totsizebuf),
+		 STRINGIFY_BIGINT (continued_file_size, s1buf),
+		 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
+	  return false;
+	}
+      
+      if (real_s_totsize - real_s_sizeleft != continued_file_offset)
+	{
+	  WARN ((0, 0, _("This volume is out of sequence")));
+	  return false;
+	}
+    }
+
+  increase_volume_number ();
+  return true;
+}
+
+
+/* Check the LABEL block against the volume label, seen as a globbing
+   pattern.  Return true if the pattern matches.  In case of failure,
+   retry matching a volume sequence number before giving up in
+   multi-volume mode.  */
+static bool
+check_label_pattern (union block *label)
+{
+  char *string;
+  bool result;
+
+  if (! memchr (label->header.name, '\0', sizeof label->header.name))
+    return false;
+
+  if (fnmatch (volume_label_option, label->header.name, 0) == 0)
+    return true;
+
+  if (!multi_volume_option)
+    return false;
+
+  string = xmalloc (strlen (volume_label_option)
+		    + sizeof VOLUME_LABEL_APPEND + 1);
+  strcpy (string, volume_label_option);
+  strcat (string, VOLUME_LABEL_APPEND);
+  result = fnmatch (string, label->header.name, 0) == 0;
+  free (string);
+  return result;
+}
+
+/* Check if the next block contains a volume label and if this matches
+   the one given in the command line */
+static void
+match_volume_label (void)
+{
+  union block *label = find_next_block ();
+
+  if (!label)
+    FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
+		  quote (volume_label_option)));
+  if (!check_label_pattern (label))
+    FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
+		  quote_n (0, label->header.name),
+		  quote_n (1, volume_label_option)));
+}
+
+/* Mark the archive with volume label STR. */
+static void
+_write_volume_label (const char *str)
+{
+  if (archive_format == POSIX_FORMAT)
+    xheader_store ("GNU.volume.label", NULL, str);
+  else
+    {
+      union block *label = find_next_block ();
+      
+      memset (label, 0, BLOCKSIZE);
+
+      strcpy (label->header.name, volume_label_option);
+      assign_string (&current_stat_info.file_name,
+		     label->header.name);
+      current_stat_info.had_trailing_slash =
+	strip_trailing_slashes (current_stat_info.file_name);
+
+      label->header.typeflag = GNUTYPE_VOLHDR;
+      TIME_TO_CHARS (start_time.tv_sec, label->header.mtime);
+      finish_header (&current_stat_info, label, -1);
+      set_next_block_after (label);
+    }
+}
+
+#define VOL_SUFFIX "Volume"
+
+/* Add a volume label to a part of multi-volume archive */
+static void
+add_volume_label (void)
+{
+  char buf[UINTMAX_STRSIZE_BOUND];
+  char *p = STRINGIFY_BIGINT (volno, buf);
+  char *s = xmalloc (strlen (volume_label_option) + sizeof VOL_SUFFIX
+		     + strlen (p) + 2);
+  sprintf (s, "%s %s %s", volume_label_option, VOL_SUFFIX, p);
+  _write_volume_label (s);
+  free (s);
+}
+
+/* Add a volume label to the current archive */
+static void
+write_volume_label (void)
+{
+  if (multi_volume_option)
+    add_volume_label ();
+  else
+    _write_volume_label (volume_label_option);
+}
+
+/* Write GNU multi-volume header */
+static void
+gnu_add_multi_volume_header (void)
+{
+  int tmp;
+  union block *block = find_next_block ();
+  
+  if (strlen (real_s_name) > NAME_FIELD_SIZE)
+    WARN ((0, 0,
+	   _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
+	   quotearg_colon (real_s_name)));
+  
+  memset (block, 0, BLOCKSIZE);
+  
+  /* FIXME: Michael P Urban writes: [a long name file] is being written
+     when a new volume rolls around [...]  Looks like the wrong value is
+     being preserved in real_s_name, though.  */
+  
+  strncpy (block->header.name, real_s_name, NAME_FIELD_SIZE);
+  block->header.typeflag = GNUTYPE_MULTIVOL;
+  
+  OFF_TO_CHARS (real_s_sizeleft, block->header.size);
+  OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
+		block->oldgnu_header.offset);
+  
+  tmp = verbose_option;
+  verbose_option = 0;
+  finish_header (&current_stat_info, block, -1);
+  verbose_option = tmp;
+  set_next_block_after (block);
+}
+
+/* Add a multi volume header to the current archive. The exact header format
+   depends on the archive format. */
+static void
+add_multi_volume_header (void)
+{
+  if (archive_format == POSIX_FORMAT)
+    {
+      off_t d = real_s_totsize - real_s_sizeleft;
+      xheader_store ("GNU.volume.size", NULL, &real_s_sizeleft);
+      xheader_store ("GNU.volume.offset", NULL, &d);
+    }
+  else
+    gnu_add_multi_volume_header ();
+}
+
+/* Synchronize multi-volume globals */
+static void
+multi_volume_sync ()
+{
+  if (multi_volume_option)
+    {
+      if (save_name)
+	{
+	  assign_string (&real_s_name,
+			 safer_name_suffix (save_name, false,
+					    absolute_names_option));
+	  real_s_totsize = save_totsize;
+	  real_s_sizeleft = save_sizeleft;
+	}
+      else
+	{
+	  assign_string (&real_s_name, 0);
+	  real_s_totsize = 0;
+	  real_s_sizeleft = 0;
+	}
+    }
+}
+
+
+/* Low-level flush functions */
+
+/* Simple flush read (no multi-volume or label extensions) */
+static void
+simple_flush_read (void)
+{
+  size_t status;		/* result from system call */
+
+  if (checkpoint_option && !(++checkpoint % 10))
+    /* TRANSLATORS: This is a ``checkpoint of read operation'',
+       *not* ``Reading a checkpoint''.
+       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
+       *not* ``Leyendo un punto de comprobaci@'on'' */
+    WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
+
+  /* Clear the count of errors.  This only applies to a single call to
+     flush_read.  */
+
+  read_error_count = 0;		/* clear error count */
+
+  if (write_archive_to_stdout && record_start_block != 0)
+    {
+      archive = STDOUT_FILENO;
+      status = sys_write_archive_buffer ();
+      archive = STDIN_FILENO;
+      if (status != record_size)
+	archive_write_error (status);
+    }
+  
+  for (;;)
+    {
+      status = rmtread (archive, record_start->buffer, record_size);
+      if (status == record_size)
+	{
+	  records_read++;
+	  return;
+	}
+      if (status == SAFE_READ_ERROR)
+	{
+	  archive_read_error ();
+	  continue;		/* try again */
+	}
+      break;
+    }
+  short_read (status);
+}
+
+/* Simple flush write (no multi-volume or label extensions) */
+static void
+simple_flush_write (void)
+{
+  ssize_t status;
+
+  status = _flush_write ();
+  if (status != record_size)
+    archive_write_error (status);
+  else
+    {
+      records_written++;
+      bytes_written += status;
+    }
+}
+
+
+/* GNU flush functions. These support multi-volume and archive labels in
+   GNU and PAX archive formats. */
+
+static void
+_gnu_flush_read (void)
+{
+  size_t status;		/* result from system call */
+
+  if (checkpoint_option && !(++checkpoint % 10))
+    /* TRANSLATORS: This is a ``checkpoint of read operation'',
+       *not* ``Reading a checkpoint''.
+       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
+       *not* ``Leyendo un punto de comprobaci@'on'' */
+    WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
+
+  /* Clear the count of errors.  This only applies to a single call to
+     flush_read.  */
+
+  read_error_count = 0;		/* clear error count */
+
+  if (write_archive_to_stdout && record_start_block != 0)
+    {
+      archive = STDOUT_FILENO;
+      status = sys_write_archive_buffer ();
+      archive = STDIN_FILENO;
+      if (status != record_size)
+	archive_write_error (status);
+    }
+
+  multi_volume_sync ();
+
+  for (;;)
+    {
+      status = rmtread (archive, record_start->buffer, record_size);
+      if (status == record_size)
+	{
+	  records_read++;
+	  return;
+	}
+
+      /* The condition below used to include
+	      || (status > 0 && !read_full_records)
+	 This is incorrect since even if new_volume() succeeds, the
+	 subsequent call to rmtread will overwrite the chunk of data
+	 already read in the buffer, so the processing will fail */
+      if ((status == 0
+	   || (status == SAFE_READ_ERROR && errno == ENOSPC))
+	  && multi_volume_option)
+	{
+	  while (!try_new_volume ())
+	    ;
+	  return;
+	}
+      else if (status == SAFE_READ_ERROR)
+	{
+	  archive_read_error ();
+	  continue; 
+	}
+      break;
+    }
+  short_read (status);
+}
+
+static void
+gnu_flush_read (void)
+{
+  flush_read = simple_flush_read; /* Avoid recursion */
+  _gnu_flush_read ();
+  flush_read = gnu_flush_read; 
+}
+
+static void
+_gnu_flush_write (void)
+{
+  ssize_t status;
+  union block *header;
+  char *copy_ptr;
+  size_t copy_size;
+  size_t bufsize;
+  
+  status = _flush_write ();
+  if (status != record_size && !multi_volume_option)
+    archive_write_error (status);
+  else
+    {
+      records_written++;
+      bytes_written += status;
+    }
+
+  if (status == record_size)
+    {
+      multi_volume_sync ();
+      return;
+    }
+
+  /* In multi-volume mode. */
+  /* ENXIO is for the UNIX PC.  */
+  if (status < 0 && errno != ENOSPC && errno != EIO && errno != ENXIO)
+    archive_write_error (status);
+
+  if (!new_volume (ACCESS_WRITE))
+    return;
+
+  xheader_destroy (&extended_header);
+  
+  increase_volume_number ();
+  if (totals_option)
+    prev_written += bytes_written;
+  bytes_written = 0;
+
+  copy_ptr = record_start->buffer + status;
+  copy_size = record_size - status;
+  /* Switch to the next buffer */
+  record_index = !record_index;
+  init_buffer ();
+  
+  if (volume_label_option)
+    add_volume_label ();
+
+  if (real_s_name)
+    add_multi_volume_header ();
+
+  header = write_extended (XGLTYPE, NULL, find_next_block ());
+  bufsize = available_space_after (header);
+  while (bufsize < copy_size)
+    {
+      memcpy (header->buffer, copy_ptr, bufsize);
+      copy_ptr += bufsize;
+      copy_size -= bufsize;
+      set_next_block_after (header + (bufsize - 1) / BLOCKSIZE);
+      header = find_next_block ();
+      bufsize = available_space_after (header);
+    }
+  memcpy (header->buffer, copy_ptr, copy_size);
+  memset (header->buffer + copy_size, 0, bufsize - copy_size);
+  set_next_block_after (header + (copy_size - 1) / BLOCKSIZE);
+  find_next_block ();
+}
+
+static void
+gnu_flush_write (void)
+{
+  flush_write = simple_flush_write; /* Avoid recursion */
+  _gnu_flush_write ();
+  flush_write = gnu_flush_write; 
+}
+  
+void
+open_archive (enum access_mode wanted_access)
+{
+  flush_read = gnu_flush_read;
+  flush_write = gnu_flush_write;
+
+  _open_archive (wanted_access);
+  switch (wanted_access)
+    {
+    case ACCESS_READ:
+      if (volume_label_option)
+	match_volume_label ();
+      break;
+
+    case ACCESS_WRITE:
+      records_written = 0;
+      if (volume_label_option)
+	write_volume_label ();
+      break;
+    }
 }
