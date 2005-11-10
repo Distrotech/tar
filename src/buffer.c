@@ -1028,7 +1028,7 @@ try_new_volume ()
   size_t status;
   enum read_header rc;
   union block *block;
-  
+
   switch (subcommand_option)
     {
     case APPEND_SUBCOMMAND:
@@ -1099,8 +1099,8 @@ try_new_volume ()
   if (real_s_name)
     {
       uintmax_t s;
-      if (continued_file_name 
-	  && strcmp (continued_file_name, real_s_name))
+      if (!continued_file_name 
+	  || strcmp (continued_file_name, real_s_name))
 	{
 	  WARN ((0, 0, _("%s is not continued on this volume"),
 		 quote (real_s_name)));
@@ -1269,6 +1269,7 @@ add_multi_volume_header (void)
   if (archive_format == POSIX_FORMAT)
     {
       off_t d = real_s_totsize - real_s_sizeleft;
+      xheader_store ("GNU.volume.filename", NULL, real_s_name);
       xheader_store ("GNU.volume.size", NULL, &real_s_sizeleft);
       xheader_store ("GNU.volume.offset", NULL, &d);
     }
