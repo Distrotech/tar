@@ -1,3 +1,23 @@
+2005-11-10  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Fix splitting of sparse files between the volumes.
+	
+	* src/buffer.c (try_new_volume): Bugfix. Always check
+	continued_file_name. If it is absent, the volume is out
+	of sync.
+	(add_multi_volume_header): Create GNU.volume.filename keyword in
+	the extended header.
+	* src/sparse.c (sparse_dump_region): Call mv_size_left.
+	(sparse_dump_file): Enclose the loop in mv_begin/mv_end.
+	* src/system.c: Do not pad compressed output if it goes to
+	stdout.
+	* src/xheader.c (xhdr_tab): New keyword GNU.volume.filename.
+
+	* tests/sparsemv.at: New testcase
+	* tests/sparsemvp.at: New testcase
+	* tests/Makefile.am: Add sparsemv.at and sparsemvp.at.
+	* tests/testsuite.at: Likewise.
+
 2005-11-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c: Rewritten in a more modular fashion to provide
