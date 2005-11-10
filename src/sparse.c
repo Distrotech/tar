@@ -324,6 +324,7 @@ sparse_dump_region (struct tar_sparse_file *file, size_t i)
       memset (blk->buffer + bytes_read, 0, BLOCKSIZE - bytes_read);
       bytes_left -= bytes_read;
       file->dumped_size += bytes_read;
+      mv_size_left (file->stat_info->archive_file_size - file->dumped_size);
       set_next_block_after (blk);
     }
 
@@ -397,8 +398,10 @@ sparse_dump_file (int fd, struct tar_stat_info *st)
 	{
 	  size_t i;
 
+	  mv_begin (file.stat_info);
 	  for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
 	    rc = tar_sparse_dump_region (&file, i);
+	  mv_end ();
 	}
     }
 
