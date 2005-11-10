@@ -1317,7 +1317,7 @@ volume_size_decoder (struct tar_stat_info *st, char const *arg, size_t size)
 /* FIXME: Merge with volume_size_coder */
 static void
 volume_offset_coder (struct tar_stat_info const *st, char const *keyword,
-		   struct xheader *xhdr, void const *data)
+		     struct xheader *xhdr, void const *data)
 {
   off_t v = *(off_t*)data;
   code_num (v, keyword, xhdr);
@@ -1330,6 +1330,14 @@ volume_offset_decoder (struct tar_stat_info *st, char const *arg, size_t size)
   if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), "GNU.volume.offset"))
     continued_file_offset = u;
 }
+
+static void
+volume_filename_decoder (struct tar_stat_info *st, char const *arg,
+			 size_t size)
+{
+  decode_string (&continued_file_name, arg);
+}
+  
 
 struct xhdr_tab const xhdr_tab[] = {
   { "atime",	atime_coder,	atime_decoder,	  false },
@@ -1374,8 +1382,10 @@ struct xhdr_tab const xhdr_tab[] = {
      otherwise kept in the size field of a multivolume header.  The
      GNU.volume.offset keeps the offset of the start of this volume,
      otherwise kept in oldgnu_header.offset.  */
-  { "GNU.volume.size", volume_size_coder, volume_size_decoder, false },
-  { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder, false },
+  { "GNU.volume.filename", volume_label_coder, volume_filename_decoder,
+    true },
+  { "GNU.volume.size", volume_size_coder, volume_size_decoder, true },
+  { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder, true },
 
   { NULL, NULL, NULL, false }
 };
