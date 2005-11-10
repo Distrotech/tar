@@ -332,12 +332,10 @@ sys_child_open_for_compress (void)
   xclose (parent_pipe[PWRITE]);
 
   /* Check if we need a grandchild tar.  This happens only if either:
-     a) we are writing stdout: to force reblocking;
-     b) the file is to be accessed by rmt: compressor doesn't know how;
-     c) the file is not a plain file.  */
+     a) the file is to be accessed by rmt: compressor doesn't know how;
+     b) the file is not a plain file.  */
 
-  if (strcmp (archive_name_array[0], "-") != 0
-      && !_remdev (archive_name_array[0])
+  if (!_remdev (archive_name_array[0])
       && is_regular_file (archive_name_array[0]))
     {
       if (backup_option)
@@ -345,20 +343,21 @@ sys_child_open_for_compress (void)
 
       /* We don't need a grandchild tar.  Open the archive and launch the
 	 compressor.  */
-
-      archive = creat (archive_name_array[0], MODE_RW);
-      if (archive < 0)
+      if (strcmp (archive_name_array[0], "-"))
 	{
-	  int saved_errno = errno;
-
-	  if (backup_option)
-	    undo_last_backup ();
-	  errno = saved_errno;
-	  open_fatal (archive_name_array[0]);
+	  archive = creat (archive_name_array[0], MODE_RW);
+	  if (archive < 0)
+	    {
+	      int saved_errno = errno;
+	      
+	      if (backup_option)
+		undo_last_backup ();
+	      errno = saved_errno;
+	      open_fatal (archive_name_array[0]);
+	    }
+	  xdup2 (archive, STDOUT_FILENO);
 	}
-      xdup2 (archive, STDOUT_FILENO);
-      execlp (use_compress_program_option, use_compress_program_option,
-	      (char *) 0);
+      execlp (use_compress_program_option, use_compress_program_option, NULL);
       exec_fatal (use_compress_program_option);
     }
 
