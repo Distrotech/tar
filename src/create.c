@@ -577,17 +577,27 @@ write_long_name (struct tar_stat_info *st)
 }
 
 union block *
-write_extended (char type, struct tar_stat_info *st, union block *old_header)
+write_extended (bool global, struct tar_stat_info *st, union block *old_header)
 {
   union block *header, hp;
   char *p;
-
+  int type;
+  
   if (extended_header.buffer || extended_header.stk == NULL)
     return old_header;
 
   xheader_finish (&extended_header);
   memcpy (hp.buffer, old_header, sizeof (hp));
-  p = xheader_xhdr_name (st);
+  if (global)
+    {
+      type = XGLTYPE;
+      p = xheader_ghdr_name ();
+    }
+  else
+    {
+      type = XHDTYPE;
+      p = xheader_xhdr_name (st);
+    }
   xheader_write (type, p, &extended_header);
   free (p);
   header = find_next_block ();
@@ -852,7 +862,7 @@ finish_header (struct tar_stat_info *st,
       print_header (st, block_ordinal);
     }
 
-  header = write_extended (XHDTYPE, st, header);
+  header = write_extended (false, st, header);
   simple_finish_header (header);
 }
 
