@@ -29,20 +29,20 @@ AT_TAR_CHECK([
 genfile --sparse --file sparsefile 0 ABCDEFGHIJK 1M ABCDEFGHI || AT_SKIP_TEST
 echo "Pass 1: Split between data blocks"
 echo "Create archive"
-tar --sparse -c --record-size=512 -M -L7 -f arc.1 -f arc.2  sparsefile
+tar --sparse -c --record-size=512 -M -L7 -f arc.1 -f arc.2 -f arc.3 sparsefile 
 echo "Test archive"
-tar -t -M -f arc.1 -f arc.2 
+tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
-tar -d -M -f arc.1 -f arc.2
+tar -d -M -f arc.1 -f arc.2 -f arc.3
 
 echo "Pass 2: Split within a data block"
 genfile --sparse --file sparsefile 0 ABCDEFGHIJKL 1M ABCDEFG || AT_SKIP_TEST
 echo "Create archive"
-tar --sparse -c --record-size=512 -M -L7 -f arc.1 -f arc.2  sparsefile
+tar --sparse -c --record-size=512 -M -L7 -f arc.1 -f arc.2 -f arc.3 sparsefile 
 echo "Test archive"
-tar -t -M -f arc.1 -f arc.2 
+tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
-tar -d -M -f arc.1 -f arc.2
+tar -d -M -f arc.1 -f arc.2 -f arc.3
 ],
 [0],
 [Pass 1: Split between data blocks
