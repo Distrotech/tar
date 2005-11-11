@@ -84,6 +84,9 @@ extern bool time_to_start_writing;
 
 bool write_archive_to_stdout;
 
+void (*flush_write_ptr) (size_t);
+void (*flush_read_ptr) (void);
+
 
 char *volume_label;
 char *continued_file_name;
@@ -674,6 +677,7 @@ _flush_read (void)
 void
 flush_archive (void)
 {
+  size_t buffer_level = current_block->buffer - record_start->buffer;
   record_start_block += record_end - record_start;
   current_block = record_start;
   record_end = record_start + blocking_factor;
@@ -692,7 +696,7 @@ flush_archive (void)
       break;
 
     case ACCESS_WRITE:
-      flush_write ();
+      flush_write_ptr (buffer_level);
       break;
 
     case ACCESS_UPDATE:
@@ -784,7 +788,11 @@ void
 close_archive (void)
 {
   if (time_to_start_writing || access_mode == ACCESS_WRITE)
-    flush_archive ();
+    {
+      flush_archive ();
+      if (current_block > record_start)
+	flush_archive ();
+    }
 
   sys_drain_input_pipe ();
 
@@ -1021,13 +1029,26 @@ new_volume (enum access_mode mode)
 
   return true;
 }
-      
+
+static bool
+read_header0 ()
+{
+  enum read_header rc = read_header (false);
+
+  if (rc == HEADER_SUCCESS)
+    {
+      set_next_block_after (current_header);
+      return true;
+    }
+  ERROR ((0, 0, _("This does not look like a tar archive")));
+  return false;
+}
+
 bool
 try_new_volume ()
 {
   size_t status;
-  enum read_header rc;
-  union block *block;
+  union block *header;
 
   switch (subcommand_option)
     {
@@ -1051,49 +1072,51 @@ try_new_volume ()
   if (status != record_size)
     short_read (status);
 
- again:
-  block = current_block;
-  rc = read_header (true);
-  switch (rc)
+  header = find_next_block ();
+  if (!header)
+    return false;
+  switch (header->header.typeflag)
     {
-    case HEADER_SUCCESS_EXTENDED:
-      if (current_header->header.typeflag == XGLTYPE)
-	{
-	  struct tar_stat_info dummy;
-	  xheader_read (current_header,
-			OFF_FROM_HEADER (current_header->header.size));
-	  xheader_decode_global ();
-	  xheader_destroy (&extended_header);
-	  tar_stat_init (&dummy);
-	  xheader_decode (&dummy); /* decodes values from the global header */
-	  tar_stat_destroy (&dummy);
-	}
+    case XGLTYPE:
+      {
+	struct tar_stat_info dummy;
+	if (!read_header0 ())
+	  return false;
+	tar_stat_init (&dummy);
+	xheader_decode (&dummy); /* decodes values from the global header */
+	tar_stat_destroy (&dummy);
+	if (!real_s_name)
+	  {
+	    /* We have read the extended header of the first member in
+	       this volume. Put it back, so next read_header works as
+	       expected. */
+	    current_block = record_start;
+	  }
+	break;
+      }
+      
+    case GNUTYPE_VOLHDR:
+      if (!read_header0 ())
+	return false;
+      assign_string (&volume_label, current_header->header.name);
+      set_next_block_after (header);
+      header = find_next_block ();
+      if (header->header.typeflag != GNUTYPE_MULTIVOL)
+	break;
+      /* FALL THROUGH */
+      
+    case GNUTYPE_MULTIVOL:
+      if (!read_header0 ())
+	return false;
+      assign_string (&continued_file_name, current_header->header.name);
+      continued_file_size =
+	UINTMAX_FROM_HEADER (current_header->header.size);
+      continued_file_offset =
+	UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
       break;
       
-    case HEADER_SUCCESS:
-      if (current_header->header.typeflag == GNUTYPE_VOLHDR)
-	assign_string (&volume_label, current_header->header.name);
-      else if (current_header->header.typeflag == GNUTYPE_MULTIVOL)
-	{
-	  assign_string (&continued_file_name, current_header->header.name);
-	  continued_file_size =
-	       UINTMAX_FROM_HEADER (current_header->header.size);
-	  continued_file_offset =
-	       UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
-	}
-      else
-	break;
-      set_next_block_after (current_header);
-      goto again;
-
-    case HEADER_ZERO_BLOCK:
-    case HEADER_END_OF_FILE:
-    case HEADER_FAILURE:
-      current_block = block;
-      break;
-
     default:
-      abort ();
+      break;
     }
 
   if (real_s_name)
@@ -1218,6 +1241,38 @@ add_volume_label (void)
   _write_volume_label (s);
   free (s);
 }
+
+static void
+add_chunk_header ()
+{
+  if (archive_format == POSIX_FORMAT)
+    {
+      off_t block_ordinal;
+      union block *blk;
+      struct tar_stat_info st;
+      static size_t real_s_part_no; /* FIXME */
+
+      real_s_part_no++;
+      memset (&st, 0, sizeof st);
+      st.orig_file_name = st.file_name = real_s_name;
+      st.stat.st_mode = S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH;
+      st.stat.st_uid = getuid ();
+      st.stat.st_gid = getgid ();
+      st.orig_file_name = xheader_format_name (&st,
+					       "%d/GNUFileParts.%p/%f.%n",
+					       real_s_part_no);
+      st.file_name = st.orig_file_name;
+      st.archive_file_size = st.stat.st_size = real_s_sizeleft;
+      
+      block_ordinal = current_block_ordinal ();
+      blk = start_header (&st);
+      free (st.orig_file_name);
+      if (!blk)
+	abort (); /* FIXME */
+      finish_header (&st, blk, block_ordinal);
+    }
+}
+
 
 /* Add a volume label to the current archive */
 static void
@@ -1350,7 +1405,7 @@ simple_flush_read (void)
 
 /* Simple flush write (no multi-volume or label extensions) */
 static void
-simple_flush_write (void)
+simple_flush_write (size_t level __attribute__((unused)))
 {
   ssize_t status;
 
@@ -1431,20 +1486,20 @@ _gnu_flush_read (void)
 static void
 gnu_flush_read (void)
 {
-  flush_read = simple_flush_read; /* Avoid recursion */
+  flush_read_ptr = simple_flush_read; /* Avoid recursion */
   _gnu_flush_read ();
-  flush_read = gnu_flush_read; 
+  flush_read_ptr = gnu_flush_read; 
 }
 
 static void
-_gnu_flush_write (void)
+_gnu_flush_write (size_t buffer_level)
 {
   ssize_t status;
   union block *header;
   char *copy_ptr;
   size_t copy_size;
   size_t bufsize;
-  
+
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
@@ -1476,7 +1531,7 @@ _gnu_flush_write (void)
   bytes_written = 0;
 
   copy_ptr = record_start->buffer + status;
-  copy_size = record_size - status;
+  copy_size = buffer_level - status;
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();
@@ -1487,7 +1542,10 @@ _gnu_flush_write (void)
   if (real_s_name)
     add_multi_volume_header ();
 
-  header = write_extended (XGLTYPE, NULL, find_next_block ());
+  write_extended (true, NULL, find_next_block ());
+  if (real_s_name)
+    add_chunk_header ();
+  header = find_next_block ();
   bufsize = available_space_after (header);
   while (bufsize < copy_size)
     {
@@ -1505,18 +1563,30 @@ _gnu_flush_write (void)
 }
 
 static void
-gnu_flush_write (void)
+gnu_flush_write (size_t buffer_level)
 {
-  flush_write = simple_flush_write; /* Avoid recursion */
-  _gnu_flush_write ();
-  flush_write = gnu_flush_write; 
+  flush_write_ptr = simple_flush_write; /* Avoid recursion */
+  _gnu_flush_write (buffer_level);
+  flush_write_ptr = gnu_flush_write; 
 }
-  
+
+void
+flush_read ()
+{
+  flush_read_ptr ();
+}
+
+void
+flush_write ()
+{
+  flush_write_ptr (record_size);
+}    
+
 void
 open_archive (enum access_mode wanted_access)
 {
-  flush_read = gnu_flush_read;
-  flush_write = gnu_flush_write;
+  flush_read_ptr = gnu_flush_read;
+  flush_write_ptr = gnu_flush_write;
 
   _open_archive (wanted_access);
   switch (wanted_access)
@@ -1533,3 +1603,4 @@ open_archive (enum access_mode wanted_access)
       break;
     }
 }
+
