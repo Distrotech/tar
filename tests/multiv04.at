@@ -41,6 +41,8 @@ AT_TAR_CHECK([
 mkdir directory
 awk 'BEGIN { for (i = 0; i < 1024; i++) printf("genfile -f directory/%014X\n", i); }' </dev/null | sh
 
+exec <&-
+
 sleep 2
 
 tar --listed-incremental=list -c -f archive.a directory

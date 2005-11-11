@@ -29,6 +29,7 @@ AT_KEYWORDS([sparse multiv sparsemv])
 #
 
 AT_TAR_CHECK([
+exec <&-
 genfile --sparse --file sparsefile 0 ABCDEFGHIJ 1M ABCDEFGHI || AT_SKIP_TEST
 echo "Pass 1: Split between data blocks"
 echo "Create archive"

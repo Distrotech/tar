@@ -34,6 +34,8 @@ genfile --length 20000 > to
 genfile --length 20000 > tre
 genfile --length 10240 > fire
 
+exec <&-
+
 tar -c -f A.tar -f B.tar -f C.tar -M -L 30 en to tre fire || exit 1
 echo separator
 tar -v -x -f A.tar -f B.tar -f C.tar -M en || exit 1

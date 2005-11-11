@@ -28,6 +28,7 @@ AT_KEYWORDS([multivolume multiv multiv01])
 #  TRUSS=strace
 
 AT_TAR_CHECK([
+exec <&-
 genfile --length 7168 > file1
 
 for block in " 1" " 2" " 3" " 4" " 5" " 6" " 7" " 8" \

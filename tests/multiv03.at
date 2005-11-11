@@ -43,6 +43,8 @@ EOF
 
 genfile --length 15360 > $AFILE
 
+exec <&-
+
 tar -M -L 10 -c -f arch.1 -f arch.2 $AFILE || exit 1
 tar -tM -f arch.1 -f arch.2 || exit 1
 

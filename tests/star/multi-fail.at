@@ -28,7 +28,7 @@ AT_STAR_PREREQ([gnu-multi-fail-volume1.gtar])
 AT_STAR_PREREQ([gnu-multi-fail-volume2.gtar])
 
 tar --utc -tvM -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume1.gtar \
-               -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume2.gtar </dev/null
+               -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume2.gtar <&-
 ],
 [0],
 [drwxrwsr-x joerg/bs          0 2003-10-11 14:32 OBJ/i386-sunos5-gcc/
