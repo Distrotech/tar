@@ -225,10 +225,11 @@ xheader_set_option (char *string)
                               to the result of the basename
                               utility on the translated file name.
      %p                       The process ID of the pax process.
+     %n                       The value of the 3rd argument.  
      %%                       A '%' character. */
 
-static char *
-xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
+char *
+xheader_format_name (struct tar_stat_info *st, const char *fmt, size_t n)
 {
   char *buf;
   size_t len = strlen (fmt);
@@ -254,7 +255,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	    {
 	      dir = safer_name_suffix (dir_name (st->orig_file_name),
 	                               false, absolute_names_option);
-	      len += strlen (dir) - 1;
+	      len += strlen (dir) - 2;
 	    }
 	  break;
 
@@ -262,21 +263,18 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 	  if (st)
 	    {
 	      base = base_name (st->orig_file_name);
-	      len += strlen (base) - 1;
+	      len += strlen (base) - 2;
 	    }
 	  break;
 
 	case 'p':
 	  pptr = umaxtostr (getpid (), pidbuf);
-	  len += pidbuf + sizeof pidbuf - 1 - pptr - 1;
+	  len += pidbuf + sizeof pidbuf - 1 - pptr - 2;
 	  break;
 
 	case 'n':
-	  if (allow_n)
-	    {
-	      nptr = umaxtostr (global_header_count + 1, nbuf);
-	      len += nbuf + sizeof nbuf - 1 - nptr - 1;
-	    }
+	  nptr = umaxtostr (n, nbuf);
+	  len += nbuf + sizeof nbuf - 1 - nptr - 2;
 	  break;
 	}
       p++;
@@ -316,6 +314,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, bool allow_n)
 		{
 		  q = stpcpy (q, nptr);
 		  p += 2;
+		  break;
 		}
 	      /* else fall through */
 
@@ -341,7 +340,7 @@ xheader_xhdr_name (struct tar_stat_info *st)
 {
   if (!exthdr_name)
     assign_string (&exthdr_name, "%d/PaxHeaders.%p/%f");
-  return xheader_format_name (st, exthdr_name, false);
+  return xheader_format_name (st, exthdr_name, 0);
 }
 
 #define GLOBAL_HEADER_TEMPLATE "/GlobalHead.%p.%n"
@@ -361,7 +360,7 @@ xheader_ghdr_name (void)
       strcat(globexthdr_name, GLOBAL_HEADER_TEMPLATE);
     }
 
-  return xheader_format_name (NULL, globexthdr_name, true);
+  return xheader_format_name (NULL, globexthdr_name, global_header_count + 1);
 }
 
 void
@@ -396,6 +395,9 @@ xheader_write (char type, char *name, struct xheader *xhdr)
     }
   while (size > 0);
   xheader_destroy (xhdr);
+
+  if (type == XGLTYPE)
+    global_header_count++;
 }
 
 void
@@ -414,7 +416,6 @@ xheader_write_global (void)
   xheader_write (XGLTYPE, name = xheader_ghdr_name (),
 		 &extended_header);
   free (name);
-  global_header_count++;
 }
 
 
