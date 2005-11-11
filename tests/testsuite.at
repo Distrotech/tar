@@ -27,6 +27,8 @@ m4_define([AT_TAR_CHECK],[
              [AT_CHECK([
 mkdir FMT
 (cd FMT
+TEST_TAR_FORMAT=FMT
+export TEST_TAR_FORMAT
 TAR_OPTIONS="-H FMT"
 export TAR_OPTIONS
 rm -rf *
