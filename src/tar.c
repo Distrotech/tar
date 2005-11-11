@@ -42,6 +42,7 @@
 #include <prepargs.h>
 #include <quotearg.h>
 #include <xstrtol.h>
+#include <stdopen.h>
 
 /* Local declarations.  */
 
@@ -74,12 +75,15 @@ request_stdin (const char *option)
   stdin_used_by = option;
 }
 
-/* Returns true if and only if the user typed 'y' or 'Y'.  */
+extern int rpmatch (char const *response);
+
+/* Returns true if and only if the user typed an affirmative response.  */
 int
 confirm (const char *message_action, const char *message_name)
 {
   static FILE *confirm_file;
   static int confirm_file_EOF;
+  bool status = false;
 
   if (!confirm_file)
     {
@@ -99,22 +103,24 @@ confirm (const char *message_action, const char *message_name)
   fprintf (stdlis, "%s %s?", message_action, quote (message_name));
   fflush (stdlis);
 
-  {
-    int reply = confirm_file_EOF ? EOF : getc (confirm_file);
-    int character;
+  if (!confirm_file_EOF)
+    {
+      char *response = NULL;
+      size_t response_size = 0;
+      if (getline (&response, &response_size, confirm_file) < 0)
+	confirm_file_EOF = 1;
+      else
+	status = rpmatch (response) > 0;
+      free (response);
+    }
+  
+  if (confirm_file_EOF)
+    {
+      fputc ('\n', stdlis);
+      fflush (stdlis);
+    }
 
-    for (character = reply;
-	 character != '\n';
-	 character = getc (confirm_file))
-      if (character == EOF)
-	{
-	  confirm_file_EOF = 1;
-	  fputc ('\n', stdlis);
-	  fflush (stdlis);
-	  break;
-	}
-    return reply == 'y' || reply == 'Y';
-  }
+  return status;
 }
 
 static struct fmttab {
@@ -130,7 +136,7 @@ static struct fmttab {
 #endif
   { "gnu",     GNU_FORMAT },
   { "pax",     POSIX_FORMAT }, /* An alias for posix */
-  { NULL,	 0 }
+  { NULL,      0 }
 };
 
 static void
@@ -170,13 +176,6 @@ assert_format(unsigned fmt_mask)
 
 
 /* Options.  */
-
-/* For long options that unconditionally set a single flag, we have getopt
-   do it.  For the others, we share the code for the equivalent short
-   named option, the name of which is stored in the otherwise-unused `val'
-   field of the `struct option'; for long options that have no equivalent
-   short option, we use non-characters as pseudo short options,
-   starting at CHAR_MAX + 1 and going upwards.  */
 
 enum
 {
@@ -265,9 +264,10 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    Available option letters are DEIJQY and aeqy. Consider the following
    assignments:
 
-   [For Solaris tar compatibility]
+   [For Solaris tar compatibility =/= Is it important at all?]
    e  exit immediately with a nonzero exit status if unexpected errors occur
    E  use extended headers (--format=posix)
+   
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
    [I  same as T =/= will harm star compatibility]
 
@@ -1667,24 +1667,10 @@ decode_options (int argc, char **argv)
 	archive_format = DEFAULT_ARCHIVE_FORMAT;
     }
 
-  /* FIXME: Merge the four conditionals below */
-  if (volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
-    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
-		   | FORMAT_MASK (GNU_FORMAT)
-		   | FORMAT_MASK (POSIX_FORMAT));
-
-
-  if (incremental_option)
-    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
-		   | FORMAT_MASK (GNU_FORMAT)
-		   | FORMAT_MASK (POSIX_FORMAT));
-
-  if (multi_volume_option)
-    assert_format (FORMAT_MASK (OLDGNU_FORMAT)
-		   | FORMAT_MASK (GNU_FORMAT)
-		   | FORMAT_MASK (POSIX_FORMAT));
-
-  if (sparse_option)
+  if ((volume_label_option && subcommand_option == CREATE_SUBCOMMAND)
+      || incremental_option
+      || multi_volume_option
+      || sparse_option)
     assert_format (FORMAT_MASK (OLDGNU_FORMAT)
 		   | FORMAT_MASK (GNU_FORMAT)
 		   | FORMAT_MASK (POSIX_FORMAT));
@@ -1738,22 +1724,27 @@ decode_options (int argc, char **argv)
 
   if (volume_label_option)
     {
-      size_t volume_label_max_len =
-	(sizeof current_header->header.name
-	 - 1 /* for trailing '\0' */
-	 - (multi_volume_option
-	    ? (sizeof " Volume "
-	       - 1 /* for null at end of " Volume " */
-	       + INT_STRLEN_BOUND (int) /* for volume number */
-	       - 1 /* for sign, as 0 <= volno */)
-	    : 0));
-      if (volume_label_max_len < strlen (volume_label_option))
-	USAGE_ERROR ((0, 0,
-		      ngettext ("%s: Volume label is too long (limit is %lu byte)",
-				"%s: Volume label is too long (limit is %lu bytes)",
-				volume_label_max_len),
-		      quotearg_colon (volume_label_option),
-		      (unsigned long) volume_label_max_len));
+      if (archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
+	{
+	  size_t volume_label_max_len =
+	    (sizeof current_header->header.name
+	     - 1 /* for trailing '\0' */
+	     - (multi_volume_option
+		? (sizeof " Volume "
+		   - 1 /* for null at end of " Volume " */
+		   + INT_STRLEN_BOUND (int) /* for volume number */
+		   - 1 /* for sign, as 0 <= volno */)
+		: 0));
+	  if (volume_label_max_len < strlen (volume_label_option))
+	    USAGE_ERROR ((0, 0,
+			  ngettext ("%s: Volume label is too long (limit is %lu byte)",
+				    "%s: Volume label is too long (limit is %lu bytes)",
+				    volume_label_max_len),
+			  quotearg_colon (volume_label_option),
+			  (unsigned long) volume_label_max_len));
+	}
+      /* else FIXME
+	 Label length in PAX format is limited by the volume size. */
     }
 
   if (verify_option)
@@ -1879,6 +1870,9 @@ main (int argc, char **argv)
   filename_terminator = '\n';
   set_quoting_style (0, escape_quoting_style);
 
+  /* Make sure we have first three descriptors available */
+  stdopen ();
+    
   /* Pre-allocate a few structures.  */
 
   allocated_archive_names = 10;
