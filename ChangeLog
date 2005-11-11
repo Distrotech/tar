@@ -1,3 +1,38 @@
+2005-11-11  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (flush_write,flush_read): Change data type.
+	(flush_archive): Compute actual buffer fill level before calling
+	low level function.
+	(close_archive): Call flush_archive again if the first call
+	resulted in partially filled buffer.
+	(try_new_volume): Rewritten handling of initial headers.
+	(add_chunk_header): New function. Write an additional header
+	before the continuation chunk. The purpose of the header is to
+	allow third-party tars to extract the member.
+	(simple_flush_write): Take an argument.
+	(_gnu_flush_write): Correctly handle partially filled buffers.
+	* src/common.h (flush_read,flush_write): Functions, again.
+	(write_extended): Changed declaration
+	(xheader_format_name): New declaration
+	* src/create.c (write_extended): Change type and meaning of
+	the first argument. All callers updated
+	* src/xheader.c (xheader_format_name): Remove static
+	qualifier. Change last argument.
+	Correct buffer size calculation (allocated too much space).
+	(xheader_write): Increase global_header_count here ...
+	(xheader_write_global): ... instead of here
+	
+	* tests/testsuite.at (AT_TAR_CHECK): Define TEST_TAR_FORMAT
+	* tests/multiv01.at: Update
+	* tests/multiv02.at: Update
+	* tests/multiv03.at: Update
+	* tests/sparsemvp.at: Update
+	* tests/star/multi-fail.at: Update
+	
+	* scripts/tarcat: Handle archives in pax format. Improve handling
+	of traditional archives.
+	* doc/tar.texi (Tarcat): New node
+	
 2005-11-10  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix splitting of sparse files between the volumes.
