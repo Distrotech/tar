@@ -30,6 +30,7 @@ lib/paxerror.c
 lib/paxexit.c
 lib/paxnames.c
 lib/quotearg.c
+lib/rpmatch.c
 lib/rtapelib.c
 lib/xalloc-die.c
 lib/xmalloc.c
