@@ -348,8 +348,8 @@ off_t current_block_ordinal (void);
 void close_archive (void);
 void closeout_volume_number (void);
 union block *find_next_block (void);
-void (*flush_read) (void);
-void (*flush_write) (void);
+void flush_read (void);
+void flush_write (void);
 void flush_archive (void);
 void init_volume_number (void);
 void open_archive (enum access_mode);
@@ -386,7 +386,7 @@ void dump_file (char *, int, dev_t);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *, union block *, off_t);
 void simple_finish_header (union block *header);
-union block * write_extended (char type, struct tar_stat_info *st,
+union block * write_extended (bool global, struct tar_stat_info *st,
 			      union block *old_header);
 union block *start_private_header (const char *name, size_t size);
 void write_eot (void);
@@ -637,6 +637,8 @@ void xheader_string_begin (void);
 void xheader_string_add (char const *s);
 void xheader_string_end (char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
+char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
+			   size_t n);
 
 /* Module system.c */
 
