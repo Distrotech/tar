@@ -28,6 +28,7 @@ obstack
 quote
 quotearg
 rmdir
+rpmatch
 safe-read
 save-cwd
 savedir

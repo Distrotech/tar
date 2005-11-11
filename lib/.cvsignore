@@ -124,6 +124,7 @@ ref-del.sed
 ref-del.sin
 rmdir.c
 rmt.h
+rpmatch.c
 rtapelib.c
 safe-read.c
 safe-read.h
