@@ -19,8 +19,8 @@
 ## 02110-1301, USA.
 
 noinst_LIBRARIES = libtar.a
-noinst_HEADERS = system.h localedir.h rmt.h paxlib.h
-libtar_a_SOURCES = prepargs.c prepargs.h rtapelib.c paxerror.c paxexit.c paxnames.c
+noinst_HEADERS = system.h localedir.h rmt.h paxlib.h stdopen.h
+libtar_a_SOURCES = prepargs.c prepargs.h rtapelib.c paxerror.c paxexit.c paxnames.c stdopen.c
 
 localedir = $(datadir)/locale
 
