@@ -1,5 +1,20 @@
 2005-11-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* gnulib.modules: Add rpmatch
+	* lib/stdopen.h, lib/stdopen.c: New file. Imported from coreutils.
+	* lib/Makefile.tmpl: Add stdopen.h, stdopen.c
+	* po/POTFILES.in: Add rpmatch.c
+	* src/tar.c (confirm): Rewritten using rpmatch.
+	(decode_options): Minor optimizations
+	(main): Call stdopen() to ensure the first three descriptors are
+	open.
+
+	* tests/multiv01.at, tests/multiv02.at, tests/multiv03.at,
+	tests/multiv04.at, tests/sparsemv.at, tests/sparsemvp.at,
+	tests/star/multi-fail.at: Close stdin so that if something fails
+	causing tar to ask for the next volume, it won't hang the
+	testsuite.
+	
 	* src/buffer.c (flush_write,flush_read): Change data type.
 	(flush_archive): Compute actual buffer fill level before calling
 	low level function.
