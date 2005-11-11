@@ -339,6 +339,7 @@ Using Multiple Tapes
 
 * Multi-Volume Archives::       Archives Longer than One Tape or Disk
 * Tape Files::                  Tape Files
+* Tarcat::                      Concatenate Volumes into a Single Archive
 
 GNU tar internals and development
 
@@ -8525,6 +8526,8 @@ $ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
 @menu
 * Multi-Volume Archives::       Archives Longer than One Tape or Disk
 * Tape Files::                  Tape Files
+* Tarcat::                      Concatenate Volumes into a Single Archive
+
 @end menu
 
 @node Multi-Volume Archives
@@ -8644,6 +8647,32 @@ People seem to often do:
 @end smallexample
 
 or such, for pushing a common date in all volumes or an archive set.
+
+@node Tarcat
+@subsection Concatenate Volumes into a Single Archive
+
+@pindex tarcat
+  Sometimes it is necessary to convert existing @GNUTAR{} multi-volume
+archive to a single @command{tar} archive.  Simply concatenating all
+volumes into one will not work, since each volume carries an additional
+information at the beginning.  @GNUTAR{} is shipped with the shell
+script @command{tarcat} designed for this purpose.
+
+  The script takes a list of files comprising a multi-volume archive
+and creates the resulting archive at the standard output.  For example:
+
+@smallexample
+@kbd{tarcat vol.1 vol.2 vol.3 | tar tf -}
+@end smallexample
+
+  The script implements a simple heuristics to determine the format of
+the first volume file and to decide how to process the rest of the
+files.  However, it makes no attempt to verify whether the files are
+given in order or even if they are valid @command{tar} archives.
+It uses @command{dd} and does not filter its standard error, so you
+will usually see lots of spurious messages. 
+
+@FIXME{The script is not installed.  Should we install it?}
 
 @node label
 @section Including a Label in the Archive
