@@ -1,3 +1,8 @@
+2005-11-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/xheader.c: Remove parts of code prematurely introduced
+	yesterday. Thanks Eric Blake.
+
 2005-11-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (xheader_format_name): Fix memory leak.
