@@ -374,17 +374,6 @@ xheader_write (char type, char *name, struct xheader *xhdr)
   size_t size;
   char *p;
 
-  if (multi_volume_option)
-    {
-      /* Estimate the total size of the extended header and, in case
-	 if XHDTYPE, the ustar header following it, and make sure that
-	 these fit into the current volume */
-      size_t hblocks = 1 + (extended_header.size + BLOCKSIZE - 1) / BLOCKSIZE;
-      if (type == XHDTYPE)
-	hblocks++;
-      multi_volume_fixup (hblocks);
-    }
-  
   size = xhdr->size;
   header = start_private_header (name, size);
   header->header.typeflag = type;
@@ -413,44 +402,6 @@ xheader_write (char type, char *name, struct xheader *xhdr)
 
   if (type == XGLTYPE)
     global_header_count++;
-}
-
-/* SIZE is guaranteed to be divisible by BLOCKSIZE */
-void
-xheader_eof (size_t size)
-{
-  union block *header;
-  char *name;
-  int first_block = 1;
-  int nl = 0;
-  
-  size -= BLOCKSIZE;
-  name = xheader_ghdr_name ();
-  header = start_private_header (name, size);
-  header->header.typeflag = XGLTYPE;
-  free (name);
-  simple_finish_header (header);
-  if (size)
-    nl = 1;
-  while (size > 0)
-    {
-      size_t len;
-
-      header = find_next_block ();
-      len = BLOCKSIZE;
-      if (len > size)
-	len = size;
-      memset (header->buffer, 0, len);
-      if (first_block)
-	{
-	  first_block = 0;
-	  sprintf (header->buffer, "%d GNU.volume.eof=", size);
-	}
-      size -= len;
-      set_next_block_after (header);
-    }
-  if (nl)
-    header->buffer[BLOCKSIZE-1] = '\n';
 }
 
 void
@@ -666,20 +617,6 @@ extended_header_init (void)
       extended_header.stk = xmalloc (sizeof *extended_header.stk);
       obstack_init (extended_header.stk);
     }
-}
-
-void
-xheader_save (struct xheader *xhdr)
-{
-  *xhdr = extended_header;
-  memset (&extended_header, 0, sizeof extended_header);
-}
-
-void
-xheader_restore (struct xheader *xhdr)
-{
-  xheader_destroy (&extended_header);
-  extended_header = *xhdr;
 }
 
 void
