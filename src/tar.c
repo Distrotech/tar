@@ -36,6 +36,7 @@
 #define GLOBAL
 #include "common.h"
 
+#include <argmatch.h>
 #include <getdate.h>
 #include <localedir.h>
 #include <rmt.h>
@@ -113,7 +114,7 @@ confirm (const char *message_action, const char *message_name)
 	status = rpmatch (response) > 0;
       free (response);
     }
-  
+
   if (confirm_file_EOF)
     {
       fputc ('\n', stdlis);
@@ -267,7 +268,7 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    [For Solaris tar compatibility =/= Is it important at all?]
    e  exit immediately with a nonzero exit status if unexpected errors occur
    E  use extended headers (--format=posix)
-   
+
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
    [I  same as T =/= will harm star compatibility]
 
@@ -357,8 +358,11 @@ static struct argp_option options[] = {
    N_("force NAME as group for added files"), 51 },
   {"mode", MODE_OPTION, N_("CHANGES"), 0,
    N_("force (symbolic) mode CHANGES for added files"), 51 },
-  {"atime-preserve", ATIME_PRESERVE_OPTION, 0, 0,
-   N_("don't change access times on dumped files"), 51 },
+  {"atime-preserve", ATIME_PRESERVE_OPTION,
+   N_("METHOD"), OPTION_ARG_OPTIONAL,
+   N_("preserve access times on dumped files, either by restoring the times"
+      " after reading (METHOD='replace'; default) or by not setting the times"
+      " in the first place (METHOD='system')"), 51 },
   {"touch", 'm', 0, 0,
    N_("don't extract file modified time"), 51 },
   {"same-owner", SAME_OWNER_OPTION, 0, 0,
@@ -577,6 +581,17 @@ static struct argp_option options[] = {
    N_("Hang for SECS seconds (default 3600)"), 0},
   {0, 0, 0, 0, 0, 0}
 };
+
+static char const *const atime_preserve_args[] =
+{
+  "replace", "system", NULL
+};
+static enum atime_preserve const atime_preserve_types[] =
+{
+  replace_atime_preserve, system_atime_preserve
+};
+ARGMATCH_VERIFY (atime_preserve_args, atime_preserve_types);
+
 
 struct tar_args {
   char const *textual_date_option;
@@ -1117,7 +1132,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case ATIME_PRESERVE_OPTION:
-      atime_preserve_option = true;
+      atime_preserve_option =
+	(arg
+	 ? XARGMATCH ("--atime-preserve", arg,
+		      atime_preserve_args, atime_preserve_types)
+	 : replace_atime_preserve);
+      if (! O_NOATIME && atime_preserve_option == system_atime_preserve)
+	FATAL_ERROR ((0, 0,
+		      _("--atime-preserve='system' is not supported"
+			" on this platform\n")));
       break;
 
     case CHECKPOINT_OPTION:
@@ -1872,7 +1895,7 @@ main (int argc, char **argv)
 
   /* Make sure we have first three descriptors available */
   stdopen ();
-    
+
   /* Pre-allocate a few structures.  */
 
   allocated_archive_names = 10;

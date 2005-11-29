@@ -22,7 +22,9 @@
 @set xref-append @xref{add}
 @set pxref-append @pxref{add}
 
-@set op-atime-preserve @option{--atime-preserve}
+@set op-atime-preserve @option{--atime-preserve[=METHOD]}
+@set op-atime-preserve-replace @option{--atime-preserve=replace}
+@set op-atime-preserve-system @option{--atime-preserve=system}
 @set ref-atime-preserve @ref{Attributes}
 @set xref-atime-preserve @xref{Attributes}
 @set pxref-atime-preserve @pxref{Attributes}
@@ -174,7 +176,7 @@
 @set xref-keep-old-files @xref{Keep Old Files}
 @set pxref-keep-old-files @pxref{Keep Old Files}
 
-@set op-keep-newer-files @option{--keep-old-files} 
+@set op-keep-newer-files @option{--keep-old-files}
 @set ref-keep-newer-files @ref{Keep Newer Files}
 @set xref-keep-newer-files @xref{Keep Newer Files}
 @set pxref-keep-newer-files @pxref{Keep Newer Files}
@@ -232,7 +234,7 @@
 @set xref-numeric-owner @xref{Attributes}
 @set pxref-numeric-owner @pxref{Attributes}
 
-@set op-occurrence @option{--occurrence} 
+@set op-occurrence @option{--occurrence}
 @set ref-occurrence @ref{--occurrence}
 @set xref-occurrence @xref{--occurrence}
 @set pxref-occurrence @pxref{--occurrence}
@@ -334,7 +336,7 @@
 @set xref-starting-file @xref{Scarce}
 @set pxref-starting-file @pxref{Scarce}
 
-@set op-strip-components @option{--strip-components} 
+@set op-strip-components @option{--strip-components}
 @set ref-strip-components @ref{--strip-components}
 @set xref-strip-components @xref{--strip-components}
 @set pxref-strip-components @pxref{--strip-components}

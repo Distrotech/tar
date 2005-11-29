@@ -227,7 +227,7 @@ Changing How @command{tar} Writes Files
 * Keep Newer Files::
 * Unlink First::
 * Recursive Unlink::
-* Modification Times::
+* Data Modification Times::
 * Setting Access Permissions::
 * Writing to Standard Output::
 * remove files::
@@ -262,7 +262,7 @@ Choosing Files and Names for @command{tar}
 * Wildcards::
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
-* one::                         Crossing Filesystem Boundaries
+* one::                         Crossing File System Boundaries
 
 Reading Names from a File
 
@@ -273,7 +273,7 @@ Excluding Some Files
 * controlling pattern-patching with exclude::
 * problems with exclude::
 
-Crossing Filesystem Boundaries
+Crossing File System Boundaries
 
 * directory::                   Changing Directory
 * absolute::                    Absolute File Names
@@ -427,7 +427,7 @@ The @command{tar} program is used to create and manipulate @command{tar}
 archives.  An @dfn{archive} is a single file which contains the contents
 of many files, while still identifying the names of the files, their
 owner(s), and so forth.  (In addition, archives record access
-permissions, user and group, size in bytes, and last modification time.
+permissions, user and group, size in bytes, and data modification time.
 Some archives also record the file names in each archived directory, as
 well as other file and directory information.)  You can use @command{tar}
 to @dfn{create} a new archive in a specified directory.
@@ -440,14 +440,14 @@ The files inside an archive are called @dfn{members}.  Within this
 manual, we use the term @dfn{file} to refer only to files accessible in
 the normal ways (by @command{ls}, @command{cat}, and so forth), and the term
 @dfn{member} to refer only to the members of an archive.  Similarly, a
-@dfn{file name} is the name of a file, as it resides in the filesystem,
+@dfn{file name} is the name of a file, as it resides in the file system,
 and a @dfn{member name} is the name of an archive member within the
 archive.
 
 @cindex extraction
 @cindex unpacking
 The term @dfn{extraction} refers to the process of copying an archive
-member (or multiple members) into a file in the filesystem.  Extracting
+member (or multiple members) into a file in the file system.  Extracting
 all the members of an archive is often called @dfn{extracting the
 archive}.  The term @dfn{unpack} can also be used to refer to the
 extraction of many or all the members of an archive.  Extracting an
@@ -511,7 +511,7 @@ projects) together on a disk or a tape.  This guards against
 accidental destruction of the information in those files.
 @GNUTAR{} has special features that allow it to be
 used to make incremental and full dumps of all the files in a
-filesystem.
+file system.
 
 @item Transportation
 You can create an archive on one system, transfer it to another system,
@@ -692,7 +692,7 @@ about how Unix-type operating systems work, and you should know how to
 use some basic utilities.  For example, you should know how to create,
 list, copy, rename, edit, and delete files and directories; how to
 change between directories; and how to figure out where you are in the
-filesystem.  You should have some basic understanding of directory
+file system.  You should have some basic understanding of directory
 structure and how files are named according to which directory they are
 in.  You should understand concepts such as standard output and standard
 input, what various definitions of the term ``argument'' mean, and the
@@ -1473,7 +1473,7 @@ earlier (say, @file{blues}), you can extract it from the archive without
 changing the archive's structure.  It will be identical to the original
 file @file{blues} that you deleted.  @FIXME{At the time of this
 writing, atime and ctime are not restored.  Since this is a tutorial
-for a beginnig user, it should hardly be mentioned here.  Maybe in
+for a beginning user, it should hardly be mentioned here.  Maybe in
 a footnote?  --gray}.
 
 First, make sure you are in the @file{practice} directory, and list the
@@ -1489,7 +1489,7 @@ $ @kbd{tar --extract --file=collection.tar blues}
 
 @noindent
 If you list the files in the directory again, you will see that the file
-@file{blues} has been restored, with its original permissions, creation
+@file{blues} has been restored, with its original permissions, data modification
 times, and owner.@FIXME{This is only accidentally true, but not in
 general.  In most cases, one has to be root for restoring the owner, and
 use a special option for restoring permissions.  Here, it just happens
@@ -1735,7 +1735,7 @@ option).  @value{xref-absolute-names}, for more information about
 If you give the name of a directory as either a file name or a member
 name, then @command{tar} acts recursively on all the files and directories
 beneath that directory.  For example, the name @file{/} identifies all
-the files in the filesystem to @command{tar}.
+the files in the file system to @command{tar}.
 
 The distinction between file names and archive member names is especially
 important when shell globbing is used, and sometimes a source of confusion
@@ -2214,16 +2214,51 @@ An exclude pattern must match an initial subsequence of the name's components.
 @FIXME-xref{}
 
 @item --atime-preserve
+@itemx --atime-preserve=replace
+@itemx --atime-preserve=system
 
-Tells @command{tar} to preserve the access time field in a file's inode when
-reading it.  Due to limitations in the @code{utimes} system call, the
-modification time field is also preserved, which may cause problems if
-the file is simultaneously being modified by another program.
-This option is incompatible with incremental backups, because
-preserving the access time involves updating the last-changed time.
-Also, this option does not work on files that you do not own,
-unless you're root.
-@FIXME-xref{}
+Attempt to preserve the access time of files when reading them.  This
+option currently is effective only on files that you own, unless you
+have superuser privileges.
+
+Though this option should work on recent Linux kernel versions, it is
+not reliable on other platforms.  To preserve the access time reliably
+on those platforms, you can mount the file system read-only, or access
+the file system via a read-only loopback mount, or use the
+@samp{noatime} mount option available on some systems.  However,
+mounting typically requires superuser privileges and can be a pain to
+manage, so the @option{--atime-preserve} option can be useful despite
+its glitches on other platforms.
+
+@value{op-atime-preserve-replace} remembers the access time of a file
+before reading it, and then restores the access time afterwards.  This
+may cause problems if other programs are reading the file at the same
+time, as the times of their accesses will be lost.  On most platforms
+restoring the access time also requires @command{tar} to restore the
+data modification time too, so this option may also cause problems if
+other programs are writing the file at the same time.  (Tar attempts
+to detect this situation, but cannot do so reliably due to race
+conditions.)  Worse, on most platforms restoring the access time also
+updates the status change time, which means that this option is
+incompatible with incremental backups.
+
+@value{op-atime-preserve-system} avoids changing time stamps on files
+other than directories, without interfering with time stamp updates
+caused by other programs, so it works better with incremental backups.
+However, it requires a special @code{O_NOATIME} option from the
+underlying operating and file system implementation, and it requires
+that searching directories does not update their access times.  As of
+this writing (November 2005) this works only in a few new Linux
+kernels.  Worse, there is currently no reliable way to know whether
+the features actually work.  Sometimes @command{tar} knows for sure
+that the features are not working, so it will complain and exit right
+away if you try to use @value{op-atime-preserve-system}; but other
+times @command{tar} might think that the option is supported when it
+is not actually working.
+
+Currently @option{--atime-preserve} with no operand defaults to
+@value{op-atime-preserve-replace}, but this may change in the future
+as support for @value{op-atime-preserve-system} improves.
 
 @item --backup=@var{backup-type}
 
@@ -2403,7 +2438,7 @@ archive, which normally signals EOF.  @xref{Reading}.
 Used to inform @command{tar} that it is working with an old
 @acronym{GNU}-format incremental backup archive.  It is intended
 primarily for backwards compatibility only.  @FIXME{incremental and
-listed-incremental}. 
+listed-incremental}.
 
 @item --index-file=@var{file}
 
@@ -2494,7 +2529,7 @@ in cases when such recognition fails.
 
 When creating an archive, @command{tar} will only add files that have changed
 since @var{date}.  If @var{date} begins with @samp{/} or @samp{.}, it
-is taken to be the name of a file whose last-modified time specifies
+is taken to be the name of a file whose data modification time specifies
 the date.  @FIXME-xref{}
 
 @item --newer-mtime=@var{date}
@@ -2894,8 +2929,8 @@ Displays the total number of bytes written after creating an archive.
 @item --touch
 @itemx -m
 
-Sets the modification time of extracted files to the extraction time,
-rather than the modification time stored in the archive.
+Sets the data modification time of extracted files to the extraction time,
+rather than the data modification time stored in the archive.
 @xref{Writing}.
 
 @item --uncompress
@@ -3538,7 +3573,7 @@ complex.  @command{tar} @emph{allows} you to have infinite number of files
 with the same name.  Some operations treat these same-named members no
 differently than any other set of archive members: for example, if you
 view an archive with @value{op-list}, you will see all of those members
-listed, with their modification times, owners, etc.
+listed, with their data modification times, owners, etc.
 
 Other operations don't deal with these members as perfectly as you might
 prefer; if you were to use @value{op-extract} to extract the archive,
@@ -4018,7 +4053,7 @@ Do not exit with nonzero on unreadable files or directories.
 there's a better way of organizing them.}
 
 The previous chapter showed how to use @value{op-extract} to extract
-an archive into the filesystem.  Various options cause @command{tar} to
+an archive into the file system.  Various options cause @command{tar} to
 extract more information than just file contents, such as the owner,
 the permissions, the modification date, and so forth.  This section
 presents options to be used with @option{--extract} when certain special
@@ -4113,6 +4148,7 @@ encountered while reading an archive.  Use in conjunction with
 @subsection Changing How @command{tar} Writes Files
 @cindex Overwriting old files, prevention
 @cindex Protecting old files
+@cindex Data modification times of extracted files
 @cindex Modification times of extracted files
 @cindex Permissions of extracted files
 @cindex Modes of extracted files
@@ -4129,7 +4165,7 @@ encountered while reading an archive.  Use in conjunction with
 * Keep Newer Files::
 * Unlink First::
 * Recursive Unlink::
-* Modification Times::
+* Data Modification Times::
 * Setting Access Permissions::
 * Writing to Standard Output::
 * remove files::
@@ -4161,7 +4197,7 @@ existing files and to follow existing symbolic links when extracting.
 Some people argue that @GNUTAR{} should not hesitate
 to overwrite files with other files when extracting.  When extracting
 a @command{tar} archive, they expect to see a faithful copy of the
-state of the filesystem when the archive was created.  It is debatable
+state of the file system when the archive was created.  It is debatable
 that this would always be a proper behavior.  For example, suppose one
 has an archive in which @file{usr/local} is a link to
 @file{usr/local2}.  Since then, maybe the site removed the link and
@@ -4260,22 +4296,22 @@ If you specify the @value{op-recursive-unlink} option,
 as far as current permissions will allow it.  This could include removal
 of the contents of a full directory hierarchy.
 
-@node Modification Times
-@unnumberedsubsubsec Setting Modification Times
+@node Data Modification Times
+@unnumberedsubsubsec Setting Data Modification Times
 
-Normally, @command{tar} sets the modification times of extracted files to
-the modification times recorded for the files in the archive, but
+Normally, @command{tar} sets the data modification times of extracted
+files to the corresponding times recorded for the files in the archive, but
 limits the permissions of extracted files by the current @code{umask}
 setting.
 
-To set the modification times of extracted files to the time when
+To set the data modification times of extracted files to the time when
 the files were extracted, use the @value{op-touch} option in
 conjunction with @value{op-extract}.
 
 @table @option
 @item --touch
 @itemx -m
-Sets the modification time of extracted archive members to the time
+Sets the data modification time of extracted archive members to the time
 they were extracted, not the time recorded for them in the archive.
 Use in conjunction with @value{op-extract}.
 @end table
@@ -4666,7 +4702,7 @@ called @dfn{dumps}.
 
 @cindex corrupted archives
 Full dumps should only be made when no other people or programs
-are modifying files in the filesystem.  If files are modified while
+are modifying files in the file system.  If files are modified while
 @command{tar} is making the backup, they may not be stored properly in
 the archive, in which case you won't be able to restore them if you
 have to.  (Files not being modified are written with no trouble, and do
@@ -4676,18 +4712,18 @@ You will want to use the @value{op-label} option to give the archive a
 volume label, so you can tell what this archive is even if the label
 falls off the tape, or anything like that.
 
-Unless the filesystem you are dumping is guaranteed to fit on
+Unless the file system you are dumping is guaranteed to fit on
 one volume, you will need to use the @value{op-multi-volume} option.
 Make sure you have enough tapes on hand to complete the backup.
 
-If you want to dump each filesystem separately you will need to use
+If you want to dump each file system separately you will need to use
 the @value{op-one-file-system} option to prevent @command{tar} from crossing
-filesystem boundaries when storing (sub)directories.
+file system boundaries when storing (sub)directories.
 
 The @value{op-incremental} (@FIXME-pxref{}) option is not needed,
-since this is a complete copy of everything in the filesystem, and a
+since this is a complete copy of everything in the file system, and a
 full restore from this backup would only be done onto a completely
-empty disk. 
+empty disk.
 
 Unless you are in a hurry, and trust the @command{tar} program (and your
 tapes), it is a good idea to use the @value{op-verify} option, to make
@@ -4700,16 +4736,16 @@ capable of being verified, unfortunately.
 @section Using @command{tar} to Perform Incremental Dumps
 
 @dfn{Incremental backup} is a special form of @GNUTAR{} archive that
-stores additional metadata so that exact state of the filesystem
-can be restored when extracting the archive. 
+stores additional metadata so that exact state of the file system
+can be restored when extracting the archive.
 
 @GNUTAR{} currently offers two options for handling incremental
-backups: @value{op-listed-incremental} and @value{op-incremental}.  
+backups: @value{op-listed-incremental} and @value{op-incremental}.
 
 The option @option{--listed-incremental} instructs tar to operate on
 an incremental archive with additional metadata stored in a standalone
-file, called @dfn{snapshot file}.  The purpose of this file is to help
-determine what files have been changed, added or deleted since the
+file, called a @dfn{snapshot file}.  The purpose of this file is to help
+determine which files have been changed, added or deleted since the
 last backup, so that the next incremental backup will contain only
 modified files.  The name of the snapshot file is given as an argument
 to the option:
@@ -4732,13 +4768,13 @@ $ @kbd{tar --create \
 @end smallexample
 
 This will create in @file{archive.1.tar} an incremental backup of
-@file{/usr} filesystem, storing additional metadata in the file
+the @file{/usr} file system, storing additional metadata in the file
 @file{/var/log/usr.snar}.  If this file does not exist, it will be
-created.  The created archive will then be called @dfn{level 0 backup}
-(see the next section for more info on backup levels).
+created.  The created archive will then be a @dfn{level 0 backup};
+please see the next section for more on backup levels.
 
-Otherwise, if the file @file{/var/log/usr.snar} exists, it is used to
-determine the modified files.  In this case only these files will be
+Otherwise, if the file @file{/var/log/usr.snar} exists, it
+determines which files are modified.  In this case only these files will be
 stored in the archive.  Suppose, for example, that after running the
 above command, you delete file @file{/usr/doc/old} and create
 directory @file{/usr/local/db} with the following contents:
@@ -4749,7 +4785,7 @@ $ @kbd{ls /usr/local/db}
 /usr/local/db/index
 @end smallexample
 
-Some time later you create another incremental backup. You will
+Some time later you create another incremental backup.  You will
 then see:
 
 @smallexample
@@ -4765,7 +4801,7 @@ usr/local/db/index
 
 @noindent
 The created archive @file{archive.2.tar} will contain only these
-three members.  This archive is called @dfn{level 1 backup}.  Notice,
+three members.  This archive is called a @dfn{level 1 backup}.  Notice
 that @file{/var/log/usr.snar} will be updated with the new data, so if
 you plan to create more @samp{level 1} backups, it is necessary to
 create a working copy of the snapshot file before running
@@ -4781,17 +4817,17 @@ $ @kbd{tar --create \
 
 Incremental dumps depend crucially on time stamps, so the results are
 unreliable if you modify a file's time stamps during dumping (e.g.,
-with the @option{--atime-preserve} option), or if you set the clock
+with the @option{--atime-preserve=replace} option), or if you set the clock
 backwards.
 
 Metadata stored in snapshot files include device numbers, which,
 obviously is supposed to be a non-volatile value.  However, it turns
-out that NFS devices have non-dependable values when an automounter
+out that NFS devices have undependable values when an automounter
 gets in the picture.  This can lead to a great deal of spurious
 redumping in incremental dumps, so it is somewhat useless to compare
 two NFS devices numbers over time.  The solution implemented currently
 is to considers all NFS devices as being equal when it comes to
-comparing directories; this is fairly gross, but there does not seem 
+comparing directories; this is fairly gross, but there does not seem
 to be a better way to go.
 
 Note that incremental archives use @command{tar} extensions and may
@@ -4799,9 +4835,9 @@ not be readable by non-@acronym{GNU} versions of the @command{tar} program.
 
 To extract from the incremental dumps, use
 @option{--listed-incremental} together with @option{--extract}
-option (@pxref{extracting files}). In this case, @command{tar} does
+option (@pxref{extracting files}).  In this case, @command{tar} does
 not need to access snapshot file, since all the data necessary for
-extraction are stored in the archive itself. So, when extracting, you
+extraction are stored in the archive itself.  So, when extracting, you
 can give whatever argument to @option{--listed-incremental}, the usual
 practice is to use @option{--listed-incremental=/dev/null}.
 Alternatively, you can use @option{--incremental}, which needs no
@@ -4817,10 +4853,10 @@ system that did not exist in their directories when the archive was
 created.  If you have created several levels of incremental files,
 then in order to restore the exact contents the file system  had when
 the last level was created, you will need to restore from all backups
-in turn. Continuing our example, to restore the state of @file{/usr}
+in turn.  Continuing our example, to restore the state of @file{/usr}
 file system, one would do@footnote{Notice, that since both archives
 were created withouth @option{-P} option (@pxref{absolute}), these
-commands should be run from the root filesystem.}: 
+commands should be run from the root file system.}:
 
 @smallexample
 $ @kbd{tar --extract \
@@ -4832,7 +4868,7 @@ $ @kbd{tar --extract \
 @end smallexample
 
 To list the contents of an incremental archive, use @option{--list}
-(@pxref{list}), as usual. To obtain more information about the
+(@pxref{list}), as usual.  To obtain more information about the
 archive, use @option{--listed-incremental} or @option{--incremental}
 combined with two @option{--verbose} options@footnote{Two
 @option{--verbose} options were selected to avoid breaking usual
@@ -4865,7 +4901,7 @@ if the file  is present in the archive, @samp{N} if the file is not
 included in the archive, or a @samp{D} if the file is a directory (and
 is included in the archive).@FIXME-xref{dumpdir format}.  Each such
 line is terminated by a newline character.  The last line is followed
-by an additional newline to indicate the end of the data.          
+by an additional newline to indicate the end of the data.
 
 @anchor{incremental-op}The option @option{--incremental} (@option{-G})
 gives the same behavior as @option{--listed-incremental} when used
@@ -4919,7 +4955,7 @@ designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
 it is easier to use the scripts.  @value{xref-incremental}, before
-making such an attempt. 
+making such an attempt.
 
 @node Backup Parameters
 @section Setting Parameters for Backups and Restoration
@@ -5006,7 +5042,7 @@ in a separate file.  This file is usually named
 
 @defvr {Backup variable} DIRLIST
 
-A path to the file containing the list of the filesystems to backup
+A path to the file containing the list of the file systems to backup
 or restore.  By default it is @file{/etc/backup/dirs}.
 @end defvr
 
@@ -5050,7 +5086,7 @@ of @GNUTAR{}.
 @defvr {Backup variable} VOLNO_FILE
 
 Name of temporary file to hold volume numbers.  This needs to be accessible
-by all the machines which have filesystems to be dumped.
+by all the machines which have file systems to be dumped.
 @end defvr
 
 @defvr {Backup variable} XLIST
@@ -5067,7 +5103,7 @@ This variable affects only @code{backup}.
 
 @defvr {Backup variable} SLEEP_TIME
 
-Time to sleep between dumps of any two successive filesystems
+Time to sleep between dumps of any two successive file systems
 
 This variable affects only @code{backup}.
 @end defvr
@@ -5174,10 +5210,10 @@ Current backup or restore level.
 Name or IP address of the host machine being dumped or restored.
 
 @item fs
-Full path name to the filesystem being dumped or restored.
+Full path name to the file system being dumped or restored.
 
 @item fsname
-Filesystem name with directory separators replaced with colons.  This
+File system name with directory separators replaced with colons.  This
 is useful, e.g., for creating unique files.
 @end table
 @end deffn
@@ -5185,19 +5221,19 @@ is useful, e.g., for creating unique files.
 Following variables keep the names of user hook functions
 
 @defvr {Backup variable} DUMP_BEGIN
-Dump begin function.  It is executed before dumping the filesystem.
+Dump begin function.  It is executed before dumping the file system.
 @end defvr
 
 @defvr {Backup variable} DUMP_END
-Executed after dumping the filesystem.
+Executed after dumping the file system.
 @end defvr
 
 @defvr {Backup variable} RESTORE_BEGIN
-Executed before restoring the filesystem.
+Executed before restoring the file system.
 @end defvr
 
 @defvr {Backup variable} RESTORE_END
-Executed after restoring the filesystem.
+Executed after restoring the file system.
 @end defvr
 
 @node backup-specs example
@@ -5353,10 +5389,10 @@ Display program version and exit.
 To restore files that were archived using a scripted backup, use the
 @code{restore} script.  Its usage is quite straightforward.  In the
 simplest form, invoke @code{restore --all}, it will
-then restore all the filesystems and files specified in
+then restore all the file systems and files specified in
 @file{backup-specs} (@pxref{General-Purpose Variables,BACKUP_DIRS}).
 
-You may select the filesystems (and/or files) to restore by
+You may select the file systems (and/or files) to restore by
 giving @code{restore} list of @dfn{patterns} in its command
 line.  For example, running
 
@@ -5365,7 +5401,7 @@ restore 'albert:*'
 @end smallexample
 
 @noindent
-will restore all filesystems on the machine @samp{albert}.  A more
+will restore all file systems on the machine @samp{albert}.  A more
 complicated example:
 
 @smallexample
@@ -5373,8 +5409,8 @@ restore 'albert:*' '*:/var'
 @end smallexample
 
 @noindent
-This command will restore all filesystems on the machine @samp{albert}
-as well as @file{/var} filesystem on all machines.
+This command will restore all file systems on the machine @samp{albert}
+as well as @file{/var} file system on all machines.
 
 By default @code{restore} will start restoring files from the lowest
 available dump level (usually zero) and will continue through
@@ -5392,7 +5428,7 @@ The full list of options accepted by @code{restore} follows:
 @table @option
 @item -a
 @itemx --all
-Restore all filesystems and files specified in @file{backup-specs}
+Restore all file systems and files specified in @file{backup-specs}
 
 @item -l @var{level}
 @itemx --level=@var{level}
@@ -5431,7 +5467,7 @@ system if they were not in the file system when the archive was made.
 @end quotation
 
 @value{xref-incremental}, for an explanation of how the script makes
-that determination. 
+that determination.
 
 @node Choosing
 @chapter Choosing Files and Names for @command{tar}
@@ -5453,7 +5489,7 @@ are in specified directories.
 * Wildcards::
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
-* one::                         Crossing Filesystem Boundaries
+* one::                         Crossing File System Boundaries
 @end menu
 
 @node file
@@ -5959,7 +5995,7 @@ patterns listed in a file.
 @samp{*} or @samp{?} for example, are replaced and expanded into all
 existing files matching the given pattern.  However, @command{tar} often
 uses wildcard patterns for matching (or globbing) archive members instead
-of actual files in the filesystem.  Wildcard patterns are also used for
+of actual files in the file system.  Wildcard patterns are also used for
 verifying volume labels of @command{tar} archives.  This section has the
 purpose of explaining wildcard syntax for @command{tar}.
 
@@ -6009,21 +6045,22 @@ string: excluding a directory also excludes all the files beneath it.
 @node after
 @section Operating Only on New Files
 @cindex Excluding file by age
+@cindex Data Modification time, excluding files by
 @cindex Modification time, excluding files by
 @cindex Age, excluding files by
 @UNREVISED
 
 The @value{op-after-date} option causes @command{tar} to only work on files
-whose modification or inode-changed times are newer than the @var{date}
+whose data modification or status change times are newer than the @var{date}
 given.  If @var{date} starts with @samp{/} or @samp{.}, it is taken to
-be a file name; the last-modified time of that file is used as the date.
+be a file name; the data modification time of that file is used as the date.
 If you use this option when creating or appending to an archive,
 the archive will only include new files.  If you use @option{--after-date}
 when extracting an archive, @command{tar} will only extract files newer
 than the @var{date} you specify.
 
 If you only want @command{tar} to make the date comparison based on
-modification of the actual contents of the file (rather than inode
+modification of the file's data (rather than status
 changes), then use the @value{op-newer-mtime} option.
 
 You may use these options with any operation.  Note that these options
@@ -6037,27 +6074,29 @@ deciding whether or not to archive the files.
 @itemx -N @var{date}
 Only store files newer than @var{date}.
 
-Acts on files only if their modification or inode-changed times are
+Acts on files only if their data modification or status change times are
 later than @var{date}.  Use in conjunction with any operation.
 
 If @var{date} starts with @samp{/} or @samp{.}, it is taken to be a file
-name; the last-modified time of that file is used as the date.
+name; the data modification time of that file is used as the date.
 
 @item --newer-mtime=@var{date}
-Acts like @value{op-after-date}, but only looks at modification times.
+Acts like @value{op-after-date}, but only looks at data modification times.
 @end table
 
-These options limit @command{tar} to only operating on files which have
-been modified after the date specified.  A file is considered to have
-changed if the contents have been modified, or if the owner,
+These options limit @command{tar} to operate only on files which have
+been modified after the date specified.  A file's status is considered to have
+changed if its contents have been modified, or if its owner,
 permissions, and so forth, have been changed.  (For more information on
 how to specify a date, see @ref{Date input formats}; remember that the
 entire date argument must be quoted if it contains any spaces.)
 
-Gurus would say that @value{op-after-date} tests both the @code{mtime}
-(time the contents of the file were last modified) and @code{ctime}
-(time the file's status was last changed: owner, permissions, etc)
-fields, while @value{op-newer-mtime} tests only @code{mtime} field.
+Gurus would say that @value{op-after-date} tests both the data
+modification time (@code{mtime}, the time the contents of the file
+were last modified) and the status change time (@code{ctime}, the time
+the file's status was last changed: owner, permissions, etc.@:)
+fields, while @value{op-newer-mtime} tests only the @code{mtime}
+field.
 
 To be precise, @value{op-after-date} checks @emph{both} @code{mtime} and
 @code{ctime} and processes the file if either one is more recent than
@@ -6153,7 +6192,7 @@ contents of @file{grape/concord}, but no entries under @file{grape}
 other than @file{grape/concord}.
 
 @node one
-@section Crossing Filesystem Boundaries
+@section Crossing File System Boundaries
 @cindex File system boundaries, not crossing
 @UNREVISED
 
@@ -6174,7 +6213,7 @@ archiving.  Use in conjunction with any write operation.
 
 The @option{--one-file-system} option causes @command{tar} to modify its
 normal behavior in archiving the contents of directories.  If a file in
-a directory is not on the same filesystem as the directory itself, then
+a directory is not on the same file system as the directory itself, then
 @command{tar} will not archive that file.  If the file is a directory
 itself, @command{tar} will not archive anything beneath it; in other words,
 @command{tar} will not cross mount points.
@@ -6566,7 +6605,7 @@ than System V's.
 
 Normally, when @command{tar} archives a symbolic link, it writes a
 block to the archive naming the target of the link.  In that way, the
-@command{tar} archive is a faithful record of the filesystem contents.
+@command{tar} archive is a faithful record of the file system contents.
 @value{op-dereference} is used with @value{op-create}, and causes
 @command{tar} to archive the files symbolic links point to, instead of
 the links themselves.  When this option is used, when @command{tar}
@@ -6930,7 +6969,7 @@ treatment of sparse files may be done automatically with any special
 @acronym{GNU} options.  For now, it is an option needing to be specified on
 the command line with the creation or updating of an archive.
 
-Files in the filesystem occasionally have ``holes.''  A hole in a file
+Files in the file system occasionally have ``holes.''  A hole in a file
 is a section of the file's contents which was never written.  The
 contents of a hole read as all zeros.  On many operating systems,
 actual disk storage is not allocated for holes, but they are counted
@@ -7027,29 +7066,44 @@ get it right.
 @section Handling File Attributes
 @UNREVISED
 
-When @command{tar} reads files, this causes them to have the access
-times updated.  To have @command{tar} attempt to set the access times
-back to what they were before they were read, use the
-@value{op-atime-preserve} option.
+When @command{tar} reads files, it updates their access times.  To
+avoid this, use the @value{op-atime-preserve} option, which can either
+reset the access time retroactively or avoid changing it in the first
+place.
 
 Handling of file attributes
 
 @table @option
 @item --atime-preserve
-Preserve access times on files that are read.
-This doesn't work for files that
-you don't own, unless you're root, and it doesn't interact with
-incremental dumps nicely (@pxref{Backups}), and it can set access or
-modification times incorrectly if other programs access the file while
-@command{tar} is running; but it is good enough for some purposes.
+@itemx --atime-preserve=replace
+@itemx --atime-preserve=system
+Preserve the access times of files that are read.  This works only for
+files that you own, unless you have superuser privileges.
+
+@value{op-atime-preserve-replace} works on most systems, but it also
+restores the data modification time and updates the status change
+time.  Hence it doesn't interact with incremental dumps nicely
+(@pxref{Backups}), and it can set access or data modification times
+incorrectly if other programs access the file while @command{tar} is
+running.
+
+@value{op-atime-preserve-system} avoids changing the access time in
+the first place, if the operating system supports this.
+Unfortunately, this may or may not work on any given operating system
+or file system.  If @command{tar} knows for sure it won't work, it
+complains right away.
+
+Currently @option{--atime-preserve} with no operand defaults to
+@value{op-atime-preserve-replace}, but this is intended to change to
+@value{op-atime-preserve-system} when the latter is better-supported.
 
 @item -m
 @itemx --touch
-Do not extract file modified time.
+Do not extract data modification time.
 
-When this option is used, @command{tar} leaves the modification times
-of the files it extracts as the time when the files were extracted,
-instead of setting it to the time recorded in the archive.
+When this option is used, @command{tar} leaves the data modification times
+of the files it extracts as the times when the files were extracted,
+instead of setting it to the times recorded in the archive.
 
 This option is meaningless with @value{op-list}.
 
@@ -7090,7 +7144,7 @@ This is useful in certain circumstances, when restoring a backup from
 an emergency floppy with different passwd/group files for example.
 It is otherwise impossible to extract files with the right ownerships
 if the password file in use during the extraction does not match the
-one belonging to the filesystem(s) being extracted.  This occurs,
+one belonging to the file system(s) being extracted.  This occurs,
 for example, if you are restoring your files after a major crash and
 had booted from an emergency floppy with no password file or put your
 disk into another machine to do the restore.
@@ -7244,9 +7298,10 @@ The @code{size} field is the size of the file in bytes; linked files
 are archived with this field specified as zero.  @FIXME-xref{Modifiers, in
 particular the @value{op-incremental} option.}
 
-The @code{mtime} field is the modification time of the file at the time
-it was archived.  It is the ASCII representation of the octal value of
-the last time the file was modified, represented as an integer number of
+The @code{mtime} field is the data modification time of the file at
+the time it was archived.  It is the ASCII representation of the octal
+value of the last time the file's contents were modified, represented
+as an integer number of
 seconds since January 1, 1970, 00:00 Coordinated Universal Time.
 
 The @code{chksum} field is the ASCII representation of the octal value
@@ -7262,8 +7317,8 @@ type, the file will be extracted as if it were a regular file.  As this
 action occurs, @command{tar} issues a warning to the standard error.
 
 The @code{atime} and @code{ctime} fields are used in making incremental
-backups; they store, respectively, the particular file's access time
-and last inode-change time.
+backups; they store, respectively, the particular file's access and
+status change times.
 
 The @code{offset} is used by the @value{op-multi-volume} option, when
 making a multi-volume archive.  The offset is number of bytes into
@@ -8426,7 +8481,7 @@ failed.
 Often you might want to write a large archive, one larger than will fit
 on the actual tape you are using.  In such a case, you can run multiple
 @command{tar} commands, but this can be inconvenient, particularly if you
-are using options like @value{op-exclude} or dumping entire filesystems.
+are using options like @value{op-exclude} or dumping entire file systems.
 Therefore, @command{tar} supports multiple tapes automatically.
 
 Use @value{op-multi-volume} on the command line, and then @command{tar} will,
@@ -8670,7 +8725,7 @@ the first volume file and to decide how to process the rest of the
 files.  However, it makes no attempt to verify whether the files are
 given in order or even if they are valid @command{tar} archives.
 It uses @command{dd} and does not filter its standard error, so you
-will usually see lots of spurious messages. 
+will usually see lots of spurious messages.
 
 @FIXME{The script is not installed.  Should we install it?}
 

@@ -70,10 +70,10 @@ tar: Error exit delayed from previous errors
 -----
 tar: file: Warning: Cannot open: Permission denied
 -----
-tar: directory: Cannot savedir: Permission denied
+tar: directory: Cannot open: Permission denied
 tar: Error exit delayed from previous errors
 -----
-tar: directory: Warning: Cannot savedir: Permission denied
+tar: directory: Warning: Cannot open: Permission denied
 ])
 
 AT_CLEANUP

@@ -22,7 +22,6 @@
 #include <system.h>
 
 #include <quotearg.h>
-#include <utimens.h>
 
 #include "common.h"
 #include <hash.h>
@@ -452,7 +451,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   finish_header (st, header, -1);
 
   header = find_next_block ();
-  
+
   bufsize = available_space_after (header);
 
   while (bufsize < size)
@@ -582,7 +581,7 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
   union block *header, hp;
   char *p;
   int type;
-  
+
   if (extended_header.buffer || extended_header.stk == NULL)
     return old_header;
 
@@ -950,35 +949,6 @@ dump_regular_file (int fd, struct tar_stat_info *st)
   return dump_status_ok;
 }
 
-static void
-dump_regular_finish (int fd, struct tar_stat_info *st,
-		     struct timespec original_ctime)
-{
-  if (fd >= 0)
-    {
-      struct stat final_stat;
-      if (fstat (fd, &final_stat) != 0)
-	{
-	  stat_diag (st->orig_file_name);
-	}
-      else if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime)
-	       != 0)
-	{
-	  WARN ((0, 0, _("%s: file changed as we read it"),
-		 quotearg_colon (st->orig_file_name)));
-	}
-      if (close (fd) != 0)
-	{
-	  close_diag (st->orig_file_name);
-	}
-    }
-  if (remove_files_option)
-    {
-      if (unlink (st->orig_file_name) == -1)
-	unlink_error (st->orig_file_name);
-    }
-}
-
 /* Look in directory DIRNAME for a cache directory tag file
    with the magic name "CACHEDIR.TAG" and a standard header,
    as described at:
@@ -1059,9 +1029,9 @@ dump_dir0 (char *directory,
 	      size_t bufsize;
 	      ssize_t count;
 	      const char *buffer, *p_buffer;
-	      
+
 	      block_ordinal = current_block_ordinal ();
-	      buffer = gnu_list_name->dir_contents; 
+	      buffer = gnu_list_name->dir_contents;
 	      if (buffer)
 		totsize = dumpdir_size (buffer);
 	      else
@@ -1070,7 +1040,7 @@ dump_dir0 (char *directory,
 	      finish_header (st, blk, block_ordinal);
 	      p_buffer = buffer;
 	      size_left = totsize;
-	      
+
 	      mv_begin (st);
 	      mv_total_size (totsize);
 	      while (size_left > 0)
@@ -1161,11 +1131,9 @@ ensure_slash (char **pstr)
 }
 
 static bool
-dump_dir (struct tar_stat_info *st, int top_level, dev_t parent_device)
+dump_dir (int fd, struct tar_stat_info *st, int top_level, dev_t parent_device)
 {
-  char *directory;
-
-  directory = savedir (st->orig_file_name);
+  char *directory = fdsavedir (fd);
   if (!directory)
     {
       savedir_diag (st->orig_file_name);
@@ -1273,7 +1241,7 @@ compare_links (void const *entry1, void const *entry2)
 }
 
 static void
-unknown_file_error (char *p)
+unknown_file_error (char const *p)
 {
   WARN ((0, 0, _("%s: Unknown file type; file ignored"),
 	 quotearg_colon (p)));
@@ -1289,8 +1257,8 @@ unknown_file_error (char *p)
    again if we've done it once already.  */
 static Hash_table *link_table;
 
-/* Try to dump stat as a hard link to another file in the archive. If
-   succeeded returns true */
+/* Try to dump stat as a hard link to another file in the archive.
+   Return true if successful.  */
 static bool
 dump_hard_link (struct tar_stat_info *st)
 {
@@ -1392,7 +1360,7 @@ check_links (void)
    exit_status to failure, a clear diagnostic has been issued.  */
 
 static void
-dump_file0 (struct tar_stat_info *st, char *p,
+dump_file0 (struct tar_stat_info *st, char const *p,
 	    int top_level, dev_t parent_device)
 {
   union block *header;
@@ -1400,6 +1368,7 @@ dump_file0 (struct tar_stat_info *st, char *p,
   struct timespec original_ctime;
   struct timespec restore_times[2];
   off_t block_ordinal = -1;
+  bool is_dir;
 
   if (interactive_option && !confirm ("add", p))
     return;
@@ -1458,43 +1427,48 @@ dump_file0 (struct tar_stat_info *st, char *p,
 
   if (is_avoided_name (p))
     return;
-  if (S_ISDIR (st->stat.st_mode))
-    {
-      dump_dir (st, top_level, parent_device);
-      if (atime_preserve_option)
-	utimens (p, restore_times);
-      return;
-    }
-  else
-    {
-      /* Check for multiple links.  */
-      if (dump_hard_link (st))
-	return;
 
-      /* This is not a link to a previously dumped file, so dump it.  */
+  is_dir = S_ISDIR (st->stat.st_mode) != 0;
 
-      if (S_ISREG (st->stat.st_mode)
-	  || S_ISCTG (st->stat.st_mode))
+  if (!is_dir && dump_hard_link (st))
+    return;
+
+  if (is_dir || S_ISREG (st->stat.st_mode) || S_ISCTG (st->stat.st_mode))
+    {
+      bool ok;
+      int fd = -1;
+      struct stat final_stat;
+
+      if (is_dir || file_dumpable_p (st))
 	{
-	  int fd;
-	  enum dump_status status;
-
-	  if (file_dumpable_p (st))
+	  fd = open (p,
+		     (O_RDONLY | O_BINARY
+		      | (is_dir ? O_DIRECTORY | O_NONBLOCK : 0)
+		      | (atime_preserve_option == system_atime_preserve
+			 ? O_NOATIME
+			 : 0)));
+	  if (fd < 0)
 	    {
-	      fd = open (st->orig_file_name,
-			 O_RDONLY | O_BINARY);
-	      if (fd < 0)
-		{
-		  if (!top_level && errno == ENOENT)
-		    WARN ((0, 0, _("%s: File removed before we read it"),
-			   quotearg_colon (st->orig_file_name)));
-		  else
-		    open_diag (st->orig_file_name);
-		  return;
-		}
+	      if (!top_level && errno == ENOENT)
+		WARN ((0, 0, _("%s: File removed before we read it"),
+		       quotearg_colon (p)));
+	      else
+		open_diag (p);
+	      return;
 	    }
-	  else
+	}
+
+      if (is_dir)
+	{
+	  ok = dump_dir (fd, st, top_level, parent_device);
+
+	  /* dump_dir consumes FD if successful.  */
+	  if (ok)
 	    fd = -1;
+	}
+      else
+	{
+	  enum dump_status status;
 
 	  if (fd != -1 && sparse_option && sparse_file_p (st))
 	    {
@@ -1508,88 +1482,130 @@ dump_file0 (struct tar_stat_info *st, char *p,
 	  switch (status)
 	    {
 	    case dump_status_ok:
-	      mv_end ();
-	      dump_regular_finish (fd, st, original_ctime);
-	      break;
-
 	    case dump_status_short:
 	      mv_end ();
-	      close (fd);
 	      break;
 
 	    case dump_status_fail:
-	      close (fd);
-	      return;
+	      break;
 
 	    case dump_status_not_implemented:
 	      abort ();
 	    }
 
-	  if (atime_preserve_option)
-	    utimens (st->orig_file_name, restore_times);
-	  file_count_links (st);
-	  return;
+	  ok = status == dump_status_ok;
 	}
-#ifdef HAVE_READLINK
-      else if (S_ISLNK (st->stat.st_mode))
+
+      if (ok)
 	{
-	  char *buffer;
-	  int size;
-	  size_t linklen = st->stat.st_size;
-	  if (linklen != st->stat.st_size || linklen + 1 == 0)
-	    xalloc_die ();
-	  buffer = (char *) alloca (linklen + 1);
-	  size = readlink (p, buffer, linklen + 1);
-	  if (size < 0)
+	  /* If possible, reopen a directory if we are preserving
+	     atimes, so that we can set just the atime on systems with
+	     _FIOSATIME.  */
+	  if (fd < 0 && is_dir
+	      && atime_preserve_option == replace_atime_preserve)
+	    fd = open (p, O_RDONLY | O_BINARY | O_DIRECTORY | O_NONBLOCK);
+
+	  if ((fd < 0
+	       ? deref_stat (dereference_option, p, &final_stat)
+	       : fstat (fd, &final_stat))
+	      != 0)
 	    {
-	      readlink_diag (p);
-	      return;
+	      stat_diag (p);
+	      ok = false;
 	    }
-	  buffer[size] = '\0';
-	  assign_string (&st->link_name, buffer);
-	  if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
-	    write_long_link (st);
+	}
 
-	  block_ordinal = current_block_ordinal ();
-	  st->stat.st_size = 0;	/* force 0 size on symlink */
-	  header = start_header (st);
-	  if (!header)
-	    return;
-	  tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
-	  header->header.typeflag = SYMTYPE;
-	  finish_header (st, header, block_ordinal);
-	  /* nothing more to do to it */
+      if (ok)
+	{
+	  if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime) != 0)
+	    WARN ((0, 0, _("%s: file changed as we read it"),
+		   quotearg_colon (p)));
+	  else if (atime_preserve_option == replace_atime_preserve
+		   && set_file_atime (fd, p, restore_times) != 0)
+	    utime_error (p);
+	}
 
-	  if (remove_files_option)
+      if (0 <= fd && close (fd) != 0)
+	{
+	  close_diag (p);
+	  ok = false;
+	}
+
+      if (ok && remove_files_option)
+	{
+	  if (is_dir)
 	    {
-	      if (unlink (p) == -1)
+	      if (rmdir (p) != 0 && errno != ENOTEMPTY)
+		rmdir_error (p);
+	    }
+	  else
+	    {
+	      if (unlink (p) != 0)
 		unlink_error (p);
 	    }
-	  file_count_links (st);
+	}
+
+      return;
+    }
+#ifdef HAVE_READLINK
+  else if (S_ISLNK (st->stat.st_mode))
+    {
+      char *buffer;
+      int size;
+      size_t linklen = st->stat.st_size;
+      if (linklen != st->stat.st_size || linklen + 1 == 0)
+	xalloc_die ();
+      buffer = (char *) alloca (linklen + 1);
+      size = readlink (p, buffer, linklen + 1);
+      if (size < 0)
+	{
+	  readlink_diag (p);
 	  return;
 	}
+      buffer[size] = '\0';
+      assign_string (&st->link_name, buffer);
+      if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
+	write_long_link (st);
+
+      block_ordinal = current_block_ordinal ();
+      st->stat.st_size = 0;	/* force 0 size on symlink */
+      header = start_header (st);
+      if (!header)
+	return;
+      tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
+      header->header.typeflag = SYMTYPE;
+      finish_header (st, header, block_ordinal);
+      /* nothing more to do to it */
+
+      if (remove_files_option)
+	{
+	  if (unlink (p) == -1)
+	    unlink_error (p);
+	}
+      file_count_links (st);
+      return;
+    }
 #endif
-      else if (S_ISCHR (st->stat.st_mode))
-	type = CHRTYPE;
-      else if (S_ISBLK (st->stat.st_mode))
-	type = BLKTYPE;
-      else if (S_ISFIFO (st->stat.st_mode))
-	type = FIFOTYPE;
-      else if (S_ISSOCK (st->stat.st_mode))
-	{
-	  WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
-	  return;
-	}
-      else if (S_ISDOOR (st->stat.st_mode))
-	{
-	  WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
-	  return;
-	}
-      else
-	{
-	  unknown_file_error (p);
-	  return;
-	}
+  else if (S_ISCHR (st->stat.st_mode))
+    type = CHRTYPE;
+  else if (S_ISBLK (st->stat.st_mode))
+    type = BLKTYPE;
+  else if (S_ISFIFO (st->stat.st_mode))
+    type = FIFOTYPE;
+  else if (S_ISSOCK (st->stat.st_mode))
+    {
+      WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
+      return;
+    }
+  else if (S_ISDOOR (st->stat.st_mode))
+    {
+      WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
+      return;
+    }
+  else
+    {
+      unknown_file_error (p);
+      return;
     }
 
   if (archive_format == V7_FORMAT)

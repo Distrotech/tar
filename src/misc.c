@@ -23,6 +23,14 @@
 #include <quotearg.h>
 #include <save-cwd.h>
 #include <unlinkdir.h>
+#include <utimens.h>
+
+#if HAVE_STROPTS_H
+# include <stropts.h>
+#endif
+#if HAVE_SYS_FILIO_H
+# include <sys/filio.h>
+#endif
 
 
 /* Handling strings.  */
@@ -488,6 +496,26 @@ int
 deref_stat (bool deref, char const *name, struct stat *buf)
 {
   return deref ? stat (name, buf) : lstat (name, buf);
+}
+
+/* Set FD's (i.e., FILE's) access time to TIMESPEC[0].  If that's not
+   possible to do by itself, set its access and data modification
+   times to TIMESPEC[0] and TIMESPEC[1], respectively.  */
+int
+set_file_atime (int fd, char const *file, struct timespec const timespec[2])
+{
+#ifdef _FIOSATIME
+  if (0 <= fd)
+    {
+      struct timeval timeval;
+      timeval.tv_sec = timespec[0].tv_sec;
+      timeval.tv_usec = timespec[0].tv_nsec / 1000;
+      if (ioctl (fd, _FIOSATIME, &timeval) == 0)
+	return 0;
+    }
+#endif
+
+  return futimens (fd, file, timespec);
 }
 
 /* A description of a working directory.  */

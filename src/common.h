@@ -114,7 +114,13 @@ GLOBAL bool utc_option;
    than newer_mtime_option.  */
 GLOBAL int after_date_option;
 
-GLOBAL bool atime_preserve_option;
+enum atime_preserve
+{
+  no_atime_preserve,
+  replace_atime_preserve,
+  system_atime_preserve
+};
+GLOBAL enum atime_preserve atime_preserve_option;
 
 GLOBAL bool backup_option;
 

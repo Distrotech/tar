@@ -25,10 +25,8 @@
 # include <linux/fd.h>
 #endif
 
-#include <quotearg.h>
-#include <utimens.h>
-
 #include "common.h"
+#include <quotearg.h>
 #include <rmt.h>
 #include <stdarg.h>
 
@@ -205,9 +203,10 @@ diff_dir (void)
 static void
 diff_file (void)
 {
+  char const *file_name = current_stat_info.file_name;
   struct stat stat_data;
 
-  if (!get_stat_data (current_stat_info.file_name, &stat_data))
+  if (!get_stat_data (file_name, &stat_data))
     skip_member ();
   else if (!S_ISREG (stat_data.st_mode))
     {
@@ -228,19 +227,24 @@ diff_file (void)
       if (tar_timespec_cmp (get_stat_mtime (&stat_data), 
                             current_stat_info.mtime))
 	report_difference (&current_stat_info, _("Mod time differs"));
-      if (current_header->header.typeflag != GNUTYPE_SPARSE &&
-	  stat_data.st_size != current_stat_info.stat.st_size)
+      if (current_header->header.typeflag != GNUTYPE_SPARSE
+	  && stat_data.st_size != current_stat_info.stat.st_size)
 	{
 	  report_difference (&current_stat_info, _("Size differs"));
 	  skip_member ();
 	}
       else
 	{
-	  diff_handle = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
+	  int atime_flag =
+	    (atime_preserve_option == system_atime_preserve
+	     ? O_NOATIME
+	     : 0);
+
+	  diff_handle = open (file_name, O_RDONLY | O_BINARY | atime_flag);
 
 	  if (diff_handle < 0)
 	    {
-	      open_error (current_stat_info.file_name);
+	      open_error (file_name);
 	      skip_member ();
 	      report_difference (&current_stat_info, NULL);
 	    }
@@ -253,18 +257,18 @@ diff_file (void)
 	      else
 		read_and_process (&current_stat_info, process_rawdata);
 
-	      status = close (diff_handle);
-	      if (status != 0)
-		close_error (current_stat_info.file_name);
-
-	      if (atime_preserve_option)
+	      if (atime_preserve_option == replace_atime_preserve)
 		{
 		  struct timespec ts[2];
 		  ts[0] = get_stat_atime (&stat_data);
 		  ts[1] = get_stat_mtime (&stat_data);
-		  if (utimens (current_stat_info.file_name, ts) != 0)
-		    utime_error (current_stat_info.file_name);
+		  if (set_file_atime (diff_handle, file_name, ts) != 0)
+		    utime_error (file_name);
 		}
+
+	      status = close (diff_handle);
+	      if (status != 0)
+		close_error (file_name);
 	    }
 	}
     }
@@ -357,7 +361,7 @@ diff_dumpdir (void)
     }
   else
     dev = stat.st_dev;
-      
+
   dumpdir_buffer = get_directory_contents (current_stat_info.file_name, dev);
 
   if (dumpdir_buffer)

@@ -38,6 +38,10 @@ it lists member names as stored in the archive, i.e., with any eventual
 prefixes removed.  The option is useful, for example, while comparing
 `tar cv' and `tar tv' outputs.
 
+* New option --atime-preserve=system, which uses the O_NOATIME feature
+of recent Linux kernels to avoid some problems when preserving file
+access times.
+
 * Better support for full-resolution time stamps.  Tar cannot restore
 time stamps to full nanosecond resolution, though, until the kernel
 guys get their act together and give us a system call to set file time

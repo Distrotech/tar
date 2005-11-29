@@ -1,3 +1,61 @@
+2005-11-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* NEWS: New option --atime-preserve=system, which uses O_NOATIME.
+
+	* configure.ac: Prefer AC_CHECK_HEADERS_ONCE to AC_CHECK_HEADERS.
+	Check for stropts.h and sys/filio.h too, for _FIOSATIME.
+	* doc/tar.texi: Change "modification time" to "data modification
+	time", "change time" to "status change time", and "filesystem" to
+	"file system", so that we use terminology consistent with POSIX.
+	Use American spacing rather than French for sentence ends.
+	"non-dependable" -> "undependable".
+	(Option Summary, Attributes): Explain better the pitfalls of the
+	--atime-preserve option, and suggest read-only mounts,loopback
+	mounts, and noatime mounts for older systems.
+	* doc/value.texi (op-atime-preserve-system): Renamed from
+	op-atime-preserver-system to fix a misspelling.
+	* src/common.h (enum atime_preserve): Use lower case for enum values.
+	* src/compare.c: Don't include utimens.h; no longer needed.
+	(diff_file): Use set_file_atime rather than utimens; avoid closing
+	diff_handle until after this, so that we can set the file time stamp
+	via the file descriptor rather than via its name.
+	* src/create.c: Don't include utimens.h; no longer needed.
+	(dump_regular_finish): Remove.  All callers now do its work inline.
+	(dump_dir): New arg FD.  All callers changed.
+	Use fdsavedir rather than savedir.
+	(unknown_file_error): Arg is a const pointer now.
+	(dump_file0): 2nd arg is a const pointer now.
+	Treat directories more like files, with respect to --atime-preserve.
+	For example, also warn if a directory changes while we are dumping it.
+	Prefer file descriptors to file names when retrieving/setting file
+	attributes; this saves path-resolution time and allows us to avoid
+	changing mtime/ctime on Solaris when restoring atime as root.
+	Use O_DIRECTORY when opening directories, to avoid some race conditions.
+	Do not reset atime if mtime has changed.  Report an error if
+	we cannot reset atime.
+
+2005-11-29  Ian Turner  <ian@zmanda.com>
+
+	First cut at adding support for --atime-preserve=system.
+	* doc/tar.texi (Option Summary): First cut at documenting it.
+	All other uses of --atime-preserve changed to --atime-preserve=replace.
+	* doc/value.texi (op-atime-preserve-replace, op-atime-preserver-system):
+	New.
+	(op-atime-preserve): Mention METHOD.
+	* src/common.h (atime_preserve): New enum.
+	(atime_preserve_option): Now of the enum type rather than bool.
+	All uses changed.
+	* src/compare.c (diff_file): Read with O_NOATIME if asked for.
+	* src/create.c (dump_file0): Read regular and CTG files with O_NOATIME
+	if asked for.
+	* src/tar.c (usage): Mention new usage.
+	(parse_opt): Parse new usage.
+
+2005-11-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* THANKS: Convert back to UTF-8, sort (using LC_ALL=C on Debian
+	stable), and consistently use tabs rather than spaces.
+
 2005-11-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c: Remove parts of code prematurely introduced
@@ -23,7 +81,7 @@
 	tests/star/multi-fail.at: Close stdin so that if something fails
 	causing tar to ask for the next volume, it won't hang the
 	testsuite.
-	
+
 	* src/buffer.c (flush_write,flush_read): Change data type.
 	(flush_archive): Compute actual buffer fill level before calling
 	low level function.
@@ -45,22 +103,22 @@
 	Correct buffer size calculation (allocated too much space).
 	(xheader_write): Increase global_header_count here ...
 	(xheader_write_global): ... instead of here
-	
+
 	* tests/testsuite.at (AT_TAR_CHECK): Define TEST_TAR_FORMAT
 	* tests/multiv01.at: Update
 	* tests/multiv02.at: Update
 	* tests/multiv03.at: Update
 	* tests/sparsemvp.at: Update
 	* tests/star/multi-fail.at: Update
-	
+
 	* scripts/tarcat: Handle archives in pax format. Improve handling
 	of traditional archives.
 	* doc/tar.texi (Tarcat): New node
-	
+
 2005-11-10  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix splitting of sparse files between the volumes.
-	
+
 	* src/buffer.c (try_new_volume): Bugfix. Always check
 	continued_file_name. If it is absent, the volume is out
 	of sync.
@@ -86,13 +144,13 @@
 	on the extended header boundary) are still not solved, others
 	(splitting a sparse file between the volume) require additional
 	testing. Wait for the next commit.
-	
+
 	(volume_label,continued_file_name,continued_file_size)
 	(continued_file_offset): New globals.
 	(save_name,save_totsize,save_sizeleft): Make static
 	(mv_begin,mv_end,mv_total_size,mv_size_left): New functions
 	(open_archive,flush_write,flush_read): Rewritten
-	
+
 	* src/common.h (save_name,save_sizeleft,save_totsize): Remove
 	globals.
 	(volume_label,continued_file_name,continued_file_size): New
@@ -122,7 +180,19 @@
 	of related tests in groups.
 
 	* doc/tar.texi: Update
-	
+
+2005-11-07  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/xheader.c (struct xhdr_tab.coder): Last arg is void const *,
+	not void *, to avoid create.c warning from GCC "passing argument 3
+	of 'xheader_store' discards qualifiers from pointer target type".
+	(dummy_coder, atime_coder, gid_coder, gname_coder, linkpath_coder):
+	(ctime_coder, mtime_coder, path_coder, size_coder, uid_coder):
+	(uname_coder, sparse_size_coder, sparse_numblocks_coder):
+	(sparse_offset_coder, sparse_numbytes_coder, dumpdir_coder):
+	(xheader_store): Likewise.
+	* src/common.h (xheader_store): Likewise.
+
 2005-11-07  Sergey Poznyakoff  <gray@gnu.org.ua>
        and  Paul Eggert  <eggert@cs.ucla.edu>
 
@@ -187,6 +257,13 @@
 	* tests/incremental.at: Likewise
 
 2005-11-06  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* NEWS: Minor language and white space fixes.
+
+	* tests/truncate.at: Create files whose time stamps must fall on
+	1-second boundaries.  This prevents tests from failing on hosts
+	like Solaris 8 that have nanosecond-resolution file time stamps.
+	* tests/update.at: Likewise.
 
 	* src/xheader.c (strtoimax, strtoumax): Remove decls; now done
 	in system.h.
