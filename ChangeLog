@@ -1,6 +1,7 @@
 2005-11-29  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* NEWS: New option --atime-preserve=system, which uses O_NOATIME.
+	* THANKS: Add Ian Turner.
 
 	* configure.ac: Prefer AC_CHECK_HEADERS_ONCE to AC_CHECK_HEADERS.
 	Check for stropts.h and sys/filio.h too, for _FIOSATIME.
