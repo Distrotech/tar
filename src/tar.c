@@ -1140,7 +1140,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       if (! O_NOATIME && atime_preserve_option == system_atime_preserve)
 	FATAL_ERROR ((0, 0,
 		      _("--atime-preserve='system' is not supported"
-			" on this platform\n")));
+			" on this platform")));
       break;
 
     case CHECKPOINT_OPTION:
