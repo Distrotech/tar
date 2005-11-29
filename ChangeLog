@@ -35,6 +35,9 @@
 	Do not reset atime if mtime has changed.  Report an error if
 	we cannot reset atime.
 
+	* lib/.cvsignore: Add malloc.h, regcomp.c, regex.c, regex.h,
+	regex_internal.c, regex_internal.h, regexc.c; used by rpmatch.
+
 2005-11-29  Ian Turner  <ian@zmanda.com>
 
 	First cut at adding support for --atime-preserve=system.

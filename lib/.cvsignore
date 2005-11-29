@@ -85,6 +85,7 @@ lchown.h
 localcharset.c
 localcharset.h
 localedir.h
+malloc.c
 mbchar.c
 mbchar.h
 mbuiter.h
@@ -122,6 +123,12 @@ ref-add.sed
 ref-add.sin
 ref-del.sed
 ref-del.sin
+regcomp.c
+regex.c
+regex.h
+regex_internal.c
+regex_internal.h
+regexec.c
 rmdir.c
 rmt.h
 rpmatch.c
