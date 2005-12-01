@@ -86,6 +86,7 @@ m4_include([gzip.at])
 
 m4_include([incremental.at])
 m4_include([incr01.at])
+m4_include([incr02.at])
 
 m4_include([ignfail.at])
 

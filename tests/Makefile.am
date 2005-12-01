@@ -63,6 +63,7 @@ TESTSUITE_AT = \
  gzip.at\
  incremental.at\
  incr01.at\
+ incr02.at\
  ignfail.at\
  link01.at\
  listed01.at\
