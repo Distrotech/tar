@@ -1470,11 +1470,8 @@ To extract specific archive members, give their exact member names as
 arguments, as printed by @value{op-list}.  If you had mistakenly deleted
 one of the files you had placed in the archive @file{collection.tar}
 earlier (say, @file{blues}), you can extract it from the archive without
-changing the archive's structure.  It will be identical to the original
-file @file{blues} that you deleted.  @FIXME{At the time of this
-writing, atime and ctime are not restored.  Since this is a tutorial
-for a beginning user, it should hardly be mentioned here.  Maybe in
-a footnote?  --gray}.
+changing the archive's structure.  Its contents will be identical to the
+original file @file{blues} that you deleted.
 
 First, make sure you are in the @file{practice} directory, and list the
 files in the directory.  Now, delete the file, @samp{blues}, and list
@@ -2221,15 +2218,6 @@ Attempt to preserve the access time of files when reading them.  This
 option currently is effective only on files that you own, unless you
 have superuser privileges.
 
-Though this option should work on recent Linux kernel versions, it is
-not reliable on other platforms.  To preserve the access time reliably
-on those platforms, you can mount the file system read-only, or access
-the file system via a read-only loopback mount, or use the
-@samp{noatime} mount option available on some systems.  However,
-mounting typically requires superuser privileges and can be a pain to
-manage, so the @option{--atime-preserve} option can be useful despite
-its glitches on other platforms.
-
 @value{op-atime-preserve-replace} remembers the access time of a file
 before reading it, and then restores the access time afterwards.  This
 may cause problems if other programs are reading the file at the same
@@ -2242,23 +2230,31 @@ conditions.)  Worse, on most platforms restoring the access time also
 updates the status change time, which means that this option is
 incompatible with incremental backups.
 
-@value{op-atime-preserve-system} avoids changing time stamps on files
-other than directories, without interfering with time stamp updates
+@value{op-atime-preserve-system} avoids changing time stamps on files,
+without interfering with time stamp updates
 caused by other programs, so it works better with incremental backups.
 However, it requires a special @code{O_NOATIME} option from the
-underlying operating and file system implementation, and it requires
+underlying operating and file system implementation, and it also requires
 that searching directories does not update their access times.  As of
-this writing (November 2005) this works only in a few new Linux
-kernels.  Worse, there is currently no reliable way to know whether
-the features actually work.  Sometimes @command{tar} knows for sure
-that the features are not working, so it will complain and exit right
-away if you try to use @value{op-atime-preserve-system}; but other
-times @command{tar} might think that the option is supported when it
-is not actually working.
+this writing (November 2005) this works only with Linux, and only with
+Linux kernels 2.6.8 and later.  Worse, there is currently no reliable
+way to know whether this feature actually works.  Sometimes
+@command{tar} knows that it does not work, and if you use
+@value{op-atime-preserve-system} then @command{tar} complains and
+exits right away.  But other times @command{tar} might think that the
+option works when it actually does not.
 
 Currently @option{--atime-preserve} with no operand defaults to
 @value{op-atime-preserve-replace}, but this may change in the future
 as support for @value{op-atime-preserve-system} improves.
+
+If your operating system does not support
+@value{op-atime-preserve-system}, you might be able to preserve access
+times reliably by by using the @command{mount} command.  For example,
+you can mount the file system read-only, or access the file system via
+a read-only loopback mount, or use the @samp{noatime} mount option
+available on some systems.  However, mounting typically requires
+superuser privileges and can be a pain to manage.
 
 @item --backup=@var{backup-type}
 
