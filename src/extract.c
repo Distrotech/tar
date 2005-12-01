@@ -120,19 +120,6 @@ extr_init (void)
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
 
-  /* Save 'root device' to avoid purging mount points.
-     FIXME: Should the same be done after handling -C option ? */
-  if (one_file_system_option)
-    {
-      struct stat st;
-      char *dir = xgetcwd ();
-
-      if (deref_stat (true, dir, &st))
-	stat_diag (dir);
-      else
-	root_device = st.st_dev;
-    }
-
   /* Option -p clears the kernel umask, so it does not affect proper
      restoration of file permissions.  New intermediate directories will
      comply with umask at start of program.  */
@@ -625,6 +612,19 @@ extract_dir (char *file_name, int typeflag)
   int status;
   mode_t mode;
   int interdir_made = 0;
+
+  /* Save 'root device' to avoid purging mount points. */
+  if (one_file_system_option && root_device == 0)
+    {
+      struct stat st;
+      char *dir = xgetcwd ();
+
+      if (deref_stat (true, dir, &st))
+	stat_diag (dir);
+      else
+	root_device = st.st_dev;
+      free (dir);
+    }
 
   if (incremental_option)
     /* Read the entry and delete files that aren't listed in the archive.  */
