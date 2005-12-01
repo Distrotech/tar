@@ -30,6 +30,11 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
+static bool directories_first;  /* Directory members precede non-directory
+				   ones in the archive. This is detected for
+				   incremental archives only. This variable
+				   helps correctly restore directory
+				   timestamps */
 
 /* Status of the permissions of a file that we are extracting.  */
 enum permstatus
@@ -321,7 +326,19 @@ set_stat (char const *file_name,
    once we stop extracting files into that directory.
    If not restoring permissions, remember to invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
-   PERMSTATUS specifies the status of the file's permissions.  */
+   PERMSTATUS specifies the status of the file's permissions.
+
+   NOTICE: this works only if the archive has usual member order, i.e.
+   directory, then the files in that directory. Incremental archive have
+   somewhat reversed order: first go subdirectories, then all other
+   members. To help cope with this case the variable directories_first
+   is set by prepare_to_extract.
+
+   If an archive was explicitely created so that its member order is
+   reversed, some directory timestamps can be restored incorrectly,
+   e.g.:
+       tar --no-recursion -cf archive dir dir/subdir dir/subdir/file
+*/
 static void
 delay_set_stat (char const *file_name, struct tar_stat_info const *st,
 		mode_t invert_permissions, enum permstatus permstatus)
@@ -615,7 +632,8 @@ extract_dir (char *file_name, int typeflag)
   else if (typeflag == GNUTYPE_DUMPDIR)
     skip_member ();
 
-  mode = (current_stat_info.stat.st_mode | (we_are_root ? 0 : MODE_WXUSR)) & MODE_RWX;
+  mode = (current_stat_info.stat.st_mode |
+	   (we_are_root ? 0 : MODE_WXUSR)) & MODE_RWX;
 
   while ((status = mkdir (file_name, mode)))
     {
@@ -1089,6 +1107,8 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     case DIRTYPE:
     case GNUTYPE_DUMPDIR:
       *fun = extract_dir;
+      if (current_stat_info.dumpdir)
+	directories_first = true;
       break;
 
     case GNUTYPE_VOLHDR:
@@ -1180,7 +1200,8 @@ extract_archive (void)
                                  false, absolute_names_option);
   if (strip_name_components)
     {
-      size_t prefix_len = stripped_prefix_len (file_name, strip_name_components);
+      size_t prefix_len = stripped_prefix_len (file_name,
+					       strip_name_components);
       if (prefix_len == (size_t) -1)
 	{
 	  skip_member ();
@@ -1189,8 +1210,12 @@ extract_archive (void)
       file_name += prefix_len;
     }
 
-  apply_nonancestor_delayed_set_stat (file_name, 0);
-
+  /* Restore stats for all non-ancestor directories, unless
+     it is an incremental archive.
+     (see NOTICE in the comment to delay_set_stat above) */
+  if (!directories_first)
+    apply_nonancestor_delayed_set_stat (file_name, 0);
+      
   /* Take a safety backup of a previously existing file.  */
 
   if (backup_option)
@@ -1204,7 +1229,6 @@ extract_archive (void)
       }
 
   /* Extract the archive entry according to its type.  */
-
   /* KLUDGE */
   typeflag = sparse_member_p (&current_stat_info) ?
                   GNUTYPE_SPARSE : current_header->header.typeflag;
