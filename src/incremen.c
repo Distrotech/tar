@@ -681,6 +681,12 @@ purge_directory (char const *directory_name)
   char *current_dir;
   char *cur, *arc;
 
+  if (!current_stat_info.dumpdir)
+    {
+      skip_member ();
+      return;
+    }
+  
   current_dir = savedir (directory_name);
 
   if (!current_dir)
