@@ -62,6 +62,8 @@ was not processed correctly.
 ** Previous version created invalid archives when files shrink
 during reading.
 ** Compare mode (tar d) hanged when trying to compare file contents.
+** Previous versions in certain cases failed to restore directory
+modification times.
 
 
 version 1.15.1 - Sergey Poznyakoff, 2004-12-21

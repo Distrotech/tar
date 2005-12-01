@@ -6,6 +6,9 @@
 	(prepare_to_extract): Set directories_first
 	(extract_archive): Call apply_nonancestor_delayed_set_stat() only
 	if not extracting from an incremental archive
+	(extract_dir): Obtain root_device here, to make sure it works
+	correctly with -C.
+
 	* src/incremen.c (purge_directory): Skip the member and return if
 	the archive is not in incremental format.
 	* tests/incr02.at: New testcase
@@ -13,7 +16,8 @@
 	* tests/testsuite.at: Likewise
 
 	* THANKS: Add Guerkan Karaman.
-
+	* NEWS: Update
+	
 2005-11-30  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* doc/tar.texi (Option Summary): Rewrite the
