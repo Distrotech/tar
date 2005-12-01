@@ -1,3 +1,19 @@
+2005-12-01  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/extract.c: Fix restoring of directory timestamps from
+	incremental archives.
+	(directories_first): New variable.
+	(prepare_to_extract): Set directories_first
+	(extract_archive): Call apply_nonancestor_delayed_set_stat() only
+	if not extracting from an incremental archive
+	* src/incremen.c (purge_directory): Skip the member and return if
+	the archive is not in incremental format.
+	* tests/incr02.at: New testcase
+	* tests/Makefile.am: Add incr02.at
+	* tests/testsuite.at: Likewise
+
+	* THANKS: Add Guerkan Karaman.
+
 2005-11-30  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* doc/tar.texi (Option Summary): Rewrite the
