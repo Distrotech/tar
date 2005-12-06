@@ -1,3 +1,15 @@
+2005-12-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Document --to-command and --info-script
+	options. Add missing xrefs.
+	* src/buffer.c (new_volume): Use sys_exec_info_script() instead of
+	system().
+	* src/common.h (archive_format_string,subcommand_string)
+	(sys_exec_info_script): New prototypes.
+	* src/system.c (sys_exec_info_script): New function.
+	* src/tar.c (archive_format_string): Remove static qualifier.
+	(subcommand_string): New function.
+
 2005-12-01  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/extract.c: Fix restoring of directory timestamps from
