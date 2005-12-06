@@ -657,6 +657,7 @@ chr_to_env (char *envar, char c)
 static void
 stat_to_env (char *name, char type, struct tar_stat_info *st)
 {
+  str_to_env ("TAR_VERSION", PACKAGE_VERSION);
   chr_to_env ("TAR_FILETYPE", type);
   oct_to_env ("TAR_MODE", st->stat.st_mode);
   str_to_env ("TAR_FILENAME", name);
@@ -763,5 +764,52 @@ sys_wait_command (void)
 
   pid = -1;
 }
+
+int
+sys_exec_info_script (const char *archive_name, int volume_number)
+{
+  pid_t pid;
+  char *argv[4];
+  char uintbuf[UINTMAX_STRSIZE_BOUND];
+
+  pid = xfork ();
+
+  if (pid != 0)
+    {
+      int status;
+      
+      /* Master */
+      while (waitpid (pid, &status, 0) == -1)
+	if (errno != EINTR)
+	  {
+	    waitpid_error (info_script_option);
+	    return -1;
+	  }
+      
+      if (WIFEXITED (status))
+	return WEXITSTATUS (status);
+      
+      return -1;
+    }
+
+  /* Child */
+  setenv ("TAR_VERSION", PACKAGE_VERSION, 1);
+  setenv ("TAR_ARCHIVE", archive_name, 1);
+  setenv ("TAR_VOLUME", STRINGIFY_BIGINT (volume_number, uintbuf), 1);
+  setenv ("TAR_SUBCOMMAND", subcommand_string (subcommand_option), 1);
+  setenv ("TAR_FORMAT",
+	  archive_format_string (current_format == DEFAULT_FORMAT ?
+				 archive_format : current_format), 1);
+  
+  argv[0] = "/bin/sh";
+  argv[1] = "-c";
+  argv[2] = (char*) info_script_option;
+  argv[3] = NULL;
+
+  execv (argv[0], argv);
+
+  exec_fatal (info_script_option);
+}
+
 
 #endif /* not MSDOS */
