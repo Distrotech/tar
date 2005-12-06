@@ -2826,6 +2826,12 @@ from the archive.  @xref{Recursive Unlink}.
 Directs @command{tar} to remove the source file from the file system after
 appending it to an archive.  @xref{remove files}.
 
+@item --restrict
+
+Disable use of some potentially harmful @command{tar} options.
+Currently this option disables shell invocaton from multi-volume menu
+(@pxref{Using Multiple Tapes}).
+
 @item --rmt-command=@var{cmd}
 
 Notifies @command{tar} that it should use @var{cmd} instead of
@@ -8619,9 +8625,8 @@ the first archive, using @value{op-multi-volume}, and then put in the
 second tape when prompted, so @command{tar} can restore both halves of the
 file.)
 
-@GNUTAR{} multi-volume archives do not use a truly
-portable format.  You need @GNUTAR{} at both end to
-process them properly.
+@GNUTAR{} multi-volume archives do not use a truly portable format.
+You need @GNUTAR{} at both ends to process them properly.
 
 When prompting for a new tape, @command{tar} accepts any of the following
 responses:
@@ -8634,7 +8639,8 @@ Request @command{tar} to exit immediately.
 @item n @var{file name}
 Request @command{tar} to write the next volume on the file @var{file name}.
 @item !
-Request @command{tar} to run a subshell.
+Request @command{tar} to run a subshell.  This option can be disabled
+by giving @option{--restrict} command line option to @command{tar}.
 @item y
 Request @command{tar} to begin writing the next volume.
 @end table
@@ -8676,9 +8682,12 @@ Format of the archive being processed. @xref{Formats}, for a complete
 list of archive format names. 
 @end table
 
-If the program fails, @command{tar} exits; otherwise, it begins
-writing the next volume.  The behavior of the @samp{n} response to the
-normal tape-change prompt is not available if you use @value{op-info-script}. 
+The info script can instruct @command{tar} to use new archive name,
+by writing in to file descriptor 3 (see below for an
+example).
+
+If the info script fails, @command{tar} exits; otherwise, it begins
+writing the next volume.  
 
 The method @command{tar} uses to detect end of tape is not perfect, and
 fails on some operating systems or on some devices.  You can use the
@@ -8701,42 +8710,33 @@ finished, it will rewrite the file with the now-current volume number.
 per @value{ref-label}, it @emph{only} affects the number used in
 the prompt.)
 
-If you want @command{tar} to cycle through a series of tape drives, then
-you can use the @samp{n} response to the tape-change prompt.  This
-method can be used with info scripts as well, although it is not as
-straight-forward as using @samp{n} response.  For example, the
-following script cycles through a series of archive files named
-@file{archive-@var{vol}}, where @var{vol} is the archive volume
-number:
+If you want @command{tar} to cycle through a series of files or tape
+drives, there are three approaches to choose from.  First of all, you
+can give @command{tar} multiple @value{op-file} options. In this case
+the specified files will be used, in sequence, as the successive
+volumes of the archive.  Only when the first one in the sequence needs
+to be used again will @command{tar} prompt for a tape change (or run
+the info script).  Secondly, you can use the @samp{n} response to the
+tape-change prompt, and, finally, you can use an info script, that
+writes new archive name to file descriptor.  The following example
+illustrates this approach:
 
 @smallexample
 @group
+#! /bin/sh
 echo Preparing volume $TAR_VOLUME of $TAR_ARCHIVE.
 
+name=`expr $TAR_ARCHIVE : '\(.*\)-.*'`
 case $TAR_SUBCOMMAND in
--c)       mv $TAR_ARCHIVE $@{TAR_ARCHIVE@}$(($TAR_VOLUME - 1));;
--d|-x|-t) test -r $@{TAR_ARCHIVE@}$(($TAR_VOLUME)) || exit 1
-	  ln -sf $@{TAR_ARCHIVE@}$(($TAR_VOLUME)) $TAR_ARCHIVE;;
+-c)       ;;
+-d|-x|-t) test -r $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME || exit 1
+	  ;;
 *)        exit 1
 esac
+
+echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&3
 @end group
 @end smallexample
-
-@noindent
-The same approach can be used to cycle through a series of tape drives.
-
-Another possibility is to give @command{tar} multiple @value{op-file}
-options. In this case the specified files will be used, in sequence,
-as the successive volumes of the archive.  Only when the first one in
-the sequence needs to be used again will @command{tar} prompt for a
-tape change (or run the info script).
-
-Multi-volume archives
-
-With @value{op-multi-volume}, @command{tar} will not abort when it cannot
-read or write any more data.  Instead, it will ask you to prepare a new
-volume.  If the archive is on a magnetic tape, you should change tapes
-now; if the archive is on a floppy disk, you should change disks, etc.
 
 Each volume of a multi-volume archive is an independent @command{tar}
 archive, complete in itself.  For example, you can list or extract any
