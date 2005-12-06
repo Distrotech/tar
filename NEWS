@@ -38,9 +38,20 @@ it lists member names as stored in the archive, i.e., with any eventual
 prefixes removed.  The option is useful, for example, while comparing
 `tar cv' and `tar tv' outputs.
 
+* New option --to-command pipes the contents of archive members to the
+specified command.
+
 * New option --atime-preserve=system, which uses the O_NOATIME feature
 of recent Linux kernels to avoid some problems when preserving file
 access times.
+
+* New option --restrict prohibits use of some potentially harmful tar
+options.  Currently it disables '!' escape in multi-volume name menu.
+
+* The end-of-volume script (introduced with --info-script option) can
+get current archive name from the environment variable TAR_ARCHIVE and
+the volume number from the variable TAR_VOLUME.  It can alter the
+archive name by writing new name to the file descriptor 3.
 
 * Better support for full-resolution time stamps.  Tar cannot restore
 time stamps to full nanosecond resolution, though, until the kernel
