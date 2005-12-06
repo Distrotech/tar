@@ -153,7 +153,7 @@ set_archive_format (char const *name)
   archive_format = p->fmt;
 }
 
-static const char *
+const char *
 archive_format_string (enum archive_format fmt)
 {
   struct fmttab const *p;
@@ -174,6 +174,42 @@ assert_format(unsigned fmt_mask)
 		  _("GNU features wanted on incompatible archive format")));
 }
 
+const char *
+subcommand_string (enum subcommand c)
+{
+  switch (c)
+    {
+    case UNKNOWN_SUBCOMMAND:
+      return "unknown?";
+
+    case APPEND_SUBCOMMAND:
+      return "-r";
+
+    case CAT_SUBCOMMAND:
+      return "-A";
+      
+    case CREATE_SUBCOMMAND:
+      return "-c";
+      
+    case DELETE_SUBCOMMAND:
+      return "-D";
+
+    case DIFF_SUBCOMMAND:
+      return "-d";
+      
+    case EXTRACT_SUBCOMMAND:
+      return "-x";
+
+    case LIST_SUBCOMMAND:
+      return "-t";
+
+    case UPDATE_SUBCOMMAND:
+      return "-u";
+
+    default:
+      abort ();
+    }
+}
 
 
 /* Options.  */
