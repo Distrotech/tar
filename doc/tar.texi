@@ -270,7 +270,7 @@ Reading Names from a File
 
 Excluding Some Files
 
-* controlling pattern-patching with exclude::
+* controlling pattern-matching with exclude::
 * problems with exclude::
 
 Crossing File System Boundaries
@@ -1010,10 +1010,10 @@ working directory with the archive name you intend to use (in this case,
 Whenever you use @samp{create}, @command{tar} will erase the current
 contents of the file named by @value{op-file} if it exists.  @command{tar}
 will not tell you if you are about to overwrite an archive unless you
-specify an option which does this.  @FIXME{xref to the node for
---backup!}To add files to an existing archive, you need to use a
-different option, such as @value{op-append}; see @ref{append} for
-information on how to do this.
+specify an option which does this (@pxref{backup}, for the
+information on how to do so).  To add files to an existing archive,
+you need to use a different option, such as @value{op-append}; see
+@ref{append} for information on how to do this.
 
 @node Creating the archive
 @subsection Creating the Archive
@@ -1803,6 +1803,8 @@ You will likely use some options frequently, while you will only use
 others infrequently, or not at all.  (A full list of options is
 available in @pxref{All Options}.)
 
+@vrindex TAR_OPTIONS, environment variable
+@anchor{TAR_OPTIONS}
 The @env{TAR_OPTIONS} environment variable specifies default options to
 be placed in front of any explicit options.  For example, if
 @code{TAR_OPTIONS} is @samp{-v --unlink-first}, @command{tar} behaves as
@@ -2204,11 +2206,11 @@ Normally when creating an archive, @command{tar} strips an initial
 
 @item --after-date
 
-(See @option{--newer}.) @FIXME-pxref{}
+(See @option{--newer}, @pxref{after})
 
 @item --anchored
 An exclude pattern must match an initial subsequence of the name's components.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 
 @item --atime-preserve
 @itemx --atime-preserve=replace
@@ -2260,7 +2262,7 @@ superuser privileges and can be a pain to manage.
 
 Rather than deleting files from the file system, @command{tar} will
 back them up using simple or numbered backups, depending upon
-@var{backup-type}.  @FIXME-xref{}
+@var{backup-type}.  @xref{backup}.
 
 @item --block-number
 @itemx -R
@@ -2272,13 +2274,13 @@ with the block number in the archive file.  @FIXME-xref{}
 @itemx -b @var{blocking}
 
 Sets the blocking factor @command{tar} uses to @var{blocking} x 512 bytes per
-record.  @FIXME-xref{}
+record.  @value{xref-blocking-factor}.
 
 @item --bzip2
 @itemx -j
 
 This option tells @command{tar} to read or write archives through
-@code{bzip2}.  @FIXME-xref{}
+@code{bzip2}.  @xref{gzip}.
 
 @item --checkpoint
 
@@ -2324,43 +2326,43 @@ symlink.  @FIXME-xref{}
 
 When this option is specified, @command{tar} will change its current directory
 to @var{dir} before performing any operations.  When this option is used
-during archive creation, it is order sensitive.  @FIXME-xref{}
+during archive creation, it is order sensitive.  @xref{directory}.
 
 @item --exclude=@var{pattern}
 
 When performing operations, @command{tar} will skip files that match
-@var{pattern}.  @FIXME-xref{}
+@var{pattern}.  @xref{exclude}.
 
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 
 Similar to @option{--exclude}, except @command{tar} will use the list of
-patterns in the file @var{file}.  @FIXME-xref{}
+patterns in the file @var{file}.  @xref{exclude}.
 
 @item --exclude-caches
 
 Automatically excludes all directories
-containing a cache directory tag.  @FIXME-xref{}
+containing a cache directory tag.  @xref{exclude}.
 
 @item --file=@var{archive}
 @itemx -f @var{archive}
 
 @command{tar} will use the file @var{archive} as the @command{tar} archive it
 performs operations on, rather than @command{tar}'s compilation dependent
-default.  @FIXME-xref{}
+default.  @xref{file tutorial}.
 
 @item --files-from=@var{file}
 @itemx -T @var{file}
 
 @command{tar} will use the contents of @var{file} as a list of archive members
 or files to operate on, in addition to those specified on the
-command-line.  @FIXME-xref{}
+command-line.  @xref{files}.
 
 @item --force-local
 
 Forces @command{tar} to interpret the filename given to @option{--file}
 as a local file, even if it looks like a remote tape drive name.
-@FIXME-xref{}
+@xref{local and remote archives}.
 
 @item --format=@var{format}
 
@@ -2406,16 +2408,19 @@ Also see the comments for the @value{op-owner} option.
 
 This option tells @command{tar} to read or write archives through
 @command{gzip}, allowing @command{tar} to directly operate on several
-kinds of compressed archives transparently.  @FIXME-xref{}
+kinds of compressed archives transparently.  @xref{gzip}.
 
 @item --help
 
 @command{tar} will print out a short message summarizing the operations and
-options to @command{tar} and exit.  @FIXME-xref{}
+options to @command{tar} and exit. @xref{help}.
 
 @item --ignore-case
-Ignore case when excluding files.
-@FIXME-xref{}
+Ignore case when excluding files. @xref{controlling pattern-matching
+with exclude}.
+
+@item --ignore-command-error
+Ignore exit codes of subprocesses. @xref{Writing to an External Program}.
 
 @item --ignore-failed-read
 
@@ -2446,7 +2451,8 @@ Send verbose output to @var{file} instead of to standard output.
 
 When @command{tar} is performing multi-tape backups, @var{script-file} is run
 at the end of each tape.  If @var{script-file} exits with nonzero status,
-@command{tar} fails immediately.  @FIXME-xref{}
+@command{tar} fails immediately.  @xref{info-script}, for a detailed
+discussion of @var{script-file}.
 
 @item --interactive
 @itemx --confirmation
@@ -2465,7 +2471,7 @@ when extracting files from an archive.
 @itemx -k
 
 Do not overwrite existing files when extracting files from an archive.
-@xref{Writing}.
+@xref{Keep Old Files}.
 
 @item --label=@var{name}
 @itemx -V @var{name}
@@ -2473,7 +2479,7 @@ Do not overwrite existing files when extracting files from an archive.
 When creating an archive, instructs @command{tar} to write @var{name}
 as a name record in the archive.  When extracting or listing archives,
 @command{tar} will only operate on archives that have a label matching
-the pattern specified in @var{name}.  @FIXME-xref{}
+the pattern specified in @var{name}.  @xref{Tape Files}.
 
 @item --listed-incremental=@var{snapshot-file}
 @itemx -g @var{snapshot-file}
@@ -2505,7 +2511,7 @@ or on any other file already marked as executable.
 @itemx -M
 
 Informs @command{tar} that it should create or otherwise operate on a
-multi-volume @command{tar} archive.  @FIXME-xref{}
+multi-volume @command{tar} archive.  @xref{Using Multiple Tapes}.
 
 @item --new-volume-script
 
@@ -2526,7 +2532,7 @@ in cases when such recognition fails.
 When creating an archive, @command{tar} will only add files that have changed
 since @var{date}.  If @var{date} begins with @samp{/} or @samp{.}, it
 is taken to be the name of a file whose data modification time specifies
-the date.  @FIXME-xref{}
+the date.  @xref{after}.
 
 @item --newer-mtime=@var{date}
 
@@ -2536,16 +2542,20 @@ also back up files for which any status information has changed).
 
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 
 @item --no-ignore-case
 Use case-sensitive matching when excluding files.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
+
+@item --no-ignore-command-error
+Print warnings about subprocesses terminated with a non-zero exit
+code. @xref{Writing to an External Program}. 
 
 @item --no-recursion
 
 With this option, @command{tar} will not recurse into directories.
-@FIXME-xref{}
+@xref{recurse}.
 
 @item --no-same-owner
 @itemx -o
@@ -2562,24 +2572,24 @@ for ordinary users.
 
 @item --no-wildcards
 Do not use wildcards when excluding files.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 
 @item --no-wildcards-match-slash
 Wildcards do not match @samp{/} when excluding files.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 
 @item --null
 
 When @command{tar} is using the @option{--files-from} option, this option
 instructs @command{tar} to expect filenames terminated with @option{NUL}, so
 @command{tar} can correctly work with file names that contain newlines.
-@FIXME-xref{}
+@xref{nul}.
 
 @item --numeric-owner
 
 This option will notify @command{tar} that it should use numeric user
 and group IDs when creating a @command{tar} file, rather than names.
-@FIXME-xref{}
+@xref{Attributes}.
 
 @item -o
 When extracting files, this option is a synonym for
@@ -2656,14 +2666,14 @@ This option does not affect extraction from archives.
 @item --pax-option=@var{keyword-list}
 
 This option is meaningful only with @acronym{POSIX.1-2001} archives
-(@FIXME-xref{}).  It modifies the way @command{tar} handles the
+(@pxref{posix}).  It modifies the way @command{tar} handles the
 extended header keywords.  @var{Keyword-list} is a comma-separated
 list of keyword options, each keyword option taking one of
 the following forms:
 
 @table @asis
 @item delete=@var{pattern}
-When used with one of archive-creation command (@FIXME-xref{}),
+When used with one of archive-creation commands,
 this option instructs @command{tar} to omit from extended header records
 that it produces any keywords matching the string @var{pattern}.
 
@@ -2773,7 +2783,7 @@ Same as @option{--format=posix}.
 @item --preserve
 
 Synonymous with specifying both @option{--preserve-permissions} and
-@option{--same-order}.  @FIXME-xref{}
+@option{--same-order}.  @xref{Setting Access Permissions}.
 
 @item --preserve-order
 
@@ -2787,7 +2797,7 @@ When @command{tar} is extracting an archive, it normally subtracts the
 users' umask from the permissions specified in the archive and uses
 that number as the permissions to create the destination file.
 Specifying this option instructs @command{tar} that it should use the
-permissions directly from the archive.  @xref{Writing}.
+permissions directly from the archive.  @xref{Setting Access Permissions}.
 
 @item --read-full-records
 @itemx -B
@@ -2798,23 +2808,23 @@ from pipes on systems with buggy implementations.  @xref{Reading}.
 @item --record-size=@var{size}
 
 Instructs @command{tar} to use @var{size} bytes per record when accessing the
-archive.  @FIXME-xref{}
+archive.  @value{xref-blocking-factor}.
 
 @item --recursion
 
 With this option, @command{tar} recurses into directories.
-@FIXME-xref{}
+@xref{recurse}.
 
 @item --recursive-unlink
 
 Remove existing
 directory hierarchies before extracting directories of the same name
-from the archive.  @xref{Writing}.
+from the archive.  @xref{Recursive Unlink}.
 
 @item --remove-files
 
 Directs @command{tar} to remove the source file from the file system after
-appending it to an archive.  @FIXME-xref{}
+appending it to an archive.  @xref{remove files}.
 
 @item --rmt-command=@var{cmd}
 
@@ -2824,7 +2834,7 @@ the default @file{/usr/libexec/rmt} (@pxref{Remote Tape Server}).
 @item --rsh-command=@var{cmd}
 
 Notifies @command{tar} that is should use @var{cmd} to communicate with remote
-devices.  @FIXME-xref{}
+devices.  @xref{Device}.
 
 @item --same-order
 @itemx --preserve-order
@@ -2840,11 +2850,11 @@ archive.  @xref{Reading}.
 When extracting an archive, @command{tar} will attempt to preserve the owner
 specified in the @command{tar} archive with this option present.
 This is the default behavior for the superuser; this option has an
-effect only for ordinary users.  @FIXME-xref{}
+effect only for ordinary users.  @xref{Attributes}.
 
 @item --same-permissions
 
-(See @option{--preserve-permissions}; @pxref{Writing}.)
+(See @option{--preserve-permissions}; @pxref{Setting Access Permissions}.)
 
 @item --show-defaults
 
@@ -2860,7 +2870,7 @@ $ tar --show-defaults
 @item --show-omitted-dirs
 
 Instructs @command{tar} to mention directories its skipping over when
-operating on a @command{tar} archive.  @FIXME-xref{}
+operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 
 @item --show-stored-names
 
@@ -2873,7 +2883,7 @@ names.  @xref{listing member and file names}.
 @itemx -S
 
 Invokes a @acronym{GNU} extension when adding files to an archive that handles
-sparse files efficiently.  @FIXME-xref{}
+sparse files efficiently.  @xref{sparse}.
 
 @item --starting-file=@var{name}
 @itemx -K @var{name}
@@ -2898,55 +2908,60 @@ would extracted this file to file @file{name}.
 @item --suffix=@var{suffix}
 
 Alters the suffix @command{tar} uses when backing up files from the default
-@samp{~}.  @FIXME-xref{}
+@samp{~}.  @xref{backup}.
 
 @item --tape-length=@var{num}
 @itemx -L @var{num}
 
 Specifies the length of tapes that @command{tar} is writing as being
-@w{@var{num} x 1024} bytes long.  @FIXME-xref{}
+@w{@var{num} x 1024} bytes long.  @xref{Using Multiple Tapes}.
 
 @item --test-label
 
 Reads the volume label.  If an argument is specified, test whether it
 matches the volume label.  @xref{--test-label option}.
 
+@item --to-command=@var{command}
+
+During extraction @command{tar} will pipe extracted files to the
+standard input of @var{command}. @xref{Writing to an External Program}.
+
 @item --to-stdout
 @itemx -O
 
 During extraction, @command{tar} will extract files to stdout rather
-than to the file system.  @xref{Writing}.
+than to the file system.  @xref{Writing to Standard Output}.
 
 @item --totals
 
 Displays the total number of bytes written after creating an archive.
-@FIXME-xref{}
+@xref{verbose}.
 
 @item --touch
 @itemx -m
 
 Sets the data modification time of extracted files to the extraction time,
 rather than the data modification time stored in the archive.
-@xref{Writing}.
+@xref{Data Modification Times}.
 
 @item --uncompress
 
-(See @option{--compress}.) @FIXME-pxref{}
+(See @option{--compress}. @pxref{gzip})
 
 @item --ungzip
 
-(See @option{--gzip}.) @FIXME-pxref{}
+(See @option{--gzip}. @pxref{gzip})
 
 @item --unlink-first
 @itemx -U
 
 Directs @command{tar} to remove the corresponding file from the file
-system before extracting it from the archive.  @xref{Writing}.
+system before extracting it from the archive.  @xref{Unlink First}.
 
 @item --use-compress-program=@var{prog}
 
 Instructs @command{tar} to access the archive through @var{prog}, which is
-presumed to be a compression program of some sort.  @FIXME-xref{}
+presumed to be a compression program of some sort.  @xref{gzip}.
 
 @item --utc
 
@@ -2958,33 +2973,34 @@ Display file modification dates in @acronym{UTC}.  This option implies
 
 Specifies that @command{tar} should be more verbose about the operations its
 performing.  This option can be specified multiple times for some
-operations to increase the amount of information displayed.  @FIXME-xref{}
+operations to increase the amount of information displayed.
+@xref{verbose}.
 
 @item --verify
 @itemx -W
 
 Verifies that the archive was correctly written when creating an
-archive.  @FIXME-xref{}
+archive.  @xref{verify}.
 
 @item --version
 
 @command{tar} will print an informational message about what version
 it is and a copyright message, some credits, and then exit.
-@FIXME-xref{}
+@xref{help}.
 
 @item --volno-file=@var{file}
 
 Used in conjunction with @option{--multi-volume}.  @command{tar} will keep track
 of which volume of a multi-volume archive its working in @var{file}.
-@FIXME-xref{}
+@xref{volno-file}.
 
 @item --wildcards
 Use wildcards when excluding files.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 
 @item --wildcards-match-slash
 Wildcards match @samp{/} when excluding files.
-@FIXME-xref{}
+@xref{controlling pattern-matching with exclude}.
 @end table
 
 @node Short Option Summary
@@ -3323,6 +3339,7 @@ is actually making forward progress.
 @FIXME{There is some confusion here.  It seems that -R once wrote a
 message at @samp{every} record read or written.}
 
+@anchor{show-omitted-dirs}
 The @value{op-show-omitted-dirs} option, when reading an archive---with
 @value{op-list} or @value{op-extract}, for example---causes a message
 to be printed for each directory in the archive which is skipped.
@@ -4142,14 +4159,6 @@ encountered while reading an archive.  Use in conjunction with
 
 @node Writing
 @subsection Changing How @command{tar} Writes Files
-@cindex Overwriting old files, prevention
-@cindex Protecting old files
-@cindex Data modification times of extracted files
-@cindex Modification times of extracted files
-@cindex Permissions of extracted files
-@cindex Modes of extracted files
-@cindex Writing extracted files to standard output
-@cindex Standard output, writing extracted files to
 @UNREVISED
 
 @FIXME{need to mention the brand new option, --backup}
@@ -4164,6 +4173,7 @@ encountered while reading an archive.  Use in conjunction with
 * Data Modification Times::
 * Setting Access Permissions::
 * Writing to Standard Output::
+* Writing to an External Program::
 * remove files::
 @end menu
 
@@ -4180,6 +4190,7 @@ permission, etc.).  The @option{--overwrite-dir} option enables this
 default behavior.  To be more cautious and preserve the metadata of
 such a directory, use the @option{--no-overwrite-dir} option.
 
+@cindex Overwriting old files, prevention
 To be even more cautious and prevent existing files from being replaced, use
 the @value{op-keep-old-files} option.  It causes @command{tar} to refuse
 to replace or update a file that already exists, i.e., a file with the
@@ -4190,6 +4201,7 @@ To be more aggressive about altering existing files, use the
 @value{op-overwrite} option.  It causes @command{tar} to overwrite
 existing files and to follow existing symbolic links when extracting.
 
+@cindex Protecting old files
 Some people argue that @GNUTAR{} should not hesitate
 to overwrite files with other files when extracting.  When extracting
 a @command{tar} archive, they expect to see a faithful copy of the
@@ -4295,6 +4307,8 @@ of the contents of a full directory hierarchy.
 @node Data Modification Times
 @unnumberedsubsubsec Setting Data Modification Times
 
+@cindex Data modification times of extracted files
+@cindex Modification times of extracted files
 Normally, @command{tar} sets the data modification times of extracted
 files to the corresponding times recorded for the files in the archive, but
 limits the permissions of extracted files by the current @code{umask}
@@ -4315,6 +4329,8 @@ Use in conjunction with @value{op-extract}.
 @node Setting Access Permissions
 @unnumberedsubsubsec Setting Access Permissions
 
+@cindex Permissions of extracted files
+@cindex Modes of extracted files
 To set the modes (access permissions) of extracted files to those
 recorded for those files in the archive, use @option{--same-permissions}
 in conjunction with the @value{op-extract} operation.  @FIXME{Should be
@@ -4323,20 +4339,18 @@ aliased to ignore-umask.}
 @table @option
 @item --preserve-permission
 @itemx --same-permission
-@itemx --ignore-umask
+@c @itemx --ignore-umask
 @itemx -p
 Set modes of extracted archive members to those recorded in the
 archive, instead of current umask settings.  Use in conjunction with
 @value{op-extract}.
 @end table
 
-@FIXME{Following paragraph needs to be rewritten: why doesn't this cat
-files together, why is this useful.  is it really useful with
-more than one file?}
-
 @node Writing to Standard Output
 @unnumberedsubsubsec Writing to Standard Output
 
+@cindex Writing extracted files to standard output
+@cindex Standard output, writing extracted files to
 To write the extracted files to the standard output, instead of
 creating the files on the file system, use @value{op-to-stdout} in
 conjunction with @value{op-extract}.  This option is useful if you are
@@ -4348,12 +4362,12 @@ found in the archive.
 @table @option
 @item --to-stdout
 @itemx -O
-Writes files to the standard output.  Used in conjunction with
-@value{op-extract}.  Extract files to standard output.  When this option
-is used, instead of creating the files specified, @command{tar} writes
-the contents of the files extracted to its standard output.  This may
-be useful if you are only extracting the files in order to send them
-through a pipe.  This option is meaningless with @value{op-list}.
+Writes files to the standard output.  Use only in conjunction with
+@value{op-extract}.  When this option is used, instead of creating the
+files specified, @command{tar} writes the contents of the files
+extracted to its standard output.  This may be useful if you are only
+extracting the files in order to send them through a pipe.  This
+option is meaningless with @value{op-list}. 
 @end table
 
 This can be useful, for example, if you have a tar archive containing
@@ -4369,6 +4383,121 @@ or even like this if you want to process the concatenation of the files:
 @smallexample
 tar -xOzf foo.tgz bigfile1 bigfile2 | process
 @end smallexample
+
+Hovewer, @option{--to-command} may be more convenient for use with
+multiple files. See the next section.
+
+@node Writing to an External Program
+@unnumberedsubsubsec Writing to an External Program
+
+You can instruct @command{tar} to send the contents of each extracted
+file to the standard input of an external program:
+
+@table @option
+@item --to-program=@var{command}
+Extract files and pipe their contents to the standard input of
+@var{command}. When this option is used, instead of creating the
+files specified, @command{tar} invokes @var{command} and pipes the
+contents of the files to its standard output. @var{Command} may
+contain command line arguments. The program is executed via
+@code{sh -c}. Notice, that @var{command} is executed once for each regular file
+extracted. Non-regular files (directories, etc.) are ignored when this
+option is used.
+@end table
+
+The command can obtain the information about the file it processes
+from the following environment variables:
+
+@table @var
+@vrindex TAR_FILETYPE, to-command environment
+@item TAR_FILETYPE
+Type of the file. It is a single letter with the following meaning:
+
+@multitable @columnfractions 0.10 0.90
+@item f @tab Regular file
+@item d @tab Directory
+@item l @tab Symbolic link
+@item h @tab Hard link
+@item b @tab Block device
+@item c @tab Character device
+@end multitable
+
+Currently only regular files are supported.
+
+@vrindex TAR_MODE, to-command environment
+@item TAR_MODE
+File mode, an octal number.
+
+@vrindex TAR_FILENAME, to-command environment
+@item TAR_FILENAME
+The name of the file.
+
+@vrindex TAR_REALNAME, to-command environment
+@item TAR_REALNAME
+Name of the file as stored in the archive.
+
+@vrindex TAR_UNAME, to-command environment
+@item TAR_UNAME
+Name of the file owner.
+
+@vrindex TAR_GNAME, to-command environment
+@item TAR_GNAME
+Name of the file owner group.
+
+@vrindex TAR_ATIME, to-command environment
+@item TAR_ATIME
+Time of last access. It is a decimal number, representing seconds
+since the epoch.  If the archive provides times with nanosecond
+precision, the nanoseconds are appended to the timestamp after a
+decimal point.
+
+@vrindex TAR_MTIME, to-command environment
+@item TAR_MTIME
+Time of last modification.
+
+@vrindex TAR_CTIME, to-command environment
+@item TAR_CTIME
+Time of last status change.
+
+@vrindex TAR_SIZE, to-command environment
+@item TAR_SIZE
+Size of the file.
+
+@vrindex TAR_UID, to-command environment
+@item TAR_UID
+UID of the file owner.
+
+@vrindex TAR_GID, to-command environment
+@item TAR_GID
+GID of the file owner.
+@end table
+
+In addition to these variables, @env{TAR_VERSION} contains the
+@GNUTAR{} version number.
+
+If @var{command} exits with a non-0 status, @command{tar} will print
+an error message similar to the following:
+
+@smallexample
+tar: 2345: Child returned status 1
+@end smallexample
+
+Here, @samp{2345} is the PID of the finished process.
+
+If this behavior is not wanted, use @option{--ignore-command-error}:
+
+@table @option
+@item --ignore-command-error
+Ignore exit codes of subprocesses.  Notice that if the program
+exits on signal or otherwise terminates abnormally, the error message
+will be printed even if this option is used.
+
+@item --no-ignore-command-error
+Cancel the effect of any previous @option{--ignore-command-error}
+option. This option is useful if you have set
+@option{--ignore-command-error} in @env{TAR_OPTIONS}
+(@pxref{TAR_OPTIONS}) and wish to temporarily cancel it.
+@end table
 
 @node remove files
 @unnumberedsubsubsec Removing Files
@@ -4716,7 +4845,7 @@ If you want to dump each file system separately you will need to use
 the @value{op-one-file-system} option to prevent @command{tar} from crossing
 file system boundaries when storing (sub)directories.
 
-The @value{op-incremental} (@FIXME-pxref{}) option is not needed,
+The @value{op-incremental} (@value{pxref-incremental}) option is not needed,
 since this is a complete copy of everything in the file system, and a
 full restore from this backup would only be done onto a completely
 empty disk.
@@ -4938,9 +5067,9 @@ and @command{tar} commands by hand.
 Before you use these scripts, you need to edit the file
 @file{backup-specs}, which specifies parameters used by the backup
 scripts and by the restore script.  This file is usually located
-in @file{/etc/backup} directory.  @FIXME-xref{Script Syntax} Once the
-backup parameters are set, you can perform backups or restoration by
-running the appropriate script.
+in @file{/etc/backup} directory.  @xref{Backup Parameters}, for its
+detailed description.  Once the backup parameters are set, you can
+perform backups or restoration by running the appropriate script.
 
 The name of the backup script is @code{backup}.  The name of the
 restore script is @code{restore}.  The following sections describe
@@ -5575,6 +5704,8 @@ prompt you for a username and password.  If you use
 will complete the remote connection, if possible, using your username
 as the username on the remote machine.
 
+@cindex Local and remote archives
+@anchor{local and remote archives}
 If the archive file name includes a colon (@samp{:}), then it is assumed
 to be a file on another machine.  If the archive file is
 @samp{@var{user}@@@var{host}:@var{file}}, then @var{file} is used on the
@@ -5852,24 +5983,21 @@ Causes @command{tar} to ignore directories containing a cache directory tag.
 @end table
 
 @findex exclude-caches
-When creating an archive,
-the @option{--exclude-caches} option
-causes @command{tar} to exclude all directories
-that contain a @dfn{cache directory tag}.
-A cache directory tag is a short file
-with the well-known name @file{CACHEDIR.TAG}
-and having a standard header
+When creating an archive, the @option{--exclude-caches} option causes
+@command{tar} to exclude all directories that contain a @dfn{cache
+directory tag}. A cache directory tag is a short file with the
+well-known name @file{CACHEDIR.TAG} and having a standard header
 specified in @url{http://www.brynosaurus.com/cachedir/spec.html}.
-Various applications write cache directory tags
-into directories they use to hold regenerable, non-precious data,
-so that such data can be more easily excluded from backups.
+Various applications write cache directory tags into directories they
+use to hold regenerable, non-precious data, so that such data can be
+more easily excluded from backups. 
 
 @menu
-* controlling pattern-patching with exclude::
+* controlling pattern-matching with exclude::
 * problems with exclude::
 @end menu
 
-@node controlling pattern-patching with exclude
+@node controlling pattern-matching with exclude
 @unnumberedsubsec Controlling Pattern-Matching with the @code{exclude} Options
 
 Normally, a pattern matches a name if an initial subsequence of the
@@ -6172,7 +6300,7 @@ causes @command{tar} to extract only the matched directory entries, not
 the files under those directories.
 
 The @value{op-no-recursion} option also affects how exclude patterns
-are interpreted (@pxref{controlling pattern-patching with exclude}).
+are interpreted (@pxref{controlling pattern-matching with exclude}).
 
 The @option{--no-recursion} and @option{--recursion} options apply to
 later options and operands, and can be overridden by later occurrences
@@ -7767,8 +7895,9 @@ maximum tape length, you might avoid the problem entirely.
 @item -F @var{file}
 @itemx --info-script=@var{file}
 @itemx --new-volume-script=@var{file}
-Execute @file{file} at end of each tape.  If @file{file} exits with
-nonzero status, exit.  This implies @value{op-multi-volume}.
+Execute @file{file} at end of each tape.  This implies
+@value{op-multi-volume}.  @xref{info-script}, for a detailed
+description of this option. 
 @end table
 
 @node Remote Tape Server
@@ -8513,14 +8642,43 @@ Request @command{tar} to begin writing the next volume.
 (You should only type @samp{y} after you have changed the tape;
 otherwise @command{tar} will write over the volume it just finished.)
 
+@cindex End-of-archive info script
+@cindex Info script
+@anchor{info-script}
 If you want more elaborate behavior than this, give @command{tar} the
 @value{op-info-script} option.  The file @var{script-name} is expected
 to be a program (or shell script) to be run instead of the normal
-prompting procedure.  If the program fails, @command{tar} exits;
-otherwise, @command{tar} begins writing the next volume.  The behavior
-of the
-@samp{n} response to the normal tape-change prompt is not available
-if you use @value{op-info-script}.
+prompting procedure.  It is executed without any command line
+arguments.  Additional data is passed to it via the following
+environment variables:
+
+@table @env
+@vrindex TAR_VERSION, info script environment variable
+@item TAR_VERSION
+@GNUTAR{} version number.
+
+@vrindex TAR_ARCHIVE, info script environment variable 
+@item TAR_ARCHIVE
+The name of the archive @command{tar} is processing.
+
+@vrindex TAR_VOLUME, info script environment variable
+@item TAR_VOLUME
+Ordinal number of the volume @command{tar} is about to start.
+
+@vrindex TAR_SUBCOMMAND, info script environment variable
+@item TAR_SUBCOMMAND
+Short option describing the operation @command{tar} is executed. 
+@xref{Operations}, for a complete list of subcommand options.
+
+@vrindex TAR_FORMAT, info script environment variable
+@item TAR_FORMAT
+Format of the archive being processed. @xref{Formats}, for a complete
+list of archive format names. 
+@end table
+
+If the program fails, @command{tar} exits; otherwise, it begins
+writing the next volume.  The behavior of the @samp{n} response to the
+normal tape-change prompt is not available if you use @value{op-info-script}. 
 
 The method @command{tar} uses to detect end of tape is not perfect, and
 fails on some operating systems or on some devices.  You can use the
@@ -8530,6 +8688,9 @@ The @var{size} argument should then be the usable size of the tape.
 But for many devices, and floppy disks in particular, this option is
 never required for real, as far as we know.
 
+@cindex Volume number file
+@cindex volno file
+@anchor{volno-file}
 The volume number used by @command{tar} in its tape-change prompt
 can be changed; if you give the @value{op-volno-file} option, then
 @var{file-of-number} should be an unexisting file to be created, or else,
@@ -8541,13 +8702,34 @@ per @value{ref-label}, it @emph{only} affects the number used in
 the prompt.)
 
 If you want @command{tar} to cycle through a series of tape drives, then
-you can use the @samp{n} response to the tape-change prompt.  This is
-error prone, however, and doesn't work at all with @value{op-info-script}.
-Therefore, if you give @command{tar} multiple @value{op-file} options, then
-the specified files will be used, in sequence, as the successive volumes
-of the archive.  Only when the first one in the sequence needs to be
-used again will @command{tar} prompt for a tape change (or run the info
-script).
+you can use the @samp{n} response to the tape-change prompt.  This
+method can be used with info scripts as well, although it is not as
+straight-forward as using @samp{n} response.  For example, the
+following script cycles through a series of archive files named
+@file{archive-@var{vol}}, where @var{vol} is the archive volume
+number:
+
+@smallexample
+@group
+echo Preparing volume $TAR_VOLUME of $TAR_ARCHIVE.
+
+case $TAR_SUBCOMMAND in
+-c)       mv $TAR_ARCHIVE $@{TAR_ARCHIVE@}$(($TAR_VOLUME - 1));;
+-d|-x|-t) test -r $@{TAR_ARCHIVE@}$(($TAR_VOLUME)) || exit 1
+	  ln -sf $@{TAR_ARCHIVE@}$(($TAR_VOLUME)) $TAR_ARCHIVE;;
+*)        exit 1
+esac
+@end group
+@end smallexample
+
+@noindent
+The same approach can be used to cycle through a series of tape drives.
+
+Another possibility is to give @command{tar} multiple @value{op-file}
+options. In this case the specified files will be used, in sequence,
+as the successive volumes of the archive.  Only when the first one in
+the sequence needs to be used again will @command{tar} prompt for a
+tape change (or run the info script).
 
 Multi-volume archives
 
@@ -8615,13 +8797,14 @@ should load the volume where the archive member starts, and use
 volumes as it needs them.  @xref{extracting archives}, for more
 information about extracting archives.
 
-@value{op-info-script} is like @value{op-multi-volume}, except that
-@command{tar} does not prompt you directly to change media volumes when
-a volume is full---instead, @command{tar} runs commands you have stored
-in @var{script-name}.  For example, this option can be used to eject
-cassettes, or to broadcast messages such as @samp{Someone please come
-change my tape} when performing unattended backups.  When @var{script-name}
-is done, @command{tar} will assume that the media has been changed.
+@value{op-info-script} (@pxref{info-script}) is like
+@value{op-multi-volume}, except that @command{tar} does not prompt you
+directly to change media volumes when a volume is full---instead,
+@command{tar} runs commands you have stored in @var{script-name}.  For
+example, this option can be used to eject cassettes, or to broadcast
+messages such as @samp{Someone please come change my tape} when
+performing unattended backups.  When @var{script-name} is done,
+@command{tar} will assume that the media has been changed. 
 
 Multi-volume archives can be modified like any other archive.  To add
 files to a multi-volume archive, you need to only mount the last
@@ -8651,7 +8834,7 @@ operation.
 @item --info-script=@var{program-file}
 @itemx -F @var{program-file}
 Creates a multi-volume archive via a script.  Used in conjunction with
-@value{op-create}.
+@value{op-create}. @xref{info-script}, dor a detailed discussion.
 @end table
 
 Beware that there is @emph{no} real standard about the proper way, for
