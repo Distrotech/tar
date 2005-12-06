@@ -904,7 +904,7 @@ new_volume (enum access_mode mode)
 	{
 	  if (volno_file_option)
 	    closeout_volume_number ();
-	  if (system (info_script_option) != 0)
+	  if (sys_exec_info_script (*archive_name_cursor, global_volno+1))
 	    FATAL_ERROR ((0, 0, _("%s command failed"),
 			  quote (info_script_option)));
 	}
