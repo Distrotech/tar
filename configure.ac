@@ -155,7 +155,7 @@ else
   case $DEFAULT_ARCHIVE in
     *[[0-7][lmh]])
       AC_DEFINE(DENSITY_LETTER, 1,
-	[[Define to 1 if density may be indicated by [lmh] at end of device.]])
+	[Define to 1 if density may be indicated by [lmh] at end of device.])
       device_prefix=`echo $DEFAULT_ARCHIVE | sed 's/[0-7][lmh]$//'`
       ;;
     *[[0-7]])

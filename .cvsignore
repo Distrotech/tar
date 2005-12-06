@@ -1,6 +1,7 @@
 *.bz2
 *.gz
 *.tar
+.bootstrap
 ABOUT-NLS
 COPYING
 INSTALL

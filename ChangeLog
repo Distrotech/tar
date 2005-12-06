@@ -1,3 +1,8 @@
+2005-12-06  Eric Blake  <ebb9@byu.net> (trivial changes)
+
+	* configure.ac (DENSITY_LETTER): Fix m4 overquoting.
+	* .cvsignore: Ignore .bootstrap.
+
 2005-12-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Document --to-command and --info-script
@@ -29,7 +34,7 @@
 
 	* THANKS: Add Guerkan Karaman.
 	* NEWS: Update
-	
+
 2005-11-30  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* doc/tar.texi (Option Summary): Rewrite the
