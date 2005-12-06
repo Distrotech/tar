@@ -617,6 +617,8 @@ void tar_stat_init (struct tar_stat_info *st);
 void tar_stat_destroy (struct tar_stat_info *st);
 void usage (int) __attribute__ ((noreturn));
 int tar_timespec_cmp (struct timespec a, struct timespec b);
+const char *archive_format_string (enum archive_format fmt);
+const char *subcommand_string (enum subcommand c);
 
 /* Module update.c.  */
 
@@ -664,6 +666,7 @@ size_t sys_write_archive_buffer (void);
 bool sys_get_archive_stat (void);
 int sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st);
 void sys_wait_command (void);
+int sys_exec_info_script (const char *archive_name, int volume_number);
 
 /* Module compare.c */
 void report_difference (struct tar_stat_info *st, const char *message, ...);
