@@ -1,6 +1,6 @@
 /* System-dependent calls for tar.
 
-   Copyright (C) 2003, 2004 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -766,19 +766,36 @@ sys_wait_command (void)
 }
 
 int
-sys_exec_info_script (const char *archive_name, int volume_number)
+sys_exec_info_script (const char **archive_name, int volume_number)
 {
   pid_t pid;
   char *argv[4];
   char uintbuf[UINTMAX_STRSIZE_BOUND];
+  int p[2];
+  
+  xpipe (p);
+  pipe_handler = signal (SIGPIPE, SIG_IGN);
 
   pid = xfork ();
 
   if (pid != 0)
     {
-      int status;
-      
       /* Master */
+
+      int rc;
+      int status;
+      char *buf;
+      size_t size = 0;
+      FILE *fp;
+      
+      xclose (p[PWRITE]);
+      fp = fdopen (p[PREAD], "r");
+      rc = getline (&buf, &size, fp);
+      fclose (fp);
+
+      if (rc > 0 && buf[rc-1] == '\n')
+	buf[--rc] = 0;
+      
       while (waitpid (pid, &status, 0) == -1)
 	if (errno != EINTR)
 	  {
@@ -787,20 +804,30 @@ sys_exec_info_script (const char *archive_name, int volume_number)
 	  }
       
       if (WIFEXITED (status))
-	return WEXITSTATUS (status);
+	{
+	  if (WEXITSTATUS (status) == 0 && rc > 0)
+	    *archive_name = buf;
+	  else
+	    free (buf);
+	  return WEXITSTATUS (status);
+	}
       
+      free (buf);
       return -1;
     }
 
   /* Child */
   setenv ("TAR_VERSION", PACKAGE_VERSION, 1);
-  setenv ("TAR_ARCHIVE", archive_name, 1);
+  setenv ("TAR_ARCHIVE", *archive_name, 1);
   setenv ("TAR_VOLUME", STRINGIFY_BIGINT (volume_number, uintbuf), 1);
   setenv ("TAR_SUBCOMMAND", subcommand_string (subcommand_option), 1);
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
 				 archive_format : current_format), 1);
-  
+
+  xclose (p[PREAD]);
+  xdup2 (p[PWRITE], 3);
+
   argv[0] = "/bin/sh";
   argv[1] = "-c";
   argv[2] = (char*) info_script_option;
