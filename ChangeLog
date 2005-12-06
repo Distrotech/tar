@@ -1,3 +1,20 @@
+2005-12-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Update --info-scripts documentation
+	* scripts/dump-remind.in: Use TAR_VOLUME instead of reading volno
+	file.
+	* src/buffer.c (new_volume): Update invocation
+	(change_tape_menu): New function. Disable '!' command if given
+	--restrict option.
+	* src/common.h (sys_exec_info_script): Update delaration
+	(restrict_option): New global
+	* src/system.c (sys_exec_info_script): The script can supply new
+	archive name to use by writing it to file descriptor 3.
+	* src/tar.c (options): Add --restrict option. Use macros for
+	option grouping.
+	(license): Print full list of copyright years
+	* NEWS: Update
+	
 2005-12-06  Eric Blake  <ebb9@byu.net> (trivial changes)
 
 	* configure.ac (DENSITY_LETTER): Fix m4 overquoting.
