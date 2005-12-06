@@ -863,6 +863,99 @@ increase_volume_number ()
   volno++;
 }
 
+void
+change_tape_menu (FILE *read_file)
+{
+  char *input_buffer = NULL;
+  size_t size = 0;
+
+  while (1)
+    {
+      fputc ('\007', stderr);
+      fprintf (stderr,
+	       _("Prepare volume #%d for %s and hit return: "),
+	       global_volno + 1, quote (*archive_name_cursor));
+      fflush (stderr);
+      
+      if (getline (&input_buffer, &size, read_file) <= 0)
+	{
+	  WARN ((0, 0, _("EOF where user reply was expected")));
+	  
+	  if (subcommand_option != EXTRACT_SUBCOMMAND
+	      && subcommand_option != LIST_SUBCOMMAND
+	      && subcommand_option != DIFF_SUBCOMMAND)
+	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
+	  
+	  fatal_exit ();
+	}
+      
+      if (input_buffer[0] == '\n'
+	  || input_buffer[0] == 'y'
+	  || input_buffer[0] == 'Y')
+	break;
+
+      switch (input_buffer[0])
+	{
+	case '?':
+	  {
+	    fprintf (stderr, _("\
+ n [name]      Give a new file name for the next (and subsequent) volume(s)\n\
+ q             Abort tar\n\
+ y or newline  Continue operation\n"));
+            if (!restrict_option)
+              fprintf (stderr, _(" !             Spawn a subshell\n"));
+	    fprintf (stderr, _(" ?             Print this list\n"));
+	  }
+	  break;
+
+	case 'q':
+	  /* Quit.  */
+	  
+	  WARN ((0, 0, _("No new volume; exiting.\n")));
+	  
+	  if (subcommand_option != EXTRACT_SUBCOMMAND
+	      && subcommand_option != LIST_SUBCOMMAND
+	      && subcommand_option != DIFF_SUBCOMMAND)
+	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
+	  
+	  fatal_exit ();
+	  
+	case 'n':
+	  /* Get new file name.  */
+	  
+	  {
+	    char *name;
+	    char *cursor;
+	    
+	    for (name = input_buffer + 1;
+		 *name == ' ' || *name == '\t';
+		 name++)
+	      ;
+	    
+	    for (cursor = name; *cursor && *cursor != '\n'; cursor++)
+	      ;
+	    *cursor = '\0';
+	    
+	    /* FIXME: the following allocation is never reclaimed.  */
+	    *archive_name_cursor = xstrdup (name);
+	  }
+	  break;
+	  
+	case '!':
+	  if (!restrict_option)
+	    {
+	      sys_spawn_shell ();
+	      break;
+	    }
+	  /* FALL THROUGH */
+
+	default:
+	  fprintf (stderr, _("Invalid input. Type ? for help.\n"));
+	}
+    }
+  free (input_buffer);
+}
+
 /* We've hit the end of the old volume.  Close it and open the next one.
    Return nonzero on success.
 */
@@ -904,88 +997,12 @@ new_volume (enum access_mode mode)
 	{
 	  if (volno_file_option)
 	    closeout_volume_number ();
-	  if (sys_exec_info_script (*archive_name_cursor, global_volno+1))
+	  if (sys_exec_info_script (archive_name_cursor, global_volno+1))
 	    FATAL_ERROR ((0, 0, _("%s command failed"),
 			  quote (info_script_option)));
 	}
       else
-	while (1)
-	  {
-	    char input_buffer[80];
-
-	    fputc ('\007', stderr);
-	    fprintf (stderr,
-		     _("Prepare volume #%d for %s and hit return: "),
-		     global_volno + 1, quote (*archive_name_cursor));
-	    fflush (stderr);
-
-	    if (fgets (input_buffer, sizeof input_buffer, read_file) == 0)
-	      {
-		WARN ((0, 0, _("EOF where user reply was expected")));
-
-		if (subcommand_option != EXTRACT_SUBCOMMAND
-		    && subcommand_option != LIST_SUBCOMMAND
-		    && subcommand_option != DIFF_SUBCOMMAND)
-		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
-
-		fatal_exit ();
-	      }
-	    if (input_buffer[0] == '\n'
-		|| input_buffer[0] == 'y'
-		|| input_buffer[0] == 'Y')
-	      break;
-
-	    switch (input_buffer[0])
-	      {
-	      case '?':
-		{
-		  /* FIXME: Might it be useful to disable the '!' command? */
-		  fprintf (stderr, _("\
- n [name]   Give a new file name for the next (and subsequent) volume(s)\n\
- q          Abort tar\n\
- !          Spawn a subshell\n\
- ?          Print this list\n"));
-		}
-		break;
-
-	      case 'q':
-		/* Quit.  */
-
-		WARN ((0, 0, _("No new volume; exiting.\n")));
-
-		if (subcommand_option != EXTRACT_SUBCOMMAND
-		    && subcommand_option != LIST_SUBCOMMAND
-		    && subcommand_option != DIFF_SUBCOMMAND)
-		  WARN ((0, 0, _("WARNING: Archive is incomplete")));
-
-		fatal_exit ();
-
-	      case 'n':
-		/* Get new file name.  */
-
-		{
-		  char *name = &input_buffer[1];
-		  char *cursor;
-
-		  for (name = input_buffer + 1;
-		       *name == ' ' || *name == '\t';
-		       name++)
-		    ;
-
-		  for (cursor = name; *cursor && *cursor != '\n'; cursor++)
-		    ;
-		  *cursor = '\0';
-
-		  /* FIXME: the following allocation is never reclaimed.  */
-		  *archive_name_cursor = xstrdup (name);
-		}
-		break;
-
-	      case '!':
-		sys_spawn_shell ();
-		break;
-	      }
-	  }
+	change_tape_menu (read_file);
     }
 
   if (strcmp (archive_name_cursor[0], "-") == 0)
@@ -1499,7 +1516,7 @@ _gnu_flush_write (size_t buffer_level)
   char *copy_ptr;
   size_t copy_size;
   size_t bufsize;
-
+    
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
@@ -1524,7 +1541,7 @@ _gnu_flush_write (size_t buffer_level)
     return;
 
   xheader_destroy (&extended_header);
-  
+
   increase_volume_number ();
   if (totals_option)
     prev_written += bytes_written;
