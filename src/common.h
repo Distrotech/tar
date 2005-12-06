@@ -254,6 +254,9 @@ GLOBAL bool touch_option;
 GLOBAL char *to_command_option;
 GLOBAL bool ignore_command_error_option;
 
+/* Restrict some potentially harmful tar options */
+GLOBAL bool restrict_option;
+
 /* Return true if the extracted files are not being written to disk */
 #define EXTRACT_OVER_PIPE (to_stdout_option || to_command_option)
 
@@ -647,7 +650,7 @@ void xheader_string_end (char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
 char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 			   size_t n);
-
+     
 /* Module system.c */
 
 void sys_detect_dev_null_output (void);
@@ -666,7 +669,7 @@ size_t sys_write_archive_buffer (void);
 bool sys_get_archive_stat (void);
 int sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st);
 void sys_wait_command (void);
-int sys_exec_info_script (const char *archive_name, int volume_number);
+int sys_exec_info_script (const char **archive_name, int volume_number);
 
 /* Module compare.c */
 void report_difference (struct tar_stat_info *st, const char *message, ...);
