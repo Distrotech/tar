@@ -259,6 +259,7 @@ enum
   RECURSION_OPTION,
   RECURSIVE_UNLINK_OPTION,
   REMOVE_FILES_OPTION,
+  RESTRICT_OPTION,
   RMT_COMMAND_OPTION,
   RSH_COMMAND_OPTION,
   SAME_OWNER_OPTION,
@@ -312,301 +313,328 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    Y  per-block gzip compression */
 
 static struct argp_option options[] = {
+#define GRID 10
   {NULL, 0, NULL, 0,
-   N_("Main operation mode:"), 0},
+   N_("Main operation mode:"), GRID },
 
   {"list", 't', 0, 0,
-   N_("list the contents of an archive"), 10 },
+   N_("list the contents of an archive"), GRID+1 },
   {"extract", 'x', 0, 0,
-   N_("extract files from an archive"), 10 },
-  {"get", 0, 0, OPTION_ALIAS, NULL, 0 },
+   N_("extract files from an archive"), GRID+1 },
+  {"get", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"create", 'c', 0, 0,
-   N_("create a new archive"), 10 },
+   N_("create a new archive"), GRID+1 },
   {"diff", 'd', 0, 0,
-   N_("find differences between archive and file system"), 10 },
-  {"compare", 0, 0, OPTION_ALIAS, NULL, 10},
+   N_("find differences between archive and file system"), GRID+1 },
+  {"compare", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"append", 'r', 0, 0,
-   N_("append files to the end of an archive"), 10 },
+   N_("append files to the end of an archive"), GRID+1 },
   {"update", 'u', 0, 0,
-   N_("only append files newer than copy in archive"), 10 },
+   N_("only append files newer than copy in archive"), GRID+1 },
   {"catenate", 'A', 0, 0,
-   N_("append tar files to an archive"), 10 },
-  {"concatenate", 0, 0, OPTION_ALIAS, NULL, 10},
+   N_("append tar files to an archive"), GRID+1 },
+  {"concatenate", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"delete", DELETE_OPTION, 0, 0,
-   N_("delete from the archive (not on mag tapes!)"), 10 },
+   N_("delete from the archive (not on mag tapes!)"), GRID+1 },
   {"test-label", TEST_LABEL_OPTION, NULL, 0,
-   N_("Test archive volume label and exit"), 10 },
+   N_("Test archive volume label and exit"), GRID+1 },
+#undef GRID
 
+#define GRID 20  
   {NULL, 0, NULL, 0,
-   N_("Operation modifiers:"), 20},
+   N_("Operation modifiers:"), GRID },
 
   {"sparse", 'S', 0, 0,
-   N_("handle sparse files efficiently"), 21 },
+   N_("handle sparse files efficiently"), GRID+1 },
   {"incremental", 'G', 0, 0,
-   N_("handle old GNU-format incremental backup"), 21 },
+   N_("handle old GNU-format incremental backup"), GRID+1 },
   {"listed-incremental", 'g', N_("FILE"), 0,
-   N_("handle new GNU-format incremental backup"), 21 },
+   N_("handle new GNU-format incremental backup"), GRID+1 },
   {"ignore-failed-read", IGNORE_FAILED_READ_OPTION, 0, 0,
-   N_("do not exit with nonzero on unreadable files"), 21 },
+   N_("do not exit with nonzero on unreadable files"), GRID+1 },
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
-   N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), 21 },
+   N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), GRID+1 },
   {"seek", 'n', NULL, 0,
-   N_("archive is seekable"), 21 },
+   N_("archive is seekable"), GRID+1 },
+#undef GRID
 
+#define GRID 30  
   {NULL, 0, NULL, 0,
-   N_("Overwrite control:"), 30},
+   N_("Overwrite control:\n"), GRID+1 },
 
   {"verify", 'W', 0, 0,
-   N_("attempt to verify the archive after writing it"), 31 },
+   N_("attempt to verify the archive after writing it"), GRID+1 },
   {"remove-files", REMOVE_FILES_OPTION, 0, 0,
-   N_("remove files after adding them to the archive"), 31 },
+   N_("remove files after adding them to the archive"), GRID+1 },
   {"keep-old-files", 'k', 0, 0,
-   N_("don't replace existing files when extracting"), 31 },
+   N_("don't replace existing files when extracting"), GRID+1 },
   {"keep-newer-files", KEEP_NEWER_FILES_OPTION, 0, 0,
-   N_("don't replace existing files that are newer than their archive copies"), 31 },
+   N_("don't replace existing files that are newer than their archive copies"), GRID+1 },
   {"overwrite", OVERWRITE_OPTION, 0, 0,
-   N_("overwrite existing files when extracting"), 31 },
+   N_("overwrite existing files when extracting"), GRID+1 },
   {"unlink-first", 'U', 0, 0,
-   N_("remove each file prior to extracting over it"), 31 },
+   N_("remove each file prior to extracting over it"), GRID+1 },
   {"recursive-unlink", RECURSIVE_UNLINK_OPTION, 0, 0,
-   N_("empty hierarchies prior to extracting directory"), 31 },
+   N_("empty hierarchies prior to extracting directory"), GRID+1 },
   {"no-overwrite-dir", NO_OVERWRITE_DIR_OPTION, 0, 0,
-   N_("preserve metadata of existing directories"), 31 },
+   N_("preserve metadata of existing directories"), GRID+1 },
+#undef GRID
 
+#define GRID 40  
   {NULL, 0, NULL, 0,
-   N_("Select output stream:"), 40},
+   N_("Select output stream:"), GRID },
 
   {"to-stdout", 'O', 0, 0,
-   N_("extract files to standard output"), 41 },
+   N_("extract files to standard output"), GRID+1 },
   {"to-command", TO_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("pipe extracted files to another program"), 41 },
+   N_("pipe extracted files to another program"), GRID+1 },
   {"ignore-command-error", IGNORE_COMMAND_ERROR_OPTION, 0, 0,
-   N_("ignore exit codes of children"), 41 },
+   N_("ignore exit codes of children"), GRID+1 },
   {"no-ignore-command-error", NO_IGNORE_COMMAND_ERROR_OPTION, 0, 0,
-   N_("treat non-zero exit codes of children as error"), 41 },
+   N_("treat non-zero exit codes of children as error"), GRID+1 },
+#undef GRID
 
+#define GRID 50  
   {NULL, 0, NULL, 0,
-   N_("Handling of file attributes:"), 50 },
+   N_("Handling of file attributes:"), GRID },
 
   {"owner", OWNER_OPTION, N_("NAME"), 0,
-   N_("force NAME as owner for added files"), 51 },
+   N_("force NAME as owner for added files"), GRID+1 },
   {"group", GROUP_OPTION, N_("NAME"), 0,
-   N_("force NAME as group for added files"), 51 },
+   N_("force NAME as group for added files"), GRID+1 },
   {"mode", MODE_OPTION, N_("CHANGES"), 0,
-   N_("force (symbolic) mode CHANGES for added files"), 51 },
+   N_("force (symbolic) mode CHANGES for added files"), GRID+1 },
   {"atime-preserve", ATIME_PRESERVE_OPTION,
    N_("METHOD"), OPTION_ARG_OPTIONAL,
    N_("preserve access times on dumped files, either by restoring the times"
       " after reading (METHOD='replace'; default) or by not setting the times"
-      " in the first place (METHOD='system')"), 51 },
+      " in the first place (METHOD='system')"), GRID+1 },
   {"touch", 'm', 0, 0,
-   N_("don't extract file modified time"), 51 },
+   N_("don't extract file modified time"), GRID+1 },
   {"same-owner", SAME_OWNER_OPTION, 0, 0,
-   N_("try extracting files with the same ownership"), 51 },
+   N_("try extracting files with the same ownership"), GRID+1 },
   {"no-same-owner", NO_SAME_OWNER_OPTION, 0, 0,
-   N_("extract files as yourself"), 51 },
+   N_("extract files as yourself"), GRID+1 },
   {"numeric-owner", NUMERIC_OWNER_OPTION, 0, 0,
-   N_("always use numbers for user/group names"), 51 },
+   N_("always use numbers for user/group names"), GRID+1 },
   {"preserve-permissions", 'p', 0, 0,
    N_("extract information about file permissions (default for superuser)"),
-   51 },
-  {"same-permissions", 0, 0, OPTION_ALIAS, NULL, 51 },
+   GRID+1 },
+  {"same-permissions", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"no-same-permissions", NO_SAME_PERMISSIONS_OPTION, 0, 0,
-   N_("apply the user's umask when extracting permissions from the archive (default for ordinary users)"), 51 },
+   N_("apply the user's umask when extracting permissions from the archive (default for ordinary users)"), GRID+1 },
   {"preserve-order", 's', 0, 0,
-   N_("sort names to extract to match archive"), 51 },
-  {"same-order", 0, 0, OPTION_ALIAS, NULL, 51 },
+   N_("sort names to extract to match archive"), GRID+1 },
+  {"same-order", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"preserve", PRESERVE_OPTION, 0, 0,
-   N_("same as both -p and -s"), 51 },
+   N_("same as both -p and -s"), GRID+1 },
+#undef GRID
 
+#define GRID 60  
   {NULL, 0, NULL, 0,
-   N_("Device selection and switching:"), 60 },
+   N_("Device selection and switching:\n"), GRID+1 },
 
   {"file", 'f', N_("ARCHIVE"), 0,
-   N_("use archive file or device ARCHIVE"), 61 },
+   N_("use archive file or device ARCHIVE"), GRID+1 },
   {"force-local", FORCE_LOCAL_OPTION, 0, 0,
-   N_("archive file is local even if it has a colon"), 61 },
+   N_("archive file is local even if it has a colon"), GRID+1 },
   {"rmt-command", RMT_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("use given rmt COMMAND instead of rmt"), 61 },
+   N_("use given rmt COMMAND instead of rmt"), GRID+1 },
   {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
-   N_("use remote COMMAND instead of rsh"), 61 },
+   N_("use remote COMMAND instead of rsh"), GRID+1 },
 #ifdef DEVICE_PREFIX
   {"-[0-7][lmh]", 0, NULL, OPTION_DOC, /* It is OK, since `name' will never be
 					  translated */
-   N_("specify drive and density"), 61 },
+   N_("specify drive and density"), GRID+1 },
 #endif
-  {NULL, '0', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '1', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '2', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '3', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '4', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '5', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '6', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '7', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '8', NULL, OPTION_HIDDEN, NULL, 61 },
-  {NULL, '9', NULL, OPTION_HIDDEN, NULL, 61 },
+  {NULL, '0', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '1', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '2', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '3', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '4', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '5', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '6', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '7', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '8', NULL, OPTION_HIDDEN, NULL, GRID+1 },
+  {NULL, '9', NULL, OPTION_HIDDEN, NULL, GRID+1 },
 
   {"multi-volume", 'M', 0, 0,
-   N_("create/list/extract multi-volume archive"), 61 },
+   N_("create/list/extract multi-volume archive"), GRID+1 },
   {"tape-length", 'L', N_("NUMBER"), 0,
-   N_("change tape after writing NUMBER x 1024 bytes"), 61 },
+   N_("change tape after writing NUMBER x 1024 bytes"), GRID+1 },
   {"info-script", 'F', N_("NAME"), 0,
-   N_("run script at end of each tape (implies -M)"), 61 },
-  {"new-volume-script", 0, 0, OPTION_ALIAS, NULL, 61 },
+   N_("run script at end of each tape (implies -M)"), GRID+1 },
+  {"new-volume-script", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"volno-file", VOLNO_FILE_OPTION, N_("FILE"), 0,
-   N_("use/update the volume number in FILE"), 61 },
+   N_("use/update the volume number in FILE"), GRID+1 },
+#undef GRID
 
+#define GRID 70  
   {NULL, 0, NULL, 0,
-   N_("Device blocking:"), 70 },
+   N_("Device blocking:"), GRID+1 },
 
   {"blocking-factor", 'b', N_("BLOCKS"), 0,
-   N_("BLOCKS x 512 bytes per record"), 71 },
+   N_("BLOCKS x 512 bytes per record"), GRID+1 },
   {"record-size", RECORD_SIZE_OPTION, N_("NUMBER"), 0,
-   N_("NUMBER of bytes per record, multiple of 512"), 71 },
+   N_("NUMBER of bytes per record, multiple of 512"), GRID+1 },
   {"ignore-zeros", 'i', 0, 0,
-   N_("ignore zeroed blocks in archive (means EOF)"), 71 },
+   N_("ignore zeroed blocks in archive (means EOF)"), GRID+1 },
   {"read-full-records", 'B', 0, 0,
-   N_("reblock as we read (for 4.2BSD pipes)"), 71 },
+   N_("reblock as we read (for 4.2BSD pipes)"), GRID+1 },
+#undef GRID
 
+#define GRID 80  
   {NULL, 0, NULL, 0,
-   N_("Archive format selection:"), 80 },
+   N_("Archive format selection:"), GRID },
 
   {"format", 'H', N_("FORMAT"), 0,
-   N_("create archive of the given format."), 81 },
+   N_("create archive of the given format."), GRID+1 },
 
-  {NULL, 0, NULL, 0, N_("FORMAT is one of the following:"), 82 },
-  {"  v7", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("old V7 tar format"), 83},
+  {NULL, 0, NULL, 0, N_("FORMAT is one of the following:"), GRID+2 },
+  {"  v7", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("old V7 tar format"),
+   GRID+3 },
   {"  oldgnu", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-   N_("GNU format as per tar <= 1.12"), 83},
+   N_("GNU format as per tar <= 1.12"), GRID+3 },
   {"  gnu", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-   N_("GNU tar 1.13.x format"), 83},
+   N_("GNU tar 1.13.x format"), GRID+3 },
   {"  ustar", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-   N_("POSIX 1003.1-1988 (ustar) format"), 83 },
+   N_("POSIX 1003.1-1988 (ustar) format"), GRID+3 },
   {"  pax", 0, NULL, OPTION_DOC|OPTION_NO_TRANS,
-   N_("POSIX 1003.1-2001 (pax) format"), 83 },
-  {"  posix", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("same as pax"), 83 },
+   N_("POSIX 1003.1-2001 (pax) format"), GRID+3 },
+  {"  posix", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("same as pax"), GRID+3 },
 
   {"old-archive", OLD_ARCHIVE_OPTION, 0, 0, /* FIXME */
-   N_("same as --format=v7"), 88 },
-  {"portability", 0, 0, OPTION_ALIAS, NULL, 88 },
+   N_("same as --format=v7"), GRID+8 },
+  {"portability", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
   {"posix", POSIX_OPTION, 0, 0,
-   N_("same as --format=posix"), 88 },
+   N_("same as --format=posix"), GRID+8 },
   {"pax-option", PAX_OPTION, N_("keyword[[:]=value][,keyword[[:]=value], ...]"), 0,
-   N_("control pax keywords"), 88 },
+   N_("control pax keywords"), GRID+8 },
   {"label", 'V', N_("TEXT"), 0,
-   N_("create archive with volume name TEXT. At list/extract time, use TEXT as a globbing pattern for volume name"), 88 },
+   N_("create archive with volume name TEXT. At list/extract time, use TEXT as a globbing pattern for volume name"), GRID+8 },
   {"bzip2", 'j', 0, 0,
-   N_("filter the archive through bzip2"), 88 },
+   N_("filter the archive through bzip2"), GRID+8 },
   {"gzip", 'z', 0, 0,
-   N_("filter the archive through gzip"), 88 },
-  {"gunzip", 0, 0, OPTION_ALIAS, NULL, 88 },
-  {"ungzip", 0, 0, OPTION_ALIAS, NULL, 88 },
+   N_("filter the archive through gzip"), GRID+8 },
+  {"gunzip", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
+  {"ungzip", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
   {"compress", 'Z', 0, 0,
-   N_("filter the archive through compress"), 88 },
-  {"uncompress", 0, 0, OPTION_ALIAS, NULL, 88 },
+   N_("filter the archive through compress"), GRID+8 },
+  {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
   {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
-   N_("filter through PROG (must accept -d)"), 88 },
+   N_("filter through PROG (must accept -d)"), GRID+8 },
+#undef GRID
 
+#define GRID 90  
   {NULL, 0, NULL, 0,
-   N_("Local file selection:"), 90 },
+   N_("Local file selection:"), GRID },
 
   {"add-file", ARGP_KEY_ARG, N_("FILE"), 0,
-   N_("add given FILE to the archive (useful if its name starts with a dash)"), 91},
+   N_("add given FILE to the archive (useful if its name starts with a dash)"), GRID+1 },
   {"directory", 'C', N_("DIR"), 0,
-   N_("change to directory DIR"), 91 },
+   N_("change to directory DIR"), GRID+1 },
   {"files-from", 'T', N_("FILE"), 0,
-   N_("get names to extract or create from FILE"), 91 },
+   N_("get names to extract or create from FILE"), GRID+1 },
   {"null", NULL_OPTION, 0, 0,
-   N_("-T reads null-terminated names, disable -C"), 91 },
+   N_("-T reads null-terminated names, disable -C"), GRID+1 },
   {"unquote", UNQUOTE_OPTION, 0, 0,
-   N_("unquote filenames read with -T (default)"), 91 },
+   N_("unquote filenames read with -T (default)"), GRID+1 },
   {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
-   N_("do not unquote filenames read with -T"), 91 },
+   N_("do not unquote filenames read with -T"), GRID+1 },
   {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
-   N_("exclude files, given as a PATTERN"), 91 },
+   N_("exclude files, given as a PATTERN"), GRID+1 },
   {"exclude-from", 'X', N_("FILE"), 0,
-   N_("exclude patterns listed in FILE"), 91 },
+   N_("exclude patterns listed in FILE"), GRID+1 },
   {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
-   N_("exclude directories containing a cache tag"), 91 },
+   N_("exclude directories containing a cache tag"), GRID+1 },
   {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
-   N_("exclusion ignores case"), 91 },
+   N_("exclusion ignores case"), GRID+1 },
   {"anchored", ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match file name start"), 91 },
+   N_("exclude patterns match file name start"), GRID+1 },
   {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match after any `/' (default)"), 91 },
+   N_("exclude patterns match after any `/' (default)"), GRID+1 },
   {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
-   N_("exclusion is case sensitive (default)"), 91 },
+   N_("exclusion is case sensitive (default)"), GRID+1 },
   {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
-   N_("exclude patterns are plain strings"), 91 },
+   N_("exclude patterns are plain strings"), GRID+1 },
   {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards do not match `/'"), 91 },
+   N_("exclude pattern wildcards do not match `/'"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
-   N_("avoid descending automatically in directories"), 91 },
+   N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
-   N_("stay in local file system when creating archive"), 91 },
-  {NULL, 'l', 0, OPTION_HIDDEN, "", 91},
+   N_("stay in local file system when creating archive"), GRID+1 },
+  {NULL, 'l', 0, OPTION_HIDDEN, "", GRID+1 },
   {"recursion", RECURSION_OPTION, 0, 0,
-   N_("recurse into directories (default)"), 91 },
+   N_("recurse into directories (default)"), GRID+1 },
   {"absolute-names", 'P', 0, 0,
-   N_("don't strip leading `/'s from file names"), 91 },
+   N_("don't strip leading `/'s from file names"), GRID+1 },
   {"dereference", 'h', 0, 0,
-   N_("follow symlinks; archive and dump the files they point to"), 91 },
+   N_("follow symlinks; archive and dump the files they point to"), GRID+1 },
   {"starting-file", 'K', N_("MEMBER-NAME"), 0,
-   N_("begin at member MEMBER-NAME in the archive"), 91 },
+   N_("begin at member MEMBER-NAME in the archive"), GRID+1 },
   {"strip-components", STRIP_COMPONENTS_OPTION, N_("NUMBER"), 0,
-   N_("strip NUMBER leading components from file names"), 91 },
+   N_("strip NUMBER leading components from file names"), GRID+1 },
   {"newer", 'N', N_("DATE-OR-FILE"), 0,
-   N_("only store files newer than DATE-OR-FILE"), 91 },
+   N_("only store files newer than DATE-OR-FILE"), GRID+1 },
   {"newer-mtime", NEWER_MTIME_OPTION, N_("DATE"), 0,
-   N_("compare date and time when data changed only"), 91 },
+   N_("compare date and time when data changed only"), GRID+1 },
   {"after-date", 'N', N_("DATE"), 0,
-   N_("same as -N"), 91 },
+   N_("same as -N"), GRID+1 },
   {"backup", BACKUP_OPTION, N_("CONTROL"), OPTION_ARG_OPTIONAL,
-   N_("backup before removal, choose version CONTROL"), 91 },
+   N_("backup before removal, choose version CONTROL"), GRID+1 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
-   N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), 91 },
+   N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), GRID+1 },
   {"wildcards", WILDCARDS_OPTION, 0, 0,
-   N_("exclude patterns use wildcards (default)"), 91 },
+   N_("exclude patterns use wildcards (default)"), GRID+1 },
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards match `/' (default)"), 91 },
+   N_("exclude pattern wildcards match `/' (default)"), GRID+1 },
+#undef GRID
 
+#define GRID 100  
   {NULL, 0, NULL, 0,
-   N_("Informative output:"), 100 },
+   N_("Informative output:"), GRID },
 
   {"verbose", 'v', 0, 0,
-   N_("verbosely list files processed"), 101 },
+   N_("verbosely list files processed"), GRID+1 },
   {"checkpoint", CHECKPOINT_OPTION, 0, 0,
-   N_("display progress messages every 10th record"), 101 },
+   N_("display progress messages every 10th record"), GRID+1 },
   {"check-links", CHECK_LINKS_OPTION, 0, 0,
-   N_("print a message if not all links are dumped"), 102 },
+   N_("print a message if not all links are dumped"), GRID+1 },
   {"totals", TOTALS_OPTION, 0, 0,
-   N_("print total bytes written while creating archive"), 102 },
+   N_("print total bytes written while creating archive"), GRID+1 },
   {"utc", UTC_OPTION, 0, 0,
-   N_("print file modification dates in UTC"), 102 },
+   N_("print file modification dates in UTC"), GRID+1 },
   {"index-file", INDEX_FILE_OPTION, N_("FILE"), 0,
-   N_("send verbose output to FILE"), 102 },
+   N_("send verbose output to FILE"), GRID+1 },
   {"block-number", 'R', 0, 0,
-   N_("show block number within archive with each message"), 102 },
+   N_("show block number within archive with each message"), GRID+1 },
   {"interactive", 'w', 0, 0,
-   N_("ask for confirmation for every action"), 102 },
-  {"confirmation", 0, 0, OPTION_ALIAS, NULL, 102 },
+   N_("ask for confirmation for every action"), GRID+1 },
+  {"confirmation", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"show-defaults", SHOW_DEFAULTS_OPTION, 0, 0,
-   N_("Show tar defaults"), 102 },
+   N_("Show tar defaults"), GRID+1 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
-   N_("When listing or extracting, list each directory that does not match search criteria"), 102 },
+   N_("When listing or extracting, list each directory that does not match search criteria"), GRID+1 },
   {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
    N_("When creating archive in verbose mode, list member names as stored in the archive"),
-   102 },
+   GRID+1 },
+#undef GRID
 
+#define GRID 110  
   {NULL, 0, NULL, 0,
-   N_("Compatibility options:"), 110 },
+   N_("Compatibility options:"), GRID },
 
   {NULL, 'o', 0, 0,
-   N_("when creating, same as --old-archive. When extracting, same as --no-same-owner"), 111 },
+   N_("when creating, same as --old-archive. When extracting, same as --no-same-owner"), GRID+1 },
+#undef GRID
 
+#define GRID 120  
   {NULL, 0, NULL, 0,
-   N_("Other options:"), 120 },
+   N_("Other options:"), GRID },
 
+  {"restrict", RESTRICT_OPTION, 0, 0, 
+   N_("Restrict use of some potentially harmful options"), -1 },
+   
   {"help",  '?', 0, 0,  N_("Give this help list"), -1},
   {"usage", USAGE_OPTION, 0, 0,  N_("Give a short usage message"), -1},
   {"license", LICENSE_OPTION, 0, 0, N_("Print license and exit"), -1},
@@ -615,6 +643,8 @@ static struct argp_option options[] = {
      --version */
   {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
    N_("Hang for SECS seconds (default 3600)"), 0},
+#undef GRID
+  
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -678,7 +708,8 @@ void
 license ()
 {
   printf ("tar (%s) %s\n%s\n", PACKAGE_NAME, PACKAGE_VERSION,
-	  "Copyright (C) 2004 Free Software Foundation, Inc.\n");
+	  "Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, \n\
+2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.\n");
   puts (_("Based on the work of John Gilmore and Jay Fenlason. See AUTHORS\n\
 for complete list of authors.\n"));
   printf (_("   GNU tar is free software; you can redistribute it and/or modify\n"
@@ -768,6 +799,20 @@ add_file_id (const char *filename)
   p->dev = st.st_dev;
   file_id_list = p;
 }
+
+/* Default density numbers for [0-9][lmh] device specifications */
+
+#ifndef LOW_DENSITY_NUM
+# define LOW_DENSITY_NUM 0
+#endif
+
+#ifndef MID_DENSITY_NUM
+# define MID_DENSITY_NUM 8
+#endif
+
+#ifndef HIGH_DENSITY_NUM
+# define HIGH_DENSITY_NUM 16
+#endif
 
 static void
 update_argv (const char *filename, struct argp_state *state)
@@ -1012,7 +1057,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       seekable_archive = true;
       break;
 
-#if !MSDOS
     case 'N':
       after_date_option = true;
       /* Fall through.  */
@@ -1046,7 +1090,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	}
 
       break;
-#endif /* not MSDOS */
 
     case 'o':
       args->o_option = true;
@@ -1147,12 +1190,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  int e = errno;
 	  FATAL_ERROR ((0, e, "%s", quotearg_colon (arg)));
 	}
-      break;
-
-    case 'y':
-      USAGE_ERROR ((0, 0,
-		    _("Warning: the -y option is not supported;"
-		      " perhaps you meant -j?")));
       break;
 
     case 'z':
@@ -1352,6 +1389,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       remove_files_option = true;
       break;
 
+    case RESTRICT_OPTION:
+      restrict_option = true;
+      break;
+      
     case RMT_COMMAND_OPTION:
       rmt_command = arg;
       break;
@@ -1477,25 +1518,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	switch (arg[0])
 	  {
 	  case 'l':
-#ifdef LOW_NUM
-	    device += LOW_NUM;
-#endif
+	    device += LOW_DENSITY_NUM;
 	    break;
 
 	  case 'm':
-#ifdef MID_NUM
-	    device += MID_NUM;
-#else
-	    device += 8;
-#endif
+	    device += MID_DENSITY_NUM;
 	    break;
 
 	  case 'h':
-#ifdef HGH_NUM
-	    device += HGH_NUM;
-#else
-	    device += 16;
-#endif
+	    device += HIGH_DENSITY_NUM;
 	    break;
 
 	  default:
@@ -1734,6 +1765,13 @@ decode_options (int argc, char **argv)
 		   | FORMAT_MASK (GNU_FORMAT)
 		   | FORMAT_MASK (POSIX_FORMAT));
 
+  if (multi_volume_option
+      && archive_format == POSIX_FORMAT
+      && subcommand_option == CREATE_SUBCOMMAND
+      && !tape_length_option)
+    USAGE_ERROR ((0, 0,
+		  _("creating multi-volume archives in posix format requires using --tape-length (-L) option")));
+  
   if (occurrence_option)
     {
       if (!args.input_files)
