@@ -20,7 +20,6 @@
 @syncodeindex vr cp
 
 @defindex op
-@syncodeindex op cp
 
 @copying
 
@@ -101,6 +100,7 @@ Appendices
 * Snapshot Files::
 * Free Software Needs Free Documentation::
 * Copying This Manual::
+* Index of Command Line Options::
 * Index::
 
 @detailmenu
@@ -160,6 +160,7 @@ Invoking @GNUTAR{}
 * Styles::
 * All Options::
 * help::
+* defaults::
 * verbose::
 * interactive::
 
@@ -566,7 +567,7 @@ UNIX98 @command{tar} implementations.
 
 However, to facilitate transition, @option{-o} option retains its
 old semantics when it is used with one of archive-creation commands.
-Users are encouraged to use @value{op-format-oldgnu} instead.
+Users are encouraged to use @option{--format=oldgnu} instead.
 
 It is especially important, since versions of @acronym{GNU} Automake
 up to and including 1.8.4 invoke tar with this option to produce
@@ -854,20 +855,27 @@ useful in making things more clear and helping you avoid errors.)
 @unnumberedsubsec The @option{--file} Option
 
 @table @option
+@opindex file, tutorial
 @item --file=@var{archive-name}
 @itemx -f @var{archive-name}
 Specify the name of an archive file.
 @end table
 
-You can specify an argument for the @value{op-file} option whenever you
+You can specify an argument for the @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) option whenever you
 use @command{tar}; this option determines the name of the archive file
 that @command{tar} will work on.
 
-If you don't specify this argument, then @command{tar} will use a
-default, usually some physical tape drive attached to your machine.
-If there is no tape drive attached, or the default is not meaningful,
-then @command{tar} will print an error message.  The error message might
-look roughly like one of the following:
+@vrindex TAPE
+If you don't specify this argument, then @command{tar} will examine
+the environment variable @env{TAPE}.  If it is set, its value will be
+used as the archive name.  Otherwise, @command{tar} will use the
+default archive, determined at the compile time. Usually it is
+standard output or some physical tape drive attached to your machine
+(you can verify what the default is by running @kbd{tar
+--show-defaults}, @pxref{defaults}).  If there is no tape drive
+attached, or the default is not meaningful, then @command{tar} will
+print an error message.  The error message might look roughly like one
+of the following: 
 
 @smallexample
 tar: can't open /dev/rmt8 : No such device or address
@@ -876,20 +884,21 @@ tar: can't open /dev/rsmt0 : I/O error
 
 @noindent
 To avoid confusion, we recommend that you always specify an archive file
-name by using @value{op-file} when writing your @command{tar} commands.
-For more information on using the @value{op-file} option, see
+name by using @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) when writing your @command{tar} commands.
+For more information on using the @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) option, see
 @ref{file}.
 
 @node verbose tutorial
 @unnumberedsubsec The @option{--verbose} Option
 
 @table @option
+@opindex verbose, introduced
 @item --verbose
 @itemx -v
 Show the files being worked on as @command{tar} is running.
 @end table
 
-@value{op-verbose} shows details about the results of running
+@option{--verbose} (@option{-v}) shows details about the results of running
 @command{tar}.  This can be especially useful when the results might not be
 obvious.  For example, if you want to see the progress of @command{tar} as
 it writes files into the archive, you can use the @option{--verbose}
@@ -939,6 +948,7 @@ Later in the tutorial, we will give examples using @w{@option{--verbose
 @unnumberedsubsec Getting Help: Using the @option{--help} Option
 
 @table @option
+@opindex help
 @item --help
 
 The @option{--help} option to @command{tar} prints out a very brief list of
@@ -950,7 +960,9 @@ all operations and option available for the current version of
 @section How to Create Archives
 @UNREVISED
 
-One of the basic operations of @command{tar} is @value{op-create}, which
+@cindex Creation of the archive
+@cindex Archive, creation of
+One of the basic operations of @command{tar} is @option{--create} (@option{-c}), which
 you use to create a @command{tar} archive.  We will explain
 @option{--create} first because, in order to learn about the other
 operations, you will find it useful to have an archive available to
@@ -1008,16 +1020,17 @@ It is very important to make sure there isn't already a file in the
 working directory with the archive name you intend to use (in this case,
 @samp{collection.tar}), or that you don't care about its contents.
 Whenever you use @samp{create}, @command{tar} will erase the current
-contents of the file named by @value{op-file} if it exists.  @command{tar}
+contents of the file named by @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) if it exists.  @command{tar}
 will not tell you if you are about to overwrite an archive unless you
 specify an option which does this (@pxref{backup}, for the
 information on how to do so).  To add files to an existing archive,
-you need to use a different option, such as @value{op-append}; see
+you need to use a different option, such as @option{--append} (@option{-r}); see
 @ref{append} for information on how to do this.
 
 @node Creating the archive
 @subsection Creating the Archive
 
+@opindex create, introduced
 To place the files @file{blues}, @file{folk}, and @file{jazz} into an
 archive named @file{collection.tar}, use the following command:
 
@@ -1081,14 +1094,16 @@ run and will prompt you for one.  If you don't name any files, @command{tar}
 will complain.  You must have write access to the working directory,
 or else you will not be able to create an archive in that directory.
 
-@emph{Caution}: Do not attempt to use @value{op-create} to add files to
+@emph{Caution}: Do not attempt to use @option{--create} (@option{-c}) to add files to
 an existing archive; it will delete the archive and write a new one.
-Use @value{op-append} instead.  @xref{append}.
+Use @option{--append} (@option{-r}) instead.  @xref{append}.
 
 @node create verbose
 @subsection Running @option{--create} with @option{--verbose}
 
-If you include the @value{op-verbose} option on the command line,
+@opindex create, using with @option{--verbose}
+@opindex verbose, using with @option{--create}
+If you include the @option{--verbose} (@option{-v}) option on the command line,
 @command{tar} will list the files it is acting on as it is working.  In
 verbose mode, the @code{create} example above would appear as:
 
@@ -1116,12 +1131,12 @@ understand.
 @node short create
 @subsection Short Forms with @samp{create}
 
-As we said before, the @value{op-create} operation is one of the most
+As we said before, the @option{--create} (@option{-c}) operation is one of the most
 basic uses of @command{tar}, and you will use it countless times.
 Eventually, you will probably want to use abbreviated (or ``short'')
 forms of options.  A full discussion of the three different forms that
 options can take appears in @ref{Styles}; for now, here is what the
-previous example (including the @value{op-verbose} option) looks like
+previous example (including the @option{--verbose} (@option{-v}) option) looks like
 using short option forms:
 
 @smallexample
@@ -1187,9 +1202,6 @@ the order of options and placement of file and archive names,
 especially when using short option forms.  Not having the option name
 written out mnemonically can affect how well you remember which option
 does what, and therefore where different names have to be placed.
-(Placing options in an unusual order can also cause @command{tar} to
-report an error if you have set the shell environment variable
-@env{POSIXLY_CORRECT}.)
 
 @node create dir
 @subsection Archiving Directories
@@ -1238,7 +1250,7 @@ directory from its superior directory, you should make sure you have
 write access to the superior directory itself, not only the directory
 you are trying archive with @command{tar}.  For example, you will probably
 not be able to store your home directory in an archive by invoking
-@command{tar} from the root directory; @value{xref-absolute-names}.  (Note
+@command{tar} from the root directory; @xref{absolute}.  (Note
 also that @file{collection.tar}, the original archive file, has itself
 been archived.  @command{tar} will accept any file as a file to be
 archived, regardless of its content.  When @file{music.tar} is
@@ -1272,8 +1284,9 @@ directory being dumped.}
 @node list
 @section How to List Archives
 
+@opindex list
 Frequently, you will find yourself wanting to determine exactly what a
-particular archive contains.  You can use the @value{op-list} operation
+particular archive contains.  You can use the @option{--list} (@option{-t}) operation
 to get the member names as they currently appear in the archive, as well
 as various attributes of the files at the time they were archived.  For
 example, you can examine the archive @file{collection.tar} that you
@@ -1305,14 +1318,16 @@ baboon
 @end smallexample
 
 @noindent
-Be sure to use a @value{op-file} option just as with @value{op-create}
+Be sure to use a @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) option just as with @option{--create} (@option{-c})
 to specify the name of the archive.
 
-If you use the @value{op-verbose} option with @option{--list}, then
+@opindex list, using with @option{--verbose}
+@opindex verbose, using with @option{--list}
+If you use the @option{--verbose} (@option{-v}) option with @option{--list}, then
 @command{tar} will print out a listing reminiscent of @w{@samp{ls -l}},
 showing owner, file size, and so forth.
 
-If you had used @value{op-verbose} mode, the example above would look
+If you had used @option{--verbose} (@option{-v}) mode, the example above would look
 like:
 
 @smallexample
@@ -1346,7 +1361,7 @@ etc/mail/aliases
 @end group
 @end smallexample
 
-@cindex @option{--show-stored-names} described
+@opindex show-stored-names
   This default behavior can sometimes be inconvenient.  You can force
 @GNUTAR{} show member names when creating archive by supplying
 @option{--show-stored-names} option.
@@ -1357,7 +1372,7 @@ Print member (not @emph{file}) names when creating the archive.
 @end table
 
 @cindex File name arguments, using @option{--list} with
-@cindex @option{--list} with file name arguments
+@opindex list, using with file name arguments
 You can specify one or more individual member names as arguments when
 using @samp{list}.  In this case, @command{tar} will only list the
 names of members you identify.  For example, @w{@kbd{tar --list
@@ -1392,8 +1407,8 @@ stored in the specified archive.
 
 To get information about the contents of an archived directory,
 use the directory name as a file name argument in conjunction with
-@value{op-list}.  To find out file attributes, include the
-@value{op-verbose} option.
+@option{--list} (@option{-t}).  To find out file attributes, include the
+@option{--verbose} (@option{-v}) option.
 
 For example, to find out about files in the directory @file{practice}, in
 the archive file @file{music.tar}, type:
@@ -1422,18 +1437,20 @@ all the files (including sub-directories) in that directory.
 @cindex Retrieving files from an archive
 @cindex Resurrecting files from an archive
 
+@opindex extract
 Creating an archive is only half the job---there is no point in storing
 files in an archive if you can't retrieve them.  The act of retrieving
 members from an archive so they can be used and manipulated as
 unarchived files again is called @dfn{extraction}.  To extract files
-from an archive, use the @value{op-extract} operation.  As with
-@value{op-create}, specify the name of the archive with @value{op-file}.
-Extracting an archive does not modify the archive in any way; you can
-extract it multiple times if you want or need to.
+from an archive, use the @option{--extract} (@option{--get} or
+@option{-x}) operation.  As with @option{--create}, specify the name
+of the archive with @option{--file} (@option{-f}) option. Extracting
+an archive does not modify the archive in any way; you can extract it
+multiple times if you want or need to. 
 
 Using @option{--extract}, you can extract an entire archive, or specific
 files.  The files can be directories containing other files, or not.  As
-with @value{op-create} and @value{op-list}, you may use the short or the
+with @option{--create} (@option{-c}) and @option{--list} (@option{-t}), you may use the short or the
 long form of the operation without affecting the performance.
 
 @menu
@@ -1467,7 +1484,7 @@ produces this:
 @subsection Extracting Specific Files
 
 To extract specific archive members, give their exact member names as
-arguments, as printed by @value{op-list}.  If you had mistakenly deleted
+arguments, as printed by @option{--list} (@option{-t}).  If you had mistakenly deleted
 one of the files you had placed in the archive @file{collection.tar}
 earlier (say, @file{blues}), you can extract it from the archive without
 changing the archive's structure.  Its contents will be identical to the
@@ -1498,22 +1515,22 @@ you may have made before deleting the file from the file system,
 however, will @emph{not} have been made to the archive member.)  The
 archive file, @samp{collection.tar}, is the same as it was before you
 extracted @samp{blues}.  You can confirm this by running @command{tar} with
-@value{op-list}.
+@option{--list} (@option{-t}).
 
 @FIXME{we hope this will change:}Remember that as with other operations,
 specifying the exact member name is important.  @w{@kbd{tar --extract
 --file=bfiles.tar birds}} will fail, because there is no member named
 @file{birds}.  To extract the member named @file{./birds}, you must
 specify @w{@kbd{tar --extract --file=bfiles.tar ./birds}}.  To find the
-exact member names of the members of an archive, use @value{op-list}
+exact member names of the members of an archive, use @option{--list} (@option{-t})
 (@pxref{list}).
 
 You can extract a file to standard output by combining the above options
-with the @value{op-to-stdout} option (@pxref{Writing to Standard
+with the @option{--to-stdout} (@option{-O}) option (@pxref{Writing to Standard
 Output}).
 
-If you give the @value{op-verbose} option, then @value{op-extract} will
-print the names of the archive members as it extracts them.
+If you give the @option{--verbose} option, then @option{--extract}
+will print the names of the archive members as it extracts them. 
 
 @node extract dir
 @subsection Extracting Files that are Directories
@@ -1552,7 +1569,7 @@ practice/jazz
 @end smallexample
 
 @noindent
-If you were to specify two @value{op-verbose} options, @command{tar}
+If you were to specify two @option{--verbose} (@option{-v}) options, @command{tar}
 would have displayed more detail about the extracted files, as shown
 in the example below:
 
@@ -1589,8 +1606,8 @@ $ @kbd{tar -xvf ../untrusted.tar}
 @end smallexample
 
 It is also a good practice to examine contents of the archive
-before extracting it, using @value{op-list} option, possibly combined
-with @value{op-verbose}.
+before extracting it, using @option{--list} (@option{-t}) option, possibly combined
+with @option{--verbose} (@option{-v}).
 
 @node failing commands
 @subsection Commands That Will Fail
@@ -1673,9 +1690,9 @@ pointers to other parts of the @command{tar} manual.
 Some options are so special they are fully described right in this
 chapter.  They have the effect of inhibiting the normal operation of
 @command{tar} or else, they globally alter the amount of feedback the user
-receives about what is going on.  These are the @value{op-help} and
-@value{op-version} (@pxref{help}), @value{op-verbose} (@pxref{verbose})
-and @value{op-interactive} options (@pxref{interactive}).
+receives about what is going on.  These are the @option{--help} and
+@option{--version} (@pxref{help}), @option{--verbose} (@pxref{verbose})
+and @option{--interactive} options (@pxref{interactive}).
 
 @menu
 * Synopsis::
@@ -1683,6 +1700,7 @@ and @value{op-interactive} options (@pxref{interactive}).
 * Styles::
 * All Options::
 * help::
+* defaults::
 * verbose::
 * interactive::
 @end menu
@@ -1713,21 +1731,23 @@ to understand.  Further, the option stating the main operation mode
 (the @command{tar} main command) is usually given first.
 
 Each @var{name} in the synopsis above is interpreted as an archive member
-name when the main command is one of @value{op-compare}, @value{op-delete},
-@value{op-extract}, @value{op-list} or @value{op-update}.  When naming
-archive members, you must give the exact name of the member in the
-archive, as it is printed by @value{op-list}.  For @value{op-append}
-and @value{op-create}, these @var{name} arguments specify the names
-of either files or directory hierarchies to place in the archive.
+name when the main command is one of @option{--compare}
+(@option{--diff}, @option{-d}), @option{--delete}, @option{--extract}
+(@option{--get}, @option{-x}), @option{--list} (@option{-t}) or
+@option{--update} (@option{-u}).  When naming archive members, you
+must give the exact name of the member in the archive, as it is
+printed by @option{--list}.  For @option{--append} (@option{-r}) and
+@option{--create} (@option{-c}), these @var{name} arguments specify
+the names of either files or directory hierarchies to place in the archive.
 These files or hierarchies should already exist in the file system,
 prior to the execution of the @command{tar} command.
 
 @command{tar} interprets relative file names as being relative to the
 working directory.  @command{tar} will make all file names relative
 (by removing leading slashes when archiving or restoring files),
-unless you specify otherwise (using the @value{op-absolute-names}
-option).  @value{xref-absolute-names}, for more information about
-@value{op-absolute-names}.
+unless you specify otherwise (using the @option{--absolute-names}
+option).  @xref{absolute}, for more information about 
+@option{--absolute-names}.
 
 If you give the name of a directory as either a file name or a member
 name, then @command{tar} acts recursively on all the files and directories
@@ -1746,14 +1766,15 @@ sufficient for this.
 
 Even if @var{name}s are often specified on the command line, they
 can also be read from a text file in the file system, using the
-@value{op-files-from} option.
+@option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}}) option.
 
-If you don't use any file name arguments, @value{op-append},
-@value{op-delete} and @value{op-concatenate} will do nothing, while
-@value{op-create} will usually yield a diagnostic and inhibit @command{tar}
-execution.  The other operations of @command{tar} (@value{op-list},
-@value{op-extract}, @value{op-compare}, and @value{op-update}) will act
-on the entire contents of the archive.
+If you don't use any file name arguments, @option{--append} (@option{-r}),
+@option{--delete} and @option{--concatenate} (@option{--catenate},
+@option{-A}) will do nothing, while @option{--create} (@option{-c})
+will usually yield a diagnostic and inhibit @command{tar} execution.
+The other operations of @command{tar} (@option{--list},
+@option{--extract}, @option{--compare}, and @option{--update})
+will act on the entire contents of the archive.
 
 @cindex exit status
 @cindex return status
@@ -1771,10 +1792,11 @@ the error.
 
 @GNUTAR{} returns only a few exit statuses.  I'm really
 aiming simplicity in that area, for now.  If you are not using the
-@value{op-compare} option, zero means that everything went well, besides
-maybe innocuous warnings.  Nonzero means that something went wrong.
-Right now, as of today, ``nonzero'' is almost always 2, except for
-remote operations, where it may be 128.
+@option{--compare} @option{--diff}, @option{-d}) option, zero means
+that everything went well, besides maybe innocuous warnings.  Nonzero
+means that something went wrong. Right now, as of today, ``nonzero''
+is almost always 2, except for remote operations, where it may be
+128. 
 
 @node using tar options
 @section Using @command{tar} Options
@@ -1791,17 +1813,17 @@ looks, or the format of the files that you wish to archive may require
 you to do something special in order to make the archive look right.
 
 You can customize and control @command{tar}'s performance by running
-@command{tar} with one or more options (such as @value{op-verbose}, which
-we used in the tutorial).  As we said in the tutorial, @dfn{options} are
-arguments to @command{tar} which are (as their name suggests) optional.
-Depending on the operating mode, you may specify one or more options.
-Different options will have different effects, but in general they all
-change details of the operation, such as archive format, archive name,
-or level of user interaction.  Some options make sense with all
-operating modes, while others are meaningful only with particular modes.
-You will likely use some options frequently, while you will only use
-others infrequently, or not at all.  (A full list of options is
-available in @pxref{All Options}.)
+@command{tar} with one or more options (such as @option{--verbose}
+(@option{-v}), which we used in the tutorial).  As we said in the
+tutorial, @dfn{options} are arguments to @command{tar} which are (as
+their name suggests) optional. Depending on the operating mode, you
+may specify one or more options. Different options will have different
+effects, but in general they all change details of the operation, such
+as archive format, archive name, or level of user interaction.  Some
+options make sense with all operating modes, while others are
+meaningful only with particular modes. You will likely use some
+options frequently, while you will only use others infrequently, or
+not at all.  (A full list of options is available in @pxref{All Options}.)
 
 @vrindex TAR_OPTIONS, environment variable
 @anchor{TAR_OPTIONS}
@@ -1817,7 +1839,7 @@ Note that @command{tar} options are case sensitive.  For example, the
 options @option{-T} and @option{-t} are different; the first requires an
 argument for stating the name of a file providing a list of @var{name}s,
 while the second does not require an argument and is another way to
-write @value{op-list}.
+write @option{--list} (@option{-t}).
 
 In addition to the eight operations, there are many options to
 @command{tar}, and three different styles for writing both: long (mnemonic)
@@ -1837,21 +1859,21 @@ line invoking @command{tar}.  The different styles were developed at
 different times during the history of @command{tar}.  These styles will be
 presented below, from the most recent to the oldest.
 
-Some options must take an argument.  (For example, @value{op-file} takes
-the name of an archive file as an argument.  If you do not supply an
-archive file name, @command{tar} will use a default, but this can be
-confusing; thus, we recommend that you always supply a specific archive
-file name.)  Where you @emph{place} the arguments generally depends on
-which style of options you choose.  We will detail specific information
-relevant to each option style in the sections on the different option
-styles, below.  The differences are subtle, yet can often be very
-important; incorrect option placement can cause you to overwrite a
-number of important files.  We urge you to note these differences, and
-only use the option style(s) which makes the most sense to you until you
-feel comfortable with the others.
+Some options must take an argument.  (For example, @option{--file}
+(@option{-f})) takes the name of an archive file as an argument.  If
+you do not supply an archive file name, @command{tar} will use a
+default, but this can be confusing; thus, we recommend that you always
+supply a specific archive file name.)  Where you @emph{place} the
+arguments generally depends on which style of options you choose.  We
+will detail specific information relevant to each option style in the
+sections on the different option styles, below.  The differences are
+subtle, yet can often be very important; incorrect option placement
+can cause you to overwrite a number of important files.  We urge you
+to note these differences, and only use the option style(s) which
+makes the most sense to you until you feel comfortable with the others.
 
 Some options @emph{may} take an argument (currently, there are
-two such options: @value{op-backup} and @value{op-occurrence}).  Such
+two such options: @option{--backup} and @option{--occurrence}).  Such
 options may have at most long and short forms, they do not have old style
 equivalent.  The rules for specifying an argument for such options
 are stricter than those for specifying mandatory arguments.  Please,
@@ -2035,7 +2057,7 @@ people are used to them.  For compatibility with Unix @command{tar},
 the first argument is always treated as containing command and option
 letters even if it doesn't start with @samp{-}.  Thus, @samp{tar c} is
 equivalent to @w{@samp{tar -c}:} both of them specify the
-@value{op-create} command to create an archive.
+@option{--create} (@option{-c}) command to create an archive.
 
 @node Mixing
 @subsection Mixing Option Styles
@@ -2126,16 +2148,19 @@ a reference for deciphering @command{tar} commands in scripts.
 
 @table @option
 
+@opindex append, summary
 @item --append
 @itemx -r
 
 Appends files to the end of the archive.  @xref{append}.
 
+@opindex catenate, summary
 @item --catenate
 @itemx -A
 
 Same as @option{--concatenate}.  @xref{concatenate}.
 
+@opindex compare, summary
 @item --compare
 @itemx -d
 
@@ -2143,48 +2168,56 @@ Compares archive members with their counterparts in the file
 system, and reports differences in file size, mode, owner,
 modification date and contents.  @xref{compare}.
 
+@opindex concatenate, summary
 @item --concatenate
 @itemx -A
 
 Appends other @command{tar} archives to the end of the archive.
 @xref{concatenate}.
 
+@opindex create, summary
 @item --create
 @itemx -c
 
 Creates a new @command{tar} archive.  @xref{create}.
 
+@opindex delete, summary
 @item --delete
 
 Deletes members from the archive.  Don't try this on a archive on a
 tape!  @xref{delete}.
 
+@opindex diff, summary
 @item --diff
 @itemx -d
 
 Same @option{--compare}.  @xref{compare}.
 
+@opindex extract, summary
 @item --extract
 @itemx -x
 
 Extracts members from the archive into the file system.  @xref{extract}.
 
+@opindex get, summary
 @item --get
 @itemx -x
 
 Same as @option{--extract}.  @xref{extract}.
 
+@opindex list, summary
 @item --list
 @itemx -t
 
 Lists the members in an archive.  @xref{list}.
 
+@opindex update, summary
 @item --update
 @itemx -u
 
 @FIXME{It was: A combination of the @option{--compare} and
 @option{--append} operations.  This is not true and rather misleading,
-as @value{op-compare} does a lot more than @value{op-update} for
+as @option{--compare} (@option{--diff}, @option{-d}) does a lot more than @option{--update} (@option{-u}) for
 ensuring files are identical.}  Adds files to the end of the archive,
 but only if they are newer than their counterparts already in the
 archive, or if they do not already exist in the archive.
@@ -2197,6 +2230,7 @@ archive, or if they do not already exist in the archive.
 
 @table @option
 
+@opindex absolute-names, summary
 @item --absolute-names
 @itemx -P
 
@@ -2204,14 +2238,17 @@ Normally when creating an archive, @command{tar} strips an initial
 @samp{/} from member names.  This option disables that behavior.
 @xref{absolute}.
 
+@opindex after-date, summary
 @item --after-date
 
 (See @option{--newer}, @pxref{after})
 
+@opindex anchored, summary
 @item --anchored
 An exclude pattern must match an initial subsequence of the name's components.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex atime-preserve, summary
 @item --atime-preserve
 @itemx --atime-preserve=replace
 @itemx --atime-preserve=system
@@ -2220,7 +2257,7 @@ Attempt to preserve the access time of files when reading them.  This
 option currently is effective only on files that you own, unless you
 have superuser privileges.
 
-@value{op-atime-preserve-replace} remembers the access time of a file
+@option{--atime-preserve=replace} remembers the access time of a file
 before reading it, and then restores the access time afterwards.  This
 may cause problems if other programs are reading the file at the same
 time, as the times of their accesses will be lost.  On most platforms
@@ -2232,7 +2269,7 @@ conditions.)  Worse, on most platforms restoring the access time also
 updates the status change time, which means that this option is
 incompatible with incremental backups.
 
-@value{op-atime-preserve-system} avoids changing time stamps on files,
+@option{--atime-preserve=system} avoids changing time stamps on files,
 without interfering with time stamp updates
 caused by other programs, so it works better with incremental backups.
 However, it requires a special @code{O_NOATIME} option from the
@@ -2242,46 +2279,51 @@ this writing (November 2005) this works only with Linux, and only with
 Linux kernels 2.6.8 and later.  Worse, there is currently no reliable
 way to know whether this feature actually works.  Sometimes
 @command{tar} knows that it does not work, and if you use
-@value{op-atime-preserve-system} then @command{tar} complains and
+@option{--atime-preserve=system} then @command{tar} complains and
 exits right away.  But other times @command{tar} might think that the
 option works when it actually does not.
 
 Currently @option{--atime-preserve} with no operand defaults to
-@value{op-atime-preserve-replace}, but this may change in the future
-as support for @value{op-atime-preserve-system} improves.
+@option{--atime-preserve=replace}, but this may change in the future
+as support for @option{--atime-preserve=system} improves.
 
 If your operating system does not support
-@value{op-atime-preserve-system}, you might be able to preserve access
+@option{--atime-preserve=system}, you might be able to preserve access
 times reliably by by using the @command{mount} command.  For example,
 you can mount the file system read-only, or access the file system via
 a read-only loopback mount, or use the @samp{noatime} mount option
 available on some systems.  However, mounting typically requires
 superuser privileges and can be a pain to manage.
 
+@opindex backup, summary
 @item --backup=@var{backup-type}
 
 Rather than deleting files from the file system, @command{tar} will
 back them up using simple or numbered backups, depending upon
 @var{backup-type}.  @xref{backup}.
 
+@opindex block-number, summary
 @item --block-number
 @itemx -R
 
 With this option present, @command{tar} prints error messages for read errors
-with the block number in the archive file.  @xref{block-number}
+with the block number in the archive file.  @xref{block-number}.
 
+@opindex blocking-factor, summary
 @item --blocking-factor=@var{blocking}
 @itemx -b @var{blocking}
 
 Sets the blocking factor @command{tar} uses to @var{blocking} x 512 bytes per
-record.  @value{xref-blocking-factor}.
+record.  @xref{Blocking Factor}.
 
+@opindex bzip2, summary
 @item --bzip2
 @itemx -j
 
 This option tells @command{tar} to read or write archives through
 @code{bzip2}.  @xref{gzip}.
 
+@opindex checkpoint, summary
 @item --checkpoint
 
 This option directs @command{tar} to print periodic checkpoint messages as it
@@ -2289,6 +2331,7 @@ reads through the archive.  Its intended for when you want a visual
 indication that @command{tar} is still running, but don't want to see
 @option{--verbose} output.  @FIXME-xref{}
 
+@opindex check-links, summary
 @item --check-links
 @itemx -l
 If this option was given, @command{tar} will check the number of links
@@ -2302,6 +2345,8 @@ semantics for @option{-l}.
 
 @xref{Current status}, for more information.
 
+@opindex compress, summary
+@opindex uncompress, summary
 @item --compress
 @itemx --uncompress
 @itemx -Z
@@ -2310,10 +2355,12 @@ semantics for @option{-l}.
 writing the archive.  This allows you to directly act on archives
 while saving space.  @xref{gzip}.
 
+@opindex confirmation, summary
 @item --confirmation
 
 (See @option{--interactive}.)  @xref{interactive}.
 
+@opindex dereference, summary
 @item --dereference
 @itemx -h
 
@@ -2321,6 +2368,7 @@ When creating a @command{tar} archive, @command{tar} will archive the
 file that a symbolic link points to, rather than archiving the
 symlink.  @xref{dereference}.
 
+@opindex directory, summary
 @item --directory=@var{dir}
 @itemx -C @var{dir}
 
@@ -2328,22 +2376,26 @@ When this option is specified, @command{tar} will change its current directory
 to @var{dir} before performing any operations.  When this option is used
 during archive creation, it is order sensitive.  @xref{directory}.
 
+@opindex exclude, summary
 @item --exclude=@var{pattern}
 
 When performing operations, @command{tar} will skip files that match
 @var{pattern}.  @xref{exclude}.
 
+@opindex exclude-from, summary
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 
 Similar to @option{--exclude}, except @command{tar} will use the list of
 patterns in the file @var{file}.  @xref{exclude}.
 
+@opindex exclude-caches, summary
 @item --exclude-caches
 
 Automatically excludes all directories
 containing a cache directory tag.  @xref{exclude}.
 
+@opindex file, summary
 @item --file=@var{archive}
 @itemx -f @var{archive}
 
@@ -2351,6 +2403,7 @@ containing a cache directory tag.  @xref{exclude}.
 performs operations on, rather than @command{tar}'s compilation dependent
 default.  @xref{file tutorial}.
 
+@opindex files-from, summary
 @item --files-from=@var{file}
 @itemx -T @var{file}
 
@@ -2358,12 +2411,14 @@ default.  @xref{file tutorial}.
 or files to operate on, in addition to those specified on the
 command-line.  @xref{files}.
 
+@opindex force-local, summary
 @item --force-local
 
 Forces @command{tar} to interpret the filename given to @option{--file}
 as a local file, even if it looks like a remote tape drive name.
 @xref{local and remote archives}.
 
+@opindex format, summary
 @item --format=@var{format}
 
 Selects output archive format.  @var{Format} may be one of the
@@ -2392,6 +2447,7 @@ Creates a @acronym{POSIX.1-2001 archive}.
 
 @xref{Formats}, for a detailed discussion of these formats.
 
+@opindex group, summary
 @item --group=@var{group}
 
 Files added to the @command{tar} archive will have a group id of @var{group},
@@ -2399,8 +2455,11 @@ rather than the group from the source file.  @var{group} is first decoded
 as a group symbolic name, but if this interpretation fails, it has to be
 a decimal numeric group ID.  @FIXME-xref{}
 
-Also see the comments for the @value{op-owner} option.
+Also see the comments for the @option{--owner=@var{user}} option.
 
+@opindex gzip, summary
+@opindex gunzip, summary
+@opindex ungzip, summary
 @item --gzip
 @itemx --gunzip
 @itemx --ungzip
@@ -2410,29 +2469,35 @@ This option tells @command{tar} to read or write archives through
 @command{gzip}, allowing @command{tar} to directly operate on several
 kinds of compressed archives transparently.  @xref{gzip}.
 
+@opindex help, summary
 @item --help
 
 @command{tar} will print out a short message summarizing the operations and
 options to @command{tar} and exit. @xref{help}.
 
+@opindex ignore-case, summary
 @item --ignore-case
 Ignore case when excluding files. @xref{controlling pattern-matching
 with exclude}.
 
+@opindex ignore-command-error, summary
 @item --ignore-command-error
 Ignore exit codes of subprocesses. @xref{Writing to an External Program}.
 
+@opindex ignore-failed-read, summary
 @item --ignore-failed-read
 
 Do not exit unsuccessfully merely because an unreadable file was encountered.
 @xref{Reading}.
 
+@opindex ignore-zeros, summary
 @item --ignore-zeros
 @itemx -i
 
 With this option, @command{tar} will ignore zeroed blocks in the
 archive, which normally signals EOF.  @xref{Reading}.
 
+@opindex incremental, summary
 @item --incremental
 @itemx -G
 
@@ -2441,10 +2506,13 @@ Used to inform @command{tar} that it is working with an old
 primarily for backwards compatibility only.  @FIXME{incremental and
 listed-incremental}.
 
+@opindex index-file, summary
 @item --index-file=@var{file}
 
 Send verbose output to @var{file} instead of to standard output.
 
+@opindex info-script, summary
+@opindex new-volume-script, summary
 @item --info-script=@var{script-file}
 @itemx --new-volume-script=@var{script-file}
 @itemx -F @var{script-file}
@@ -2454,6 +2522,7 @@ at the end of each tape.  If @var{script-file} exits with nonzero status,
 @command{tar} fails immediately.  @xref{info-script}, for a detailed
 discussion of @var{script-file}.
 
+@opindex interactive, summary
 @item --interactive
 @itemx --confirmation
 @itemx -w
@@ -2462,17 +2531,20 @@ Specifies that @command{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
 @xref{interactive}.
 
+@opindex keep-newer-files, summary
 @item --keep-newer-files
 
 Do not replace existing files that are newer than their archive copies
 when extracting files from an archive.
 
+@opindex keep-old-files, summary
 @item --keep-old-files
 @itemx -k
 
 Do not overwrite existing files when extracting files from an archive.
 @xref{Keep Old Files}.
 
+@opindex label, summary
 @item --label=@var{name}
 @itemx -V @var{name}
 
@@ -2481,6 +2553,7 @@ as a name record in the archive.  When extracting or listing archives,
 @command{tar} will only operate on archives that have a label matching
 the pattern specified in @var{name}.  @xref{Tape Files}.
 
+@opindex listed-incremental, summary
 @item --listed-incremental=@var{snapshot-file}
 @itemx -g @var{snapshot-file}
 
@@ -2490,6 +2563,7 @@ backup, using @var{snapshot-file} to determine which files to backup.
 With other operations, informs @command{tar} that the archive is in
 incremental format.  @FIXME{incremental and listed-incremental}.
 
+@opindex mode, summary
 @item --mode=@var{permissions}
 
 When adding files to an archive, @command{tar} will use
@@ -2507,24 +2581,28 @@ more flexibility.  For example, the value @samp{a+rw} adds read and write
 permissions for everybody, while retaining executable bits on directories
 or on any other file already marked as executable.
 
+@opindex multi-volume, summary
 @item --multi-volume
 @itemx -M
 
 Informs @command{tar} that it should create or otherwise operate on a
 multi-volume @command{tar} archive.  @xref{Using Multiple Tapes}.
 
+@opindex new-volume-script, summary
 @item --new-volume-script
 
 (see --info-script)
 
-@item -n
-@itemx --seek
+@opindex seek, summary
+@item --seek
+@itemx -n
 
 Assume that the archive media supports seeks to arbitrary
 locations.  Usually @command{tar} determines automatically whether
 the archive can be seeked or not.  This option is intended for use
 in cases when such recognition fails.
 
+@opindex newer, summary
 @item --newer=@var{date}
 @itemx --after-date=@var{date}
 @itemx -N
@@ -2534,29 +2612,35 @@ since @var{date}.  If @var{date} begins with @samp{/} or @samp{.}, it
 is taken to be the name of a file whose data modification time specifies
 the date.  @xref{after}.
 
+@opindex newer-mtime, summary
 @item --newer-mtime=@var{date}
 
 Like @option{--newer}, but add only files whose
 contents have changed (as opposed to just @option{--newer}, which will
 also back up files for which any status information has changed).
 
+@opindex no-anchored, summary
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex no-ignore-case, summary
 @item --no-ignore-case
 Use case-sensitive matching when excluding files.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex no-ignore-command-error, summary
 @item --no-ignore-command-error
 Print warnings about subprocesses terminated with a non-zero exit
 code. @xref{Writing to an External Program}. 
 
+@opindex no-recursion, summary
 @item --no-recursion
 
 With this option, @command{tar} will not recurse into directories.
 @xref{recurse}.
 
+@opindex no-same-owner, summary
 @item --no-same-owner
 @itemx -o
 
@@ -2564,20 +2648,24 @@ When extracting an archive, do not attempt to preserve the owner
 specified in the @command{tar} archive.  This the default behavior
 for ordinary users.
 
+@opindex no-same-permissions, summary
 @item --no-same-permissions
 
 When extracting an archive, subtract the user's umask from files from
 the permissions specified in the archive.  This is the default behavior
 for ordinary users.
 
+@opindex no-wildcards, summary
 @item --no-wildcards
 Do not use wildcards when excluding files.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex no-wildcards-match-slash, summary
 @item --no-wildcards-match-slash
 Wildcards do not match @samp{/} when excluding files.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex null, summary
 @item --null
 
 When @command{tar} is using the @option{--files-from} option, this option
@@ -2585,6 +2673,7 @@ instructs @command{tar} to expect filenames terminated with @option{NUL}, so
 @command{tar} can correctly work with file names that contain newlines.
 @xref{nul}.
 
+@opindex numeric-owner, summary
 @item --numeric-owner
 
 This option will notify @command{tar} that it should use numeric user
@@ -2603,6 +2692,7 @@ removed in the future releases.
 
 @xref{Current status}, for more information.
 
+@opindex occurrence, summary
 @item --occurrence[=@var{number}]
 
 This option can be used in conjunction with one of the subcommands
@@ -2621,9 +2711,11 @@ tar -x -f archive.tar --occurrence filename
 will extract the first occurrence of @file{filename} from @file{archive.tar}
 and will terminate without scanning to the end of the archive.
 
+@opindex old-archive, summary
 @item --old-archive
 Synonym for @option{--format=v7}.
 
+@opindex one-file-system, summary
 @item --one-file-system
 @itemx -l
 Used when creating an archive.  Prevents @command{tar} from recursing into
@@ -2638,16 +2730,19 @@ a synonym for @option{--check-links}.
 
 @xref{Current status}, for more information.
 
+@opindex overwrite, summary
 @item --overwrite
 
 Overwrite existing files and directory metadata when extracting files
 from an archive.  @xref{Overwrite Old Files}.
 
+@opindex overwrite-dir, summary
 @item --overwrite-dir
 
 Overwrite the metadata of existing directories when extracting files
 from an archive.  @xref{Overwrite Old Files}.
 
+@opindex owner, summary
 @item --owner=@var{user}
 
 Specifies that @command{tar} should use @var{user} as the owner of members
@@ -2663,8 +2758,9 @@ anonymous anyway, so that might as well be the owner of anonymous archives.
 
 This option does not affect extraction from archives.
 
+@opindex pax-option, summary
 @item --pax-option=@var{keyword-list}
-
+@FIXME{Such a detailed description does not belong there, move it elsewhere.}
 This option is meaningful only with @acronym{POSIX.1-2001} archives
 (@pxref{posix}).  It modifies the way @command{tar} handles the
 extended header keywords.  @var{Keyword-list} is a comma-separated
@@ -2773,22 +2869,28 @@ the group name will be forced to a new value for all files
 stored in the archive.
 @end table
 
+@opindex portability, summary
 @item --portability
 @itemx --old-archive
 Synonym for @option{--format=v7}.
 
+@opindex posix, summary
 @item --posix
 Same as @option{--format=posix}.
 
+@opindex preserve, summary
 @item --preserve
 
 Synonymous with specifying both @option{--preserve-permissions} and
 @option{--same-order}.  @xref{Setting Access Permissions}.
 
+@opindex preserve-order, summary
 @item --preserve-order
 
 (See @option{--same-order}; @pxref{Reading}.)
 
+@opindex preserve-permissions, summary
+@opindex same-permissions, summary
 @item --preserve-permissions
 @itemx --same-permissions
 @itemx -p
@@ -2799,49 +2901,58 @@ that number as the permissions to create the destination file.
 Specifying this option instructs @command{tar} that it should use the
 permissions directly from the archive.  @xref{Setting Access Permissions}.
 
+@opindex read-full-records, summary
 @item --read-full-records
 @itemx -B
 
 Specifies that @command{tar} should reblock its input, for reading
 from pipes on systems with buggy implementations.  @xref{Reading}.
 
+@opindex record-size, summary
 @item --record-size=@var{size}
 
 Instructs @command{tar} to use @var{size} bytes per record when accessing the
-archive.  @value{xref-blocking-factor}.
+archive.  @xref{Blocking Factor}.
 
+@opindex recursion, summary
 @item --recursion
 
 With this option, @command{tar} recurses into directories.
 @xref{recurse}.
 
+@opindex recursive-unlink, summary
 @item --recursive-unlink
 
 Remove existing
 directory hierarchies before extracting directories of the same name
 from the archive.  @xref{Recursive Unlink}.
 
+@opindex remove-files, summary
 @item --remove-files
 
 Directs @command{tar} to remove the source file from the file system after
 appending it to an archive.  @xref{remove files}.
 
+@opindex restrict, summary
 @item --restrict
 
 Disable use of some potentially harmful @command{tar} options.
 Currently this option disables shell invocaton from multi-volume menu
 (@pxref{Using Multiple Tapes}).
 
+@opindex rmt-command, summary
 @item --rmt-command=@var{cmd}
 
 Notifies @command{tar} that it should use @var{cmd} instead of
 the default @file{/usr/libexec/rmt} (@pxref{Remote Tape Server}).
 
+@opindex rsh-command, summary
 @item --rsh-command=@var{cmd}
 
 Notifies @command{tar} that is should use @var{cmd} to communicate with remote
 devices.  @xref{Device}.
 
+@opindex same-order, summary
 @item --same-order
 @itemx --preserve-order
 @itemx -s
@@ -2851,6 +2962,7 @@ small amounts of memory.  It informs @command{tar} that the list of file
 arguments has already been sorted to match the order of files in the
 archive.  @xref{Reading}.
 
+@opindex same-owner, summary
 @item --same-owner
 
 When extracting an archive, @command{tar} will attempt to preserve the owner
@@ -2858,10 +2970,12 @@ specified in the @command{tar} archive with this option present.
 This is the default behavior for the superuser; this option has an
 effect only for ordinary users.  @xref{Attributes}.
 
+@opindex same-permissions, summary
 @item --same-permissions
 
 (See @option{--preserve-permissions}; @pxref{Setting Access Permissions}.)
 
+@opindex show-defaults, summary
 @item --show-defaults
 
 Displays the default options used by @command{tar} and exits
@@ -2873,11 +2987,13 @@ $ tar --show-defaults
 --format=gnu -f- -b20
 @end smallexample
 
+@opindex show-omitted-dirs, summary
 @item --show-omitted-dirs
 
 Instructs @command{tar} to mention directories its skipping over when
 operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 
+@opindex show-stored-names, summary
 @item --show-stored-names
 
 This option has effect only when used in conjunction with one of
@@ -2885,12 +3001,14 @@ archive creation operations.  It instructs tar to list the member names
 stored in the archive, as opposed to the actual file
 names.  @xref{listing member and file names}.
 
+@opindex sparse, summary
 @item --sparse
 @itemx -S
 
 Invokes a @acronym{GNU} extension when adding files to an archive that handles
 sparse files efficiently.  @xref{sparse}.
 
+@opindex starting-file, summary
 @item --starting-file=@var{name}
 @itemx -K @var{name}
 
@@ -2898,6 +3016,7 @@ This option affects extraction only; @command{tar} will skip extracting
 files in the archive until it finds one that matches @var{name}.
 @xref{Scarce}.
 
+@opindex strip-components, summary
 @item --strip-components=@var{number}
 Strip given @var{number} of leading components from file names before
 extraction.@footnote{This option was called @option{--strip-path} in
@@ -2911,38 +3030,45 @@ tar --extract --file archive.tar --strip-components=2
 @noindent
 would extracted this file to file @file{name}.
 
+@opindex suffix, summary
 @item --suffix=@var{suffix}
 
 Alters the suffix @command{tar} uses when backing up files from the default
 @samp{~}.  @xref{backup}.
 
+@opindex tape-length, summary
 @item --tape-length=@var{num}
 @itemx -L @var{num}
 
 Specifies the length of tapes that @command{tar} is writing as being
 @w{@var{num} x 1024} bytes long.  @xref{Using Multiple Tapes}.
 
+@opindex test-label, summary
 @item --test-label
 
 Reads the volume label.  If an argument is specified, test whether it
 matches the volume label.  @xref{--test-label option}.
 
+@opindex to-command, summary
 @item --to-command=@var{command}
 
 During extraction @command{tar} will pipe extracted files to the
 standard input of @var{command}. @xref{Writing to an External Program}.
 
+@opindex to-stdout, summary
 @item --to-stdout
 @itemx -O
 
 During extraction, @command{tar} will extract files to stdout rather
 than to the file system.  @xref{Writing to Standard Output}.
 
+@opindex totals, summary
 @item --totals
 
 Displays the total number of bytes written after creating an archive.
 @xref{verbose}.
 
+@opindex touch, summary
 @item --touch
 @itemx -m
 
@@ -2950,30 +3076,36 @@ Sets the data modification time of extracted files to the extraction time,
 rather than the data modification time stored in the archive.
 @xref{Data Modification Times}.
 
+@opindex uncompress, summary
 @item --uncompress
 
 (See @option{--compress}. @pxref{gzip})
 
+@opindex ungzip, summary
 @item --ungzip
 
 (See @option{--gzip}. @pxref{gzip})
 
+@opindex unlink-first, summary
 @item --unlink-first
 @itemx -U
 
 Directs @command{tar} to remove the corresponding file from the file
 system before extracting it from the archive.  @xref{Unlink First}.
 
+@opindex use-compress-program, summary
 @item --use-compress-program=@var{prog}
 
 Instructs @command{tar} to access the archive through @var{prog}, which is
 presumed to be a compression program of some sort.  @xref{gzip}.
 
+@opindex utc, summary
 @item --utc
 
 Display file modification dates in @acronym{UTC}.  This option implies
 @option{--verbose}.
 
+@opindex verbose, summary
 @item --verbose
 @itemx -v
 
@@ -2982,28 +3114,33 @@ performing.  This option can be specified multiple times for some
 operations to increase the amount of information displayed.
 @xref{verbose}.
 
+@opindex verify, summary
 @item --verify
 @itemx -W
 
 Verifies that the archive was correctly written when creating an
 archive.  @xref{verify}.
 
+@opindex version, summary
 @item --version
 
 @command{tar} will print an informational message about what version
 it is and a copyright message, some credits, and then exit.
 @xref{help}.
 
+@opindex volno-file, summary
 @item --volno-file=@var{file}
 
 Used in conjunction with @option{--multi-volume}.  @command{tar} will keep track
 of which volume of a multi-volume archive its working in @var{file}.
 @xref{volno-file}.
 
+@opindex wildcards, summary
 @item --wildcards
 Use wildcards when excluding files.
 @xref{controlling pattern-matching with exclude}.
 
+@opindex wildcards-match-slash, summary
 @item --wildcards-match-slash
 Wildcards match @samp{/} when excluding files.
 @xref{controlling pattern-matching with exclude}.
@@ -3191,8 +3328,11 @@ the earlier versions of @GNUTAR{}.  In the future releases
 @node help
 @section @GNUTAR{} documentation
 
+@cindex Getting program version number
+@opindex version
+@cindex Version of the @command{tar} program
 Being careful, the first thing is really checking that you are using
-@GNUTAR{}, indeed.  The @value{op-version} option
+@GNUTAR{}, indeed.  The @option{--version} option
 will generate a message giving confirmation that you are using
 @GNUTAR{}, with the precise version of @GNUTAR{}
 you are using.  @command{tar} identifies itself and
@@ -3213,14 +3353,17 @@ named @samp{tar}, after the name of the main program it
 contains@footnote{There are plans to merge the @command{cpio} and
 @command{tar} packages into a single one which would be called
 @code{paxutils}.  So, who knows if, one of this days, the
-@value{op-version} would not yield @w{@samp{tar (@acronym{GNU}
+@option{--version} would not yield @w{@samp{tar (@acronym{GNU}
 paxutils) 3.2}}}.
 
+@cindex Obtaining help
+@cindex Listing all @command{tar} options
+@opindex help, introduction
 Another thing you might want to do is checking the spelling or meaning
 of some particular @command{tar} option, without resorting to this
 manual, for once you have carefully read it.  @GNUTAR{}
 has a short help feature, triggerable through the
-@value{op-help} option.  By using this option, @command{tar} will
+@option{--help} option.  By using this option, @command{tar} will
 print a usage message listing all available options on standard
 output, then exit successfully, without doing anything else and
 ignoring all other options.  Even if this is only a brief summary, it
@@ -3235,26 +3378,27 @@ $ @kbd{tar --help | less}
 presuming, here, that you like using @command{less} for a pager.  Other
 popular pagers are @command{more} and @command{pg}.  If you know about some
 @var{keyword} which interests you and do not want to read all the
-@value{op-help} output, another common idiom is doing:
+@option{--help} output, another common idiom is doing:
 
 @smallexample
 tar --help | grep @var{keyword}
 @end smallexample
 
 @noindent
-for getting only the pertinent lines.
+for getting only the pertinent lines.  Notice, however, that some
+@command{tar} options have long description lines and the above
+command will list only the first of them.
 
-The perceptive reader would have noticed some contradiction in the
-previous paragraphs.  It is written that both @value{op-version} and
-@value{op-help} print something, and have all other options ignored.  In
-fact, they cannot ignore each other, and one of them has to win.  We do
-not specify which is stronger, here; experiment if you really wonder!
+@opindex usage
+If you only wish to check the spelling of an option, running @kbd{tar
+--usage} may be a better choice.  This will display a terse list of
+@command{tar} option without accompanying explanations.
 
 The short help output is quite succinct, and you might have to get
 back to the full documentation for precise points.  If you are reading
 this paragraph, you already have the @command{tar} manual in some
-form.  This manual is available in printed form, as a kind of small
-book.  It may printed out of the @GNUTAR{}
+form.  This manual is available in a variety of forms from
+@url{http://www.gnu.org/software/tar/manual}.  It may printed out of the @GNUTAR{}
 distribution, provided you have @TeX{} already installed somewhere,
 and a laser printer around.  Just configure the distribution, execute
 the command @w{@samp{make dvi}}, then print @file{doc/tar.dvi} the
@@ -3267,25 +3411,38 @@ file.  Just call @w{@samp{info tar}} or, if you do not have the
 
 There is currently no @code{man} page for @GNUTAR{}.
 If you observe such a @code{man} page on the system you are running,
-either it does not long to @GNUTAR{}, or it has not
-been produced by @acronym{GNU}.  Currently, @GNUTAR{}
-documentation is provided in Texinfo format only, if we
-except, of course, the short result of @kbd{tar --help}.
+either it does not belong to @GNUTAR{}, or it has not
+been produced by @acronym{GNU}.  Some package maintainers convert
+@kbd{tar --help} output to a man page, using @command{help2man}.  In
+any case, please bear in mind that the authoritative source of
+information about @GNUTAR{} is this Texinfo documentation.
+
+@node defaults
+@section Obtaining @GNUTAR{} default values
+
+@opindex show-defaults
+@GNUTAR{} has some predefined defaults that are used when you do not
+explicitely specify another values.  To obtain a list of such
+defaults, use @option{--show-defaults} option.  This will output the
+values in the form of @command{tar} command line options:
+
+@smallexample
+@group
+@kbd{tar --show-defaults}
+--format=gnu -f- -b20 --rmt-command=/etc/rmt --rsh-command=/usr/bin/rsh
+@end group
+@end smallexample
+
+@noindent
+The above output shows that this version of @GNUTAR{} defaults to
+using @samp{gnu} archive format (@pxref{Formats}), it uses standard
+output as the archive, if no @option{--file} option has been given
+(@pxref{file tutorial}), the default blocking factor is 20
+(@pxref{Blocking Factor}).  It also shows the default locations where
+@command{tar} will look for @command{rmt} and @command{rsh} binaries.
 
 @node verbose
 @section Checking @command{tar} progress
-
-@cindex Progress information
-@cindex Status information
-@cindex Information on progress and status of operations
-@cindex Verbose operation
-@cindex Block number where error occurred
-@cindex Error message, block number of
-@cindex Version of the @command{tar} program
-
-@cindex Getting more information during the operation
-@cindex Information during operation
-@cindex Feedback from @command{tar}
 
 Typically, @command{tar} performs most operations without reporting any
 information to the user except error messages.  When using @command{tar}
@@ -3300,21 +3457,24 @@ archive, however, you may need more information than just an error
 message in order to solve the problem.  The following options can be
 helpful diagnostic tools.
 
-Normally, the @value{op-list} command to list an archive prints just
-the file names (one per line) and the other commands are silent.
-When used with most operations, the @value{op-verbose} option causes
-@command{tar} to print the name of each file or archive member as it
-is processed.  This and the other options which make @command{tar} print
-status information can be useful in monitoring @command{tar}.
+@cindex Verbose operation
+@opindex verbose
+Normally, the @option{--list} (@option{-t}) command to list an archive
+prints just the file names (one per line) and the other commands are
+silent. When used with most operations, the @option{--verbose}
+(@option{-v}) option causes @command{tar} to print the name of each
+file or archive member as it is processed.  This and the other options
+which make @command{tar} print status information can be useful in
+monitoring @command{tar}. 
 
-With @value{op-create} or @value{op-extract}, @value{op-verbose} used once
-just prints the names of the files or members as they are processed.
-Using it twice causes @command{tar} to print a longer listing (reminiscent
-of @samp{ls -l}) for each member.  Since @value{op-list} already prints
-the names of the members, @value{op-verbose} used once with @value{op-list}
-causes @command{tar} to print an @samp{ls -l} type listing of the files
-in the archive.  The following examples both extract members with
-long list output:
+With @option{--create} or @option{--extract}, @option{--verbose} used
+once just prints the names of the files or members as they are processed.
+Using it twice causes @command{tar} to print a longer listing
+(reminiscent of @samp{ls -l}) for each member.  Since @option{--list}
+already prints  the names of the members, @option{--verbose} used once
+with @option{--list} causes @command{tar} to print an @samp{ls -l}
+type listing of the files in the archive.  The following examples both
+extract members with long list output:
 
 @smallexample
 $ @kbd{tar --extract --file=archive.tar --verbose --verbose}
@@ -3331,44 +3491,52 @@ If @option{--index-file=@var{file}} is specified, @command{tar} sends
 verbose output to @var{file} rather than to standard output or standard
 error.
 
-The @value{op-totals} option---which is only meaningful when used with
-@value{op-create}---causes @command{tar} to print the total
+@cindex Obtaining total status information
+@opindex totals
+The @option{--totals} option---which is only meaningful when used with
+@option{--create} (@option{-c})---causes @command{tar} to print the total
 amount written to the archive, after it has been fully created.
 
-The @value{op-checkpoint} option prints an occasional message
+@cindex Progress information
+@opindex checkpoint
+The @option{--checkpoint} option prints an occasional message
 as @command{tar} reads or writes the archive.  In fact, it prints
 a message each 10 records read or written.  It is designed for
 those who don't need the more detailed (and voluminous) output of
-@value{op-block-number}, but do want visual confirmation that @command{tar}
+@option{--block-number} (@option{-R}), but do want visual confirmation that @command{tar}
 is actually making forward progress.
 
 @FIXME{There is some confusion here.  It seems that -R once wrote a
 message at @samp{every} record read or written.}
 
+@opindex show-omitted-dirs
 @anchor{show-omitted-dirs}
-The @value{op-show-omitted-dirs} option, when reading an archive---with
-@value{op-list} or @value{op-extract}, for example---causes a message
+The @option{--show-omitted-dirs} option, when reading an archive---with
+@option{--list} or @option{--extract}, for example---causes a message
 to be printed for each directory in the archive which is skipped.
 This happens regardless of the reason for skipping: the directory might
 not have been named on the command line (implicitly or explicitly),
-it might be excluded by the use of the @value{op-exclude} option, or
+it might be excluded by the use of the @option{--exclude=@var{pattern}} option, or
 some other reason.
 
+@opindex block-number
+@cindex Block number where error occurred
 @anchor{block-number}
-If @value{op-block-number} is used, @command{tar} prints, along with
+If @option{--block-number} (@option{-R}) is used, @command{tar} prints, along with
 every message it would normally produce, the block number within the
 archive where the message was triggered.  Also, supplementary messages
 are triggered when reading blocks full of NULs, or when hitting end of
 file on the archive.  As of now, if the archive if properly terminated
 with a NUL block, the reading of the file may stop before end of file
 is met, so the position of end of file will not usually show when
-@value{op-block-number} is used.  Note that @GNUTAR{}
+@option{--block-number} (@option{-R}) is used.  Note that @GNUTAR{}
 drains the archive before exiting when reading the
 archive from a pipe.
 
+@cindex Error message, block number of
 This option is especially useful when reading damaged archives, since
 it helps pinpoint the damaged sections.  It can also be used with
-@value{op-list} when listing a file-system backup tape, allowing you to
+@option{--list} (@option{-t}) when listing a file-system backup tape, allowing you to
 choose among several backup tapes when retrieving a file later, in
 favor of the tape where the file appears earliest (closest to the
 front of the tape).  @xref{backup}.
@@ -3382,10 +3550,11 @@ further instructions.  In some situations however, you may want to
 exclude some files and archive members from the operation (for instance
 if disk or storage space is tight).  You can do this by excluding
 certain files automatically (@pxref{Choosing}), or by performing
-an operation interactively, using the @value{op-interactive} option.
+an operation interactively, using the @option{--interactive} (@option{-w}) option.
 @command{tar} also accepts @option{--confirmation} for this option.
 
-When the @value{op-interactive} option is specified, before
+@opindex interactive
+When the @option{--interactive} (@option{-w}) option is specified, before
 reading, writing, or deleting files, @command{tar} first prints a message
 for each such file, telling what operation it intends to take, then asks
 for confirmation on the terminal.  The actions which require
@@ -3427,23 +3596,26 @@ output free to receive verbose output, all separate from errors.
 @node Basic tar
 @section Basic @GNUTAR{} Operations
 
-The basic @command{tar} operations, @value{op-create}, @value{op-list} and
-@value{op-extract}, are currently presented and described in the tutorial
+The basic @command{tar} operations, @option{--create} (@option{-c}),
+@option{--list} (@option{-t}) and @option{--extract} (@option{--get},
+@option{-x}), are currently presented and described in the tutorial 
 chapter of this manual.  This section provides some complementary notes
 for these operations.
 
-@table @asis
-@item @value{op-create}
+@table @option
+@opindex create, complementary notes
+@item --create
+@itemx -c
 
 Creating an empty archive would have some kind of elegance.  One can
-initialize an empty archive and later use @value{op-append} for adding
-all members.  Some applications would not welcome making an exception
-in the way of adding the first archive member.  On the other hand,
-many people reported that it is dangerously too easy for @command{tar}
-to destroy a magnetic tape with an empty archive@footnote{This is well
-described in @cite{Unix-haters Handbook}, by Simson Garfinkel, Daniel
-Weise & Steven Strassmann, IDG Books, ISBN 1-56884-203-1.}.  The two most
-common errors are:
+initialize an empty archive and later use @option{--append}
+(@option{-r}) for adding all members.  Some applications would not
+welcome making an exception in the way of adding the first archive
+member.  On the other hand, many people reported that it is
+dangerously too easy for @command{tar} to destroy a magnetic tape with
+an empty archive@footnote{This is well described in @cite{Unix-haters
+Handbook}, by Simson Garfinkel, Daniel Weise & Steven Strassmann, IDG
+Books, ISBN 1-56884-203-1.}.  The two most common errors are:
 
 @enumerate
 @item
@@ -3465,32 +3637,34 @@ file, which was meant to be saved, is rather destroyed.
 
 So, recognizing the likelihood and the catastrophical nature of these
 errors, @GNUTAR{} now takes some distance from elegance, and
-cowardly refuses to create an archive when @value{op-create} option is
-given, there are no arguments besides options, and @value{op-files-from}
-option is @emph{not} used.  To get around the cautiousness of @GNUTAR{}
-and nevertheless create an archive with nothing in it,
-one may still use, as the value for the @value{op-files-from} option,
-a file with no names in it, as shown in the following commands:
+cowardly refuses to create an archive when @option{--create} option is
+given, there are no arguments besides options, and
+@option{--files-from} (@option{-T}) option is @emph{not} used.  To get
+around the cautiousness of @GNUTAR{} and nevertheless create an
+archive with nothing in it, one may still use, as the value for the
+@option{--files-from} option, a file with no names in it, as shown in
+the following commands: 
 
 @smallexample
 @kbd{tar --create --file=empty-archive.tar --files-from=/dev/null}
 @kbd{tar cfT empty-archive.tar /dev/null}
 @end smallexample
 
-@item @value{op-extract}
+@opindex extract, complementary notes
+@item --extract
+@itemx --get
+@itemx -x
 
 A socket is stored, within a @GNUTAR{} archive, as a pipe.
 
-@item @value{op-list}
+@item @option{--list} (@option{-t})
 
 @GNUTAR{} now shows dates as @samp{1996-08-30},
-while it used to show them as @samp{Aug 30 1996}.  (One can revert to
-the old behavior by defining @code{USE_OLD_CTIME} in @file{src/list.c}
-before reinstalling.)  But preferably, people should get used to ISO
-8601 dates.  Local American dates should be made available again with
-full date localization support, once ready.  In the meantime, programs
-not being localizable for dates should prefer international dates,
-that's really the way to go.
+while it used to show them as @samp{Aug 30 1996}. Preferably,
+people should get used to ISO 8601 dates.  Local American dates should
+be made available again with full date localization support, once
+ready.  In the meantime, programs not being localizable for dates
+should prefer international dates, that's really the way to go.
 
 Look up @url{http://www.ft.uni-erlangen.de/~mskuhn/iso-time.html} if you
 are curious, it contains a detailed explanation of the ISO 8601 standard.
@@ -3578,24 +3752,25 @@ Compare archive members to their counterparts in the file system.
 @subsection How to Add Files to Existing Archives: @option{--append}
 @UNREVISED
 
+@opindex append
 If you want to add files to an existing archive, you don't need to
-create a new archive; you can use @value{op-append}.  The archive must
-already exist in order to use @option{--append}.  (A related operation
-is the @option{--update} operation; you can use this to add newer
-versions of archive members to an existing archive.  To learn how to
+create a new archive; you can use @option{--append} (@option{-r}).
+The archive must already exist in order to use @option{--append}.  (A
+related operation is the @option{--update} operation; you can use this
+to add newer versions of archive members to an existing archive.  To learn how to
 do this with @option{--update}, @pxref{update}.)
 
-If you use @value{op-append} to add a file that has the same name as an
+If you use @option{--append} to add a file that has the same name as an
 archive member to an archive containing that archive member, then the
 old member is not deleted.  What does happen, however, is somewhat
 complex.  @command{tar} @emph{allows} you to have infinite number of files
 with the same name.  Some operations treat these same-named members no
 differently than any other set of archive members: for example, if you
-view an archive with @value{op-list}, you will see all of those members
-listed, with their data modification times, owners, etc.
+view an archive with @option{--list} (@option{-t}), you will see all
+of those members listed, with their data modification times, owners, etc.
 
 Other operations don't deal with these members as perfectly as you might
-prefer; if you were to use @value{op-extract} to extract the archive,
+prefer; if you were to use @option{--extract} to extract the archive,
 only the most recently added copy of a member with the same name as four
 other members would end up in the working directory.  This is because
 @option{--extract} extracts an archive in the order the members appeared
@@ -3623,7 +3798,9 @@ tar --extract --file archive.tar --occurrence=2 myfile
 @end smallexample
 
 @noindent
-would extract only the second copy.  @xref{Option Summary,---occurrence}, for the description of @value{op-occurrence} option.
+would extract only the second copy.  @xref{Option
+Summary,---occurrence}, for the description of @option{--occurrence}
+option. 
 
 @FIXME{ hag -- you might want to incorporate some of the above into the
 MMwtSN node; not sure.  i didn't know how to make it simpler...
@@ -3633,7 +3810,7 @@ with the Same Name.}
 
 @cindex Members, replacing with other members
 @cindex Replacing members with other members
-If you want to replace an archive member, use @value{op-delete} to
+If you want to replace an archive member, use @option{--delete} to
 delete the member you want to remove from the archive, , and then use
 @option{--append} to add the member you want to be in the archive.  Note
 that you can not change the order of the archive; the most recently
@@ -3655,15 +3832,15 @@ and @ref{Media}, for more information.)
 @cindex Archives, Appending files to
 
 The simplest way to add a file to an already existing archive is the
-@value{op-append} operation, which writes specified files into the
+@option{--append} (@option{-r}) operation, which writes specified files into the
 archive whether or not they are already among the archived files.
 When you use @option{--append}, you @emph{must} specify file name
 arguments, as there is no default.  If you specify a file that already
 exists in the archive, another copy of the file will be added to the
 end of the archive.  As with other operations, the member names of the
 newly added files will be exactly the same as their names given on the
-command line.  The @value{op-verbose} option will print out the names
-of the files as they are written into the archive.
+command line.  The @option{--verbose} (@option{-v}) option will print
+out the names of the files as they are written into the archive.
 
 @option{--append} cannot be performed on some tape drives, unfortunately,
 due to deficiencies in the formats those tape drives use.  The archive
@@ -3681,7 +3858,7 @@ $ @kbd{tar --append --file=collection.tar rock}
 @end smallexample
 
 @noindent
-If you now use the @value{op-list} operation, you will see that
+If you now use the @option{--list} (@option{-t}) operation, you will see that
 @file{rock} has been added to the archive:
 
 @smallexample
@@ -3698,7 +3875,7 @@ title claims it will become...}
 @node multiple
 @subsubsection Multiple Files with the Same Name
 
-You can use @value{op-append} to add copies of files which have been
+You can use @option{--append} (@option{-r}) to add copies of files which have been
 updated since the archive was created.  (However, we do not recommend
 doing this since there is another @command{tar} option called
 @option{--update}; @pxref{update} for more information.  We describe this
@@ -3755,7 +3932,7 @@ replaced by the newer version.  You can confirm this by extracting
 the archive and running @samp{ls} on the directory.
 
 If you wish to extract the first occurrence of the file @file{blues}
-from the archive, use @value{op-occurrence} option, as shown in
+from the archive, use @option{--occurrence} option, as shown in
 the following example:
 
 @smallexample
@@ -3763,22 +3940,24 @@ $ @kbd{tar --extract -vv --occurrence --file=collection.tar blues}
 -rw-rw-rw- me user     21 1996-09-23 16:44 blues
 @end smallexample
 
-@xref{Writing}, for more information on @value{op-extract} and
+@xref{Writing}, for more information on @option{--extract} and
 @xref{Option Summary, --occurrence}, for the description of
-@value{op-occurrence} option.
+@option{--occurrence} option.
 
 @node update
 @subsection Updating an Archive
 @UNREVISED
 @cindex Updating an archive
 
-In the previous section, you learned how to use @value{op-append} to add
-a file to an existing archive.  A related operation is
-@value{op-update}.  The @option{--update} operation updates a @command{tar}
-archive by comparing the date of the specified archive members against
-the date of the file with the same name.  If the file has been modified
-more recently than the archive member, then the newer version of the
-file is added to the archive (as with @value{op-append}).
+@opindex update
+In the previous section, you learned how to use @option{--append} to
+add a file to an existing archive.  A related operation is 
+@option{--update} (@option{-u}).  The @option{--update} operation
+updates a @command{tar} archive by comparing the date of the specified
+archive members against the date of the file with the same name.  If
+the file has been modified more recently than the archive member, then
+the newer version of the file is added to the archive (as with
+@option{--append}). 
 
 Unfortunately, you cannot use @option{--update} with magnetic tape drives.
 The operation will fail.
@@ -3789,7 +3968,7 @@ charles and/or mib/thomas/dave shevett..}
 Both @option{--update} and @option{--append} work by adding to the end
 of the archive.  When you extract a file from the archive, only the
 version stored last will wind up in the file system, unless you use
-the @value{op-backup} option.  @FIXME-ref{Multiple Members with the
+the @option{--backup} option.  @FIXME-ref{Multiple Members with the
 Same Name}
 
 @menu
@@ -3799,7 +3978,7 @@ Same Name}
 @node how to update
 @subsubsection How to Update an Archive Using @option{--update}
 
-You must use file name arguments with the @value{op-update} operation.
+You must use file name arguments with the @option{--update} (@option{-u}) operation.
 If you don't specify any files, @command{tar} won't act on any files and
 won't tell you that it didn't do anything (which may end up confusing
 you).
@@ -3810,7 +3989,7 @@ behavior just confused the author. :-) }
 To see the @option{--update} option at work, create a new file,
 @file{classical}, in your practice directory, and some extra text to the
 file @file{blues}, using any text editor.  Then invoke @command{tar} with
-the @samp{update} operation and the @value{op-verbose} option specified,
+the @samp{update} operation and the @option{--verbose} (@option{-v}) option specified,
 using the names of all the files in the practice directory as file name
 arguments:
 
@@ -3835,7 +4014,7 @@ it is because writing to the middle of a section of tape is a difficult
 process.  Tapes are not designed to go backward.  @xref{Media}, for more
 information about tapes.
 
-@value{op-update} is not suitable for performing backups for two
+@option{--update} (@option{-u}) is not suitable for performing backups for two
 reasons: it does not change directory content entries, and it
 lengthens the archive every time it is used.  The @GNUTAR{}
 options intended specifically for backups are more
@@ -3846,18 +4025,27 @@ efficient.  If you need to run backups, please consult @ref{Backups}.
 
 @cindex Adding archives to an archive
 @cindex Concatenating Archives
+@opindex concatenate
+@opindex catenate
+@c @cindex @option{-A} described
 Sometimes it may be convenient to add a second archive onto the end of
 an archive rather than adding individual files to the archive.  To add
 one or more archives to the end of another archive, you should use the
-@value{op-concatenate} operation.
+@option{--concatenate} (@option{--catenate}, @option{-A}) operation.
 
-To use @option{--concatenate}, name the archives to be concatenated on the
-command line.  (Nothing happens if you don't list any.)  The members,
-and their member names, will be copied verbatim from those archives.  If
-this causes multiple members to have the same name, it does not delete
-any members; all the members with the same name coexist.  @FIXME-ref{For
+To use @option{--concatenate}, give the first archive with
+@option{--file} option and name the rest of archives to be
+concatenated on the command line.  The members, and their member
+names, will be copied verbatim from those archives to the first one.
+@FIXME-ref{This can cause multiple members to have the same name, for
 information on how this affects reading the archive, Multiple
 Members with the Same Name.}
+The new, concatenated archive will be called by the same name as the
+one given with the @option{--file} option.  As usual, if you omit
+@option{--file}, @command{tar} will use the value of the environment
+variable @env{TAPE}, or, if this has not been set, the default archive name.
+
+@FIXME{There is no way to specify a new name...}
 
 To demonstrate how @option{--concatenate} works, create two small archives
 called @file{bluesrock.tar} and @file{folkjazz.tar}, using the relevant
@@ -3892,16 +4080,6 @@ $ @kbd{cd ..}
 $ @kbd{tar --concatenate --file=bluesrock.tar jazzfolk.tar}
 @end smallexample
 
-The result of this command is the concatenation of the archive
-specified with @option{--file} option and the archives, given in the
-command line.  The new, concatenated archive will be called by the
-same name as the one given with the @option{--file} option.  As usual,
-if you omit @option{--file}, @command{tar} will use the value of the
-environment variable @env{TAPE}, or, if this has not been set, the
-default archive name.
-
-@FIXME{There is no way to specify a new name...}
-
 If you now list the contents of the @file{bluesclass.tar}, you will see
 that now it also contains the archive members of @file{jazzfolk.tar}:
 
@@ -3919,7 +4097,7 @@ parameters.  Notice, that @command{tar} does not check whether the
 archives it concatenates have compatible formats, it does not
 even check if the files are really tar archives.
 
-Like @value{op-append}, this operation cannot be performed on some
+Like @option{--append} (@option{-r}), this operation cannot be performed on some
 tape drives, due to deficiencies in the formats those tape drives use.
 
 @cindex @code{concatenate} vs @command{cat}
@@ -3935,7 +4113,7 @@ from the target archive before each new archive is appended.  If you use
 @command{cat} to combine the archives, the result will not be a valid
 @command{tar} format archive.  If you need to retrieve files from an
 archive that was added to using the @command{cat} utility, use the
-@value{op-ignore-zeros} option.  @xref{Ignore Zeros}, for further
+@option{--ignore-zeros} (@option{-i}) option.  @xref{Ignore Zeros}, for further
 information on dealing with archives improperly combined using the
 @command{cat} shell utility.
 
@@ -3945,15 +4123,16 @@ information on dealing with archives improperly combined using the
 @cindex Deleting files from an archive
 @cindex Removing files from an archive
 
-You can remove members from an archive by using the @value{op-delete}
-option.  Specify the name of the archive with @value{op-file} and then
-specify the names of the members to be deleted; if you list no member
-names, nothing will be deleted.  The @value{op-verbose} option will
-cause @command{tar} to print the names of the members as they are deleted.
-As with @value{op-extract}, you must give the exact member names when
-using @samp{tar --delete}.  @option{--delete} will remove all versions of
-the named file from the archive.  The @option{--delete} operation can run
-very slowly.
+@opindex delete
+You can remove members from an archive by using the @option{--delete}
+option.  Specify the name of the archive with @option{--file}
+(@option{-f}) and then specify the names of the members to be deleted;
+if you list no member names, nothing will be deleted.  The
+@option{--verbose} option will cause @command{tar} to print the names
+of the members as they are deleted. As with @option{--extract}, you
+must give the exact member names when using @samp{tar --delete}.
+@option{--delete} will remove all versions of the named file from the
+archive.  The @option{--delete} operation can run very slowly.
 
 Unlike other operations, @option{--delete} has no short form.
 
@@ -3995,7 +4174,7 @@ $
 to fix the above example's results, yet.  I have to play with this and
 follow it and see what it actually does!}
 
-The @value{op-delete} option has been reported to work properly when
+The @option{--delete} option has been reported to work properly when
 @command{tar} acts as a filter from @code{stdin} to @code{stdout}.
 
 @node compare
@@ -4003,6 +4182,7 @@ The @value{op-delete} option has been reported to work properly when
 @cindex Verifying the currency of an archive
 @UNREVISED
 
+@opindex compare
 The @option{--compare} (@option{-d}), or @option{--diff} operation compares
 specified archive members against files with the same names, and then
 reports differences in file size, mode, owner, modification date and
@@ -4029,15 +4209,16 @@ blues
 tar: funk not found in archive
 @end smallexample
 
-The spirit behind the @value{op-compare} option is to check whether the
+The spirit behind the @option{--compare} (@option{--diff}, @option{-d}) option is to check whether the
 archive represents the current state of files on disk, more than validating
 the integrity of the archive media.  For this later goal, @xref{verify}.
 
 @node create options
 @section Options Used by @option{--create}
 
+@opindex create, additional options
 The previous chapter described the basics of how to use
-@value{op-create} to create an archive from a set of files.
+@option{--create} (@option{-c}) to create an archive from a set of files.
 @xref{create}.  This section described advanced options to be used with
 @option{--create}.
 
@@ -4060,7 +4241,8 @@ Do not exit with nonzero on unreadable files or directories.
 @FIXME{i need to get dan to go over these options with me and see if
 there's a better way of organizing them.}
 
-The previous chapter showed how to use @value{op-extract} to extract
+@opindex extract, additional options
+The previous chapter showed how to use @option{--extract} to extract
 an archive into the file system.  Various options cause @command{tar} to
 extract more information than just file contents, such as the owner,
 the permissions, the modification date, and so forth.  This section
@@ -4078,26 +4260,22 @@ considerations arise.  You may review the information presented in
 @node Reading
 @subsection Options to Help Read Archives
 @cindex Options when reading archives
-@cindex Reading incomplete records
-@cindex Records, incomplete
-@cindex End-of-archive entries, ignoring
-@cindex Ignoring end-of-archive entries
-@cindex Large lists of file names on small machines
-@cindex Small memory
-@cindex Running out of space
 @UNREVISED
 
+@cindex Reading incomplete records
+@cindex Records, incomplete
+@opindex read-full-records
 Normally, @command{tar} will request data in full record increments from
 an archive storage device.  If the device cannot return a full record,
 @command{tar} will report an error.  However, some devices do not always
 return full records, or do not require the last record of an archive to
 be padded out to the next record boundary.  To keep reading until you
 obtain a full record, or to accept an incomplete record if it contains
-an end-of-archive marker, specify the @value{op-read-full-records} option
-in conjunction with the @value{op-extract} or @value{op-list} operations.
-@value{xref-read-full-records}.
+an end-of-archive marker, specify the @option{--read-full-records} (@option{-B}) option
+in conjunction with the @option{--extract} or @option{--list} operations.
+@xref{Blocking}.
 
-The @value{op-read-full-records} option is turned on by default when
+The @option{--read-full-records} (@option{-B}) option is turned on by default when
 @command{tar} reads an archive from standard input, or from a remote
 machine.  This is because on BSD Unix systems, attempting to read a
 pipe returns however much happens to be in the pipe, even if it is
@@ -4105,10 +4283,11 @@ less than was requested.  If this option were not enabled, @command{tar}
 would fail as soon as it read an incomplete record from the pipe.
 
 If you're not sure of the blocking factor of an archive, you can
-read the archive by specifying @value{op-read-full-records} and
-@value{op-blocking-factor}, using a blocking factor larger than what the
-archive uses.  This lets you avoid having to determine the blocking factor
-of an archive.  @value{xref-blocking-factor}.
+read the archive by specifying @option{--read-full-records} (@option{-B}) and
+@option{--blocking-factor=@var{512-size}} (@option{-b
+@var{512-size}}), using a blocking factor larger than what the archive
+uses.  This lets you avoid having to determine the blocking factor 
+of an archive.  @xref{Blocking Factor}.
 
 @menu
 * read full records::
@@ -4121,24 +4300,28 @@ of an archive.  @value{xref-blocking-factor}.
 @FIXME{need sentence or so of intro here}
 
 @table @option
+@opindex read-full-records
 @item --read-full-records
 @item -B
-Use in conjunction with @value{op-extract} to read an archive which
-contains incomplete records, or one which has a blocking factor less
-than the one specified.
+Use in conjunction with @option{--extract} (@option{--get},
+@option{-x}) to read an archive which contains incomplete records, or
+one which has a blocking factor less than the one specified.
 @end table
 
 @node Ignore Zeros
 @unnumberedsubsubsec Ignoring Blocks of Zeros
 
+@cindex End-of-archive blocks, ignoring
+@cindex Ignoring end-of-archive blocks
+@opindex ignore-zeros
 Normally, @command{tar} stops reading when it encounters a block of zeros
 between file entries (which usually indicates the end of the archive).
-@value{op-ignore-zeros} allows @command{tar} to completely read an archive
-which contains a block of zeros before the end (i.e., a damaged
-archive, or one that was created by concatenating several archives
-together).
+@option{--ignore-zeros} (@option{-i}) allows @command{tar} to
+completely read an archive which contains a block of zeros before the
+end (i.e., a damaged archive, or one that was created by concatenating
+several archives together).
 
-The @value{op-ignore-zeros} option is turned off by default because many
+The @option{--ignore-zeros} (@option{-i}) option is turned off by default because many
 versions of @command{tar} write garbage after the end-of-archive entry,
 since that part of the media is never supposed to be read.  @GNUTAR{}
 does not write after the end of an archive, but seeks to
@@ -4149,7 +4332,7 @@ maintain compatiblity among archiving utilities.
 @itemx -i
 To ignore blocks of zeros (i.e., end-of-archive entries) which may be
 encountered while reading an archive.  Use in conjunction with
-@value{op-extract} or @value{op-list}.
+@option{--extract} or @option{--list}.
 @end table
 
 @node Writing
@@ -4175,6 +4358,7 @@ encountered while reading an archive.  Use in conjunction with
 @node Dealing with Old Files
 @unnumberedsubsubsec Options Controlling the Overwriting of Existing Files
 
+@opindex overwrite-dir, introduced
 When extracting files, if @command{tar} discovers that the extracted
 file already exists, it normally replaces the file by removing it before
 extracting it, to prevent confusion in the presence of hard or symbolic
@@ -4186,14 +4370,16 @@ default behavior.  To be more cautious and preserve the metadata of
 such a directory, use the @option{--no-overwrite-dir} option.
 
 @cindex Overwriting old files, prevention
+@opindex keep-old-files, introduced
 To be even more cautious and prevent existing files from being replaced, use
-the @value{op-keep-old-files} option.  It causes @command{tar} to refuse
+the @option{--keep-old-files} (@option{-k}) option.  It causes @command{tar} to refuse
 to replace or update a file that already exists, i.e., a file with the
 same name as an archive member prevents extraction of that archive
 member.  Instead, it reports an error.
 
+@opindex overwrite, introduced
 To be more aggressive about altering existing files, use the
-@value{op-overwrite} option.  It causes @command{tar} to overwrite
+@option{--overwrite} option.  It causes @command{tar} to overwrite
 existing files and to follow existing symbolic links when extracting.
 
 @cindex Protecting old files
@@ -4211,11 +4397,12 @@ whole hierarchy just to make room for the link to be reinstated
 (unless it @emph{also} simultaneously restores the full
 @file{/usr/local2}, of course!)  @GNUTAR{} is indeed
 able to remove a whole hierarchy to reestablish a symbolic link, for
-example, but @emph{only if} @value{op-recursive-unlink} is specified
+example, but @emph{only if} @option{--recursive-unlink} is specified
 to allow this behavior.  In any case, single files are silently
 removed.
 
-Finally, the @value{op-unlink-first} option can improve performance in
+@opindex unlink-first, introduced
+Finally, the @option{--unlink-first} (@option{-U}) option can improve performance in
 some cases by causing @command{tar} to remove files unconditionally
 before extracting them.
 
@@ -4223,12 +4410,12 @@ before extracting them.
 @unnumberedsubsubsec Overwrite Old Files
 
 @table @option
+@opindex overwrite
 @item --overwrite
 Overwrite existing files and directory metadata when extracting files
 from an archive.
 
-This
-causes @command{tar} to write extracted files into the file system without
+This causes @command{tar} to write extracted files into the file system without
 regard to the files already on the system; i.e., files with the same
 names as archive members are overwritten when the archive is extracted.
 It also causes @command{tar} to extract the ownership, permissions,
@@ -4239,12 +4426,13 @@ symbolic link itself (if this is possible).  Moreover, special devices,
 empty directories and even symbolic links are automatically removed if
 they are in the way of extraction.
 
-Be careful when using the @value{op-overwrite} option, particularly when
-combined with the @value{op-absolute-names} option, as this combination
+Be careful when using the @option{--overwrite} option, particularly when
+combined with the @option{--absolute-names} (@option{-P}) option, as this combination
 can change the contents, ownership or permissions of any file on your
 system.  Also, many systems do not take kindly to overwriting files that
 are currently being executed.
 
+@opindex overwrite-dir
 @item --overwrite-dir
 Overwrite the metadata of directories when extracting files from an
 archive, but remove other files before extracting.
@@ -4254,29 +4442,32 @@ archive, but remove other files before extracting.
 @unnumberedsubsubsec Keep Old Files
 
 @table @option
+@opindex keep-old-files
 @item --keep-old-files
 @itemx -k
 Do not replace existing files from archive.  The
-@value{op-keep-old-files} option prevents @command{tar} from replacing
-existing files with files with the same name from the archive.
-The @value{op-keep-old-files} option is meaningless with @value{op-list}.
-Prevents @command{tar} from replacing files in the file system during
-extraction.
+@option{--keep-old-files} (@option{-k}) option prevents @command{tar}
+from replacing existing files with files with the same name from the
+archive. The @option{--keep-old-files} option is meaningless with
+@option{--list} (@option{-t}).  Prevents @command{tar} from replacing
+files in the file system during extraction.
 @end table
 
 @node Keep Newer Files
 @unnumberedsubsubsec Keep Newer Files
 
 @table @option
+@opindex keep-newer-files
 @item --keep-newer-files
 Do not replace existing files that are newer than their archive
-copies.  This option is meaningless with @value{op-list}.
+copies.  This option is meaningless with @option{--list} (@option{-t}).
 @end table
 
 @node Unlink First
 @unnumberedsubsubsec Unlink First
 
 @table @option
+@opindex unlink-first
 @item --unlink-first
 @itemx -U
 Remove files before extracting over them.
@@ -4289,12 +4480,13 @@ slows @command{tar} down slightly, so it is disabled by default.
 @unnumberedsubsubsec Recursive Unlink
 
 @table @option
+@opindex recursive-unlink
 @item --recursive-unlink
 When this option is specified, try removing files and directory hierarchies
 before extracting over them.  @emph{This is a dangerous option!}
 @end table
 
-If you specify the @value{op-recursive-unlink} option,
+If you specify the @option{--recursive-unlink} option,
 @command{tar} removes @emph{anything} that keeps you from extracting a file
 as far as current permissions will allow it.  This could include removal
 of the contents of a full directory hierarchy.
@@ -4310,15 +4502,16 @@ limits the permissions of extracted files by the current @code{umask}
 setting.
 
 To set the data modification times of extracted files to the time when
-the files were extracted, use the @value{op-touch} option in
-conjunction with @value{op-extract}.
+the files were extracted, use the @option{--touch} (@option{-m}) option in
+conjunction with @option{--extract} (@option{--get}, @option{-x}).
 
 @table @option
+@opindex touch 
 @item --touch
 @itemx -m
 Sets the data modification time of extracted archive members to the time
 they were extracted, not the time recorded for them in the archive.
-Use in conjunction with @value{op-extract}.
+Use in conjunction with @option{--extract} (@option{--get}, @option{-x}).
 @end table
 
 @node Setting Access Permissions
@@ -4328,17 +4521,19 @@ Use in conjunction with @value{op-extract}.
 @cindex Modes of extracted files
 To set the modes (access permissions) of extracted files to those
 recorded for those files in the archive, use @option{--same-permissions}
-in conjunction with the @value{op-extract} operation.  @FIXME{Should be
-aliased to ignore-umask.}
+in conjunction with the @option{--extract} (@option{--get},
+@option{-x}) operation.  @FIXME{Should be aliased to ignore-umask.}
 
 @table @option
+@opindex preserve-permission
+@opindex same-permission
 @item --preserve-permission
 @itemx --same-permission
 @c @itemx --ignore-umask
 @itemx -p
 Set modes of extracted archive members to those recorded in the
 archive, instead of current umask settings.  Use in conjunction with
-@value{op-extract}.
+@option{--extract} (@option{--get}, @option{-x}).
 @end table
 
 @node Writing to Standard Output
@@ -4347,22 +4542,24 @@ archive, instead of current umask settings.  Use in conjunction with
 @cindex Writing extracted files to standard output
 @cindex Standard output, writing extracted files to
 To write the extracted files to the standard output, instead of
-creating the files on the file system, use @value{op-to-stdout} in
-conjunction with @value{op-extract}.  This option is useful if you are
+creating the files on the file system, use @option{--to-stdout} (@option{-O}) in
+conjunction with @option{--extract} (@option{--get}, @option{-x}).  This option is useful if you are
 extracting files to send them through a pipe, and do not need to
 preserve them in the file system.  If you extract multiple members,
 they appear on standard output concatenated, in the order they are
 found in the archive.
 
 @table @option
+@opindex to-stdout
 @item --to-stdout
 @itemx -O
 Writes files to the standard output.  Use only in conjunction with
-@value{op-extract}.  When this option is used, instead of creating the
-files specified, @command{tar} writes the contents of the files
-extracted to its standard output.  This may be useful if you are only
-extracting the files in order to send them through a pipe.  This
-option is meaningless with @value{op-list}. 
+@option{--extract} (@option{--get}, @option{-x}).  When this option is
+used, instead of creating the files specified, @command{tar} writes
+the contents of the files extracted to its standard output.  This may
+be useful if you are only extracting the files in order to send them
+through a pipe.  This option is meaningless with @option{--list}
+(@option{-t}).  
 @end table
 
 This can be useful, for example, if you have a tar archive containing
@@ -4389,6 +4586,7 @@ You can instruct @command{tar} to send the contents of each extracted
 file to the standard input of an external program:
 
 @table @option
+@opindex to-program
 @item --to-program=@var{command}
 Extract files and pipe their contents to the standard input of
 @var{command}. When this option is used, instead of creating the
@@ -4482,11 +4680,13 @@ Here, @samp{2345} is the PID of the finished process.
 If this behavior is not wanted, use @option{--ignore-command-error}:
 
 @table @option
+@opindex ignore-command-error
 @item --ignore-command-error
 Ignore exit codes of subprocesses.  Notice that if the program
 exits on signal or otherwise terminates abnormally, the error message
 will be printed even if this option is used.
 
+@opindex no-ignore-command-error
 @item --no-ignore-command-error
 Cancel the effect of any previous @option{--ignore-command-error}
 option. This option is useful if you have set
@@ -4502,17 +4702,17 @@ option goes in this section.  i have no idea; i only know it's nowhere
 else in the book...}
 
 @table @option
+@opindex remove-files
 @item --remove-files
 Remove files after adding them to the archive.
 @end table
 
 @node Scarce
 @subsection Coping with Scarce Resources
-@cindex Middle of the archive, starting in the
-@cindex Running out of space during extraction
-@cindex Disk space, running out of
-@cindex Space on the disk, recovering from lack of
 @UNREVISED
+
+@cindex Small memory
+@cindex Running out of space
 
 @menu
 * Starting File::
@@ -4523,36 +4723,41 @@ Remove files after adding them to the archive.
 @unnumberedsubsubsec Starting File
 
 @table @option
+@opindex starting-file
 @item --starting-file=@var{name}
 @itemx -K @var{name}
 Starts an operation in the middle of an archive.  Use in conjunction
-with @value{op-extract} or @value{op-list}.
+with @option{--extract} (@option{--get}, @option{-x}) or @option{--list} (@option{-t}).
 @end table
 
+@cindex Middle of the archive, starting in the
 If a previous attempt to extract files failed due to lack of disk
-space, you can use @value{op-starting-file} to start extracting only
-after member @var{name} of the archive.  This assumes, of course, that
-there is now free space, or that you are now extracting into a
-different file system.  (You could also choose to suspend @command{tar},
-remove unnecessary files from the file system, and then restart the
-same @command{tar} operation.  In this case, @value{op-starting-file} is
-not necessary.  @value{xref-incremental}, @value{xref-interactive},
-and @value{ref-exclude}.)
+space, you can use @option{--starting-file=@var{name}} (@option{-K
+@var{name}}) to start extracting only after member @var{name} of the
+archive.  This assumes, of course, that there is now free space, or
+that you are now extracting into a different file system.  (You could
+also choose to suspend @command{tar}, remove unnecessary files from
+the file system, and then restart the same @command{tar} operation.
+In this case, @option{--starting-file} is not necessary.
+@xref{Incremental Dumps}, @xref{interactive}, and @ref{exclude}.)
 
 @node Same Order
 @unnumberedsubsubsec Same Order
 
 @table @option
+@cindex Large lists of file names on small machines
+@opindex same-order
+@opindex preserve-order
 @item --same-order
 @itemx --preserve-order
 @itemx -s
 To process large lists of file names on machines with small amounts of
-memory.  Use in conjunction with @value{op-compare},
-@value{op-list}
-or @value{op-extract}.
+memory.  Use in conjunction with @option{--compare} (@option{--diff},
+@option{-d}), @option{--list} (@option{-t}) or @option{--extract}
+(@option{--get}, @option{-x}). 
 @end table
 
-The @value{op-same-order} option tells @command{tar} that the list of file
+The @option{--same-order} (@option{--preserve-order}, @option{-s}) option tells @command{tar} that the list of file
 names to be listed or extracted is sorted in the same order as the
 files in the archive.  This allows a large list of names to be used,
 even on a small machine that would not otherwise be able to hold all
@@ -4601,9 +4806,8 @@ partial extraction of a file, both the backup and the partially extracted
 file are kept.
 
 @table @samp
-
 @item --backup[=@var{method}]
-@opindex --backup
+@opindex backup
 @vindex VERSION_CONTROL
 @cindex backups
 Back up files that are about to be overwritten or removed.
@@ -4622,24 +4826,24 @@ also allows more descriptive names.  The valid @var{method}s are:
 @table @samp
 @item t
 @itemx numbered
-@opindex numbered @r{backup method}
+@cindex numbered @r{backup method}
 Always make numbered backups.
 
 @item nil
 @itemx existing
-@opindex existing @r{backup method}
+@cindex existing @r{backup method}
 Make numbered backups of files that already have them, simple backups
 of the others.
 
 @item never
 @itemx simple
-@opindex simple @r{backup method}
+@cindex simple @r{backup method}
 Always make simple backups.
 
 @end table
 
 @item --suffix=@var{suffix}
-@opindex --suffix
+@opindex suffix
 @cindex backup suffix
 @vindex SIMPLE_BACKUP_SUFFIX
 Append @var{suffix} to each backup file made with @option{--backup}.  If this
@@ -4649,7 +4853,7 @@ set, the default is @samp{~}, just as in Emacs.
 
 @end table
 
-Some people express the desire to @emph{always} use the @value{op-backup}
+Some people express the desire to @emph{always} use the @option{--backup}
 option, by defining some kind of alias or script.  This is not as easy
 as one may think, due to the fact that old style options should appear first
 and consume arguments a bit unpredictably for an alias or script.  But,
@@ -4715,7 +4919,7 @@ remember to stick it in here. :-)}
 
 If there are too many files to conveniently list on the command line,
 you can list the names in a file, and @command{tar} will read that file.
-@value{xref-files-from}.
+@xref{files}.
 
 There are various ways of causing @command{tar} to skip over some files,
 and not archive them.  @xref{Choosing}.
@@ -4822,29 +5026,32 @@ the archive, in which case you won't be able to restore them if you
 have to.  (Files not being modified are written with no trouble, and do
 not corrupt the entire archive.)
 
-You will want to use the @value{op-label} option to give the archive a
+You will want to use the @option{--label=@var{archive-label}}
+(@option{-V @var{archive-label}}) option to give the archive a 
 volume label, so you can tell what this archive is even if the label
 falls off the tape, or anything like that.
 
 Unless the file system you are dumping is guaranteed to fit on
-one volume, you will need to use the @value{op-multi-volume} option.
+one volume, you will need to use the @option{--multi-volume} (@option{-M}) option.
 Make sure you have enough tapes on hand to complete the backup.
 
 If you want to dump each file system separately you will need to use
-the @value{op-one-file-system} option to prevent @command{tar} from crossing
-file system boundaries when storing (sub)directories.
+the @option{--one-file-system} (@option{-l}) option to prevent
+@command{tar} from crossing file system boundaries when storing
+(sub)directories. 
 
-The @value{op-incremental} (@value{pxref-incremental}) option is not needed,
-since this is a complete copy of everything in the file system, and a
-full restore from this backup would only be done onto a completely
+The @option{--incremental} (@option{-G}) (@pxref{Incremental Dumps})
+option is not needed, since this is a complete copy of everything in
+the file system, and a full restore from this backup would only be
+done onto a completely 
 empty disk.
 
 Unless you are in a hurry, and trust the @command{tar} program (and your
-tapes), it is a good idea to use the @value{op-verify} option, to make
-sure your files really made it onto the dump properly.  This will
-also detect cases where the file was modified while (or just after)
-it was being archived.  Not all media (notably cartridge tapes) are
-capable of being verified, unfortunately.
+tapes), it is a good idea to use the @option{--verify} (@option{-W})
+option, to make sure your files really made it onto the dump properly.
+This will also detect cases where the file was modified while (or just
+after) it was being archived.  Not all media (notably cartridge tapes)
+are capable of being verified, unfortunately.
 
 @node Incremental Dumps
 @section Using @command{tar} to Perform Incremental Dumps
@@ -4854,8 +5061,10 @@ stores additional metadata so that exact state of the file system
 can be restored when extracting the archive.
 
 @GNUTAR{} currently offers two options for handling incremental
-backups: @value{op-listed-incremental} and @value{op-incremental}.
+backups: @option{--listed-incremental=@var{snapshot-file}} (@option{-g
+@var{snapshot-file}}) and @option{--incremental} (@option{-G}). 
 
+@opindex listed-incremental
 The option @option{--listed-incremental} instructs tar to operate on
 an incremental archive with additional metadata stored in a standalone
 file, called a @dfn{snapshot file}.  The purpose of this file is to help
@@ -4947,6 +5156,8 @@ to be a better way to go.
 Note that incremental archives use @command{tar} extensions and may
 not be readable by non-@acronym{GNU} versions of the @command{tar} program.
 
+@opindex listed-incremental, using with @option{--extract}
+@opindex extract, using with @option{--listed-incremental}
 To extract from the incremental dumps, use
 @option{--listed-incremental} together with @option{--extract}
 option (@pxref{extracting files}).  In this case, @command{tar} does
@@ -4989,6 +5200,10 @@ combined with two @option{--verbose} options@footnote{Two
 verbose listing output (@option{--list --verbose}) when using in
 scripts.
 
+@opindex incremental, using with @option{--list}
+@opindex listed-incremental, using with @option{--list}
+@opindex list, using with @option{--incremental}
+@opindex list, using with @option{--listed-incremental}
 Versions of @GNUTAR{} up to 1.15.1 used to dump verbatim binary
 contents of the DUMPDIR header (with terminating nulls) when
 @option{--incremental} or @option{--listed-incremental} option was
@@ -5068,7 +5283,7 @@ their use in detail.
 designed to be used together.  While it is possible to restore files by
 hand from an archive which was created using a backup script, and to create
 an archive by hand which could then be extracted using the restore script,
-it is easier to use the scripts.  @value{xref-incremental}, before
+it is easier to use the scripts.  @xref{Incremental Dumps}, before
 making such an attempt.
 
 @node Backup Parameters
@@ -5127,7 +5342,7 @@ invocations of @command{mt}.
 @defvr {Backup variable} BLOCKING
 
 The blocking factor @command{tar} will use when writing the dump archive.
-@value{xref-blocking-factor}.
+@xref{Blocking Factor}.
 @end defvr
 
 @defvr {Backup variable} BACKUP_DIRS
@@ -5580,7 +5795,7 @@ positioning.}
 system if they were not in the file system when the archive was made.
 @end quotation
 
-@value{xref-incremental}, for an explanation of how the script makes
+@xref{Incremental Dumps}, for an explanation of how the script makes
 that determination.
 
 @node Choosing
@@ -5608,26 +5823,26 @@ are in specified directories.
 
 @node file
 @section Choosing and Naming Archive Files
-@cindex Naming an archive
-@cindex Archive Name
-@cindex Directing output
-@cindex Choosing an archive file
-@cindex Where is the archive?
 @UNREVISED
 
 @FIXME{should the title of this section actually be, "naming an
 archive"?}
 
+@cindex Naming an archive
+@cindex Archive Name
+@cindex Choosing an archive file
+@cindex Where is the archive?
 By default, @command{tar} uses an archive file name that was compiled when
 it was built on the system; usually this name refers to some physical
 tape drive on the machine.  However, the person who installed @command{tar}
 on the system may not set the default to a meaningful value as far as
 most users are concerned.  As a result, you will usually want to tell
-@command{tar} where to find (or create) the archive.  The @value{op-file}
+@command{tar} where to find (or create) the archive.  The @option{--file=@var{archive-name}} (@option{-f @var{archive-name}})
 option allows you to either specify or name a file to use as the archive
 instead of the default archive file location.
 
 @table @option
+@opindex file, short description
 @item --file=@var{archive-name}
 @itemx -f @var{archive-name}
 Name the archive to create or operate on.  Use in conjunction with
@@ -5708,7 +5923,7 @@ the @GNUTAR{} distribution and by default is installed under
 @file{@var{prefix}/libexec/rmt}, were @var{prefix} means your
 installation prefix).  If you need to use a file whose name includes a
 colon, then the remote tape drive behavior
-can be inhibited by using the @value{op-force-local} option.
+can be inhibited by using the @option{--force-local} option.
 
 @FIXME{i know we went over this yesterday, but bob (and now i do again,
 too) thinks it's out of the middle of nowhere.  it doesn't seem to tie
@@ -5745,9 +5960,9 @@ If you specify a directory name as a file name argument, all the files
 in that directory are operated on by @command{tar}.
 
 If you do not specify files when @command{tar} is invoked with
-@value{op-create}, @command{tar} operates on all the non-directory files in
-the working directory.  If you specify either @value{op-list} or
-@value{op-extract}, @command{tar} operates on all the archive members in the
+@option{--create} (@option{-c}), @command{tar} operates on all the non-directory files in
+the working directory.  If you specify either @option{--list} (@option{-t}) or
+@option{--extract} (@option{--get}, @option{-x}), @command{tar} operates on all the archive members in the
 archive.  If you specify any operation other than one of these three,
 @command{tar} does nothing.
 
@@ -5765,13 +5980,14 @@ specifying the names of files and archive members.
 @cindex File Name arguments, alternatives
 Instead of giving the names of files or archive members on the command
 line, you can put the names into a file, and then use the
-@value{op-files-from} option to @command{tar}.  Give the name of the file
+@option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}}) option to @command{tar}.  Give the name of the file
 which contains the list of files to include as the argument to
 @option{--files-from}.  In the list, the file names should be separated by
 newlines.  You will frequently use this option when you have generated
 the list of files to archive with the @command{find} utility.
 
 @table @option
+@opindex files-from
 @item --files-from=@var{file name}
 @itemx -T @var{file name}
 Get names to extract or create from file @var{file name}.
@@ -5840,6 +6056,7 @@ libc.a
 @end smallexample
 
 @noindent
+@opindex directory, using in @option{--files-from} argument
 Notice that the option parsing algorithm used with @option{-T} is
 stricter than the one used by shell.  Namely, when specifying option
 arguments, you should observe the following rules:
@@ -5877,7 +6094,7 @@ dir
 @end smallexample
 @end itemize
 
-@cindex @option{--add-file}
+@opindex add-file
 If you happen to have a file whose name starts with @samp{-},
 precede it with @option{--add-file} option to prevent it from
 being recognized as an option.  For example: @code{--add-file --my-file}.
@@ -5891,20 +6108,21 @@ being recognized as an option.  For example: @code{--add-file --my-file}.
 
 @cindex File names, terminated by @code{NUL}
 @cindex @code{NUL} terminated file names
-The @value{op-null} option causes @value{op-files-from} to read file
+The @option{--null} option causes @option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}}) to read file
 names terminated by a @code{NUL} instead of a newline, so files whose
 names contain newlines can be archived using @option{--files-from}.
 
 @table @option
+@opindex null
 @item --null
 Only consider @code{NUL} terminated file names, instead of files that
 terminate in a newline.
 @end table
 
-The @value{op-null} option is just like the one in @acronym{GNU}
+The @option{--null} option is just like the one in @acronym{GNU}
 @command{xargs} and @command{cpio}, and is useful with the
 @option{-print0} predicate of @acronym{GNU} @command{find}.  In
-@command{tar}, @value{op-null} also disables special handling for
+@command{tar}, @option{--null} also disables special handling for
 file names that begin with dash.
 
 This example shows how to use @command{find} to generate a list of files
@@ -5926,21 +6144,22 @@ $ @kbd{tar -c -v --null --files-from=long-files --file=big.tar}
 
 @node exclude
 @section Excluding Some Files
+@UNREVISED
+
 @cindex File names, excluding files by
 @cindex Excluding files by name and pattern
 @cindex Excluding files by file system
-@UNREVISED
-
 To avoid operating on files whose names match a particular pattern,
-use the @value{op-exclude} or @value{op-exclude-from} options.
+use the @option{--exclude} or @option{--exclude-from} options. 
 
 @table @option
+@opindex exclude
 @item --exclude=@var{pattern}
 Causes @command{tar} to ignore files that match the @var{pattern}.
 @end table
 
 @findex exclude
-The @value{op-exclude} option prevents any file or member whose name
+The @option{--exclude=@var{pattern}} option prevents any file or member whose name
 matches the shell wildcard (@var{pattern}) from being operated on.
 For example, to create an archive with all the contents of the directory
 @file{src} except for files whose names end in @file{.o}, use the
@@ -5949,6 +6168,7 @@ command @samp{tar -cf src.tar --exclude='*.o' src}.
 You may give multiple @option{--exclude} options.
 
 @table @option
+@opindex exclude-from
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
 Causes @command{tar} to ignore files that match the patterns listed in
@@ -5956,7 +6176,7 @@ Causes @command{tar} to ignore files that match the patterns listed in
 @end table
 
 @findex exclude-from
-Use the @option{--exclude-from=@var{file-of-patterns}} option to read a
+Use the @option{--exclude-from} option to read a
 list of patterns, one per line, from @var{file}; @command{tar} will
 ignore files matching those patterns.  Thus if @command{tar} is
 called as @w{@samp{tar -c -X foo .}} and the file @file{foo} contains a
@@ -5967,6 +6187,7 @@ added to the archive.
 newlines the same as the files-from option does?}
 
 @table @option
+@opindex exclude-caches
 @item --exclude-caches
 Causes @command{tar} to ignore directories containing a cache directory tag.
 @end table
@@ -6010,17 +6231,23 @@ ignores case when excluding @samp{makefile}, but not when excluding
 @samp{readme}.
 
 @table @option
+@opindex anchored
+@opindex no-anchored
 @item --anchored
 @itemx --no-anchored
 If anchored, a pattern must match an initial subsequence
 of the name's components.  Otherwise, the pattern can match any
 subsequence.  Default is @option{--no-anchored}.
 
+@opindex ignore-case
+@opindex no-ignore-case
 @item --ignore-case
 @itemx --no-ignore-case
 When ignoring case, upper-case patterns match lower-case names and vice versa.
 When not ignoring case (the default), matching is case-sensitive.
 
+@opindex wildcards
+@opindex no-wildcards
 @item --wildcards
 @itemx --no-wildcards
 When using wildcards (the default), @samp{*}, @samp{?}, and @samp{[...]}
@@ -6028,6 +6255,8 @@ are the usual shell wildcards, and @samp{\} escapes wildcards.
 Otherwise, none of these characters are special, and patterns must match
 names literally.
 
+@opindex wildcards-match-slash
+@opindex no-wildcards-match-slash
 @item --wildcards-match-slash
 @itemx --no-wildcards-match-slash
 When wildcards match slash (the default), a wildcard like @samp{*} in
@@ -6044,6 +6273,7 @@ the name's parent directories.
 @node problems with exclude
 @unnumberedsubsec Problems with Using the @code{exclude} Options
 
+@opindex exclude, potential problems with
 Some users find @samp{exclude} options confusing.  Here are some common
 pitfalls:
 
@@ -6057,15 +6287,15 @@ explicitly name the file @samp{dir.o/foo} after all the options have been
 listed, @samp{dir.o/foo} will be excluded from the archive.
 
 @item
-You can sometimes confuse the meanings of @value{op-exclude} and
-@value{op-exclude-from}.  Be careful: use @value{op-exclude} when files
+You can sometimes confuse the meanings of @option{--exclude} and
+@option{--exclude-from}.  Be careful: use @option{--exclude} when files
 to be excluded are given as a pattern on the command line.  Use
-@option{--exclude-from=@var{file-of-patterns}} to introduce the name of a
-file which contains a list of patterns, one per line; each of these
-patterns can exclude zero, one, or many files.
+@option{--exclude-from} to introduce the name of a file which contains
+a list of patterns, one per line; each of these patterns can exclude
+zero, one, or many files. 
 
 @item
-When you use @value{op-exclude}, be sure to quote the @var{pattern}
+When you use @option{--exclude=@var{pattern}}, be sure to quote the @var{pattern}
 parameter, so @GNUTAR{} sees wildcard characters
 like @samp{*}.  If you do not do this, the shell might expand the
 @samp{*} itself using files at hand, so @command{tar} might receive a
@@ -6093,11 +6323,10 @@ might fail.
 
 @item
 In earlier versions of @command{tar}, what is now the
-@option{--exclude-from=@var{file-of-patterns}} option was called
-@option{--exclude=@var{pattern}} instead.  Now,
-@option{--exclude=@var{pattern}} applies to patterns listed on the command
-line and @option{--exclude-from=@var{file-of-patterns}} applies to
-patterns listed in a file.
+@option{--exclude-from} option was called @option{--exclude} instead.
+Now, @option{--exclude} applies to patterns listed on the command
+line and @option{--exclude-from} applies to patterns listed in a
+file. 
 
 @end itemize
 
@@ -6157,31 +6386,34 @@ string: excluding a directory also excludes all the files beneath it.
 
 @node after
 @section Operating Only on New Files
+@UNREVISED
+
 @cindex Excluding file by age
 @cindex Data Modification time, excluding files by
 @cindex Modification time, excluding files by
 @cindex Age, excluding files by
-@UNREVISED
-
-The @value{op-after-date} option causes @command{tar} to only work on files
-whose data modification or status change times are newer than the @var{date}
-given.  If @var{date} starts with @samp{/} or @samp{.}, it is taken to
-be a file name; the data modification time of that file is used as the date.
-If you use this option when creating or appending to an archive,
-the archive will only include new files.  If you use @option{--after-date}
-when extracting an archive, @command{tar} will only extract files newer
-than the @var{date} you specify.
+The @option{--after-date=@var{date}} (@option{--newer=@var{date}},
+@option{-N @var{date}}) option causes @command{tar} to only work on
+files whose data modification or status change times are newer than
+the @var{date} given.  If @var{date} starts with @samp{/} or @samp{.},
+it is taken to be a file name; the data modification time of that file
+is used as the date. If you use this option when creating or appending
+to an archive, the archive will only include new files.  If you use
+@option{--after-date} when extracting an archive, @command{tar} will
+only extract files newer than the @var{date} you specify.
 
 If you only want @command{tar} to make the date comparison based on
 modification of the file's data (rather than status
-changes), then use the @value{op-newer-mtime} option.
+changes), then use the @option{--newer-mtime=@var{date}} option.
 
 You may use these options with any operation.  Note that these options
-differ from the @value{op-update} operation in that they allow you to
-specify a particular date against which @command{tar} can compare when
-deciding whether or not to archive the files.
+differ from the @option{--update} (@option{-u}) operation in that they
+allow you to specify a particular date against which @command{tar} can
+compare when deciding whether or not to archive the files.
 
 @table @option
+@opindex after-date
+@opindex newer
 @item --after-date=@var{date}
 @itemx --newer=@var{date}
 @itemx -N @var{date}
@@ -6193,8 +6425,9 @@ later than @var{date}.  Use in conjunction with any operation.
 If @var{date} starts with @samp{/} or @samp{.}, it is taken to be a file
 name; the data modification time of that file is used as the date.
 
+@opindex newer-mtime
 @item --newer-mtime=@var{date}
-Acts like @value{op-after-date}, but only looks at data modification times.
+Acts like @option{--after-date}, but only looks at data modification times.
 @end table
 
 These options limit @command{tar} to operate only on files which have
@@ -6204,17 +6437,17 @@ permissions, and so forth, have been changed.  (For more information on
 how to specify a date, see @ref{Date input formats}; remember that the
 entire date argument must be quoted if it contains any spaces.)
 
-Gurus would say that @value{op-after-date} tests both the data
+Gurus would say that @option{--after-date} tests both the data
 modification time (@code{mtime}, the time the contents of the file
 were last modified) and the status change time (@code{ctime}, the time
 the file's status was last changed: owner, permissions, etc.@:)
-fields, while @value{op-newer-mtime} tests only the @code{mtime}
+fields, while @option{--newer-mtime} tests only the @code{mtime}
 field.
 
-To be precise, @value{op-after-date} checks @emph{both} @code{mtime} and
+To be precise, @option{--after-date} checks @emph{both} @code{mtime} and
 @code{ctime} and processes the file if either one is more recent than
-@var{date}, while @value{op-newer-mtime} only checks @code{mtime} and
-disregards @code{ctime}.  Neither uses @code{atime} (the last time the
+@var{date}, while @option{--newer-mtime} only checks @code{mtime} and
+disregards @code{ctime}.  Neither does it use @code{atime} (the last time the
 contents of the file were looked at).
 
 Date specifiers can have embedded spaces.  Because of this, you may need
@@ -6224,7 +6457,7 @@ arguments.
 @FIXME{Need example of --newer-mtime with quoted argument.}
 
 @quotation
-@strong{Please Note:} @value{op-after-date} and @value{op-newer-mtime}
+@strong{Please Note:} @option{--after-date} and @option{--newer-mtime}
 should not be used for incremental backups.  Some files (such as those
 in renamed directories) are not selected properly by these options.
 @xref{Incremental Dumps}.
@@ -6235,22 +6468,23 @@ in renamed directories) are not selected properly by these options.
 
 @node recurse
 @section Descending into Directories
+@UNREVISED
 @cindex Avoiding recursion in directories
 @cindex Descending directories, avoiding
 @cindex Directories, avoiding recursion
 @cindex Recursion in directories, avoiding
-@UNREVISED
 
 @FIXME{arrggh!  this is still somewhat confusing to me. :-< }
 
 @FIXME{show dan bob's comments, from 2-10-97}
 
 Usually, @command{tar} will recursively explore all directories (either
-those given on the command line or through the @value{op-files-from}
+those given on the command line or through the @option{--files-from} 
 option) for the various files they contain.  However, you may not always
 want @command{tar} to act this way.
 
-The @value{op-no-recursion} option inhibits @command{tar}'s recursive descent
+@opindex no-recursion
+The @option{--no-recursion} option inhibits @command{tar}'s recursive descent
 into specified directories.  If you specify @option{--no-recursion}, you can
 use the @command{find} utility for hunting through levels of directories to
 construct a list of file names which you could then pass to @command{tar}.
@@ -6262,6 +6496,7 @@ archive; see @ref{files} for more information on using @command{find} with
 @item --no-recursion
 Prevents @command{tar} from recursively descending directories.
 
+@opindex recursion
 @item --recursion
 Requires @command{tar} to recursively descend directories.
 This is the default.
@@ -6274,21 +6509,22 @@ want to back up, and since @command{tar} @emph{usually} recursively
 descends on directories, they have to use the @samp{@w{!  -d}} option
 to @command{find} @FIXME{needs more explanation or a cite to another
 info file}as they usually do not want all the files in a directory.
-They then use the @value{op-files-from} option to archive the files
+They then use the @option{--files-from} option to archive the files
 located via @command{find}.
 
 The problem when restoring files archived in this manner is that the
 directories themselves are not in the archive; so the
-@value{op-same-permissions} option does not affect them---while users
-might really like it to.  Specifying @value{op-no-recursion} is a way to
-tell @command{tar} to grab only the directory entries given to it, adding
+@option{--same-permissions} (@option{--preserve-permissions},
+@option{-p}) option does not affect them---while users might really
+like it to.  Specifying @option{--no-recursion} is a way to tell
+@command{tar} to grab only the directory entries given to it, adding 
 no new files on its own.
 
-The @value{op-no-recursion} option also applies when extracting: it
+The @option{--no-recursion} option also applies when extracting: it
 causes @command{tar} to extract only the matched directory entries, not
 the files under those directories.
 
-The @value{op-no-recursion} option also affects how exclude patterns
+The @option{--no-recursion} option also affects how exclude patterns
 are interpreted (@pxref{controlling pattern-matching with exclude}).
 
 The @option{--no-recursion} and @option{--recursion} options apply to
@@ -6296,7 +6532,7 @@ later options and operands, and can be overridden by later occurrences
 of @option{--no-recursion} and @option{--recursion}.  For example:
 
 @smallexample
-$ @kbd{tar -cf jams.tar --norecursion grape --recursion grape/concord}
+$ @kbd{tar -cf jams.tar --no-recursion grape --recursion grape/concord}
 @end smallexample
 
 @noindent
@@ -6312,12 +6548,13 @@ other than @file{grape/concord}.
 @command{tar} will normally automatically cross file system boundaries in
 order to archive files which are part of a directory tree.  You can
 change this behavior by running @command{tar} and specifying
-@value{op-one-file-system}.  This option only affects files that are
+@option{--one-file-system} (@option{-l}).  This option only affects files that are
 archived because they are in a directory that is being archived;
 @command{tar} will still archive files explicitly named on the command line
-or through @value{op-files-from}, regardless of where they reside.
+or through @option{--files-from}, regardless of where they reside.
 
 @table @option
+@opindex one-file-system
 @item --one-file-system
 @itemx -l
 Prevents @command{tar} from crossing file system boundaries when
@@ -6336,7 +6573,7 @@ but nothing under it.
 
 This option is useful for making full or incremental archival backups of
 a file system.  If this option is used in conjunction with
-@value{op-verbose}, files that are excluded are mentioned by name on the
+@option{--verbose} (@option{-v}), files that are excluded are mentioned by name on the
 standard error.
 
 @menu
@@ -6346,6 +6583,7 @@ standard error.
 
 @node directory
 @subsection Changing the Working Directory
+@UNREVISED
 
 @FIXME{need to read over this node now for continuity; i've switched
 things around some.}
@@ -6353,15 +6591,14 @@ things around some.}
 @cindex Changing directory mid-stream
 @cindex Directory, changing mid-stream
 @cindex Working directory, specifying
-@UNREVISED
-
 To change the working directory in the middle of a list of file names,
 either on the command line or in a file specified using
-@value{op-files-from}, use @value{op-directory}.  This will change the
-working directory to the directory @var{directory} after that point in
-the list.
+@option{--files-from} (@option{-T}), use @option{--directory} (@option{-C}).
+This will change the working directory to the specified directory
+after that point in the list.
 
 @table @option
+@opindex directory
 @item --directory=@var{directory}
 @itemx -C @var{directory}
 Changes the working directory in the middle of a command line.
@@ -6452,16 +6689,17 @@ $ @kbd{tar -c -f foo.tar --files-from list}
 Notice also that you can only use the short option variant in the file
 list, i.e., always use @option{-C}, not @option{--directory}.
 
-The interpretation of @value{op-directory} is disabled by
-@value{op-null} option.
+The interpretation of @option{--directory} is disabled by
+@option{--null} option.
 
 @node absolute
 @subsection Absolute File Names
 @UNREVISED
 
 @table @option
-@item -P
-@itemx --absolute-names
+@opindex absolute-names
+@item --absolute-names
+@itemx -P
 Do not strip leading slashes from file names, and permit file names
 containing a @file{..} file name component.
 @end table
@@ -6497,21 +6735,22 @@ is not, generally speaking, the same as the one you'd get running
 scripts for comparing both outputs.  @xref{listing member and file names},
 for the information on how to handle this case.}
 
-If you use the @value{op-absolute-names} option, @command{tar} will do
-none of these transformations.
+If you use the @option{--absolute-names} (@option{-P}) option,
+@command{tar} will do none of these transformations.
 
 To archive or extract files relative to the root directory, specify
-the @value{op-absolute-names} option.
+the @option{--absolute-names} (@option{-P}) option.
 
 Normally, @command{tar} acts on files relative to the working
 directory---ignoring superior directory names when archiving, and
 ignoring leading slashes when extracting.
 
-When you specify @value{op-absolute-names}, @command{tar} stores file names
-including all superior directory names, and preserves leading slashes.
-If you only invoked @command{tar} from the root directory you would never
-need the @value{op-absolute-names} option, but using this option may be
-more convenient than switching to root.
+When you specify @option{--absolute-names} (@option{-P}),
+@command{tar} stores file names including all superior directory
+names, and preserves leading slashes. If you only invoked
+@command{tar} from the root directory you would never need the
+@option{--absolute-names} option, but using this option
+may be more convenient than switching to root.
 
 @FIXME{Should be an example in the tutorial/wizardry section using this
 to transfer files between systems.}
@@ -6555,6 +6794,7 @@ $ @kbd{tar -c -f archive.tar -C  / home}
 @node Formats
 @chapter Controlling the Archive Format
 
+@cindex Tar archive formats
 Due to historical reasons, there are several formats of tar archives.
 All of them are based on the same principles, but have some subtle
 differences that often make them incompatible with each other.
@@ -6716,10 +6956,11 @@ than System V's.
 @cindex File names, using symbolic links
 @cindex Symbolic link as file name
 
+@opindex dereference
 Normally, when @command{tar} archives a symbolic link, it writes a
 block to the archive naming the target of the link.  In that way, the
 @command{tar} archive is a faithful record of the file system contents.
-@value{op-dereference} is used with @value{op-create}, and causes
+@option{--dereference} (@option{-h}) is used with @option{--create} (@option{-c}), and causes
 @command{tar} to archive the files symbolic links point to, instead of
 the links themselves.  When this option is used, when @command{tar}
 encounters a symbolic link, it will archive the linked-to file,
@@ -6737,7 +6978,7 @@ the same archive, an entire second copy of it will be stored.  (This
 @emph{might} be considered a bug.)
 
 So, for portable archives, do not archive symbolic links as such,
-and use @value{op-dereference}: many systems do not support
+and use @option{--dereference} (@option{-h}): many systems do not support
 symbolic links, and moreover, your distribution might be unusable if
 it contains unresolved symbolic links.
 
@@ -6746,30 +6987,32 @@ it contains unresolved symbolic links.
 @cindex Format, old style
 @cindex Old style format
 @cindex Old style archives
+@cindex v7 archive format
 
 Certain old versions of @command{tar} cannot handle additional
 information recorded by newer @command{tar} programs.  To create an
 archive in V7 format (not ANSI), which can be read by these old
-versions, specify the @value{op-format-v7} option in
-conjunction with the @value{op-create} (@command{tar} also
+versions, specify the @option{--format=v7} option in
+conjunction with the @option{--create} (@option{-c}) (@command{tar} also
 accepts @option{--portability} or @samp{op-old-archive} for this
 option).  When you specify it,
 @command{tar} leaves out information about directories, pipes, fifos,
 contiguous files, and device files, and specifies file ownership by
 group and user IDs instead of group and user names.
 
-When updating an archive, do not use @value{op-format-v7}
+When updating an archive, do not use @option{--format=v7}
 unless the archive was created using this option.
 
 In most cases, a @emph{new} format archive can be read by an @emph{old}
 @command{tar} program without serious trouble, so this option should
 seldom be needed.  On the other hand, most modern @command{tar}s are
 able to read old format archives, so it might be safer for you to
-always use @value{op-format-v7} for your distributions.
+always use @option{--format=v7} for your distributions.
 
 @node ustar
 @subsection Ustar Archive Format
 
+@cindex ustar archive format
 Archive format defined by @acronym{POSIX}.1-1988 specification is called
 @code{ustar}.  Although it is more flexible than the V7 format, it
 still has many restrictions (@xref{Formats,ustar}, for the detailed
@@ -6777,12 +7020,14 @@ description of @code{ustar} format).  Along with V7 format,
 @code{ustar} format is a good choice for archives intended to be read
 with other implementations of @command{tar}.
 
-To create archive in @code{ustar} format, use @value{op-format-ustar}
-option in conjunction with the @value{op-create}.
+To create archive in @code{ustar} format, use @option{--format=ustar}
+option in conjunction with the @option{--create} (@option{-c}).
 
 @node gnu
 @subsection @acronym{GNU} and old @GNUTAR{} format
 
+@cindex GNU archive format
+@cindex Old GNU archive format
 @GNUTAR{} was based on an early draft of the
 @acronym{POSIX} 1003.1 @code{ustar} standard.  @acronym{GNU} extensions to
 @command{tar}, such as the support for file names longer than 100
@@ -6798,16 +7043,18 @@ this format by default.  This will change in the future releases, since
 we plan to make @samp{posix} format the default.
 
 To force creation a @GNUTAR{} archive, use option
-@value{op-format-gnu}.
+@option{--format=gnu}.
 
 @node posix
 @subsection @GNUTAR{} and @acronym{POSIX} @command{tar}
 
+@cindex POSIX archive format
+@cindex PAX archive format
 The version @value{VERSION} of @GNUTAR{} is able
 to read and create archives conforming to @acronym{POSIX.1-2001} standard.
 
 A @acronym{POSIX} conformant archive will be created if @command{tar}
-was given @value{op-format-posix} option.
+was given @option{--format=posix} option.
 
 @node Checksumming
 @subsection Checksumming Problems
@@ -6950,15 +7197,17 @@ $ @kbd{cat archive.tar.gz | tar tfz -}
 
 Notice also, that there are several restrictions on operations on
 compressed archives.  First of all, compressed archives cannot be
-modified, i.e., you cannot update (@value{op-update}) them or delete
-(@value{op-delete}) members from them.  Likewise, you cannot append
+modified, i.e., you cannot update (@option{--update} (@option{-u})) them or delete
+(@option{--delete}) members from them.  Likewise, you cannot append
 another @command{tar} archive to a compressed archive using
-@value{op-append}).  Secondly, multi-volume archives cannot be
+@option{--append} (@option{-r})).  Secondly, multi-volume archives cannot be
 compressed.
 
 The following table summarizes compression options used by @GNUTAR{}.
 
 @table @option
+@opindex gzip
+@opindex ungzip
 @item -z
 @itemx --gzip
 @itemx --ungzip
@@ -6976,7 +7225,7 @@ $ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
 @end smallexample
 
 @noindent
-Another way would be to avoid the @value{op-gzip} option and run
+Another way would be to avoid the @option{--gzip} (@option{--gunzip}, @option{--ungzip}, @option{-z}) option and run
 @command{gzip} explicitly:
 
 @smallexample
@@ -6998,21 +7247,24 @@ every volume or file, in case of corrupted archives.  Doing so, we might
 lose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
+@opindex bzip2
 @item -j
 @itemx --bzip2
-Filter the archive through @code{bzip2}.  Otherwise like @value{op-gzip}.
+Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
 
+@opindex compress
+@opindex uncompress
 @item -Z
 @itemx --compress
 @itemx --uncompress
-Filter the archive through @command{compress}.  Otherwise like
-@value{op-gzip}.
+Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
 
 The @acronym{GNU} Project recommends you not use
 @command{compress}, because there is a patent covering the algorithm it
 uses.  You could be sued for patent infringement merely by running
 @command{compress}.
 
+@opindex use-compress-program
 @item --use-compress-program=@var{prog}
 Use external compression program @var{prog}.  Use this option if you
 have a compression program that @GNUTAR{} does not support.  There
@@ -7027,7 +7279,7 @@ and produce uncompressed data on the standard output.
 @end table
 
 @FIXME{I have one question, or maybe it's a suggestion if there isn't a way
-to do it now.  I would like to use @value{op-gzip}, but I'd also like
+to do it now.  I would like to use @option{--gzip}, but I'd also like
 the output to be fed through a program like @acronym{GNU}
 @command{ecc} (actually, right now that's @samp{exactly} what I'd like
 to use :-)), basically adding ECC protection on top of compression.
@@ -7049,14 +7301,14 @@ that capability.  Supposing I were to actually do such a thing and
 get it (apparently) working, do you accept contributed changes to
 utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
 
-Isn't that exactly the role of the @value{op-use-compress-prog} option?
+Isn't that exactly the role of the @option{--use-compress-prog=@var{program}} option?
 I never tried it myself, but I suspect you may want to write a
 @var{prog} script or program able to filter stdin to stdout to
 way you want.  It should recognize the @option{-d} option, for when
 extraction is needed rather than creation.
 
 It has been reported that if one writes compressed data (through the
-@value{op-gzip} or @value{op-compress} options) to a DLT and tries to use
+@option{--gzip} or @option{--compress} options) to a DLT and tries to use
 the DLT compression mode, the data will actually get bigger and one will
 end up with less space on the tape.}
 
@@ -7066,14 +7318,15 @@ end up with less space on the tape.}
 @UNREVISED
 
 @table @option
+@opindex sparse
 @item -S
 @itemx --sparse
 Handle sparse files efficiently.
 @end table
 
 This option causes all files to be put in the archive to be tested for
-sparseness, and handled specially if they are.  The @value{op-sparse}
-option is useful when many @code{dbm} files, for example, are being
+sparseness, and handled specially if they are.  The @option{--sparse}
+(@option{-S}) option is useful when many @code{dbm} files, for example, are being
 backed up.  Using this option dramatically decreases the amount of
 space needed to store such a file.
 
@@ -7088,43 +7341,43 @@ contents of a hole read as all zeros.  On many operating systems,
 actual disk storage is not allocated for holes, but they are counted
 in the length of the file.  If you archive such a file, @command{tar}
 could create an archive longer than the original.  To have @command{tar}
-attempt to recognize the holes in a file, use @value{op-sparse}.  When
-you use the @value{op-sparse} option, then, for any file using less
-disk space than would be expected from its length, @command{tar} searches
-the file for consecutive stretches of zeros.  It then records in the
-archive for the file where the consecutive stretches of zeros are, and
-only archives the ``real contents'' of the file.  On extraction (using
-@value{op-sparse} is not needed on extraction) any such files have
-holes created wherever the continuous stretches of zeros were found.
-Thus, if you use @value{op-sparse}, @command{tar} archives won't take
-more space than the original.
+attempt to recognize the holes in a file, use @option{--sparse} (@option{-S}).  When
+you use this option, then, for any file using less disk space than
+would be expected from its length, @command{tar} searches the file for
+consecutive stretches of zeros.  It then records in the archive for
+the file where the consecutive stretches of zeros are, and only
+archives the ``real contents'' of the file.  On extraction (using
+@option{--sparse} is not needed on extraction) any such
+files have holes created wherever the continuous stretches of zeros
+were found. Thus, if you use @option{--sparse}, @command{tar} archives
+won't take more space than the original. 
 
 A file is sparse if it contains blocks of zeros whose existence is
 recorded, but that have no space allocated on disk.  When you specify
-the @value{op-sparse} option in conjunction with the @value{op-create}
-operation, @command{tar} tests all files for sparseness while archiving.
-If @command{tar} finds a file to be sparse, it uses a sparse representation of
-the file in the archive.  @value{xref-create}, for more information
-about creating archives.
+the @option{--sparse} option in conjunction with the @option{--create}
+(@option{-c}) operation, @command{tar} tests all files for sparseness
+while archiving. If @command{tar} finds a file to be sparse, it uses a
+sparse representation of the file in the archive.  @xref{create}, for
+more information about creating archives.
 
-@value{op-sparse} is useful when archiving files, such as dbm files,
+@option{--sparse} is useful when archiving files, such as dbm files,
 likely to contain many nulls.  This option dramatically
 decreases the amount of space needed to store such an archive.
 
 @quotation
-@strong{Please Note:} Always use @value{op-sparse} when performing file
+@strong{Please Note:} Always use @option{--sparse} when performing file
 system backups, to avoid archiving the expanded forms of files stored
 sparsely in the system.
 
 Even if your system has no sparse files currently, some may be
-created in the future.  If you use @value{op-sparse} while making file
+created in the future.  If you use @option{--sparse} while making file
 system backups as a matter of course, you can be assured the archive
 will never take more space on the media than the files take on disk
 (otherwise, archiving a disk filled with sparse files might take
 hundreds of tapes).  @FIXME-xref{incremental when node name is set.}
 @end quotation
 
-@command{tar} ignores the @value{op-sparse} option when reading an archive.
+@command{tar} ignores the @option{--sparse} option when reading an archive.
 
 @table @option
 @item --sparse
@@ -7145,9 +7398,9 @@ dumping a @file{core} file of over 400 megabytes, but with only about
 ELC, with full CPU utilization.)
 
 This reading is required in all cases and is not related to the fact
-the @value{op-sparse} option is used or not, so by merely @emph{not}
+the @option{--sparse} option is used or not, so by merely @emph{not}
 using the option, you are not saving time@footnote{Well!  We should say
-the whole truth, here.  When @value{op-sparse} is selected while creating
+the whole truth, here.  When @option{--sparse} is selected while creating
 an archive, the current @command{tar} algorithm requires sparse files to be
 read twice, not once.  We hope to develop a new archive format for saving
 sparse files in which one pass will be sufficient.}.
@@ -7180,36 +7433,38 @@ get it right.
 @UNREVISED
 
 When @command{tar} reads files, it updates their access times.  To
-avoid this, use the @value{op-atime-preserve} option, which can either
+avoid this, use the @option{--atime-preserve[=METHOD]} option, which can either
 reset the access time retroactively or avoid changing it in the first
 place.
 
 Handling of file attributes
 
 @table @option
+@opindex atime-preserve
 @item --atime-preserve
 @itemx --atime-preserve=replace
 @itemx --atime-preserve=system
 Preserve the access times of files that are read.  This works only for
 files that you own, unless you have superuser privileges.
 
-@value{op-atime-preserve-replace} works on most systems, but it also
+@option{--atime-preserve=replace} works on most systems, but it also
 restores the data modification time and updates the status change
 time.  Hence it doesn't interact with incremental dumps nicely
 (@pxref{Backups}), and it can set access or data modification times
 incorrectly if other programs access the file while @command{tar} is
 running.
 
-@value{op-atime-preserve-system} avoids changing the access time in
+@option{--atime-preserve=system} avoids changing the access time in
 the first place, if the operating system supports this.
 Unfortunately, this may or may not work on any given operating system
 or file system.  If @command{tar} knows for sure it won't work, it
 complains right away.
 
 Currently @option{--atime-preserve} with no operand defaults to
-@value{op-atime-preserve-replace}, but this is intended to change to
-@value{op-atime-preserve-system} when the latter is better-supported.
+@option{--atime-preserve=replace}, but this is intended to change to
+@option{--atime-preserve=system} when the latter is better-supported.
 
+@opindex touch
 @item -m
 @itemx --touch
 Do not extract data modification time.
@@ -7218,8 +7473,9 @@ When this option is used, @command{tar} leaves the data modification times
 of the files it extracts as the times when the files were extracted,
 instead of setting it to the times recorded in the archive.
 
-This option is meaningless with @value{op-list}.
+This option is meaningless with @option{--list} (@option{-t}).
 
+@opindex same-owner
 @item --same-owner
 Create extracted files with the same ownership they have in the
 archive.
@@ -7235,19 +7491,21 @@ files are easily and silently lost when files are given away.
 When writing an archive, @command{tar} writes the user id and user name
 separately.  If it can't find a user name (because the user id is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
-and doing a @code{chmod} like when you use @value{op-same-permissions},
+and doing a @code{chmod} like when you use @option{--same-permissions},
 @FIXME{same-owner?}it tries to look the name (if one was written)
 up in @file{/etc/passwd}.  If it fails, then it uses the user id
 stored in the archive instead.
 
+@opindex no-same-owner
 @item --no-same-owner
 @itemx -o
 Do not attempt to restore ownership when extracting.  This is the
 default behavior for ordinary users, so this option has an effect
 only for the superuser.
 
+@opindex numeric-owner
 @item --numeric-owner
-The @value{op-numeric-owner} option allows (ANSI) archives to be written
+The @option{--numeric-owner} option allows (ANSI) archives to be written
 without user/group name information or such information to be ignored
 when extracting.  It effectively disables the generation and/or use
 of user/group name information.  This option forces extraction using
@@ -7264,7 +7522,7 @@ disk into another machine to do the restore.
 
 The numeric ids are @emph{always} saved into @command{tar} archives.
 The identifying names are added at create time when provided by the
-system, unless @value{op-old-archive} is used.  Numeric ids could be
+system, unless @option{--old-archive} (@option{-o}) is used.  Numeric ids could be
 used when moving archives between a collection of machines using
 a centralized management for attribution of numeric ids to users
 and groups.  This is often made through using the NIS capabilities.
@@ -7284,6 +7542,8 @@ This is not the good way, I think.  @GNUTAR{} is
 already crowded with options and moreover, the approach just explained
 gives you a great deal of control already.
 
+@opindex same-permissions, short description
+@opindex preserve-permissions, short description
 @item -p
 @itemx --same-permissions
 @itemx --preserve-permissions
@@ -7296,13 +7556,14 @@ on extracted files.  This option is by default enabled when
 @command{tar} is executed by a superuser.
 
 
-This option is meaningless with @value{op-list}.
+This option is meaningless with @option{--list} (@option{-t}).
 
+@opindex preserve
 @item --preserve
-Same as both @value{op-same-permissions} and @value{op-same-order}.
+Same as both @option{--same-permissions} and @option{--same-order}.
 
-The @value{op-preserve} option has no equivalent short option name.
-It is equivalent to @value{op-same-permissions} plus @value{op-same-order}.
+The @option{--preserve} option has no equivalent short option name.
+It is equivalent to @option{--same-permissions} plus @option{--same-order}.
 
 @FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)}
 
@@ -7338,7 +7599,7 @@ same name, see -backup node, when it's written.}
 
 In addition to entries describing archive members, an archive may
 contain entries which @command{tar} itself uses to store information.
-@value{xref-label}, for an example of such an archive entry.
+@xref{label}, for an example of such an archive entry.
 
 A @command{tar} archive file contains a series of blocks.  Each block
 contains @code{BLOCKSIZE} bytes.  Although this format may be thought
@@ -7354,7 +7615,7 @@ particular @GNUTAR{} always issues a warning if it does not encounter it.
 
 The blocks may be @dfn{blocked} for physical I/O operations.
 Each record of @var{n} blocks (where @var{n} is set by the
-@value{op-blocking-factor} option to @command{tar}) is written with a single
+@option{--blocking-factor=@var{512-size}} (@option{-b @var{512-size}}) option to @command{tar}) is written with a single
 @w{@samp{write ()}} operation.  On magnetic tapes, the result of
 such a write is a single record.  When writing an archive,
 the last record of blocks should be written at the full size, with
@@ -7409,7 +7670,7 @@ not support numeric user or group IDs, these fields should be ignored.
 
 The @code{size} field is the size of the file in bytes; linked files
 are archived with this field specified as zero.  @FIXME-xref{Modifiers, in
-particular the @value{op-incremental} option.}
+particular the @option{--incremental} (@option{-G}) option.}
 
 The @code{mtime} field is the data modification time of the file at
 the time it was archived.  It is the ASCII representation of the octal
@@ -7433,7 +7694,7 @@ The @code{atime} and @code{ctime} fields are used in making incremental
 backups; they store, respectively, the particular file's access and
 status change times.
 
-The @code{offset} is used by the @value{op-multi-volume} option, when
+The @code{offset} is used by the @option{--multi-volume} (@option{-M}) option, when
 making a multi-volume archive.  The offset is number of bytes into
 the file that we need to restart at to continue the file on the next
 tape, i.e., where we store the location that a continued file is
@@ -7574,7 +7835,7 @@ files in an archive.  These are listed below.
 @item GNUTYPE_DUMPDIR
 @itemx 'D'
 This represents a directory and a list of files created by the
-@value{op-incremental} option.  The @code{size} field gives the total
+@option{--incremental} (@option{-G}) option.  The @code{size} field gives the total
 size of the associated list of files.  Each file name is preceded by
 either a @samp{Y} (the file should be in this archive) or an @samp{N}.
 (The file is a directory, or is not stored in the archive.)  Each file
@@ -7584,7 +7845,7 @@ last file name.
 @item GNUTYPE_MULTIVOL
 @itemx 'M'
 This represents a file continued from another volume of a multi-volume
-archive created with the @value{op-multi-volume} option.  The original
+archive created with the @option{--multi-volume} (@option{-M}) option.  The original
 type of the file is not given here.  The @code{size} field gives the
 maximum size of this piece of the file (assuming the volume does
 not end before the file is written out).  The @code{offset} field
@@ -7602,16 +7863,16 @@ with the number of bytes of data to be found after the hole.
 @item GNUTYPE_VOLHDR
 @itemx 'V'
 This file type is used to mark the volume header that was given with
-the @value{op-label} option when the archive was created.  The @code{name}
-field contains the @code{name} given after the @value{op-label} option.
+the @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) option when the archive was created.  The @code{name}
+field contains the @code{name} given after the @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) option.
 The @code{size} field is zero.  Only the first file in each volume
 of an archive should have this type.
 
 @end table
 
 You may have trouble reading a @acronym{GNU} format archive on a
-non-@acronym{GNU} system if the options @value{op-incremental},
-@value{op-multi-volume}, @value{op-sparse}, or @value{op-label} were
+non-@acronym{GNU} system if the options @option{--incremental} (@option{-G}),
+@option{--multi-volume} (@option{-M}), @option{--sparse} (@option{-S}), or @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) were
 used when writing the archive.  In general, if @command{tar} does not
 use the @acronym{GNU}-added fields of the header, other versions of
 @command{tar} should be able to read the archive.  Otherwise, the
@@ -7807,7 +8068,7 @@ with the sources for @command{tar}; it's compiled and installed by default.
 The exact path to this utility is determined when configuring the package.
 It is @file{@var{prefix}/libexec/rmt}, where @var{prefix} stands for
 your installation prefix.  This location may also be overridden at
-runtime by using @value{op-rmt-command} option (@xref{Option Summary,
+runtime by using @option{rmt-command=@var{command}} option (@xref{Option Summary,
 ---rmt-command}, for detailed description of this option.  @xref{Remote
 Tape Server}, for the description of @command{rmt} command).
 
@@ -7847,9 +8108,11 @@ too.  The installer could also check for @samp{DEFTAPE} in
 @file{<sys/mtio.h>}.
 
 @table @option
+@opindex force-local, short description
 @item --force-local
 Archive file is local even if it contains a colon.
 
+@opindex rsh-command
 @item --rsh-command=@var{command}
 Use remote @var{command} instead of @command{rsh}.  This option exists
 so that people who use something other than the standard @command{rsh}
@@ -7865,6 +8128,7 @@ variable @env{RSH} @emph{at installation time}.
 @item -[0-7][lmh]
 Specify drive and density.
 
+@opindex multi-volume, short description
 @item -M
 @itemx --multi-volume
 Create/list/extract multi-volume archive.
@@ -7873,6 +8137,7 @@ This option causes @command{tar} to write a @dfn{multi-volume} archive---one
 that may be larger than will fit on the medium used to hold it.
 @xref{Multi-Volume Archives}.
 
+@opindex tape-length, short description
 @item -L @var{num}
 @itemx --tape-length=@var{num}
 Change tape after writing @var{num} x 1024 bytes.
@@ -7881,11 +8146,13 @@ This option might be useful when your tape drivers do not properly
 detect end of physical tapes.  By being slightly conservative on the
 maximum tape length, you might avoid the problem entirely.
 
+@opindex info-script, short description
+@opindex new-volume-script, short description
 @item -F @var{file}
 @itemx --info-script=@var{file}
 @itemx --new-volume-script=@var{file}
 Execute @file{file} at end of each tape.  This implies
-@value{op-multi-volume}.  @xref{info-script}, for a detailed
+@option{--multi-volume} (@option{-M}).  @xref{info-script}, for a detailed
 description of this option. 
 @end table
 
@@ -7908,8 +8175,8 @@ California, but can be freely distributed.  It is compiled and
 installed by default.
 
 @cindex absolute file names
-Unless you use the @value{op-absolute-names} option, @GNUTAR{}
-will not allow you to create an archive that contains
+Unless you use the @option{--absolute-names} (@option{-P}) option,
+@GNUTAR{} will not allow you to create an archive that contains
 absolute file names (a file name beginning with @samp{/}.) If you try,
 @command{tar} will automatically remove the leading @samp{/} from the
 file names it stores in the archive.  It will also type a warning
@@ -7931,7 +8198,7 @@ For example, if the archive contained a file @file{/usr/bin/computoy},
 relative to the current directory.  If you want to extract the files in
 an archive to the same absolute names that they had when the archive
 was created, you should do a @samp{cd /} before extracting the files
-from the archive, or you should either use the @value{op-absolute-names}
+from the archive, or you should either use the @option{--absolute-names}
 option, or use the command @samp{tar -C / @dots{}}.
 
 @cindex Ultrix 3.1 and write failure
@@ -7948,23 +8215,23 @@ disk files (or any other file that can be backspaced with @samp{lseek}),
 and industry-standard 9-track magnetic tape (or any other kind of tape
 that can be backspaced with the @code{MTIOCTOP} @code{ioctl}.
 
-This means that the @value{op-append}, @value{op-update},
-@value{op-concatenate}, and @value{op-delete} commands will not work on any
-other kind of file.  Some media simply cannot be backspaced, which
-means these commands and options will never be able to work on them.
-These non-backspacing media include pipes and cartridge tape drives.
+This means that the @option{--append}, @option{--concatenate}, and
+@option{--delete} commands will not work on any other kind of file.
+Some media simply cannot be backspaced, which means these commands and
+options will never be able to work on them. These non-backspacing
+media include pipes and cartridge tape drives. 
 
 Some other media can be backspaced, and @command{tar} will work on them
 once @command{tar} is modified to do so.
 
-Archives created with the @value{op-multi-volume}, @value{op-label}, and
-@value{op-incremental} options may not be readable by other version
+Archives created with the @option{--multi-volume}, @option{--label}, and
+@option{--incremental} (@option{-G}) options may not be readable by other version
 of @command{tar}.  In particular, restoring a file that was split over
 a volume boundary will require some careful work with @command{dd}, if
 it can be done at all.  Other versions of @command{tar} may also create
 an empty file whose name is that of the volume header.  Some versions
 of @command{tar} may create normal files instead of directories archived
-with the @value{op-incremental} option.
+with the @option{--incremental} (@option{-G}) option.
 
 @node Common Problems and Solutions
 @section Some Common Problems and their Solutions
@@ -8052,12 +8319,13 @@ to what we call a @dfn{record} in @GNUTAR{}.
 
 When writing to tapes, @command{tar} writes the contents of the archive
 in chunks known as @dfn{records}.  To change the default blocking
-factor, use the @value{op-blocking-factor} option.  Each record will
-then be composed of @var{512-size} blocks.  (Each @command{tar} block is
-512 bytes.  @xref{Standard}.)  Each file written to the archive uses
-at least one full record.  As a result, using a larger record size
-can result in more wasted space for small files.  On the other hand, a
-larger record size can often be read and written much more efficiently.
+factor, use the @option{--blocking-factor=@var{512-size}} (@option{-b
+@var{512-size}}) option.  Each record will then be composed of
+@var{512-size} blocks.  (Each @command{tar} block is 512 bytes.
+@xref{Standard}.)  Each file written to the archive uses at least one
+full record.  As a result, using a larger record size can result in
+more wasted space for small files.  On the other hand, a larger record
+size can often be read and written much more efficiently. 
 
 Further complicating the problem is that some tape drives ignore the
 blocking entirely.  For these, a larger record size can still improve
@@ -8071,16 +8339,16 @@ record size was used when the archive was created, @command{tar} will
 print a message about a non-standard blocking factor, and then operate
 normally.  On some tape devices, however, @command{tar} cannot figure
 out the record size itself.  On most of those, you can specify a
-blocking factor (with @value{op-blocking-factor}) larger than the
-actual blocking factor, and then use the @value{op-read-full-records}
-option.  (If you specify a blocking factor with
-@value{op-blocking-factor} and don't use the
-@value{op-read-full-records} option, then @command{tar} will not
+blocking factor (with @option{--blocking-factor}) larger than the
+actual blocking factor, and then use the @option{--read-full-records}
+(@option{-B}) option.  (If you specify a blocking factor with
+@option{--blocking-factor} and don't use the
+@option{--read-full-records} option, then @command{tar} will not
 attempt to figure out the recording size itself.)  On some devices,
 you must always specify the record size exactly with
-@value{op-blocking-factor} when reading, because @command{tar} cannot
-figure it out.  In any case, use @value{op-list} before doing any
-extractions to see whether @command{tar} is reading the archive
+@option{--blocking-factor} when reading, because @command{tar} cannot
+figure it out.  In any case, use @option{--list} (@option{-t}) before
+doing any extractions to see whether @command{tar} is reading the archive
 correctly.
 
 @command{tar} blocks are all fixed size (512 bytes), and its scheme for
@@ -8091,7 +8359,7 @@ is how you tell that the remainder of the last record(s) are garbage.
 
 In a standard @command{tar} file (no options), the block size is 512
 and the record size is 10240, for a blocking factor of 20.  What the
-@value{op-blocking-factor} option does is sets the blocking factor,
+@option{--blocking-factor} option does is sets the blocking factor,
 changing the record size while leaving the block size at 512 bytes.
 20 was fine for ancient 800 or 1600 bpi reel-to-reel tape drives;
 most tape drives these days prefer much bigger records in order to
@@ -8128,8 +8396,8 @@ To specify format parameters when accessing or creating an archive,
 you can use the options described in the following sections.
 If you do not specify any format parameters, @command{tar} uses
 default parameters.  You cannot modify a compressed archive.
-If you create an archive with the @value{op-blocking-factor} option
-specified (@value{pxref-blocking-factor}), you must specify that
+If you create an archive with the @option{--blocking-factor} option
+specified (@pxref{Blocking Factor}), you must specify that
 blocking-factor when operating on the archive.  @xref{Formats}, for other
 examples of format parameter considerations.
 
@@ -8143,15 +8411,17 @@ examples of format parameter considerations.
 @cindex Blocks per record
 @UNREVISED
 
+@opindex blocking-factor
 The data in an archive is grouped into blocks, which are 512 bytes.
 Blocks are read and written in whole number multiples called
 @dfn{records}.  The number of blocks in a record (ie.  the size of a
 record in units of 512 bytes) is called the @dfn{blocking factor}.
-The @value{op-blocking-factor} option specifies the blocking factor of
-an archive.  The default blocking factor is typically 20 (i.e.,
-10240 bytes), but can be specified at installation.  To find out
-the blocking factor of an existing archive, use @samp{tar --list
---file=@var{archive-name}}.  This may not work on some devices.
+The @option{--blocking-factor=@var{512-size}} (@option{-b
+@var{512-size}}) option specifies the blocking factor of an archive.
+The default blocking factor is typically 20 (i.e., 10240 bytes), but
+can be specified at installation.  To find out the blocking factor of
+an existing archive, use @samp{tar --list --file=@var{archive-name}}.
+This may not work on some devices. 
 
 Records are separated by gaps, which waste space on the archive media.
 If you are archiving on magnetic tape, using a larger blocking factor
@@ -8196,21 +8466,21 @@ If you use a non-default blocking factor when you create an archive, you
 must specify the same blocking factor when you modify that archive.  Some
 archive devices will also require you to specify the blocking factor when
 reading that archive, however this is not typically the case.  Usually, you
-can use @value{op-list} without specifying a blocking factor---@command{tar}
+can use @option{--list} (@option{-t}) without specifying a blocking factor---@command{tar}
 reports a non-default record size and then lists the archive members as
 it would normally.  To extract files from an archive with a non-standard
 blocking factor (particularly if you're not sure what the blocking factor
-is), you can usually use the @value{op-read-full-records} option while
+is), you can usually use the @option{--read-full-records} (@option{-B}) option while
 specifying a blocking factor larger then the blocking factor of the archive
 (ie.  @samp{tar --extract --read-full-records --blocking-factor=300}.
-@xref{list}, for more information on the @value{op-list}
+@xref{list}, for more information on the @option{--list} (@option{-t})
 operation.  @xref{Reading}, for a more detailed explanation of that option.
 
 @table @option
 @item --blocking-factor=@var{number}
 @itemx -b @var{number}
 Specifies the blocking factor of an archive.  Can be used with any
-operation, but is usually not necessary with @value{op-list}.
+operation, but is usually not necessary with @option{--list} (@option{-t}).
 @end table
 
 Device blocking
@@ -8265,7 +8535,7 @@ redirected nor piped,
 the archive is directly handled to a local disk, instead of any special
 device,
 @item
-@value{op-blocking-factor} is not explicitly specified on the @command{tar}
+@option{--blocking-factor} is not explicitly specified on the @command{tar}
 invocation.
 @end itemize
 
@@ -8306,11 +8576,12 @@ the first null block encountered.  This inelegantly breaks the pipe.
 @command{tar} should rather drain the pipe out before exiting itself.
 @end itemize
 
+@opindex ignore-zeros, short description
 @item -i
 @itemx --ignore-zeros
 Ignore blocks of zeros in archive (means EOF).
 
-The @value{op-ignore-zeros} option causes @command{tar} to ignore blocks
+The @option{--ignore-zeros} (@option{-i}) option causes @command{tar} to ignore blocks
 of zeros in the archive.  Normally a block of zeros indicates the
 end of the archive, but when reading a damaged archive, or one which
 was created by concatenating several archives together, this option
@@ -8322,13 +8593,15 @@ Note that this option causes @command{tar} to read to the end of the
 archive file, which may sometimes avoid problems when multiple files
 are stored on a single physical tape.
 
+@opindex read-full-records, short description
 @item -B
 @itemx --read-full-records
 Reblock as we read (for reading 4.2BSD pipes).
 
-If @value{op-read-full-records} is used, @command{tar} will not panic if an
-attempt to read a record from the archive does not return a full record.
-Instead, @command{tar} will keep reading until it has obtained a full
+If @option{--read-full-records} is used, @command{tar}
+will not panic if an attempt to read a record from the archive does
+not return a full record. Instead, @command{tar} will keep reading
+until it has obtained a full 
 record.
 
 This option is turned on by default when @command{tar} is reading
@@ -8534,7 +8807,7 @@ rrrr*rrrrrr*rrrrr*rr*rrrrr*rrr*rrrr**----------------
 
 @FIXME{Is it true that this only works on non-block devices?
 should explain the difference, (fixed or variable).}
-@value{xref-blocking-factor}.
+@xref{Blocking Factor}.
 
 You can use the @command{mt} utility to advance or rewind a tape past a
 specified number of archive files on the tape.  This will allow you
@@ -8595,18 +8868,18 @@ failed.
 Often you might want to write a large archive, one larger than will fit
 on the actual tape you are using.  In such a case, you can run multiple
 @command{tar} commands, but this can be inconvenient, particularly if you
-are using options like @value{op-exclude} or dumping entire file systems.
+are using options like @option{--exclude=@var{pattern}} or dumping entire file systems.
 Therefore, @command{tar} supports multiple tapes automatically.
 
-Use @value{op-multi-volume} on the command line, and then @command{tar} will,
-when it reaches the end of the tape, prompt for another tape, and
-continue the archive.  Each tape will have an independent archive, and
-can be read without needing the other.  (As an exception to this, the
-file that @command{tar} was archiving when it ran out of tape will usually
-be split between the two archives; in this case you need to extract from
-the first archive, using @value{op-multi-volume}, and then put in the
-second tape when prompted, so @command{tar} can restore both halves of the
-file.)
+Use @option{--multi-volume} (@option{-M}) on the command line, and
+then @command{tar} will, when it reaches the end of the tape, prompt
+for another tape, and continue the archive.  Each tape will have an
+independent archive, and can be read without needing the other.  (As
+an exception to this, the file that @command{tar} was archiving when
+it ran out of tape will usually be split between the two archives; in
+this case you need to extract from the first archive, using
+@option{--multi-volume}, and then put in the second tape when
+prompted, so @command{tar} can restore both halves of the file.)
 
 @GNUTAR{} multi-volume archives do not use a truly portable format.
 You need @GNUTAR{} at both ends to process them properly.
@@ -8634,12 +8907,16 @@ otherwise @command{tar} will write over the volume it just finished.)
 @cindex End-of-archive info script
 @cindex Info script
 @anchor{info-script}
+@opindex info-script
+@opindex new-volume-script
 If you want more elaborate behavior than this, give @command{tar} the
-@value{op-info-script} option.  The file @var{script-name} is expected
-to be a program (or shell script) to be run instead of the normal
+@option{--info-script=@var{script-name}}
+(@option{--new-volume-script=@var{script-name}}, @option{-F
+@var{script-name}}) option.  The file @var{script-name} is expected to
+be a program (or shell script) to be run instead of the normal
 prompting procedure.  It is executed without any command line
 arguments.  Additional data is passed to it via the following
-environment variables:
+environment variables: 
 
 @table @env
 @vrindex TAR_VERSION, info script environment variable
@@ -8674,28 +8951,31 @@ writing the next volume.
 
 The method @command{tar} uses to detect end of tape is not perfect, and
 fails on some operating systems or on some devices.  You can use the
-@value{op-tape-length} option if @command{tar} can't detect the end of the
-tape itself.  This option selects @value{op-multi-volume} automatically.
-The @var{size} argument should then be the usable size of the tape.
-But for many devices, and floppy disks in particular, this option is
-never required for real, as far as we know.
+@option{--tape-length=@var{size}} (@option{-L @var{size}}) option if
+@command{tar} can't detect the end of the tape itself.  This option
+selects @option{--multi-volume} (@option{-M}) automatically. The
+@var{size} argument should then be the usable size of the tape in
+units of 1024 bytes. But for many devices, and floppy disks in
+particular, this option is never required for real, as far as we know. 
 
 @cindex Volume number file
 @cindex volno file
 @anchor{volno-file}
+@opindex volno-file
 The volume number used by @command{tar} in its tape-change prompt
-can be changed; if you give the @value{op-volno-file} option, then
-@var{file-of-number} should be an unexisting file to be created, or else,
-a file already containing a decimal number.  That number will be used
-as the volume number of the first volume written.  When @command{tar} is
-finished, it will rewrite the file with the now-current volume number.
-(This does not change the volume number written on a tape label, as
-per @value{ref-label}, it @emph{only} affects the number used in
-the prompt.)
+can be changed; if you give the
+@option{--volno-file=@var{file-of-number}} option, then
+@var{file-of-number} should be an unexisting file to be created, or
+else, a file already containing a decimal number.  That number will be
+used as the volume number of the first volume written.  When
+@command{tar} is finished, it will rewrite the file with the
+now-current volume number. (This does not change the volume number
+written on a tape label, as per @ref{label}, it @emph{only} affects
+the number used in the prompt.)
 
 If you want @command{tar} to cycle through a series of files or tape
 drives, there are three approaches to choose from.  First of all, you
-can give @command{tar} multiple @value{op-file} options. In this case
+can give @command{tar} multiple @option{--file} options. In this case
 the specified files will be used, in sequence, as the successive
 volumes of the archive.  Only when the first one in the sequence needs
 to be used again will @command{tar} prompt for a tape change (or run
@@ -8723,11 +9003,11 @@ echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&3
 
 Each volume of a multi-volume archive is an independent @command{tar}
 archive, complete in itself.  For example, you can list or extract any
-volume alone; just don't specify @value{op-multi-volume}.  However, if one
-file in the archive is split across volumes, the only way to extract
-it successfully is with a multi-volume extract command @option{--extract
---multi-volume} (@option{-xM}) starting on or before the volume where
-the file begins.
+volume alone; just don't specify @option{--multi-volume}
+(@option{-M}).  However, if one file in the archive is split across
+volumes, the only way to extract it successfully is with a
+multi-volume extract command @option{--extract --multi-volume}
+(@option{-xM}) starting on or before the volume where the file begins.
 
 For example, let's presume someone has two tape drives on a system
 named @file{/dev/tape0} and @file{/dev/tape1}.  For having @GNUTAR{}
@@ -8751,14 +9031,15 @@ $ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
 @cindex Multi-volume archives
 @UNREVISED
 
+@opindex multi-volume
 To create an archive that is larger than will fit on a single unit of
-the media, use the @value{op-multi-volume} option in conjunction with
-the @value{op-create} option (@pxref{create}).  A
-@dfn{multi-volume} archive can be manipulated like any other archive
-(provided the @value{op-multi-volume} option is specified), but is
-stored on more than one tape or disk.
+the media, use the @option{--multi-volume} (@option{-M}) option in conjunction with
+the @option{--create} option (@pxref{create}).  A @dfn{multi-volume}
+archive can be manipulated like any other archive (provided the
+@option{--multi-volume} option is specified), but is stored on more
+than one tape or disk. 
 
-When you specify @value{op-multi-volume}, @command{tar} does not report an
+When you specify @option{--multi-volume}, @command{tar} does not report an
 error when it comes to the end of an archive volume (when reading), or
 the end of the media (when writing).  Instead, it prompts you to load
 a new storage volume.  If the archive is on a magnetic tape, you
@@ -8767,38 +9048,43 @@ floppy disk, you should change disks; etc.
 
 You can read each individual volume of a multi-volume archive as if it
 were an archive by itself.  For example, to list the contents of one
-volume, use @value{op-list}, without @value{op-multi-volume} specified.
+volume, use @option{--list}, without @option{--multi-volume} specified.
 To extract an archive member from one volume (assuming it is described
-that volume), use @value{op-extract}, again without
-@value{op-multi-volume}.
+that volume), use @option{--extract}, again without
+@option{--multi-volume}.
 
 If an archive member is split across volumes (ie.  its entry begins on
 one volume of the media and ends on another), you need to specify
-@value{op-multi-volume} to extract it successfully.  In this case, you
+@option{--multi-volume} to extract it successfully.  In this case, you
 should load the volume where the archive member starts, and use
 @samp{tar --extract --multi-volume}---@command{tar} will prompt for later
 volumes as it needs them.  @xref{extracting archives}, for more
 information about extracting archives.
 
-@value{op-info-script} (@pxref{info-script}) is like
-@value{op-multi-volume}, except that @command{tar} does not prompt you
-directly to change media volumes when a volume is full---instead,
-@command{tar} runs commands you have stored in @var{script-name}.  For
-example, this option can be used to eject cassettes, or to broadcast
-messages such as @samp{Someone please come change my tape} when
-performing unattended backups.  When @var{script-name} is done,
-@command{tar} will assume that the media has been changed. 
+@option{--info-script=@var{script-name}}
+(@option{--new-volume-script=@var{script-name}}, @option{-F
+@var{script-name}}) (@pxref{info-script}) is like
+@option{--multi-volume} (@option{-M}), except that @command{tar} does
+not prompt you directly to change media volumes when a volume is
+full---instead, @command{tar} runs commands you have stored in
+@var{script-name}.  For example, this option can be used to eject
+cassettes, or to broadcast messages such as @samp{Someone please come
+change my tape} when performing unattended backups.  When
+@var{script-name} is done, @command{tar} will assume that the media
+has been changed.
 
 Multi-volume archives can be modified like any other archive.  To add
 files to a multi-volume archive, you need to only mount the last
 volume of the archive media (and new volumes, if needed).  For all
 other operations, you need to use the entire archive.
 
-If a multi-volume archive was labeled using @value{op-label}
-(@value{pxref-label}) when it was created, @command{tar} will not
-automatically label volumes which are added later.  To label subsequent
-volumes, specify @value{op-label} again in conjunction with the
-@value{op-append}, @value{op-update} or @value{op-concatenate} operation.
+If a multi-volume archive was labeled using
+@option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
+(@pxref{label}) when it was created, @command{tar} will not
+automatically label volumes which are added later.  To label
+subsequent volumes, specify @option{--label=@var{archive-label}} again
+in conjunction with the @option{--append}, @option{--update} or
+@option{--concatenate} operation. 
 
 @cindex Labeling multi-volume archives
 @FIXME{example}
@@ -8810,14 +9096,15 @@ before end.  Is the exit status even checked in tar?  :-(}
 @item --multi-volume
 @itemx -M
 Creates a multi-volume archive, when used in conjunction with
-@value{op-create}.  To perform any other operation on a multi-volume
-archive, specify @value{op-multi-volume} in conjunction with that
+@option{--create} (@option{-c}).  To perform any other operation on a multi-volume
+archive, specify @option{--multi-volume} in conjunction with that
 operation.
 
 @item --info-script=@var{program-file}
+@itemx --new-volume-script=@var{program-file}
 @itemx -F @var{program-file}
 Creates a multi-volume archive via a script.  Used in conjunction with
-@value{op-create}. @xref{info-script}, dor a detailed discussion.
+@option{--create} (@option{-c}). @xref{info-script}, dor a detailed discussion.
 @end table
 
 Beware that there is @emph{no} real standard about the proper way, for
@@ -8838,16 +9125,17 @@ machines between which you know exchange of files is possible.
 @UNREVISED
 
 To give the archive a name which will be recorded in it, use the
-@value{op-label} option.  This will write a special block identifying
-@var{volume-label} as the name of the archive to the front of the archive
-which will be displayed when the archive is listed with @value{op-list}.
-If you are creating a multi-volume archive with
-@value{op-multi-volume} (@pxref{Using Multiple Tapes}), then the
+@option{--label=@var{volume-label}} (@option{-V @var{volume-label}})
+option.  This will write a special block identifying
+@var{volume-label} as the name of the archive to the front of the
+archive which will be displayed when the archive is listed with
+@option{--list}.  If you are creating a multi-volume archive with
+@option{--multi-volume} (@pxref{Using Multiple Tapes}), then the
 volume label will have @samp{Volume @var{nnn}} appended to the name
 you give, where @var{nnn} is the number of the volume of the archive.
-(If you use the @value{op-label} option when reading an archive, it
-checks to make sure the label on the tape matches the one you give.
-@value{xref-label}. 
+(If you use the @option{--label=@var{volume-label}}) option when
+reading an archive, it checks to make sure the label on the tape
+matches the one you give. @xref{label}. 
 
 When @command{tar} writes an archive to tape, it creates a single
 tape file.  If multiple archives are written to the same tape, one
@@ -8897,30 +9185,31 @@ will usually see lots of spurious messages.
 @cindex Labels on the archive media
 @UNREVISED
 
-@cindex @option{--label} option introduced
-@cindex @option{-V} option introduced
+@opindex label
   To avoid problems caused by misplaced paper labels on the archive
 media, you can include a @dfn{label} entry---an archive member which
 contains the name of the archive---in the archive itself.  Use the
-@value{op-label} option in conjunction with the @value{op-create} operation
-to include a label entry in the archive as it is being created.
+@option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
+option in conjunction with the @option{--create} operation to include
+a label entry in the archive as it is being created. 
 
 @table @option
 @item --label=@var{archive-label}
 @itemx -V @var{archive-label}
 Includes an @dfn{archive-label} at the beginning of the archive when
 the archive is being created, when used in conjunction with the
-@value{op-create} operation.  Checks to make sure the archive label
+@option{--create} operation.  Checks to make sure the archive label
 matches the one specified (when used in conjunction with any other
 operation.
 @end table
 
-  If you create an archive using both @value{op-label} and
-@value{op-multi-volume}, each volume of the archive will have an
-archive label of the form @samp{@var{archive-label} Volume @var{n}},
-where @var{n} is 1 for the first volume, 2 for the next, and so on.
-@xref{Using Multiple Tapes}, for information on creating multiple
-volume archives.
+  If you create an archive using both
+@option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
+and @option{--multi-volume} (@option{-M}), each volume of the archive
+will have an archive label of the form @samp{@var{archive-label}
+Volume @var{n}}, where @var{n} is 1 for the first volume, 2 for the
+next, and so on. @xref{Using Multiple Tapes}, for information on
+creating multiple volume archives.
 
 @cindex Volume label, listing
 @cindex Listing volume label
@@ -8936,7 +9225,7 @@ V--------- 0 0        0 1992-03-07 12:01 iamalabel--Volume Header--
 @end group
 @end smallexample
 
-@cindex @option{--test-label} option introduced
+@opindex test-label
 @anchor{--test-label option}
   However, @option{--list} option will cause listing entire
 contents of the archive, which may be undesirable (for example, if the
@@ -8994,15 +9283,15 @@ is attempted@footnote{Previous versions of @command{tar} used full
 regular expression matching, or before that, only exact string
 matching, instead of wildcard matchers.  We decided for the sake of
 simplicity to use a uniform matching device through
-@command{tar}.}.  If the switch @value{op-multi-volume} is being used,
+@command{tar}.}.  If the switch @option{--multi-volume} (@option{-M}) is being used,
 the volume label matcher will also suffix @var{archive-label} by
 @w{@samp{ Volume [1-9]*}} if the initial match fails, before giving
 up.  Since the volume numbering is automatically added in labels at
 creation time, it sounded logical to equally help the user taking care
 of it when the archive is being read.
 
-  The @value{op-label} was once called @option{--volume}, but is not available
-under that name anymore.
+  The @option{--label} was once called @option{--volume}, but is not
+available under that name anymore.
 
   You can also use @option{--label} to get a common information on
 all tapes of a series.  For having this information different in each
@@ -9033,6 +9322,7 @@ is usually not the case.
 @table @option
 @item -W
 @itemx --verify
+@opindex verify, short description
 Attempt to verify the archive after writing.
 @end table
 
@@ -9050,9 +9340,11 @@ file system as the archive is being written, to verify a write
 operation, or can compare a previously written archive, to insure that
 it is up to date.
 
+@opindex verify, using with @option{--create}
+@opindex create, using with @option{--verify}
 To check for discrepancies in an archive immediately after it is
-written, use the @value{op-verify} option in conjunction with
-the @value{op-create} operation.  When this option is
+written, use the @option{--verify} (@option{-W}) option in conjunction with
+the @option{--create} operation.  When this option is
 specified, @command{tar} checks archive members against their counterparts
 in the file system, and reports discrepancies on the standard error.
 
@@ -9061,33 +9353,35 @@ of the last written entry.  This option is useful for detecting data
 errors on some tapes.  Archives written to pipes, some cartridge tape
 drives, and some other devices cannot be verified.
 
-One can explicitly compare an already made archive with the file system
-by using the @value{op-compare} option, instead of using the more automatic
-@value{op-verify} option.  @value{xref-compare}.
+One can explicitly compare an already made archive with the file
+system by using the @option{--compare} (@option{--diff}, @option{-d})
+option, instead of using the more automatic @option{--verify} option.
+@xref{compare}. 
 
 Note that these two options have a slightly different intent.  The
-@value{op-compare} option how identical are the logical contents of some
-archive with what is on your disks, while the @value{op-verify} option is
+@option{--compare} option checks how identical are the logical contents of some
+archive with what is on your disks, while the @option{--verify} option is
 really for checking if the physical contents agree and if the recording
-media itself is of dependable quality.  So, for the @value{op-verify}
+media itself is of dependable quality.  So, for the @option{--verify} 
 operation, @command{tar} tries to defeat all in-memory cache pertaining to
 the archive, while it lets the speed optimization undisturbed for the
-@value{op-compare} option.  If you nevertheless use @value{op-compare} for
+@option{--compare} option.  If you nevertheless use @option{--compare} for
 media verification, you may have to defeat the in-memory cache yourself,
 maybe by opening and reclosing the door latch of your recording unit,
 forcing some doubt in your operating system about the fact this is really
 the same volume as the one just written or read.
 
-The @value{op-verify} option would not be necessary if drivers were indeed
+The @option{--verify} option would not be necessary if drivers were indeed
 able to detect dependably all write failures.  This sometimes require many
 magnetic heads, some able to read after the writes occurred.  One would
 not say that drivers unable to detect all cases are necessarily flawed,
 as long as programming is concerned.
 
-The @value{op-verify} option will not work in conjunction with the
-@value{op-multi-volume} option or the @value{op-append},
-@value{op-update} and @value{op-delete} operations.  @xref{Operations},
-for more information on these operations.
+The @option{--verify} (@option{-W}) option will not work in
+conjunction with the @option{--multi-volume} (@option{-M}) option or
+the @option{--append} (@option{-r}), @option{--update} (@option{-u})
+and @option{--delete} operations.  @xref{Operations}, for more
+information on these operations. 
 
 Also, since @command{tar} normally strips leading @samp{/} from file
 names (@pxref{absolute}), a command like @samp{tar --verify -cf
@@ -9132,6 +9426,19 @@ changeable feature.
 
 @include fdl.texi
 
+@node Index of Command Line Options
+@appendix Index of Command Line Options
+
+This appendix contains an index of all @GNUTAR{} long command line
+options. The options are listed without the preceeding double-dash.
+
+@FIXME{@itemize
+@item Make sure @emph{all} options are indexed.
+@item Provide an index of short options
+@end itemize}
+
+@printindex op
+
 @node Index
 @appendix Index
 
@@ -9144,3 +9451,4 @@ changeable feature.
 @c Local variables:
 @c texinfo-column-for-description: 32
 @c End:
+
