@@ -764,10 +764,10 @@ corresponding abbreviations.  @FIXME{make sure this is still the case,
 at the end}We will indicate those abbreviations appropriately to get
 you used to seeing them.  (Note that the ``old style'' option forms
 exist in @GNUTAR{} for compatibility with Unix
-@command{tar}.  We present a full discussion of this way of writing
-options and operations appears in @ref{Old Options}, and we discuss
-the other two styles of writing options in @ref{Mnemonic Options}, and
-@ref{Short Options}.)
+@command{tar}.  In this book we present a full discussion of this way
+of writing options and operations (@pxref{Old Options}), and we discuss
+the other two styles of writing options (@xref{Mnemonic Options}, and
+@pxref{Short Options}).
 
 In the examples and in the text of this tutorial, we usually use the
 long forms of operations and options; but the ``short'' forms produce
@@ -2268,7 +2268,7 @@ back them up using simple or numbered backups, depending upon
 @itemx -R
 
 With this option present, @command{tar} prints error messages for read errors
-with the block number in the archive file.  @FIXME-xref{}
+with the block number in the archive file.  @xref{block-number}
 
 @item --blocking-factor=@var{blocking}
 @itemx -b @var{blocking}
@@ -2308,18 +2308,18 @@ semantics for @option{-l}.
 
 @command{tar} will use the @command{compress} program when reading or
 writing the archive.  This allows you to directly act on archives
-while saving space.  @FIXME-xref{}
+while saving space.  @xref{gzip}.
 
 @item --confirmation
 
-(See @option{--interactive}.)  @FIXME-pxref{}
+(See @option{--interactive}.)  @xref{interactive}.
 
 @item --dereference
 @itemx -h
 
 When creating a @command{tar} archive, @command{tar} will archive the
 file that a symbolic link points to, rather than archiving the
-symlink.  @FIXME-xref{}
+symlink.  @xref{dereference}.
 
 @item --directory=@var{dir}
 @itemx -C @var{dir}
@@ -2460,7 +2460,7 @@ discussion of @var{script-file}.
 
 Specifies that @command{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
-@FIXME-xref{}
+@xref{interactive}.
 
 @item --keep-newer-files
 
@@ -2680,8 +2680,8 @@ that it produces any keywords matching the string @var{pattern}.
 When used in extract or list mode, this option instructs tar
 to ignore any keywords matching the given @var{pattern} in the extended
 header records.  In both cases, matching is performed using the pattern
-matching notation described in @acronym{POSIX 1003.2}, 3.13 @FIXME-xref{see
-man 7 glob}.  For example:
+matching notation described in @acronym{POSIX 1003.2}, 3.13
+(See @cite{glob(7)}). For example:
 
 @smallexample
 --pax-option delete=security.*
@@ -3354,6 +3354,7 @@ not have been named on the command line (implicitly or explicitly),
 it might be excluded by the use of the @value{op-exclude} option, or
 some other reason.
 
+@anchor{block-number}
 If @value{op-block-number} is used, @command{tar} prints, along with
 every message it would normally produce, the block number within the
 archive where the message was triggered.  Also, supplementary messages
@@ -3370,8 +3371,7 @@ it helps pinpoint the damaged sections.  It can also be used with
 @value{op-list} when listing a file-system backup tape, allowing you to
 choose among several backup tapes when retrieving a file later, in
 favor of the tape where the file appears earliest (closest to the
-front of the tape).  @FIXME-xref{when the node name is set and the
-backup section written.}
+front of the tape).  @xref{backup}.
 
 @node interactive
 @section Asking for Confirmation During Operations
@@ -3885,12 +3885,22 @@ $ @kbd{tar -tvf folkjazz.tar}
 -rw-rw-rw- melissa user     65 1997-01-30 14:15 jazz
 @end smallexample
 
-We can concatenate these two archives with @command{tar}:
+We can concatenate these two archives with @command{tar}: 
 
 @smallexample
 $ @kbd{cd ..}
 $ @kbd{tar --concatenate --file=bluesrock.tar jazzfolk.tar}
 @end smallexample
+
+The result of this command is the concatenation of the archive
+specified with @option{--file} option and the archives, given in the
+command line.  The new, concatenated archive will be called by the
+same name as the one given with the @option{--file} option.  As usual,
+if you omit @option{--file}, @command{tar} will use the value of the
+environment variable @env{TAPE}, or, if this has not been set, the
+default archive name.
+
+@FIXME{There is no way to specify a new name...}
 
 If you now list the contents of the @file{bluesclass.tar}, you will see
 that now it also contains the archive members of @file{jazzfolk.tar}:
@@ -3905,10 +3915,9 @@ folk
 
 When you use @option{--concatenate}, the source and target archives must
 already exist and must have been created using compatible format
-parameters.  @FIXME-pxref{Matching Format Parameters}The new,
-concatenated archive will be called by the same name as the first
-archive listed on the command line.  @FIXME{is there a way to specify a
-new name?}
+parameters.  Notice, that @command{tar} does not check whether the
+archives it concatenates have compatible formats, it does not
+even check if the files are really tar archives.
 
 Like @value{op-append}, this operation cannot be performed on some
 tape drives, due to deficiencies in the formats those tape drives use.
@@ -3929,12 +3938,6 @@ archive that was added to using the @command{cat} utility, use the
 @value{op-ignore-zeros} option.  @xref{Ignore Zeros}, for further
 information on dealing with archives improperly combined using the
 @command{cat} shell utility.
-
-@FIXME{this shouldn't go here.  where should it go?} You must specify
-the source archives using @value{op-file} (@value{pxref-file}).  If you
-do not specify the target archive, @command{tar} uses the value of the
-environment variable @env{TAPE}, or, if this has not been set, the
-default archive name.
 
 @node delete
 @subsection Removing Archive Members Using @option{--delete}
@@ -4025,20 +4028,6 @@ rock
 blues
 tar: funk not found in archive
 @end smallexample
-
-@noindent
-@FIXME{what does this actually depend on?  i'm making a guess,
-here.}Depending on the system where you are running @command{tar} and the
-version you are running, @command{tar} may have a different error message,
-such as:
-
-@smallexample
-funk: does not exist
-@end smallexample
-
-@FIXME-xref{somewhere, for more information about format parameters.
-Melissa says: such as "format variations"?  But why?  Clearly I don't
-get it yet; I'll deal when I get to that section.}
 
 The spirit behind the @value{op-compare} option is to check whether the
 archive represents the current state of files on disk, more than validating
@@ -4167,7 +4156,7 @@ encountered while reading an archive.  Use in conjunction with
 @subsection Changing How @command{tar} Writes Files
 @UNREVISED
 
-@FIXME{need to mention the brand new option, --backup}
+@FIXME{Introductory paragraph}
 
 @menu
 * Dealing with Old Files::
@@ -4562,12 +4551,6 @@ memory.  Use in conjunction with @value{op-compare},
 @value{op-list}
 or @value{op-extract}.
 @end table
-
-@FIXME{we don't need/want --preserve to exist any more (from melissa:
-ie, don't want that *version* of the option to exist, or don't want
-the option to exist in either version?}
-
-@FIXME{i think this explanation is lacking.}
 
 The @value{op-same-order} option tells @command{tar} that the list of file
 names to be listed or extracted is sorted in the same order as the
@@ -5464,8 +5447,8 @@ The backup scripts write two files on the file system.  The first is a
 record file in @file{/etc/tar-backup/}, which is used by the scripts
 to store and retrieve information about which files were dumped.  This
 file is not meant to be read by humans, and should not be deleted by
-them.  @FIXME-xref{incremental and listed-incremental, for a more
-detailed explanation of this file.}
+them.  @xref{Snapshot Files}, for a more detailed explanation of this
+file.
 
 The second file is a log file containing the names of the file systems
 and files dumped, what time the backup was made, and any error
@@ -8531,9 +8514,9 @@ regardless of which archive or what part of the archive the tape
 head is on.  Before writing an archive, you should make sure that no
 data on the tape will be overwritten (unless it is no longer needed).
 Before reading an archive, you should make sure the tape head is at
-the beginning of the archive you want to read.  (The @code{restore}
-script will find the archive automatically.  @FIXME-xref{Scripted Restoration}@xref{mt}, for
-an explanation of the tape moving utility.
+the beginning of the archive you want to read.  You can do it manually
+via @code{mt} utility (@pxref{mt}).  The @code{restore} script does
+that automatically (@pxref{Scripted Restoration}).
 
 If you want to add new archive file entries to a tape, you should
 advance the tape to the end of the existing file entries, backspace
@@ -8859,12 +8842,12 @@ To give the archive a name which will be recorded in it, use the
 @var{volume-label} as the name of the archive to the front of the archive
 which will be displayed when the archive is listed with @value{op-list}.
 If you are creating a multi-volume archive with
-@value{op-multi-volume}@FIXME-pxref{Using Multiple Tapes}, then the
-volume label will have
-@samp{Volume @var{nnn}} appended to the name you give, where @var{nnn} is
-the number of the volume of the archive.  (If you use the @value{op-label}
-option when reading an archive, it checks to make sure the label on the
-tape matches the one you give.  @value{xref-label}.
+@value{op-multi-volume} (@pxref{Using Multiple Tapes}), then the
+volume label will have @samp{Volume @var{nnn}} appended to the name
+you give, where @var{nnn} is the number of the volume of the archive.
+(If you use the @value{op-label} option when reading an archive, it
+checks to make sure the label on the tape matches the one you give.
+@value{xref-label}. 
 
 When @command{tar} writes an archive to tape, it creates a single
 tape file.  If multiple archives are written to the same tape, one
@@ -8936,8 +8919,8 @@ operation.
 @value{op-multi-volume}, each volume of the archive will have an
 archive label of the form @samp{@var{archive-label} Volume @var{n}},
 where @var{n} is 1 for the first volume, 2 for the next, and so on.
-@FIXME-xref{Multi-Volume Archives, for information on creating multiple
-volume archives.}
+@xref{Using Multiple Tapes}, for information on creating multiple
+volume archives.
 
 @cindex Volume label, listing
 @cindex Listing volume label
