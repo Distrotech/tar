@@ -1,5 +1,11 @@
 2005-12-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/tar.texi: Following the discussion with Karl Berry,
+	discontinue using @value{} substitutions for Texinfo commands.
+	Properly index all long options. Print a
+	separate long option index.
+	* doc/value.texi: Remove @set's
+
 	* doc/tar.texi: Update --info-script documentation
 	Resolve some more FIXMEs.
 	* scripts/dump-remind.in: Use TAR_VOLUME instead of reading volno
