@@ -413,15 +413,15 @@ void check_links (void);
 #define UNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 #define GNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 
-void gid_to_chars (gid_t, char *, size_t);
-void major_to_chars (major_t, char *, size_t);
-void minor_to_chars (minor_t, char *, size_t);
-void mode_to_chars (mode_t, char *, size_t);
-void off_to_chars (off_t, char *, size_t);
-void size_to_chars (size_t, char *, size_t);
-void time_to_chars (time_t, char *, size_t);
-void uid_to_chars (uid_t, char *, size_t);
-void uintmax_to_chars (uintmax_t, char *, size_t);
+bool gid_to_chars (gid_t, char *, size_t);
+bool major_to_chars (major_t, char *, size_t);
+bool minor_to_chars (minor_t, char *, size_t);
+bool mode_to_chars (mode_t, char *, size_t);
+bool off_to_chars (off_t, char *, size_t);
+bool size_to_chars (size_t, char *, size_t);
+bool time_to_chars (time_t, char *, size_t);
+bool uid_to_chars (uid_t, char *, size_t);
+bool uintmax_to_chars (uintmax_t, char *, size_t);
 void string_to_chars (char const *, char *, size_t);
 
 /* Module diffarch.c.  */
