@@ -1,3 +1,18 @@
+2005-12-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi (Current status): Renamed to 'Changes' and moved to
+	appendices.
+	(Large or Negative Values): Rewritten
+	* src/common.h (gid_to_chars, major_to_chars, minor_to_chars)
+	(mode_to_chars, off_to_chars, size_to_chars, time_to_chars)
+	(uid_to_chars, uintmax_to_chars): Return bool
+	* src/create.c (gid_to_chars, major_to_chars, minor_to_chars)
+	(mode_to_chars, off_to_chars, size_to_chars, time_to_chars)
+	(uid_to_chars, uintmax_to_chars): Return bool
+	(to_chars): Return bool
+	(start_header): Check return values of convertion routines. Fail
+	if unable to store data in the header.
+
 2005-12-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Following the discussion with Karl Berry,
