@@ -96,6 +96,7 @@ document.  The rest of the menu lists all the lower level nodes.
 
 Appendices
 
+* Changes::
 * Genfile::
 * Snapshot Files::
 * Free Software Needs Free Documentation::
@@ -112,7 +113,6 @@ Introduction
 * Definitions::                 Some Definitions
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
-* Current status::              Current development status of @GNUTAR{}
 * Authors::                     @GNUTAR{} Authors
 * Reports::                     Reporting bugs or suggestions
 
@@ -349,6 +349,7 @@ GNU tar internals and development
 
 Copying This Manual
 
+* Free Software Needs Free Documentation::
 * GNU Free Documentation License::  License for copying this manual
 
 @end detailmenu
@@ -369,7 +370,6 @@ archives need not (and these days, typically do not) reside on tapes.
 * Definitions::                 Some Definitions
 * What tar Does::               What @command{tar} Does
 * Naming tar Archives::         How @command{tar} Archives are Named
-* Current status::              Current development status of @GNUTAR{}
 * Authors::                     @GNUTAR{} Authors
 * Reports::                     Reporting bugs or suggestions
 @end menu
@@ -536,63 +536,6 @@ archive members as ``files'' or ``entries''.  For people familiar with
 the operation of @command{tar}, this causes no difficulty.  However, in
 this manual, we consistently refer to ``archives'' and ``archive
 members'' to make learning to use @command{tar} easier for novice users.
-
-@node Current status
-@section Current development status of @GNUTAR{}
-
-@GNUTAR{} is currently in the process of active development, whose
-primary aims are:
-
-@itemize @bullet
-@item Improve compatibility between @GNUTAR{} and other @command{tar}
-implementations.
-@item Switch to using @acronym{POSIX} archives.
-@item Revise sparse file handling and multiple volume processing.
-@item Merge with the @acronym{GNU} @code{paxutils} project.
-@end itemize
-
-Some of these aims are already attained, while others are still
-being worked upon.  From the point of view of an end user, the
-following issues need special mentioning:
-
-@table @asis
-@item Use of short option @option{-o}.
-
-Earlier versions of @GNUTAR{} understood @option{-o} command line
-option as a synonym for @option{--old-archive}.
-
-@GNUTAR{} starting from version 1.13.90 understands this option as
-a synonym for @option{--no-same-owner}.  This is compatible with
-UNIX98 @command{tar} implementations.
-
-However, to facilitate transition, @option{-o} option retains its
-old semantics when it is used with one of archive-creation commands.
-Users are encouraged to use @option{--format=oldgnu} instead.
-
-It is especially important, since versions of @acronym{GNU} Automake
-up to and including 1.8.4 invoke tar with this option to produce
-distribution tarballs.  @xref{Formats,v7}, for the detailed discussion
-of this issue and its implications.
-
-Future versions of @GNUTAR{} will understand @option{-o} only as a
-synonym for @option{--no-same-owner}.
-
-@item Use of short option @option{-l}
-
-Earlier versions of @GNUTAR{} understood @option{-l} option as a
-synonym for @option{--one-file-system}.  Such usage is deprecated.
-For compatibility with other implementations future versions of
-@GNUTAR{} will understand this option as a synonym for
-@option{--check-links}.
-
-@item Use of options @option{--portability} and @option{--old-archive}
-
-These options are deprecated.  Please use @option{--format=v7} instead.
-
-@item Use of option @option{--posix}
-
-This option is deprecated.  Please use @option{--format=posix} instead.
-@end table
 
 @node Authors
 @section @GNUTAR{} Authors
@@ -2343,7 +2286,7 @@ Future versions will take @option{-l} as a short version of
 @option{--check-links}.  However, current release still retains the old
 semantics for @option{-l}.
 
-@xref{Current status}, for more information.
+@xref{Changes}, for more information.
 
 @opindex compress, summary
 @opindex uncompress, summary
@@ -2690,7 +2633,7 @@ When creating an archive, @option{-o} is a synonym for
 with previous versions of @GNUTAR{}, and will be
 removed in the future releases.
 
-@xref{Current status}, for more information.
+@xref{Changes}, for more information.
 
 @opindex occurrence, summary
 @item --occurrence[=@var{number}]
@@ -2728,7 +2671,7 @@ allowed in the present version, it is @emph{strongly discouraged}.
 The future versions of @GNUTAR{} will use @option{-l} as
 a synonym for @option{--check-links}.
 
-@xref{Current status}, for more information.
+@xref{Changes}, for more information.
 
 @opindex overwrite, summary
 @item --overwrite
@@ -3272,7 +3215,7 @@ them with the equivalent long option.
 is retained for compatibility with the earlier versions of GNU
 @command{tar}, and will be changed in future releases.
 
-@xref{Current status}, for more information.
+@xref{Changes}, for more information.
 
 @item -m
 
@@ -7097,40 +7040,36 @@ a @command{tar} able to read the good archives they receive.
 @cindex large values
 @cindex future time stamps
 @cindex negative time stamps
+@UNREVISED{}
 
-@acronym{POSIX} @command{tar} format uses fixed-sized unsigned octal strings
-to represent numeric values.  User and group IDs and device major and
-minor numbers have unsigned 21-bit representations, and file sizes and
-times have unsigned 33-bit representations.  @GNUTAR{}
-generates @acronym{POSIX} representations when possible, but for values
-outside the @acronym{POSIX} range it generates two's-complement base-256
-strings: uids, gids, and device numbers have signed 57-bit
-representations, and file sizes and times have signed 89-bit
-representations.  These representations are an extension to @acronym{POSIX}
-@command{tar} format, so they are not universally portable.
+The above sections suggest to use @samp{oldest possible} archive
+format if in doubt.  However, sometimes it is not possible.  If you
+attempt to archive a file whose metadata cannot be represented using
+required format, @GNUTAR{} will print error message and ignore such a
+file.  You will than have to switch to a format that is able to
+handle such values.  The format summary table (@pxref{Formats}) will
+help you to do so.
 
-The most common portability problems with out-of-range numeric values
-are large files and future or negative time stamps.
+In particular, when trying to archive files larger than 8GB or with
+timestamps not in the range 1970-01-01 00:00:00 through 2242-03-16
+12:56:31 @sc{utc}, you will have to chose between @acronym{GNU} and
+@acronym{POSIX} archive formats.  When considering which format to
+choose, bear in mind that the @acronym{GNU} format uses
+two's-complement base-256 notation to stores values that do not fit
+into standard @acronym{ustar} range.  Such archives can generally be
+read only by a @GNUTAR{} implementation.  Moreover, they sometimes
+cannot be correctly restored on another hosts even by @GNUTAR{}. For
+example, using two's complement representation for negative time
+stamps that assumes a signed 32-bit @code{time_t} generates archives
+that are not portable to hosts with differing @code{time_t}
+representations.
 
-Portable archives should avoid members of 8 GB or larger, as @acronym{POSIX}
-@command{tar} format cannot represent them.
+On the other hand, @acronym{POSIX} archives, generally speaking, can
+be extracted by any tar implementation that understands older
+@acronym{ustar} format.  The only exception are files larger than 8GB.
 
-Portable archives should avoid time stamps from the future.  @acronym{POSIX}
-@command{tar} format can represent time stamps in the range 1970-01-01
-00:00:00 through 2242-03-16 12:56:31 @sc{utc}.  However, many current
-hosts use a signed 32-bit @code{time_t}, or internal time stamp format,
-and cannot represent time stamps after 2038-01-19 03:14:07 @sc{utc}; so
-portable archives must avoid these time stamps for many years to come.
-
-Portable archives should also avoid time stamps before 1970.  These time
-stamps are a common @acronym{POSIX} extension but their @code{time_t}
-representations are negative.  Many traditional @command{tar}
-implementations generate a two's complement representation for negative
-time stamps that assumes a signed 32-bit @code{time_t}; hence they
-generate archives that are not portable to hosts with differing
-@code{time_t} representations.  @GNUTAR{} recognizes this
-situation when it is run on host with a signed 32-bit @code{time_t}, but
-it issues a warning, as these time stamps are nonstandard and unportable.
+@FIXME{Describe how @acronym{POSIX} archives are extracted by non
+POSIX-aware tars.}
 
 @node Compression
 @section Using Less Space through Compression
@@ -9405,9 +9344,53 @@ disabled) switch, a notch which can be popped out or covered, a ring
 which can be removed from the center of a tape reel, or some other
 changeable feature.
 
-@node Free Software Needs Free Documentation
-@appendix Free Software Needs Free Documentation
-@include freemanuals.texi
+@node Changes
+@appendix Changes
+
+This appendix lists some important user-visible changes between
+version @GNUTAR{} @value{VERSION} and previous versions. An up-to-date
+version of this document is available at
+@uref{http://www.gnu.org/@/software/@/tar/manual/changes.html,the
+@GNUTAR{} documentation page}.
+
+@table @asis
+@item Use of short option @option{-o}.
+
+Earlier versions of @GNUTAR{} understood @option{-o} command line
+option as a synonym for @option{--old-archive}.
+
+@GNUTAR{} starting from version 1.13.90 understands this option as
+a synonym for @option{--no-same-owner}.  This is compatible with
+UNIX98 @command{tar} implementations.
+
+However, to facilitate transition, @option{-o} option retains its
+old semantics when it is used with one of archive-creation commands.
+Users are encouraged to use @option{--format=oldgnu} instead.
+
+It is especially important, since versions of @acronym{GNU} Automake
+up to and including 1.8.4 invoke tar with this option to produce
+distribution tarballs.  @xref{Formats,v7}, for the detailed discussion
+of this issue and its implications.
+
+Future versions of @GNUTAR{} will understand @option{-o} only as a
+synonym for @option{--no-same-owner}.
+
+@item Use of short option @option{-l}
+
+Earlier versions of @GNUTAR{} understood @option{-l} option as a
+synonym for @option{--one-file-system}.  Such usage is deprecated.
+For compatibility with other implementations future versions of
+@GNUTAR{} will understand this option as a synonym for
+@option{--check-links}.
+
+@item Use of options @option{--portability} and @option{--old-archive}
+
+These options are deprecated.  Please use @option{--format=v7} instead.
+
+@item Use of option @option{--posix}
+
+This option is deprecated.  Please use @option{--format=posix} instead.
+@end table
 
 @node Genfile
 @appendix Genfile
@@ -9416,6 +9399,10 @@ changeable feature.
 @node Snapshot Files
 @appendix Format of the Incremental Snapshot Files
 @include snapshot.texi
+
+@node Free Software Needs Free Documentation
+@appendix Free Software Needs Free Documentation
+@include freemanuals.texi
 
 @node Copying This Manual
 @appendix Copying This Manual
