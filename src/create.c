@@ -108,6 +108,68 @@ to_base256 (int negative, uintmax_t value, char *where, size_t size)
   while (i);
 }
 
+
+static bool
+to_chars (int negative, uintmax_t value, size_t valsize,
+	  uintmax_t (*substitute) (int *),
+	  char *where, size_t size, const char *type);
+
+static bool
+to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
+		uintmax_t (*substitute) (int *),
+		char *where, size_t size, const char *type)
+{
+  uintmax_t maxval = (gnu_format
+		      ? MAX_VAL_WITH_DIGITS (size - 1, LG_256)
+		      : MAX_VAL_WITH_DIGITS (size - 1, LG_8));
+  char valbuf[UINTMAX_STRSIZE_BOUND + 1];
+  char maxbuf[UINTMAX_STRSIZE_BOUND];
+  char minbuf[UINTMAX_STRSIZE_BOUND + 1];
+  char const *minval_string;
+  char const *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
+  char const *value_string;
+  char *p;
+    
+  if (gnu_format)
+    {
+      uintmax_t m = maxval + 1 ? maxval + 1 : maxval / 2 + 1;
+      char *p = STRINGIFY_BIGINT (m, minbuf + 1);
+      *--p = '-';
+      minval_string = p;
+    }
+  else
+    minval_string = "0";
+  
+  if (negative)
+    {
+      char *p = STRINGIFY_BIGINT (- value, valbuf + 1);
+      *--p = '-';
+      value_string = p;
+    }
+  else
+    value_string = STRINGIFY_BIGINT (value, valbuf);
+	  
+  if (substitute)
+    {
+      int negsub;
+      uintmax_t sub = substitute (&negsub) & maxval;
+      /* FIXME: This is the only place where GNU_FORMAT differs from
+	 OLDGNU_FORMAT. Apart from this they are completely identical. */
+      uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
+      char subbuf[UINTMAX_STRSIZE_BOUND + 1];
+      char *sub_string = STRINGIFY_BIGINT (s, subbuf + 1);
+      if (negsub)
+	*--sub_string = '-';
+      WARN ((0, 0, _("value %s out of %s range %s..%s; substituting %s"),
+	     value_string, type, minval_string, maxval_string,
+	     sub_string));
+      to_chars (negsub, s, valsize, 0, where, size, type);
+    }
+  else
+    ERROR ((0, 0, _("value %s out of %s range %s..%s"),
+	    value_string, type, minval_string, maxval_string));
+}
+
 /* Convert NEGATIVE VALUE (which was originally of size VALSIZE) to
    external form, using SUBSTITUTE (...) if VALUE won't fit.  Output
    to buffer WHERE with size SIZE.  NEGATIVE is 1 iff VALUE was
@@ -122,103 +184,61 @@ to_base256 (int negative, uintmax_t value, char *where, size_t size)
    SUBSTITUTE the address of an 0-or-1 flag recording whether the
    substitute value is negative.  */
 
-static void
+static bool
 to_chars (int negative, uintmax_t value, size_t valsize,
 	  uintmax_t (*substitute) (int *),
 	  char *where, size_t size, const char *type)
 {
-  int base256_allowed = (archive_format == GNU_FORMAT
-			 || archive_format == OLDGNU_FORMAT);
+  int gnu_format = (archive_format == GNU_FORMAT
+		    || archive_format == OLDGNU_FORMAT);
 
   /* Generate the POSIX octal representation if the number fits.  */
   if (! negative && value <= MAX_VAL_WITH_DIGITS (size - 1, LG_8))
     {
       where[size - 1] = '\0';
       to_octal (value, where, size - 1);
+      return true;
     }
-
-  /* Otherwise, generate the base-256 representation if we are
-     generating an old or new GNU format and if the number fits.  */
-  else if (((negative ? -1 - value : value)
-	    <= MAX_VAL_WITH_DIGITS (size - 1, LG_256))
-	   && base256_allowed)
+  else if (gnu_format)
     {
-      where[0] = negative ? -1 : 1 << (LG_256 - 1);
-      to_base256 (negative, value, where + 1, size - 1);
-    }
+      /* Try to cope with the number by using traditional GNU format
+	 methods */
 
-  /* Otherwise, if the number is negative, and if it would not cause
-     ambiguity on this host by confusing positive with negative
-     values, then generate the POSIX octal representation of the value
-     modulo 2**(field bits).  The resulting tar file is
-     machine-dependent, since it depends on the host word size.  Yuck!
-     But this is the traditional behavior.  */
-  else if (negative && valsize * CHAR_BIT <= (size - 1) * LG_8)
-    {
-      static int warned_once;
-      if (! warned_once)
+      /* Generate the base-256 representation if the number fits.  */
+      if (((negative ? -1 - value : value)
+	   <= MAX_VAL_WITH_DIGITS (size - 1, LG_256)))
 	{
-	  warned_once = 1;
-	  WARN ((0, 0, _("Generating negative octal headers")));
+	  where[0] = negative ? -1 : 1 << (LG_256 - 1);
+	  to_base256 (negative, value, where + 1, size - 1);
+	  return true;
 	}
-      where[size - 1] = '\0';
-      to_octal (value & MAX_VAL_WITH_DIGITS (valsize * CHAR_BIT, 1),
-		where, size - 1);
-    }
 
-  /* Otherwise, output a substitute value if possible (with a
-     warning), and an error message if not.  */
+      /* Otherwise, if the number is negative, and if it would not cause
+	 ambiguity on this host by confusing positive with negative
+	 values, then generate the POSIX octal representation of the value
+	 modulo 2**(field bits).  The resulting tar file is
+	 machine-dependent, since it depends on the host word size.  Yuck!
+	 But this is the traditional behavior.  */
+      else if (negative && valsize * CHAR_BIT <= (size - 1) * LG_8)
+	{
+	  static int warned_once;
+	  if (! warned_once)
+	    {
+	      warned_once = 1;
+	      WARN ((0, 0, _("Generating negative octal headers")));
+	    }
+	  where[size - 1] = '\0';
+	  to_octal (value & MAX_VAL_WITH_DIGITS (valsize * CHAR_BIT, 1),
+		    where, size - 1);
+	  return true;
+	}
+      /* Otherwise fall back to substitution, if possible: */
+    }
   else
-    {
-      uintmax_t maxval = (base256_allowed
-			  ? MAX_VAL_WITH_DIGITS (size - 1, LG_256)
-			  : MAX_VAL_WITH_DIGITS (size - 1, LG_8));
-      char valbuf[UINTMAX_STRSIZE_BOUND + 1];
-      char maxbuf[UINTMAX_STRSIZE_BOUND];
-      char minbuf[UINTMAX_STRSIZE_BOUND + 1];
-      char const *minval_string;
-      char const *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
-      char const *value_string;
-
-      if (base256_allowed)
-	{
-	  uintmax_t m = maxval + 1 ? maxval + 1 : maxval / 2 + 1;
-	  char *p = STRINGIFY_BIGINT (m, minbuf + 1);
-	  *--p = '-';
-	  minval_string = p;
-	}
-      else
-	minval_string = "0";
-
-      if (negative)
-	{
-	  char *p = STRINGIFY_BIGINT (- value, valbuf + 1);
-	  *--p = '-';
-	  value_string = p;
-	}
-      else
-	value_string = STRINGIFY_BIGINT (value, valbuf);
-
-      if (substitute)
-	{
-	  int negsub;
-	  uintmax_t sub = substitute (&negsub) & maxval;
-	  /* FIXME: This is the only place where GNU_FORMAT differs from
-             OLDGNU_FORMAT. Apart from this they are completely identical. */
-	  uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
-	  char subbuf[UINTMAX_STRSIZE_BOUND + 1];
-	  char *sub_string = STRINGIFY_BIGINT (s, subbuf + 1);
-	  if (negsub)
-	    *--sub_string = '-';
-	  WARN ((0, 0, _("value %s out of %s range %s..%s; substituting %s"),
-		 value_string, type, minval_string, maxval_string,
-		 sub_string));
-	  to_chars (negsub, s, valsize, 0, where, size, type);
-	}
-      else
-	ERROR ((0, 0, _("value %s out of %s range %s..%s"),
-		value_string, type, minval_string, maxval_string));
-    }
+    substitute = NULL; /* No substitution for formats, other than GNU */
+  
+  return to_chars_subst (negative, gnu_format, value, valsize, substitute,
+			 where, size, type);
 }
 
 static uintmax_t
@@ -237,25 +257,25 @@ gid_substitute (int *negative)
   return r;
 }
 
-void
+bool
 gid_to_chars (gid_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, gid_substitute, p, s, "gid_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, gid_substitute, p, s, "gid_t");
 }
 
-void
+bool
 major_to_chars (major_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "major_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "major_t");
 }
 
-void
+bool
 minor_to_chars (minor_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "minor_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "minor_t");
 }
 
-void
+bool
 mode_to_chars (mode_t v, char *p, size_t s)
 {
   /* In the common case where the internal and external mode bits are the same,
@@ -292,25 +312,25 @@ mode_to_chars (mode_t v, char *p, size_t s)
 	   | (v & S_IWOTH ? TOWRITE : 0)
 	   | (v & S_IXOTH ? TOEXEC : 0));
     }
-  to_chars (negative, u, sizeof v, 0, p, s, "mode_t");
+  return to_chars (negative, u, sizeof v, 0, p, s, "mode_t");
 }
 
-void
+bool
 off_to_chars (off_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "off_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "off_t");
 }
 
-void
+bool
 size_to_chars (size_t v, char *p, size_t s)
 {
-  to_chars (0, (uintmax_t) v, sizeof v, 0, p, s, "size_t");
+  return to_chars (0, (uintmax_t) v, sizeof v, 0, p, s, "size_t");
 }
 
-void
+bool
 time_to_chars (time_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "time_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "time_t");
 }
 
 static uintmax_t
@@ -329,16 +349,16 @@ uid_substitute (int *negative)
   return r;
 }
 
-void
+bool
 uid_to_chars (uid_t v, char *p, size_t s)
 {
-  to_chars (v < 0, (uintmax_t) v, sizeof v, uid_substitute, p, s, "uid_t");
+  return to_chars (v < 0, (uintmax_t) v, sizeof v, uid_substitute, p, s, "uid_t");
 }
 
-void
+bool
 uintmax_to_chars (uintmax_t v, char *p, size_t s)
 {
-  to_chars (0, v, sizeof v, 0, p, s, "uintmax_t");
+  return to_chars (0, v, sizeof v, 0, p, s, "uintmax_t");
 }
 
 void
@@ -681,7 +701,8 @@ start_header (struct tar_stat_info *st)
 	xheader_store ("uid", st, NULL);
 	uid = 0;
       }
-    UID_TO_CHARS (uid, header->header.uid);
+    if (!UID_TO_CHARS (uid, header->header.uid))
+      return NULL;
   }
 
   {
@@ -692,7 +713,8 @@ start_header (struct tar_stat_info *st)
 	xheader_store ("gid", st, NULL);
 	gid = 0;
       }
-    GID_TO_CHARS (gid, header->header.gid);
+    if (!GID_TO_CHARS (gid, header->header.gid))
+      return NULL;
   }
 
   {
@@ -703,7 +725,8 @@ start_header (struct tar_stat_info *st)
 	xheader_store ("size", st, NULL);
 	size = 0;
       }
-    OFF_TO_CHARS (size, header->header.size);
+    if (!OFF_TO_CHARS (size, header->header.size))
+      return NULL;
   }
 
   {
@@ -716,7 +739,8 @@ start_header (struct tar_stat_info *st)
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec)
 	  mtime.tv_sec = 0;
       }
-    TIME_TO_CHARS (mtime.tv_sec, header->header.mtime);
+    if (!TIME_TO_CHARS (mtime.tv_sec, header->header.mtime))
+      return NULL;
   }
 
   /* FIXME */
@@ -732,7 +756,8 @@ start_header (struct tar_stat_info *st)
 	  xheader_store ("devmajor", st, NULL);
 	  devmajor = 0;
 	}
-      MAJOR_TO_CHARS (devmajor, header->header.devmajor);
+      if (!MAJOR_TO_CHARS (devmajor, header->header.devmajor))
+	return NULL;
 
       if (archive_format == POSIX_FORMAT
 	  && MAX_OCTAL_VAL (header->header.devminor) < devminor)
@@ -740,12 +765,14 @@ start_header (struct tar_stat_info *st)
 	  xheader_store ("devminor", st, NULL);
 	  devminor = 0;
 	}
-      MINOR_TO_CHARS (devminor, header->header.devminor);
+      if (!MINOR_TO_CHARS (devminor, header->header.devminor))
+	return NULL;
     }
   else if (archive_format != GNU_FORMAT && archive_format != OLDGNU_FORMAT)
     {
-      MAJOR_TO_CHARS (0, header->header.devmajor);
-      MINOR_TO_CHARS (0, header->header.devminor);
+      if (!(MAJOR_TO_CHARS (0, header->header.devmajor)
+	    && MINOR_TO_CHARS (0, header->header.devminor)))
+	return NULL;
     }
 
   if (archive_format == POSIX_FORMAT)
@@ -1289,7 +1316,7 @@ dump_hard_link (struct tar_stat_info *st)
 	  st->stat.st_size = 0;
 	  blk = start_header (st);
 	  if (!blk)
-	    return true;
+	    return false;
 	  tar_copy_str (blk->header.linkname, link_name, NAME_FIELD_SIZE);
 
 	  blk->header.typeflag = LNKTYPE;
