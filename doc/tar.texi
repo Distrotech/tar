@@ -7055,7 +7055,7 @@ timestamps not in the range 1970-01-01 00:00:00 through 2242-03-16
 12:56:31 @sc{utc}, you will have to chose between @acronym{GNU} and
 @acronym{POSIX} archive formats.  When considering which format to
 choose, bear in mind that the @acronym{GNU} format uses
-two's-complement base-256 notation to stores values that do not fit
+two's-complement base-256 notation to store values that do not fit
 into standard @acronym{ustar} range.  Such archives can generally be
 read only by a @GNUTAR{} implementation.  Moreover, they sometimes
 cannot be correctly restored on another hosts even by @GNUTAR{}. For
