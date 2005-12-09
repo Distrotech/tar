@@ -1618,6 +1618,9 @@ open_archive (enum access_mode wanted_access)
       if (volume_label_option)
 	write_volume_label ();
       break;
+
+    default:
+      break;
     }
 }
 
