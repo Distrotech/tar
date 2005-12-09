@@ -1,3 +1,12 @@
+2005-12-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (open_archive): Add default case to shut up gcc.
+	* src/common.h (set_file_atime): Add prototype.
+	* src/create.c (to_chars_subst): Remove unused variable
+	Make sure useful result code is returned.
+	* src/incremen.c (read_directory_file): Fix format string
+	Thanks Eric Blake for reporting.
+
 2005-12-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi (Current status): Renamed to 'Changes' and moved to
