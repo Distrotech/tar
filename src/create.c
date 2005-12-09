@@ -128,7 +128,6 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
   char const *minval_string;
   char const *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
   char const *value_string;
-  char *p;
     
   if (gnu_format)
     {
@@ -163,11 +162,12 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
       WARN ((0, 0, _("value %s out of %s range %s..%s; substituting %s"),
 	     value_string, type, minval_string, maxval_string,
 	     sub_string));
-      to_chars (negsub, s, valsize, 0, where, size, type);
+      return to_chars (negsub, s, valsize, 0, where, size, type);
     }
   else
     ERROR ((0, 0, _("value %s out of %s range %s..%s"),
 	    value_string, type, minval_string, maxval_string));
+  return false;
 }
 
 /* Convert NEGATIVE VALUE (which was originally of size VALSIZE) to
