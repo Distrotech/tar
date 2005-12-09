@@ -569,7 +569,9 @@ pid_t xfork (void);
 void xpipe (int[2]);
 
 void *page_aligned_alloc (void **, size_t);
-
+int set_file_atime (int fd, char const *file,
+		    struct timespec const timespec[2]);
+     
 /* Module names.c.  */
 
 extern struct name *gnu_list_name;
