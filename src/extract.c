@@ -30,11 +30,6 @@
 static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
-static bool directories_first;  /* Directory members precede non-directory
-				   ones in the archive. This is detected for
-				   incremental archives only. This variable
-				   helps correctly restore directory
-				   timestamps */
 
 /* Status of the permissions of a file that we are extracting.  */
 enum permstatus
@@ -318,13 +313,13 @@ set_stat (char const *file_name,
    NOTICE: this works only if the archive has usual member order, i.e.
    directory, then the files in that directory. Incremental archive have
    somewhat reversed order: first go subdirectories, then all other
-   members. To help cope with this case the variable directories_first
-   is set by prepare_to_extract.
+   members. To help cope with this case the variable
+   delay_directory_restore_option is set by prepare_to_extract.
 
    If an archive was explicitely created so that its member order is
    reversed, some directory timestamps can be restored incorrectly,
    e.g.:
-       tar --no-recursion -cf archive dir dir/subdir dir/subdir/file
+       tar --no-recursion -cf archive dir dir/file1 foo dir/file2
 */
 static void
 delay_set_stat (char const *file_name, struct tar_stat_info const *st,
@@ -1108,7 +1103,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     case GNUTYPE_DUMPDIR:
       *fun = extract_dir;
       if (current_stat_info.dumpdir)
-	directories_first = true;
+	delay_directory_restore_option = true;
       break;
 
     case GNUTYPE_VOLHDR:
@@ -1213,7 +1208,7 @@ extract_archive (void)
   /* Restore stats for all non-ancestor directories, unless
      it is an incremental archive.
      (see NOTICE in the comment to delay_set_stat above) */
-  if (!directories_first)
+  if (!delay_directory_restore_option)
     apply_nonancestor_delayed_set_stat (file_name, 0);
       
   /* Take a safety backup of a previously existing file.  */
