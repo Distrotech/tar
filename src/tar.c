@@ -221,9 +221,10 @@ enum
   BACKUP_OPTION,
   CHECKPOINT_OPTION,
   CHECK_LINKS_OPTION,
+  DELAY_DIRECTORY_RESTORE_OPTION,
   DELETE_OPTION,
-  EXCLUDE_OPTION,
   EXCLUDE_CACHES_OPTION,
+  EXCLUDE_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   HANG_OPTION,
@@ -236,6 +237,7 @@ enum
   MODE_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
+  NO_DELAY_DIRECTORY_RESTORE_OPTION,
   NO_IGNORE_CASE_OPTION,
   NO_IGNORE_COMMAND_ERROR_OPTION,
   NO_OVERWRITE_DIR_OPTION,
@@ -243,8 +245,8 @@ enum
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
   NO_UNQUOTE_OPTION,
-  NO_WILDCARDS_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
+  NO_WILDCARDS_OPTION,
   NULL_OPTION,
   NUMERIC_OWNER_OPTION,
   OCCURRENCE_OPTION,
@@ -269,16 +271,16 @@ enum
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TEST_LABEL_OPTION,
-  TO_COMMAND_OPTION,
   TOTALS_OPTION,
+  TO_COMMAND_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
   UTC_OPTION,
   VERSION_OPTION,
   VOLNO_FILE_OPTION,
-  WILDCARDS_OPTION,
-  WILDCARDS_MATCH_SLASH_OPTION
+  WILDCARDS_MATCH_SLASH_OPTION,
+  WILDCARDS_OPTION
 };
 
 const char *argp_program_version = "tar (" PACKAGE_NAME ") " VERSION;
@@ -428,6 +430,10 @@ static struct argp_option options[] = {
   {"same-order", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"preserve", PRESERVE_OPTION, 0, 0,
    N_("same as both -p and -s"), GRID+1 },
+  {"delay-directory-restore", DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
+   N_("Delay setting modification times and permissions of extracted directories until the end of extraction."), GRID+1 },
+  {"no-delay-directory-restore", NO_DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
+   N_("Cancel the effect of --delay-directory-restore option."), GRID+1 },
 #undef GRID
 
 #define GRID 60  
@@ -750,7 +756,8 @@ read_name_from_file (FILE *fp, struct obstack *stk)
     {
       if (c == 0)
 	{
-	  /* We have read a zero separator. The file possibly is zero-separated */
+	  /* We have read a zero separator. The file possibly is
+	     zero-separated */
 	  /* FATAL_ERROR((0, 0, N_("file name contains null character"))); */
 	  return file_list_zero;
 	}
@@ -1226,6 +1233,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	args->version_control_string = arg;
       break;
 
+    case DELAY_DIRECTORY_RESTORE_OPTION:
+      delay_directory_restore_option = true;
+      break;
+
+    case NO_DELAY_DIRECTORY_RESTORE_OPTION:
+      delay_directory_restore_option = false;
+      break;
+      
     case DELETE_OPTION:
       set_subcommand_option (DELETE_SUBCOMMAND);
       break;
