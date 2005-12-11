@@ -97,6 +97,7 @@ document.  The rest of the menu lists all the lower level nodes.
 Appendices
 
 * Changes::
+* Configuring Help Summary::
 * Genfile::
 * Snapshot Files::
 * Free Software Needs Free Documentation::
@@ -1311,7 +1312,7 @@ etc/mail/aliases
 
 @table @option
 @item --show-stored-names
-Print member (not @emph{file}) names when creating the archive.
+Print member (as opposed to @emph{file}) names when creating the archive.
 @end table
 
 @cindex File name arguments, using @option{--list} with
@@ -2303,6 +2304,12 @@ while saving space.  @xref{gzip}.
 
 (See @option{--interactive}.)  @xref{interactive}.
 
+@opindex delay-directory-restore, summary
+@item --delay-directory-restore
+
+Delay setting modification times and permissions of extracted
+directories until the end of extraction. @xref{Directory Modification Times and Permissions}.
+
 @opindex dereference, summary
 @item --dereference
 @itemx -h
@@ -2566,6 +2573,13 @@ also back up files for which any status information has changed).
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
 @xref{controlling pattern-matching with exclude}.
+
+@opindex no-delay-directory-restore, summary
+@item --no-delay-directory-restore
+
+Setting modification times and permissions of extracted
+directories when all files from this directory has been
+extracted. This is the default. @xref{Directory Modification Times and Permissions}.
 
 @opindex no-ignore-case, summary
 @item --no-ignore-case
@@ -3331,6 +3345,9 @@ tar --help | grep @var{keyword}
 for getting only the pertinent lines.  Notice, however, that some
 @command{tar} options have long description lines and the above
 command will list only the first of them.
+
+The exact look of the option summary displayed by @kbd{tar --help} is
+configurable. @xref{Configuring Help Summary}, for a detailed description.
 
 @opindex usage
 If you only wish to check the spelling of an option, running @kbd{tar
@@ -4293,6 +4310,7 @@ encountered while reading an archive.  Use in conjunction with
 * Recursive Unlink::
 * Data Modification Times::
 * Setting Access Permissions::
+* Directory Modification Times and Permissions::
 * Writing to Standard Output::
 * Writing to an External Program::
 * remove files::
@@ -4477,6 +4495,85 @@ in conjunction with the @option{--extract} (@option{--get},
 Set modes of extracted archive members to those recorded in the
 archive, instead of current umask settings.  Use in conjunction with
 @option{--extract} (@option{--get}, @option{-x}).
+@end table
+
+@node Directory Modification Times and Permissions
+@unnumberedsubsubsec Directory Modification Times and Permissions
+
+After sucessfully extracting a file member, @GNUTAR{} normally
+restores its permissions and modification times, as described in the
+previous sections.  This cannot be done for directories, because
+after extracting a directory @command{tar} will almost certainly
+extract files into that directory and this will cause the directory
+modification time to be updated.  Moreover, restoring that directory
+permissions may not permit file creation within it.  Thus, restoring
+directory permissions and modification times must be delayed at least
+until all files have been extracted into that directory.  @GNUTAR{}
+restores directories using the following approach.
+
+The extracted directories are created with the mode specified in the
+archive, as modified by the umask of the user, which gives sufficient
+permissions to allow file creation.  The meta-information about the
+directory is recorded in the temporary list of directories.  When
+preparing to extract next archive member, @GNUTAR{} checks if the
+directory prefix of this file contains the remembered directory.  If
+it does not, the program assumes that all files have been extracted
+into that directory, restores its modification time and permissions
+and removes its entry from the internal list.  This approach allows
+to correctly restore directory meta-information in the majority of
+cases, while keeping memory requirements sufficiently small.  It is
+based on the fact, that most @command{tar} archives use the predefined
+order of members: first the directory, then all the files and
+subdirectories in that directory.
+
+However, this is not always true.  The most important exception are
+incremental archives (@pxref{Incremental Dumps}).  The member order in
+an incremental archive is reversed: first all directory members are
+stored, followed by other (non-directory) members.  So, when extracting
+from incremental archives, @GNUTAR{} alters the above procedure.  It
+remebers all restored directories, and restores their meta-data
+only after the entire archive has been processed.  Notice, that you do
+not need to specity any special options for that, as @GNUTAR{}
+automatically detects archives in incremental format.
+
+There may be cases, when such processing is required for normal archives
+too.  Consider the following example:
+
+@smallexample
+@group
+$ @kbd{tar --no-recursion -cvf archive \
+    foo foo/file1 bar bar/file foo/file2}
+foo/
+foo/file1
+bar/
+bar/file
+foo/file2
+@end group
+@end smallexample
+
+During the normal operation, after encountering @file{bar}
+@GNUTAR{} will assume that all files from the directory @file{foo}
+were already extracted and will therefore restore its timestamp and
+permission bits.  However, after extracting @file{foo/file2} the
+directory timestamp will be offset again.
+
+To correctly restore directory meta-information in such cases, use
+@option{delay-directory-restore} command line option:
+
+@table @option
+@opindex delay-directory-restore
+@item --delay-directory-restore
+Delays restoring of the modification times and permissions of extracted
+directories until the end of extraction.  This way, correct
+meta-information is restored even if the archive has unusual member
+ordering.
+
+@opindex no-delay-directory-restore
+@item --no-delay-directory-restore
+Cancel the effect of the previous @option{--delay-directory-restore}.
+Use this option if you have used @option{--delay-directory-restore} in
+@env{TAR_OPTIONS} variable (@pxref{TAR_OPTIONS}) and wish to
+temporarily disable it.
 @end table
 
 @node Writing to Standard Output
@@ -9391,6 +9488,219 @@ These options are deprecated.  Please use @option{--format=v7} instead.
 
 This option is deprecated.  Please use @option{--format=posix} instead.
 @end table
+
+@node Configuring Help Summary
+@appendix Configuring Help Summary
+
+Running @kbd{tar --help} displays the short @command{tar} option
+summary (@pxref{help}). This summary is organised by @dfn{groups} of
+semantically close options. The options within each group are printed
+in the following order: a short option, eventually followed by a list
+of corresponding long option names, followed by a short description of
+the option. For example, here is an excerpt from the actual @kbd{tar
+--help} output:
+
+@verbatim
+ Main operation mode:
+
+  -A, --catenate, --concatenate   append tar files to an archive
+  -c, --create               create a new archive
+  -d, --diff, --compare      find differences between archive and
+                             file system
+      --delete               delete from the archive 
+@end verbatim
+
+@vrindex ARGP_HELP_FMT, environment variable
+The exact visual representation of the help output is configurable via
+@env{ARGP_HELP_FMT} environment variable. The value of this variable
+is a comma-separated list of @dfn{format variable} assignments. There
+are two kinds of format variables. An @dfn{offset variable} keeps the
+offset of some part of help output text from the leftmost column on
+the screen. A @dfn{boolean} variable is a flag that toggles some
+output feature on or off. Depending on the type of the corresponding
+variable, there are two kinds of assignments:
+
+@table @asis
+@item Offset assignment
+
+The assignment to an offset variable has the following syntax:
+
+@smallexample
+@var{variable}=@var{value}
+@end smallexample
+
+@noindent
+where @var{variable} is the variable name, and @var{value} is a
+numeric value to be assigned to the variable.
+
+@item Boolean assignment
+
+To assign @code{true} value to a variable, simply put this variable name. To
+assign @code{false} value, prefix the variable name with @samp{no-}. For
+example:
+
+@smallexample
+@group
+# Assign @code{true} value:
+dup-args
+# Assign @code{false} value:
+no-dup-args
+@end group
+@end smallexample
+@end table
+
+Following variables are declared:
+
+@deftypevr {Help Output} boolean dup-args
+If true, arguments for an option are shown with both short and long
+options, even when a given option has both forms, for example:
+
+@smallexample
+  -f ARCHIVE, --file=ARCHIVE use archive file or device ARCHIVE
+@end smallexample
+
+If false, then if an option has both short and long forms, the
+argument is only shown with the long one, for example:
+
+@smallexample
+  -f, --file=ARCHIVE         use archive file or device ARCHIVE
+@end smallexample
+
+@noindent
+and a message indicating that the argument is applicable to both
+forms is printed below the options. This message can be disabled
+using @code{dup-args-note} (see below).
+
+The default is false.
+@end deftypevr
+
+@deftypevr {Help Output} boolean dup-args-note
+If this variable is true, which is the default, the following notice
+is displayed at the end of the help output:
+
+@quotation
+Mandatory or optional arguments to long options are also mandatory or
+optional for any corresponding short options.
+@end quotation
+
+Setting @code{no-dup-args-note} inhibits this message. Normally, only one of
+variables @code{dup-args} or @code{dup-args-note} should be set.
+@end deftypevr
+
+@deftypevr {Help Output} offset short-opt-col
+Column in which short options start. Default is 2.
+
+@smallexample
+@group
+$ @kbd{tar --help|grep ARCHIVE}
+  -f, --file=ARCHIVE   use archive file or device ARCHIVE
+$ @kbd{ARGP_HELP_FMT=short-opt-col=6 tar --help|grep ARCHIVE}
+      -f, --file=ARCHIVE   use archive file or device ARCHIVE
+@end group
+@end smallexample
+@end deftypevr
+
+@deftypevr {Help Output} offset long-opt-col
+Column in which long options start. Default is 6. For example:
+
+@smallexample
+@group
+$ @kbd{tar --help|grep ARCHIVE}
+  -f, --file=ARCHIVE   use archive file or device ARCHIVE
+$ @kbd{ARGP_HELP_FMT=long-opt-col=16 tar --help|grep ARCHIVE}
+  -f,           --file=ARCHIVE   use archive file or device ARCHIVE
+@end group
+@end smallexample
+@end deftypevr
+
+@deftypevr {Help Output} offset doc-opt-col
+Column in which @dfn{doc options} start.  A doc option isn't actually
+an option, but rather an arbitrary piece of documentation that is
+displayed in much the same manner as the options.  For example, in
+the description of @option{--format} option:
+
+@smallexample
+@group
+  -H, --format=FORMAT        create archive of the given format.
+
+ FORMAT is one of the following:
+
+    gnu                      GNU tar 1.13.x format
+    oldgnu                   GNU format as per tar <= 1.12
+    pax                      POSIX 1003.1-2001 (pax) format
+    posix                    same as pax
+    ustar                    POSIX 1003.1-1988 (ustar) format
+    v7                       old V7 tar format
+@end group
+@end smallexample
+
+@noindent
+the format names are doc options. Thus, if you set
+@kbd{ARGP_HELP_FMT=doc-opt-col=6} the above part of the help output
+will look as follows:
+
+@smallexample
+@group
+  -H, --format=FORMAT        create archive of the given format.
+
+ FORMAT is one of the following:
+
+        gnu                      GNU tar 1.13.x format
+        oldgnu                   GNU format as per tar <= 1.12
+        pax                      POSIX 1003.1-2001 (pax) format
+        posix                    same as pax
+        ustar                    POSIX 1003.1-1988 (ustar) format
+        v7                       old V7 tar format
+@end group
+@end smallexample
+@end deftypevr
+
+@deftypevr {Help Output} offset opt-doc-col
+Column in which option description starts. Default is 29.
+
+@smallexample
+@group
+$ @kbd{tar --help|grep ARCHIVE}
+  -f, --file=ARCHIVE         use archive file or device ARCHIVE
+$ @kbd{ARGP_HELP_FMT=opt-doc-col=19 tar --help|grep ARCHIVE}
+  -f, --file=ARCHIVE   use archive file or device ARCHIVE
+$ @kbd{ARGP_HELP_FMT=opt-doc-col=9 tar --help|grep ARCHIVE}
+  -f, --file=ARCHIVE
+           use archive file or device ARCHIVE
+@end group
+@end smallexample
+
+@noindent
+Notice, that the description starts on a separate line if
+@code{opt-doc-col} value is too small.
+@end deftypevr
+
+@deftypevr {Help Output} offset header-col
+Column in which @dfn{group headers} are printed.  A group header is a
+descriptive text preceding an option group.  For example, in the
+following text:
+
+@verbatim
+ Main operation mode:
+
+  -A, --catenate, --concatenate   append tar files to 
+                             an archive
+  -c, --create               create a new archive
+@end verbatim
+@noindent
+@samp{Main operation mode:} is the group header.
+
+The default value is 1.  
+@end deftypevr
+
+@deftypevr {Help Output} offset usage-indent
+Indentation of wrapped usage lines. Affects @option{--usage}
+output. Default is 12.
+@end deftypevr
+
+@deftypevr {Help Output} offset rmargin
+Right margin of the text output. Used for wrapping.
+@end deftypevr
 
 @node Genfile
 @appendix Genfile
