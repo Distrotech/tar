@@ -1,3 +1,15 @@
+2005-12-11  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update
+	* doc/tar.texi: Document --delay-directory-restore option.
+	(Configuring Help Summary): Document usage of ARGP_HELP_FMT
+	variable to customize help output.
+	* src/common.h (delay_directory_restore_option): New global.
+	* src/extract.c (directories_first): Replaced by
+	delay_directory_restore_option. All uses changed.
+	* src/tar.c (options,parse_opt): New options
+	--delay-directory-restore and --no-delay-directory-restore
+
 2005-12-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (open_archive): Add default case to shut up gcc.
