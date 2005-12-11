@@ -325,9 +325,15 @@ GLOBAL bool unquote_option;
 
 GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
-GLOBAL bool show_stored_names_option; /* When creating archive in verbose mode,
-					 list member names as stored in the
-					 archive */
+/* When creating archive in verbose mode, list member names as stored in the
+   archive */
+GLOBAL bool show_stored_names_option; 
+
+/* Delay setting modification times and permissions of extracted directories
+   until the end of extraction. This variable helps correctly restore directory
+   timestamps from archives with an unusual member order. It is automatically
+   set for incremental archives. */
+GLOBAL bool delay_directory_restore_option; 
 
 
 /* Declarations for each module.  */
