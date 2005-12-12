@@ -202,8 +202,12 @@ procdir (char *name_buffer, struct stat *stat_data,
 	? ALL_CHILDREN
 	: CHANGED_CHILDREN;
     }
-  
-  if (one_file_system_option && device != stat_data->st_dev)
+
+  /* If the directory is on another device and --one-file-system was given,
+     omit it... */
+  if (one_file_system_option && device != stat_data->st_dev
+      /* ... except if it was explicitely given in the command line */
+      && !name_scan (name_buffer))
     directory->children = NO_CHILDREN;
   else if (children == ALL_CHILDREN)
     directory->children = ALL_CHILDREN;
