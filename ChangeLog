@@ -1,3 +1,9 @@
+2005-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (procdir): If --one-file-system is given and a
+	directory is found to be on another device, *and* this directory
+	is explicitely given in the command line, then do not omit it.
+
 2005-12-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update
