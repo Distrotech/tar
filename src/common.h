@@ -303,7 +303,7 @@ struct name
     size_t length;		/* cached strlen(name) */
     uintmax_t found_count;	/* number of times a matching file has
 				   been found */
-    int isdir;
+    int explicit;               /* was explicitely given in the command line */
     char firstch;		/* first char is literally matched */
     char regexp;		/* this name is a regexp, not literal */
     int change_dir;		/* set with the -C option */
