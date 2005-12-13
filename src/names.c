@@ -209,6 +209,7 @@ name_add (const char *name)
     }
   name_array[names++] = name;
 }
+
 
 /* Names from external name file.  */
 
@@ -428,7 +429,8 @@ addname (char const *string, int change_dir)
   name->firstch = 1;		/* assume first char is literal */
   name->change_dir = change_dir;
   name->dir_contents = 0;
-
+  name->explicit = 1;
+  
   if (string && is_pattern (string))
     {
       name->regexp = 1;
@@ -708,6 +710,8 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 	  string_length = strlen (string);
 	  if (*string == 'D')
 	    {
+	      struct name *np;
+	      
 	      if (allocated_length <= name_length + string_length)
 		{
 		  do
@@ -721,8 +725,9 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 		  namebuf = xrealloc (namebuf, allocated_length + 1);
 		}
 	      strcpy (namebuf + name_length, string + 1);
-	      add_hierarchy_to_namelist (addname (namebuf, change_dir),
-					 device);
+	      np = addname (namebuf, change_dir);
+	      np->explicit = 0;
+	      add_hierarchy_to_namelist (np, device);
 	    }
 	}
 
