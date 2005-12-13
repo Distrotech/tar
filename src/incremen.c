@@ -150,6 +150,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 { 
   struct directory *directory;
   bool nfs = NFS_FILE_STAT (*stat_data);
+  struct name *np;
   
   if ((directory = find_directory (name_buffer)) != NULL)
     {
@@ -207,7 +208,7 @@ procdir (char *name_buffer, struct stat *stat_data,
      omit it... */
   if (one_file_system_option && device != stat_data->st_dev
       /* ... except if it was explicitely given in the command line */
-      && !name_scan (name_buffer))
+      && !((np = name_scan (name_buffer)) && np->explicit))
     directory->children = NO_CHILDREN;
   else if (children == ALL_CHILDREN)
     directory->children = ALL_CHILDREN;
