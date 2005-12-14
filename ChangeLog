@@ -1,3 +1,11 @@
+2005-12-14  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/names.c (name_scan): Take an additional argument requesting
+	exact matching. 
+	* src/common.h (name_scan): Change prototype.
+	* src/delete.c, src/incremen.c, src/update.c: Update invocations
+	of name_scan.
+
 2005-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (struct name): New member `explicit'. Remove unused
