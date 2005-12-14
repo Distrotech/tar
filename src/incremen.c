@@ -208,7 +208,7 @@ procdir (char *name_buffer, struct stat *stat_data,
      omit it... */
   if (one_file_system_option && device != stat_data->st_dev
       /* ... except if it was explicitely given in the command line */
-      && !((np = name_scan (name_buffer)) && np->explicit))
+      && !((np = name_scan (name_buffer, true)) && np->explicit))
     directory->children = NO_CHILDREN;
   else if (children == ALL_CHILDREN)
     directory->children = ALL_CHILDREN;
