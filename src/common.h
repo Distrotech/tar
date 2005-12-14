@@ -597,7 +597,7 @@ struct name *addname (char const *, int);
 int name_match (const char *);
 void names_notfound (void);
 void collect_and_sort_names (void);
-struct name *name_scan (const char *);
+struct name *name_scan (const char *, bool);
 char *name_from_list (void);
 void blank_name_list (void);
 char *new_name (const char *, const char *);
