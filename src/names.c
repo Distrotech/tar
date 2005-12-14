@@ -446,7 +446,7 @@ addname (char const *string, int change_dir)
 /* Find a match for FILE_NAME (whose string length is LENGTH) in the name
    list.  */
 static struct name *
-namelist_match (char const *file_name, size_t length)
+namelist_match (char const *file_name, size_t length, bool exact)
 {
   struct name *p;
 
@@ -459,6 +459,8 @@ namelist_match (char const *file_name, size_t length)
 
       if (p->regexp
 	  ? fnmatch (p->name, file_name, recursion_option) == 0
+	  : exact ? (p->length == length
+		     && memcmp (file_name, p->name, length) == 0)
 	  : (p->length <= length
 	     && (file_name[p->length] == '\0'
 		 || (ISSLASH (file_name[p->length]) && recursion_option))
@@ -491,7 +493,7 @@ name_match (const char *file_name)
 	  return 1;
 	}
 
-      cursor = namelist_match (file_name, length);
+      cursor = namelist_match (file_name, length, false);
       if (cursor)
 	{
 	  if (!(ISSLASH (file_name[cursor->length]) && recursion_option)
@@ -787,18 +789,22 @@ collect_and_sort_names (void)
     name->found_count = 0;
 }
 
-/* This is like name_match, except that it returns a pointer to the
-   name it matched, and doesn't set FOUND in structure.  The caller
-   will have to do that if it wants to.  Oh, and if the namelist is
-   empty, it returns null, unlike name_match, which returns TRUE.  */
+/* This is like name_match, except that
+    1. It returns a pointer to the name it matched, and doesn't set FOUND
+    in structure. The caller will have to do that if it wants to.  
+    2. If the namelist is empty, it returns null, unlike name_match, which
+    returns TRUE.
+    3. The second argument (EXACT) controls matching algorithm. If it
+    is TRUE, the exact matching is used. However, regular expressions are
+    always matched as such, no matter what the value of EXACT is. */
 struct name *
-name_scan (const char *file_name)
+name_scan (const char *file_name, bool exact)
 {
   size_t length = strlen (file_name);
 
   while (1)
     {
-      struct name *cursor = namelist_match (file_name, length);
+      struct name *cursor = namelist_match (file_name, length, exact);
       if (cursor)
 	return cursor;
 
