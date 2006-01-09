@@ -18,6 +18,7 @@ argp-fs-xinl.c
 argp-help.c
 argp-namefrob.h
 argp-parse.c
+argp-pin.c
 argp-pv.c
 argp-pvh.c
 argp-xinl.c
@@ -96,6 +97,7 @@ memrchr.c
 memrchr.h
 memset.c
 minmax.h
+mkdirat.c
 mktime.c
 modechange.c
 modechange.h
@@ -104,6 +106,7 @@ obstack.h
 offtostr.c
 open-safer.c
 openat-die.c
+openat-priv.h
 openat.c
 openat.h
 paxerror.c
