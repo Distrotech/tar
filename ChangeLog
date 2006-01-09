@@ -1,7 +1,13 @@
+2006-01-09  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap: Default to pserver, and switch to cvs.sv.gnu.org,
+	to accommodate recent changes to the GNU CVS server.
+	* lib/.cvsignore: Add argp-pin.c, mkdirat.c, openat-priv.h.
+
 2005-12-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/names.c (name_scan): Take an additional argument requesting
-	exact matching. 
+	exact matching.
 	* src/common.h (name_scan): Change prototype.
 	* src/delete.c, src/incremen.c, src/update.c: Update invocations
 	of name_scan.
@@ -78,7 +84,7 @@
 	option grouping.
 	(license): Print full list of copyright years
 	* NEWS: Update
-	
+
 2005-12-06  Eric Blake  <ebb9@byu.net> (trivial changes)
 
 	* configure.ac (DENSITY_LETTER): Fix m4 overquoting.
