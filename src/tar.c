@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
-   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -211,6 +211,30 @@ subcommand_string (enum subcommand c)
     }
 }
 
+void
+tar_list_quoting_styles (FILE *fp, char *prefix)
+{
+  int i;
+
+  for (i = 0; quoting_style_args[i]; i++)
+    fprintf (fp, "%s%s\n", prefix, quoting_style_args[i]);
+}
+
+void
+tar_set_quoting_style (char *arg)
+{
+  int i;
+
+  for (i = 0; quoting_style_args[i]; i++)
+    if (strcmp (arg, quoting_style_args[i]) == 0)
+      {
+	set_quoting_style (NULL, i);
+	return;
+      }
+  FATAL_ERROR ((0, 0,
+		_("Unknown quoting style `%s'. Try `%s --quoting-style=help' to get a list."), arg));
+}
+
 
 /* Options.  */
 
@@ -241,6 +265,7 @@ enum
   NO_IGNORE_CASE_OPTION,
   NO_IGNORE_COMMAND_ERROR_OPTION,
   NO_OVERWRITE_DIR_OPTION,
+  NO_QUOTE_CHARS_OPTION,
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
@@ -257,6 +282,8 @@ enum
   PAX_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
+  QUOTE_CHARS_OPTION,
+  QUOTING_STYLE_OPTION,
   RECORD_SIZE_OPTION,
   RECURSION_OPTION,
   RECURSIVE_UNLINK_OPTION,
@@ -624,6 +651,12 @@ static struct argp_option options[] = {
   {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
    N_("When creating archive in verbose mode, list member names as stored in the archive"),
    GRID+1 },
+  {"quoting-style", QUOTING_STYLE_OPTION, N_("STYLE"), 0,
+   N_("Set name quoting style. See below for valid STYLE values."), GRID+1 },
+  {"quote-chars", QUOTE_CHARS_OPTION, N_("STRING"), 0,
+   N_("Additionally quote characters from STRING"), GRID+1 },
+  {"no-quote-chars", NO_QUOTE_CHARS_OPTION, N_("STRING"), 0,
+   N_("Disable quoting for characters from STRING"), GRID+1 },
 #undef GRID
 
 #define GRID 110  
@@ -679,9 +712,10 @@ static void
 show_default_settings (FILE *stream)
 {
   fprintf (stream,
-	   "--format=%s -f%s -b%d --rmt-command=%s",
+	   "--format=%s -f%s -b%d --quoting-style=%s --rmt-command=%s",
 	   archive_format_string (DEFAULT_ARCHIVE_FORMAT),
 	   DEFAULT_ARCHIVE, DEFAULT_BLOCKING,
+	   quoting_style_args[DEFAULT_QUOTING_STYLE],
 	   DEFAULT_RMT_COMMAND);
 #ifdef REMOTE_SHELL
   fprintf (stream, " --rsh-command=%s", REMOTE_SHELL);
@@ -1319,6 +1353,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       old_files_option = NO_OVERWRITE_DIR_OLD_FILES;
       break;
 
+    case NO_QUOTE_CHARS_OPTION:
+      for (;*arg; arg++)
+	set_char_quoting (NULL, *arg, 0);
+      break;
+      
     case NO_WILDCARDS_OPTION:
       args->exclude_options &= ~ EXCLUDE_WILDCARDS;
       break;
@@ -1367,6 +1406,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	}
       break;
 
+    case QUOTE_CHARS_OPTION:
+      for (;*arg; arg++)
+	set_char_quoting (NULL, *arg, 1);
+      break;
+
+    case QUOTING_STYLE_OPTION:
+      tar_set_quoting_style (arg);
+      break;
+      
     case PAX_OPTION:
       args->pax_option++;
       xheader_set_option (arg);
@@ -1573,6 +1621,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       state->flags |= ARGP_NO_EXIT;
       argp_state_help (state, state->out_stream,
 		       ARGP_HELP_STD_HELP & ~ARGP_HELP_BUG_ADDR);
+      fprintf (state->out_stream, "\n%s\n\n",
+	       _("Valid arguments for --quoting-style options are:"));
+      tar_list_quoting_styles (state->out_stream, "  ");
+      
       fprintf (state->out_stream, _("\n*This* tar defaults to:\n"));
       show_default_settings (state->out_stream);
       fprintf (state->out_stream, "\n");
@@ -1980,7 +2032,7 @@ main (int argc, char **argv)
 
   exit_status = TAREXIT_SUCCESS;
   filename_terminator = '\n';
-  set_quoting_style (0, escape_quoting_style);
+  set_quoting_style (0, DEFAULT_QUOTING_STYLE);
 
   /* Make sure we have first three descriptors available */
   stdopen ();
