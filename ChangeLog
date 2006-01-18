@@ -1,3 +1,12 @@
+2006-01-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Updated.
+	* configure.ac (DEFAULT_QUOTING_STYLE): New configuration variable
+	* doc/tar.texi: Initial documentation for --quoting-style,
+	--quote-chars and --no-quote-chars option.
+	* src/tar.c: Implement new options --quoting-style, --quote-chars
+	and --no-quote-chars.
+
 2006-01-09  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap: Default to pserver, and switch to cvs.sv.gnu.org,
