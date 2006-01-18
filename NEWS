@@ -1,6 +1,6 @@
 GNU tar NEWS - User visible changes.
 Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
-2004, 2005
+2004, 2005, 2006
 Free Software Foundation, Inc.
 See the end for copying conditions.
 
@@ -53,6 +53,14 @@ This option is implied when restoring from incremental archives.
 
 * New option --restrict prohibits use of some potentially harmful tar
 options.  Currently it disables '!' escape in multi-volume name menu.
+
+* New options --quoting-style and --quote-chars control the way tar
+quotes member names on output. The --quoting-style takes an argument
+specifying the quoting style to use (literal, shell, shell-always,
+c, escape, locale, clocale). The argument to --quote-chars is a string
+specifying characters to quote, even if the selected quoting style
+would not quote them otherwise. The option --no-quote-chars is
+provided to disable quoting certain characters.
 
 * The end-of-volume script (introduced with --info-script option) can
 get current archive name from the environment variable TAR_ARCHIVE and
