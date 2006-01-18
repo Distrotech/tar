@@ -1,7 +1,7 @@
 # Configure template for GNU tar.
 
 # Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-# 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
+# 2002, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -183,6 +183,23 @@ DEFAULT_BLOCKING=${DEFAULT_BLOCKING-20}
 AC_DEFINE_UNQUOTED(DEFAULT_BLOCKING, $DEFAULT_BLOCKING,
   [Define to a number giving the default blocking size for archives.])
 AC_MSG_RESULT($DEFAULT_BLOCKING)
+
+AC_MSG_CHECKING(for default quoting style)
+
+m4_define([QUOTING_STYLES],dnl
+          [literal|shell|shell-always|c|escape|locale|clocale])
+DEFAULT_QUOTING_STYLE="escape"
+AC_ARG_VAR([DEFAULT_QUOTING_STYLE],
+           [Set the default quoting style. Allowed values are: ] m4_bpatsubst(QUOTING_STYLES,[|], [[, ]]) [. Default is "escape".])
+
+case $DEFAULT_QUOTING_STYLE in
+QUOTING_STYLES) ;;
+*)  AC_MSG_ERROR(Invalid quoting style);;
+esac
+AC_MSG_RESULT($DEFAULT_QUOTING_STYLE)
+DEFAULT_QUOTING_STYLE=`echo ${DEFAULT_QUOTING_STYLE}|sed 's/-/_/g'`_quoting_style
+AC_DEFINE_UNQUOTED(DEFAULT_QUOTING_STYLE, $DEFAULT_QUOTING_STYLE,
+  [Define to a default quoting style (see lib/quoteargs.c for the list)])
 
 # Iconv
 AM_ICONV
