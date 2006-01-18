@@ -28,7 +28,7 @@ This manual is for @acronym{GNU} @command{tar} (version
 from archives.
 
 Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-2003, 2004 Free Software Foundation, Inc.
+2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -2591,6 +2591,11 @@ Use case-sensitive matching when excluding files.
 Print warnings about subprocesses terminated with a non-zero exit
 code. @xref{Writing to an External Program}. 
 
+@opindex no-quote-chars, summary
+@item --no-quote-chars=@var{string}
+Do not quote characters from @var{string}, even if the selected
+quoting style implies they should be quoted (@FIXME-pxref{Quoting Styles}).
+
 @opindex no-recursion, summary
 @item --no-recursion
 
@@ -2714,6 +2719,20 @@ their distributions for the owner of files, because the @code{root} user is
 anonymous anyway, so that might as well be the owner of anonymous archives.
 
 This option does not affect extraction from archives.
+
+@opindex quote-chars, summary
+@item --quote-chars=@var{string}
+Always quote characters from @var{string}, even if the selected
+quoting style would not quote them (@FIXME-pxref{Quoting Styles}).
+
+@opindex quoting-style, summary
+@item --quoting-style=@var{style}
+Set quoting style to use when printing member and file names
+(@FIXME-pxref{Quoting Styles}). Valid @var{style} values are:
+@code{literal}, @code{shell}, @code{shell-always}, @code{c},
+@code{escape}, @code{locale}, and @code{clocale}. Default quoting
+style is @code{escape}, unless overridden while configuring the
+package. 
 
 @opindex pax-option, summary
 @item --pax-option=@var{keyword-list}
@@ -2941,7 +2960,8 @@ Here is an example of what you can see using this option:
 
 @smallexample
 $ tar --show-defaults
---format=gnu -f- -b20
+--format=gnu -f- -b20 --quoting-style=escape \
+--rmt-command=/usr/libexec/rmt --rsh-command=/usr/bin/rsh
 @end smallexample
 
 @opindex show-omitted-dirs, summary
