@@ -1924,7 +1924,8 @@ decode_options (int argc, char **argv)
       if (multi_volume_option)
 	USAGE_ERROR ((0, 0, _("Cannot use multi-volume compressed archives")));
       if (subcommand_option == UPDATE_SUBCOMMAND
-	  || subcommand_option == APPEND_SUBCOMMAND)
+	  || subcommand_option == APPEND_SUBCOMMAND
+	  || subcommand_option == DELETE_SUBCOMMAND)
 	USAGE_ERROR ((0, 0, _("Cannot update compressed archives")));
       if (subcommand_option == CAT_SUBCOMMAND)
 	USAGE_ERROR ((0, 0, _("Cannot concatenate compressed archives")));
