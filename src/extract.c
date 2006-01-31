@@ -1102,7 +1102,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     case DIRTYPE:
     case GNUTYPE_DUMPDIR:
       *fun = extract_dir;
-      if (current_stat_info.dumpdir)
+      if (current_stat_info.is_dumpdir)
 	delay_directory_restore_option = true;
       break;
 
