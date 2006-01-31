@@ -300,7 +300,10 @@ struct tar_stat_info
   struct sp_array *sparse_map;
 
   /* For dumpdirs */
-  char *dumpdir;
+  bool is_dumpdir;          /* Is the member a dumpdir? */
+  bool skipped;             /* The member contents is already read
+			       (for GNUTYPE_DUMPDIR) */
+  char *dumpdir;            /* Contents of the dump directory */    
 };
 
 union block
