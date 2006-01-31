@@ -216,17 +216,13 @@ list_archive (void)
     {
       if (verbose_option > 2)
 	{
-	  if (current_stat_info.dumpdir)
+	  if (is_dumpdir (&current_stat_info))
 	    list_dumpdir (current_stat_info.dumpdir,
 			  dumpdir_size (current_stat_info.dumpdir));
 	}
     }
 
-  mv_begin (&current_stat_info);
-
   skip_member ();
-
-  mv_end ();
 }
 
 /* Check header checksum */
@@ -577,10 +573,11 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   else
     {
       stat_info->is_sparse = false;
-      if ((current_format == GNU_FORMAT
-	   || current_format == OLDGNU_FORMAT)
-	  && current_header->header.typeflag == GNUTYPE_DUMPDIR)
-	get_gnu_dumpdir ();
+      if (((current_format == GNU_FORMAT
+	    || current_format == OLDGNU_FORMAT)
+	   && current_header->header.typeflag == GNUTYPE_DUMPDIR)
+          || stat_info->dumpdir)
+	stat_info->is_dumpdir = true;
     }
 }
 
@@ -1298,15 +1295,18 @@ skip_file (off_t size)
 void
 skip_member (void)
 {
-  char save_typeflag = current_header->header.typeflag;
-  set_next_block_after (current_header);
+  if (!current_stat_info.skipped)
+    {
+      char save_typeflag = current_header->header.typeflag;
+      set_next_block_after (current_header);
 
-  mv_begin (&current_stat_info);
+      mv_begin (&current_stat_info);
 
-  if (current_stat_info.is_sparse)
-    sparse_skip_file (&current_stat_info);
-  else if (save_typeflag != DIRTYPE)
-    skip_file (current_stat_info.stat.st_size);
+      if (current_stat_info.is_sparse)
+	sparse_skip_file (&current_stat_info);
+      else if (save_typeflag != DIRTYPE)
+	skip_file (current_stat_info.stat.st_size);
 
-  mv_end ();
+      mv_end ();
+    }
 }
