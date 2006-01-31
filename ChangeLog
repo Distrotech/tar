@@ -1,3 +1,19 @@
+2006-01-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (get_gnu_dumpdir): Remove prototype
+	(is_dumpdir): New function
+	* src/extract.c (prepare_to_extract): Use is_dumpdir member to
+	check for dumpdirs.
+	* src/incremen.c (get_gnu_dumpdir): Static
+	(is_dumpdir): New function
+	(purge_directory): Use is_dumpdir
+	* src/list.c (list_archive): Use is_dumpdir
+	Do not wrap skip_member in mv_begin/mv_end, the function itself
+	takes care of it.
+	(decode_header): Set stat_info->is_dumpdir
+	(skip_member): Do nothing if skipped is true
+	* src/tar.h (struct tar_stat_info): New members is_dumpdir and skipped.
+	
 2006-01-22  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Refuse using --delete with
