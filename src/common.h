@@ -458,7 +458,7 @@ void list_dumpdir (char *buffer, size_t size);
 void update_parent_directory (const char *name);
 
 size_t dumpdir_size (const char *p);
-void get_gnu_dumpdir (void);
+bool is_dumpdir (struct tar_stat_info *stat_info);
 
 /* Module list.c.  */
 
