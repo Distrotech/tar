@@ -636,8 +636,8 @@ write_directory_file (void)
 
 /* Restoration of incremental dumps.  */
 
-void
-get_gnu_dumpdir ()
+static void
+get_gnu_dumpdir (struct tar_stat_info *stat_info)
 {
   size_t size;
   size_t copied;
@@ -645,15 +645,13 @@ get_gnu_dumpdir ()
   char *to;
   char *archive_dir;
   
-  size = current_stat_info.stat.st_size;
-  if (size != current_stat_info.stat.st_size)
-    xalloc_die ();
+  size = stat_info->stat.st_size;
 
   archive_dir = xmalloc (size);
   to = archive_dir;
 
   set_next_block_after (current_header);
-  mv_begin (&current_stat_info);
+  mv_begin (stat_info);
 
   for (; size > 0; size -= copied)
     {
@@ -672,11 +670,21 @@ get_gnu_dumpdir ()
 
   mv_end ();
   
-  current_stat_info.stat.st_size = 0; /* For skip_member() and friends
-					 to work correctly */
-  current_stat_info.dumpdir = archive_dir;
+  stat_info->dumpdir = archive_dir;
+  stat_info->skipped = true; /* For skip_member() and friends
+				to work correctly */
 }
 
+/* Return T if STAT_INFO represents a dumpdir archive member.
+   Note: can invalidate current_header. It happens if flush_archive()
+   gets called within get_gnu_dumpdir() */
+bool
+is_dumpdir (struct tar_stat_info *stat_info)
+{
+  if (stat_info->is_dumpdir && !stat_info->dumpdir)
+    get_gnu_dumpdir (stat_info);
+  return stat_info->is_dumpdir;
+}
 
 /* Examine the directories under directory_name and delete any
    files that were not there at the time of the back-up. */
@@ -686,7 +694,7 @@ purge_directory (char const *directory_name)
   char *current_dir;
   char *cur, *arc;
 
-  if (!current_stat_info.dumpdir)
+  if (!is_dumpdir (&current_stat_info))
     {
       skip_member ();
       return;
