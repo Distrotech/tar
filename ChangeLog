@@ -1,3 +1,7 @@
+2006-02-07  Jim Meyering  <jim@meyering.net> 
+
+        * src/xheader.c (sparse_map_decoder): Fix misleading diagnostic.
+
 2006-01-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (get_gnu_dumpdir): Remove prototype
