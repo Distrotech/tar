@@ -1,6 +1,6 @@
 #! /bin/sh
 # This program is part of GNU tar
-# Copyright 2004, 2005, Free Software Foundation
+# Copyright (C) 2004, 2005, 2006 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ bailout() {
 
 # Return current date
 now() {
-#IF_DATE_FORMAT_OK	
+#IF_DATE_FORMAT_OK
 	date +%Y-%m-%d
 #ELSE_DATE_FORMAT_OK
         LC_ALL=C date | \
@@ -108,7 +108,7 @@ test_root() {
 
 root_fs() {
     echo "${ROOT_FS}$1" | tr -s /
-}    
+}
 
 advice() {
     echo "Directory $1 is not found." >&2
@@ -139,7 +139,7 @@ init_common() {
 	    advice $LOGPATH
 	    exit 1
 	fi
-    fi	
+    fi
     # Get the values of BACKUP_DIRS, BACKUP_FILES, and other variables.
     if [ ! -r $CONFIGFILE ]; then
 	echo "$PROGNAME: cannot read $CONFIGFILE. Stop." >&2
@@ -151,7 +151,7 @@ init_common() {
 
     test_root
 
-    if [ x"${ADMINISTRATOR}" = x ]; then 
+    if [ x"${ADMINISTRATOR}" = x ]; then
 	bailout "ADMINISTRATOR not defined"
     fi
 
@@ -159,7 +159,7 @@ init_common() {
     [ x"$SLEEP_TIME" = x ] && SLEEP_TIME=60
 
     if [ x$VOLNO_FILE = x ]; then
-	bailout "VOLNO_FILE not specified" 
+	bailout "VOLNO_FILE not specified"
     fi
 
     if [ -r $DIRLIST ]; then
@@ -253,7 +253,7 @@ wait_time() {
 		    diff = 3600 * (time[1] - now[1]) + 60 * (time[2] - now[2]);
 		    if (diff < 0)
 			diff += 3600 * 24
-		    print diff	
+		    print diff
 		}'`"
 	clear
 	echo "${SLEEP_MESSAGE}"
@@ -320,7 +320,7 @@ print_level() {
     else
     	echo "Level ${1-$DUMP_LEVEL}"
     fi
-}    	
+}
 
 prev_level() {
     print_level `expr $DUMP_LEVEL - 1` | tr A-Z a-z
@@ -339,22 +339,9 @@ remote_run() {
 
 license() {
     cat - <<EOF
-    This program is part of GNU tar
-    Copyright 2004, Free Software Foundation
-
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 1, or (at your option)
-    any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-    02110-1301, USA.
+Copyright (C) 2006 Free Software Foundation, Inc.
+This is free software.  You may redistribute copies of it under the terms of
+the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.
 EOF
 }

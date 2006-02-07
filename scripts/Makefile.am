@@ -1,4 +1,4 @@
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ CLEANFILES=backup.sh backup restore dump-remind
 
 SED_CMD="s,\@libexecdir\@,$(libexecdir),;\
          s,\@sysconfdir\@,$(sysconfdir),;\
-         s,\@PACKAGE\@,$(PACKAGE),;\
+         s,\@PACKAGE_NAME\@,$(PACKAGE_NAME),;\
          s,\@VERSION\@,$(VERSION),;\
          s,\@PACKAGE_BUGREPORT\@,$(PACKAGE_BUGREPORT),;\
          s,\@DATE_FORMAT_OK\@,$(DATE_FORMAT_OK),;@BACKUP_SED_COND@"

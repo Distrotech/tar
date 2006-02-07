@@ -1,6 +1,6 @@
 #! /bin/sh
 # This program is part of GNU tar
-# Copyright 2004, Free Software Foundation
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,9 +31,8 @@ Options are:
                            (default $DUMP_LEVEL).
    -v, --verbose[=LEVEL]   Set verbosity level. Default 100.
 
-Informational options:   
+Informational options:
    -h, --help              Display this help message.
-   -L, --license           Display program license.
    -V, --version           Display program version.
 
 Send bug reports to @PACKAGE_BUGREPORT@.
@@ -72,30 +71,28 @@ do
 	 ;;
   -v*)   VERBOSE=`expr $option : "-v\(.*\)"`;;
   -V|--v|--ve|--ver|--vers|--versi|--versio|--version)
-    	 echo "restore (@PACKAGE@ @VERSION@)"
-	 exit 0;;
-  -L|--li|--lic|--lice|--licen|--licens|--license)
-    	 license
- 	 exit;;
+    	 echo "restore (@PACKAGE_NAME@) @VERSION@"
+	 license
+	 exit;;
   -h|--h|--he|--hel|--help)
 	 usage
 	 exit;;
   -*) bailout "Unknown option $opt. Try $PROGNAME --help for more info.";;
   *)  if [ -z "$PATTERN" ]; then
          PATTERN=$opt
-      else  
+      else
          PATTERN="$PATTERN|$opt"
       fi
       ;;
-  esac	
-done    
+  esac
+done
 
 if [ -z "$RESTORE_ALL" ]; then
 	if [ -z "$PATTERN" ]; then
 		usage
 		exit;
 	fi
-fi	
+fi
 
 init_restore
 cat > $LOGFILE <<EOF
@@ -105,7 +102,7 @@ It was created by GNU $PROGNAME, from  @PACKAGE@ (@VERSION@).
 Invocation command line was
 
   \$ $CMDLINE
-  
+
 EOF
 
 restore_fs()
@@ -141,14 +138,14 @@ restore_fs()
       DATE=`get_dump_time $level`
       FILE="`level_log_name ${fsname} ${level}`"
       message 10 "FILE=$FILE"
-      
+
       LABEL="`print_level $level` backup of ${fs} on ${remotehost} at ${DATE}"
       ${RESTORE_BEGIN-:} $level $remotehost $fs $fsname
       backup_host ${remotehost} \
                   "--listed=\"$FILE\"" \
                   "--label=\"$LABEL\"" \
 		  -C $fs
-      ${RESTORE_END-:} $level $remotehost $fs $fsname 		  
+      ${RESTORE_END-:} $level $remotehost $fs $fsname
     done
 }
 
@@ -169,11 +166,11 @@ restore_files()
 	  continue;
       fi
       message 10 "Restoring level $level"
-      
+
       DATE=`get_dump_time $level`
       FILE="`level_log_name MISC ${level}`"
       message 10 "FILE=$FILE"
-      
+
       LABEL="`print_level $level` backup of miscellaneous files at ${DATE}"
       ${RESTORE_BEGIN-:} $level $localhost MISC MISC
       backup_host ${localhost} \
@@ -226,12 +223,7 @@ if [ "x${BACKUP_FILES}" != "x" ] ; then
 	done
 	[ -z "$RESTORE_FILES" ] || restore_files $RESTORE_FILES
     fi
-    	
+
 fi) 2>&1 | tee -a "${LOGFILE}"
 
-# EOF    
-
-    
-    
-          
-	
+# EOF

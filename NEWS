@@ -87,6 +87,11 @@ modification times.
 ** When creating an archive, do not attempt to store files whose
 meta-data cannot be stored in the header due to format limitations
 (for ustar and v7 formats).
+** The --version option now also outputs information about copyright,
+license, and credits.  This reverts to the behavior of tar 1.14 and
+earlier, and conforms to the GNU coding standards.  The --license (-L)
+option introduced in tar 1.15 has been removed, since it's no longer
+needed.
 
 
 version 1.15.1 - Sergey Poznyakoff, 2004-12-21

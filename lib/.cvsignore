@@ -191,6 +191,9 @@ utimens.h
 vasnprintf.c
 vasnprintf.h
 verify.h
+version-etc-fsf.c
+version-etc.c
+version-etc.h
 vsnprintf.c
 vsnprintf.h
 xalloc-die.c

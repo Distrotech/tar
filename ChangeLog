@@ -1,5 +1,25 @@
 2006-02-07  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* NEWS: --version now outputs copyright etc., to conform to the
+	GNU coding standards.  Remove --license.
+	* gnulib.modules: Add version-etc-fsf.
+	* doc/tar.texi: Document the change.
+	* lib/.cvsignore: Add version-etc-fsf.c, version-etc.c, version-etc.h.
+	* scripts/Makefile.am (SED_CMD): Update PAKCAGE_NAME, not PACKAGE.
+	* scripts/backup.in: Remove --license.  Change --version to conform
+	to GCS.
+	* scripts/restore.in: Likewise.
+	* scripts/backup.sh.in (license): Output briefer license in the
+	style of coreutils, for consistency with other changes.
+	* src/tar.c: Include <version-etc.h>.
+	(LICENSE_OPTION): Remove.
+	(options): Remove --license.
+	(license): Remove.
+	(parse_opt): Use version_etc instead of rolling it ourselves.
+	Remove --license.
+	* tests/version.at (tar --version): Check only the first line of
+	output.
+
 	* ChangeLog, NEWS, src/common.h, src/extract.c, src/incremen.c:
 	* src/list.c, src/names.c, src/tar.h, src/xheader.c:
 	Update copyright year to 2006.

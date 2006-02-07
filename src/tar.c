@@ -42,6 +42,7 @@
 #include <rmt.h>
 #include <prepargs.h>
 #include <quotearg.h>
+#include <version-etc.h>
 #include <xstrtol.h>
 #include <stdopen.h>
 
@@ -187,16 +188,16 @@ subcommand_string (enum subcommand c)
 
     case CAT_SUBCOMMAND:
       return "-A";
-      
+
     case CREATE_SUBCOMMAND:
       return "-c";
-      
+
     case DELETE_SUBCOMMAND:
       return "-D";
 
     case DIFF_SUBCOMMAND:
       return "-d";
-      
+
     case EXTRACT_SUBCOMMAND:
       return "-x";
 
@@ -257,7 +258,6 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
-  LICENSE_OPTION,
   MODE_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
@@ -369,7 +369,7 @@ static struct argp_option options[] = {
    N_("Test archive volume label and exit"), GRID+1 },
 #undef GRID
 
-#define GRID 20  
+#define GRID 20
   {NULL, 0, NULL, 0,
    N_("Operation modifiers:"), GRID },
 
@@ -387,7 +387,7 @@ static struct argp_option options[] = {
    N_("archive is seekable"), GRID+1 },
 #undef GRID
 
-#define GRID 30  
+#define GRID 30
   {NULL, 0, NULL, 0,
    N_("Overwrite control:\n"), GRID+1 },
 
@@ -409,7 +409,7 @@ static struct argp_option options[] = {
    N_("preserve metadata of existing directories"), GRID+1 },
 #undef GRID
 
-#define GRID 40  
+#define GRID 40
   {NULL, 0, NULL, 0,
    N_("Select output stream:"), GRID },
 
@@ -423,7 +423,7 @@ static struct argp_option options[] = {
    N_("treat non-zero exit codes of children as error"), GRID+1 },
 #undef GRID
 
-#define GRID 50  
+#define GRID 50
   {NULL, 0, NULL, 0,
    N_("Handling of file attributes:"), GRID },
 
@@ -463,7 +463,7 @@ static struct argp_option options[] = {
    N_("Cancel the effect of --delay-directory-restore option."), GRID+1 },
 #undef GRID
 
-#define GRID 60  
+#define GRID 60
   {NULL, 0, NULL, 0,
    N_("Device selection and switching:\n"), GRID+1 },
 
@@ -502,7 +502,7 @@ static struct argp_option options[] = {
    N_("use/update the volume number in FILE"), GRID+1 },
 #undef GRID
 
-#define GRID 70  
+#define GRID 70
   {NULL, 0, NULL, 0,
    N_("Device blocking:"), GRID+1 },
 
@@ -516,7 +516,7 @@ static struct argp_option options[] = {
    N_("reblock as we read (for 4.2BSD pipes)"), GRID+1 },
 #undef GRID
 
-#define GRID 80  
+#define GRID 80
   {NULL, 0, NULL, 0,
    N_("Archive format selection:"), GRID },
 
@@ -558,7 +558,7 @@ static struct argp_option options[] = {
    N_("filter through PROG (must accept -d)"), GRID+8 },
 #undef GRID
 
-#define GRID 90  
+#define GRID 90
   {NULL, 0, NULL, 0,
    N_("Local file selection:"), GRID },
 
@@ -623,7 +623,7 @@ static struct argp_option options[] = {
    N_("exclude pattern wildcards match `/' (default)"), GRID+1 },
 #undef GRID
 
-#define GRID 100  
+#define GRID 100
   {NULL, 0, NULL, 0,
    N_("Informative output:"), GRID },
 
@@ -659,7 +659,7 @@ static struct argp_option options[] = {
    N_("Disable quoting for characters from STRING"), GRID+1 },
 #undef GRID
 
-#define GRID 110  
+#define GRID 110
   {NULL, 0, NULL, 0,
    N_("Compatibility options:"), GRID },
 
@@ -667,23 +667,22 @@ static struct argp_option options[] = {
    N_("when creating, same as --old-archive. When extracting, same as --no-same-owner"), GRID+1 },
 #undef GRID
 
-#define GRID 120  
+#define GRID 120
   {NULL, 0, NULL, 0,
    N_("Other options:"), GRID },
 
-  {"restrict", RESTRICT_OPTION, 0, 0, 
+  {"restrict", RESTRICT_OPTION, 0, 0,
    N_("Restrict use of some potentially harmful options"), -1 },
-   
+
   {"help",  '?', 0, 0,  N_("Give this help list"), -1},
   {"usage", USAGE_OPTION, 0, 0,  N_("Give a short usage message"), -1},
-  {"license", LICENSE_OPTION, 0, 0, N_("Print license and exit"), -1},
   {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
   /* FIXME -V (--label) conflicts with the default short option for
      --version */
   {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
    N_("Hang for SECS seconds (default 3600)"), 0},
 #undef GRID
-  
+
   {0, 0, 0, 0, 0, 0}
 };
 
@@ -742,30 +741,6 @@ set_use_compress_program_option (const char *string)
     USAGE_ERROR ((0, 0, _("Conflicting compression options")));
 
   use_compress_program_option = string;
-}
-
-void
-license ()
-{
-  printf ("tar (%s) %s\n%s\n", PACKAGE_NAME, PACKAGE_VERSION,
-	  "Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, \n\
-2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.\n");
-  puts (_("Based on the work of John Gilmore and Jay Fenlason. See AUTHORS\n\
-for complete list of authors.\n"));
-  printf (_("   GNU tar is free software; you can redistribute it and/or modify\n"
-    "   it under the terms of the GNU General Public License as published by\n"
-    "   the Free Software Foundation; either version 2 of the License, or\n"
-    "   (at your option) any later version.\n"
-    "\n"
-    "   GNU tar is distributed in the hope that it will be useful,\n"
-    "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-    "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-    "   GNU General Public License for more details.\n"
-    "\n"
-    "   You should have received a copy of the GNU General Public License\n"
-    "   along with GNU tar; if not, write to the Free Software Foundation,\n"
-    "   Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA\n\n"));
-  exit (0);
 }
 
 static volatile int _argp_hang;
@@ -1274,7 +1249,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NO_DELAY_DIRECTORY_RESTORE_OPTION:
       delay_directory_restore_option = false;
       break;
-      
+
     case DELETE_OPTION:
       set_subcommand_option (DELETE_SUBCOMMAND);
       break;
@@ -1357,7 +1332,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       for (;*arg; arg++)
 	set_char_quoting (NULL, *arg, 0);
       break;
-      
+
     case NO_WILDCARDS_OPTION:
       args->exclude_options &= ~ EXCLUDE_WILDCARDS;
       break;
@@ -1414,7 +1389,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case QUOTING_STYLE_OPTION:
       tar_set_quoting_style (arg);
       break;
-      
+
     case PAX_OPTION:
       args->pax_option++;
       xheader_set_option (arg);
@@ -1455,7 +1430,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case RESTRICT_OPTION:
       restrict_option = true;
       break;
-      
+
     case RMT_COMMAND_OPTION:
       rmt_command = arg;
       break;
@@ -1624,7 +1599,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       fprintf (state->out_stream, "\n%s\n\n",
 	       _("Valid arguments for --quoting-style options are:"));
       tar_list_quoting_styles (state->out_stream, "  ");
-      
+
       fprintf (state->out_stream, _("\n*This* tar defaults to:\n"));
       show_default_settings (state->out_stream);
       fprintf (state->out_stream, "\n");
@@ -1638,12 +1613,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case VERSION_OPTION:
-      fprintf (state->out_stream, "%s\n", argp_program_version);
+      version_etc (state->out_stream, "tar", PACKAGE_NAME, VERSION,
+		   "John Gilmore", "Jay Fenlason", (char *) NULL);
       exit (0);
-
-    case LICENSE_OPTION:
-      license ();
-      break;
 
     case HANG_OPTION:
       _argp_hang = atoi (arg ? arg : "3600");
@@ -1838,7 +1810,7 @@ decode_options (int argc, char **argv)
       && !tape_length_option)
     USAGE_ERROR ((0, 0,
 		  _("creating multi-volume archives in posix format requires using --tape-length (-L) option")));
-  
+
   if (occurrence_option)
     {
       if (!args.input_files)

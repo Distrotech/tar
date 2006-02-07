@@ -1,5 +1,5 @@
 # Checking tar version                              -*- Autotest -*-
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,10 +18,9 @@
 
 AT_SETUP([tar version])
 
-AT_CHECK([tar --version],
+AT_CHECK([tar --version | sed 1q],
          [0],
          [AT_PACKAGE_TARNAME (AT_PACKAGE_NAME) AT_PACKAGE_VERSION
 ])
 
 AT_CLEANUP
-          
