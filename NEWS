@@ -1,9 +1,4 @@
 GNU tar NEWS - User visible changes.
-Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
-2004, 2005, 2006
-Free Software Foundation, Inc.
-See the end for copying conditions.
-
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.15.2 (CVS version -- unreleased)
@@ -737,8 +732,8 @@ Versions 1.07 back to 1.00 by Jay Fenlason.
 
 
 
-Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003
-Free Software Foundation, Inc.
+Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
+2004, 2005, 2006 Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 

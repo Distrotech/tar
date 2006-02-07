@@ -1,7 +1,7 @@
 /* Extract files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -759,26 +759,26 @@ extract_file (char *file_name, int typeflag)
     for (size = current_stat_info.stat.st_size; size > 0; )
       {
 	mv_size_left (size);
-	
+
 	/* Locate data, determine max length writeable, write it,
 	   block that we have used the data, then check if the write
 	   worked.  */
-	
+
 	data_block = find_next_block ();
 	if (! data_block)
 	  {
 	    ERROR ((0, 0, _("Unexpected EOF in archive")));
 	    break;		/* FIXME: What happens, then?  */
 	  }
-	
+
 	written = available_space_after (data_block);
-	
+
 	if (written > size)
 	  written = size;
 	errno = 0;
 	count = full_write (fd, data_block->buffer, written);
 	size -= written;
-	
+
 	set_next_block_after ((union block *)
 			      (data_block->buffer + written - 1));
 	if (count != written)
@@ -793,7 +793,7 @@ extract_file (char *file_name, int typeflag)
   skip_file (size);
 
   mv_end ();
-  
+
   /* If writing to stdout, don't try to do anything to the filename;
      it doesn't exist, or we don't want to touch it anyway.  */
 
@@ -1210,7 +1210,7 @@ extract_archive (void)
      (see NOTICE in the comment to delay_set_stat above) */
   if (!delay_directory_restore_option)
     apply_nonancestor_delayed_set_stat (file_name, 0);
-      
+
   /* Take a safety backup of a previously existing file.  */
 
   if (backup_option)

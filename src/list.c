@@ -1,7 +1,7 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -211,7 +211,7 @@ list_archive (void)
   decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
     print_header (&current_stat_info, block_ordinal);
-  
+
   if (incremental_option)
     {
       if (verbose_option > 2)
@@ -1006,7 +1006,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
     }
   else
     temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
-  
+
   if (block_number_option)
     {
       char buf[UINTMAX_STRSIZE_BOUND];
@@ -1277,7 +1277,7 @@ skip_file (off_t size)
     }
 
   mv_size_left (size);
-  
+
   while (size > 0)
     {
       x = find_next_block ();

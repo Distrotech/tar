@@ -1,7 +1,7 @@
 /* GNU dump extensions to tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -115,13 +115,13 @@ update_parent_directory (const char *name)
 {
   struct directory *directory;
   char *p, *name_buffer;
-  
+
   p = dir_name (name);
   name_buffer = xmalloc (strlen (p) + 2);
   strcpy (name_buffer, p);
   if (! ISSLASH (p[strlen (p) - 1]))
     strcat (name_buffer, "/");
-  
+
   directory = find_directory (name_buffer);
   free (name_buffer);
   if (directory)
@@ -142,16 +142,16 @@ compare_dirents (const void *first, const void *second)
 		 (*(char *const *) second) + 1);
 }
 
-enum children 
+enum children
 procdir (char *name_buffer, struct stat *stat_data,
 	 dev_t device,
 	 enum children children,
 	 bool verbose)
-{ 
+{
   struct directory *directory;
   bool nfs = NFS_FILE_STAT (*stat_data);
   struct name *np;
-  
+
   if ((directory = find_directory (name_buffer)) != NULL)
     {
       /* With NFS, the same file can have two different devices
@@ -160,7 +160,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 	 To avoid spurious incremental redumping of
 	 directories, consider all NFS devices as equal,
 	 relying on the i-node to establish differences.  */
-      
+
       if (! (((directory->nfs & nfs)
 	      || directory->device_number == stat_data->st_dev)
 	     && directory->inode_number == stat_data->st_ino))
@@ -212,7 +212,7 @@ procdir (char *name_buffer, struct stat *stat_data,
     directory->children = NO_CHILDREN;
   else if (children == ALL_CHILDREN)
     directory->children = ALL_CHILDREN;
-  
+
   return directory->children;
 }
 
@@ -247,7 +247,7 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
     }
   else
     children = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
-  
+
   if (dirp && children != NO_CHILDREN)
     for (entry = dirp;
 	 (entrylen = strlen (entry)) != 0;
@@ -377,7 +377,7 @@ dumpdir_size (const char *p)
       totsize += size;
       p += size;
     }
-  return totsize + 1;  
+  return totsize + 1;
 }
 
 
@@ -399,7 +399,7 @@ static FILE *listed_incremental_stream;
    correctly and that tar will use the most conservative backup method among
    possible alternatives (i.e. prefer ALL_CHILDREN over CHANGED_CHILDREN,
    etc.) This ensures that the snapshots are updated to the recent version
-   without any loss of data. */ 
+   without any loss of data. */
 void
 read_directory_file (void)
 {
@@ -436,7 +436,7 @@ read_directory_file (void)
       uintmax_t u;
       time_t t = u;
       int incremental_version;
-      
+
       if (strncmp (buf, PACKAGE_NAME, sizeof PACKAGE_NAME - 1) == 0)
 	{
 	  ebuf = buf + sizeof PACKAGE_NAME - 1;
@@ -445,7 +445,7 @@ read_directory_file (void)
 	  for (; *ebuf != '-'; ebuf++)
 	    if (!*ebuf)
 	      ERROR((1, 0, _("Bad incremental file format")));
-	  
+
 	  incremental_version = (errno = 0, strtoumax (ebuf+1, &ebuf, 10));
 	  if (getline (&buf, &bufsize, fp) <= 0)
 	    {
@@ -461,7 +461,7 @@ read_directory_file (void)
       if (incremental_version > TAR_INCREMENTAL_VERSION)
 	ERROR((1, 0, _("Unsupported incremental format version: %d"),
 	       incremental_version));
-      
+
       t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
       if (buf == ebuf || (u == 0 && errno == EINVAL))
 	ERROR ((0, 0, "%s:%ld: %s",
@@ -476,7 +476,7 @@ read_directory_file (void)
       else if (incremental_version == 1)
 	{
 	  newer_mtime_option.tv_sec = t;
-	  
+
 	  t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
 	  if (buf == ebuf || (u == 0 && errno == EINVAL))
 	    ERROR ((0, 0, "%s:%ld: %s",
@@ -518,19 +518,19 @@ read_directory_file (void)
 		ERROR ((0, 0, "%s:%ld: %s",
 			quotearg_colon (listed_incremental_option), lineno,
 			_("Invalid modification time (seconds)")));
-	      else if (mtime.tv_sec != u) 
+	      else if (mtime.tv_sec != u)
 		ERROR ((0, 0, "%s:%ld: %s",
 			quotearg_colon (listed_incremental_option), lineno,
 			_("Modification time (seconds) out of range")));
 	      strp = ebuf;
-	  
+
 	      errno = 0;
 	      mtime.tv_nsec = u = strtoumax (strp, &ebuf, 10);
 	      if (!isspace (*ebuf))
 		ERROR ((0, 0, "%s:%ld: %s",
 			quotearg_colon (listed_incremental_option), lineno,
 			_("Invalid modification time (nanoseconds)")));
-	      else if (mtime.tv_nsec != u) 
+	      else if (mtime.tv_nsec != u)
 		ERROR ((0, 0, "%s:%ld: %s",
 			quotearg_colon (listed_incremental_option), lineno,
 			_("Modification time (nanoseconds) out of range")));
@@ -538,14 +538,14 @@ read_directory_file (void)
 	    }
 	  else
 	    memset (&mtime, 0, sizeof mtime);
-	  
+
 	  errno = 0;
 	  dev = u = strtoumax (strp, &ebuf, 10);
 	  if (!isspace (*ebuf))
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Invalid device number")));
-	  else if (dev != u) 
+	  else if (dev != u)
 	    ERROR ((0, 0, "%s:%ld: %s",
 		    quotearg_colon (listed_incremental_option), lineno,
 		    _("Device number out of range")));
@@ -588,7 +588,7 @@ write_directory_file_entry (void *entry, void *data)
       int e;
       char buf[UINTMAX_STRSIZE_BOUND];
       char *str = quote_copy_string (directory->name);
-      
+
       if (directory->nfs)
 	fprintf (fp, "+");
       fprintf (fp, "%s ", umaxtostr (directory->mtime.tv_sec, buf));
@@ -596,7 +596,7 @@ write_directory_file_entry (void *entry, void *data)
       fprintf (fp, "%s ", umaxtostr (directory->device_number, buf));
       fprintf (fp, "%s ", umaxtostr (directory->inode_number, buf));
       fprintf (fp, "%s\n", str ? str : directory->name);
-	       
+
       e = errno;
       if (str)
 	free (str);
@@ -621,7 +621,7 @@ write_directory_file (void)
 
   fprintf (fp, "%s-%s-%d\n", PACKAGE_NAME, PACKAGE_VERSION,
 	   TAR_INCREMENTAL_VERSION);
-  
+
   fprintf (fp, "%lu %lu\n",
 	   (unsigned long int) start_time.tv_sec,
 	   (unsigned long int) start_time.tv_nsec);
@@ -644,7 +644,7 @@ get_gnu_dumpdir (struct tar_stat_info *stat_info)
   union block *data_block;
   char *to;
   char *archive_dir;
-  
+
   size = stat_info->stat.st_size;
 
   archive_dir = xmalloc (size);
@@ -669,7 +669,7 @@ get_gnu_dumpdir (struct tar_stat_info *stat_info)
     }
 
   mv_end ();
-  
+
   stat_info->dumpdir = archive_dir;
   stat_info->skipped = true; /* For skip_member() and friends
 				to work correctly */
@@ -699,7 +699,7 @@ purge_directory (char const *directory_name)
       skip_member ();
       return;
     }
-  
+
   current_dir = savedir (directory_name);
 
   if (!current_dir)
@@ -771,13 +771,13 @@ list_dumpdir (char *buffer, size_t size)
 	  buffer++;
 	  size--;
 	  break;
-	  
+
 	case 0:
 	  fputc ('\n', stdlis);
 	  buffer++;
 	  size--;
 	  break;
-	  
+
 	default:
 	  fputc (*buffer, stdlis);
 	  buffer++;

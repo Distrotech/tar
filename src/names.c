@@ -1,7 +1,7 @@
 /* Various processing of names.
 
    Copyright (C) 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -430,7 +430,7 @@ addname (char const *string, int change_dir)
   name->change_dir = change_dir;
   name->dir_contents = 0;
   name->explicit = 1;
-  
+
   if (string && is_pattern (string))
     {
       name->regexp = 1;
@@ -713,7 +713,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 	  if (*string == 'D')
 	    {
 	      struct name *np;
-	      
+
 	      if (allocated_length <= name_length + string_length)
 		{
 		  do
@@ -791,7 +791,7 @@ collect_and_sort_names (void)
 
 /* This is like name_match, except that
     1. It returns a pointer to the name it matched, and doesn't set FOUND
-    in structure. The caller will have to do that if it wants to.  
+    in structure. The caller will have to do that if it wants to.
     2. If the namelist is empty, it returns null, unlike name_match, which
     returns TRUE.
     3. The second argument (EXACT) controls matching algorithm. If it

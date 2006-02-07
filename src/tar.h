@@ -1,7 +1,7 @@
 /* GNU tar Archive Format description.
 
    Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   2000, 2001, 2003, 2004, 2005 Free Software Foundation, Inc.
+   2000, 2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -303,7 +303,7 @@ struct tar_stat_info
   bool is_dumpdir;          /* Is the member a dumpdir? */
   bool skipped;             /* The member contents is already read
 			       (for GNUTYPE_DUMPDIR) */
-  char *dumpdir;            /* Contents of the dump directory */    
+  char *dumpdir;            /* Contents of the dump directory */
 };
 
 union block

@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -327,13 +327,13 @@ GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
 /* When creating archive in verbose mode, list member names as stored in the
    archive */
-GLOBAL bool show_stored_names_option; 
+GLOBAL bool show_stored_names_option;
 
 /* Delay setting modification times and permissions of extracted directories
    until the end of extraction. This variable helps correctly restore directory
    timestamps from archives with an unusual member order. It is automatically
    set for incremental archives. */
-GLOBAL bool delay_directory_restore_option; 
+GLOBAL bool delay_directory_restore_option;
 
 
 /* Declarations for each module.  */
@@ -577,7 +577,7 @@ void xpipe (int[2]);
 void *page_aligned_alloc (void **, size_t);
 int set_file_atime (int fd, char const *file,
 		    struct timespec const timespec[2]);
-     
+
 /* Module names.c.  */
 
 extern struct name *gnu_list_name;
@@ -658,7 +658,7 @@ void xheader_string_end (char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
 char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 			   size_t n);
-     
+
 /* Module system.c */
 
 void sys_detect_dev_null_output (void);

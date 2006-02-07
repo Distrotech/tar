@@ -1,4 +1,10 @@
-2006-02-07  Jim Meyering  <jim@meyering.net> 
+2006-02-07  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* ChangeLog, NEWS, src/common.h, src/extract.c, src/incremen.c:
+	* src/list.c, src/names.c, src/tar.h, src/xheader.c:
+	Update copyright year to 2006.
+
+2006-02-07  Jim Meyering  <jim@meyering.net>
 
         * src/xheader.c (sparse_map_decoder): Fix misleading diagnostic.
 
@@ -17,7 +23,7 @@
 	(decode_header): Set stat_info->is_dumpdir
 	(skip_member): Do nothing if skipped is true
 	* src/tar.h (struct tar_stat_info): New members is_dumpdir and skipped.
-	
+
 2006-01-22  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Refuse using --delete with
@@ -7120,8 +7126,8 @@ See ChangeLog.1 for earlier changes.
 
 
 
-Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005 Free Software
-Foundation, Inc.
+Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
+Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 
