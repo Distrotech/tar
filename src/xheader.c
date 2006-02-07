@@ -1249,7 +1249,7 @@ sparse_map_decoder (struct tar_stat_info *st, char const *arg,
 	  else
 	    {
 	      ERROR ((0, 0, _("Malformed extended header: excess %s=%s"),
-		      "GNU.sparse.numbytes", arg));
+		      keyword, arg));
 	      return;
 	    }
 	}
