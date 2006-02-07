@@ -1,4 +1,8 @@
 .deps
+__fpending.c
+__fpending.h
+closeout.c
+closeout.h
 Makefile
 Makefile.am
 Makefile.in

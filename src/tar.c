@@ -37,6 +37,8 @@
 #include "common.h"
 
 #include <argmatch.h>
+#include <closeout.h>
+#include <exitfail.h>
 #include <getdate.h>
 #include <localedir.h>
 #include <rmt.h>
@@ -1441,7 +1443,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case SHOW_DEFAULTS_OPTION:
       show_default_settings (stdout);
-      exit(0);
+      close_stdout ();
+      exit (0);
 
     case STRIP_COMPONENTS_OPTION:
       {
@@ -1605,16 +1608,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
       fprintf (state->out_stream, "\n");
       fprintf (state->out_stream, _("Report bugs to %s.\n"),
 	       argp_program_bug_address);
+      close_stdout ();
       exit (0);
 
     case USAGE_OPTION:
-      argp_state_help (state, state->out_stream,
-		       ARGP_HELP_USAGE | ARGP_HELP_EXIT_OK);
-      break;
+      argp_state_help (state, state->out_stream, ARGP_HELP_USAGE);
+      close_stdout ();
+      exit (0);
 
     case VERSION_OPTION:
       version_etc (state->out_stream, "tar", PACKAGE_NAME, VERSION,
 		   "John Gilmore", "Jay Fenlason", (char *) NULL);
+      close_stdout ();
       exit (0);
 
     case HANG_OPTION:
@@ -1643,6 +1648,7 @@ void
 usage (int status)
 {
   argp_help (&argp, stderr, ARGP_HELP_SEE, (char*) program_name);
+  close_stdout ();
   exit (status);
 }
 
@@ -1753,7 +1759,7 @@ decode_options (int argc, char **argv)
 
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP,
 		  &index, &args))
-    exit (1);
+    exit (TAREXIT_FAILURE);
 
 
   /* Special handling for 'o' option:
@@ -2003,6 +2009,7 @@ main (int argc, char **argv)
   bindtextdomain (PACKAGE, LOCALEDIR);
   textdomain (PACKAGE);
 
+  exit_failure = TAREXIT_FAILURE;
   exit_status = TAREXIT_SUCCESS;
   filename_terminator = '\n';
   set_quoting_style (0, DEFAULT_QUOTING_STYLE);
@@ -2089,8 +2096,9 @@ main (int argc, char **argv)
   free (archive_name_array);
   name_term ();
 
-  if (stdlis != stderr && (ferror (stdlis) || fclose (stdlis) != 0))
-    FATAL_ERROR ((0, 0, _("Error in writing to standard output")));
+  if (stdlis == stdout)
+    close_stdout ();
+
   if (exit_status == TAREXIT_FAILURE)
     error (0, 0, _("Error exit delayed from previous errors"));
   if (ferror (stderr) || fclose (stderr) != 0)

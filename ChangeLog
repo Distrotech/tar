@@ -1,5 +1,20 @@
 2006-02-07  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* gnulib.modules: Add closeout, exitfial.
+	* lib/.cvsignore: Add __fpending.c, __fpending.h, closeout.c,
+	closeout.h.
+	* src/buffer.c: Incluse closeout.h.
+	(_open_archive): Use freopen rather than fopen, so
+	that stdlis is always either stdout or stderr.  Use
+	close_stdout_set_file_name to report its name.
+	* src/tar.c: Include closeout.h and exitfail.h.
+	(parse_opt, usage): Call close_stdout as appropriate, to check for
+	write errors.
+	(decode_options): Exit with status TAREXIT_FAILURE, not 1.
+	(main): Set exit_failure, to exit with proper status on memory
+	allocation failure and the like.
+	Use close_stdout rather than rolling our own test.
+
 	* NEWS: --version now outputs copyright etc., to conform to the
 	GNU coding standards.  Remove --license.
 	* gnulib.modules: Add version-etc-fsf.

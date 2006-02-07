@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -23,6 +23,7 @@
 
 #include <signal.h>
 
+#include <closeout.h>
 #include <fnmatch.h>
 #include <human.h>
 #include <quotearg.h>
@@ -368,7 +369,7 @@ init_buffer ()
 {
   if (!record_buffer[record_index])
     page_aligned_alloc (&record_buffer[record_index], record_size);
-      
+
   record_start = record_buffer[record_index];
   current_block = record_start;
   record_end = record_start + blocking_factor;
@@ -383,9 +384,10 @@ _open_archive (enum access_mode wanted_access)
 
   if (index_file_name)
     {
-      stdlis = fopen (index_file_name, "w");
+      stdlis = freopen (index_file_name, "w", stdout);
       if (! stdlis)
 	open_error (index_file_name);
+      close_stdout_set_file_name (index_file_name);
     }
   else
     stdlis = to_stdout_option ? stderr : stdout;
@@ -402,7 +404,7 @@ _open_archive (enum access_mode wanted_access)
 
   record_index = 0;
   init_buffer ();
-  
+
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
@@ -876,19 +878,19 @@ change_tape_menu (FILE *read_file)
 	       _("Prepare volume #%d for %s and hit return: "),
 	       global_volno + 1, quote (*archive_name_cursor));
       fflush (stderr);
-      
+
       if (getline (&input_buffer, &size, read_file) <= 0)
 	{
 	  WARN ((0, 0, _("EOF where user reply was expected")));
-	  
+
 	  if (subcommand_option != EXTRACT_SUBCOMMAND
 	      && subcommand_option != LIST_SUBCOMMAND
 	      && subcommand_option != DIFF_SUBCOMMAND)
 	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
-	  
+
 	  fatal_exit ();
 	}
-      
+
       if (input_buffer[0] == '\n'
 	  || input_buffer[0] == 'y'
 	  || input_buffer[0] == 'Y')
@@ -910,37 +912,37 @@ change_tape_menu (FILE *read_file)
 
 	case 'q':
 	  /* Quit.  */
-	  
+
 	  WARN ((0, 0, _("No new volume; exiting.\n")));
-	  
+
 	  if (subcommand_option != EXTRACT_SUBCOMMAND
 	      && subcommand_option != LIST_SUBCOMMAND
 	      && subcommand_option != DIFF_SUBCOMMAND)
 	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
-	  
+
 	  fatal_exit ();
-	  
+
 	case 'n':
 	  /* Get new file name.  */
-	  
+
 	  {
 	    char *name;
 	    char *cursor;
-	    
+
 	    for (name = input_buffer + 1;
 		 *name == ' ' || *name == '\t';
 		 name++)
 	      ;
-	    
+
 	    for (cursor = name; *cursor && *cursor != '\n'; cursor++)
 	      ;
 	    *cursor = '\0';
-	    
+
 	    /* FIXME: the following allocation is never reclaimed.  */
 	    *archive_name_cursor = xstrdup (name);
 	  }
 	  break;
-	  
+
 	case '!':
 	  if (!restrict_option)
 	    {
@@ -977,7 +979,7 @@ new_volume (enum access_mode mode)
   assign_string (&volume_label, NULL);
   assign_string (&continued_file_name, NULL);
   continued_file_size = continued_file_offset = 0;
-  
+
   if (rmtclose (archive) != 0)
     close_warn (*archive_name_cursor);
 
@@ -1111,7 +1113,7 @@ try_new_volume ()
 	  }
 	break;
       }
-      
+
     case GNUTYPE_VOLHDR:
       if (!read_header0 ())
 	return false;
@@ -1121,7 +1123,7 @@ try_new_volume ()
       if (header->header.typeflag != GNUTYPE_MULTIVOL)
 	break;
       /* FALL THROUGH */
-      
+
     case GNUTYPE_MULTIVOL:
       if (!read_header0 ())
 	return false;
@@ -1131,7 +1133,7 @@ try_new_volume ()
       continued_file_offset =
 	UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
       break;
-      
+
     default:
       break;
     }
@@ -1139,7 +1141,7 @@ try_new_volume ()
   if (real_s_name)
     {
       uintmax_t s;
-      if (!continued_file_name 
+      if (!continued_file_name
 	  || strcmp (continued_file_name, real_s_name))
 	{
 	  WARN ((0, 0, _("%s is not continued on this volume"),
@@ -1162,7 +1164,7 @@ try_new_volume ()
 		 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
 	  return false;
 	}
-      
+
       if (real_s_totsize - real_s_sizeleft != continued_file_offset)
 	{
 	  WARN ((0, 0, _("This volume is out of sequence")));
@@ -1228,7 +1230,7 @@ _write_volume_label (const char *str)
   else
     {
       union block *label = find_next_block ();
-      
+
       memset (label, 0, BLOCKSIZE);
 
       strcpy (label->header.name, volume_label_option);
@@ -1280,7 +1282,7 @@ add_chunk_header ()
 					       real_s_part_no);
       st.file_name = st.orig_file_name;
       st.archive_file_size = st.stat.st_size = real_s_sizeleft;
-      
+
       block_ordinal = current_block_ordinal ();
       blk = start_header (&st);
       free (st.orig_file_name);
@@ -1307,25 +1309,25 @@ gnu_add_multi_volume_header (void)
 {
   int tmp;
   union block *block = find_next_block ();
-  
+
   if (strlen (real_s_name) > NAME_FIELD_SIZE)
     WARN ((0, 0,
 	   _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
 	   quotearg_colon (real_s_name)));
-  
+
   memset (block, 0, BLOCKSIZE);
-  
+
   /* FIXME: Michael P Urban writes: [a long name file] is being written
      when a new volume rolls around [...]  Looks like the wrong value is
      being preserved in real_s_name, though.  */
-  
+
   strncpy (block->header.name, real_s_name, NAME_FIELD_SIZE);
   block->header.typeflag = GNUTYPE_MULTIVOL;
-  
+
   OFF_TO_CHARS (real_s_sizeleft, block->header.size);
   OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
 		block->oldgnu_header.offset);
-  
+
   tmp = verbose_option;
   verbose_option = 0;
   finish_header (&current_stat_info, block, -1);
@@ -1401,7 +1403,7 @@ simple_flush_read (void)
       if (status != record_size)
 	archive_write_error (status);
     }
-  
+
   for (;;)
     {
       status = rmtread (archive, record_start->buffer, record_size);
@@ -1493,7 +1495,7 @@ _gnu_flush_read (void)
       else if (status == SAFE_READ_ERROR)
 	{
 	  archive_read_error ();
-	  continue; 
+	  continue;
 	}
       break;
     }
@@ -1505,7 +1507,7 @@ gnu_flush_read (void)
 {
   flush_read_ptr = simple_flush_read; /* Avoid recursion */
   _gnu_flush_read ();
-  flush_read_ptr = gnu_flush_read; 
+  flush_read_ptr = gnu_flush_read;
 }
 
 static void
@@ -1516,7 +1518,7 @@ _gnu_flush_write (size_t buffer_level)
   char *copy_ptr;
   size_t copy_size;
   size_t bufsize;
-    
+
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
@@ -1552,7 +1554,7 @@ _gnu_flush_write (size_t buffer_level)
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();
-  
+
   if (volume_label_option)
     add_volume_label ();
 
@@ -1584,7 +1586,7 @@ gnu_flush_write (size_t buffer_level)
 {
   flush_write_ptr = simple_flush_write; /* Avoid recursion */
   _gnu_flush_write (buffer_level);
-  flush_write_ptr = gnu_flush_write; 
+  flush_write_ptr = gnu_flush_write;
 }
 
 void
@@ -1597,7 +1599,7 @@ void
 flush_write ()
 {
   flush_write_ptr (record_size);
-}    
+}
 
 void
 open_archive (enum access_mode wanted_access)
@@ -1623,4 +1625,3 @@ open_archive (enum access_mode wanted_access)
       break;
     }
 }
-
