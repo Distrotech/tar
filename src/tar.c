@@ -23,6 +23,7 @@
 
 #include <fnmatch.h>
 #include <argp.h>
+#include <argp-namefrob.h>
 
 #include <signal.h>
 #if ! defined SIGCHLD && defined SIGCLD
@@ -235,7 +236,7 @@ tar_set_quoting_style (char *arg)
 	return;
       }
   FATAL_ERROR ((0, 0,
-		_("Unknown quoting style `%s'. Try `%s --quoting-style=help' to get a list."), arg));
+		_("Unknown quoting style `%s'. Try `%s --quoting-style=help' to get a list."), arg, program_invocation_short_name));
 }
 
 
