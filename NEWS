@@ -1,7 +1,7 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.15.2 (CVS version -- unreleased)
+version 1.15.90 - Sergey Poznyakoff, 2006-02-19
 
 * New features
 
