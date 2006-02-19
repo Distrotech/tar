@@ -1285,10 +1285,10 @@ add_chunk_header ()
 
       block_ordinal = current_block_ordinal ();
       blk = start_header (&st);
-      free (st.orig_file_name);
       if (!blk)
 	abort (); /* FIXME */
       finish_header (&st, blk, block_ordinal);
+      free (st.orig_file_name);
     }
 }
 
