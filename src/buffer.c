@@ -966,7 +966,8 @@ new_volume (enum access_mode mode)
 {
   static FILE *read_file;
   static int looped;
-
+  int prompt;
+  
   if (!read_file && !info_script_option)
     /* FIXME: if fopen is used, it will never be closed.  */
     read_file = archive == STDIN_FILENO ? fopen (TTY_NAME, "r") : stdin;
@@ -989,9 +990,10 @@ new_volume (enum access_mode mode)
       archive_name_cursor = archive_name_array;
       looped = 1;
     }
-
+  prompt = looped;
+  
  tryagain:
-  if (looped)
+  if (prompt)
     {
       /* We have to prompt from now on.  */
 
@@ -1041,6 +1043,7 @@ new_volume (enum access_mode mode)
       open_warn (*archive_name_cursor);
       if (!verify_option && mode == ACCESS_WRITE && backup_option)
 	undo_last_backup ();
+      prompt = 1;
       goto tryagain;
     }
 
