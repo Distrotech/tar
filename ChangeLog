@@ -2,6 +2,9 @@
 
 	* src/buffer.c (add_chunk_header): Free st.orig_file_name after
 	calling	finish_header().
+	(new_volume): Prompt the user for archive name if unable to open
+	next archive.
+
 	* src/create.c (dump_file0): Restore file_count_links,
 	accidentally removed on 2005-11-29.
 	* configure.ac: Raise version number to 1.15.90
