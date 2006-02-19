@@ -1,3 +1,10 @@
+2006-02-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (dump_file0): Restore file_count_links,
+	accidentally removed on 2005-11-29.
+	* configure.ac: Raise version number to 1.15.90
+	* NEWS: Likewise.
+
 2006-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (tar_set_quoting_style): Provide second argument to
