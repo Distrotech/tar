@@ -1520,6 +1520,8 @@ dump_file0 (struct tar_stat_info *st, char const *p,
 	      abort ();
 	    }
 
+	  file_count_links (st);
+	  
 	  ok = status == dump_status_ok;
 	}
 
