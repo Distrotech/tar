@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-AT_SETUP([Sparse files])
+AT_SETUP([sparse files])
 AT_KEYWORDS([sparse sparse01])
 
 AT_TAR_CHECK([

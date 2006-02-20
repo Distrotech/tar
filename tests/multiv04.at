@@ -33,7 +33,7 @@
 # sufficiently small, in order for the entire archive to fit in two volumes.
 # 3. Test the created multi-volume archive.
 
-AT_SETUP([Split directory members in a MV archive])
+AT_SETUP([split directory members in a MV archive])
 AT_KEYWORDS([multivolume multiv multiv04])
 
 AT_TAR_CHECK([

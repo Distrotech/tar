@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-AT_SETUP([Extracting sparse file over a pipe])
+AT_SETUP([extracting sparse file over a pipe])
 AT_KEYWORDS([sparse sparse02])
 
 # Tar 1.14 - 1.15.1 was unable to extract sparse files to a pipe.

@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-AT_SETUP([Sparse files in PAX MV archives])
+AT_SETUP([sparse files in PAX MV archives])
 AT_KEYWORDS([sparse multiv sparsemvp])
 
 # Check if sparse files are correctly split between PAX multi-volume
