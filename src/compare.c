@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -20,6 +20,7 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
+#include <system-ioctl.h>
 
 #if HAVE_LINUX_FD_H
 # include <linux/fd.h>
@@ -139,7 +140,7 @@ read_and_process (struct tar_stat_info *st, int (*processor) (size_t, char *))
   union block *data_block;
   size_t data_size;
   size_t size = st->stat.st_size;
-  
+
   mv_begin (st);
   while (size)
     {
@@ -224,7 +225,7 @@ diff_file (void)
       if (!sys_compare_gid (&stat_data, &current_stat_info.stat))
 	report_difference (&current_stat_info, _("Gid differs"));
 
-      if (tar_timespec_cmp (get_stat_mtime (&stat_data), 
+      if (tar_timespec_cmp (get_stat_mtime (&stat_data),
                             current_stat_info.mtime))
 	report_difference (&current_stat_info, _("Mod time differs"));
       if (current_header->header.typeflag != GNUTYPE_SPARSE
@@ -423,7 +424,7 @@ diff_multivol (void)
     }
 
   read_and_process (&current_stat_info, process_rawdata);
-  
+
   status = close (fd);
   if (status != 0)
     close_error (current_stat_info.file_name);

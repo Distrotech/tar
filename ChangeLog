@@ -1,3 +1,17 @@
+2006-02-20  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap: Don't claim lib/Makefile.am is generated automatically
+	from itself.
+
+	Avoid installation glitches on Solaris 8 with Sun C 5.4.
+	* lib/.cvsignore: Add system-ioctl.h.
+	* lib/Makefile.tmpl (noinst_HEADERS): Add system-ioctl.h.
+	* src/buffer.c: Include system-ioctl.h.
+	* src/compare.c: Likewise.
+	* src/delete.c: Likewise.
+	* src/system.c: Include <getline.h>, <setenv.h>.
+	* src/tar.c: Include <getline.h>.
+
 2006-02-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (add_chunk_header): Free st.orig_file_name after

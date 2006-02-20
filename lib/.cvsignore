@@ -178,6 +178,7 @@ strtoul.c
 strtoull.c
 strtoumax.c
 sysexit_.h
+system-ioctl.h
 system.h
 time_r.c
 time_r.h

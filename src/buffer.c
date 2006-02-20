@@ -20,11 +20,13 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
+#include <system-ioctl.h>
 
 #include <signal.h>
 
 #include <closeout.h>
 #include <fnmatch.h>
+#include <getline.h>
 #include <human.h>
 #include <quotearg.h>
 
@@ -967,7 +969,7 @@ new_volume (enum access_mode mode)
   static FILE *read_file;
   static int looped;
   int prompt;
-  
+
   if (!read_file && !info_script_option)
     /* FIXME: if fopen is used, it will never be closed.  */
     read_file = archive == STDIN_FILENO ? fopen (TTY_NAME, "r") : stdin;
@@ -991,7 +993,7 @@ new_volume (enum access_mode mode)
       looped = 1;
     }
   prompt = looped;
-  
+
  tryagain:
   if (prompt)
     {

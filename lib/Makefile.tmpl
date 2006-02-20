@@ -1,7 +1,7 @@
 # Makefile for GNU tar library.	-*- Makefile -*-
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005
-# Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2004,
+# 2005, 2006 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 ## 02110-1301, USA.
 
 noinst_LIBRARIES = libtar.a
-noinst_HEADERS = system.h localedir.h rmt.h paxlib.h stdopen.h
+noinst_HEADERS = system.h system-ioctl.h localedir.h rmt.h paxlib.h stdopen.h
 libtar_a_SOURCES = prepargs.c prepargs.h rtapelib.c paxerror.c paxexit.c paxnames.c stdopen.c
 
 localedir = $(datadir)/locale

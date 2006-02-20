@@ -1,6 +1,6 @@
 /* System-dependent calls for tar.
 
-   Copyright (C) 2003, 2004, 2005 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -17,6 +17,8 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
+#include <getline.h>
+#include <setenv.h>
 
 #include "common.h"
 #include <rmt.h>
@@ -349,7 +351,7 @@ sys_child_open_for_compress (void)
 	  if (archive < 0)
 	    {
 	      int saved_errno = errno;
-	      
+
 	      if (backup_option)
 		undo_last_backup ();
 	      errno = saved_errno;
@@ -772,7 +774,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   char *argv[4];
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   int p[2];
-  
+
   xpipe (p);
   pipe_handler = signal (SIGPIPE, SIG_IGN);
 
@@ -787,7 +789,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
       char *buf;
       size_t size = 0;
       FILE *fp;
-      
+
       xclose (p[PWRITE]);
       fp = fdopen (p[PREAD], "r");
       rc = getline (&buf, &size, fp);
@@ -795,14 +797,14 @@ sys_exec_info_script (const char **archive_name, int volume_number)
 
       if (rc > 0 && buf[rc-1] == '\n')
 	buf[--rc] = 0;
-      
+
       while (waitpid (pid, &status, 0) == -1)
 	if (errno != EINTR)
 	  {
 	    waitpid_error (info_script_option);
 	    return -1;
 	  }
-      
+
       if (WIFEXITED (status))
 	{
 	  if (WEXITSTATUS (status) == 0 && rc > 0)
@@ -811,7 +813,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
 	    free (buf);
 	  return WEXITSTATUS (status);
 	}
-      
+
       free (buf);
       return -1;
     }

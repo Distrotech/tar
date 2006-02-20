@@ -22,6 +22,7 @@
 #include <system.h>
 
 #include <fnmatch.h>
+#include <getline.h>
 #include <argp.h>
 #include <argp-namefrob.h>
 
