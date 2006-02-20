@@ -295,7 +295,7 @@ echo "$0: Creating m4/gnulib.m4"
  echo "])") > ./m4/gnulib.m4
 
 echo "$0: Creating lib/Makefile.am"
-(echo "# This file is generated automatically from lib/Makefile.am. Do not edit!"
+(echo "# This file is generated automatically. Do not edit!"
  cat lib/Makefile.tmpl
 
  for gnulib_module in $gnulib_modules; do
