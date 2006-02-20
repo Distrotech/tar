@@ -70,6 +70,9 @@ TESTSUITE_AT = \
  listed02.at\
  long01.at\
  longv7.at\
+ lustar01.at\
+ lustar02.at\
+ lustar03.at\
  multiv01.at\
  multiv02.at\
  multiv03.at\
