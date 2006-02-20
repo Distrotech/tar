@@ -1,3 +1,18 @@
+2006-02-20  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (split_long_name): Fix maximum length estimation.
+	Patch by Jim Lowe.
+	* tests/Makefile.am (lustar01.at,lustar02.at,lustar03.at): New
+	tests.
+	* tests/atlocal.in: Add build-aux to the PATH
+	* tests/long01.at: Remove mkhier, use AT_TAR_MKHIER instead
+	* tests/longv7.at: Reword test title
+	* tests/lustar01.at: New test
+	* tests/lustar02.at: New test
+	* tests/lustar03.at: New test
+	* tests/testsuite.at (AT_TAR_MKHIER): New macro
+	(lustar01.at,lustar02.at,lustar03.at): New tests.		
+
 2006-02-20  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap: Don't claim lib/Makefile.am is generated automatically
