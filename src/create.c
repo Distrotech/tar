@@ -494,7 +494,7 @@ split_long_name (const char *name, size_t length)
   size_t i;
 
   if (length > PREFIX_FIELD_SIZE)
-    length = PREFIX_FIELD_SIZE+2;
+    length = PREFIX_FIELD_SIZE + 1;
   for (i = length - 1; i > 0; i--)
     if (ISSLASH (name[i]))
       break;
