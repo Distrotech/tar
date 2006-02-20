@@ -33,21 +33,8 @@ m4_define([NAME],[0123456789abcde])
 m4_define([FULLNAME],NAME)
 m4_for([N],0,29,,[m4_define([FULLNAME],FULLNAME/NAME)])
 
-# Create a directory from [FULLNAME] with a file NAME at the deepest
-# level. The full length of the resulting file name is 512
-# NOTE: It is important to use a *file* in this test, since directory
-# names always receive a trailing slash in tar.
-mkhier() {
-	(for name in `echo FULLNAME | tr '/' ' '`
-	do
-		mkdir $name
-		cd $name
-	done
-	cat /dev/null > NAME)
-}
-
 AT_TAR_CHECK([
-mkhier
+AT_TAR_MKHIER(FULLNAME,NAME)
 echo test > endfile
 
 tar cf archive FULLNAME/NAME endfile
