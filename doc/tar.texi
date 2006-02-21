@@ -4649,8 +4649,8 @@ You can instruct @command{tar} to send the contents of each extracted
 file to the standard input of an external program:
 
 @table @option
-@opindex to-program
-@item --to-program=@var{command}
+@opindex to-command
+@item --to-command=@var{command}
 Extract files and pipe their contents to the standard input of
 @var{command}. When this option is used, instead of creating the
 files specified, @command{tar} invokes @var{command} and pipes the
