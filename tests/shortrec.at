@@ -31,7 +31,7 @@ mkdir directory
 tar -c -b 1 directory | tar -t >/dev/null
 tar -c -b 1 -f archive directory
 tar -t -f archive >/dev/null
-tar -t <archive >/dev/null
+tar -t -f - < archive >/dev/null
 
 rm -r directory
 ])
