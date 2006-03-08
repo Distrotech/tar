@@ -6,7 +6,7 @@
 	on my host (Debian GNU/Linux 3.1 stable, with default block size),
 	but I assume it does help on some hosts.
 
-	* lib/.cvsignore: Add unistd_.h.  Sort.
+	* lib/.cvsignore: Sort.
 
 2006-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
