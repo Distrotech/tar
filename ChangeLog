@@ -1,5 +1,11 @@
 2006-03-07  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* src/buffer.c (record_buffer_aligned): New var.
+	(init_buffer): Use it to ensure that the buffer is aligned.
+	This doesn't result in any measurable performance improvement
+	on my host (Debian GNU/Linux 3.1 stable, with default block size),
+	but I assume it does help on some hosts.
+
 	* lib/.cvsignore: Add unistd_.h.  Sort.
 
 2006-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>

@@ -44,6 +44,7 @@
 static tarlong prev_written;	/* bytes written on previous volumes */
 static tarlong bytes_written;	/* bytes written on this volume */
 static void *record_buffer[2];	/* allocated memory */
+union block *record_buffer_aligned[2];
 static int record_index;
 
 /* FIXME: The following variables should ideally be static to this
@@ -369,10 +370,11 @@ xclose (int fd)
 static void
 init_buffer ()
 {
-  if (!record_buffer[record_index])
-    page_aligned_alloc (&record_buffer[record_index], record_size);
+  if (! record_buffer_aligned[record_index])
+    record_buffer_aligned[record_index] =
+      page_aligned_alloc (&record_buffer[record_index], record_size);
 
-  record_start = record_buffer[record_index];
+  record_start = record_buffer_aligned[record_index];
   current_block = record_start;
   record_end = record_start + blocking_factor;
 }
