@@ -1,3 +1,7 @@
+2006-03-07  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* lib/.cvsignore: Add unistd_.h.  Sort.
+
 2006-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/shortrec.at: Use -f - to read from stdin.

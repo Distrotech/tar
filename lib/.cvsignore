@@ -1,11 +1,9 @@
 .deps
-__fpending.c
-__fpending.h
-closeout.c
-closeout.h
 Makefile
 Makefile.am
 Makefile.in
+__fpending.c
+__fpending.h
 alloca.c
 alloca.h
 alloca_.h
@@ -35,6 +33,8 @@ charset.alias
 chdir-long.c
 chdir-long.h
 chown.c
+closeout.c
+closeout.h
 config.charset
 creat-safer.c
 dirname.c
@@ -186,6 +186,7 @@ timespec.h
 umaxtostr.c
 unistd--.h
 unistd-safer.h
+unistd_.h
 unlinkdir.c
 unlinkdir.h
 unlocked-io.h
