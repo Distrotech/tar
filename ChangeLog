@@ -1,3 +1,7 @@
+2006-03-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* tests/Makefile.am (AM_CPPFLAGS): Define LOCALEDIR
+
 2006-03-07  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/buffer.c (record_buffer_aligned): New var.
