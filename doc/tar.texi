@@ -2765,7 +2765,7 @@ would suppress security-related information.
 
 This keyword allows user control over the name that is written into the
 ustar header blocks for the extended headers.  The name is obtained
-from @var{string} after substituting the following meta-characters:
+from @var{string} after making the following substitutions:
 
 @multitable @columnfractions .30 .70
 @headitem Meta-character @tab Replaced By
@@ -2790,8 +2790,8 @@ will use the following default value:
 @item globexthdr.name=@var{string}
 This keyword allows user control over the name that is written into
 the ustar header blocks for global extended header records.  The name
-shall will be obtained from the contents of @var{string}, after the
-following character substitutions have been made:
+is obtained from the contents of @var{string}, after making
+the following substitutions:
 
 @multitable @columnfractions .30 .70
 @headitem Meta-character @tab Replaced By
@@ -2802,7 +2802,7 @@ starting at 1.
 @item %% @tab A @samp{%} character.
 @end multitable
 
-Any other @samp{%} characters in string produce undefined results.
+Any other @samp{%} characters in @var{string} produce undefined results.
 
 If no option @samp{globexthdr.name=string} is specified, @command{tar}
 will use the following default value:
@@ -4037,7 +4037,7 @@ files from @file{practice}:
 @smallexample
 $ @kbd{tar -cvf bluesrock.tar blues rock}
 blues
-classical
+rock
 $ @kbd{tar -cvf folkjazz.tar folk jazz}
 folk
 jazz
@@ -4051,7 +4051,7 @@ contain what they are supposed to:
 $ @kbd{tar -tvf bluesrock.tar}
 -rw-r--r-- melissa user    105 1997-01-21 19:42 blues
 -rw-r--r-- melissa user     33 1997-01-20 15:34 rock
-$ @kbd{tar -tvf folkjazz.tar}
+$ @kbd{tar -tvf jazzfolk.tar}
 -rw-r--r-- melissa user     20 1996-09-23 16:44 folk
 -rw-r--r-- melissa user     65 1997-01-30 14:15 jazz
 @end smallexample
@@ -4063,15 +4063,15 @@ $ @kbd{cd ..}
 $ @kbd{tar --concatenate --file=bluesrock.tar jazzfolk.tar}
 @end smallexample
 
-If you now list the contents of the @file{bluesclass.tar}, you will see
+If you now list the contents of the @file{bluesrock.tar}, you will see
 that now it also contains the archive members of @file{jazzfolk.tar}:
 
 @smallexample
 $ @kbd{tar --list --file=bluesrock.tar}
 blues
 rock
-jazz
 folk
+jazz
 @end smallexample
 
 When you use @option{--concatenate}, the source and target archives must
