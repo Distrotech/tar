@@ -1,3 +1,20 @@
+2006-03-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Benno Schulenberg
+
+2006-03-13  Jim Meyering <jim@meyering.net>
+
+	* tests/listed02.at:  Sort the two lines of stderr from the
+	first `tar -v --listed-incremental'.  They would come out
+	reversed and provoke a test failure on a tmpfs
+	file system.
+
+2006-03-13  Benno Schulenberg <benno@nietvergeten.nl>
+
+	* doc/tar.texi: Minor fixes.
+	* src/tar.c (options): Consistently begin help messages with a
+	lowercase letter.
+	
 2006-03-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/Makefile.am (AM_CPPFLAGS): Define LOCALEDIR
