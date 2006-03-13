@@ -370,7 +370,7 @@ static struct argp_option options[] = {
   {"delete", DELETE_OPTION, 0, 0,
    N_("delete from the archive (not on mag tapes!)"), GRID+1 },
   {"test-label", TEST_LABEL_OPTION, NULL, 0,
-   N_("Test archive volume label and exit"), GRID+1 },
+   N_("test the archive volume label and exit"), GRID+1 },
 #undef GRID
 
 #define GRID 20
@@ -386,7 +386,11 @@ static struct argp_option options[] = {
   {"ignore-failed-read", IGNORE_FAILED_READ_OPTION, 0, 0,
    N_("do not exit with nonzero on unreadable files"), GRID+1 },
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
-   N_("process only the NUMBERth occurrence of each file in the archive. This option is valid only in conjunction with one of the subcommands --delete, --diff, --extract or --list and when a list of files is given either on the command line or via -T option. NUMBER defaults to 1."), GRID+1 },
+   N_("process only the NUMBERth occurrence of each file in the archive;"
+      " this option is valid only in conjunction with one of the subcommands"
+      " --delete, --diff, --extract or --list and when a list of files"
+      " is given either on the command line or via the -T option;"
+      " NUMBER defaults to 1"), GRID+1 },
   {"seek", 'n', NULL, 0,
    N_("archive is seekable"), GRID+1 },
 #undef GRID
@@ -462,9 +466,10 @@ static struct argp_option options[] = {
   {"preserve", PRESERVE_OPTION, 0, 0,
    N_("same as both -p and -s"), GRID+1 },
   {"delay-directory-restore", DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
-   N_("Delay setting modification times and permissions of extracted directories until the end of extraction."), GRID+1 },
+   N_("delay setting modification times and permissions of extracted"
+      " directories until the end of extraction"), GRID+1 },
   {"no-delay-directory-restore", NO_DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
-   N_("Cancel the effect of --delay-directory-restore option."), GRID+1 },
+   N_("cancel the effect of --delay-directory-restore option"), GRID+1 },
 #undef GRID
 
 #define GRID 60
@@ -525,7 +530,7 @@ static struct argp_option options[] = {
    N_("Archive format selection:"), GRID },
 
   {"format", 'H', N_("FORMAT"), 0,
-   N_("create archive of the given format."), GRID+1 },
+   N_("create archive of the given format"), GRID+1 },
 
   {NULL, 0, NULL, 0, N_("FORMAT is one of the following:"), GRID+2 },
   {"  v7", 0, NULL, OPTION_DOC|OPTION_NO_TRANS, N_("old V7 tar format"),
@@ -545,10 +550,10 @@ static struct argp_option options[] = {
   {"portability", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
   {"posix", POSIX_OPTION, 0, 0,
    N_("same as --format=posix"), GRID+8 },
-  {"pax-option", PAX_OPTION, N_("keyword[[:]=value][,keyword[[:]=value], ...]"), 0,
+  {"pax-option", PAX_OPTION, N_("keyword[[:]=value][,keyword[[:]=value]]..."), 0,
    N_("control pax keywords"), GRID+8 },
   {"label", 'V', N_("TEXT"), 0,
-   N_("create archive with volume name TEXT. At list/extract time, use TEXT as a globbing pattern for volume name"), GRID+8 },
+   N_("create archive with volume name TEXT; at list/extract time, use TEXT as a globbing pattern for volume name"), GRID+8 },
   {"bzip2", 'j', 0, 0,
    N_("filter the archive through bzip2"), GRID+8 },
   {"gzip", 'z', 0, 0,
@@ -649,18 +654,18 @@ static struct argp_option options[] = {
    N_("ask for confirmation for every action"), GRID+1 },
   {"confirmation", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"show-defaults", SHOW_DEFAULTS_OPTION, 0, 0,
-   N_("Show tar defaults"), GRID+1 },
+   N_("show tar defaults"), GRID+1 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
-   N_("When listing or extracting, list each directory that does not match search criteria"), GRID+1 },
+   N_("when listing or extracting, list each directory that does not match search criteria"), GRID+1 },
   {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
-   N_("When creating archive in verbose mode, list member names as stored in the archive"),
+   N_("when creating archive in verbose mode, list member names as stored in the archive"),
    GRID+1 },
   {"quoting-style", QUOTING_STYLE_OPTION, N_("STYLE"), 0,
-   N_("Set name quoting style. See below for valid STYLE values."), GRID+1 },
+   N_("set name quoting style; see below for valid STYLE values"), GRID+1 },
   {"quote-chars", QUOTE_CHARS_OPTION, N_("STRING"), 0,
-   N_("Additionally quote characters from STRING"), GRID+1 },
+   N_("additionally quote characters from STRING"), GRID+1 },
   {"no-quote-chars", NO_QUOTE_CHARS_OPTION, N_("STRING"), 0,
-   N_("Disable quoting for characters from STRING"), GRID+1 },
+   N_("disable quoting for characters from STRING"), GRID+1 },
 #undef GRID
 
 #define GRID 110
@@ -668,7 +673,7 @@ static struct argp_option options[] = {
    N_("Compatibility options:"), GRID },
 
   {NULL, 'o', 0, 0,
-   N_("when creating, same as --old-archive. When extracting, same as --no-same-owner"), GRID+1 },
+   N_("when creating, same as --old-archive; when extracting, same as --no-same-owner"), GRID+1 },
 #undef GRID
 
 #define GRID 120
@@ -676,15 +681,15 @@ static struct argp_option options[] = {
    N_("Other options:"), GRID },
 
   {"restrict", RESTRICT_OPTION, 0, 0,
-   N_("Restrict use of some potentially harmful options"), -1 },
+   N_("disable use of some potentially harmful options"), -1 },
 
-  {"help",  '?', 0, 0,  N_("Give this help list"), -1},
-  {"usage", USAGE_OPTION, 0, 0,  N_("Give a short usage message"), -1},
-  {"version", VERSION_OPTION, 0, 0,  N_("Print program version"), -1},
+  {"help",  '?', 0, 0,  N_("give this help list"), -1},
+  {"usage", USAGE_OPTION, 0, 0,  N_("give a short usage message"), -1},
+  {"version", VERSION_OPTION, 0, 0,  N_("print program version"), -1},
   /* FIXME -V (--label) conflicts with the default short option for
      --version */
   {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
-   N_("Hang for SECS seconds (default 3600)"), 0},
+   N_("hang for SECS seconds (default 3600)"), 0},
 #undef GRID
 
   {0, 0, 0, 0, 0, 0}
