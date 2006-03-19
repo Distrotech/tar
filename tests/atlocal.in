@@ -2,5 +2,5 @@
 # Configurable variable values for tar test suite.
 # Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
-PATH=@abs_builddir@:@abs_top_builddir@/src:@abs_top_builddir@/build-aux:$top_srcdir:$srcdir:$PATH
+PATH=@abs_builddir@:@abs_top_builddir@/src:@abs_top_srcdir@/build-aux:$top_srcdir:$srcdir:$PATH
 

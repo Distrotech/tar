@@ -1,3 +1,8 @@
+2006-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> (trivial change)
+
+	* tests/atlocal.in (PATH): Add build-aux from the source tree,
+	not the build tree.
+
 2006-03-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Add Benno Schulenberg
@@ -14,7 +19,7 @@
 	* doc/tar.texi: Minor fixes.
 	* src/tar.c (options): Consistently begin help messages with a
 	lowercase letter.
-	
+
 2006-03-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/Makefile.am (AM_CPPFLAGS): Define LOCALEDIR
