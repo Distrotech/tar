@@ -53,14 +53,13 @@ diff_init (void)
 /* Sigh about something that differs by writing a MESSAGE to stdlis,
    given MESSAGE is nonzero.  Also set the exit status if not already.  */
 void
-report_difference (struct tar_stat_info *st __attribute__ ((unused)),
-		   const char *fmt, ...)
+report_difference (struct tar_stat_info *st, const char *fmt, ...)
 {
   if (fmt)
     {
       va_list ap;
 
-      fprintf (stdlis, "%s: ", quotearg_colon (current_stat_info.file_name));
+      fprintf (stdlis, "%s: ", quotearg_colon (st->file_name));
       va_start (ap, fmt);
       vfprintf (stdlis, fmt, ap);
       va_end (ap);
