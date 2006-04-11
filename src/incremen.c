@@ -34,9 +34,10 @@ struct directory
     struct timespec mtime;      /* Modification time */
     dev_t device_number;	/* device number for directory */
     ino_t inode_number;		/* inode number for directory */
-    enum children children;
-    bool nfs;
-    bool found;
+    enum children children;     /* what to save under this directory */
+    bool nfs;                   /* is the directory mounted on nfs? */
+    bool found;                 /* was the directory found on fs? */
+    bool new;                   /* is it new? */
     char name[1];		/* file name of directory */
   };
 
@@ -67,6 +68,19 @@ compare_directories (void const *entry1, void const *entry2)
   return strcmp (directory1->name, directory2->name) == 0;
 }
 
+static struct directory *
+make_directory (const char *name)
+{
+  size_t namelen = strlen (name);
+  size_t size = offsetof (struct directory, name) + namelen + 1;
+  struct directory *directory = xmalloc (size);
+  strcpy (directory->name, name);
+  if (ISSLASH (directory->name[namelen-1]))
+    directory->name[namelen-1] = 0;
+  directory->new = false;
+  return directory;
+}
+  
 /* Create and link a new directory entry for directory NAME, having a
    device number DEV and an inode number INO, with NFS indicating
    whether it is an NFS device and FOUND indicating whether we have
@@ -75,8 +89,7 @@ static struct directory *
 note_directory (char const *name, struct timespec mtime,
 		dev_t dev, ino_t ino, bool nfs, bool found)
 {
-  size_t size = offsetof (struct directory, name) + strlen (name) + 1;
-  struct directory *directory = xmalloc (size);
+  struct directory *directory = make_directory (name);
 
   directory->mtime = mtime;
   directory->device_number = dev;
@@ -84,7 +97,6 @@ note_directory (char const *name, struct timespec mtime,
   directory->children = CHANGED_CHILDREN;
   directory->nfs = nfs;
   directory->found = found;
-  strcpy (directory->name, name);
 
   if (! ((directory_table
 	  || (directory_table = hash_initialize (0, 0, hash_directory,
@@ -103,10 +115,10 @@ find_directory (char *name)
     return 0;
   else
     {
-      size_t size = offsetof (struct directory, name) + strlen (name) + 1;
-      struct directory *dir = alloca (size);
-      strcpy (dir->name, name);
-      return hash_lookup (directory_table, dir);
+      struct directory *dir = make_directory (name);
+      struct directory *ret = hash_lookup (directory_table, dir);
+      free (dir);
+      return ret;
     }
 }
 
@@ -117,13 +129,7 @@ update_parent_directory (const char *name)
   char *p, *name_buffer;
 
   p = dir_name (name);
-  name_buffer = xmalloc (strlen (p) + 2);
-  strcpy (name_buffer, p);
-  if (! ISSLASH (p[strlen (p) - 1]))
-    strcat (name_buffer, "/");
-
-  directory = find_directory (name_buffer);
-  free (name_buffer);
+  directory = find_directory (p);
   if (directory)
     {
       struct stat st;
@@ -173,7 +179,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 	  directory->device_number = stat_data->st_dev;
 	  directory->inode_number = stat_data->st_ino;
 	}
-      else if (listed_incremental_option)
+      else if (listed_incremental_option && !directory->new)
 	/* Newer modification time can mean that new files were
 	   created in the directory or some of the existing files
 	   were renamed. */
@@ -202,6 +208,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 		 && OLDER_STAT_TIME (*stat_data, c))))
 	? ALL_CHILDREN
 	: CHANGED_CHILDREN;
+      directory->new = true;
     }
 
   /* If the directory is on another device and --one-file-system was given,
@@ -293,13 +300,12 @@ scan_directory (struct obstack *stk, char *dir_name, dev_t device)
 	      }
 #endif
 
+	    else if (children == CHANGED_CHILDREN
+		     && OLDER_STAT_TIME (stat_data, m)
+		     && (!after_date_option || OLDER_STAT_TIME (stat_data, c)))
+	      obstack_1grow (stk, 'N');
 	    else
-	      if (children == CHANGED_CHILDREN
-		  && OLDER_STAT_TIME (stat_data, m)
-		  && (!after_date_option || OLDER_STAT_TIME (stat_data, c)))
-		obstack_1grow (stk, 'N');
-	      else
-		obstack_1grow (stk, 'Y');
+	      obstack_1grow (stk, 'Y');
 	  }
 
 	obstack_grow (stk, entry, entrylen + 1);
@@ -565,7 +571,7 @@ read_directory_file (void)
 
 	  strp++;
 	  unquote_string (strp);
-	  note_directory (strp, mtime, dev, ino, nfs, 0);
+	  note_directory (strp, mtime, dev, ino, nfs, false);
 	}
     }
 
