@@ -1,3 +1,17 @@
+2006-04-11  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/extract.c (extract_dir): Fix toggling existing directory
+	permissions (Debian bug #361077). Use parts of patch provided by
+	Ian Jackson <iwj@ubuntu.com>. 
+	* src/compare.c: Minor changes
+	* src/incremen.c (directory.new): New member
+	(note_directory,find_directory: Use make_directory to create
+	struct directory entries
+	(procdir): Avoid duplicating  directories in the incremental
+	backup map.
+	* tests/Makefile.am (TESTSUITE_AT): Add extrac06.at
+	* tests/testsuite.at: Include extrac06.at 
+	
 2006-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> (trivial change)
 
 	* tests/atlocal.in (PATH): Add build-aux from the source tree,
