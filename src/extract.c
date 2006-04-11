@@ -428,7 +428,7 @@ make_directories (char *file_name)
 	     invert_permissions is zero, because
 	     repair_delayed_set_stat may need to update the struct.  */
 	  delay_set_stat (file_name,
-			  &current_stat_info /* ignored */,
+			  &current_stat_info,
 			  invert_permissions, INTERDIR_PERMSTATUS);
 
 	  print_for_mkdir (file_name, cursor - file_name, mode);
@@ -647,7 +647,7 @@ extract_dir (char *file_name, int typeflag)
 		}
 	      if (S_ISDIR (st.st_mode))
 		{
-		  mode = st.st_mode & ~ current_umask;
+		  mode = st.st_mode;
 		  break;
 		}
 	    }
@@ -668,12 +668,16 @@ extract_dir (char *file_name, int typeflag)
   if (status == 0
       || old_files_option == DEFAULT_OLD_FILES
       || old_files_option == OVERWRITE_OLD_FILES)
-    delay_set_stat (file_name, &current_stat_info,
-		    MODE_RWX & (mode ^ current_stat_info.stat.st_mode),
-		    (status == 0
-		     ? ARCHIVED_PERMSTATUS
-		     : UNKNOWN_PERMSTATUS));
-
+    {
+      if (status == 0)
+	delay_set_stat (file_name, &current_stat_info,
+			MODE_RWX & (mode ^ current_stat_info.stat.st_mode),
+			ARCHIVED_PERMSTATUS);
+      else /* For an already existing directory, invert_perms must be 0 */
+	delay_set_stat (file_name, &current_stat_info,
+			0,
+			UNKNOWN_PERMSTATUS);
+    }
   return status;
 }
 
