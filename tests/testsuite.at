@@ -85,6 +85,7 @@ m4_include([extrac02.at])
 m4_include([extrac03.at])
 m4_include([extrac04.at])
 m4_include([extrac05.at])
+m4_include([extrac06.at])
 
 m4_include([gzip.at])
 
