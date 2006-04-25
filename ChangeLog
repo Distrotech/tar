@@ -1,3 +1,11 @@
+2006-04-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* tests/sparse01.at, tests/sparse02.at, tests/sparse03.at,
+	tests/sparsemv.at, tests/sparsemvp.at: Skip the test if the file
+	system does not support sparse files.
+	* doc/tar.texi (@copying): Remove the reference to not existing
+	invariant section.
+
 2006-04-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/extract.c (extract_dir): Fix toggling existing directory
