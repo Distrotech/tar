@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,7 +26,7 @@ AT_KEYWORDS([sparse sparse02])
 # http://lists.gnu.org/archive/html/bug-tar/2005-02/msg00003.html 
 
 AT_TAR_CHECK([
-genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL
+genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST
 tar -c -f archive --sparse sparsefile || exit 1
 echo separator
 
