@@ -453,7 +453,7 @@ _open_archive (enum access_mode wanted_access)
 
 	    archive = STDIN_FILENO;
 
-	    type = check_compressed_archive (archive);
+	    type = check_compressed_archive ();
 	    if (type != ct_none)
 	      FATAL_ERROR ((0, 0,
 			    _("Archive is compressed. Use %s option"),
