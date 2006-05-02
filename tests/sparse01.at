@@ -22,8 +22,8 @@ AT_SETUP([sparse files])
 AT_KEYWORDS([sparse sparse01])
 
 AT_TAR_CHECK([
-genfile --length 1000 > begin
-genfile --length 1000 > end
+genfile --length 1000 -f begin
+genfile --length 1000 -f end
 genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST
 tar -c -f archive --sparse begin sparsefile end || exit 1
 echo separator

@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@ AT_SETUP([deleting non-existing member])
 AT_KEYWORDS([delete delete05])
 
 AT_TAR_CHECK([
-genfile -l 1024 > en
-genfile -l 1024 > to
+genfile -l 1024 -f en
+genfile -l 1024 -f to
 
 tar cf archive en to
 # Make sure we don't use bogus blocking factor.

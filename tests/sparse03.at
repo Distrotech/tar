@@ -27,8 +27,8 @@ AT_KEYWORDS([sparse sparse03])
 # http://lists.gnu.org/archive/html/bug-tar/2005-06/msg00040.html
 
 AT_TAR_CHECK([
-genfile --length 1000 > begin
-genfile --length 1000 > end
+genfile --length 1000 --file begin
+genfile --length 1000 --file end
 genfile --sparse --file sparsefile --block-size 512 8G A || AT_SKIP_TEST
 tar -c -f archive --sparse begin sparsefile end || exit 1
 echo separator

@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,11 +36,11 @@ cztery
 ])
 
 AT_TAR_CHECK([
-genfile --length 118 > jeden
-genfile --length 223 > dwa
-genfile --length 517 > trzy
+genfile --length 118 --file jeden
+genfile --length 223 --file dwa
+genfile --length 517 --file trzy
 genfile --sparse --file sparsefile 0 ABCD 1M EFGH 2000K IJKL
-genfile --length 110 > cztery
+genfile --length 110 --file cztery
 
 tar cf archive jeden dwa trzy cztery || exit 1
 
