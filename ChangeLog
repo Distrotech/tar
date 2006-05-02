@@ -1,3 +1,8 @@
+2006-05-02  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (_open_archive): Remove unnecessary argument to
+	check_compressed_archive. 
+
 2006-04-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/sparse01.at, tests/sparse02.at, tests/sparse03.at,
