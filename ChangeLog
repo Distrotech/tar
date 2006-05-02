@@ -1,5 +1,18 @@
 2006-05-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/buffer.c (try_new_volume): Attempt to continue if the name
+	is apparently truncated in a GNU format volume.
+
+	* tests/comprec.at, tests/delete01.at, tests/delete02.at,
+	tests/delete04.at, tests/delete05.at, tests/extrac05.at,
+	tests/listed01.at, tests/multiv01.at, tests/multiv02.at,
+	tests/pipe.at, tests/same-order01.at, tests/same-order02.at,
+	tests/sparse01.at, tests/sparse03.at: Always use genfile --file,
+	this enables extra error checking.
+	 
+	* tests/multiv03.at: Attempt to extract a member with truncated
+	file name from the archive.
+	
 	* src/buffer.c (_open_archive): Remove unnecessary argument to
 	check_compressed_archive. 
 
