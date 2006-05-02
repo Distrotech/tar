@@ -1151,9 +1151,19 @@ try_new_volume ()
       if (!continued_file_name
 	  || strcmp (continued_file_name, real_s_name))
 	{
-	  WARN ((0, 0, _("%s is not continued on this volume"),
-		 quote (real_s_name)));
-	  return false;
+	  if ((archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
+	      && strlen (real_s_name) >= NAME_FIELD_SIZE
+	      && strncmp (continued_file_name, real_s_name,
+			  NAME_FIELD_SIZE) == 0)
+	    WARN ((0, 0,
+ _("%s is possibly continued on this volume: header contains truncated name"),
+		   quote (real_s_name)));
+	  else
+	    {
+	      WARN ((0, 0, _("%s is not continued on this volume"),
+		     quote (real_s_name)));
+	      return false;
+	    }
 	}
 
       s = continued_file_size + continued_file_offset;
