@@ -1,11 +1,20 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
+version 1.15.91 - Sergey Poznyakoff, (CVS version)
+
+* New features
+
+** New incremental snapshot file format keeps information about file names 
+as well as that about directories.
+
+
+
 version 1.15.90 - Sergey Poznyakoff, 2006-02-19
 
 * New features
 
-* Any number of -T (--files-from) options may be used in the command line.
+** Any number of -T (--files-from) options may be used in the command line.
 The file specified with -T may include any valid `tar' options,
 including another -T option.
 Compatibility note: older versions of tar would only recognize -C
@@ -13,14 +22,14 @@ as an option name within the file list file.  Now any file whose name
 starts with - is handled as an option.  To insert file names starting with
 dash, use the --add-file option.
 
-* List files containing null-separated file names are detected and processed
+** List files containing null-separated file names are detected and processed
 automatically.  It is no longer necessary to give the --null option.
 
-* New option --no-unquote disables the unquoting of input file names.
+** New option --no-unquote disables the unquoting of input file names.
 This is useful for processing output from `find dir -print0'.
 An orthogonal option --unquote is provided as well.
 
-* New option --test-label tests the archive volume label.
+** New option --test-label tests the archive volume label.
 If an argument is specified, the label is compared against its value.
 Tar exits with code 0 if the two strings match, and with code 2 if
 they do not.
@@ -28,28 +37,28 @@ they do not.
 If no argument is given, the --verbose option is implied.  In this case,
 tar prints the label name if present and exits with code 0.
 
-* New option --show-stored-names.  When creating an archive in verbose mode,
+** New option --show-stored-names.  When creating an archive in verbose mode,
 it lists member names as stored in the archive, i.e., with any eventual
 prefixes removed.  The option is useful, for example, while comparing
 `tar cv' and `tar tv' outputs.
 
-* New option --to-command pipes the contents of archive members to the
+** New option --to-command pipes the contents of archive members to the
 specified command.
 
-* New option --atime-preserve=system, which uses the O_NOATIME feature
+** New option --atime-preserve=system, which uses the O_NOATIME feature
 of recent Linux kernels to avoid some problems when preserving file
 access times.
 
-* New option --delay-directory-restore delays restoring modification times
+** New option --delay-directory-restore delays restoring modification times
 and permissions of extracted directories until the end of extraction.
 This is necessary for restoring from archives with unusual member
 ordering (in particular, those created with --no-recursion option).
 This option is implied when restoring from incremental archives.
 
-* New option --restrict prohibits use of some potentially harmful tar
+** New option --restrict prohibits use of some potentially harmful tar
 options.  Currently it disables '!' escape in multi-volume name menu.
 
-* New options --quoting-style and --quote-chars control the way tar
+** New options --quoting-style and --quote-chars control the way tar
 quotes member names on output. The --quoting-style takes an argument
 specifying the quoting style to use (literal, shell, shell-always,
 c, escape, locale, clocale). The argument to --quote-chars is a string
@@ -57,17 +66,17 @@ specifying characters to quote, even if the selected quoting style
 would not quote them otherwise. The option --no-quote-chars is
 provided to disable quoting certain characters.
 
-* The end-of-volume script (introduced with --info-script option) can
+** The end-of-volume script (introduced with --info-script option) can
 get current archive name from the environment variable TAR_ARCHIVE and
 the volume number from the variable TAR_VOLUME.  It can alter the
 archive name by writing new name to the file descriptor 3.
 
-* Better support for full-resolution time stamps.  Tar cannot restore
+** Better support for full-resolution time stamps.  Tar cannot restore
 time stamps to full nanosecond resolution, though, until the kernel
 guys get their act together and give us a system call to set file time
 stamps to nanosecond resolution.
 
-* The -v option now prints time stamps only to 1-minute resolution,
+** The -v option now prints time stamps only to 1-minute resolution,
 not full resolution, to avoid using up too many output columns.
 Nanosecond resolution is now supported, but that would be too much.
 
