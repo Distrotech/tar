@@ -26,7 +26,29 @@
 /* Incremental dump specialities.  */
 
 /* Which child files to save under a directory.  */
-enum children {NO_CHILDREN, CHANGED_CHILDREN, ALL_CHILDREN};
+enum children
+  {
+    NO_CHILDREN,
+    CHANGED_CHILDREN,
+    ALL_CHILDREN
+  };
+
+#define DIRF_INIT     0x0001    /* directory structure is initialized
+				   (procdir called at least once) */
+#define DIRF_NFS      0x0002    /* directory is mounted on nfs */
+#define DIRF_FOUND    0x0004    /* directory is found on fs */
+#define DIRF_NEW      0x0008    /* directory is new (not found
+				   in the previous dump) */
+#define DIRF_RENAMED  0x0010    /* directory is renamed */
+
+#define DIR_IS_INITED(d) ((d)->flags & DIRF_INIT)
+#define DIR_IS_NFS(d) ((d)->flags & DIRF_NFS)
+#define DIR_IS_FOUND(d) ((d)->flags & DIRF_FOUND)
+#define DIR_IS_NEW(d) ((d)->flags & DIRF_NEW)
+#define DIR_IS_RENAMED(d) ((d)->flags & DIRF_RENAMED)
+		       
+#define DIR_SET_FLAG(d,f) (d)->flags |= (f)
+#define DIR_CLEAR_FLAG(d,f) (d)->flags &= ~(f)
 
 /* Directory attributes.  */
 struct directory
@@ -34,14 +56,18 @@ struct directory
     struct timespec mtime;      /* Modification time */
     dev_t device_number;	/* device number for directory */
     ino_t inode_number;		/* inode number for directory */
-    enum children children;     /* what to save under this directory */
-    bool nfs;                   /* is the directory mounted on nfs? */
-    bool found;                 /* was the directory found on fs? */
-    bool new;                   /* is it new? */
+    char *contents;             /* Directory contents */
+    char *icontents;            /* Initial contents if the directory was
+				   rescanned */
+    enum children children;     /* What to save under this directory */
+    unsigned flags;             /* See DIRF_ macros above */
+    struct directory *orig;     /* If the directory was renamed, points to
+				   the original directory structure */
     char name[1];		/* file name of directory */
   };
 
 static Hash_table *directory_table;
+static Hash_table *directory_meta_table;
 
 #if HAVE_ST_FSTYPE_STRING
   static char const nfs_string[] = "nfs";
@@ -53,21 +79,40 @@ static Hash_table *directory_table;
 
 /* Calculate the hash of a directory.  */
 static size_t
-hash_directory (void const *entry, size_t n_buckets)
+hash_directory_name (void const *entry, size_t n_buckets)
 {
   struct directory const *directory = entry;
   return hash_string (directory->name, n_buckets);
 }
 
-/* Compare two directories for equality.  */
+/* Compare two directories for equality of their names. */
 static bool
-compare_directories (void const *entry1, void const *entry2)
+compare_directory_names (void const *entry1, void const *entry2)
 {
   struct directory const *directory1 = entry1;
   struct directory const *directory2 = entry2;
   return strcmp (directory1->name, directory2->name) == 0;
 }
 
+static size_t
+hash_directory_meta (void const *entry, size_t n_buckets)
+{
+  struct directory const *directory = entry;
+  /* FIXME: Work out a better algorytm */
+  return (directory->device_number + directory->inode_number) % n_buckets;
+}
+
+/* Compare two directories for equality of their device and inode numbers. */
+static bool
+compare_directory_meta (void const *entry1, void const *entry2)
+{
+  struct directory const *directory1 = entry1;
+  struct directory const *directory2 = entry2;
+  return directory1->device_number == directory2->device_number
+            && directory1->inode_number == directory2->inode_number;
+}
+
+/* Make a directory entry for given NAME */
 static struct directory *
 make_directory (const char *name)
 {
@@ -77,7 +122,7 @@ make_directory (const char *name)
   strcpy (directory->name, name);
   if (ISSLASH (directory->name[namelen-1]))
     directory->name[namelen-1] = 0;
-  directory->new = false;
+  directory->flags = false;
   return directory;
 }
   
@@ -87,7 +132,7 @@ make_directory (const char *name)
    found that the directory exists.  */
 static struct directory *
 note_directory (char const *name, struct timespec mtime,
-		dev_t dev, ino_t ino, bool nfs, bool found)
+		dev_t dev, ino_t ino, bool nfs, bool found, char *contents)
 {
   struct directory *directory = make_directory (name);
 
@@ -95,13 +140,32 @@ note_directory (char const *name, struct timespec mtime,
   directory->device_number = dev;
   directory->inode_number = ino;
   directory->children = CHANGED_CHILDREN;
-  directory->nfs = nfs;
-  directory->found = found;
-
+  if (nfs)
+    DIR_SET_FLAG (directory, DIRF_NFS);
+  if (found)
+    DIR_SET_FLAG (directory, DIRF_FOUND);
+  if (contents)
+    {
+      size_t size = dumpdir_size (contents);
+      directory->contents = xmalloc (size);
+      memcpy (directory->contents, contents, size);
+    }
+  else
+    directory->contents = NULL;
+  
   if (! ((directory_table
-	  || (directory_table = hash_initialize (0, 0, hash_directory,
-						 compare_directories, 0)))
+	  || (directory_table = hash_initialize (0, 0,
+						 hash_directory_name,
+						 compare_directory_names, 0)))
 	 && hash_insert (directory_table, directory)))
+    xalloc_die ();
+
+  if (! ((directory_meta_table
+	  || (directory_meta_table = hash_initialize (0, 0,
+						      hash_directory_meta,
+						      compare_directory_meta,
+						      0)))
+	 && hash_insert (directory_meta_table, directory)))
     xalloc_die ();
 
   return directory;
@@ -109,7 +173,7 @@ note_directory (char const *name, struct timespec mtime,
 
 /* Return a directory entry for a given file NAME, or zero if none found.  */
 static struct directory *
-find_directory (char *name)
+find_directory (const char *name)
 {
   if (! directory_table)
     return 0;
@@ -117,6 +181,24 @@ find_directory (char *name)
     {
       struct directory *dir = make_directory (name);
       struct directory *ret = hash_lookup (directory_table, dir);
+      free (dir);
+      return ret;
+    }
+}
+
+/* Return a directory entry for a given combination of device and inode
+   numbers, or zero if none found.  */
+static struct directory *
+find_directory_meta (dev_t dev, ino_t ino)
+{
+  if (! directory_meta_table)
+    return 0;
+  else
+    {
+      struct directory *dir = make_directory ("");
+      dir->device_number = dev;
+      dir->inode_number = ino;
+      struct directory *ret = hash_lookup (directory_meta_table, dir);
       free (dir);
       return ret;
     }
@@ -141,14 +223,7 @@ update_parent_directory (const char *name)
   free (p);
 }
 
-static int
-compare_dirents (const void *first, const void *second)
-{
-  return strcmp ((*(char *const *) first) + 1,
-		 (*(char *const *) second) + 1);
-}
-
-enum children
+static struct directory *
 procdir (char *name_buffer, struct stat *stat_data,
 	 dev_t device,
 	 enum children children,
@@ -160,6 +235,9 @@ procdir (char *name_buffer, struct stat *stat_data,
 
   if ((directory = find_directory (name_buffer)) != NULL)
     {
+      if (DIR_IS_INITED (directory))
+	return directory;
+      
       /* With NFS, the same file can have two different devices
 	 if an NFS directory is mounted in multiple locations,
 	 which is relatively common when automounting.
@@ -167,48 +245,77 @@ procdir (char *name_buffer, struct stat *stat_data,
 	 directories, consider all NFS devices as equal,
 	 relying on the i-node to establish differences.  */
 
-      if (! (((directory->nfs & nfs)
+      if (! (((DIR_IS_NFS (directory) & nfs)
 	      || directory->device_number == stat_data->st_dev)
 	     && directory->inode_number == stat_data->st_ino))
 	{
-	  if (verbose)
-	    WARN ((0, 0, _("%s: Directory has been renamed"),
-		   quotearg_colon (name_buffer)));
-	  directory->children = ALL_CHILDREN;
-	  directory->nfs = nfs;
-	  directory->device_number = stat_data->st_dev;
-	  directory->inode_number = stat_data->st_ino;
+	  /* FIXME: find_directory_meta ignores nfs */
+	  struct directory *d = find_directory_meta (stat_data->st_dev,
+						     stat_data->st_ino);
+	  if (d)
+	    {
+	      if (verbose_option)
+		WARN ((0, 0, _("%s: Directory has been renamed from %s"),
+		       quotearg_colon (name_buffer),
+		       quote_n (1, d->name)));
+	      directory->orig = d;
+	      DIR_SET_FLAG (directory, DIRF_RENAMED);
+	      directory->children = CHANGED_CHILDREN;
+	    }
+	  else
+	    {
+	      if (verbose_option)
+		WARN ((0, 0, _("%s: Directory has been renamed"),
+		       quotearg_colon (name_buffer)));
+	      directory->children = ALL_CHILDREN;
+	      directory->device_number = stat_data->st_dev;
+	      directory->inode_number = stat_data->st_ino;
+	    }
+	  if (nfs)
+	    DIR_SET_FLAG (directory, DIRF_NFS);
 	}
-      else if (listed_incremental_option && !directory->new)
-	/* Newer modification time can mean that new files were
-	   created in the directory or some of the existing files
-	   were renamed. */
-	directory->children =
-	  timespec_cmp (get_stat_mtime (stat_data), directory->mtime) > 0
-	  ? ALL_CHILDREN : CHANGED_CHILDREN;
-
-      directory->found = true;
+      else
+	directory->children = CHANGED_CHILDREN;
+      
+      DIR_SET_FLAG (directory, DIRF_FOUND);
     }
   else
     {
-      if (verbose)
-	WARN ((0, 0, _("%s: Directory is new"),
-	       quotearg_colon (name_buffer)));
+      struct directory *d = find_directory_meta (stat_data->st_dev,
+						 stat_data->st_ino);
+
       directory = note_directory (name_buffer,
 				  get_stat_mtime(stat_data),
 				  stat_data->st_dev,
 				  stat_data->st_ino,
 				  nfs,
-				  true);
+				  true,
+				  NULL);
 
-      directory->children =
-	(listed_incremental_option
-	 || (OLDER_STAT_TIME (*stat_data, m)
-	     || (after_date_option
-		 && OLDER_STAT_TIME (*stat_data, c))))
-	? ALL_CHILDREN
-	: CHANGED_CHILDREN;
-      directory->new = true;
+      if (d)
+	{
+	  if (verbose)
+	    WARN ((0, 0, _("%s: Directory has been renamed from %s"),
+		   quotearg_colon (name_buffer),
+		   quote_n (1, d->name)));
+	  directory->orig = d;
+	  DIR_SET_FLAG (directory, DIRF_RENAMED);
+	  directory->children = CHANGED_CHILDREN;
+	}
+      else
+	{
+	  DIR_SET_FLAG (directory, DIRF_NEW);
+	  if (verbose)
+	    WARN ((0, 0, _("%s: Directory is new"),
+		   quotearg_colon (name_buffer)));
+	  directory->children = 
+	    (listed_incremental_option
+	     || (OLDER_STAT_TIME (*stat_data, m)
+		 || (after_date_option
+		     && OLDER_STAT_TIME (*stat_data, c))))
+	    ? ALL_CHILDREN
+	    : CHANGED_CHILDREN;
+	}
     }
 
   /* If the directory is on another device and --one-file-system was given,
@@ -217,161 +324,40 @@ procdir (char *name_buffer, struct stat *stat_data,
       /* ... except if it was explicitely given in the command line */
       && !((np = name_scan (name_buffer, true)) && np->explicit))
     directory->children = NO_CHILDREN;
-  else if (children == ALL_CHILDREN)
+  else if (children == ALL_CHILDREN) 
     directory->children = ALL_CHILDREN;
 
-  return directory->children;
+  DIR_SET_FLAG (directory, DIRF_INIT);
+  
+  return directory;
 }
 
-
-/* Recursively scan the given directory. */
-static void
-scan_directory (struct obstack *stk, char *dir_name, dev_t device)
+/* Locate NAME in the dumpdir array DUMP.
+   Return pointer to the slot in the array, or NULL if not found */
+const char *
+dumpdir_locate (const char *dump, const char *name)
 {
-  char *dirp = savedir (dir_name);	/* for scanning directory */
-  char const *entry;	/* directory entry being scanned */
-  size_t entrylen;	/* length of directory entry */
-  char *name_buffer;		/* directory, `/', and directory member */
-  size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
-  size_t name_length;		/* used length in name_buffer */
-  enum children children;
-  struct stat stat_data;
-
-  if (! dirp)
-    savedir_error (dir_name);
-
-  name_buffer_size = strlen (dir_name) + NAME_FIELD_SIZE;
-  name_buffer = xmalloc (name_buffer_size + 2);
-  strcpy (name_buffer, dir_name);
-  if (! ISSLASH (dir_name[strlen (dir_name) - 1]))
-    strcat (name_buffer, "/");
-  name_length = strlen (name_buffer);
-
-  if (deref_stat (dereference_option, name_buffer, &stat_data))
-    {
-      stat_diag (name_buffer);
-      children = CHANGED_CHILDREN;
-    }
-  else
-    children = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
-
-  if (dirp && children != NO_CHILDREN)
-    for (entry = dirp;
-	 (entrylen = strlen (entry)) != 0;
-	 entry += entrylen + 1)
+  if (dump)
+    while (*dump)
       {
-	if (name_buffer_size <= entrylen + name_length)
+	/* Ignore 'R' (rename) entries, since they break alphabetical ordering.
+	   They normally do not occur in dumpdirs from the snapshot files,
+	   but this function is also used by purge_directory, which operates
+	   on a dumpdir from the archive, hence the need for this test. */
+	if (*dump != 'R')
 	  {
-	    do
-	      name_buffer_size += NAME_FIELD_SIZE;
-	    while (name_buffer_size <= entrylen + name_length);
-	    name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
+	    int rc = strcmp (dump + 1, name);
+	    if (rc == 0)
+	      return dump;
+	    if (rc > 1)
+	      break;
 	  }
-	strcpy (name_buffer + name_length, entry);
-
-	if (excluded_name (name_buffer))
-	  obstack_1grow (stk, 'N');
-	else
-	  {
-
-	    if (deref_stat (dereference_option, name_buffer, &stat_data))
-	      {
-		stat_diag (name_buffer);
-		continue;
-	      }
-
-	    if (S_ISDIR (stat_data.st_mode))
-	      {
-		procdir (name_buffer, &stat_data, device, children,
-			 verbose_option);
-		obstack_1grow (stk, 'D');
-	      }
-
-	    else if (one_file_system_option && device != stat_data.st_dev)
-	      obstack_1grow (stk, 'N');
-
-#ifdef S_ISHIDDEN
-	    else if (S_ISHIDDEN (stat_data.st_mode))
-	      {
-		obstack_1grow (stk, 'D');
-		obstack_grow (stk, entry, entrylen);
-		obstack_grow (stk, "A", 2);
-		continue;
-	      }
-#endif
-
-	    else if (children == CHANGED_CHILDREN
-		     && OLDER_STAT_TIME (stat_data, m)
-		     && (!after_date_option || OLDER_STAT_TIME (stat_data, c)))
-	      obstack_1grow (stk, 'N');
-	    else
-	      obstack_1grow (stk, 'Y');
-	  }
-
-	obstack_grow (stk, entry, entrylen + 1);
+	dump += strlen (dump) + 1;
       }
-
-  obstack_grow (stk, "\000\000", 2);
-
-  free (name_buffer);
-  if (dirp)
-    free (dirp);
+  return NULL;
 }
 
-/* Sort the contents of the obstack, and convert it to the char * */
-static char *
-sort_obstack (struct obstack *stk)
-{
-  char *pointer = obstack_finish (stk);
-  size_t counter;
-  char *cursor;
-  char *buffer;
-  char **array;
-  char **array_cursor;
-
-  counter = 0;
-  for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
-    counter++;
-
-  if (!counter)
-    return NULL;
-
-  array = obstack_alloc (stk, sizeof (char *) * (counter + 1));
-
-  array_cursor = array;
-  for (cursor = pointer; *cursor; cursor += strlen (cursor) + 1)
-    *array_cursor++ = cursor;
-  *array_cursor = 0;
-
-  qsort (array, counter, sizeof (char *), compare_dirents);
-
-  buffer = xmalloc (cursor - pointer + 2);
-
-  cursor = buffer;
-  for (array_cursor = array; *array_cursor; array_cursor++)
-    {
-      char *string = *array_cursor;
-
-      while ((*cursor++ = *string++))
-	continue;
-    }
-  *cursor = '\0';
-  return buffer;
-}
-
-char *
-get_directory_contents (char *dir_name, dev_t device)
-{
-  struct obstack stk;
-  char *buffer;
-
-  obstack_init (&stk);
-  scan_directory (&stk, dir_name, device);
-  buffer = sort_obstack (&stk);
-  obstack_free (&stk, NULL);
-  return buffer;
-}
-
+/* Return size in bytes of the dumpdir array P */
 size_t
 dumpdir_size (const char *p)
 {
@@ -386,6 +372,312 @@ dumpdir_size (const char *p)
   return totsize + 1;
 }
 
+static int
+compare_dirnames (const void *first, const void *second)
+{
+  return strcmp (*(const char**)first, *(const char**)second);
+}
+
+/* Compare dumpdir array from DIRECTORY with directory listing DIR and
+   build a new dumpdir template.
+
+   DIR must be returned by a previous call to savedir().
+
+   File names in DIRECTORY->contents must be sorted
+   alphabetically. 
+
+   DIRECTORY->contents is replaced with the created template. Each entry is
+   prefixed with ' ' if it was present in DUMP and with 'Y' otherwise. */
+
+void
+makedumpdir (struct directory *directory, const char *dir)
+{
+  size_t i,
+         dirsize,  /* Number of elements in DIR */
+         len;      /* Length of DIR, including terminating nul */
+  const char *p;
+  char const **array;
+  char *new_dump, *new_dump_ptr;
+  const char *dump;
+
+  if (directory->children == ALL_CHILDREN)
+    dump = NULL;
+  else if (DIR_IS_RENAMED (directory))
+    dump = directory->orig->icontents ?
+              directory->orig->icontents : directory->orig->contents;
+  else
+    dump = directory->contents;
+
+  /* Count the size of DIR and the number of elements it contains */
+  dirsize = 0;
+  len = 0;
+  for (p = dir; *p; p += strlen (p) + 1, dirsize++)
+    len += strlen (p) + 2;
+  len++;
+
+  /* Create a sorted directory listing */
+  array = xcalloc (dirsize, sizeof array[0]);
+  for (i = 0, p = dir; *p; p += strlen (p) + 1, i++)
+    array[i] = p;
+
+  qsort (array, dirsize, sizeof (array[0]), compare_dirnames);
+
+  /* Prepare space for new dumpdir */
+  new_dump = xmalloc (len);
+  new_dump_ptr = new_dump;
+
+  /* Fill in the dumpdir template */
+  for (i = 0; i < dirsize; i++)
+    {
+      const char *loc = dumpdir_locate (dump, array[i]);
+      if (loc)
+	{
+	  *new_dump_ptr++ = ' ';
+	  dump = loc + strlen (loc) + 1;
+	}
+      else
+	*new_dump_ptr++ = 'Y'; /* New entry */
+
+      /* Copy the file name */
+      for (p = array[i]; (*new_dump_ptr++ = *p++); )
+	;
+    }
+  *new_dump_ptr = 0;
+  directory->icontents = directory->contents;
+  directory->contents = new_dump;
+  free (array);
+}
+
+/* Recursively scan the given directory. */
+static char *
+scan_directory (char *dir_name, dev_t device)
+{
+  char *dirp = savedir (dir_name);	/* for scanning directory */
+  char *name_buffer;		/* directory, `/', and directory member */
+  size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
+  size_t name_length;		/* used length in name_buffer */
+  struct stat stat_data;
+  struct directory *directory;
+  
+  if (! dirp)
+    savedir_error (dir_name);
+
+  name_buffer_size = strlen (dir_name) + NAME_FIELD_SIZE;
+  name_buffer = xmalloc (name_buffer_size + 2);
+  strcpy (name_buffer, dir_name);
+  if (! ISSLASH (dir_name[strlen (dir_name) - 1]))
+    strcat (name_buffer, "/");
+  name_length = strlen (name_buffer);
+
+  if (deref_stat (dereference_option, name_buffer, &stat_data))
+    {
+      stat_diag (name_buffer);
+      /* FIXME: used to be 
+           children = CHANGED_CHILDREN;
+	 but changed to: */
+      free (name_buffer);
+      free (dirp);
+      return NULL;
+    }
+
+  directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
+    
+  if (dirp && directory->children != NO_CHILDREN)
+    {
+      char  *entry;	/* directory entry being scanned */
+      size_t entrylen;	/* length of directory entry */
+
+      makedumpdir (directory, dirp);
+
+      for (entry = directory->contents;
+	   (entrylen = strlen (entry)) != 0;
+	   entry += entrylen + 1)
+	{
+	  if (name_buffer_size <= entrylen - 1 + name_length)
+	    {
+	      do
+		name_buffer_size += NAME_FIELD_SIZE;
+	      while (name_buffer_size <= entrylen - 1 + name_length);
+	      name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
+	    }
+	  strcpy (name_buffer + name_length, entry + 1);
+	  
+	  if (excluded_name (name_buffer))
+	    *entry = 'N';
+	  else
+	    {
+	      if (deref_stat (dereference_option, name_buffer, &stat_data))
+		{
+		  stat_diag (name_buffer);
+		  *entry = 'N';
+		  continue;
+		}
+	      
+	      if (S_ISDIR (stat_data.st_mode))
+		{
+		  procdir (name_buffer, &stat_data, device,
+			   directory->children,
+			   verbose_option);
+		  *entry = 'D';
+		}
+	      
+	      else if (one_file_system_option && device != stat_data.st_dev)
+		*entry = 'N';
+
+	      else if (*entry == 'Y')
+		/* New entry, skip further checks */;
+	      
+	      /* FIXME: if (S_ISHIDDEN (stat_data.st_mode))?? */
+	      
+	      else if (OLDER_STAT_TIME (stat_data, m)
+		       && (!after_date_option
+			   || OLDER_STAT_TIME (stat_data, c)))
+		*entry = 'N';
+	      else
+		*entry = 'Y';
+	    }
+	}
+    }
+  
+  free (name_buffer);
+  if (dirp)
+    free (dirp);
+
+  return directory->contents;
+}
+
+char *
+get_directory_contents (char *dir_name, dev_t device)
+{
+  return scan_directory (dir_name, device);
+}
+
+
+static bool
+try_pos (char *name, int pos, const char *dumpdir)
+{
+  int i;
+  static char namechars[] =
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+  if (pos > 0)
+    for (i = 0; i < sizeof namechars; i++)
+      {
+	name[pos] = namechars[i];
+	if (!dumpdir_locate (dumpdir, name)
+	    || try_pos (name, pos-1, dumpdir))
+	  return true;
+      }
+  
+  return false;
+}
+  
+static bool
+create_temp_name (char *name, const char *dumpdir)
+{
+  size_t pos = strlen (name) - 6;
+  return try_pos (name + pos, 5, dumpdir);
+}
+
+char *
+make_tmp_dir_name (const char *name)
+{
+  char *dirname = dir_name (name);
+  char *tmp_name = NULL;
+  struct directory *dir = find_directory (dirname);
+      
+  tmp_name = new_name (dirname, "000000");
+  if (!create_temp_name (tmp_name, dir ? dir->contents : NULL))
+    {
+      free (tmp_name);
+      tmp_name = NULL;
+    }
+  free (dirname);
+  return tmp_name;
+}
+
+static void
+obstack_code_rename (struct obstack *stk, char *from, char *to)
+{
+  obstack_1grow (stk, 'R');
+  obstack_grow (stk, from, strlen (from) + 1);
+  obstack_1grow (stk, 'T');
+  obstack_grow (stk, to, strlen (to) + 1);
+}
+
+static bool
+rename_handler (void *data, void *proc_data)
+{
+  struct directory *dir = data;
+  struct obstack *stk = proc_data;
+  
+  if (DIR_IS_RENAMED (dir))
+    {
+      struct directory *prev, *p;
+
+      /* Detect eventual cycles and clear DIRF_RENAMED flag, so this entries
+	 are ignored when hit by this function next time.
+	 If the chain forms a cycle, prev points to the entry DIR is renamed
+	 from. In this case it still retains DIRF_RENAMED flag, which will be
+	 cleared in the `else' branch below */
+      for (prev = dir; prev && prev->orig != dir; prev = prev->orig)
+	DIR_CLEAR_FLAG (prev, DIRF_RENAMED);
+
+      if (prev == NULL)
+	{
+	  for (p = dir; p && p->orig; p = p->orig)
+	    obstack_code_rename (stk, p->orig->name, p->name);
+	}
+      else
+	{
+	  char *temp_name;
+
+	  DIR_CLEAR_FLAG (prev, DIRF_RENAMED);
+
+	  /* Break the cycle by using a temporary name for one of its
+	     elements.
+	     FIXME: Leave the choice of the name to the extractor. */
+	  temp_name = make_tmp_dir_name (dir->name);
+	  obstack_code_rename (stk, dir->name, temp_name);
+
+	  for (p = dir; p != prev; p = p->orig)
+	    obstack_code_rename (stk, p->orig->name, p->name);
+
+	  obstack_code_rename (stk, temp_name, prev->name);
+	}
+    }
+  return true;
+}
+
+const char *
+append_incremental_renames (const char *dump)
+{
+  struct obstack stk;
+  size_t size;
+
+  if (directory_table == NULL)
+    return dump;
+  
+  obstack_init (&stk);
+  if (dump)
+    {
+      size = dumpdir_size (dump) - 1;
+      obstack_grow (&stk, dump, size);
+    }
+  else
+    size = 0;
+  
+  hash_do_for_each (directory_table, rename_handler, &stk);
+  if (obstack_object_size (&stk) != size)
+    {
+      obstack_1grow (&stk, 0);
+      dump = obstack_finish (&stk);
+    }
+  else
+    obstack_free (&stk, NULL);
+  return dump;
+}
+
 
 
 static FILE *listed_incremental_stream;
@@ -398,75 +690,50 @@ static FILE *listed_incremental_stream;
    0 up to TAR_INCREMENTAL_VERSION, inclusive.
    It is able to create only snapshots of TAR_INCREMENTAL_VERSION */
 
-#define TAR_INCREMENTAL_VERSION 1
+#define TAR_INCREMENTAL_VERSION 2
 
-/* Read incremental snapshot file (directory file).
-   If the file has older incremental version, make sure that it is processed
-   correctly and that tar will use the most conservative backup method among
-   possible alternatives (i.e. prefer ALL_CHILDREN over CHANGED_CHILDREN,
-   etc.) This ensures that the snapshots are updated to the recent version
-   without any loss of data. */
-void
-read_directory_file (void)
+/* Read incremental snapshot formats 0 and 1 */
+static void
+read_incr_db_01 (int version, const char *initbuf)
 {
-  int fd;
-  FILE *fp;
+  int n;
+  uintmax_t u;
+  time_t t = u;
   char *buf = 0;
   size_t bufsize;
+  char *ebuf;
+  long lineno = 1;
 
-  /* Open the file for both read and write.  That way, we can write
-     it later without having to reopen it, and don't have to worry if
-     we chdir in the meantime.  */
-  fd = open (listed_incremental_option, O_RDWR | O_CREAT, MODE_RW);
-  if (fd < 0)
+  if (version == 1)
     {
-      open_error (listed_incremental_option);
-      return;
-    }
-
-  fp = fdopen (fd, "r+");
-  if (! fp)
-    {
-      open_error (listed_incremental_option);
-      close (fd);
-      return;
-    }
-
-  listed_incremental_stream = fp;
-
-  if (0 < getline (&buf, &bufsize, fp))
-    {
-      char *ebuf;
-      int n;
-      long lineno = 1;
-      uintmax_t u;
-      time_t t = u;
-      int incremental_version;
-
-      if (strncmp (buf, PACKAGE_NAME, sizeof PACKAGE_NAME - 1) == 0)
+      if (getline (&buf, &bufsize, listed_incremental_stream) <= 0)
 	{
-	  ebuf = buf + sizeof PACKAGE_NAME - 1;
-	  if (*ebuf++ != '-')
-	    ERROR((1, 0, _("Bad incremental file format")));
-	  for (; *ebuf != '-'; ebuf++)
-	    if (!*ebuf)
-	      ERROR((1, 0, _("Bad incremental file format")));
-
-	  incremental_version = (errno = 0, strtoumax (ebuf+1, &ebuf, 10));
-	  if (getline (&buf, &bufsize, fp) <= 0)
-	    {
-	      read_error (listed_incremental_option);
-	      free (buf);
-	      return;
-	    }
-	  ++lineno;
+	  read_error (listed_incremental_option);
+	  free (buf);
+	  return;
 	}
-      else
-	incremental_version = 0;
-
-      if (incremental_version > TAR_INCREMENTAL_VERSION)
-	ERROR((1, 0, _("Unsupported incremental format version: %d"),
-	       incremental_version));
+      ++lineno;
+    }
+  else
+    {
+      buf = strdup (initbuf);
+      bufsize = strlen (buf) + 1;
+    }
+  
+  t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
+  if (buf == ebuf || (u == 0 && errno == EINVAL))
+    ERROR ((0, 0, "%s:%ld: %s",
+	    quotearg_colon (listed_incremental_option),
+	    lineno,
+	    _("Invalid time stamp")));
+  else if (t != u)
+    ERROR ((0, 0, "%s:%ld: %s",
+	    quotearg_colon (listed_incremental_option),
+	    lineno,
+	    _("Time stamp out of range")));
+  else if (version == 1)
+    {
+      newer_mtime_option.tv_sec = t;
 
       t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
       if (buf == ebuf || (u == 0 && errno == EINVAL))
@@ -479,103 +746,300 @@ read_directory_file (void)
 		quotearg_colon (listed_incremental_option),
 		lineno,
 		_("Time stamp out of range")));
-      else if (incremental_version == 1)
-	{
-	  newer_mtime_option.tv_sec = t;
-
-	  t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
-	  if (buf == ebuf || (u == 0 && errno == EINVAL))
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option),
-		    lineno,
-		    _("Invalid time stamp")));
-	  else if (t != u)
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option),
-		    lineno,
-		    _("Time stamp out of range")));
-	  newer_mtime_option.tv_nsec = t;
-	}
-      else
-	{
-	  /* pre-1 incremental format does not contain nanoseconds */
-	  newer_mtime_option.tv_sec = t;
-	  newer_mtime_option.tv_nsec = 0;
-	}
-
-      while (0 < (n = getline (&buf, &bufsize, fp)))
-	{
-	  dev_t dev;
-	  ino_t ino;
-	  bool nfs = buf[0] == '+';
-	  char *strp = buf + nfs;
-	  struct timespec mtime;
-
-	  lineno++;
-
-	  if (buf[n - 1] == '\n')
-	    buf[n - 1] = '\0';
-
-	  if (incremental_version == 1)
-	    {
-	      errno = 0;
-	      mtime.tv_sec = u = strtoumax (strp, &ebuf, 10);
-	      if (!isspace (*ebuf))
-		ERROR ((0, 0, "%s:%ld: %s",
-			quotearg_colon (listed_incremental_option), lineno,
-			_("Invalid modification time (seconds)")));
-	      else if (mtime.tv_sec != u)
-		ERROR ((0, 0, "%s:%ld: %s",
-			quotearg_colon (listed_incremental_option), lineno,
-			_("Modification time (seconds) out of range")));
-	      strp = ebuf;
-
-	      errno = 0;
-	      mtime.tv_nsec = u = strtoumax (strp, &ebuf, 10);
-	      if (!isspace (*ebuf))
-		ERROR ((0, 0, "%s:%ld: %s",
-			quotearg_colon (listed_incremental_option), lineno,
-			_("Invalid modification time (nanoseconds)")));
-	      else if (mtime.tv_nsec != u)
-		ERROR ((0, 0, "%s:%ld: %s",
-			quotearg_colon (listed_incremental_option), lineno,
-			_("Modification time (nanoseconds) out of range")));
-	      strp = ebuf;
-	    }
-	  else
-	    memset (&mtime, 0, sizeof mtime);
-
-	  errno = 0;
-	  dev = u = strtoumax (strp, &ebuf, 10);
-	  if (!isspace (*ebuf))
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Invalid device number")));
-	  else if (dev != u)
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Device number out of range")));
-	  strp = ebuf;
-
-	  errno = 0;
-	  ino = u = strtoumax (strp, &ebuf, 10);
-	  if (!isspace (*ebuf))
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Invalid inode number")));
-	  else if (ino != u)
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Inode number out of range")));
-	  strp = ebuf;
-
-	  strp++;
-	  unquote_string (strp);
-	  note_directory (strp, mtime, dev, ino, nfs, false);
-	}
+      newer_mtime_option.tv_nsec = t;
+    }
+  else
+    {
+      /* pre-1 incremental format does not contain nanoseconds */
+      newer_mtime_option.tv_sec = t;
+      newer_mtime_option.tv_nsec = 0;
     }
 
-  if (ferror (fp))
+  while (0 < (n = getline (&buf, &bufsize, listed_incremental_stream)))
+    {
+      dev_t dev;
+      ino_t ino;
+      bool nfs = buf[0] == '+';
+      char *strp = buf + nfs;
+      struct timespec mtime;
+      
+      lineno++;
+      
+      if (buf[n - 1] == '\n')
+	buf[n - 1] = '\0';
+      
+      if (version == 1)
+	{
+	  errno = 0;
+	  mtime.tv_sec = u = strtoumax (strp, &ebuf, 10);
+	  if (!isspace (*ebuf))
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option), lineno,
+		    _("Invalid modification time (seconds)")));
+	  else if (mtime.tv_sec != u)
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option), lineno,
+		    _("Modification time (seconds) out of range")));
+	  strp = ebuf;
+	  
+	  errno = 0;
+	  mtime.tv_nsec = u = strtoumax (strp, &ebuf, 10);
+	  if (!isspace (*ebuf))
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option), lineno,
+		    _("Invalid modification time (nanoseconds)")));
+	  else if (mtime.tv_nsec != u)
+	    ERROR ((0, 0, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option), lineno,
+		    _("Modification time (nanoseconds) out of range")));
+	  strp = ebuf;
+	}
+      else
+	memset (&mtime, 0, sizeof mtime);
+      
+      errno = 0;
+      dev = u = strtoumax (strp, &ebuf, 10);
+      if (!isspace (*ebuf))
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Invalid device number")));
+      else if (dev != u)
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Device number out of range")));
+      strp = ebuf;
+
+      errno = 0;
+      ino = u = strtoumax (strp, &ebuf, 10);
+      if (!isspace (*ebuf))
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Invalid inode number")));
+      else if (ino != u)
+	ERROR ((0, 0, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Inode number out of range")));
+      strp = ebuf;
+      
+      strp++;
+      unquote_string (strp);
+      note_directory (strp, mtime, dev, ino, nfs, false, NULL);
+    }
+  free (buf);
+}
+
+/* Read a nul-terminated string from FP and store it in STK.
+   Store the number of bytes read (including nul terminator) in PCOUNT.
+
+   Return the last character read or EOF on end of file. */
+static int
+read_obstack (FILE *fp, struct obstack *stk, size_t *pcount)
+{
+  int c;
+  size_t i;
+
+  for (i = 0, c = getc (fp); c != EOF && c != 0; c = getc (fp), i++)
+    obstack_1grow (stk, c);
+  obstack_1grow (stk, 0);
+
+  *pcount = i;
+  return c;
+}
+
+/* Read from file FP a nul-terminated string and convert it to
+   uintmax_t. Return the resulting value in PVAL.
+
+   Throw fatal error if the string cannot be converted.
+   
+   Return the last character read or EOF on end of file. */
+
+static int
+read_num (FILE *fp, uintmax_t *pval)
+{
+  int c;
+  size_t i;
+  char buf[UINTMAX_STRSIZE_BOUND], *ep;
+
+  for (i = 0, c = getc (fp); c != EOF && c != 0; c = getc (fp), i++)
+    {
+      if (i == sizeof buf - 1)
+	FATAL_ERROR ((0, 0, _("Field too long while reading snapshot file")));
+      buf[i] = c;
+    }
+  buf[i] = 0;
+  *pval = strtoumax (buf, &ep, 10);
+  if (*ep)
+    FATAL_ERROR ((0, 0, _("Unexpected field value in snapshot file")));
+  return c;
+}  
+
+/* Read incremental snapshot format 2 */
+static void
+read_incr_db_2 ()
+{
+  uintmax_t u;
+  struct obstack stk;
+  
+  obstack_init (&stk);
+
+  if (read_num (listed_incremental_stream, &u))
+    FATAL_ERROR ((0, 0, "%s: %s",
+		  quotearg_colon (listed_incremental_option), 
+		  _("Error reading time stamp")));
+  newer_mtime_option.tv_sec = u;
+  if (newer_mtime_option.tv_sec != u)
+    FATAL_ERROR ((0, 0, "%s: %s",
+		  quotearg_colon (listed_incremental_option),
+		  _("Time stamp out of range")));
+
+  if (read_num (listed_incremental_stream, &u))
+    FATAL_ERROR ((0, 0, "%s: %s",
+		  quotearg_colon (listed_incremental_option), 
+		  _("Error reading time stamp")));
+  newer_mtime_option.tv_nsec = u;
+  if (newer_mtime_option.tv_nsec != u)
+    FATAL_ERROR ((0, 0, "%s: %s",
+		  quotearg_colon (listed_incremental_option),
+		  _("Time stamp out of range")));
+
+  for (;;)
+    {
+      struct timespec mtime;
+      dev_t dev;
+      ino_t ino;
+      bool nfs;
+      char *name;
+      char *content;
+      size_t s;
+      
+      if (read_num (listed_incremental_stream, &u))
+	return; /* Normal return */
+
+      nfs = u;
+      
+      if (read_num (listed_incremental_stream, &u))
+	break;
+      mtime.tv_sec = u;
+      if (mtime.tv_sec != u)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option), 
+		      _("Modification time (seconds) out of range")));
+      
+      if (read_num (listed_incremental_stream, &u))
+	break;
+      mtime.tv_nsec = u;
+      if (mtime.tv_nsec != u)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option), 
+		      _("Modification time (nanoseconds) out of range")));
+
+      if (read_num (listed_incremental_stream, &u))
+	break;
+      dev = u;
+      if (dev != u)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option), 
+		      _("Device number out of range")));
+
+      if (read_num (listed_incremental_stream, &u))
+	break;
+      ino = u;
+      if (ino != u)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option), 
+		      _("Inode number out of range")));
+
+      if (read_obstack (listed_incremental_stream, &stk, &s))
+	break;
+
+      name = obstack_finish (&stk);
+
+      while (read_obstack (listed_incremental_stream, &stk, &s) == 0 && s > 1)
+	;
+      if (getc (listed_incremental_stream) != 0)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option), 
+		      _("Missing record terminator")));
+      
+      content = obstack_finish (&stk);
+      note_directory (name, mtime, dev, ino, nfs, false, content);
+      obstack_free (&stk, content);
+    }
+  FATAL_ERROR ((0, 0, "%s: %s",
+		quotearg_colon (listed_incremental_option), 
+		_("Unexpected EOF")));
+}
+
+/* Read incremental snapshot file (directory file).
+   If the file has older incremental version, make sure that it is processed
+   correctly and that tar will use the most conservative backup method among
+   possible alternatives (i.e. prefer ALL_CHILDREN over CHANGED_CHILDREN,
+   etc.) This ensures that the snapshots are updated to the recent version
+   without any loss of data. */
+void
+read_directory_file (void)
+{
+  int fd;
+  char *buf = 0;
+  size_t bufsize;
+  long lineno = 1;
+
+  /* Open the file for both read and write.  That way, we can write
+     it later without having to reopen it, and don't have to worry if
+     we chdir in the meantime.  */
+  fd = open (listed_incremental_option, O_RDWR | O_CREAT, MODE_RW);
+  if (fd < 0)
+    {
+      open_error (listed_incremental_option);
+      return;
+    }
+
+  listed_incremental_stream = fdopen (fd, "r+");
+  if (! listed_incremental_stream)
+    {
+      open_error (listed_incremental_option);
+      close (fd);
+      return;
+    }
+
+  if (0 < getline (&buf, &bufsize, listed_incremental_stream))
+    {
+      char *ebuf;
+      int incremental_version;
+
+      if (strncmp (buf, PACKAGE_NAME, sizeof PACKAGE_NAME - 1) == 0)
+	{
+	  ebuf = buf + sizeof PACKAGE_NAME - 1;
+	  if (*ebuf++ != '-')
+	    ERROR((1, 0, _("Bad incremental file format")));
+	  for (; *ebuf != '-'; ebuf++)
+	    if (!*ebuf)
+	      ERROR((1, 0, _("Bad incremental file format")));
+
+	  incremental_version = (errno = 0, strtoumax (ebuf+1, &ebuf, 10));
+	}
+      else
+	incremental_version = 0;
+
+      switch (incremental_version)
+	{
+	case 0:
+	case 1:
+	  read_incr_db_01 (incremental_version, buf);
+	  break;
+
+	case TAR_INCREMENTAL_VERSION:
+	  read_incr_db_2 ();
+	  break;
+	  
+	default:
+	  ERROR ((1, 0, _("Unsupported incremental format version: %d"),
+		  incremental_version));
+	}
+      
+    }
+
+  if (ferror (listed_incremental_stream))
     read_error (listed_incremental_option);
   if (buf)
     free (buf);
@@ -589,24 +1053,33 @@ write_directory_file_entry (void *entry, void *data)
   struct directory const *directory = entry;
   FILE *fp = data;
 
-  if (directory->found)
+  if (DIR_IS_FOUND (directory))
     {
-      int e;
       char buf[UINTMAX_STRSIZE_BOUND];
-      char *str = quote_copy_string (directory->name);
+      char *s;
 
-      if (directory->nfs)
-	fprintf (fp, "+");
-      fprintf (fp, "%s ", umaxtostr (directory->mtime.tv_sec, buf));
-      fprintf (fp, "%s ", umaxtostr (directory->mtime.tv_nsec, buf));
-      fprintf (fp, "%s ", umaxtostr (directory->device_number, buf));
-      fprintf (fp, "%s ", umaxtostr (directory->inode_number, buf));
-      fprintf (fp, "%s\n", str ? str : directory->name);
+      s = DIR_IS_NFS (directory) ? "1" : "0";
+      fwrite (s, 2, 1, fp);
+      s = umaxtostr (directory->mtime.tv_sec, buf);
+      fwrite (s, strlen (s) + 1, 1, fp);
+      s = umaxtostr (directory->mtime.tv_nsec, buf);
+      fwrite (s, strlen (s) + 1, 1, fp);
+      s = umaxtostr (directory->device_number, buf);
+      fwrite (s, strlen (s) + 1, 1, fp);
+      s = umaxtostr (directory->inode_number, buf);
+      fwrite (s, strlen (s) + 1, 1, fp);
 
-      e = errno;
-      if (str)
-	free (str);
-      errno = e;
+      fwrite (directory->name, strlen (directory->name) + 1, 1, fp);
+      if (directory->contents)
+	{
+	  char *p;
+	  for (p = directory->contents; *p; p += strlen (p) + 1)
+	    {
+	      if (strchr ("YND", *p))
+		fwrite (p, strlen (p) + 1, 1, fp);
+	    }
+	}
+      fwrite ("\0\0", 2, 1, fp);
     }
 
   return ! ferror (fp);
@@ -616,6 +1089,8 @@ void
 write_directory_file (void)
 {
   FILE *fp = listed_incremental_stream;
+  char buf[UINTMAX_STRSIZE_BOUND];
+  char *s;
 
   if (! fp)
     return;
@@ -628,11 +1103,14 @@ write_directory_file (void)
   fprintf (fp, "%s-%s-%d\n", PACKAGE_NAME, PACKAGE_VERSION,
 	   TAR_INCREMENTAL_VERSION);
 
-  fprintf (fp, "%lu %lu\n",
-	   (unsigned long int) start_time.tv_sec,
-	   (unsigned long int) start_time.tv_nsec);
+  s = umaxtostr (start_time.tv_sec, buf);
+  fwrite (s, strlen (s) + 1, 1, fp);
+  s = umaxtostr (start_time.tv_nsec, buf);
+  fwrite (s, strlen (s) + 1, 1, fp);
+
   if (! ferror (fp) && directory_table)
     hash_do_for_each (directory_table, write_directory_file_entry, fp);
+
   if (ferror (fp))
     write_error (listed_incremental_option);
   if (fclose (fp) != 0)
@@ -698,7 +1176,7 @@ void
 purge_directory (char const *directory_name)
 {
   char *current_dir;
-  char *cur, *arc;
+  char *cur, *arc, *p;
 
   if (!is_dumpdir (&current_stat_info))
     {
@@ -717,31 +1195,53 @@ purge_directory (char const *directory_name)
       return;
     }
 
+  /* Process renames */
+  for (arc = current_stat_info.dumpdir; *arc; arc += strlen (arc) + 1)
+    {
+      if (*arc == 'R')
+	{
+	  char *src, *dst;
+	  src = arc + 1;
+	  arc += strlen (arc) + 1;
+	  dst = arc + 1;
+
+	  if (!rename_directory (src, dst))
+	    {
+	      free (current_dir);
+	      /* FIXME: Make sure purge_directory(dst) will return
+		 immediately */
+	      return;
+	    }
+	}
+    }
+  
+  /* Process deletes */
+  p = NULL;
   for (cur = current_dir; *cur; cur += strlen (cur) + 1)
     {
-      for (arc = current_stat_info.dumpdir; *arc; arc += strlen (arc) + 1)
-	{
-	  arc++;
-	  if (!strcmp (arc, cur))
-	    break;
-	}
-      if (*arc == '\0')
+      if (!dumpdir_locate (current_stat_info.dumpdir, cur))
 	{
 	  struct stat st;
-	  char *p = new_name (directory_name, cur);
+	  if (p)
+	    free (p);
+	  p = new_name (directory_name, cur);
 
 	  if (deref_stat (false, p, &st))
 	    {
-	      stat_diag (p);
-	      WARN((0, 0, _("%s: Not purging directory: unable to stat"),
-		    quotearg_colon (p)));
+	      if (errno != ENOENT) /* FIXME: Maybe keep a list of renamed
+				      dirs and check it here? */
+		{
+		  stat_diag (p);
+		  WARN ((0, 0, _("%s: Not purging directory: unable to stat"),
+			 quotearg_colon (p)));
+		}
 	      continue;
 	    }
 	  else if (one_file_system_option && st.st_dev != root_device)
 	    {
-	      WARN((0, 0,
-		    _("%s: directory is on a different device: not purging"),
-		    quotearg_colon (p)));
+	      WARN ((0, 0,
+		     _("%s: directory is on a different device: not purging"),
+		     quotearg_colon (p)));
 	      continue;
 	    }
 
@@ -756,10 +1256,10 @@ purge_directory (char const *directory_name)
 		  ERROR ((0, e, _("%s: Cannot remove"), quotearg_colon (p)));
 		}
 	    }
-	  free (p);
 	}
-
     }
+  free (p);
+  
   free (current_dir);
 }
 
@@ -773,6 +1273,8 @@ list_dumpdir (char *buffer, size_t size)
 	case 'Y':
 	case 'N':
 	case 'D':
+	case 'R':
+	case 'T':
 	  fprintf (stdlis, "%c ", *buffer);
 	  buffer++;
 	  size--;
