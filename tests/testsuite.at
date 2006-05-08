@@ -52,8 +52,24 @@ test -z "$STAR_TESTSCRIPTS" && AT_SKIP_TEST
 test -r "$STAR_TESTSCRIPTS/$1" || AT_SKIP_TEST
 ])
 
+dnl AT_GZIP_PREREQ - Skip test unless gzip (or $1) is available
 m4_define([AT_GZIP_PREREQ],[
 cat /dev/null | m4_if([$1],[],gzip,[$1]) - > /dev/null 2>&1 || AT_SKIP_TEST
+])
+
+dnl AT_SORT_PREREQ - Skip test if sort utility outputs unwanted data on stderr
+m4_define([AT_SORT_PREREQ],[
+test -z "`sort < /dev/null 2>&1`" || AT_SKIP_TEST
+])
+
+dnl AT_UNPRIVILEGED_PREREQ - Skip test if running at root privileges
+m4_define([AT_UNPRIVILEGED_PREREQ],[
+echo "test" > $[]$
+chmod 0 $[]$
+cat $[]$ > /dev/null 2>&1
+result=$?
+rm -f $[]$
+test $result -eq 0 && AT_SKIP_TEST
 ])
 
 m4_define([AT_TAR_MKHIER],[
