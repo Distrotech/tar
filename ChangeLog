@@ -1,4 +1,15 @@
-2006-05-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+2006-05-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+	
+	* tests/testsuite.at (AT_SORT_PREREQ, AT_UNPRIVILEGED_PREREQ): New 
+	defines
+	
+	* tests/extrac04.at, tests/incr03.at, tests/listed02.at,
+	tests/pipe.at, tests/rename01.at, tests/rename02.at,
+	tests/rename03.at, tests/same-order01.at: Call
+	AT_SORT_PREREQ. Remove fd 2 redirection after calls to sort
+	* ignfail.at: Call AT_UNPRIVILEGED_PREREQ
+
+2006-05-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Listed incremental backups: keep more information about
 	directories. Handle renamed directories more effectively
