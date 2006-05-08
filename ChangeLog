@@ -1,3 +1,50 @@
+2006-05-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Listed incremental backups: keep more information about
+	directories. Handle renamed directories more effectively
+	(initial implementation, more updates to follow).
+	Source tree before this point is tagged
+	alpha_1_15_90_incremental_1. 
+	
+        * NEWS: Update
+        * configure.ac: Raise version number to 1.15.91
+	* src/common.h (rename_directory,append_incremental_renames): New
+	functions.
+	* src/extract.c (rename_directory): New function
+        * src/incremen.c (struct directory.contents, flags): New members
+	(nfs,found,new): Remove. Replaced by appropriate bitmask values in
+	`flags' field. All uses updated.
+	(directory_meta_table): New table.
+	(hash_directory): Rename to hash_directory_name
+	(compare_directories): Rename to compare_directory_names
+	(hash_directory_meta,compare_directory_meta,find_directory_meta):
+	New functions
+	(compare_dirents): Removed
+        (note_directory): Get 7th argument: directory contents.
+        All callers updated
+        (dumpdir_locate,makedumpdir): New functions
+        (scan_directory): Rewritten. Use makedumpdir to create a sorted
+        dumpdir array. This makes the obstack argument unnecessary. Besides,
+        ALL_CHILDREN flag is set only for new directories.
+	(procdir): Change return type to struct directory. Return
+	immediately if the directory was already initialized. Discover
+	directory renames using directory_meta_table.
+	(append_incremental_renames): New function.	
+        (read_directory_file, write_directory_file): Use new snapshot file
+        format.
+	* src/names.c (collect_and_sort_names): Update dir_contents of the
+	first non-fake name entry when in listed incremental mode.
+	
+        * tests/incr03.at: New testcase
+	* tests/rename01.at: New testcase
+	* tests/rename02.at: New testcase
+	* tests/rename03.at: New testcase
+        * tests/Makefile.am: Add
+	incr03.at,rename01.at,rename02.at,rename03.at
+        * tests/testsuite.at: Likewise.
+	* tests/listed02.at: Update for the new behavior
+        * tests/multiv04.at (AT_KEYWORDS): Add missing incremental kw.
+
 2006-05-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (try_new_volume): Attempt to continue if the name
