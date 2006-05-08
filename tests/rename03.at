@@ -24,6 +24,8 @@ AT_SETUP([cyclic renames])
 AT_KEYWORDS([incremental rename rename03 cyclic-rename])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
+
 mkdir foo
 genfile --file foo/file1
 genfile --file foo/file2

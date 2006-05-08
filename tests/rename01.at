@@ -25,6 +25,8 @@ AT_SETUP([renamed dirs in incrementals])
 AT_KEYWORDS([incremental rename rename01])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
+
 mkdir foo
 genfile --file foo/file1
 genfile --file foo/file2

@@ -27,6 +27,8 @@ AT_SETUP([same-order01])
 AT_KEYWORDS([same-order same-order01])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
+
 genfile -l 1024 -f file1
 genfile -l 1024 -f file2
 tar cf archive file1 file2
@@ -34,7 +36,7 @@ tar cf archive file1 file2
 mkdir directory
 tar -xf archive --same-order -C directory || exit 1
 
-ls directory|sort 2>/dev/null
+ls directory|sort 
 ],
 [0],
 [file1

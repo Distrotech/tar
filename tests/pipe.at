@@ -31,12 +31,14 @@ AT_SETUP([decompressing from stdin])
 AT_KEYWORDS([pipe])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
+
 mkdir directory
 genfile --length 10240 --pattern zeros --file directory/file1
 genfile --length 13 --file directory/file2
-tar cf archive directory|sort 2>/dev/null
+tar cf archive directory|sort 
 mv directory orig
-cat archive | tar xfv - | sort 2>/dev/null
+cat archive | tar xfv - | sort 
 echo "separator"
 cmp orig/file1 directory/file1
 echo "separator"

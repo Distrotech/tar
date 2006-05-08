@@ -29,6 +29,7 @@ AT_SETUP([renamed files in incrementals])
 AT_KEYWORDS([incremental incr03 rename])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkdir directory
 genfile --file=directory/x
 genfile --file=directory/y
@@ -41,17 +42,17 @@ tar -cf archive.2 -g db directory
 mv directory orig
 
 echo Listing of archive.1
-tar -tf archive.1 | sort 2>/dev/null
+tar -tf archive.1 | sort 
 echo Listing of archive.2
-tar -tf archive.2 | sort 2>/dev/null
+tar -tf archive.2 | sort 
 
 echo Directory after first restore
 tar -xf archive.1 -g db
-find directory | sort 2>/dev/null
+find directory | sort
 
 echo Directory after second restore
 tar -xf archive.2 -g db
-find directory | sort 2>/dev/null
+find directory | sort 
 ],
 [0],
 [Listing of archive.1
