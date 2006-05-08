@@ -110,8 +110,6 @@ tart/
 tart/c0/
 tart/c2/
 tart/b2
-tart/c2/ca1
-tart/c2/ca2
 tart/c2/ca3
 Extracting main archive
 tart/
@@ -126,13 +124,10 @@ tart/c1/ca2
 Extracting incremental archive
 tar: Deleting `tart/a1'
 tar: Deleting `tart/b1'
-tar: Deleting `tart/c1'
 tart/
 tart/b2
 tart/c0/
 tart/c2/
-tart/c2/ca1
-tart/c2/ca2
 tart/c2/ca3
 Final files:
 tart
@@ -147,7 +142,7 @@ tart/c2/ca3
 ],
 [tar: tart/c0: Directory is new
 tar: tart/c1: Directory is new
-tar: tart/c2: Directory is new
+tar: tart/c2: Directory has been renamed from `tart/c1'
 ],
 [],[],[gnu, oldgnu])
 
