@@ -443,6 +443,7 @@ void verify_volume (void);
 void extr_init (void);
 void extract_archive (void);
 void extract_finish (void);
+bool rename_directory (char *src, char *dst);
 
 /* Module delete.c.  */
 
@@ -451,6 +452,7 @@ void delete_archive_members (void);
 /* Module incremen.c.  */
 
 char *get_directory_contents (char *, dev_t);
+const char *append_incremental_renames (const char *dump);
 void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *);
