@@ -787,6 +787,14 @@ collect_and_sort_names (void)
 
   for (name = namelist; name; name = name->next)
     name->found_count = 0;
+
+  if (listed_incremental_option)
+    {
+      for (name = namelist; name && name->fake; name++)
+	;
+      if (name)
+	name->dir_contents = append_incremental_renames (name->dir_contents);
+    }
 }
 
 /* This is like name_match, except that
