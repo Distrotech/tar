@@ -65,6 +65,7 @@ TESTSUITE_AT = \
  incremental.at\
  incr01.at\
  incr02.at\
+ incr03.at\
  ignfail.at\
  link01.at\
  listed01.at\
@@ -83,6 +84,9 @@ TESTSUITE_AT = \
  options02.at\
  pipe.at\
  recurse.at\
+ rename01.at\
+ rename02.at\
+ rename03.at\
  same-order01.at\
  same-order02.at\
  shortrec.at\

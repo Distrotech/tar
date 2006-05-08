@@ -92,13 +92,16 @@ m4_include([gzip.at])
 m4_include([incremental.at])
 m4_include([incr01.at])
 m4_include([incr02.at])
+m4_include([listed01.at])
+m4_include([listed02.at])
+m4_include([incr03.at])
+m4_include([rename01.at])
+m4_include([rename02.at])
+m4_include([rename03.at])
 
 m4_include([ignfail.at])
 
 m4_include([link01.at])
-
-m4_include([listed01.at])
-m4_include([listed02.at])
 
 m4_include([longv7.at])
 m4_include([long01.at])
