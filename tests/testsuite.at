@@ -47,9 +47,19 @@ done
 
 m4_define([AT_SKIP_TEST],[exit 77])
 
+dnl AT_TARBALL_PREREQ(tarball, md5sum) - Check if test tarball exists
+dnl in $TEST_DATA_DIR. If it does not, try to download it from
+dnl $TEST_DATA_URL. If download fails, or it the file's md5 sum does not
+dnl match second argument, skip the test.
+
+m4_define([AT_TARBALL_PREREQ],[
+test -z "$[]TEST_DATA_DIR" && AT_SKIP_TEST
+tarball_prereq $1 $2 $[]TEST_DATA_DIR $[]TEST_DATA_URL || AT_SKIP_TEST]) 
+
+dnl AT_TARBALL_PREREQ(tarball, md5sum) - Same for star testfiles
 m4_define([AT_STAR_PREREQ],[
 test -z "$STAR_TESTSCRIPTS" && AT_SKIP_TEST
-test -r "$STAR_TESTSCRIPTS/$1" || AT_SKIP_TEST
+tarball_prereq $1 $2 $[]STAR_TESTSCRIPTS $[]STAR_DATA_URL || AT_SKIP_TEST
 ])
 
 dnl AT_GZIP_PREREQ - Skip test unless gzip (or $1) is available
@@ -114,6 +124,7 @@ m4_include([incr03.at])
 m4_include([rename01.at])
 m4_include([rename02.at])
 m4_include([rename03.at])
+m4_include([chtype.at])
 
 m4_include([ignfail.at])
 
@@ -148,6 +159,7 @@ m4_include([sparsemvp.at])
 m4_include([update.at])
 
 m4_include([volume.at])
+m4_include([volsize.at])
 
 m4_include([comprec.at])
 
