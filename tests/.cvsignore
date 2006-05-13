@@ -1,6 +1,7 @@
 *.bz2
 *.gz
 *.tar
+*.gtar
 .deps
 Makefile
 Makefile.in
