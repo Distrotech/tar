@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 # 02110-1301, USA.
 
 AT_SETUP([multi-fail])
-AT_KEYWORDS([multivolume multiv multi-fail])
+AT_KEYWORDS([star multivolume multiv multi-fail])
 
 unset TAR_OPTIONS
 
 AT_CHECK([
-AT_STAR_PREREQ([gnu-multi-fail-volume1.gtar])
-AT_STAR_PREREQ([gnu-multi-fail-volume2.gtar])
+AT_STAR_PREREQ([gnu-multi-fail-volume1.gtar],[7c28663dd98b0bd91ceb4be7af55254e])
+AT_STAR_PREREQ([gnu-multi-fail-volume2.gtar],[b5d41c4c3ec440687d4a44957b5079a8])
 
 tar --utc -tvM -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume1.gtar \
                -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume2.gtar <&-

@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2006 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 # 02110-1301, USA.
 
 AT_SETUP([ustar-big-8g])
-AT_KEYWORDS([ustar-big-8g])
+AT_KEYWORDS([star ustar-big-8g])
 
 unset TAR_OPTIONS
 
 AT_CHECK([
 AT_GZIP_PREREQ([bzip2])
-AT_STAR_PREREQ([ustar-big-8g.tar.bz2])
+AT_STAR_PREREQ([ustar-big-8g.tar.bz2],[60ff503fa4b8288bef7ada89e9c91b0f])
 
 tar --utc -tvjf $STAR_TESTSCRIPTS/ustar-big-8g.tar.bz2
 ],
