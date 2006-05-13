@@ -196,9 +196,10 @@ find_directory_meta (dev_t dev, ino_t ino)
   else
     {
       struct directory *dir = make_directory ("");
+      struct directory *ret;
       dir->device_number = dev;
       dir->inode_number = ino;
-      struct directory *ret = hash_lookup (directory_meta_table, dir);
+      ret = hash_lookup (directory_meta_table, dir);
       free (dir);
       return ret;
     }
@@ -1219,13 +1220,16 @@ purge_directory (char const *directory_name)
   p = NULL;
   for (cur = current_dir; *cur; cur += strlen (cur) + 1)
     {
-      if (!dumpdir_locate (current_stat_info.dumpdir, cur))
-	{
-	  struct stat st;
-	  if (p)
-	    free (p);
-	  p = new_name (directory_name, cur);
+      const char *entry;
+      struct stat st;
+      if (p)
+	free (p);
+      p = new_name (directory_name, cur);
 
+      if (!(entry = dumpdir_locate (current_stat_info.dumpdir, cur))
+	  || (*entry == 'D' && S_ISDIR (st.st_mode))
+	  || (*entry == 'Y' && !S_ISDIR (st.st_mode)))
+	{
 	  if (deref_stat (false, p, &st))
 	    {
 	      if (errno != ENOENT) /* FIXME: Maybe keep a list of renamed
