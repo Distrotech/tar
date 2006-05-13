@@ -1,3 +1,29 @@
+2006-05-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Update
+	* src/buffer.c (read_header0): Use read_header_primitive to avoid
+	clubbering current_tar_info. All callers updated.
+	* src/common.h (read_header_primitive): New function
+	* src/extract.c (extract_volhdr): New function
+	(prepare_to_extract): Use extract_volhdr as extractor for volume
+	names.
+	* src/list.c (read_header_primitive): New function
+	(read_header): Front end for read_header_primitive
+	* tests/Makefile.am (TESTSUITE_AT): Add chtype.at, volsize.at
+	(check-full): New target.
+	* tests/atlocal.in (TEST_DATA_URL,STAR_DATA_URL)
+	(STAR_TESTSCRIPTS): Provide default values.
+	(tarball_prereq): New function
+	* tests/testsuite.at (AT_TARBALL_PREREQ): New defun
+	(AT_STAR_PREREQ): Rewrite using tarball_prereq
+	Include chtype.at and volsize.at
+	* tests/volume.at: Add keywords.
+
+	* tests/star/gtarfail.at, tests/star/gtarfail2.at,
+	tests/star/multi-fail.at, tests/star/pax-big-10g.at,
+	tests/star/ustar-big-2g.at, tests/star/ustar-big-8g.at
+	(AT_STAR_PREREQ): Provide md5 sum.
+
 2006-05-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 	
 	* tests/testsuite.at (AT_SORT_PREREQ, AT_UNPRIVILEGED_PREREQ): New 
