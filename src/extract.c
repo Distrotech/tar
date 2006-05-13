@@ -1030,6 +1030,13 @@ extract_mangle_wrapper (char *file_name, int typeflag)
   return 0;
 }
 
+static int
+extract_volhdr (char *file_name, int typeflag)
+{
+  if (verbose_option)
+    fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
+  skip_member ();
+}
 
 static int
 extract_failure (char *file_name, int typeflag)
@@ -1110,9 +1117,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
       break;
 
     case GNUTYPE_VOLHDR:
-      if (verbose_option)
-	fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
-      *fun = NULL;
+      *fun = extract_volhdr;
       break;
 
     case GNUTYPE_NAMES:
