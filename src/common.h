@@ -515,6 +515,8 @@ void list_archive (void);
 void print_for_mkdir (char *, int, mode_t);
 void print_header (struct tar_stat_info *, off_t);
 void read_and (void (*) (void));
+enum read_header read_header_primitive (bool raw_extended_headers,
+					struct tar_stat_info *info);
 enum read_header read_header (bool);
 enum read_header tar_checksum (union block *header, bool silent);
 void skip_file (off_t);
