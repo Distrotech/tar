@@ -24,6 +24,8 @@
 	tests/star/ustar-big-2g.at, tests/star/ustar-big-8g.at
 	(AT_STAR_PREREQ): Provide md5 sum.
 
+	* lib/.cvsignore: Update
+	
 2006-05-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 	
 	* tests/testsuite.at (AT_SORT_PREREQ, AT_UNPRIVILEGED_PREREQ): New 
