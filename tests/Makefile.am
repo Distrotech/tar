@@ -49,6 +49,7 @@ TESTSUITE_AT = \
  testsuite.at\
  append.at\
  append01.at\
+ chtype.at\
  comprec.at\
  delete01.at\
  delete02.at\
@@ -97,6 +98,7 @@ TESTSUITE_AT = \
  sparsemvp.at\
  truncate.at\
  update.at\
+ volsize.at\
  volume.at\
  version.at\
  star/gtarfail.at\
@@ -121,6 +123,9 @@ clean-local:
 
 check-local: atconfig atlocal $(TESTSUITE)
 	$(SHELL) $(TESTSUITE)
+
+check-full:
+	FULL_TEST=1 $(MAKE) check
 
 #check_SCRIPTS = tar
 
