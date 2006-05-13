@@ -281,8 +281,8 @@ tar_checksum (union block *header, bool silent)
 }
 
 /* Read a block that's supposed to be a header block.  Return its
-   address in "current_header", and if it is good, the file's size in
-   current_stat_info.stat.st_size.
+   address in "current_header", and if it is good, the file's size
+   and names (file name, link name) in *info.
 
    Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a
    block full of zeros (EOF marker).
@@ -294,7 +294,7 @@ tar_checksum (union block *header, bool silent)
    the header which this routine reads.  */
 
 enum read_header
-read_header (bool raw_extended_headers)
+read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
 {
   union block *header;
   union block *header_copy;
@@ -321,9 +321,9 @@ read_header (bool raw_extended_headers)
       /* Good block.  Decode file size and return.  */
 
       if (header->header.typeflag == LNKTYPE)
-	current_stat_info.stat.st_size = 0;	/* links 0 size on tape */
+	info->stat.st_size = 0;	/* links 0 size on tape */
       else
-	current_stat_info.stat.st_size = OFF_FROM_HEADER (header->header.size);
+	info->stat.st_size = OFF_FROM_HEADER (header->header.size);
 
       if (header->header.typeflag == GNUTYPE_LONGNAME
 	  || header->header.typeflag == GNUTYPE_LONGLINK
@@ -336,14 +336,13 @@ read_header (bool raw_extended_headers)
 	  else if (header->header.typeflag == GNUTYPE_LONGNAME
 		   || header->header.typeflag == GNUTYPE_LONGLINK)
 	    {
-	      size_t name_size = current_stat_info.stat.st_size;
+	      size_t name_size = info->stat.st_size;
 	      size_t n = name_size % BLOCKSIZE;
 	      size = name_size + BLOCKSIZE;
 	      if (n)
 		size += BLOCKSIZE - n;
 
-	      if (name_size != current_stat_info.stat.st_size
-		  || size < name_size)
+	      if (name_size != info->stat.st_size || size < name_size)
 		xalloc_die ();
 
 	      header_copy = xmalloc (size + 1);
@@ -434,9 +433,9 @@ read_header (bool raw_extended_headers)
 	      recent_long_name = 0;
 	      recent_long_name_blocks = 0;
 	    }
-	  assign_string (&current_stat_info.orig_file_name, name);
-	  assign_string (&current_stat_info.file_name, name);
-	  current_stat_info.had_trailing_slash = strip_trailing_slashes (current_stat_info.file_name);
+	  assign_string (&info->orig_file_name, name);
+	  assign_string (&info->file_name, name);
+	  info->had_trailing_slash = strip_trailing_slashes (info->file_name);
 
 	  if (recent_long_link)
 	    free (recent_long_link);
@@ -455,11 +454,17 @@ read_header (bool raw_extended_headers)
 	      recent_long_link = 0;
 	      recent_long_link_blocks = 0;
 	    }
-	  assign_string (&current_stat_info.link_name, name);
+	  assign_string (&info->link_name, name);
 
 	  return HEADER_SUCCESS;
 	}
     }
+}
+
+enum read_header
+read_header (bool raw_extended_headers)
+{
+  return read_header_primitive (raw_extended_headers, &current_stat_info);
 }
 
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
