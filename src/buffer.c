@@ -1057,10 +1057,12 @@ new_volume (enum access_mode mode)
 }
 
 static bool
-read_header0 ()
+read_header0 (struct tar_stat_info *info)
 {
-  enum read_header rc = read_header (false);
+  enum read_header rc;
 
+  tar_stat_init (info);
+  rc = read_header_primitive (false, info);
   if (rc == HEADER_SUCCESS)
     {
       set_next_block_after (current_header);
@@ -1075,7 +1077,8 @@ try_new_volume ()
 {
   size_t status;
   union block *header;
-
+  struct tar_stat_info dummy;
+	
   switch (subcommand_option)
     {
     case APPEND_SUBCOMMAND:
@@ -1101,14 +1104,13 @@ try_new_volume ()
   header = find_next_block ();
   if (!header)
     return false;
+
   switch (header->header.typeflag)
     {
     case XGLTYPE:
       {
-	struct tar_stat_info dummy;
-	if (!read_header0 ())
+	if (!read_header0 (&dummy))
 	  return false;
-	tar_stat_init (&dummy);
 	xheader_decode (&dummy); /* decodes values from the global header */
 	tar_stat_destroy (&dummy);
 	if (!real_s_name)
@@ -1122,8 +1124,9 @@ try_new_volume ()
       }
 
     case GNUTYPE_VOLHDR:
-      if (!read_header0 ())
+      if (!read_header0 (&dummy))
 	return false;
+      tar_stat_destroy (&dummy);
       assign_string (&volume_label, current_header->header.name);
       set_next_block_after (header);
       header = find_next_block ();
@@ -1132,8 +1135,9 @@ try_new_volume ()
       /* FALL THROUGH */
 
     case GNUTYPE_MULTIVOL:
-      if (!read_header0 ())
+      if (!read_header0 (&dummy))
 	return false;
+      tar_stat_destroy (&dummy);
       assign_string (&continued_file_name, current_header->header.name);
       continued_file_size =
 	UINTMAX_FROM_HEADER (current_header->header.size);
