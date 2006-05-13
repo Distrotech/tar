@@ -9,6 +9,8 @@
 	names.
 	* src/list.c (read_header_primitive): New function
 	(read_header): Front end for read_header_primitive
+	* tests/chtype.at: New file
+	* tests/volsize.at: New file
 	* tests/Makefile.am (TESTSUITE_AT): Add chtype.at, volsize.at
 	(check-full): New target.
 	* tests/atlocal.in (TEST_DATA_URL,STAR_DATA_URL)
