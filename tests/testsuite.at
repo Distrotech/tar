@@ -22,6 +22,7 @@
 m4_version_prereq([2.52g])
 
 m4_define([AT_TAR_CHECK],[
+  AT_XFAIL_IF(test -f $[]XFAILFILE)
   m4_foreach([FMT],
              [m4_if([$7],[],[v7,oldgnu,ustar,posix,gnu],[$7])],
              [AT_CHECK([
@@ -174,3 +175,4 @@ m4_include([star/ustar-big-2g.at])
 m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
+
