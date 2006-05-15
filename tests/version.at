@@ -21,6 +21,15 @@ AT_SETUP([tar version])
 AT_CHECK([tar --version | sed 1q],
          [0],
          [AT_PACKAGE_TARNAME (AT_PACKAGE_NAME) AT_PACKAGE_VERSION
-])
+],
+[],
+[cat >$[]XFAILFILE <<'_EOT'
+
+==============================================================
+WARNING: Not using the proper version, *all* checks dubious...
+==============================================================
+_EOT
+],
+[rm -f $[]XFAILFILE])
 
 AT_CLEANUP
