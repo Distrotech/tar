@@ -4,6 +4,10 @@
 
 PATH=@abs_builddir@:@abs_top_builddir@/src:@abs_top_srcdir@/build-aux:$top_srcdir:$srcdir:$PATH
 
+XFAILFILE=$abs_builddir/.badversion
+
+trap "test -r $XFAILFILE && cat $XFAILFILE; exit $?" 1 2 13 15
+
 TEST_DATA_URL=ftp://download.gnu.org.ua/pub/tests/tar
 if test -z "$TEST_DATA_DIR"; then
   TEST_DATA_DIR=$abs_builddir
