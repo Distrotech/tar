@@ -1,3 +1,10 @@
+2006-05-15  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* tests/atlocal.in (XFAILFILE): New variable
+	* tests/version.at: Create $XFAILFILE on failure
+	* tests/testsuite.at (AT_TAR_CHECK): Declare expected failure if
+	$XFAILFILE exists.
+
 2006-05-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Update
