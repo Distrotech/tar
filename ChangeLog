@@ -1,3 +1,9 @@
+2006-05-22  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Use @var{file_name} instead of @var{file name}
+	* src/buffer.c (change_tape_menu): Break the loop after obtaining
+	new archive name. Check for empty input line.
+
 2006-05-15  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/atlocal.in (XFAILFILE): New variable
