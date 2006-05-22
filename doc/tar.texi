@@ -5954,13 +5954,13 @@ To specify an archive file on a device attached to a remote machine,
 use the following:
 
 @smallexample
-@kbd{--file=@var{hostname}:/@var{dev}/@var{file name}}
+@kbd{--file=@var{hostname}:/@var{dev}/@var{file_name}}
 @end smallexample
 
 @noindent
 @command{tar} will complete the remote connection, if possible, and
 prompt you for a username and password.  If you use
-@option{--file=@@@var{hostname}:/@var{dev}/@var{file name}}, @command{tar}
+@option{--file=@@@var{hostname}:/@var{dev}/@var{file_name}}, @command{tar}
 will complete the remote connection, if possible, using your username
 as the username on the remote machine.
 
@@ -6044,9 +6044,9 @@ the list of files to archive with the @command{find} utility.
 
 @table @option
 @opindex files-from
-@item --files-from=@var{file name}
-@itemx -T @var{file name}
-Get names to extract or create from file @var{file name}.
+@item --files-from=@var{file_name}
+@itemx -T @var{file_name}
+Get names to extract or create from file @var{file_name}.
 @end table
 
 If you give a single dash as a file name for @option{--files-from}, (i.e.,
@@ -8944,8 +8944,8 @@ responses:
 Request @command{tar} to explain possible responses
 @item q
 Request @command{tar} to exit immediately.
-@item n @var{file name}
-Request @command{tar} to write the next volume on the file @var{file name}.
+@item n @var{file_name}
+Request @command{tar} to write the next volume on the file @var{file_name}.
 @item !
 Request @command{tar} to run a subshell.  This option can be disabled
 by giving @option{--restrict} command line option to @command{tar}.
