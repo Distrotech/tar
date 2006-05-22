@@ -874,8 +874,9 @@ change_tape_menu (FILE *read_file)
 {
   char *input_buffer = NULL;
   size_t size = 0;
-
-  while (1)
+  bool stop;
+  
+  while (!stop)
     {
       fputc ('\007', stderr);
       fprintf (stderr,
@@ -905,7 +906,7 @@ change_tape_menu (FILE *read_file)
 	case '?':
 	  {
 	    fprintf (stderr, _("\
- n [name]      Give a new file name for the next (and subsequent) volume(s)\n\
+ n name        Give a new file name for the next (and subsequent) volume(s)\n\
  q             Abort tar\n\
  y or newline  Continue operation\n"));
             if (!restrict_option)
@@ -942,8 +943,15 @@ change_tape_menu (FILE *read_file)
 	      ;
 	    *cursor = '\0';
 
-	    /* FIXME: the following allocation is never reclaimed.  */
-	    *archive_name_cursor = xstrdup (name);
+	    if (name[0])
+	      {
+		/* FIXME: the following allocation is never reclaimed.  */
+		*archive_name_cursor = xstrdup (name);
+		stop = true;
+	      }
+	    else
+	      fprintf (stderr, "%s",
+		       _("File name not specified. Try again.\n"));
 	  }
 	  break;
 
