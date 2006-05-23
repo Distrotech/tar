@@ -874,7 +874,7 @@ change_tape_menu (FILE *read_file)
 {
   char *input_buffer = NULL;
   size_t size = 0;
-  bool stop;
+  bool stop = false;
   
   while (!stop)
     {
