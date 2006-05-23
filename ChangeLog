@@ -1,3 +1,8 @@
+2006-05-23  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (change_tape_menu): Fix typo (uninitialized
+	variable) introduced yesterday.
+
 2006-05-22  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Use @var{file_name} instead of @var{file name}
