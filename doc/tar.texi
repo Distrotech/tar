@@ -271,7 +271,6 @@ Reading Names from a File
 
 Excluding Some Files
 
-* controlling pattern-matching with exclude::
 * problems with exclude::
 
 Crossing File System Boundaries
@@ -2188,8 +2187,9 @@ Normally when creating an archive, @command{tar} strips an initial
 
 @opindex anchored, summary
 @item --anchored
-An exclude pattern must match an initial subsequence of the name's components.
-@xref{controlling pattern-matching with exclude}.
+@FIXME{wildcards}
+A pattern must match an initial subsequence of the name's components.
+@xref{controlling pattern-matching}.
 
 @opindex atime-preserve, summary
 @item --atime-preserve
@@ -2280,13 +2280,10 @@ indication that @command{tar} is still running, but don't want to see
 If this option was given, @command{tar} will check the number of links
 dumped for each processed file.  If this number does not match the
 total number of hard links for the file, a warning message will be
-output.
-
-Future versions will take @option{-l} as a short version of
-@option{--check-links}.  However, current release still retains the old
-semantics for @option{-l}.
-
-@xref{Changes}, for more information.
+output @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
+synonym for @option{--one-file-system}.  The current semantics, wich
+complies to UNIX98, was introduced with version
+1.15.91. @xref{Changes}, for more information.}. 
 
 @opindex compress, summary
 @opindex uncompress, summary
@@ -2426,8 +2423,8 @@ options to @command{tar} and exit. @xref{help}.
 
 @opindex ignore-case, summary
 @item --ignore-case
-Ignore case when excluding files. @xref{controlling pattern-matching
-with exclude}.
+@FIXME{wildcards}
+Ignore case when matching member or file names with patterns. @xref{controlling pattern-matching}.
 
 @opindex ignore-command-error, summary
 @item --ignore-command-error
@@ -2570,8 +2567,9 @@ also back up files for which any status information has changed).
 
 @opindex no-anchored, summary
 @item --no-anchored
+@FIXME{wildcards}
 An exclude pattern can match any subsequence of the name's components.
-@xref{controlling pattern-matching with exclude}.
+@xref{controlling pattern-matching}.
 
 @opindex no-delay-directory-restore, summary
 @item --no-delay-directory-restore
@@ -2582,8 +2580,9 @@ extracted. This is the default. @xref{Directory Modification Times and Permissio
 
 @opindex no-ignore-case, summary
 @item --no-ignore-case
-Use case-sensitive matching when excluding files.
-@xref{controlling pattern-matching with exclude}.
+@FIXME{wildcards}
+Use case-sensitive matching.
+@xref{controlling pattern-matching}.
 
 @opindex no-ignore-command-error, summary
 @item --no-ignore-command-error
@@ -2618,13 +2617,15 @@ for ordinary users.
 
 @opindex no-wildcards, summary
 @item --no-wildcards
-Do not use wildcards when excluding files.
-@xref{controlling pattern-matching with exclude}.
+@FIXME{wildcards}
+Do not use wildcards.
+@xref{controlling pattern-matching}.
 
 @opindex no-wildcards-match-slash, summary
 @item --no-wildcards-match-slash
-Wildcards do not match @samp{/} when excluding files.
-@xref{controlling pattern-matching with exclude}.
+@FIXME{wildcards}
+Wildcards do not match @samp{/}.
+@xref{controlling pattern-matching}.
 
 @opindex null, summary
 @item --null
@@ -2678,18 +2679,11 @@ Synonym for @option{--format=v7}.
 
 @opindex one-file-system, summary
 @item --one-file-system
-@itemx -l
 Used when creating an archive.  Prevents @command{tar} from recursing into
 directories that are on different file systems from the current
-directory.
-
-Earlier versions of @GNUTAR{} understood @option{-l} as a
-synonym for @option{--one-file-system}.  Although such usage is still
-allowed in the present version, it is @emph{strongly discouraged}.
-The future versions of @GNUTAR{} will use @option{-l} as
-a synonym for @option{--check-links}.
-
-@xref{Changes}, for more information.
+directory @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
+synonym for @option{--one-file-system}.  This has changed in version
+1.15.91. @xref{Changes}, for more information.}.
 
 @opindex overwrite, summary
 @item --overwrite
@@ -3113,13 +3107,15 @@ of which volume of a multi-volume archive its working in @var{file}.
 
 @opindex wildcards, summary
 @item --wildcards
+@FIXME{wildcards}
 Use wildcards when excluding files.
-@xref{controlling pattern-matching with exclude}.
+@xref{controlling pattern-matching}.
 
 @opindex wildcards-match-slash, summary
 @item --wildcards-match-slash
-Wildcards match @samp{/} when excluding files.
-@xref{controlling pattern-matching with exclude}.
+@FIXME{wildcards}
+Wildcards match @samp{/}.
+@xref{controlling pattern-matching}.
 @end table
 
 @node Short Option Summary
@@ -5098,7 +5094,7 @@ one volume, you will need to use the @option{--multi-volume} (@option{-M}) optio
 Make sure you have enough tapes on hand to complete the backup.
 
 If you want to dump each file system separately you will need to use
-the @option{--one-file-system} (@option{-l}) option to prevent
+the @option{--one-file-system} option to prevent
 @command{tar} from crossing file system boundaries when storing
 (sub)directories.
 
@@ -6008,7 +6004,7 @@ the command line, as follows:
 @kbd{tar} @var{operation} [@var{option1} @var{option2} @dots{}] [@var{file name-1} @var{file name-2} @dots{}]
 @end smallexample
 
-If a file name begins with dash (@samp{-}), preceede it with
+If a file name begins with dash (@samp{-}), precede it with
 @option{--add-file} option to preventit from being treated as an
 option.
 
@@ -6259,72 +6255,8 @@ use to hold regenerable, non-precious data, so that such data can be
 more easily excluded from backups.
 
 @menu
-* controlling pattern-matching with exclude::
 * problems with exclude::
 @end menu
-
-@node controlling pattern-matching with exclude
-@unnumberedsubsec Controlling Pattern-Matching with the @code{exclude} Options
-
-Normally, a pattern matches a name if an initial subsequence of the
-name's components matches the pattern, where @samp{*}, @samp{?}, and
-@samp{[...]} are the usual shell wildcards, @samp{\} escapes wildcards,
-and wildcards can match @samp{/}.
-
-Other than optionally stripping leading @samp{/} from names
-(@pxref{absolute}), patterns and names are used as-is.  For
-example, trailing @samp{/} is not trimmed from a user-specified name
-before deciding whether to exclude it.
-
-However, this matching procedure can be altered by the options listed
-below.  These options accumulate.  For example:
-
-@smallexample
---ignore-case --exclude='makefile' --no-ignore-case ---exclude='readme'
-@end smallexample
-
-ignores case when excluding @samp{makefile}, but not when excluding
-@samp{readme}.
-
-@table @option
-@opindex anchored
-@opindex no-anchored
-@item --anchored
-@itemx --no-anchored
-If anchored, a pattern must match an initial subsequence
-of the name's components.  Otherwise, the pattern can match any
-subsequence.  Default is @option{--no-anchored}.
-
-@opindex ignore-case
-@opindex no-ignore-case
-@item --ignore-case
-@itemx --no-ignore-case
-When ignoring case, upper-case patterns match lower-case names and vice versa.
-When not ignoring case (the default), matching is case-sensitive.
-
-@opindex wildcards
-@opindex no-wildcards
-@item --wildcards
-@itemx --no-wildcards
-When using wildcards (the default), @samp{*}, @samp{?}, and @samp{[...]}
-are the usual shell wildcards, and @samp{\} escapes wildcards.
-Otherwise, none of these characters are special, and patterns must match
-names literally.
-
-@opindex wildcards-match-slash
-@opindex no-wildcards-match-slash
-@item --wildcards-match-slash
-@itemx --no-wildcards-match-slash
-When wildcards match slash (the default), a wildcard like @samp{*} in
-the pattern can match a @samp{/} in the name.  Otherwise, @samp{/} is
-matched only by @samp{/}.
-
-@end table
-
-The @option{--recursion} and @option{--no-recursion} options
-(@pxref{recurse}) also affect how exclude patterns are interpreted.  If
-recursion is in effect, a pattern excludes a name if it matches any of
-the name's parent directories.
 
 @node problems with exclude
 @unnumberedsubsec Problems with Using the @code{exclude} Options
@@ -6439,6 +6371,74 @@ Periods (@samp{.}) or forward slashes (@samp{/}) are not considered
 special for wildcard matches.  However, if a pattern completely matches
 a directory prefix of a matched string, then it matches the full matched
 string: excluding a directory also excludes all the files beneath it.
+
+@menu
+* controlling pattern-matching::
+@end menu
+
+@node controlling pattern-matching
+@unnumberedsubsec Controlling Pattern-Matching
+@UNREVISED{}
+
+Normally, a pattern matches a name if an initial subsequence of the
+name's components matches the pattern, where @samp{*}, @samp{?}, and
+@samp{[...]} are the usual shell wildcards, @samp{\} escapes wildcards,
+and wildcards can match @samp{/}.
+
+Other than optionally stripping leading @samp{/} from names
+(@pxref{absolute}), patterns and names are used as-is.  For
+example, trailing @samp{/} is not trimmed from a user-specified name
+before deciding whether to exclude it.
+
+However, this matching procedure can be altered by the options listed
+below.  These options accumulate.  For example:
+
+@smallexample
+--ignore-case --exclude='makefile' --no-ignore-case ---exclude='readme'
+@end smallexample
+
+ignores case when excluding @samp{makefile}, but not when excluding
+@samp{readme}.
+
+@table @option
+@opindex anchored
+@opindex no-anchored
+@item --anchored
+@itemx --no-anchored
+If anchored, a pattern must match an initial subsequence
+of the name's components.  Otherwise, the pattern can match any
+subsequence.  Default is @option{--no-anchored}.
+
+@opindex ignore-case
+@opindex no-ignore-case
+@item --ignore-case
+@itemx --no-ignore-case
+When ignoring case, upper-case patterns match lower-case names and vice versa.
+When not ignoring case (the default), matching is case-sensitive.
+
+@opindex wildcards
+@opindex no-wildcards
+@item --wildcards
+@itemx --no-wildcards
+When using wildcards (the default), @samp{*}, @samp{?}, and @samp{[...]}
+are the usual shell wildcards, and @samp{\} escapes wildcards.
+Otherwise, none of these characters are special, and patterns must match
+names literally.
+
+@opindex wildcards-match-slash
+@opindex no-wildcards-match-slash
+@item --wildcards-match-slash
+@itemx --no-wildcards-match-slash
+When wildcards match slash (the default), a wildcard like @samp{*} in
+the pattern can match a @samp{/} in the name.  Otherwise, @samp{/} is
+matched only by @samp{/}.
+
+@end table
+
+The @option{--recursion} and @option{--no-recursion} options
+(@pxref{recurse}) also affect how exclude patterns are interpreted.  If
+recursion is in effect, a pattern excludes a name if it matches any of
+the name's parent directories.
 
 @node after
 @section Operating Only on New Files
@@ -6580,8 +6580,8 @@ The @option{--no-recursion} option also applies when extracting: it
 causes @command{tar} to extract only the matched directory entries, not
 the files under those directories.
 
-The @option{--no-recursion} option also affects how exclude patterns
-are interpreted (@pxref{controlling pattern-matching with exclude}).
+The @option{--no-recursion} option also affects how globbing patterns
+are interpreted (@pxref{controlling pattern-matching}).
 
 The @option{--no-recursion} and @option{--recursion} options apply to
 later options and operands, and can be overridden by later occurrences
@@ -6604,7 +6604,7 @@ other than @file{grape/concord}.
 @command{tar} will normally automatically cross file system boundaries in
 order to archive files which are part of a directory tree.  You can
 change this behavior by running @command{tar} and specifying
-@option{--one-file-system} (@option{-l}).  This option only affects files that are
+@option{--one-file-system}.  This option only affects files that are
 archived because they are in a directory that is being archived;
 @command{tar} will still archive files explicitly named on the command line
 or through @option{--files-from}, regardless of where they reside.
@@ -9467,6 +9467,44 @@ version of this document is available at
 @GNUTAR{} documentation page}.
 
 @table @asis
+@item Use of globbing patterns when listing and extracting.
+
+Previous versions of GNU tar assumed shell-style globbing when
+extracting from or listing an archive.  For example:
+
+@smallexample
+$ @kbd{tar xf foo.tar '*.c'}
+@end smallexample
+
+would extract all files whose names end in @samp{.c}.  This behavior
+was not documented and was incompatible with traditional tar
+implementations.  Therefore, starting from version 1.15.91, GNU tar
+no longer uses globbing by default.  For example, the above invocation
+is now interpreted as a request to extract from the archive the file
+named @file{*.c}.
+
+To facilitate transition to the new behavior for those users who got
+used to the previous incorrect one, @command{tar} will print a warning
+if it finds out that a requested member was not found in the archive
+and its name looks like a globbing pattern.  For example:
+
+@smallexample
+$ @kbd{tar xf foo.tar  '*.c'}
+tar: Pattern matching characters used in file names. Please,
+tar: use --wildcards to enable pattern matching, or --no-wildcards to
+tar: suppress this warning.
+tar: *.c: Not found in archive
+tar: Error exit delayed from previous errors
+@end smallexample
+
+To treat member names as globbing patterns, use --wildcards option.
+If you want to tar to mimic the behavior of versions prior to 1.15.91,
+add this option to your @env{TAR_OPTIONS} variable.
+
+@xref{Wildcards}, for the detailed discussion of the use of globbing
+patterns by @GNUTAR{}.
+@FIXME{Check this reference.}
+
 @item Use of short option @option{-o}.
 
 Earlier versions of @GNUTAR{} understood @option{-o} command line
@@ -9485,16 +9523,20 @@ up to and including 1.8.4 invoke tar with this option to produce
 distribution tarballs.  @xref{Formats,v7}, for the detailed discussion
 of this issue and its implications.
 
+@FIXME{Refer to tar-v7 description in automake.info.}
+
 Future versions of @GNUTAR{} will understand @option{-o} only as a
 synonym for @option{--no-same-owner}.
 
 @item Use of short option @option{-l}
 
 Earlier versions of @GNUTAR{} understood @option{-l} option as a
-synonym for @option{--one-file-system}.  Such usage is deprecated.
-For compatibility with other implementations future versions of
-@GNUTAR{} will understand this option as a synonym for
-@option{--check-links}.
+synonym for @option{--one-file-system}.  Since such usage contradicted
+to UNIX98 specification and harmed compatibility with other
+implementation, it was declared deprecated in version 1.14.  However,
+to facilitate transition to its new semantics, it was supported by
+versions 1.15 and 1.15.90.  The present use of @option{-l} as a short
+variant of @option{--check-links} was introduced in version 1.15.91.
 
 @item Use of options @option{--portability} and @option{--old-archive}
 

@@ -3,6 +3,54 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.15.91 - Sergey Poznyakoff, (CVS version)
 
+* Incompatible changes
+
+** Globbing
+
+Previous versions of GNU tar assumed shell-style globbing when
+extracting from or listing an archive.  For example:
+
+  tar xf foo.tar '*.c'
+
+would extract all files whose names end in '.c'.  This behavior
+was not documented and was incompatible with traditional tar
+implementations.  Therefore, starting from this version, GNU tar
+no longer uses globbing by default.  For example, the above invocation
+is now interpreted as a request to extract from the archive the file
+named '*.c'.
+
+To treat member names as globbing patterns, use --wildcards option.  
+So, if you wish tar to mimic the behavior of versions up to 1.15.90,
+set 'TAR_OPTIONS=--wildcards'.
+
+The exact way tar interprets member names is controlled by the
+following command line options:
+
+     --wildcards              use wildcards 
+     --anchored               patterns match file name start
+     --ignore-case            ignore case
+     --wildcards-match-slash  wildcards match `/'
+
+Each of these options has a '--no-' counterpart that disables its
+effect (e.g. --no-wildcards).
+
+These options affect both the interpretation of member names from 
+command line and that of the exclusion patterns (given with --exclude
+and --exclude-from options). The defaults are:
+
+ 1. For member names: --no-wildcards --anchored
+ 2. For exclusion patterns: --wildcards --no-anchored --wildcards-match-slash
+
+The options can appear multiple times in the command line, thereby
+changing the way command line arguments are interpreted.  For example,
+to use case-insensitive matching in exclude patterns and to revert to
+case-sensitive matching for the rest of command line, one could write:
+
+  tar xf foo.tar --ignore-case --exclude-from=FILE --no-ignore-case file.name
+
+** Short option -l is now an alias of --check-links option, which complies
+with UNIX98.  This ends the transition period started with version 1.14.
+  
 * New features
 
 ** New incremental snapshot file format keeps information about file names 
