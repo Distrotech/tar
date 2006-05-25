@@ -1182,7 +1182,7 @@ dump_dir (int fd, struct tar_stat_info *st, int top_level, dev_t parent_device)
 void
 create_archive (void)
 {
-  char *p;
+  const char *p;
 
   open_archive (ACCESS_WRITE);
   xheader_write_global ();
@@ -1387,7 +1387,7 @@ check_links (void)
    exit_status to failure, a clear diagnostic has been issued.  */
 
 static void
-dump_file0 (struct tar_stat_info *st, char const *p,
+dump_file0 (struct tar_stat_info *st, const char *p,
 	    int top_level, dev_t parent_device)
 {
   union block *header;
@@ -1667,7 +1667,7 @@ dump_file0 (struct tar_stat_info *st, char const *p,
 }
 
 void
-dump_file (char *p, int top_level, dev_t parent_device)
+dump_file (const char *p, int top_level, dev_t parent_device)
 {
   struct tar_stat_info st;
   tar_stat_init (&st);
