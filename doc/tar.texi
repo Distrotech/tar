@@ -474,11 +474,10 @@ magnetic tape.  The name @command{tar} comes from this use; it stands for
 direct its output to available devices, files, or other programs (using
 pipes).  @command{tar} may even access remote devices or files (as archives).
 
-@FIXME{the following table entries need a bit of work..}
-
 You can use @command{tar} archives in many ways.  We want to stress a few
 of them: storage, backup, and transportation.
 
+@FIXME{the following table entries need a bit of work..}
 @table @asis
 @item Storage
 Often, @command{tar} archives are used to store related files for
@@ -1215,13 +1214,11 @@ directory @file{.} to the archive, it notices that the file
 it.  (It makes no sense to put an archive into itself.)  @GNUTAR{}
 will continue in this case, and create the archive
 normally, except for the exclusion of that one file.  (@emph{Please
-note:} Other versions of @command{tar} are not so clever; they will
-enter an infinite loop when this happens, so you should not depend on
-this behavior unless you are certain you are running @GNUTAR{}.)
-  @FIXME{bob doesn't like this sentence, since he does
-it all the time, and we've been doing it in the editing passes for
-this manual: In general, make sure that the archive is not inside a
-directory being dumped.}
+note:} Other implementations of @command{tar} may not be so clever;
+they will enter an infinite loop when this happens, so you should not
+depend on this behavior unless you are certain you are running
+@GNUTAR{}.  In general, it is wise to always place the archive outside
+of the directory being dumped.
 
 @node list
 @section How to List Archives
@@ -1247,9 +1244,6 @@ folk
 jazz
 @end smallexample
 
-@FIXME{we hope this will change.  if it doesn't, need to show the
-creation of bfiles somewhere above!!! : }
-
 @noindent
 The archive @file{bfiles.tar} would list as follows:
 
@@ -1260,17 +1254,18 @@ baboon
 @end smallexample
 
 @noindent
-Be sure to use a @option{--file=@var{archive-name}} (@option{-f @var{archive-name}}) option just as with @option{--create} (@option{-c})
-to specify the name of the archive.
+Be sure to use a @option{--file=@var{archive-name}} (@option{-f
+@var{archive-name}}) option just as with @option{--create}
+(@option{-c}) to specify the name of the archive.
 
 @opindex list, using with @option{--verbose}
 @opindex verbose, using with @option{--list}
-If you use the @option{--verbose} (@option{-v}) option with @option{--list}, then
-@command{tar} will print out a listing reminiscent of @w{@samp{ls -l}},
-showing owner, file size, and so forth.
+If you use the @option{--verbose} (@option{-v}) option with
+@option{--list}, then @command{tar} will print out a listing
+reminiscent of @w{@samp{ls -l}}, showing owner, file size, and so forth.
 
-If you had used @option{--verbose} (@option{-v}) mode, the example above would look
-like:
+If you had used @option{--verbose} (@option{-v}) mode, the example
+above would look like:
 
 @smallexample
 $ @kbd{tar --list --verbose --file=collection.tar folk}
@@ -1451,12 +1446,13 @@ $ @kbd{tar --extract --file=collection.tar blues}
 @noindent
 If you list the files in the directory again, you will see that the file
 @file{blues} has been restored, with its original permissions, data
-modification times, and owner.@FIXME{This is only accidentally true, but not in
-general.  In most cases, one has to be root for restoring the owner, and
-use a special option for restoring permissions.  Here, it just happens
-that the restoring user is also the owner of the archived members, and
-that the current @code{umask} is compatible with original permissions.}
-(These parameters will be identical to those which
+modification times, and owner.@footnote{This is only accidentally
+true, but not in general.  Whereas modification times are always
+restored, in most cases, one has to be root for restoring the owner,
+and use a special option for restoring permissions.  Here, it just
+happens that the restoring user is also the owner of the archived
+members, and that the current @code{umask} is compatible with original
+permissions.}  (These parameters will be identical to those which
 the file had when you originally placed it in the archive; any changes
 you may have made before deleting the file from the file system,
 however, will @emph{not} have been made to the archive member.)  The
@@ -1545,9 +1541,6 @@ Because you created the directory with @file{practice} as part of the
 file names of each of the files by archiving the @file{practice}
 directory as @file{practice}, you must give @file{practice} as part
 of the file names when you extract those files from the archive.
-
-@FIXME{IMPORTANT!  show the final structure, here.  figure out what it
-will be.}
 
 @node extracting untrusted archives
 @subsection Extracting Archives from Untrusted Sources
@@ -1956,8 +1949,6 @@ the same as the short option @option{-t}, and consequently, the same as the
 mnemonic option @option{--list}.  So for example, the command @w{@samp{tar
 cv}} specifies the option @option{-v} in addition to the operation @option{-c}.
 
-@FIXME{bob suggests having an uglier example. :-) }
-
 When options that need arguments are given together with the command,
 all the associated arguments follow, in the same order as the options.
 Thus, the example given previously could also be written in the old
@@ -2007,8 +1998,6 @@ following are equivalent:
 @kbd{tar -cf archive.tar.gz -z file}
 @kbd{tar cf archive.tar.gz -z file}
 @end smallexample
-
-@FIXME{still could explain this better; it's redundant:}
 
 @cindex option syntax, traditional
 As far as we know, all @command{tar} programs, @acronym{GNU} and
@@ -2176,13 +2165,9 @@ Lists the members in an archive.  @xref{list}.
 @item --update
 @itemx -u
 
-@FIXME{It was: A combination of the @option{--compare} and
-@option{--append} operations.  This is not true and rather misleading,
-as @option{--compare} does a lot more than @option{--update} for
-ensuring files are identical.}  Adds files to the end of the archive,
-but only if they are newer than their counterparts already in the
-archive, or if they do not already exist in the archive.
-@xref{update}.
+Adds files to the end of the archive, but only if they are newer than
+their counterparts already in the archive, or if they do not already
+exist in the archive. @xref{update}.
 
 @end table
 
@@ -3493,8 +3478,8 @@ The @option{--checkpoint} option prints an occasional message
 as @command{tar} reads or writes the archive.  In fact, it prints
 a message each 10 records read or written.  It is designed for
 those who don't need the more detailed (and voluminous) output of
-@option{--block-number} (@option{-R}), but do want visual confirmation that @command{tar}
-is actually making forward progress.
+@option{--block-number} (@option{-R}), but do want visual confirmation
+that @command{tar} is actually making forward progress.
 
 @FIXME{There is some confusion here.  It seems that -R once wrote a
 message at @samp{every} record read or written.}
@@ -3822,8 +3807,10 @@ and @ref{Media}, for more information.)
 @cindex Archives, Appending files to
 
 The simplest way to add a file to an already existing archive is the
-@option{--append} (@option{-r}) operation, which writes specified files into the
-archive whether or not they are already among the archived files.
+@option{--append} (@option{-r}) operation, which writes specified
+files into the archive whether or not they are already among the
+archived files.
+
 When you use @option{--append}, you @emph{must} specify file name
 arguments, as there is no default.  If you specify a file that already
 exists in the archive, another copy of the file will be added to the
@@ -3859,30 +3846,21 @@ $ @kbd{tar --list --file=collection.tar}
 -rw-r--r-- me user     20 1996-09-23 16:44 rock
 @end smallexample
 
-@FIXME{in theory, dan will (soon) try to turn this node into what it's
-title claims it will become...}
-
 @node multiple
 @subsubsection Multiple Files with the Same Name
 
-You can use @option{--append} (@option{-r}) to add copies of files which have been
-updated since the archive was created.  (However, we do not recommend
-doing this since there is another @command{tar} option called
-@option{--update}; @pxref{update} for more information.  We describe this
-use of @option{--append} here for the sake of completeness.)  @FIXME{is
-this really a good idea, to give this whole description for something
-which i believe is basically a Stupid way of doing something?  certain
-aspects of it show ways in which tar is more broken than i'd personally
-like to admit to, specifically the last sentence.  On the other hand, i
-don't think it's a good idea to be saying that we explicitly don't
-recommend using something, but i can't see any better way to deal with
-the situation.}When you extract the archive, the older version will be
-effectively lost.  This works because files are extracted from an
+You can use @option{--append} (@option{-r}) to add copies of files
+which have been updated since the archive was created.  (However, we
+do not recommend doing this since there is another @command{tar}
+option called @option{--update}; @xref{update}, for more information.
+We describe this use of @option{--append} here for the sake of
+completeness.)  When you extract the archive, the older version will
+be effectively lost.  This works because files are extracted from an
 archive in the order in which they were archived.  Thus, when the
 archive is extracted, a file archived later in time will replace a
-file of the same name which was archived earlier, even though the older
-version of the file will remain in the archive unless you delete all
-versions of the file.
+file of the same name which was archived earlier, even though the
+older version of the file will remain in the archive unless you delete
+all versions of the file. 
 
 Supposing you change the file @file{blues} and then append the changed
 version to @file{collection.tar}.  As you saw above, the original
@@ -3968,20 +3946,20 @@ Same Name}
 @node how to update
 @subsubsection How to Update an Archive Using @option{--update}
 
-You must use file name arguments with the @option{--update} (@option{-u}) operation.
-If you don't specify any files, @command{tar} won't act on any files and
-won't tell you that it didn't do anything (which may end up confusing
-you).
+You must use file name arguments with the @option{--update}
+(@option{-u}) operation.  If you don't specify any files,
+@command{tar} won't act on any files and won't tell you that it didn't
+do anything (which may end up confusing you).
 
-@FIXME{note: the above parenthetical added because in fact, this
-behavior just confused the author. :-) }
+@c note: the above parenthetical added because in fact, this
+@c behavior just confused the author. :-)
 
 To see the @option{--update} option at work, create a new file,
 @file{classical}, in your practice directory, and some extra text to the
 file @file{blues}, using any text editor.  Then invoke @command{tar} with
-the @samp{update} operation and the @option{--verbose} (@option{-v}) option specified,
-using the names of all the files in the practice directory as file name
-arguments:
+the @samp{update} operation and the @option{--verbose} (@option{-v})
+option specified, using the names of all the files in the practice
+directory as file name arguments:
 
 @smallexample
 $ @kbd{tar --update -v -f collection.tar blues folk rock classical}
@@ -4147,11 +4125,6 @@ blues
 folk
 jazz
 rock
-practice/blues
-practice/folk
-practice/jazz
-practice/rock
-practice/blues
 $ @kbd{tar --delete --file=collection.tar blues}
 $ @kbd{tar --list --file=collection.tar}
 folk
@@ -4160,9 +4133,8 @@ rock
 $
 @end smallexample
 
-@FIXME{I changed the order of these nodes around and haven't had a chance
-to fix the above example's results, yet.  I have to play with this and
-follow it and see what it actually does!}
+@FIXME{Check if the above listing is actually produced after running
+all the examples on collection.tar.}
 
 The @option{--delete} option has been reported to work properly when
 @command{tar} acts as a filter from @code{stdin} to @code{stdout}.
@@ -4227,9 +4199,6 @@ Do not exit with nonzero on unreadable files or directories.
 @node extract options
 @section Options Used by @option{--extract}
 @UNREVISED
-
-@FIXME{i need to get dan to go over these options with me and see if
-there's a better way of organizing them.}
 
 @opindex extract, additional options
 The previous chapter showed how to use @option{--extract} to extract
@@ -4513,7 +4482,7 @@ Use in conjunction with @option{--extract} (@option{--get}, @option{-x}).
 To set the modes (access permissions) of extracted files to those
 recorded for those files in the archive, use @option{--same-permissions}
 in conjunction with the @option{--extract} (@option{--get},
-@option{-x}) operation.  @FIXME{Should be aliased to ignore-umask.}
+@option{-x}) operation.  
 
 @table @option
 @opindex preserve-permission
@@ -4767,9 +4736,8 @@ option. This option is useful if you have set
 @node remove files
 @unnumberedsubsubsec Removing Files
 
-@FIXME{the various macros in the front of the manual think that this
-option goes in this section.  i have no idea; i only know it's nowhere
-else in the book...}
+@FIXME{The section is too terse. Something more to add? An example,
+maybe?}
 
 @table @option
 @opindex remove-files
@@ -5900,9 +5868,6 @@ This chapter discusses these options in detail.
 @section Choosing and Naming Archive Files
 @UNREVISED
 
-@FIXME{should the title of this section actually be, "naming an
-archive"?}
-
 @cindex Naming an archive
 @cindex Archive Name
 @cindex Choosing an archive file
@@ -6066,8 +6031,8 @@ If you specify any other operation, @command{tar} does nothing.
 By default, @command{tar} takes file names from the command line.  However,
 there are other ways to specify file or member names, or to modify the
 manner in which @command{tar} selects the files or members upon which to
-operate.  @FIXME{add xref here}In general, these methods work both for
-specifying the names of files and archive members.
+operate.  In general, these methods work both for specifying the names
+of files and archive members. 
 
 @node files
 @section Reading Names from a File
@@ -6630,19 +6595,18 @@ contents of the file were looked at).
 
 Date specifiers can have embedded spaces.  Because of this, you may need
 to quote date arguments to keep the shell from parsing them as separate
-arguments.
+arguments.  For example, the following command will add to the archive
+all the files modified less than two days ago:
 
-@FIXME{Need example of --newer-mtime with quoted argument.}
+@smallexample
+$ @kbd{tar -cf foo.tar --newer-mtime '2 days ago'}
+@end smallexample
 
 @quotation
 @strong{Please Note:} @option{--after-date} and @option{--newer-mtime}
-should not be used for incremental backups.  Some files (such as those
-in renamed directories) are not selected properly by these options.
-@xref{Incremental Dumps}.
+should not be used for incremental backups.  @xref{Incremental Dumps},
+for proper way of creating incremental backups.
 @end quotation
-
-@noindent
-@FIXME{which tells -- need to fill this in!}
 
 @node recurse
 @section Descending into Directories
@@ -6653,8 +6617,6 @@ in renamed directories) are not selected properly by these options.
 @cindex Recursion in directories, avoiding
 
 @FIXME{arrggh!  this is still somewhat confusing to me. :-< }
-
-@FIXME{show dan bob's comments, from 2-10-97}
 
 Usually, @command{tar} will recursively explore all directories (either
 those given on the command line or through the @option{--files-from}
@@ -6667,7 +6629,7 @@ into specified directories.  If you specify @option{--no-recursion}, you can
 use the @command{find} utility for hunting through levels of directories to
 construct a list of file names which you could then pass to @command{tar}.
 @command{find} allows you to be more selective when choosing which files to
-archive; see @ref{files} for more information on using @command{find} with
+archive; see @ref{files}, for more information on using @command{find} with
 @command{tar}, or look.
 
 @table @option
@@ -6684,11 +6646,11 @@ When you use @option{--no-recursion}, @GNUTAR{} grabs
 directory entries themselves, but does not descend on them
 recursively.  Many people use @command{find} for locating files they
 want to back up, and since @command{tar} @emph{usually} recursively
-descends on directories, they have to use the @samp{@w{!  -d}} option
-to @command{find} @FIXME{needs more explanation or a cite to another
-info file}as they usually do not want all the files in a directory.
-They then use the @option{--files-from} option to archive the files
-located via @command{find}.
+descends on directories, they have to use the @samp{@w{-not -type d}}
+test in their @command{find} invocation (@pxref{Type, Type, Type test,
+find, Finding Files}), as they usually do not want all the files in a
+directory. They then use the @option{--files-from} option to archive
+the files located via @command{find}.
 
 The problem when restoring files archived in this manner is that the
 directories themselves are not in the archive; so the
@@ -6696,7 +6658,15 @@ directories themselves are not in the archive; so the
 @option{-p}) option does not affect them---while users might really
 like it to.  Specifying @option{--no-recursion} is a way to tell
 @command{tar} to grab only the directory entries given to it, adding
-no new files on its own.
+no new files on its own.  To summarize, if you use @command{find} to
+create a list of files to be stored in an archive, use it as follows:
+
+@smallexample
+@group
+$ @kbd{find @var{dir} @var{tests} | \
+  tar -cf @var{archive} -T - --no-recursion}
+@end group
+@end smallexample
 
 The @option{--no-recursion} option also applies when extracting: it
 causes @command{tar} to extract only the matched directory entries, not
@@ -6734,7 +6704,6 @@ or through @option{--files-from}, regardless of where they reside.
 @table @option
 @opindex one-file-system
 @item --one-file-system
-@itemx -l
 Prevents @command{tar} from crossing file system boundaries when
 archiving.  Use in conjunction with any write operation.
 @end table
@@ -6746,13 +6715,10 @@ a directory is not on the same file system as the directory itself, then
 itself, @command{tar} will not archive anything beneath it; in other words,
 @command{tar} will not cross mount points.
 
-It is reported that using this option, the mount point is is archived,
-but nothing under it.
-
 This option is useful for making full or incremental archival backups of
 a file system.  If this option is used in conjunction with
-@option{--verbose} (@option{-v}), files that are excluded are mentioned by name on the
-standard error.
+@option{--verbose} (@option{-v}), files that are excluded are
+mentioned by name on the standard error.
 
 @menu
 * directory::                   Changing Directory
@@ -6925,7 +6891,7 @@ ignoring leading slashes when extracting.
 
 When you specify @option{--absolute-names} (@option{-P}),
 @command{tar} stores file names including all superior directory
-names, and preserves leading slashes. If you only invoked
+names, and preserves leading slashes.  If you only invoked
 @command{tar} from the root directory you would never need the
 @option{--absolute-names} option, but using this option
 may be more convenient than switching to root.
@@ -6964,6 +6930,7 @@ For example:
 
 @smallexample
 $ @kbd{(cd / && tar -c -f archive.tar home)}
+# @i{or}:
 $ @kbd{tar -c -f archive.tar -C  / home}
 @end smallexample
 
@@ -7452,39 +7419,80 @@ the opposite, i.e., read the compressed data from the standard input
 and produce uncompressed data on the standard output.
 @end table
 
-@FIXME{I have one question, or maybe it's a suggestion if there isn't a way
-to do it now.  I would like to use @option{--gzip}, but I'd also like
-the output to be fed through a program like @acronym{GNU}
-@command{ecc} (actually, right now that's @samp{exactly} what I'd like
-to use :-)), basically adding ECC protection on top of compression.
-It seems as if this should be quite easy to do, but I can't work out
-exactly how to go about it.  Of course, I can pipe the standard output
-of @command{tar} through @command{ecc}, but then I lose (though I
-haven't started using it yet, I confess) the ability to have
-@command{tar} use @command{rmt} for it's I/O (I think).
+@cindex gpg, using with tar
+@cindex gnupg, using with tar
+@cindex Using encrypted archives
+The @option{--use-compress-program} option, in particular, lets you
+implement your own filters, not necessarily dealing with
+compression/decomression.  For example, suppose you wish to implement
+PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
+gpg, gpg ---- encryption and signing tool, gpg}).  The following
+script does that: 
 
-I think the most straightforward thing would be to let me specify a
-general set of filters outboard of compression (preferably ordered,
-so the order can be automatically reversed on input operations, and
-with the options they require specifiable), but beggars shouldn't be
-choosers and anything you decide on would be fine with me.
+@smallexample
+@group
+#! /bin/sh
+case $1 in
+-d) gpg --decrypt - | gzip -d -c;;
+'') gzip -c | gpg -s ;;
+*)  echo "Unknown option $1">&2; exit 1;;
+esac
+@end group
+@end smallexample
 
-By the way, I like @command{ecc} but if (as the comments say) it can't
-deal with loss of block sync, I'm tempted to throw some time at adding
-that capability.  Supposing I were to actually do such a thing and
-get it (apparently) working, do you accept contributed changes to
-utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
+Suppose you name it @file{gpgz} and save it somewhere in your
+@env{PATH}.  Then the following command will create a commpressed
+archive signed with your private key:
 
-Isn't that exactly the role of the @option{--use-compress-prog=@var{program}} option?
-I never tried it myself, but I suspect you may want to write a
-@var{prog} script or program able to filter stdin to stdout to
-way you want.  It should recognize the @option{-d} option, for when
-extraction is needed rather than creation.
+@smallexample
+$ @kbd{tar -cf foo.tar.gpgz --use-compress=gpgz .}
+@end smallexample
 
-It has been reported that if one writes compressed data (through the
-@option{--gzip} or @option{--compress} options) to a DLT and tries to use
-the DLT compression mode, the data will actually get bigger and one will
-end up with less space on the tape.}
+@noindent
+Likewise, the following command will list its contents:
+
+@smallexample
+$ @kbd{tar -tf foo.tar.gpgz --use-compress=gpgz .}
+@end smallexample
+
+@ignore
+The above is based on the following discussion:
+
+     I have one question, or maybe it's a suggestion if there isn't a way
+     to do it now.  I would like to use @option{--gzip}, but I'd also like
+     the output to be fed through a program like @acronym{GNU}
+     @command{ecc} (actually, right now that's @samp{exactly} what I'd like
+     to use :-)), basically adding ECC protection on top of compression.
+     It seems as if this should be quite easy to do, but I can't work out
+     exactly how to go about it.  Of course, I can pipe the standard output
+     of @command{tar} through @command{ecc}, but then I lose (though I
+     haven't started using it yet, I confess) the ability to have
+     @command{tar} use @command{rmt} for it's I/O (I think).
+
+     I think the most straightforward thing would be to let me specify a
+     general set of filters outboard of compression (preferably ordered,
+     so the order can be automatically reversed on input operations, and
+     with the options they require specifiable), but beggars shouldn't be
+     choosers and anything you decide on would be fine with me.
+
+     By the way, I like @command{ecc} but if (as the comments say) it can't
+     deal with loss of block sync, I'm tempted to throw some time at adding
+     that capability.  Supposing I were to actually do such a thing and
+     get it (apparently) working, do you accept contributed changes to
+     utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
+ 
+  Isn't that exactly the role of the
+  @option{--use-compress-prog=@var{program}} option? 
+  I never tried it myself, but I suspect you may want to write a
+  @var{prog} script or program able to filter stdin to stdout to
+  way you want.  It should recognize the @option{-d} option, for when
+  extraction is needed rather than creation.
+
+  It has been reported that if one writes compressed data (through the
+  @option{--gzip} or @option{--compress} options) to a DLT and tries to use
+  the DLT compression mode, the data will actually get bigger and one will
+  end up with less space on the tape.
+@end ignore
 
 @node sparse
 @subsection Archiving Sparse Files
@@ -7548,7 +7556,7 @@ created in the future.  If you use @option{--sparse} while making file
 system backups as a matter of course, you can be assured the archive
 will never take more space on the media than the files take on disk
 (otherwise, archiving a disk filled with sparse files might take
-hundreds of tapes).  @FIXME-xref{incremental when node name is set.}
+hundreds of tapes).  @xref{Incremental Dumps}.
 @end quotation
 
 @command{tar} ignores the @option{--sparse} option when reading an archive.
@@ -7665,10 +7673,9 @@ files are easily and silently lost when files are given away.
 When writing an archive, @command{tar} writes the user id and user name
 separately.  If it can't find a user name (because the user id is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
-and doing a @code{chmod} like when you use @option{--same-permissions},
-@FIXME{same-owner?}it tries to look the name (if one was written)
-up in @file{/etc/passwd}.  If it fails, then it uses the user id
-stored in the archive instead.
+it tries to look the name (if one was written) up in
+@file{/etc/passwd}.  If it fails, then it uses the user id stored in
+the archive instead. 
 
 @opindex no-same-owner
 @item --no-same-owner
@@ -7739,7 +7746,8 @@ Same as both @option{--same-permissions} and @option{--same-order}.
 The @option{--preserve} option has no equivalent short option name.
 It is equivalent to @option{--same-permissions} plus @option{--same-order}.
 
-@FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)}
+@FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)
+Neither do I. --Sergey}
 
 @end table
 
