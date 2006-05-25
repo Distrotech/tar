@@ -1,6 +1,7 @@
 2006-05-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Document use of globbing patterns.
+	* src/tar.c (parse_opt): Add comment before --preserve case.
 
 2006-05-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
