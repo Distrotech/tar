@@ -260,7 +260,7 @@ Choosing Files and Names for @command{tar}
 * Selecting Archive Members::
 * files::                       Reading Names from a File
 * exclude::                     Excluding Some Files
-* Wildcards::
+* Wildcards::                   Wildcards Patterns and Matching
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
 * one::                         Crossing File System Boundaries
@@ -1320,25 +1320,29 @@ using @samp{list}.  In this case, @command{tar} will only list the
 names of members you identify.  For example, @w{@kbd{tar --list
 --file=afiles.tar apple}} would only print @file{apple}.
 
-@FIXME{we hope the relevant aspects of this will change:}Because
-@command{tar} preserves paths, file names must be specified as they appear
-in the archive (ie., relative to the directory from which the archive
-was created).  Therefore, it is essential when specifying member names
-to @command{tar} that you give the exact member names.  For example,
-@w{@kbd{tar --list --file=bfiles birds}} would produce an error message
-something like @samp{tar: birds: Not found in archive}, because there is
-no member named @file{birds}, only one named @file{./birds}.  While the
-names @file{birds} and @file{./birds} name the same file, @emph{member}
-names are compared using a simplistic name comparison, in which an exact
-match is necessary.  @xref{absolute}.
+Because @command{tar} preserves paths, file names must be specified as
+they appear in the archive (ie., relative to the directory from which
+the archive was created).  Therefore, it is essential when specifying
+member names to @command{tar} that you give the exact member names.
+For example, @w{@kbd{tar --list --file=bfiles.tar birds}} would produce an
+error message something like @samp{tar: birds: Not found in archive},
+because there is no member named @file{birds}, only one named
+@file{./birds}.  While the names @file{birds} and @file{./birds} name
+the same file, @emph{member} names by default are compared verbatim.
 
-However, @w{@kbd{tar --list --file=collection.tar folk}} would respond
-with @file{folk}, because @file{folk} is in the archive file
-@file{collection.tar}.  If you are not sure of the exact file name, try
-listing all the files in the archive and searching for the one you
-expect to find; remember that if you use @option{--list} with no file
-names as arguments, @command{tar} will print the names of all the members
-stored in the specified archive.
+However, @w{@kbd{tar --list --file=bfiles.tar baboon}} would respond
+with @file{baboon}, because this exact member name is in the archive file
+@file{bfiles.tar}.  If you are not sure of the exact file name,
+use @dfn{globbing patterns}, for example:
+
+@smallexample
+$ @kbd{tar --list --file=bfiles.tar --wildcards '*b*'}
+@end smallexample
+
+@noindent
+will list all members whose name contains @samp{b}.  @xref{Wildcards},
+for a detailed discussion of globbing patterns and related
+@command{tar} command line options.
 
 @menu
 * list dir::
@@ -1426,11 +1430,12 @@ produces this:
 @subsection Extracting Specific Files
 
 To extract specific archive members, give their exact member names as
-arguments, as printed by @option{--list} (@option{-t}).  If you had mistakenly deleted
-one of the files you had placed in the archive @file{collection.tar}
-earlier (say, @file{blues}), you can extract it from the archive without
-changing the archive's structure.  Its contents will be identical to the
-original file @file{blues} that you deleted.
+arguments, as printed by @option{--list} (@option{-t}).  If you had
+mistakenly deleted one of the files you had placed in the archive
+@file{collection.tar} earlier (say, @file{blues}), you can extract it
+from the archive without changing the archive's structure.  Its
+contents will be identical to the original file @file{blues} that you
+deleted. 
 
 First, make sure you are in the @file{practice} directory, and list the
 files in the directory.  Now, delete the file, @samp{blues}, and list
@@ -1445,8 +1450,8 @@ $ @kbd{tar --extract --file=collection.tar blues}
 
 @noindent
 If you list the files in the directory again, you will see that the file
-@file{blues} has been restored, with its original permissions, data modification
-times, and owner.@FIXME{This is only accidentally true, but not in
+@file{blues} has been restored, with its original permissions, data
+modification times, and owner.@FIXME{This is only accidentally true, but not in
 general.  In most cases, one has to be root for restoring the owner, and
 use a special option for restoring permissions.  Here, it just happens
 that the restoring user is also the owner of the archived members, and
@@ -1459,13 +1464,27 @@ archive file, @samp{collection.tar}, is the same as it was before you
 extracted @samp{blues}.  You can confirm this by running @command{tar} with
 @option{--list} (@option{-t}).
 
-@FIXME{we hope this will change:}Remember that as with other operations,
-specifying the exact member name is important.  @w{@kbd{tar --extract
---file=bfiles.tar birds}} will fail, because there is no member named
-@file{birds}.  To extract the member named @file{./birds}, you must
-specify @w{@kbd{tar --extract --file=bfiles.tar ./birds}}.  To find the
-exact member names of the members of an archive, use @option{--list} (@option{-t})
-(@pxref{list}).
+Remember that as with other operations, specifying the exact member
+name is important.  @w{@kbd{tar --extract --file=bfiles.tar birds}}
+will fail, because there is no member named @file{birds}.  To extract
+the member named @file{./birds}, you must specify @w{@kbd{tar
+--extract --file=bfiles.tar ./birds}}.  If you don't remember the
+exact member names, use @option{--list} (@option{-t}) option
+(@pxref{list}).  You can also extract those members that match a
+specific @dfn{globbing pattern}.  For example, to extract from
+@file{bfiles.tar} all files that begin with @samp{b}, no matter their
+directory prefix, you could type:
+
+@smallexample
+$ @kbd{tar -x -f bfiles.tar --wildcards --no-anchored 'b*'}
+@end smallexample
+
+@noindent
+Here, @option{--wildcards} instructs @command{tar} to treat
+command line arguments as globbing patterns and @option{--no-anchored}
+informs it that the patterns apply to member names after any @samp{/}
+delimiter.  The use of globbing patterns is discussed in detail in
+@xref{Wildcards}. 
 
 You can extract a file to standard output by combining the above options
 with the @option{--to-stdout} (@option{-O}) option (@pxref{Writing to Standard
@@ -1596,8 +1615,8 @@ $ @kbd{tar -tvf music.tar folk jazz}
 
 @noindent
 you would get a similar response.  Members with those names are not in the
-archive.  You must use the correct member names in order to extract the
-files from the archive.
+archive.  You must use the correct member names, or wildcards, in order
+to extract the files from the archive.
 
 If you have forgotten the correct names of the files in the archive,
 use @w{@kbd{tar --list --verbose}} to list them correctly.
@@ -2159,7 +2178,7 @@ Lists the members in an archive.  @xref{list}.
 
 @FIXME{It was: A combination of the @option{--compare} and
 @option{--append} operations.  This is not true and rather misleading,
-as @option{--compare} (@option{--diff}, @option{-d}) does a lot more than @option{--update} (@option{-u}) for
+as @option{--compare} does a lot more than @option{--update} for
 ensuring files are identical.}  Adds files to the end of the archive,
 but only if they are newer than their counterparts already in the
 archive, or if they do not already exist in the archive.
@@ -2187,7 +2206,6 @@ Normally when creating an archive, @command{tar} strips an initial
 
 @opindex anchored, summary
 @item --anchored
-@FIXME{wildcards}
 A pattern must match an initial subsequence of the name's components.
 @xref{controlling pattern-matching}.
 
@@ -2270,7 +2288,7 @@ This option tells @command{tar} to read or write archives through
 @item --checkpoint
 
 This option directs @command{tar} to print periodic checkpoint messages as it
-reads through the archive.  Its intended for when you want a visual
+reads through the archive.  It is intended for when you want a visual
 indication that @command{tar} is still running, but don't want to see
 @option{--verbose} output.  @FIXME-xref{}
 
@@ -2423,8 +2441,8 @@ options to @command{tar} and exit. @xref{help}.
 
 @opindex ignore-case, summary
 @item --ignore-case
-@FIXME{wildcards}
-Ignore case when matching member or file names with patterns. @xref{controlling pattern-matching}.
+Ignore case when matching member or file names with
+patterns. @xref{controlling pattern-matching}. 
 
 @opindex ignore-command-error, summary
 @item --ignore-command-error
@@ -2449,8 +2467,8 @@ archive, which normally signals EOF.  @xref{Reading}.
 
 Used to inform @command{tar} that it is working with an old
 @acronym{GNU}-format incremental backup archive.  It is intended
-primarily for backwards compatibility only.  @FIXME{incremental and
-listed-incremental}.
+primarily for backwards compatibility only.  @xref{Incremental Dumps},
+for a detailed discussion of incremental archives.
 
 @opindex index-file, summary
 @item --index-file=@var{file}
@@ -2507,7 +2525,7 @@ During a @option{--create} operation, specifies that the archive that
 @command{tar} creates is a new @acronym{GNU}-format incremental
 backup, using @var{snapshot-file} to determine which files to backup.
 With other operations, informs @command{tar} that the archive is in
-incremental format.  @FIXME{incremental and listed-incremental}.
+incremental format.  @xref{Incremental Dumps}.
 
 @opindex mode, summary
 @item --mode=@var{permissions}
@@ -2567,7 +2585,6 @@ also back up files for which any status information has changed).
 
 @opindex no-anchored, summary
 @item --no-anchored
-@FIXME{wildcards}
 An exclude pattern can match any subsequence of the name's components.
 @xref{controlling pattern-matching}.
 
@@ -2580,7 +2597,6 @@ extracted. This is the default. @xref{Directory Modification Times and Permissio
 
 @opindex no-ignore-case, summary
 @item --no-ignore-case
-@FIXME{wildcards}
 Use case-sensitive matching.
 @xref{controlling pattern-matching}.
 
@@ -2617,13 +2633,11 @@ for ordinary users.
 
 @opindex no-wildcards, summary
 @item --no-wildcards
-@FIXME{wildcards}
 Do not use wildcards.
 @xref{controlling pattern-matching}.
 
 @opindex no-wildcards-match-slash, summary
 @item --no-wildcards-match-slash
-@FIXME{wildcards}
 Wildcards do not match @samp{/}.
 @xref{controlling pattern-matching}.
 
@@ -3107,13 +3121,11 @@ of which volume of a multi-volume archive its working in @var{file}.
 
 @opindex wildcards, summary
 @item --wildcards
-@FIXME{wildcards}
-Use wildcards when excluding files.
+Use wildcards when matching member names with patterns.
 @xref{controlling pattern-matching}.
 
 @opindex wildcards-match-slash, summary
 @item --wildcards-match-slash
-@FIXME{wildcards}
 Wildcards match @samp{/}.
 @xref{controlling pattern-matching}.
 @end table
@@ -4948,14 +4960,25 @@ link-structure of all the files therein.  In this case, the transfer
 medium is a @dfn{pipe}, which is one a Unix redirection mechanism:
 
 @smallexample
-$ @kbd{cd sourcedir; tar -cf - .  | (cd targetdir; tar -xf -)}
+$ @kbd{(cd sourcedir; tar -cf - .) | (cd targetdir; tar -xf -)}
+@end smallexample
+
+@noindent
+You can avoid subshells by using @option{-C} option:
+
+@smallexample
+$ @kbd{tar -C sourcedir -cf - . | tar -C targetdir -xf -}
 @end smallexample
 
 @noindent
 The command also works using short option forms:
 
 @smallexample
-$ @w{@kbd{cd sourcedir; tar --create --file=- .  | (cd targetdir; tar --extract --file=-)}}
+$ @kbd{(cd sourcedir; tar --create --file=- . ) \
+       | (cd targetdir; tar --extract --file=-)}
+# Or:
+$ @kbd{tar --directory sourcedir --create --file=- . ) \
+       | tar --directory targetdir --extract --file=-}
 @end smallexample
 
 @noindent
@@ -5854,20 +5877,20 @@ that determination.
 @chapter Choosing Files and Names for @command{tar}
 @UNREVISED
 
-@FIXME{Melissa (still) Doesn't Really Like This ``Intro'' Paragraph!!!}
-
 Certain options to @command{tar} enable you to specify a name for your
 archive.  Other options let you decide which files to include or exclude
 from the archive, based on when or whether files were modified, whether
 the file names do or don't match specified patterns, or whether files
 are in specified directories.
 
+This chapter discusses these options in detail.
+
 @menu
 * file::                        Choosing the Archive's Name
 * Selecting Archive Members::
 * files::                       Reading Names from a File
 * exclude::                     Excluding Some Files
-* Wildcards::
+* Wildcards::                   Wildcards Patterns and Matching
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
 * one::                         Crossing File System Boundaries
@@ -5887,9 +5910,10 @@ archive"?}
 By default, @command{tar} uses an archive file name that was compiled when
 it was built on the system; usually this name refers to some physical
 tape drive on the machine.  However, the person who installed @command{tar}
-on the system may not set the default to a meaningful value as far as
+on the system may not have set the default to a meaningful value as far as
 most users are concerned.  As a result, you will usually want to tell
-@command{tar} where to find (or create) the archive.  The @option{--file=@var{archive-name}} (@option{-f @var{archive-name}})
+@command{tar} where to find (or create) the archive.  The
+@option{--file=@var{archive-name}} (@option{-f @var{archive-name}})
 option allows you to either specify or name a file to use as the archive
 instead of the default archive file location.
 
@@ -5925,8 +5949,9 @@ If you do not name the archive, @command{tar} uses the value of the
 environment variable @env{TAPE} as the file name for the archive.  If
 that is not available, @command{tar} uses a default, compiled-in archive
 name, usually that for tape unit zero (ie.  @file{/dev/tu00}).
-@command{tar} always needs an archive name.
 
+@cindex Standard input and output
+@cindex tar to standard input and output
 If you use @file{-} as an @var{archive-name}, @command{tar} reads the
 archive from standard input (when listing or extracting files), or
 writes it to standard output (when creating an archive).  If you use
@@ -5934,29 +5959,39 @@ writes it to standard output (when creating an archive).  If you use
 @command{tar} reads the original archive from its standard input and
 writes the entire new archive to its standard output.
 
-@FIXME{might want a different example here; this is already used in
-"notable tar usages".}
+The following example is a convenient way of copying directory
+hierarchy from @file{sourcedir} to @file{targetdir}.
 
 @smallexample
-$ @kbd{cd sourcedir; tar -cf - .  | (cd targetdir; tar -xf -)}
+$ @kbd{(cd sourcedir; tar -cf - .) | (cd targetdir; tar -xpf -)}
 @end smallexample
 
-@FIXME{help!}
+The @option{-C} option allows to avoid using subshells:
 
-@cindex Standard input and output
-@cindex tar to standard input and output
+@smallexample
+$ @kbd{tar -C sourcedir -cf - . | tar -C targetdir -xpf -}
+@end smallexample
+
+In both examples above, the leftmost @command{tar} invocation archives
+the contents of @file{sourcedir} to the standard output, while the
+rightmost one reads this archive from its standard input and
+extracts it.  The @option{-p} option tells it to restore permissions
+of the extracted files.
+
+@cindex Remote devices
+@cindex tar to a remote device
 @anchor{remote-dev}
 To specify an archive file on a device attached to a remote machine,
 use the following:
 
 @smallexample
-@kbd{--file=@var{hostname}:/@var{dev}/@var{file_name}}
+@kbd{--file=@var{hostname}:/@var{dev}/@var{file-name}}
 @end smallexample
 
 @noindent
 @command{tar} will complete the remote connection, if possible, and
 prompt you for a username and password.  If you use
-@option{--file=@@@var{hostname}:/@var{dev}/@var{file_name}}, @command{tar}
+@option{--file=@@@var{hostname}:/@var{dev}/@var{file-name}}, @command{tar}
 will complete the remote connection, if possible, using your username
 as the username on the remote machine.
 
@@ -5977,16 +6012,10 @@ installation prefix).  If you need to use a file whose name includes a
 colon, then the remote tape drive behavior
 can be inhibited by using the @option{--force-local} option.
 
-@FIXME{i know we went over this yesterday, but bob (and now i do again,
-too) thinks it's out of the middle of nowhere.  it doesn't seem to tie
-into what came before it well enough <<i moved it now, is it better
-here?>>.  bob also comments that if Amanda isn't free software, we
-shouldn't mention it..}
-
 When the archive is being created to @file{/dev/null}, @GNUTAR{}
-tries to minimize input and output operations.  The
-Amanda backup system, when used with @GNUTAR{}, has
-an initial sizing pass which uses this feature.
+tries to minimize input and output operations.  The Amanda backup
+system, when used with @GNUTAR{}, has an initial sizing pass which
+uses this feature. 
 
 @node Selecting Archive Members
 @section Selecting Archive Members
@@ -6005,18 +6034,34 @@ the command line, as follows:
 @end smallexample
 
 If a file name begins with dash (@samp{-}), precede it with
-@option{--add-file} option to preventit from being treated as an
+@option{--add-file} option to prevent it from being treated as an
 option.
 
 If you specify a directory name as a file name argument, all the files
 in that directory are operated on by @command{tar}.
 
-If you do not specify files when @command{tar} is invoked with
-@option{--create} (@option{-c}), @command{tar} operates on all the non-directory files in
-the working directory.  If you specify either @option{--list} (@option{-t}) or
-@option{--extract} (@option{--get}, @option{-x}), @command{tar} operates on all the archive members in the
-archive.  If you specify any operation other than one of these three,
-@command{tar} does nothing.
+If you do not specify files, @command{tar} behavior differs depending
+on the operation mode as described below:
+
+When @command{tar} is invoked with @option{--create} (@option{-c}),
+@command{tar} will stop immediately, reporting the following:
+
+@smallexample
+@group
+$ @kbd{tar cf a.tar}
+tar: Cowardly refusing to create an empty archive
+Try `tar --help' or `tar --usage' for more information.
+@end group
+@end smallexample
+
+If you specify either @option{--list} (@option{-t}) or
+@option{--extract} (@option{--get}, @option{-x}), @command{tar}
+operates on all the archive members in the archive.
+
+If run with @option{--diff} option, tar will compare the archive with
+the contents of the current working directory.
+
+If you specify any other operation, @command{tar} does nothing.
 
 By default, @command{tar} takes file names from the command line.  However,
 there are other ways to specify file or member names, or to modify the
@@ -6032,17 +6077,18 @@ specifying the names of files and archive members.
 @cindex File Name arguments, alternatives
 Instead of giving the names of files or archive members on the command
 line, you can put the names into a file, and then use the
-@option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}}) option to @command{tar}.  Give the name of the file
-which contains the list of files to include as the argument to
+@option{--files-from=@var{file-of-names}} (@option{-T
+@var{file-of-names}}) option to @command{tar}.  Give the name of the
+file which contains the list of files to include as the argument to 
 @option{--files-from}.  In the list, the file names should be separated by
 newlines.  You will frequently use this option when you have generated
 the list of files to archive with the @command{find} utility.
 
 @table @option
 @opindex files-from
-@item --files-from=@var{file_name}
-@itemx -T @var{file_name}
-Get names to extract or create from file @var{file_name}.
+@item --files-from=@var{file-name}
+@itemx -T @var{file-name}
+Get names to extract or create from file @var{file-name}.
 @end table
 
 If you give a single dash as a file name for @option{--files-from}, (i.e.,
@@ -6054,8 +6100,6 @@ both @code{--files-from=-} and @code{--file=-} (@code{-f -}) in the same
 command.
 
 Any number of @option{-T} options can be given in the command line.
-
-@FIXME{add bob's example, from his message on 2-10-97}
 
 The following example shows how to use @command{find} to generate a list of
 files smaller than 400K in length and put that list into a file
@@ -6149,7 +6193,7 @@ dir
 @opindex add-file
 If you happen to have a file whose name starts with @samp{-},
 precede it with @option{--add-file} option to prevent it from
-being recognized as an option.  For example: @code{--add-file --my-file}.
+being recognized as an option.  For example: @code{--add-file=--my-file}.
 
 @menu
 * nul::
@@ -6160,9 +6204,11 @@ being recognized as an option.  For example: @code{--add-file --my-file}.
 
 @cindex File names, terminated by @code{NUL}
 @cindex @code{NUL} terminated file names
-The @option{--null} option causes @option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}}) to read file
-names terminated by a @code{NUL} instead of a newline, so files whose
-names contain newlines can be archived using @option{--files-from}.
+The @option{--null} option causes
+@option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}})
+to read file names terminated by a @code{NUL} instead of a newline, so
+files whose names contain newlines can be archived using
+@option{--files-from}. 
 
 @table @option
 @opindex null
@@ -6211,8 +6257,9 @@ Causes @command{tar} to ignore files that match the @var{pattern}.
 @end table
 
 @findex exclude
-The @option{--exclude=@var{pattern}} option prevents any file or member whose name
-matches the shell wildcard (@var{pattern}) from being operated on.
+The @option{--exclude=@var{pattern}} option prevents any file or
+member whose name matches the shell wildcard (@var{pattern}) from
+being operated on. 
 For example, to create an archive with all the contents of the directory
 @file{src} except for files whose names end in @file{.o}, use the
 command @samp{tar -cf src.tar --exclude='*.o' src}.
@@ -6234,9 +6281,6 @@ ignore files matching those patterns.  Thus if @command{tar} is
 called as @w{@samp{tar -c -X foo .}} and the file @file{foo} contains a
 single line @file{*.o}, no files whose names end in @file{.o} will be
 added to the archive.
-
-@FIXME{do the exclude options files need to have stuff separated by
-newlines the same as the files-from option does?}
 
 @table @option
 @opindex exclude-caches
@@ -6283,8 +6327,8 @@ a list of patterns, one per line; each of these patterns can exclude
 zero, one, or many files.
 
 @item
-When you use @option{--exclude=@var{pattern}}, be sure to quote the @var{pattern}
-parameter, so @GNUTAR{} sees wildcard characters
+When you use @option{--exclude=@var{pattern}}, be sure to quote the
+@var{pattern} parameter, so @GNUTAR{} sees wildcard characters
 like @samp{*}.  If you do not do this, the shell might expand the
 @samp{*} itself using files at hand, so @command{tar} might receive a
 list of files instead of one pattern, or none at all, making the
@@ -6300,6 +6344,7 @@ $ @kbd{tar -c -f @var{archive.tar} --exclude '*.o' @var{directory}}
 rather than:
 
 @smallexample
+# @emph{Wrong!}
 $ @kbd{tar -c -f @var{archive.tar} --exclude *.o @var{directory}}
 @end smallexample
 
@@ -6310,6 +6355,9 @@ syntax, when using exclude options in @command{tar}.  If you try to use
 might fail.
 
 @item
+@FIXME{The change in semantics must have occurred before 1.11,
+so I doubt if it is worth mentioning at all. Anyway, should at
+least specify in which version the semantics changed.} 
 In earlier versions of @command{tar}, what is now the
 @option{--exclude-from} option was called @option{--exclude} instead.
 Now, @option{--exclude} applies to patterns listed on the command
@@ -6323,9 +6371,9 @@ file.
 
 @dfn{Globbing} is the operation by which @dfn{wildcard} characters,
 @samp{*} or @samp{?} for example, are replaced and expanded into all
-existing files matching the given pattern.  However, @command{tar} often
-uses wildcard patterns for matching (or globbing) archive members instead
-of actual files in the file system.  Wildcard patterns are also used for
+existing files matching the given pattern.  @GNUTAR{} can use wildcard
+patterns for matching (or globbing) archive members when extracting
+from or listing an archive.  Wildcard patterns are also used for
 verifying volume labels of @command{tar} archives.  This section has the
 purpose of explaining wildcard syntax for @command{tar}.
 
@@ -6370,7 +6418,7 @@ who don't have dan around.}
 Periods (@samp{.}) or forward slashes (@samp{/}) are not considered
 special for wildcard matches.  However, if a pattern completely matches
 a directory prefix of a matched string, then it matches the full matched
-string: excluding a directory also excludes all the files beneath it.
+string: thus, excluding a directory also excludes all the files beneath it.
 
 @menu
 * controlling pattern-matching::
@@ -6378,7 +6426,81 @@ string: excluding a directory also excludes all the files beneath it.
 
 @node controlling pattern-matching
 @unnumberedsubsec Controlling Pattern-Matching
-@UNREVISED{}
+
+For the purposes of this section, we call @dfn{exclusion members} all
+member names obtained while processing @option{--exclude} and
+@option{--exclude-from} options, and @dfn{inclusion members} those
+member names that were given in the command line or read from the file
+specified with @option{--files-from} option.
+
+These two pairs of member lists are used in the following operations:
+@option{--diff}, @option{--extract}, @option{--list},
+@option{--update}.
+
+There are no inclusion members in create mode (@option{--create} and
+@option{--append}), since in this mode the names obtained from the
+command line refer to @emph{files}, not archive members.
+
+By default, inclusion members are compared with archive members
+literally @footnote{Notice that earlier @GNUTAR{} versions used 
+globbing for inclusion members, which contradicted to UNIX98
+specification and was not documented. @xref{Changes}, for more
+information on this and other changes} and exclusion members are
+treated as globbing patterns.  For example:
+
+@smallexample
+@group
+$ @kbd{tar tf foo.tar}
+a.c
+b.c
+a.txt
+[remarks]
+# @i{Member names are used verbatim:}
+$ @kbd{tar -xf foo.tar -v '[remarks]'}
+[remarks]
+# @i{Exclude member names are globbed:}
+$ @kbd{tar -xf foo.tar -v --exclude '*.c'}
+a.txt
+[remarks]
+@end group
+@end smallexample
+
+This behavior can be altered by using the following options:
+
+@table @option
+@opindex wildcards
+@item --wildcards
+Treat all member names as wildcards. 
+
+@opindex no-wildcards
+@item --no-wildcards
+Treat all member names as literal strings.
+@end table
+
+Thus, to extract files whose names end in @samp{.c}, you can use:
+
+@smallexample
+$ @kbd{tar -xf foo.tar -v --wildcards '*.c'}
+a.c
+b.c
+@end smallexample
+
+@noindent
+Notice quoting of the pattern to prevent the shell from interpreting
+it.
+
+The effect of @option{--wildcards} option is cancelled by
+@option{--no-wildcards}.  This can be used to pass part of
+the command line arguments verbatim and other part as globbing
+patterns.  For example, the following invocation:
+
+@smallexample
+$ @kbd{tar -xf foo.tar --wildcards '*.txt' --no-wildcards '[remarks]'}
+@end smallexample
+
+@noindent
+instructs @command{tar} to extract from @file{foo.tar} all files whose
+names end in @samp{.txt} and the file named @file{[remarks]}.
 
 Normally, a pattern matches a name if an initial subsequence of the
 name's components matches the pattern, where @samp{*}, @samp{?}, and
@@ -6407,7 +6529,8 @@ ignores case when excluding @samp{makefile}, but not when excluding
 @itemx --no-anchored
 If anchored, a pattern must match an initial subsequence
 of the name's components.  Otherwise, the pattern can match any
-subsequence.  Default is @option{--no-anchored}.
+subsequence.  Default is @option{--no-anchored} for exclusion members
+and @option{--anchored} inclusion members.
 
 @opindex ignore-case
 @opindex no-ignore-case
@@ -6416,29 +6539,28 @@ subsequence.  Default is @option{--no-anchored}.
 When ignoring case, upper-case patterns match lower-case names and vice versa.
 When not ignoring case (the default), matching is case-sensitive.
 
-@opindex wildcards
-@opindex no-wildcards
-@item --wildcards
-@itemx --no-wildcards
-When using wildcards (the default), @samp{*}, @samp{?}, and @samp{[...]}
-are the usual shell wildcards, and @samp{\} escapes wildcards.
-Otherwise, none of these characters are special, and patterns must match
-names literally.
-
 @opindex wildcards-match-slash
 @opindex no-wildcards-match-slash
 @item --wildcards-match-slash
 @itemx --no-wildcards-match-slash
-When wildcards match slash (the default), a wildcard like @samp{*} in
-the pattern can match a @samp{/} in the name.  Otherwise, @samp{/} is
-matched only by @samp{/}.
+When wildcards match slash (the default for exclusion members), a
+wildcard like @samp{*} in the pattern can match a @samp{/} in the
+name.  Otherwise, @samp{/} is matched only by @samp{/}.
 
 @end table
 
 The @option{--recursion} and @option{--no-recursion} options
-(@pxref{recurse}) also affect how exclude patterns are interpreted.  If
-recursion is in effect, a pattern excludes a name if it matches any of
+(@pxref{recurse}) also affect how member patterns are interpreted.  If
+recursion is in effect, a pattern matches a name if it matches any of
 the name's parent directories.
+
+The following table summarizes pattern-matching default values:
+
+@multitable @columnfractions .3 .7
+@headitem Members @tab Default settings
+@item Inclusion @tab @option{--no-wildcards --anchored --no-wildcards-match-slash}
+@item Exclusion @tab @option{--wildcards --no-anchored --wildcards-match-slash}
+@end multitable
 
 @node after
 @section Operating Only on New Files
@@ -8944,8 +9066,8 @@ responses:
 Request @command{tar} to explain possible responses
 @item q
 Request @command{tar} to exit immediately.
-@item n @var{file_name}
-Request @command{tar} to write the next volume on the file @var{file_name}.
+@item n @var{file-name}
+Request @command{tar} to write the next volume on the file @var{file-name}.
 @item !
 Request @command{tar} to run a subshell.  This option can be disabled
 by giving @option{--restrict} command line option to @command{tar}.
@@ -9503,7 +9625,6 @@ add this option to your @env{TAR_OPTIONS} variable.
 
 @xref{Wildcards}, for the detailed discussion of the use of globbing
 patterns by @GNUTAR{}.
-@FIXME{Check this reference.}
 
 @item Use of short option @option{-o}.
 
@@ -9523,7 +9644,12 @@ up to and including 1.8.4 invoke tar with this option to produce
 distribution tarballs.  @xref{Formats,v7}, for the detailed discussion
 of this issue and its implications.
 
-@FIXME{Refer to tar-v7 description in automake.info.}
+@FIXME{Change the first argument to tar-formats if and when Automake
+people accept my patch to the documentation, and the new Automake is
+out --Sergey 2006-05-25}.
+@xref{Options, tar-v7, Changing Automake's Behavior,
+automake, GNU Automake}, for a description on how to use various
+archive formats with @command{automake}.
 
 Future versions of @GNUTAR{} will understand @option{-o} only as a
 synonym for @option{--no-same-owner}.
