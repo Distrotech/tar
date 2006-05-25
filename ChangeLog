@@ -1,3 +1,47 @@
+2006-05-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update
+	* doc/tar.texi: Update
+	* configure.ac (AM_INIT_AUTOMAKE): Use tar-ustar option. Raise
+	version requirement to 1.9
+	* src/common.h (struct name): Refactured
+	(warn_regex_usage): New variable.
+	(dump_file): First argument is const char*.
+	(name_init,name_add): Removed
+	(name_add_name,name_add_dir): New functions
+	(name_next): Return const char*.
+	* src/create.c: (dump_file,dump_file0): First argument is const
+	char*. All callers updated.
+	* src/names.c: Rewritten handling of member names in the command
+	line. Tar no longer attempts to guess globbing patterns, instead
+	it relies on --wildcard option.
+	(init_names): Removed.
+	(struct name_elt): New structure.
+	(name_array): Change type to struct name_elt. All references updated
+	(name_add_name,name_add_dir): New functions
+	(name_next_elt): New function
+	(name_next): Rewritten using name_next_elt.
+	(namelist_match): Rewritten pattern matching using
+	exclude_fnmatch.
+	(names_notfound): Warn if globbing patterns were used without
+	--wildcards option
+	* src/tar.c (options): Move globbing-related options into a
+	separate group. Set -l as an alias to --check-links, as required
+	by UNIX98
+	(struct tar_args): New fields
+	wildcards,matching_flags,include_anchored
+	(MAKE_EXCL_OPTIONS,MAKE_INCL_OPTIONS): New macros
+	(parse_opt): Use x2nrealloc to grow archive_name_array.
+	Use MAKE_EXCL_OPTIONS,MAKE_INCL_OPTIONS to create appropriate
+	fnmatch options, and name_add_name,name_add_dir to handle member
+	name and -C arguments.
+	(decode_options): Likewise
+	(main): Remove call to init_names.
+
+	* tests/append.at, tests/append01.at, tests/extrac01.at,
+	tests/options.at, tests/options02.at, tests/same-order01.at,
+	tests/same-order02.at: Make AT_SETUP more readable.
+	
 2006-05-23  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (change_tape_menu): Fix typo (uninitialized
