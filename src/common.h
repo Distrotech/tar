@@ -289,8 +289,8 @@ GLOBAL struct tar_stat_info current_stat_info;
 /* List of tape drive names, number of such tape drives, allocated number,
    and current cursor in list.  */
 GLOBAL const char **archive_name_array;
-GLOBAL int archive_names;
-GLOBAL int allocated_archive_names;
+GLOBAL size_t archive_names;
+GLOBAL size_t allocated_archive_names;
 GLOBAL const char **archive_name_cursor;
 
 /* Output index file name.  */
@@ -299,16 +299,17 @@ GLOBAL char const *index_file_name;
 /* Structure for keeping track of filenames and lists thereof.  */
 struct name
   {
-    struct name *next;
-    size_t length;		/* cached strlen(name) */
+    struct name *next;          /* Link to the next element */
+    int change_dir;		/* Number of the directory to change to.
+				   Set with the -C option. */
     uintmax_t found_count;	/* number of times a matching file has
 				   been found */
-    int explicit;               /* was explicitely given in the command line */
-    char firstch;		/* first char is literally matched */
-    char regexp;		/* this name is a regexp, not literal */
-    int change_dir;		/* set with the -C option */
+    int explicit;               /* this name was explicitely given in the
+				   command line */
+    int matching_flags;		/* this name is a regexp, not literal */
     char const *dir_contents;	/* for incremental_option */
-    char fake;			/* dummy entry */
+
+    size_t length;		/* cached strlen(name) */
     char name[1];
   };
 
@@ -335,6 +336,9 @@ GLOBAL bool show_stored_names_option;
    set for incremental archives. */
 GLOBAL bool delay_directory_restore_option;
 
+/* Warn about implicit use of the wildcards in command line arguments.
+   (Default for tar prior to 1.15.91, but changed afterwards */
+GLOBAL bool warn_regex_usage;
 
 /* Declarations for each module.  */
 
@@ -397,7 +401,7 @@ enum dump_status
 bool file_dumpable_p (struct tar_stat_info *);
 void create_archive (void);
 void pad_archive (off_t size_left);
-void dump_file (char *, int, dev_t);
+void dump_file (const char *, int, dev_t);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *, union block *, off_t);
 void simple_finish_header (union block *header);
@@ -592,10 +596,10 @@ void uid_to_uname (uid_t, char **uname);
 int uname_to_uid (char const *, uid_t *);
 
 void init_names (void);
-void name_add (const char *);
-void name_init (void);
+void name_add_name (const char *, int);
+void name_add_dir (const char *name);
 void name_term (void);
-char *name_next (int);
+const char *name_next (int);
 void name_gather (void);
 struct name *addname (char const *, int);
 int name_match (const char *);
