@@ -1431,6 +1431,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case PRESERVE_OPTION:
+      /* FIXME: What it is good for? */
       same_permissions_option = true;
       same_order_option = true;
       break;
