@@ -249,7 +249,6 @@ enum
   ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
   CHECKPOINT_OPTION,
-  CHECK_LINKS_OPTION,
   DELAY_DIRECTORY_RESTORE_OPTION,
   DELETE_OPTION,
   EXCLUDE_CACHES_OPTION,
@@ -589,23 +588,10 @@ static struct argp_option options[] = {
    N_("exclude patterns listed in FILE"), GRID+1 },
   {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
    N_("exclude directories containing a cache tag"), GRID+1 },
-  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
-   N_("exclusion ignores case"), GRID+1 },
-  {"anchored", ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match file name start"), GRID+1 },
-  {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("exclude patterns match after any `/' (default)"), GRID+1 },
-  {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
-   N_("exclusion is case sensitive (default)"), GRID+1 },
-  {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
-   N_("exclude patterns are plain strings"), GRID+1 },
-  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards do not match `/'"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
    N_("stay in local file system when creating archive"), GRID+1 },
-  {NULL, 'l', 0, OPTION_HIDDEN, "", GRID+1 },
   {"recursion", RECURSION_OPTION, 0, 0,
    N_("recurse into directories (default)"), GRID+1 },
   {"absolute-names", 'P', 0, 0,
@@ -626,12 +612,30 @@ static struct argp_option options[] = {
    N_("backup before removal, choose version CONTROL"), GRID+1 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
    N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), GRID+1 },
-  {"wildcards", WILDCARDS_OPTION, 0, 0,
-   N_("exclude patterns use wildcards (default)"), GRID+1 },
-  {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("exclude pattern wildcards match `/' (default)"), GRID+1 },
 #undef GRID
 
+#define GRID 95  
+  {NULL, 0, NULL, 0,
+   N_("File name matching options (affect both exclude and include patterns):"),
+   GRID },
+  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
+   N_("ignore case"), GRID+1 },
+  {"anchored", ANCHORED_OPTION, 0, 0,
+   N_("patterns match file name start"), GRID+1 },
+  {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
+   N_("patterns match after any `/' (default for exclusion)"), GRID+1 },
+  {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
+   N_("case sensitive matching (default)"), GRID+1 },
+  {"wildcards", WILDCARDS_OPTION, 0, 0,
+   N_("use wildcards (default for exclusion)"), GRID+1 },
+  {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
+   N_("verbatim string matching"), GRID+1 },
+  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
+   N_("wildcards do not match `/'"), GRID+1 },
+  {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
+   N_("wildcards match `/' (default for exclusion)"), GRID+1 },
+#undef GRID
+  
 #define GRID 100
   {NULL, 0, NULL, 0,
    N_("Informative output:"), GRID },
@@ -640,7 +644,7 @@ static struct argp_option options[] = {
    N_("verbosely list files processed"), GRID+1 },
   {"checkpoint", CHECKPOINT_OPTION, 0, 0,
    N_("display progress messages every 10th record"), GRID+1 },
-  {"check-links", CHECK_LINKS_OPTION, 0, 0,
+  {"check-links", 'l', 0, 0,
    N_("print a message if not all links are dumped"), GRID+1 },
   {"totals", TOTALS_OPTION, 0, 0,
    N_("print total bytes written while creating archive"), GRID+1 },
@@ -699,22 +703,49 @@ static char const *const atime_preserve_args[] =
 {
   "replace", "system", NULL
 };
+
 static enum atime_preserve const atime_preserve_types[] =
 {
   replace_atime_preserve, system_atime_preserve
 };
+
 ARGMATCH_VERIFY (atime_preserve_args, atime_preserve_types);
 
+/* Wildcard matching settings */
+enum wildcards
+  {
+    default_wildcards, /* For exclusion == enable_wildcards,
+			  for inclusion == disable_wildcards */
+    disable_wildcards,
+    enable_wildcards
+  };
 
-struct tar_args {
-  char const *textual_date_option;
-  int exclude_options;
-  bool o_option;
-  int pax_option;
-  char const *backup_suffix_string;
-  char const *version_control_string;
-  int input_files;
+struct tar_args        /* Variables used during option parsing */
+{
+  char const *textual_date_option; /* Keeps the argument to --newer-mtime
+				      option if it represents a textual date */
+  enum wildcards wildcards;        /* Wildcard settings (--wildcards/
+				      --no-wildcards) */
+  int matching_flags;              /* exclude_fnmatch options */
+  int include_anchored;            /* Pattern anchoring options used for
+				      file inclusion */
+  bool o_option;                   /* True if -o option was given */
+  bool pax_option;                 /* True if --pax-option was given */
+  char const *backup_suffix_string;   /* --suffix option argument */
+  char const *version_control_string; /* --backup option argument */
+  bool input_files;                /* True if some input files where given */
 };
+
+#define MAKE_EXCL_OPTIONS(args) \
+ ((((args)->wildcards != disable_wildcards) ? EXCLUDE_WILDCARDS : 0) \
+  | (args)->matching_flags \
+  | recursion_option)
+
+#define MAKE_INCL_OPTIONS(args) \
+ ((((args)->wildcards == enable_wildcards) ? EXCLUDE_WILDCARDS : 0) \
+  | (args)->include_anchored \
+  | (args)->matching_flags \
+  | recursion_option)
 
 static void
 show_default_settings (FILE *stream)
@@ -930,8 +961,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
     {
       case ARGP_KEY_ARG:
 	/* File name or non-parsed option, because of ARGP_IN_ORDER */
-	name_add (arg);
-	args->input_files++;
+	name_add_name (arg, MAKE_INCL_OPTIONS (args));
+	args->input_files = true;
 	break;
 
     case 'A':
@@ -966,8 +997,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'C':
-      name_add ("-C");
-      name_add (arg);
+      name_add_dir (arg);
       break;
 
     case 'd':
@@ -976,12 +1006,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'f':
       if (archive_names == allocated_archive_names)
-	{
-	  allocated_archive_names *= 2;
-	  archive_name_array =
-	    xrealloc (archive_name_array,
-		      sizeof (const char *) * allocated_archive_names);
-	}
+	archive_name_array = x2nrealloc (archive_name_array,
+					 &allocated_archive_names,
+					 sizeof (archive_name_array[0]));
+
       archive_name_array[archive_names++] = arg;
       break;
 
@@ -1039,21 +1067,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
       addname (arg, 0);
       break;
 
-    case 'l':
-      /* Historically equivalent to --one-file-system. This usage is
-	 incompatible with UNIX98 and POSIX specs and therefore is
-	 deprecated. The semantics of -l option will be changed in
-	 future versions. See TODO.
-      */
-      WARN ((0, 0,
-	     _("Semantics of -l option will change in the future releases.")));
-      WARN ((0, 0,
-	     _("Please use --one-file-system option instead.")));
-      /* FALL THROUGH */
     case ONE_FILE_SYSTEM_OPTION:
       /* When dumping directories, don't dump files/subdirectories
 	 that are on other filesystems. */
       one_file_system_option = true;
+      break;
+
+    case 'l':
+      check_links_option = 1;
       break;
 
     case 'L':
@@ -1209,7 +1230,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'X':
       if (add_exclude_file (add_exclude, excluded, arg,
-			    args->exclude_options | recursion_option, '\n')
+			    MAKE_EXCL_OPTIONS (args), '\n')
 	  != 0)
 	{
 	  int e = errno;
@@ -1226,7 +1247,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case ANCHORED_OPTION:
-      args->exclude_options |= EXCLUDE_ANCHORED;
+      args->matching_flags |= EXCLUDE_ANCHORED;
       break;
 
     case ATIME_PRESERVE_OPTION:
@@ -1264,7 +1285,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case EXCLUDE_OPTION:
-      add_exclude (excluded, arg, args->exclude_options | recursion_option);
+      add_exclude (excluded, arg, MAKE_EXCL_OPTIONS (args));
       break;
 
     case EXCLUDE_CACHES_OPTION:
@@ -1284,7 +1305,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case IGNORE_CASE_OPTION:
-      args->exclude_options |= FNM_CASEFOLD;
+      args->matching_flags |= FNM_CASEFOLD;
       break;
 
     case IGNORE_COMMAND_ERROR_OPTION:
@@ -1322,11 +1343,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case NO_ANCHORED_OPTION:
-      args->exclude_options &= ~ EXCLUDE_ANCHORED;
+      args->include_anchored = 0; /* Clear the default for comman line args */
+      args->matching_flags &= ~ EXCLUDE_ANCHORED;
       break;
 
     case NO_IGNORE_CASE_OPTION:
-      args->exclude_options &= ~ FNM_CASEFOLD;
+      args->matching_flags &= ~ FNM_CASEFOLD;
       break;
 
     case NO_IGNORE_COMMAND_ERROR_OPTION:
@@ -1343,11 +1365,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case NO_WILDCARDS_OPTION:
-      args->exclude_options &= ~ EXCLUDE_WILDCARDS;
+      args->wildcards = disable_wildcards;
       break;
 
     case NO_WILDCARDS_MATCH_SLASH_OPTION:
-      args->exclude_options |= FNM_FILE_NAME;
+      args->matching_flags |= FNM_FILE_NAME;
       break;
 
     case NULL_OPTION:
@@ -1400,7 +1422,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case PAX_OPTION:
-      args->pax_option++;
+      args->pax_option = true;
       xheader_set_option (arg);
       break;
 
@@ -1496,15 +1518,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case WILDCARDS_OPTION:
-      args->exclude_options |= EXCLUDE_WILDCARDS;
+      args->wildcards = enable_wildcards;
       break;
 
     case WILDCARDS_MATCH_SLASH_OPTION:
-      args->exclude_options &= ~ FNM_FILE_NAME;
-      break;
-
-    case CHECK_LINKS_OPTION:
-      check_links_option = 1;
+      args->matching_flags &= ~ FNM_FILE_NAME;
       break;
 
     case NO_RECURSION_OPTION:
@@ -1585,12 +1603,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 #endif /* not DENSITY_LETTER */
 
 	if (archive_names == allocated_archive_names)
-	  {
-	    allocated_archive_names *= 2;
-	    archive_name_array =
-	      xrealloc (archive_name_array,
-			sizeof (const char *) * allocated_archive_names);
-	  }
+	  archive_name_array = x2nrealloc (archive_name_array,
+					   &allocated_archive_names,
+					   sizeof (archive_name_array[0]));
 	archive_name_array[archive_names++] = xstrdup (buf);
       }
       break;
@@ -1683,12 +1698,14 @@ decode_options (int argc, char **argv)
 
   /* Set some default option values.  */
   args.textual_date_option = NULL;
-  args.exclude_options = EXCLUDE_WILDCARDS;
-  args.o_option = 0;
-  args.pax_option = 0;
+  args.wildcards = default_wildcards;
+  args.matching_flags = 0;
+  args.include_anchored = EXCLUDE_ANCHORED;
+  args.o_option = false;
+  args.pax_option = false;
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
   args.version_control_string = 0;
-  args.input_files = 0;
+  args.input_files = false;
 
   subcommand_option = UNKNOWN_SUBCOMMAND;
   archive_format = DEFAULT_FORMAT;
@@ -1795,10 +1812,14 @@ decode_options (int argc, char **argv)
   /* Handle operands after any "--" argument.  */
   for (; index < argc; index++)
     {
-      name_add (argv[index]);
-      args.input_files++;
+      name_add_name (argv[index], MAKE_INCL_OPTIONS (&args));
+      args.input_files = true;
     }
 
+  /* Warn about implicit use of the wildcards in command line arguments.
+     See TODO */
+  warn_regex_usage = args.wildcards == default_wildcards;
+  
   /* Derive option values and check option consistency.  */
 
   if (archive_format == DEFAULT_FORMAT)
@@ -1936,7 +1957,7 @@ decode_options (int argc, char **argv)
     {
       /* --test-label is silent if the user has specified the label name to
 	 compare against. */
-      if (args.input_files == 0)
+      if (!args.input_files)
 	verbose_option++;
     }
   else if (utc_option)
@@ -1948,7 +1969,7 @@ decode_options (int argc, char **argv)
   switch (subcommand_option)
     {
     case CREATE_SUBCOMMAND:
-      if (args.input_files == 0 && !files_from_option)
+      if (!args.input_files && !files_from_option)
 	USAGE_ERROR ((0, 0,
 		      _("Cowardly refusing to create an empty archive")));
       break;
@@ -2037,8 +2058,6 @@ main (int argc, char **argv)
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
 #endif
-
-  init_names ();
 
   /* Decode options.  */
 
