@@ -1,3 +1,7 @@
+2006-05-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Document use of globbing patterns.
+
 2006-05-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update
