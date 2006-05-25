@@ -24,7 +24,7 @@
 # manually modifying its size field. Test tarball kindly provided by Tomas.
 # Reported by: Thomas <metaf4@users.askja.de>
 # References: <4462E13A.3080008@users.askja.de>,
-#             <44639C4C.5050401@users.askja.de
+#             <44639C4C.5050401@users.askja.de>
 
 AT_SETUP([volume header size])
 AT_KEYWORDS([volume volsize])

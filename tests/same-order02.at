@@ -22,7 +22,7 @@
 # (see same-order01.sh). However, multiple -C options worked OK. 
 # Test if we did not break the correct behavior.
 
-AT_SETUP([same-order02])
+AT_SETUP([multiple -C options])
 AT_KEYWORDS([same-order same-order02])
 
 AT_TAR_CHECK([

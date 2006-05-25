@@ -23,7 +23,7 @@
 # References: <20040507122613.GB12457@pike.phil.uni-passau.de>
 # http://lists.gnu.org/archive/html/bug-tar/2004-05/msg00008.html
 
-AT_SETUP([same-order01])
+AT_SETUP([working -C with --same-order])
 AT_KEYWORDS([same-order same-order01])
 
 AT_TAR_CHECK([
