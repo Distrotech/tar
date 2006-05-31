@@ -119,10 +119,12 @@ make_directory (const char *name)
   size_t namelen = strlen (name);
   size_t size = offsetof (struct directory, name) + namelen + 1;
   struct directory *directory = xmalloc (size);
+  directory->contents = directory->icontents = NULL;
+  directory->orig = NULL;
+  directory->flags = false;
   strcpy (directory->name, name);
   if (ISSLASH (directory->name[namelen-1]))
     directory->name[namelen-1] = 0;
-  directory->flags = false;
   return directory;
 }
   
