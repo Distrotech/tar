@@ -20,10 +20,10 @@ is now interpreted as a request to extract from the archive the file
 named '*.c'.
 
 To treat member names as globbing patterns, use --wildcards option.  
-So, if you wish tar to mimic the behavior of versions up to 1.15.90,
-set 'TAR_OPTIONS=--wildcards'.
+If you wish tar to mimic the behavior of versions up to 1.15.90,
+add --wildcards to the value of the environment variable TAR_OPTIONS.
 
-The exact way tar interprets member names is controlled by the
+The exact way in which tar interprets member names is controlled by the
 following command line options:
 
      --wildcards              use wildcards 
@@ -57,11 +57,12 @@ with UNIX98.  This ends the transition period started with version 1.14.
 in the archive or member names before extracting.  The option takes a
 sed replace expression as its argument.  For example,
 
-  tar cf foo.tar --transform 's,^,prefix/'
+  tar cf foo.tar --transform 's,^,prefix/,'
 
 will add 'prefix/' to all file names stored in foo.tar.
 
-** --strip-components option works when deleting and comparing.
+** --strip-components option works when deleting and comparing.  In previous
+versions it worked only with --extract.
 
 ** New option --show-transformed-names enables display of transformed file
 or archive.  In particular, when creating archive in verbose mode,
