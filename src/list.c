@@ -467,6 +467,21 @@ read_header (bool raw_extended_headers)
   return read_header_primitive (raw_extended_headers, &current_stat_info);
 }
 
+static char *
+decode_xform (char *file_name)
+{
+  file_name = safer_name_suffix (file_name, false, absolute_names_option);
+  if (strip_name_components)
+    {
+      size_t prefix_len = stripped_prefix_len (file_name,
+					       strip_name_components);
+      if (prefix_len == (size_t) -1)
+	prefix_len = strlen (file_name);
+      file_name += prefix_len;
+    }
+  return file_name;
+}
+
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
 
 /* Decode things from a file HEADER block into STAT_INFO, also setting
@@ -584,6 +599,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
           || stat_info->dumpdir)
 	stat_info->is_dumpdir = true;
     }
+
+  transform_name_fp (&stat_info->file_name, decode_xform);
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
@@ -980,7 +997,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
   char modes[11];
   char const *time_stamp;
   int time_stamp_len;
-  char *temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
+  char *temp_name;
 
   /* These hold formatted ints.  */
   char uform[UINTMAX_STRSIZE_BOUND], gform[UINTMAX_STRSIZE_BOUND];
@@ -994,21 +1011,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
   if (test_label_option && current_header->header.typeflag != GNUTYPE_VOLHDR)
     return;
 
-  if (show_stored_names_option)
-    {
-      switch (subcommand_option)
-	{
-	case CAT_SUBCOMMAND:
-	case UPDATE_SUBCOMMAND:
-	case APPEND_SUBCOMMAND:
-	case CREATE_SUBCOMMAND:
-	  temp_name = st->file_name ? st->file_name : st->orig_file_name;
-	  break;
-
-	default:
-	  temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
-	}
-    }
+  if (show_transformed_names_option)
+    temp_name = st->file_name ? st->file_name : st->orig_file_name;
   else
     temp_name = st->orig_file_name ? st->orig_file_name : st->file_name;
 
