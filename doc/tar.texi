@@ -195,6 +195,7 @@ Advanced @GNUTAR{} Operations
 * concatenate::
 * delete::
 * compare::
+* quoting styles::
 
 How to Add Files to Existing Archives: @option{--append}
 
@@ -2593,7 +2594,7 @@ code. @xref{Writing to an External Program}.
 @opindex no-quote-chars, summary
 @item --no-quote-chars=@var{string}
 Do not quote characters from @var{string}, even if the selected
-quoting style implies they should be quoted (@FIXME-pxref{Quoting Styles}).
+quoting style implies they should be quoted (@pxref{quoting styles}).
 
 @opindex no-recursion, summary
 @item --no-recursion
@@ -2715,12 +2716,12 @@ This option does not affect extraction from archives.
 @opindex quote-chars, summary
 @item --quote-chars=@var{string}
 Always quote characters from @var{string}, even if the selected
-quoting style would not quote them (@FIXME-pxref{Quoting Styles}).
+quoting style would not quote them (@pxref{quoting styles}).
 
 @opindex quoting-style, summary
 @item --quoting-style=@var{style}
 Set quoting style to use when printing member and file names
-(@FIXME-pxref{Quoting Styles}). Valid @var{style} values are:
+(@pxref{quoting styles}). Valid @var{style} values are:
 @code{literal}, @code{shell}, @code{shell-always}, @code{c},
 @code{escape}, @code{locale}, and @code{clocale}. Default quoting
 style is @code{escape}, unless overridden while configuring the
@@ -3670,6 +3671,7 @@ it still introduces the info in the chapter correctly : ).}
 * concatenate::
 * delete::
 * compare::
+* quoting styles::
 @end menu
 
 @node Operations
@@ -4174,6 +4176,117 @@ tar: funk not found in archive
 The spirit behind the @option{--compare} (@option{--diff}, @option{-d}) option is to check whether the
 archive represents the current state of files on disk, more than validating
 the integrity of the archive media.  For this later goal, @xref{verify}.
+
+@node quoting styles
+@subsection Quoting Member Names
+@UNREVISED{}
+
+@smallexample
+@group
+$ @kbd{ls}
+a\ttab
+a\nnewline
+a\ space
+a"double"quote
+a'single'quote
+a\\backslash
+$ @kbd{tar cf arch .}
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=literal}
+./
+./a space
+./a'single'quote
+./a"double"quote
+./a\backslash
+./a	tab
+./a
+newline
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=shell}
+./
+'./a space'
+'./a'\''single'\''quote'
+'./a"double"quote'
+'./a\backslash'
+'./a	tab'
+'./a
+newline'
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=shell-always}
+'./'
+'./a space'
+'./a'\''single'\''quote'
+'./a"double"quote'
+'./a\backslash'
+'./a	tab'
+'./a
+newline'
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=c}
+"./"
+"./a space"
+"./a'single'quote"
+"./a\"double\"quote"
+"./a\\backslash"
+"./a\ttab"
+"./a\nnewline"
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=escape}
+./
+./a space
+./a'single'quote
+./a"double"quote
+./a\\backslash
+./a\ttab
+./a\nnewline
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=locale}
+`./'
+`./a space'
+`./a\'single\'quote'
+`./a"double"quote'
+`./a\\backslash'
+`./a\ttab'
+`./a\nnewline'
+@end group
+@end smallexample
+
+@smallexample
+@group
+$ @kbd{tar tf arch --quoting-style=clocale}
+"./"
+"./a space"
+"./a'single'quote"
+"./a\"double\"quote"
+"./a\\backslash"
+"./a\ttab"
+"./a\nnewline"
+@end group
+@end smallexample
 
 @node create options
 @section Options Used by @option{--create}

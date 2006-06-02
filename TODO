@@ -17,18 +17,6 @@ so that the GNU extensions (--incremental, --label and
 * Add support for a 'pax' command that conforms to POSIX 1003.1-2001.
   This would unify paxutils with tar.
 
-* Remove command-line incompatibilities between GNU tar and UNIX tar
-  as specified by UNIX98.  The main problem is:
-
-     l   GNU tar doesn't cross filesystem boundaries.
-	 UNIX98 tar warns if all links cannot be resolved.
-	   (GNU tar --check-links option)
-
-  Currently tar prints a warning when this option is used. Sometime
-  in the future its semantics will be changed to that of --check-links.
-  In the meanwhile we should announce a phase-in period where "l"
-  changes in semantics.
-
 * Interoperate better with Joerg Schilling's star implementation.
 
 * Add an option to remove files that compare successfully.

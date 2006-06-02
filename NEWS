@@ -53,9 +53,27 @@ with UNIX98.  This ends the transition period started with version 1.14.
   
 * New features
 
+** New option --transform allows to transform file names before storing them
+in the archive or member names before extracting.  The option takes a
+sed replace expression as its argument.  For example,
+
+  tar cf foo.tar --transform 's,^,prefix/'
+
+will add 'prefix/' to all file names stored in foo.tar.
+
+** --strip-components option works when deleting and comparing.
+
+** New option --show-transformed-names enables display of transformed file
+or archive.  In particular, when creating archive in verbose mode,
+the option lists member names as stored in the archive.  It
+generalizes --show-stored-names option, introduced in 1.15.90.  In
+particular, when creating an archive in verbose mode, it lists member
+names as stored in the archive, i.e., with any eventual prefixes
+removed and file name transformations applied.  The option is useful,
+for example, while comparing `tar cv' and `tar tv' outputs.
+
 ** New incremental snapshot file format keeps information about file names 
 as well as that about directories.
-
 
 
 version 1.15.90 - Sergey Poznyakoff, 2006-02-19
