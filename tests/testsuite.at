@@ -85,7 +85,7 @@ test $result -eq 0 && AT_SKIP_TEST
 
 m4_define([AT_TAR_MKHIER],[
 mkinstalldirs $1 >/dev/null
-genfile --file $1/$2])
+m4_if([$2],,,genfile --file [$1]/[$2])])
 
 AT_INIT
 
@@ -122,6 +122,7 @@ m4_include([incr02.at])
 m4_include([listed01.at])
 m4_include([listed02.at])
 m4_include([incr03.at])
+m4_include([incr04.at])
 m4_include([rename01.at])
 m4_include([rename02.at])
 m4_include([rename03.at])
