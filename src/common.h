@@ -705,6 +705,7 @@ bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
 
 /* Module transform.c */
+void set_transform_expr (const char *expr);
 bool transform_name (char **pinput);
 bool transform_name_fp (char **pinput, char *(*fun)(char *));
      
