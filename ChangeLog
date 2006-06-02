@@ -1,5 +1,15 @@
 2006-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Update
+	* src/common.h (set_transform_expr): New function
+	* tests/Makefile.am: Add incr04.at
+	* tests/testsuite.at: Likewise
+	* tests/incr04.at: New test case
+	* tests/long01.at: Fix typo in the comment
+	* tests/multiv04.at: Use genfile --files-from
+
+	(Above changes need new genfile.c from paxutils)
+	
 	* TODO: Update
 	* NEWS: Update
 	* doc/tar.texi: Update
