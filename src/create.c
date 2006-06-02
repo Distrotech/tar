@@ -1404,6 +1404,8 @@ dump_file0 (struct tar_stat_info *st, const char *p,
   assign_string (&st->file_name,
                  safer_name_suffix (p, false, absolute_names_option));
 
+  transform_name (&st->file_name);
+
   if (deref_stat (dereference_option, p, &st->stat) != 0)
     {
       stat_diag (p);
