@@ -297,12 +297,13 @@ enum
   SAME_OWNER_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
-  SHOW_STORED_NAMES_OPTION,
+  SHOW_TRANSFORMED_NAMES_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TEST_LABEL_OPTION,
   TOTALS_OPTION,
   TO_COMMAND_OPTION,
+  TRANSFORM_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
@@ -612,6 +613,8 @@ static struct argp_option options[] = {
    N_("backup before removal, choose version CONTROL"), GRID+1 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
    N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), GRID+1 },
+  {"transform", TRANSFORM_OPTION, N_("EXPR"), 0,
+   N_("Use EXPR to transform member names"), GRID+1 },
 #undef GRID
 
 #define GRID 95  
@@ -661,9 +664,10 @@ static struct argp_option options[] = {
    N_("show tar defaults"), GRID+1 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
    N_("when listing or extracting, list each directory that does not match search criteria"), GRID+1 },
-  {"show-stored-names", SHOW_STORED_NAMES_OPTION, 0, 0,
-   N_("when creating archive in verbose mode, list member names as stored in the archive"),
+  {"show-transformed-names", SHOW_TRANSFORMED_NAMES_OPTION, 0, 0,
+   N_("show file or archive names after transformation"),
    GRID+1 },
+  {"show-stored-names", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"quoting-style", QUOTING_STYLE_OPTION, N_("STYLE"), 0,
    N_("set name quoting style; see below for valid STYLE values"), GRID+1 },
   {"quote-chars", QUOTE_CHARS_OPTION, N_("STRING"), 0,
@@ -1491,8 +1495,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
       show_omitted_dirs_option = true;
       break;
 
-    case SHOW_STORED_NAMES_OPTION:
-      show_stored_names_option = true;
+    case SHOW_TRANSFORMED_NAMES_OPTION:
+      show_transformed_names_option = true;
       break;
 
     case SUFFIX_OPTION:
@@ -1510,6 +1514,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       totals_option = true;
       break;
 
+    case TRANSFORM_OPTION:
+      set_transform_expr (arg);
+      break;
+      
     case USE_COMPRESS_PROGRAM_OPTION:
       set_use_compress_program_option (arg);
       break;
