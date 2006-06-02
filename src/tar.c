@@ -601,8 +601,6 @@ static struct argp_option options[] = {
    N_("follow symlinks; archive and dump the files they point to"), GRID+1 },
   {"starting-file", 'K', N_("MEMBER-NAME"), 0,
    N_("begin at member MEMBER-NAME in the archive"), GRID+1 },
-  {"strip-components", STRIP_COMPONENTS_OPTION, N_("NUMBER"), 0,
-   N_("strip NUMBER leading components from file names"), GRID+1 },
   {"newer", 'N', N_("DATE-OR-FILE"), 0,
    N_("only store files newer than DATE-OR-FILE"), GRID+1 },
   {"newer-mtime", NEWER_MTIME_OPTION, N_("DATE"), 0,
@@ -613,8 +611,16 @@ static struct argp_option options[] = {
    N_("backup before removal, choose version CONTROL"), GRID+1 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
    N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), GRID+1 },
-  {"transform", TRANSFORM_OPTION, N_("EXPR"), 0,
-   N_("Use EXPR to transform member names"), GRID+1 },
+#undef GRID
+
+#define GRID 92
+  {NULL, 0, NULL, 0,
+   N_("File name transformations:"), GRID },
+  {"strip-components", STRIP_COMPONENTS_OPTION, N_("NUMBER"), 0,
+   N_("strip NUMBER leading components from file names on extraction"),
+   GRID+1 },
+  {"transform", TRANSFORM_OPTION, N_("EXPRESSION"), 0,
+   N_("Use sed replace EXPRESSION to transform file names"), GRID+1 },
 #undef GRID
 
 #define GRID 95  
