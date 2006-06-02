@@ -1182,51 +1182,36 @@ void
 extract_archive (void)
 {
   char typeflag;
-  char *file_name;
   tar_extractor_t fun;
 
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat_info, &current_format, 1);
-
-  if (interactive_option && !confirm ("extract", current_stat_info.file_name))
+  if (!current_stat_info.file_name[0]
+      || (interactive_option
+	  && !confirm ("extract", current_stat_info.file_name)))
     {
       skip_member ();
       return;
     }
 
   /* Print the block from current_header and current_stat.  */
-
   if (verbose_option)
     print_header (&current_stat_info, -1);
-
-  file_name = safer_name_suffix (current_stat_info.file_name,
-                                 false, absolute_names_option);
-  if (strip_name_components)
-    {
-      size_t prefix_len = stripped_prefix_len (file_name,
-					       strip_name_components);
-      if (prefix_len == (size_t) -1)
-	{
-	  skip_member ();
-	  return;
-	}
-      file_name += prefix_len;
-    }
 
   /* Restore stats for all non-ancestor directories, unless
      it is an incremental archive.
      (see NOTICE in the comment to delay_set_stat above) */
   if (!delay_directory_restore_option)
-    apply_nonancestor_delayed_set_stat (file_name, 0);
+    apply_nonancestor_delayed_set_stat (current_stat_info.file_name, 0);
 
   /* Take a safety backup of a previously existing file.  */
 
   if (backup_option)
-    if (!maybe_backup_file (file_name, 0))
+    if (!maybe_backup_file (current_stat_info.file_name, 0))
       {
 	int e = errno;
 	ERROR ((0, e, _("%s: Was unable to backup this file"),
-		quotearg_colon (file_name)));
+		quotearg_colon (current_stat_info.file_name)));
 	skip_member ();
 	return;
       }
@@ -1236,9 +1221,10 @@ extract_archive (void)
   typeflag = sparse_member_p (&current_stat_info) ?
                   GNUTYPE_SPARSE : current_header->header.typeflag;
 
-  if (prepare_to_extract (file_name, typeflag, &fun))
+  if (prepare_to_extract (current_stat_info.file_name, typeflag, &fun))
     {
-      if (fun && (*fun) (file_name, typeflag) && backup_option)
+      if (fun && (*fun) (current_stat_info.file_name, typeflag)
+	  && backup_option)
 	undo_last_backup ();
     }
   else
