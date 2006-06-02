@@ -36,6 +36,7 @@ tar_SOURCES = \
  sparse.c\
  system.c\
  tar.c\
+ transform.c\
  update.c\
  utf8.c
 
