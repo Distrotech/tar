@@ -1,3 +1,21 @@
+2006-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* TODO: Update
+	* NEWS: Update
+	* doc/tar.texi: Update
+	* src/transform.c: New file
+	* src/Makefile.am (tar_SOURCES): New module transform.c
+	* src/common.h (transform_name, transform_name_fp): New functions
+	(show_stored_names_option): Renamed to
+	show_transformed_names_option. All uses changed
+	* src/create.c (dump_file0): Transform file name
+	* src/extract.c (extract_archive): safer_name_suffix and
+	stripped_prefix_len are now called by decode_header
+	* src/list.c (print_header): Update displayable name selection.
+	* src/tar.c: New option --transform
+	New option --show-transformed-names generalizes
+	--show-stored-names. The latter is retained as an alias.
+
 2006-05-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (make_directory): Fix initialization of struct
