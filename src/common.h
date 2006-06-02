@@ -326,9 +326,10 @@ GLOBAL bool unquote_option;
 
 GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
-/* When creating archive in verbose mode, list member names as stored in the
-   archive */
-GLOBAL bool show_stored_names_option;
+/* Show file or archive names after transformation.
+   In particular, when creating archive in verbose mode, list member names
+   as stored in the archive */
+GLOBAL bool show_transformed_names_option;
 
 /* Delay setting modification times and permissions of extracted directories
    until the end of extraction. This variable helps correctly restore directory
@@ -702,3 +703,9 @@ bool sparse_diff_file (int, struct tar_stat_info *);
 /* Module utf8.c */
 bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
+
+/* Module transform.c */
+bool transform_name (char **pinput);
+bool transform_name_fp (char **pinput, char *(*fun)(char *));
+     
+     
