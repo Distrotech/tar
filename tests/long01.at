@@ -28,7 +28,7 @@
 AT_SETUP([long file names divisible by block size])
 AT_KEYWORDS([longname long512])
 
-dnl Create a directory structure with maximum diractory name length 512-16
+dnl Create a directory structure with maximum directory name length 512-16
 m4_define([NAME],[0123456789abcde])
 m4_define([FULLNAME],NAME)
 m4_for([N],0,29,,[m4_define([FULLNAME],FULLNAME/NAME)])
