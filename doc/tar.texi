@@ -2593,8 +2593,9 @@ code. @xref{Writing to an External Program}.
 
 @opindex no-quote-chars, summary
 @item --no-quote-chars=@var{string}
-Do not quote characters from @var{string}, even if the selected
-quoting style implies they should be quoted (@pxref{quoting styles}).
+Remove characters listed in @var{string} from the list of quoted
+characters set by the previous @option{--quote-chars} option
+(@pxref{quoting styles}).
 
 @opindex no-recursion, summary
 @item --no-recursion
@@ -2712,6 +2713,25 @@ their distributions for the owner of files, because the @code{root} user is
 anonymous anyway, so that might as well be the owner of anonymous archives.
 
 This option does not affect extraction from archives.
+
+@opindex transform, summary
+@item --transform=@var{sed-expr}
+
+Transform file or member names using @command{sed} replacement expression
+@var{sed-expr}.  For example,
+
+@smallexample
+$ @kbd{tar cf archive.tar --transform 's,^\./,usr/,' .}
+@end smallexample
+
+@noindent
+will add to @file{archive} files from the current working directory,
+replacing initial @samp{./} prefix with @samp{usr/}. For the detailed
+discussion, see @FIXME-xref{transform}
+
+To see transformed member names in verbose listings, use
+@option{--show-transformed-names} option
+(@FIXME-pxref{show-transformed-names}).  
 
 @opindex quote-chars, summary
 @item --quote-chars=@var{string}
@@ -2963,11 +2983,14 @@ $ tar --show-defaults
 Instructs @command{tar} to mention directories its skipping over when
 operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 
+@opindex show-transformed-names, summary
 @opindex show-stored-names, summary
-@item --show-stored-names
+@item --show-transformed-names
+@itemx --show-stored-names
 
-This option has effect only when used in conjunction with one of
-archive creation operations.  It instructs tar to list the member names
+Display file or member names after applying any transformations
+(@FIXME-pxref{}).  In particular, when used in conjunction with one of
+archive creation operations it instructs tar to list the member names
 stored in the archive, as opposed to the actual file
 names.  @xref{listing member and file names}.
 
@@ -4173,13 +4196,81 @@ blues
 tar: funk not found in archive
 @end smallexample
 
-The spirit behind the @option{--compare} (@option{--diff}, @option{-d}) option is to check whether the
-archive represents the current state of files on disk, more than validating
-the integrity of the archive media.  For this later goal, @xref{verify}.
+The spirit behind the @option{--compare} (@option{--diff},
+@option{-d}) option is to check whether the archive represents the
+current state of files on disk, more than validating the integrity of
+the archive media.  For this later goal, @xref{verify}. 
 
 @node quoting styles
 @subsection Quoting Member Names
-@UNREVISED{}
+
+When displaying member names, @command{tar} takes care to avoid
+ambiguities caused by certain characters.  This is called @dfn{name
+quoting}.  The characters in question are:
+
+@itemize @bullet
+@item Non-printable control characters:
+
+@multitable @columnfractions 0.20 0.10 0.60
+@headitem Character @tab ASCII @tab Character name
+@item \a @tab 7  @tab Audible bell
+@item \b @tab 8  @tab Backspace
+@item \f @tab 12 @tab Form feed
+@item \n @tab 10 @tab New line
+@item \r @tab 13 @tab Carriage return
+@item \t @tab 9  @tab Horizontal tabulation
+@item \v @tab 11 @tab Vertical tabulation
+@end multitable
+
+@item Space (ASCII 32)
+
+@item Single and double quotes (@samp{'} and @samp{"})
+
+@item Backslash (@samp{\})
+@end itemize
+
+The exact way @command{tar} uses to quote these characters depends on
+the @dfn{quoting style}.  The default quoting style, called
+@dfn{escape} (see below), uses backslash notation to represent control
+characters, space and backslash.  Using this quoting style, control
+characters are represented as listed in column @samp{Character} in the
+above table, a space is printed as @samp{\ } and a backslash as @samp{\\}.
+
+@GNUTAR{} offers seven distinct quoting styles, which can be selected
+using @option{--quoting-style} option:
+
+@table @option
+@item --quoting-style=@var{style}
+@opindex quoting-style
+
+Sets quoting style.  Valid values for @var{style} argument are:
+literal, shell, shell-always, c, escape, locale, clocale.
+@end table
+
+These styles are described in detail below.  To illustrate their
+effect, we will use an imaginary tar archive @file{arch.tar}
+containing the following members:
+
+@smallexample
+@group
+# 1. Contains horizontal tabulation character.
+a       tab
+# 2. Contains newline character
+a
+newline
+# 3. Contains a space
+a space
+# 4. Contains double quotes
+a"double"quote
+# 5. Contains single quotes
+a'single'quote
+# 6. Contains a backslash character:
+a\backslash
+@end group
+@end smallexample
+
+Here is how usual @command{ls} command would have listed them, if they
+had existed in the current working directory:
 
 @smallexample
 @group
@@ -4190,13 +4281,18 @@ a\ space
 a"double"quote
 a'single'quote
 a\\backslash
-$ @kbd{tar cf arch .}
 @end group
 @end smallexample
 
+Quoting styles:
+
+@table @samp
+@item literal
+No quoting, display each character as is:
+
 @smallexample
-@group
-$ @kbd{tar tf arch --quoting-style=literal}
+@group 
+$ @kbd{tar tf arch.tar --quoting-style=literal}
 ./
 ./a space
 ./a'single'quote
@@ -4208,9 +4304,17 @@ newline
 @end group
 @end smallexample
 
+@item shell
+Display characters the same way Bourne shell does:
+control characters, except @samp{\t} and @samp{\n}, are printed using
+backslash escapes, @samp{\t} and @samp{\n} are printed as is, and a
+single quote is printed as @samp{\'}.  If a name contains any quoted
+characters, it is enclosed in single quotes.  In particular, if a name
+contains single quotes, it is printed as several single-quoted strings:
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=shell}
+$ @kbd{tar tf arch.tar --quoting-style=shell}
 ./
 './a space'
 './a'\''single'\''quote'
@@ -4222,9 +4326,13 @@ newline'
 @end group
 @end smallexample
 
+@item shell-always
+Same as @samp{shell}, but the names are always enclosed in single
+quotes:
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=shell-always}
+$ @kbd{tar tf arch.tar --quoting-style=shell-always}
 './'
 './a space'
 './a'\''single'\''quote'
@@ -4236,9 +4344,16 @@ newline'
 @end group
 @end smallexample
 
+@item c
+Use the notation of the C programming language.  All names are
+enclosed in double quotes.  Control characters are quoted using
+backslash notations, double quotes are represented as @samp{\"},
+backslash characters are represented as @samp{\\}.  Single quotes and
+spaces are not quoted:
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=c}
+$ @kbd{tar tf arch.tar --quoting-style=c}
 "./"
 "./a space"
 "./a'single'quote"
@@ -4249,9 +4364,15 @@ $ @kbd{tar tf arch --quoting-style=c}
 @end group
 @end smallexample
 
+@item escape
+Control characters are printed using backslash notation, a space is
+printed as @samp{\ } and a backslash as @samp{\\}.  This is the
+default quoting style, unless it was changed when configured the
+package.
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=escape}
+$ @kbd{tar tf arch.tar --quoting-style=escape}
 ./
 ./a space
 ./a'single'quote
@@ -4262,9 +4383,19 @@ $ @kbd{tar tf arch --quoting-style=escape}
 @end group
 @end smallexample
 
+@item locale
+Control characters, single quote and backslash are printed using
+backslash notation.  All names are quoted using left and right
+quotation marks, appropriate to the current locale.  If it does not
+define quotation marks, use @samp{`} as left and @samp{'} as right
+quotation marks.  Any occurrences of the right quotation mark in a
+name are escaped with @samp{\}, for example:
+
+For example:
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=locale}
+$ @kbd{tar tf arch.tar --quoting-style=locale}
 `./'
 `./a space'
 `./a\'single\'quote'
@@ -4275,9 +4406,13 @@ $ @kbd{tar tf arch --quoting-style=locale}
 @end group
 @end smallexample
 
+@item clocale
+Same as @samp{locale}, but @samp{"} is used for both left and right
+quotation marks, if not provided by the currently selected locale:
+
 @smallexample
 @group
-$ @kbd{tar tf arch --quoting-style=clocale}
+$ @kbd{tar tf arch.tar --quoting-style=clocale}
 "./"
 "./a space"
 "./a'single'quote"
@@ -4287,6 +4422,48 @@ $ @kbd{tar tf arch --quoting-style=clocale}
 "./a\nnewline"
 @end group
 @end smallexample
+@end table
+
+You can specify which characters should be quoted in addition to those
+implied by the current quoting style:
+
+@table @option
+@item --quote-chars=@var{string}
+Always quote characters from @var{string}, even if the selected
+quoting style would not quote them.
+@end table
+
+For example, using @samp{escape} quoting (compare with the usual
+escape listing above): 
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=escape --quote-chars=' "'}
+./
+./a\ space
+./a'single'quote
+./a\"double\"quote
+./a\\backslash
+./a\ttab
+./a\nnewline
+@end group
+@end smallexample
+
+To disable quoting of such additional characters, use the following
+option:
+
+@table @option
+@item --no-quote-chars=@var{string}
+Remove characters listed in @var{string} from the list of quoted
+characters set by the previous @option{--quote-chars} option.
+@end table
+
+This option is particularly useful if you have added
+@option{--quote-chars} to your @env{TAR_OPTIONS} (@pxref{TAR_OPTIONS})
+and wish to disable it for the current invocation.
+
+Note, that @option{--no-quote-chars} does @emph{not} disable those
+characters that are quoted by default in the selected quoting style.
 
 @node create options
 @section Options Used by @option{--create}
