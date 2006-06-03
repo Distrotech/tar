@@ -65,11 +65,9 @@ will add 'prefix/' to all file names stored in foo.tar.
 versions it worked only with --extract.
 
 ** New option --show-transformed-names enables display of transformed file
-or archive.  In particular, when creating archive in verbose mode,
-the option lists member names as stored in the archive.  It
-generalizes --show-stored-names option, introduced in 1.15.90.  In
-particular, when creating an archive in verbose mode, it lists member
-names as stored in the archive, i.e., with any eventual prefixes
+or archive.   It generalizes --show-stored-names option, introduced in 
+1.15.90.  In particular, when creating an archive in verbose mode, it lists 
+member names as stored in the archive, i.e., with any eventual prefixes
 removed and file name transformations applied.  The option is useful,
 for example, while comparing `tar cv' and `tar tv' outputs.
 
