@@ -195,7 +195,6 @@ Advanced @GNUTAR{} Operations
 * concatenate::
 * delete::
 * compare::
-* quoting styles::
 
 How to Add Files to Existing Archives: @option{--append}
 
@@ -261,7 +260,9 @@ Choosing Files and Names for @command{tar}
 * Selecting Archive Members::
 * files::                       Reading Names from a File
 * exclude::                     Excluding Some Files
-* Wildcards::                   Wildcards Patterns and Matching
+* wildcards::                   Wildcards Patterns and Matching
+* quoting styles::              Ways of Quoting Special Characters in Names
+* transform::                   Modifying File and Member Names
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
 * one::                         Crossing File System Boundaries
@@ -1336,7 +1337,7 @@ $ @kbd{tar --list --file=bfiles.tar --wildcards '*b*'}
 @end smallexample
 
 @noindent
-will list all members whose name contains @samp{b}.  @xref{Wildcards},
+will list all members whose name contains @samp{b}.  @xref{wildcards},
 for a detailed discussion of globbing patterns and related
 @command{tar} command line options.
 
@@ -1481,7 +1482,7 @@ Here, @option{--wildcards} instructs @command{tar} to treat
 command line arguments as globbing patterns and @option{--no-anchored}
 informs it that the patterns apply to member names after any @samp{/}
 delimiter.  The use of globbing patterns is discussed in detail in
-@xref{Wildcards}. 
+@xref{wildcards}. 
 
 You can extract a file to standard output by combining the above options
 with the @option{--to-stdout} (@option{-O}) option (@pxref{Writing to Standard
@@ -1711,7 +1712,7 @@ the files in the file system to @command{tar}.
 
 The distinction between file names and archive member names is especially
 important when shell globbing is used, and sometimes a source of confusion
-for newcomers.  @xref{Wildcards}, for more information about globbing.
+for newcomers.  @xref{wildcards}, for more information about globbing.
 The problem is that shells may only glob using existing files in the
 file system.  Only @command{tar} itself may glob on archive members, so when
 needed, you must ensure that wildcard characters reach @command{tar} without
@@ -2727,11 +2728,11 @@ $ @kbd{tar cf archive.tar --transform 's,^\./,usr/,' .}
 @noindent
 will add to @file{archive} files from the current working directory,
 replacing initial @samp{./} prefix with @samp{usr/}. For the detailed
-discussion, see @FIXME-xref{transform}
+discussion, @xref{transform}.
 
 To see transformed member names in verbose listings, use
 @option{--show-transformed-names} option
-(@FIXME-pxref{show-transformed-names}).  
+(@pxref{show-transformed-names}).  
 
 @opindex quote-chars, summary
 @item --quote-chars=@var{string}
@@ -3021,7 +3022,7 @@ tar --extract --file archive.tar --strip-components=2
 @end smallexample
 
 @noindent
-would extracted this file to file @file{name}.
+would extract this file to file @file{name}.
 
 @opindex suffix, summary
 @item --suffix=@var{suffix}
@@ -3694,7 +3695,6 @@ it still introduces the info in the chapter correctly : ).}
 * concatenate::
 * delete::
 * compare::
-* quoting styles::
 @end menu
 
 @node Operations
@@ -4200,270 +4200,6 @@ The spirit behind the @option{--compare} (@option{--diff},
 @option{-d}) option is to check whether the archive represents the
 current state of files on disk, more than validating the integrity of
 the archive media.  For this later goal, @xref{verify}. 
-
-@node quoting styles
-@subsection Quoting Member Names
-
-When displaying member names, @command{tar} takes care to avoid
-ambiguities caused by certain characters.  This is called @dfn{name
-quoting}.  The characters in question are:
-
-@itemize @bullet
-@item Non-printable control characters:
-
-@multitable @columnfractions 0.20 0.10 0.60
-@headitem Character @tab ASCII @tab Character name
-@item \a @tab 7  @tab Audible bell
-@item \b @tab 8  @tab Backspace
-@item \f @tab 12 @tab Form feed
-@item \n @tab 10 @tab New line
-@item \r @tab 13 @tab Carriage return
-@item \t @tab 9  @tab Horizontal tabulation
-@item \v @tab 11 @tab Vertical tabulation
-@end multitable
-
-@item Space (ASCII 32)
-
-@item Single and double quotes (@samp{'} and @samp{"})
-
-@item Backslash (@samp{\})
-@end itemize
-
-The exact way @command{tar} uses to quote these characters depends on
-the @dfn{quoting style}.  The default quoting style, called
-@dfn{escape} (see below), uses backslash notation to represent control
-characters, space and backslash.  Using this quoting style, control
-characters are represented as listed in column @samp{Character} in the
-above table, a space is printed as @samp{\ } and a backslash as @samp{\\}.
-
-@GNUTAR{} offers seven distinct quoting styles, which can be selected
-using @option{--quoting-style} option:
-
-@table @option
-@item --quoting-style=@var{style}
-@opindex quoting-style
-
-Sets quoting style.  Valid values for @var{style} argument are:
-literal, shell, shell-always, c, escape, locale, clocale.
-@end table
-
-These styles are described in detail below.  To illustrate their
-effect, we will use an imaginary tar archive @file{arch.tar}
-containing the following members:
-
-@smallexample
-@group
-# 1. Contains horizontal tabulation character.
-a       tab
-# 2. Contains newline character
-a
-newline
-# 3. Contains a space
-a space
-# 4. Contains double quotes
-a"double"quote
-# 5. Contains single quotes
-a'single'quote
-# 6. Contains a backslash character:
-a\backslash
-@end group
-@end smallexample
-
-Here is how usual @command{ls} command would have listed them, if they
-had existed in the current working directory:
-
-@smallexample
-@group
-$ @kbd{ls}
-a\ttab
-a\nnewline
-a\ space
-a"double"quote
-a'single'quote
-a\\backslash
-@end group
-@end smallexample
-
-Quoting styles:
-
-@table @samp
-@item literal
-No quoting, display each character as is:
-
-@smallexample
-@group 
-$ @kbd{tar tf arch.tar --quoting-style=literal}
-./
-./a space
-./a'single'quote
-./a"double"quote
-./a\backslash
-./a	tab
-./a
-newline
-@end group
-@end smallexample
-
-@item shell
-Display characters the same way Bourne shell does:
-control characters, except @samp{\t} and @samp{\n}, are printed using
-backslash escapes, @samp{\t} and @samp{\n} are printed as is, and a
-single quote is printed as @samp{\'}.  If a name contains any quoted
-characters, it is enclosed in single quotes.  In particular, if a name
-contains single quotes, it is printed as several single-quoted strings:
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=shell}
-./
-'./a space'
-'./a'\''single'\''quote'
-'./a"double"quote'
-'./a\backslash'
-'./a	tab'
-'./a
-newline'
-@end group
-@end smallexample
-
-@item shell-always
-Same as @samp{shell}, but the names are always enclosed in single
-quotes:
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=shell-always}
-'./'
-'./a space'
-'./a'\''single'\''quote'
-'./a"double"quote'
-'./a\backslash'
-'./a	tab'
-'./a
-newline'
-@end group
-@end smallexample
-
-@item c
-Use the notation of the C programming language.  All names are
-enclosed in double quotes.  Control characters are quoted using
-backslash notations, double quotes are represented as @samp{\"},
-backslash characters are represented as @samp{\\}.  Single quotes and
-spaces are not quoted:
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=c}
-"./"
-"./a space"
-"./a'single'quote"
-"./a\"double\"quote"
-"./a\\backslash"
-"./a\ttab"
-"./a\nnewline"
-@end group
-@end smallexample
-
-@item escape
-Control characters are printed using backslash notation, a space is
-printed as @samp{\ } and a backslash as @samp{\\}.  This is the
-default quoting style, unless it was changed when configured the
-package.
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=escape}
-./
-./a space
-./a'single'quote
-./a"double"quote
-./a\\backslash
-./a\ttab
-./a\nnewline
-@end group
-@end smallexample
-
-@item locale
-Control characters, single quote and backslash are printed using
-backslash notation.  All names are quoted using left and right
-quotation marks, appropriate to the current locale.  If it does not
-define quotation marks, use @samp{`} as left and @samp{'} as right
-quotation marks.  Any occurrences of the right quotation mark in a
-name are escaped with @samp{\}, for example:
-
-For example:
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=locale}
-`./'
-`./a space'
-`./a\'single\'quote'
-`./a"double"quote'
-`./a\\backslash'
-`./a\ttab'
-`./a\nnewline'
-@end group
-@end smallexample
-
-@item clocale
-Same as @samp{locale}, but @samp{"} is used for both left and right
-quotation marks, if not provided by the currently selected locale:
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=clocale}
-"./"
-"./a space"
-"./a'single'quote"
-"./a\"double\"quote"
-"./a\\backslash"
-"./a\ttab"
-"./a\nnewline"
-@end group
-@end smallexample
-@end table
-
-You can specify which characters should be quoted in addition to those
-implied by the current quoting style:
-
-@table @option
-@item --quote-chars=@var{string}
-Always quote characters from @var{string}, even if the selected
-quoting style would not quote them.
-@end table
-
-For example, using @samp{escape} quoting (compare with the usual
-escape listing above): 
-
-@smallexample
-@group
-$ @kbd{tar tf arch.tar --quoting-style=escape --quote-chars=' "'}
-./
-./a\ space
-./a'single'quote
-./a\"double\"quote
-./a\\backslash
-./a\ttab
-./a\nnewline
-@end group
-@end smallexample
-
-To disable quoting of such additional characters, use the following
-option:
-
-@table @option
-@item --no-quote-chars=@var{string}
-Remove characters listed in @var{string} from the list of quoted
-characters set by the previous @option{--quote-chars} option.
-@end table
-
-This option is particularly useful if you have added
-@option{--quote-chars} to your @env{TAR_OPTIONS} (@pxref{TAR_OPTIONS})
-and wish to disable it for the current invocation.
-
-Note, that @option{--no-quote-chars} does @emph{not} disable those
-characters that are quoted by default in the selected quoting style.
 
 @node create options
 @section Options Used by @option{--create}
@@ -6148,7 +5884,9 @@ This chapter discusses these options in detail.
 * Selecting Archive Members::
 * files::                       Reading Names from a File
 * exclude::                     Excluding Some Files
-* Wildcards::                   Wildcards Patterns and Matching
+* wildcards::                   Wildcards Patterns and Matching
+* quoting styles::              Ways of Quoting Special Characters in Names
+* transform::                   Modifying File and Member Names
 * after::                       Operating Only on New Files
 * recurse::                     Descending into Directories
 * one::                         Crossing File System Boundaries
@@ -6621,7 +6359,7 @@ file.
 
 @end itemize
 
-@node Wildcards
+@node wildcards
 @section Wildcards Patterns and Matching
 
 @dfn{Globbing} is the operation by which @dfn{wildcard} characters,
@@ -6817,6 +6555,469 @@ The following table summarizes pattern-matching default values:
 @item Exclusion @tab @option{--wildcards --no-anchored --wildcards-match-slash}
 @end multitable
 
+@node quoting styles
+@section Quoting Member Names
+
+When displaying member names, @command{tar} takes care to avoid
+ambiguities caused by certain characters.  This is called @dfn{name
+quoting}.  The characters in question are:
+
+@itemize @bullet
+@item Non-printable control characters:
+
+@multitable @columnfractions 0.20 0.10 0.60
+@headitem Character @tab ASCII @tab Character name
+@item \a @tab 7  @tab Audible bell
+@item \b @tab 8  @tab Backspace
+@item \f @tab 12 @tab Form feed
+@item \n @tab 10 @tab New line
+@item \r @tab 13 @tab Carriage return
+@item \t @tab 9  @tab Horizontal tabulation
+@item \v @tab 11 @tab Vertical tabulation
+@end multitable
+
+@item Space (ASCII 32)
+
+@item Single and double quotes (@samp{'} and @samp{"})
+
+@item Backslash (@samp{\})
+@end itemize
+
+The exact way @command{tar} uses to quote these characters depends on
+the @dfn{quoting style}.  The default quoting style, called
+@dfn{escape} (see below), uses backslash notation to represent control
+characters, space and backslash.  Using this quoting style, control
+characters are represented as listed in column @samp{Character} in the
+above table, a space is printed as @samp{\ } and a backslash as @samp{\\}.
+
+@GNUTAR{} offers seven distinct quoting styles, which can be selected
+using @option{--quoting-style} option:
+
+@table @option
+@item --quoting-style=@var{style}
+@opindex quoting-style
+
+Sets quoting style.  Valid values for @var{style} argument are:
+literal, shell, shell-always, c, escape, locale, clocale.
+@end table
+
+These styles are described in detail below.  To illustrate their
+effect, we will use an imaginary tar archive @file{arch.tar}
+containing the following members:
+
+@smallexample
+@group
+# 1. Contains horizontal tabulation character.
+a       tab
+# 2. Contains newline character
+a
+newline
+# 3. Contains a space
+a space
+# 4. Contains double quotes
+a"double"quote
+# 5. Contains single quotes
+a'single'quote
+# 6. Contains a backslash character:
+a\backslash
+@end group
+@end smallexample
+
+Here is how usual @command{ls} command would have listed them, if they
+had existed in the current working directory:
+
+@smallexample
+@group
+$ @kbd{ls}
+a\ttab
+a\nnewline
+a\ space
+a"double"quote
+a'single'quote
+a\\backslash
+@end group
+@end smallexample
+
+Quoting styles:
+
+@table @samp
+@item literal
+No quoting, display each character as is:
+
+@smallexample
+@group 
+$ @kbd{tar tf arch.tar --quoting-style=literal}
+./
+./a space
+./a'single'quote
+./a"double"quote
+./a\backslash
+./a	tab
+./a
+newline
+@end group
+@end smallexample
+
+@item shell
+Display characters the same way Bourne shell does:
+control characters, except @samp{\t} and @samp{\n}, are printed using
+backslash escapes, @samp{\t} and @samp{\n} are printed as is, and a
+single quote is printed as @samp{\'}.  If a name contains any quoted
+characters, it is enclosed in single quotes.  In particular, if a name
+contains single quotes, it is printed as several single-quoted strings:
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=shell}
+./
+'./a space'
+'./a'\''single'\''quote'
+'./a"double"quote'
+'./a\backslash'
+'./a	tab'
+'./a
+newline'
+@end group
+@end smallexample
+
+@item shell-always
+Same as @samp{shell}, but the names are always enclosed in single
+quotes:
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=shell-always}
+'./'
+'./a space'
+'./a'\''single'\''quote'
+'./a"double"quote'
+'./a\backslash'
+'./a	tab'
+'./a
+newline'
+@end group
+@end smallexample
+
+@item c
+Use the notation of the C programming language.  All names are
+enclosed in double quotes.  Control characters are quoted using
+backslash notations, double quotes are represented as @samp{\"},
+backslash characters are represented as @samp{\\}.  Single quotes and
+spaces are not quoted:
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=c}
+"./"
+"./a space"
+"./a'single'quote"
+"./a\"double\"quote"
+"./a\\backslash"
+"./a\ttab"
+"./a\nnewline"
+@end group
+@end smallexample
+
+@item escape
+Control characters are printed using backslash notation, a space is
+printed as @samp{\ } and a backslash as @samp{\\}.  This is the
+default quoting style, unless it was changed when configured the
+package.
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=escape}
+./
+./a space
+./a'single'quote
+./a"double"quote
+./a\\backslash
+./a\ttab
+./a\nnewline
+@end group
+@end smallexample
+
+@item locale
+Control characters, single quote and backslash are printed using
+backslash notation.  All names are quoted using left and right
+quotation marks, appropriate to the current locale.  If it does not
+define quotation marks, use @samp{`} as left and @samp{'} as right
+quotation marks.  Any occurrences of the right quotation mark in a
+name are escaped with @samp{\}, for example:
+
+For example:
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=locale}
+`./'
+`./a space'
+`./a\'single\'quote'
+`./a"double"quote'
+`./a\\backslash'
+`./a\ttab'
+`./a\nnewline'
+@end group
+@end smallexample
+
+@item clocale
+Same as @samp{locale}, but @samp{"} is used for both left and right
+quotation marks, if not provided by the currently selected locale:
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=clocale}
+"./"
+"./a space"
+"./a'single'quote"
+"./a\"double\"quote"
+"./a\\backslash"
+"./a\ttab"
+"./a\nnewline"
+@end group
+@end smallexample
+@end table
+
+You can specify which characters should be quoted in addition to those
+implied by the current quoting style:
+
+@table @option
+@item --quote-chars=@var{string}
+Always quote characters from @var{string}, even if the selected
+quoting style would not quote them.
+@end table
+
+For example, using @samp{escape} quoting (compare with the usual
+escape listing above): 
+
+@smallexample
+@group
+$ @kbd{tar tf arch.tar --quoting-style=escape --quote-chars=' "'}
+./
+./a\ space
+./a'single'quote
+./a\"double\"quote
+./a\\backslash
+./a\ttab
+./a\nnewline
+@end group
+@end smallexample
+
+To disable quoting of such additional characters, use the following
+option:
+
+@table @option
+@item --no-quote-chars=@var{string}
+Remove characters listed in @var{string} from the list of quoted
+characters set by the previous @option{--quote-chars} option.
+@end table
+
+This option is particularly useful if you have added
+@option{--quote-chars} to your @env{TAR_OPTIONS} (@pxref{TAR_OPTIONS})
+and wish to disable it for the current invocation.
+
+Note, that @option{--no-quote-chars} does @emph{not} disable those
+characters that are quoted by default in the selected quoting style.
+
+@node transform
+@section Modifying File and Member Names
+
+@command{Tar} archives contain detailed information about files stored
+in them and full file names are part of that information.  When
+storing file to an archive, its file name is recorded in the archive
+along with the actual file contents.  When restoring from an archive,
+a file is created on disk with exactly the same name as that stored
+in the archive.  In the majority of cases this is the desired behavior
+of a file archiver.  However, there are some cases when it is not.
+
+First of all, it is often unsafe to extract archive members with
+absolute file names or those that begin with a @file{../}.  @GNUTAR{}
+takes special precautions when extracting such names and provides a
+special option for handling them, which is described in
+@xref{absolute}.
+
+Secondly, you may wish to extract file names without some leading
+directory components, or with otherwise modified names.  In other
+cases it is desirable to store files under differing names in the
+archive.
+
+@GNUTAR{} provides two options for these needs.
+
+@table @option
+@opindex strip-components
+@item --strip-components=@var{number}
+Strip given @var{number} of leading components from file names before
+extraction.
+@end table
+
+For example, suppose you have archived whole @file{/usr} hierarchy to
+a tar archive named @file{usr.tar}.  Among other files, this archive
+contains @file{usr/include/stdlib.h}, which you wish to extract to
+the current working directory.  To do so, you type:
+
+@smallexample
+$ @kbd{tar -xf usr.tar --strip=2 usr/include/stdlib.h}
+@end smallexample
+
+The option @option{--strip=2} instructs @command{tar} to strip the
+two leading components (@file{usr/} and @file{include/}) off the file
+name. 
+
+If you add to the above invocation @option{--verbose} (@option{-v})
+option, you will note that the verbose listing still contains the
+full file name, with the two removed components still in place.  This
+can be inconvenient, so @command{tar} provides a special option for
+altering this behavior:
+
+@anchor{show-transformed-names}
+@table @option
+@opindex --show-transformed-names
+@item --show-transformed-names
+Display file or member names with all requested transformations
+applied.
+@end table
+
+For example:
+
+@smallexample
+@group
+$ @kbd{tar -xf usr.tar -v --strip=2 usr/include/stdlib.h}
+usr/include/stdlib.h
+$ @kbd{tar -xf usr.tar -v --strip=2 --show-transformed usr/include/stdlib.h}
+stdlib.h
+@end group
+@end smallexample
+
+Notice that in both cases the file is @file{stdlib.h} extracted to the
+current working directory, @option{--show-transformed-names} affects
+only the way its name is displayed.
+
+This option is especially useful for verifying whether the invocation
+will have the desired effect.  Thus, before running
+
+@smallexample
+$ @kbd{tar -x --strip=@var{n}}
+@end smallexample
+
+@noindent
+it is often advisable to run
+
+@smallexample
+$ @kbd{tar -t -v --show-transformed --strip=@var{n}}
+@end smallexample
+
+@noindent
+to make sure the command will produce the intended results.
+
+In case you need to apply more complex modifications to the file name,
+@GNUTAR{} provides a general-purpose transformation option:
+
+@table @option
+@opindex --transform
+@item --transform=@var{expression}
+Modify file names using supplied @var{expression}.
+@end table
+
+@noindent
+The @var{expression} is a @command{sed}-like replace expression of the
+form:
+
+@smallexample
+s/@var{regexp}/@var{replace}/[@var{flags}]
+@end smallexample
+
+@noindent
+where @var{regexp} is a @dfn{regular expression}, @var{replace} is a
+replacement for each file name part that matches @var{regexp}.  Both
+@var{regexp} and @var{replace} are described in detail in
+@ref{The "s" Command, The "s" Command, The `s' Command, sed, GNU sed}.
+
+Notice, however, that the following @command{sed}-specific escapes
+are not supported in @var{replace}: @samp{\L}, @samp{\l}, @samp{\U},
+@samp{\u}, @samp{\E}.
+                    
+The supported @var{flags} are:
+
+@table @samp
+@item g
+Apply the replacement to @emph{all} matches to the @var{regexp}, not
+just the first.
+
+@item i
+Use case-insensitive matching
+
+@item x
+@var{regexp} is an @dfn{extended regular expression} (@pxref{Extended
+regexps, Extended regular expressions, Extended regular expressions,
+sed, GNU sed}.
+@end table
+
+Any delimiter can be used in lieue of @samp{/}, the only requirement being
+that it be used consistently throughout the expression. For example,
+the following two expressions are equivalent:
+
+@smallexample
+@group
+s/one/two/
+s,one,two,
+@end group
+@end smallexample
+
+Changing of delimiter is often useful when the @var{regex} contains
+slashes.  For example, it is more convenient to write:
+
+@smallexample
+s,/,-,
+@end smallexample
+
+@noindent
+instead of
+
+@smallexample
+s/\//-/
+@end smallexample
+
+Here are several examples of @option{--transform} usage:
+
+@enumerate
+@item Extract @file{usr/} hierarchy into @file{usr/local/}:
+
+@smallexample
+$ @kbd{tar --transform='s,usr/,usr/local/,' -x arch.tar}
+@end smallexample
+
+@item Strip two leading directory components (equivalent to
+@option{--strip-components=2}):
+
+@smallexample
+$ @kbd{tar --transform='s,/*[^/]*/[^/]*/,,' -x arch.tar}
+@end smallexample
+
+@item Prepend @file{/prefix/}  to each file name:
+
+@smallexample
+$ @kbd{tar --transform 's,^,/prefix/,' -x arch.tar}
+@end smallexample
+
+@end enumerate
+
+Unlike @option{--strip-components}, @option{--transform} can be used
+in any @GNUTAR{} operation mode.  For example, the following command
+adds files to the archive while replacing the leading @file{usr/}
+component with @file{var/}:
+
+@smallexample
+$ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' /}
+@end smallexample
+
+To test @option{--transform} effect we suggest to use
+@option{--show-transformed-names}:
+
+@smallexample
+$ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' \
+       --verbose --show-transformed-names /}
+@end smallexample
+    
 @node after
 @section Operating Only on New Files
 @UNREVISED
@@ -9921,7 +10122,7 @@ To treat member names as globbing patterns, use --wildcards option.
 If you want to tar to mimic the behavior of versions prior to 1.15.91,
 add this option to your @env{TAR_OPTIONS} variable.
 
-@xref{Wildcards}, for the detailed discussion of the use of globbing
+@xref{wildcards}, for the detailed discussion of the use of globbing
 patterns by @GNUTAR{}.
 
 @item Use of short option @option{-o}.
