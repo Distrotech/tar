@@ -350,6 +350,14 @@ transform_name_fp (char **pinput, char *(*fun)(char *))
 	assign_string (pinput, fun ? fun (str) : str);
 	obstack_free (&stk, str);
       }
+    else if (fun)
+      {
+	str = *pinput;
+	*pinput = NULL;
+	assign_string (pinput, fun (str));
+	free (str);
+	ret = true;
+      }
     return ret;
 }
 
