@@ -1,5 +1,7 @@
 2006-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* transform.c (transform_name_fp): Run fun even if
+	_transform_name_to_obstack returns false.
 	* doc/tar.texi (transform): Document the option.
 
 2006-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
