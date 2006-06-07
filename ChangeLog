@@ -2,7 +2,11 @@
 
 	* src/transform.c (transform_name_fp): Run fun even if
 	_transform_name_to_obstack returns false.
+	(_transform_name_to_obstack,set_transform_expr): Implement GNU
+	extension case conversion operations.
+
 	* doc/tar.texi (transform): Document the option.
+	(transform): 
 
 2006-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 

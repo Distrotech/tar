@@ -6932,10 +6932,6 @@ replacement for each file name part that matches @var{regexp}.  Both
 @var{regexp} and @var{replace} are described in detail in
 @ref{The "s" Command, The "s" Command, The `s' Command, sed, GNU sed}.
 
-Notice, however, that the following @command{sed}-specific escapes
-are not supported in @var{replace}: @samp{\L}, @samp{\l}, @samp{\U},
-@samp{\u}, @samp{\E}.
-                    
 The supported @var{flags} are:
 
 @table @samp
@@ -6997,6 +6993,12 @@ $ @kbd{tar --transform='s,/*[^/]*/[^/]*/,,' -x arch.tar}
 
 @smallexample
 $ @kbd{tar --transform 's,^,/prefix/,' -x arch.tar}
+@end smallexample
+
+@item Convert each file name to lower case:
+
+@smallexample
+$ @kbd{tar --transform 's/.*/\L&/' -x arch.tar}
 @end smallexample
 
 @end enumerate
