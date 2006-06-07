@@ -6,7 +6,6 @@
 	extension case conversion operations.
 
 	* doc/tar.texi (transform): Document the option.
-	(transform): 
 
 2006-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
