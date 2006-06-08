@@ -25,6 +25,7 @@
 #include <getline.h>
 #include <argp.h>
 #include <argp-namefrob.h>
+#include <argp-fmtstream.h>
 
 #include <signal.h>
 #if ! defined SIGCHLD && defined SIGCLD
@@ -217,12 +218,12 @@ subcommand_string (enum subcommand c)
 }
 
 void
-tar_list_quoting_styles (FILE *fp, char *prefix)
+tar_list_quoting_styles (argp_fmtstream_t fs, char *prefix)
 {
   int i;
 
   for (i = 0; quoting_style_args[i]; i++)
-    fprintf (fp, "%s%s\n", prefix, quoting_style_args[i]);
+    argp_fmtstream_printf (fs, "%s%s\n", prefix, quoting_style_args[i]);
 }
 
 void
@@ -651,8 +652,9 @@ static struct argp_option options[] = {
 
   {"verbose", 'v', 0, 0,
    N_("verbosely list files processed"), GRID+1 },
-  {"checkpoint", CHECKPOINT_OPTION, 0, 0,
-   N_("display progress messages every 10th record"), GRID+1 },
+  {"checkpoint", CHECKPOINT_OPTION, N_("[.]NUMBER"), OPTION_ARG_OPTIONAL,
+   N_("display progress messages every NUMBERth record (default 10)"),
+   GRID+1 },
   {"check-links", 'l', 0, 0,
    N_("print a message if not all links are dumped"), GRID+1 },
   {"totals", TOTALS_OPTION, 0, 0,
@@ -719,6 +721,8 @@ static enum atime_preserve const atime_preserve_types[] =
   replace_atime_preserve, system_atime_preserve
 };
 
+/* Make sure atime_preserve_types has as much entries as atime_preserve_args
+   (minus 1 for NULL guard) */
 ARGMATCH_VERIFY (atime_preserve_args, atime_preserve_types);
 
 /* Wildcard matching settings */
@@ -757,20 +761,38 @@ struct tar_args        /* Variables used during option parsing */
   | (args)->matching_flags \
   | recursion_option)
 
-static void
-show_default_settings (FILE *stream)
-{
-  fprintf (stream,
-	   "--format=%s -f%s -b%d --quoting-style=%s --rmt-command=%s",
-	   archive_format_string (DEFAULT_ARCHIVE_FORMAT),
-	   DEFAULT_ARCHIVE, DEFAULT_BLOCKING,
-	   quoting_style_args[DEFAULT_QUOTING_STYLE],
-	   DEFAULT_RMT_COMMAND);
-#ifdef REMOTE_SHELL
-  fprintf (stream, " --rsh-command=%s", REMOTE_SHELL);
-#endif
-  fprintf (stream, "\n");
+#ifdef REMOTE_SHELL                                                       
+# define DECL_SHOW_DEFAULT_SETTINGS(stream, printer)                      \
+{                                                                         \
+  printer (stream,                                                        \
+	   "--format=%s -f%s -b%d --quoting-style=%s --rmt-command=%s",   \
+	   archive_format_string (DEFAULT_ARCHIVE_FORMAT),                \
+	   DEFAULT_ARCHIVE, DEFAULT_BLOCKING,                             \
+	   quoting_style_args[DEFAULT_QUOTING_STYLE],                     \
+	   DEFAULT_RMT_COMMAND);                                          \
+  printer (stream, " --rsh-command=%s", REMOTE_SHELL);                    \
+  printer (stream, "\n");                                                 \
 }
+#else
+# define DECL_SHOW_DEFAULT_SETTINGS(stream, printer)                      \
+{                                                                         \
+  printer (stream,                                                        \
+	   "--format=%s -f%s -b%d --quoting-style=%s --rmt-command=%s",   \
+	   archive_format_string (DEFAULT_ARCHIVE_FORMAT),                \
+	   DEFAULT_ARCHIVE, DEFAULT_BLOCKING,                             \
+	   quoting_style_args[DEFAULT_QUOTING_STYLE],                     \
+	   DEFAULT_RMT_COMMAND);                                          \
+  printer (stream, "\n");                                                 \
+}
+#endif
+
+static void
+show_default_settings (FILE *fp)
+     DECL_SHOW_DEFAULT_SETTINGS(fp, fprintf)
+     
+static void
+show_default_settings_fs (argp_fmtstream_t fs)
+     DECL_SHOW_DEFAULT_SETTINGS(fs, argp_fmtstream_printf)
 
 static void
 set_subcommand_option (enum subcommand subcommand)
@@ -961,6 +983,28 @@ update_argv (const char *filename, struct argp_state *state)
     }
 }
 
+
+static void
+tar_help (struct argp_state *state)
+{
+  argp_fmtstream_t fs;
+  state->flags |= ARGP_NO_EXIT;
+  argp_state_help (state, state->out_stream,
+		   ARGP_HELP_STD_HELP & ~ARGP_HELP_BUG_ADDR);
+  /* FIXME: use struct uparams.rmargin (from argp-help.c) instead of 79 */
+  fs = argp_make_fmtstream (state->out_stream, 0, 79, 0);
+  
+  argp_fmtstream_printf (fs, "\n%s\n\n",
+		       _("Valid arguments for --quoting-style options are:"));
+  tar_list_quoting_styles (fs, "  ");
+	
+  argp_fmtstream_puts (fs, _("\n*This* tar defaults to:\n"));
+  show_default_settings_fs (fs);
+  argp_fmtstream_putc (fs, '\n');
+  argp_fmtstream_printf (fs, _("Report bugs to %s.\n"),
+			 argp_program_bug_address);
+  argp_fmtstream_free (fs);
+}
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
@@ -1273,7 +1317,22 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case CHECKPOINT_OPTION:
-      checkpoint_option = true;
+      if (arg)
+	{
+	  char *p;
+
+	  if (*arg == '.')
+	    {
+	      checkpoint_style = checkpoint_dot;
+	      arg++;
+	    }
+	  checkpoint_option = strtoul (arg, &p, 0);
+	  if (*p)
+	    FATAL_ERROR ((0, 0,
+			  _("--checkpoint value is not an integer")));
+	}
+      else
+	checkpoint_option = 10;
       break;
 
     case BACKUP_OPTION:
@@ -1633,18 +1692,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 #endif /* not DEVICE_PREFIX */
 
     case '?':
-      state->flags |= ARGP_NO_EXIT;
-      argp_state_help (state, state->out_stream,
-		       ARGP_HELP_STD_HELP & ~ARGP_HELP_BUG_ADDR);
-      fprintf (state->out_stream, "\n%s\n\n",
-	       _("Valid arguments for --quoting-style options are:"));
-      tar_list_quoting_styles (state->out_stream, "  ");
-
-      fprintf (state->out_stream, _("\n*This* tar defaults to:\n"));
-      show_default_settings (state->out_stream);
-      fprintf (state->out_stream, "\n");
-      fprintf (state->out_stream, _("Report bugs to %s.\n"),
-	       argp_program_bug_address);
+      tar_help (state);
       close_stdout ();
       exit (0);
 
