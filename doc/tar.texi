@@ -570,10 +570,8 @@ Gorin worked on a tutorial and manual for @GNUTAR{}.
 Fran@,{c}ois Pinard put version 1.11.8 of the manual together by
 taking information from all these sources and merging them.  Melissa
 Weisshaus finally edited and redesigned the book to create version
-1.12.  @FIXME{update version number as necessary; i'm being
-optimistic!} @FIXME{Someone [maybe karl berry?  maybe bob chassell?
-maybe melissa? maybe julie sussman?]  needs to properly index the
-thing.}
+1.12.  The book for versions from 1.14 up to @value{VERSION} were edited
+by the current maintainer, Sergey Poznyakoff.
 
 For version 1.12, Daniel Hagerty contributed a great deal of technical
 consulting.  In particular, he is the primary author of @ref{Backups}.
@@ -1014,8 +1012,8 @@ is the operation which creates the new archive
 (@file{collection.tar}), and @option{--file} is the option which lets
 you give it the name you chose.  The files, @file{blues}, @file{folk},
 and @file{jazz}, are now members of the archive, @file{collection.tar}
-(they are @dfn{file name arguments} to the @option{--create} operation).
-@FIXME-xref{to the discussion of file name args?}Now that they are
+(they are @dfn{file name arguments} to the @option{--create} operation.
+@xref{Choosing}, for the detailed discussion on these.) Now that they are
 in the archive, they are called @emph{archive members}, not files.
 (@pxref{Definitions,members}).
 
@@ -2274,12 +2272,13 @@ This option tells @command{tar} to read or write archives through
 @code{bzip2}.  @xref{gzip}.
 
 @opindex checkpoint, summary
-@item --checkpoint
+@item --checkpoint[=@var{number}]
 
-This option directs @command{tar} to print periodic checkpoint messages as it
-reads through the archive.  It is intended for when you want a visual
-indication that @command{tar} is still running, but don't want to see
-@option{--verbose} output.  @FIXME-xref{}
+This option directs @command{tar} to print periodic checkpoint
+messages as it reads through the archive.  It is intended for when you
+want a visual indication that @command{tar} is still running, but
+don't want to see @option{--verbose} output.  For a detailed
+description, see @ref{Progress information}.
 
 @opindex check-links, summary
 @item --check-links
@@ -3499,17 +3498,32 @@ The @option{--totals} option---which is only meaningful when used with
 @option{--create} (@option{-c})---causes @command{tar} to print the total
 amount written to the archive, after it has been fully created.
 
+@anchor{Progress information}
 @cindex Progress information
 @opindex checkpoint
 The @option{--checkpoint} option prints an occasional message
-as @command{tar} reads or writes the archive.  In fact, it prints
-a message each 10 records read or written.  It is designed for
+as @command{tar} reads or writes the archive.  It is designed for
 those who don't need the more detailed (and voluminous) output of
 @option{--block-number} (@option{-R}), but do want visual confirmation
-that @command{tar} is actually making forward progress.
+that @command{tar} is actually making forward progress.  By default it
+prints a message each 10 records read or written.  This can be changed
+by giving it a numeric argument after an equal sign:
 
-@FIXME{There is some confusion here.  It seems that -R once wrote a
-message at @samp{every} record read or written.}
+@smallexample
+$ @kbd{tar -c --checkpoint=1000} /var
+tar: Write checkpoint 1000
+tar: Write checkpoint 2000
+tar: Write checkpoint 3000
+@end smallexample
+
+This example shows the default checkpoint message used by
+@command{tar}.  If you place a dot immediately after the equal
+sign, it will print a @samp{.} at each checkpoint.  For example:
+
+@smallexample
+$ @kbd{tar -c --checkpoint=.1000} /var
+...
+@end smallexample
 
 @opindex show-omitted-dirs
 @anchor{show-omitted-dirs}
@@ -3518,8 +3532,8 @@ The @option{--show-omitted-dirs} option, when reading an archive---with
 to be printed for each directory in the archive which is skipped.
 This happens regardless of the reason for skipping: the directory might
 not have been named on the command line (implicitly or explicitly),
-it might be excluded by the use of the @option{--exclude=@var{pattern}} option, or
-some other reason.
+it might be excluded by the use of the
+@option{--exclude=@var{pattern}} option, or some other reason.
 
 @opindex block-number
 @cindex Block number where error occurred
@@ -5519,9 +5533,22 @@ This variable affects only @code{backup}.
 
 Script to be run when it's time to insert a new tape in for the next
 volume.  Administrators may want to tailor this script for their site.
-If this variable isn't set, @GNUTAR{} will display its built-in prompt
-@FIXME-xref{describe it somewhere!}, and will expect confirmation from
-the console.
+If this variable isn't set, @GNUTAR{} will display its built-in
+prompt, and will expect confirmation from the console.
+
+The built-in prompt for POSIX locale is:
+
+@smallexample
+Prepare volume #@var{n} for `@var{archive}' and hit return:
+@end smallexample
+
+@noindent
+where @var{n} is the ordinal number of the volume to be created and
+@var{archive} is archive file or device name.
+
+If you run @GNUTAR{} under a different locale, the translation of
+the above prompt to the locale's language will be used.
+
 @end defvr
 
 @defvr {Backup variable} SLEEP_MESSAGE
@@ -9547,8 +9574,10 @@ Prints status information about the tape unit.
 @FIXME{Is there a better way to frob the spacing on the list?}
 
 If you don't specify a @var{tapename}, @command{mt} uses the environment
-variable @env{TAPE}; if @env{TAPE} is not set, @command{mt} uses the device
-@file{/dev/rmt12}.
+variable @env{TAPE}; if @env{TAPE} is not set, @command{mt} will use
+the default device specified in your @file{sys/mtio.h} file
+(@code{DEFTAPE} variable).  If this is not defined, the program will
+display a descriptive error message and exit with code 1.
 
 @command{mt} returns a 0 exit status when the operation(s) were
 successful, 1 if the command was unrecognized, and 2 if an operation
@@ -10163,9 +10192,9 @@ up to and including 1.8.4 invoke tar with this option to produce
 distribution tarballs.  @xref{Formats,v7}, for the detailed discussion
 of this issue and its implications.
 
-@FIXME{Change the first argument to tar-formats if and when Automake
-people accept my patch to the documentation, and the new Automake is
-out --Sergey 2006-05-25}.
+@FIXME{Change the first argument to tar-formats when the new Automake is
+out. The proposition to add @anchor{} to the appropriate place of its
+docs was accepted by Automake people  --Sergey 2006-05-25}.
 @xref{Options, tar-v7, Changing Automake's Behavior,
 automake, GNU Automake}, for a description on how to use various
 archive formats with @command{automake}.
