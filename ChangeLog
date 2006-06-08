@@ -1,3 +1,9 @@
+2006-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/transform.c (set_transform_expr,_transform_name_to_obstack):
+	Implement NUMBER flag.
+	* doc/tar.texi: Update 
+
 2006-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/transform.c (transform_name_fp): Run fun even if
