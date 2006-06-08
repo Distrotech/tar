@@ -1,3 +1,18 @@
+2006-06-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Jason Armistead
+	* doc/tar.texi: Update
+	* NEWS: Update
+	* src/buffer.c: Implement more flexible checkpoint style
+	* src/common.h (checkpoint_option): Change type to unsigned
+	(checkpoint_style): New variable.
+	* src/tar.c: --checkpoint takes an optional argument specifying
+	number of records between two successive checkpoints (proposed
+	by Jason Armistead on 2004-06-22).  Optional dot starting the
+	argument means "print dots instead of textual checkpoints".
+	(tar_help): New function
+	* src/transform.c: Minor fixes.
+	
 2006-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* gnulib.modules: Add mkdtemp
