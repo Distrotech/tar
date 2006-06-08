@@ -103,7 +103,7 @@ add_char_segment (int chr)
   segm->v.literal.ptr = xmalloc (2);
   segm->v.literal.ptr[0] = chr;
   segm->v.literal.ptr[1] = 0;
-  segm->v.literal.size = 2;
+  segm->v.literal.size = 1;
 }
 
 static void
