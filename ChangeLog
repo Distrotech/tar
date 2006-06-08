@@ -2,6 +2,8 @@
 
 	* src/transform.c (set_transform_expr,_transform_name_to_obstack):
 	Implement NUMBER flag.
+	(add_char_segment): Fix length assignement
+
 	* doc/tar.texi: Update 
 
 2006-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
