@@ -25,6 +25,7 @@ human
 lchown
 localcharset
 memset
+mkdtemp
 modechange
 obstack
 quote
