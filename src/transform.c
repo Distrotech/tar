@@ -19,7 +19,7 @@
 #include <regex.h>
 #include "common.h"
 
-enum transform_type
+static enum transform_type
   {
     transform_none,
     transform_first,
@@ -526,20 +526,3 @@ transform_name (char **pinput)
   return transform_name_fp (pinput, NULL);
 }
 
-#if 0
-void
-read_and_transform_loop ()
-{
-  char buf[512];
-  while (fgets (buf, sizeof buf, stdin))
-    {
-      char *p = buf + strlen (buf);
-      if (p[-1] == '\n')
-	p[-1] = 0;
-      if (transform_name (buf, &p))
-	printf ("=> %s\n", p);
-      else
-	printf ("=\n");
-    }
-}
-#endif
