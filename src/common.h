@@ -129,7 +129,15 @@ GLOBAL enum backup_type backup_type;
 
 GLOBAL bool block_number_option;
 
-GLOBAL bool checkpoint_option;
+GLOBAL unsigned checkpoint_option;
+
+enum checkpoint_style
+  {
+    checkpoint_text,
+    checkpoint_dot
+  };
+
+GLOBAL enum checkpoint_style checkpoint_style;
 
 /* Specified name of compression program, or "gzip" as implied by -z.  */
 GLOBAL const char *use_compress_program_option;
