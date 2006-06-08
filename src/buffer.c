@@ -74,7 +74,7 @@ static int read_error_count;
 static bool hit_eof;
 
 /* Checkpointing counter */
-static int checkpoint;
+static unsigned checkpoint;
 
 static bool read_full_records = false;
 
@@ -530,19 +530,43 @@ _open_archive (enum access_mode wanted_access)
     }
 }
 
+static void
+do_checkpoint (bool write)
+{
+  if (checkpoint_option && !(++checkpoint % checkpoint_option))
+    {
+      switch (checkpoint_style)
+	{
+	case checkpoint_dot:
+	  fputc ('.', stdlis);
+	  fflush (stdlis);
+	  break;
+
+	case checkpoint_text:
+	  if (write)
+	    /* TRANSLATORS: This is a ``checkpoint of write operation'',
+	     *not* ``Writing a checkpoint''.
+	     E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
+	     *not* ``Escribiendo un punto de comprobaci@'on'' */
+	    WARN ((0, 0, _("Write checkpoint %u"), checkpoint));
+	  else
+	    /* TRANSLATORS: This is a ``checkpoint of read operation'',
+	       *not* ``Reading a checkpoint''.
+	       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
+	       *not* ``Leyendo un punto de comprobaci@'on'' */
+	    WARN ((0, 0, _("Read checkpoint %u"), checkpoint));
+	  break;
+	}
+    }
+}  
+
 /* Perform a write to flush the buffer.  */
 ssize_t
 _flush_write (void)
 {
   ssize_t status;
 
-  if (checkpoint_option && !(++checkpoint % 10))
-    /* TRANSLATORS: This is a ``checkpoint of write operation'',
-       *not* ``Writing a checkpoint''.
-       E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
-       *not* ``Escribiendo un punto de comprobaci@'on'' */
-    WARN ((0, 0, _("Write checkpoint %d"), checkpoint));
-
+  do_checkpoint (true);
   if (tape_length_option && tape_length_option <= bytes_written)
     {
       errno = ENOSPC;
@@ -644,39 +668,6 @@ short_read (size_t status)
 
   record_end = record_start + (record_size - left) / BLOCKSIZE;
   records_read++;
-}
-
-/* Perform a read to flush the buffer.  */
-size_t
-_flush_read (void)
-{
-  size_t status;		/* result from system call */
-
-  if (checkpoint_option && !(++checkpoint % 10))
-    /* TRANSLATORS: This is a ``checkpoint of read operation'',
-       *not* ``Reading a checkpoint''.
-       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
-       *not* ``Leyendo un punto de comprobaci@'on'' */
-    WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
-
-  /* Clear the count of errors.  This only applies to a single call to
-     flush_read.  */
-
-  read_error_count = 0;		/* clear error count */
-
-  if (write_archive_to_stdout && record_start_block != 0)
-    {
-      archive = STDOUT_FILENO;
-      status = sys_write_archive_buffer ();
-      archive = STDIN_FILENO;
-      if (status != record_size)
-	archive_write_error (status);
-    }
-
-  status = rmtread (archive, record_start->buffer, record_size);
-  if (status == record_size)
-    records_read++;
-  return status;
 }
 
 /*  Flush the current buffer to/from the archive.  */
@@ -1412,13 +1403,8 @@ simple_flush_read (void)
 {
   size_t status;		/* result from system call */
 
-  if (checkpoint_option && !(++checkpoint % 10))
-    /* TRANSLATORS: This is a ``checkpoint of read operation'',
-       *not* ``Reading a checkpoint''.
-       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
-       *not* ``Leyendo un punto de comprobaci@'on'' */
-    WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
-
+  do_checkpoint (false);
+  
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
@@ -1476,13 +1462,8 @@ _gnu_flush_read (void)
 {
   size_t status;		/* result from system call */
 
-  if (checkpoint_option && !(++checkpoint % 10))
-    /* TRANSLATORS: This is a ``checkpoint of read operation'',
-       *not* ``Reading a checkpoint''.
-       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
-       *not* ``Leyendo un punto de comprobaci@'on'' */
-    WARN ((0, 0, _("Read checkpoint %d"), checkpoint));
-
+  do_checkpoint (false);
+  
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
