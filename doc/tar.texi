@@ -6932,7 +6932,7 @@ replacement for each file name part that matches @var{regexp}.  Both
 @var{regexp} and @var{replace} are described in detail in
 @ref{The "s" Command, The "s" Command, The `s' Command, sed, GNU sed}.
 
-The supported @var{flags} are:
+Supported @var{flags} are:
 
 @table @samp
 @item g
@@ -6946,6 +6946,17 @@ Use case-insensitive matching
 @var{regexp} is an @dfn{extended regular expression} (@pxref{Extended
 regexps, Extended regular expressions, Extended regular expressions,
 sed, GNU sed}.
+
+@item @var{number}
+Only replace the @var{number}th match of the @var{regexp}.
+
+Note: the @var{posix} standard does not specify what should happen
+when you mix the @samp{g} and @var{number} modifiers.  @GNUTAR{}
+follows the GNU @command{sed} implementation in this regard, so
+the the interaction is defined to be: ignore matches before the
+@var{number}th, and then match and replace all matches from the
+@var{number}th on.
+                                   
 @end table
 
 Any delimiter can be used in lieue of @samp{/}, the only requirement being
