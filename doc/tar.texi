@@ -7030,6 +7030,10 @@ To test @option{--transform} effect we suggest to use
 $ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' \
        --verbose --show-transformed-names /}
 @end smallexample
+
+If both @option{--strip-components} and @option{--transform} are used
+together, then @option{--transform} is applied first, and the required
+number of components is then stripped from its result.
     
 @node after
 @section Operating Only on New Files
