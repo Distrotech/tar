@@ -26,6 +26,7 @@ enum transform_type
     transform_global
   }
 transform_type = transform_none;
+static unsigned match_number = 0;
 static regex_t regex;
 static struct obstack stk;
 
@@ -174,6 +175,12 @@ set_transform_expr (const char *expr)
 
       case 'x':
 	cflags |= REG_EXTENDED;
+	break;
+	
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9':
+	match_number = strtoul (p, (char**) &p, 0);
+	p--;
 	break;
 	
       default:
@@ -372,9 +379,10 @@ _transform_name_to_obstack (char *input)
   regmatch_t *rmp;
   char *p;
   int rc;
+  size_t nmatches = 0;
   enum case_ctl_type case_ctl = ctl_stop,  /* Current case conversion op */
                      save_ctl = ctl_stop;  /* Saved case_ctl for \u and \l */
-
+  
   /* Reset case conversion after a single-char operation */
 #define CASE_CTL_RESET()  if (case_ctl == ctl_upcase_next     \
 			      || case_ctl == ctl_locase_next) \
@@ -403,7 +411,15 @@ _transform_name_to_obstack (char *input)
 
 	  if (rmp[0].rm_so)
 	    obstack_grow (&stk, input, rmp[0].rm_so);
-	  
+
+	  nmatches++;
+	  if (match_number && nmatches < match_number)
+	    {
+	      obstack_grow (&stk, input, disp);
+	      input += disp;
+	      continue;
+	    }
+
 	  for (segm = repl_head; segm; segm = segm->next)
 	    {
 	      switch (segm->type)
