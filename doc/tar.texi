@@ -99,6 +99,7 @@ Appendices
 * Configuring Help Summary::
 * Genfile::
 * Snapshot Files::
+* Dumpdir::
 * Free Software Needs Free Documentation::
 * Copying This Manual::
 * Index of Command Line Options::
@@ -347,6 +348,7 @@ GNU tar internals and development
 
 * Genfile::
 * Snapshot Files::
+* Dumpdir::
 
 Copying This Manual
 
@@ -1013,7 +1015,7 @@ is the operation which creates the new archive
 you give it the name you chose.  The files, @file{blues}, @file{folk},
 and @file{jazz}, are now members of the archive, @file{collection.tar}
 (they are @dfn{file name arguments} to the @option{--create} operation).
-@FIXME{xref here to the discussion of file name args?}Now that they are
+@FIXME-xref{to the discussion of file name args?}Now that they are
 in the archive, they are called @emph{archive members}, not files.
 (@pxref{Definitions,members}).
 
@@ -2990,7 +2992,7 @@ operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 @itemx --show-stored-names
 
 Display file or member names after applying any transformations
-(@FIXME-pxref{}).  In particular, when used in conjunction with one of
+(@pxref{transform}).  In particular, when used in conjunction with one of
 archive creation operations it instructs tar to list the member names
 stored in the archive, as opposed to the actual file
 names.  @xref{listing member and file names}.
@@ -5303,7 +5305,8 @@ unambiguous for a program: each file name is printed as
 where @var{x} is a letter describing the status of the file: @samp{Y}
 if the file  is present in the archive, @samp{N} if the file is not
 included in the archive, or a @samp{D} if the file is a directory (and
-is included in the archive).@FIXME-xref{dumpdir format}.  Each such
+is included in the archive).  @xref{Dumpdir}, for the detailed
+description of dumpdirs and status codes.  Each such
 line is terminated by a newline character.  The last line is followed
 by an additional newline to indicate the end of the data.
 
@@ -10409,6 +10412,10 @@ Right margin of the text output. Used for wrapping.
 @node Snapshot Files
 @appendix Format of the Incremental Snapshot Files
 @include snapshot.texi
+
+@node Dumpdir
+@appendix Dumpdir
+@include dumpdir.texi
 
 @node Free Software Needs Free Documentation
 @appendix Free Software Needs Free Documentation
