@@ -1,5 +1,14 @@
 2006-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* gnulib.modules: Add mkdtemp
+	* doc/dumpdir.texi: New file
+	* doc/Makefile.am (tar_TEXINFOS): Add dumpdir.texi
+	* doc/tar.texi: Document dumpdir format
+	* src/incremen.c (dumpdir_locate,obstack_code_rename):
+	(purge_directory): Re-implement renaming. Introduce
+	'X' control code.
+	(make_tmp_dir_name): Remove
+	
 	* src/transform.c (set_transform_expr,_transform_name_to_obstack):
 	Implement NUMBER flag.
 	(add_char_segment): Fix length assignement
