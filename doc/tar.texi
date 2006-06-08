@@ -6990,26 +6990,26 @@ Here are several examples of @option{--transform} usage:
 @item Extract @file{usr/} hierarchy into @file{usr/local/}:
 
 @smallexample
-$ @kbd{tar --transform='s,usr/,usr/local/,' -x arch.tar}
+$ @kbd{tar --transform='s,usr/,usr/local/,' -x -f arch.tar}
 @end smallexample
 
 @item Strip two leading directory components (equivalent to
 @option{--strip-components=2}):
 
 @smallexample
-$ @kbd{tar --transform='s,/*[^/]*/[^/]*/,,' -x arch.tar}
+$ @kbd{tar --transform='s,/*[^/]*/[^/]*/,,' -x -f arch.tar}
 @end smallexample
 
 @item Prepend @file{/prefix/}  to each file name:
 
 @smallexample
-$ @kbd{tar --transform 's,^,/prefix/,' -x arch.tar}
+$ @kbd{tar --transform 's,^,/prefix/,' -x -f arch.tar}
 @end smallexample
 
 @item Convert each file name to lower case:
 
 @smallexample
-$ @kbd{tar --transform 's/.*/\L&/' -x arch.tar}
+$ @kbd{tar --transform 's/.*/\L&/' -x -f arch.tar}
 @end smallexample
 
 @end enumerate
