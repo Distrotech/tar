@@ -192,8 +192,7 @@ struct oldgnu_header
 /* Solaris extended header */
 #define SOLARIS_XHDTYPE 'X'
 
-
-/* Jörg Schilling star header */
+/* J@"org Schilling star header */
 
 struct star_header
 {				/* byte offset */
@@ -221,7 +220,8 @@ struct star_header
 #define SPARSES_IN_STAR_HEADER      4
 #define SPARSES_IN_STAR_EXT_HEADER  21
 
-struct star_in_header {
+struct star_in_header
+{
   char fill[345];       /*   0  Everything that is before t_prefix */
   char prefix[1];       /* 345  t_name prefix */
   char fill2;           /* 346  */
@@ -236,11 +236,13 @@ struct star_in_header {
   char xmagic[4];       /* 508  "tar" */
 };
 
-struct star_ext_header {
+struct star_ext_header
+{
   struct sparse sp[SPARSES_IN_STAR_EXT_HEADER];
   char isextended;
 };
 
+/* END */
 
 
 /* tar Header Block, overall structure.  */
@@ -263,10 +265,10 @@ enum archive_format
 
 /* Information about a sparse file.  */
 struct sp_array
-  {
-    off_t offset;
-    size_t numbytes;
-  };
+{
+  off_t offset;
+  size_t numbytes;
+};
 
 struct tar_stat_info
 {
@@ -317,4 +319,4 @@ union block
   struct star_ext_header star_ext_header;
 };
 
-/* End of Format description.  */
+
