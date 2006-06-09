@@ -1,6 +1,6 @@
 # Makefile for GNU tar documentation.
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003 Free
+# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2006 Free
 # Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
@@ -24,11 +24,12 @@ tar_TEXINFOS = \
  freemanuals.texi\
  genfile.texi\
  getdate.texi\
+ intern.texi\
  header.texi\
  rendition.texi\
  snapshot.texi\
  value.texi
-EXTRA_DIST = convtexi.pl gendocs_template 
+EXTRA_DIST = gendocs_template texify.sed
 DISTCLEANFILES=*.info* 
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
@@ -38,8 +39,8 @@ RENDITION = DISTRIB
 MAKEINFOFLAGS=-D$(RENDITION)
 
 header.texi: $(top_srcdir)/src/tar.h
-	sed -n '/Archive Format/,/End of Format/p' $(top_srcdir)/src/tar.h \
-	  | expand | sed 's/\([{}]\)/@\1/g' >$@
+	sed -f $(srcdir)/texify.sed $(top_srcdir)/src/tar.h \
+	  | expand >$@
 
 clean-local:
 	rm -rf manual
