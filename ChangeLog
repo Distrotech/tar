@@ -1,5 +1,16 @@
 2006-06-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/Makefile.am (tar_TEXINFOS): Add intern.texi
+	(EXTRA_DIST): Remove convtexi.pl, add texify.sed
+	* doc/intern.texi: New file
+	* doc/convtexi.pl: Remove
+	* doc/texify.sed: Auxiliary script to convert ../src/tar.h to
+	header.texi
+	* doc/rendition.texi: Fix typo
+	* doc/tar.texi: Update
+	* src/tar.h: Fix indentation, introduce end-of-format marker for
+	texify.sed
+
 	* THANKS: Add Jason Armistead
 	* doc/tar.texi: Update
 	* NEWS: Update
