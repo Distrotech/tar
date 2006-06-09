@@ -24,6 +24,9 @@ tar.kw
 tar.kws
 tar.ky
 tar.log
+tar.op
+tar.ops
+tar.pdf
 tar.pg
 tar.pgs
 tar.ps
@@ -31,6 +34,4 @@ tar.toc
 tar.tp
 tar.vr
 tar.vrs
-tmp-tar.*
-tmp2-tar.*
 version.texi

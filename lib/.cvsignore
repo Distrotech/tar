@@ -106,7 +106,8 @@ memrchr.h
 memset.c
 minmax.h
 mkdirat.c
-mktime.c
+mkdtemp.c
+mkdtemp.h
 modechange.c
 modechange.h
 obstack.c
