@@ -3,7 +3,7 @@
 @c 2003, 2004 Free Software Foundation, Inc.
 @c See file tar.texi for copying conditions.
 
-@c This file contains support for 'renditions' by Fra@,{c}ois Pinard
+@c This file contains support for 'renditions' by Fran@,{c}ois Pinard
 @c I extended it by adding a FIXME_FOOTNOTE variable, which controls
 @c whether FIXME information should be placed in footnotes or
 @c inlined. --gray
