@@ -10,6 +10,7 @@
 @smallbook
 @c %**end of header
 
+@include config.texi
 @include rendition.texi
 @include value.texi
 
@@ -80,7 +81,7 @@ document.  The rest of the menu lists all the lower level nodes.
 @end ifnottex
 
 @c The master menu, created with texinfo-master-menu, goes here.
-@c (However, getdate.texi's menu is interpolated by hand.)
+@c FIXME: Submenus for getdate.texi and intern.texi are interpolated by hand.
 
 @menu
 * Introduction::
@@ -98,8 +99,7 @@ Appendices
 * Changes::
 * Configuring Help Summary::
 * Genfile::
-* Snapshot Files::
-* Dumpdir::
+* Tar Internals::
 * Free Software Needs Free Documentation::
 * Copying This Manual::
 * Index of Command Line Options::
@@ -152,6 +152,7 @@ How to Extract Members from an Archive
 * extracting archives::
 * extracting files::
 * extract dir::
+* extracting untrusted archives::
 * failing commands::
 
 Invoking @GNUTAR{}
@@ -231,7 +232,9 @@ Changing How @command{tar} Writes Files
 * Recursive Unlink::
 * Data Modification Times::
 * Setting Access Permissions::
+* Directory Modification Times and Permissions::
 * Writing to Standard Output::
+* Writing to an External Program::
 * remove files::
 
 Coping with Scarce Resources
@@ -276,10 +279,21 @@ Excluding Some Files
 
 * problems with exclude::
 
+Wildcards Patterns and Matching
+
+* controlling pattern-matching::
+
 Crossing File System Boundaries
 
 * directory::                   Changing Directory
 * absolute::                    Absolute File Names
+
+Controlling the Archive Format
+
+* Portability::                 Making @command{tar} Archives More Portable
+* Compression::                 Using Less Space through Compression
+* Attributes::                  Handling File Attributes
+* cpio::                        Comparison of @command{tar} and @command{cpio}
 
 Date input formats
 
@@ -293,23 +307,20 @@ Date input formats
 * Seconds since the Epoch::        @@1078100502.
 * Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
 
-Controlling the Archive Format
-
-* Portability::                 Making @command{tar} Archives More Portable
-* Compression::                 Using Less Space through Compression
-* Attributes::                  Handling File Attributes
-* Standard::                    The Standard Format
-* Extensions::                  @acronym{GNU} Extensions to the Archive Format
-* cpio::                        Comparison of @command{tar} and @command{cpio}
-
 Making @command{tar} Archives More Portable
 
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
 * old::                         Old V7 Archives
+* ustar::                       Ustar Archives
+* gnu::                         GNU and old GNU format archives.
 * posix::                       @acronym{POSIX} archives
 * Checksumming::                Checksumming Problems
 * Large or Negative Values::    Large files, negative time stamps, etc.
+
+@GNUTAR{} and @acronym{POSIX} @command{tar}
+
+* PAX keywords:: Controlling Extended Header Keywords.
 
 Using Less Space through Compression
 
@@ -347,12 +358,14 @@ Using Multiple Tapes
 GNU tar internals and development
 
 * Genfile::
+* Tar Internals::
+* Standard::
+* Extensions::
 * Snapshot Files::
 * Dumpdir::
 
 Copying This Manual
 
-* Free Software Needs Free Documentation::
 * GNU Free Documentation License::  License for copying this manual
 
 @end detailmenu
@@ -852,24 +865,38 @@ others.  We will use @option{--verbose} at times to help make something
 clear, and we will give many examples both using and not using
 @option{--verbose} to show the differences.
 
-Sometimes, a single instance of @option{--verbose} on the command line
-will show a full, @samp{ls} style listing of an archive or files,
-giving sizes, owners, and similar information. @FIXME{Describe the
-exact output format, e.g., how hard links are displayed.}
-Other times, @option{--verbose} will only show files or members that the particular
-operation is operating on at the time.  In the latter case, you can
-use @option{--verbose} twice in a command to get a listing such as that
-in the former case.  For example, instead of saying
+Each instance of @option{--verbose} on the command line increases the
+verbosity level by one, so if you need more details on the output, 
+specify it twice.
+
+When reading archives (@option{--list}, @option{--extract},
+@option{--diff}), @command{tar} by default prints only the names of
+the members being extracted.  Using @option{--verbose} will show a full,
+@command{ls} style member listing.
+
+In contrast, when writing archives (@option{--create}, @option{--append},
+@option{--update}), @command{tar} does not print file names by
+default.  So, a single @option{--verbose} option shows the file names
+being added to the archive, while two @option{--verbose} options
+enable the full listing.
+   
+For example, to create an archive in verbose mode:
 
 @smallexample
-@kbd{tar -cvf afiles.tar apple angst aspic}
+$ @kbd{tar -cvf afiles.tar apple angst aspic}
+apple
+angst
+aspic
 @end smallexample
 
 @noindent
-above, you might say
+Creating the same archive with the verbosity level 2 could give:
 
 @smallexample
-@kbd{tar -cvvf afiles.tar apple angst aspic}
+$ @kbd{tar -cvvf afiles.tar apple angst aspic}
+-rw-r--r-- gray/staff    62373 2006-06-09 12:06 apple
+-rw-r--r-- gray/staff    11481 2006-06-09 12:06 angst
+-rw-r--r-- gray/staff    23152 2006-06-09 12:06 aspic
 @end smallexample
 
 @noindent
@@ -886,6 +913,92 @@ Note that you must double the hyphens properly each time.
 
 Later in the tutorial, we will give examples using @w{@option{--verbose
 --verbose}}.
+
+The full output consists of six fields:
+
+@itemize @bullet
+@item File type and permissions in symbolic form.
+These are displayed in the same format as the first column of
+@command{ls -l} output (@pxref{What information is listed,
+format=verbose, Verbose listing, fileutils, GNU file utilities}).
+
+@item Owner name and group separated by a slash character.
+If these data are not available (for example, when listing a @samp{v7} format
+archive), numeric ID values are printed instead.
+
+@item Size of the file, in bytes.
+
+@item File modification date in ISO 8601 format.
+
+@item File modification time.
+
+@item File name.
+If the name contains any special characters (white space, newlines,
+etc.) these are displayed in an unambiguous form using so called
+@dfn{quoting style}.  For the detailed discussion of available styles
+and on how to use them, see @ref{quoting styles}.
+
+Depending on the file type, the name can be followed by some
+additional information, described in the following table:
+
+@table @samp
+@item -> @var{link-name}
+The file or archive member is a @dfn{symbolic link} and
+@var{link-name} is the name of file it links to.
+
+@item link to @var{link-name}
+The file or archive member is a @dfn{hard link} and @var{link-name} is
+the name of file it links to.
+
+@item --Long Link--
+The archive member is an old GNU format long link.  You will normally
+not encounter this.
+
+@item --Long Name--
+The archive member is an old GNU format long name.  You will normally
+not encounter this.
+
+@item --Volume Header--
+The archive member is a GNU @dfn{volume header} (@pxref{Tape Files}).
+
+@item --Continued at byte @var{n}--
+Encountered only at the beginning of a multy-volume archive
+(@pxref{Using Multiple Tapes}).  This archive member is a continuation
+from the previous volume. The number @var{n} gives the offset where
+the original file was split.  
+
+@item --Mangled file names--
+This archive member contains @dfn{mangled file names} declarations,
+a special member type that was used by early versions of @GNUTAR{}.
+You probably will never encounter this, unless you are reading a very
+old archive.
+
+@item  unknown file type @var{c}
+An archive member of unknown type. @var{c} is the type character from
+the archive header.  If you encounter such a message, it means that
+either your archive contains proprietary member types @GNUTAR{} is not
+able to handle, or the archive is corrupted.
+@end table
+
+@end itemize
+
+For example, here is an archive listing containing most of the special
+suffixes explained above:
+
+@smallexample
+@group
+V--------- 0/0          1536 2006-06-09 13:07 MyVolume--Volume Header--
+-rw-r--r-- gray/staff 456783 2006-06-09 12:06 aspic--Continued at
+byte 32456--
+-rw-r--r-- gray/staff  62373 2006-06-09 12:06 apple
+lrwxrwxrwx gray/staff      0 2006-06-09 13:01 angst -> apple
+-rw-r--r-- gray/staff  35793 2006-06-09 12:06 blues
+hrw-r--r-- gray/staff      0 2006-06-09 12:06 music link to blues
+@end group
+@end smallexample
+
+@smallexample
+@end smallexample
 
 @node help tutorial
 @unnumberedsubsec Getting Help: Using the @option{--help} Option
@@ -2287,7 +2400,7 @@ If this option was given, @command{tar} will check the number of links
 dumped for each processed file.  If this number does not match the
 total number of hard links for the file, a warning message will be
 output @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
-synonym for @option{--one-file-system}.  The current semantics, wich
+synonym for @option{--one-file-system}.  The current semantics, which
 complies to UNIX98, was introduced with version
 1.15.91. @xref{Changes}, for more information.}. 
 
@@ -2751,114 +2864,11 @@ package.
 
 @opindex pax-option, summary
 @item --pax-option=@var{keyword-list}
-@FIXME{Such a detailed description does not belong there, move it elsewhere.}
 This option is meaningful only with @acronym{POSIX.1-2001} archives
 (@pxref{posix}).  It modifies the way @command{tar} handles the
 extended header keywords.  @var{Keyword-list} is a comma-separated
-list of keyword options, each keyword option taking one of
-the following forms:
-
-@table @asis
-@item delete=@var{pattern}
-When used with one of archive-creation commands,
-this option instructs @command{tar} to omit from extended header records
-that it produces any keywords matching the string @var{pattern}.
-
-When used in extract or list mode, this option instructs tar
-to ignore any keywords matching the given @var{pattern} in the extended
-header records.  In both cases, matching is performed using the pattern
-matching notation described in @acronym{POSIX 1003.2}, 3.13
-(See @cite{glob(7)}). For example:
-
-@smallexample
---pax-option delete=security.*
-@end smallexample
-
-would suppress security-related information.
-
-@item exthdr.name=@var{string}
-
-This keyword allows user control over the name that is written into the
-ustar header blocks for the extended headers.  The name is obtained
-from @var{string} after making the following substitutions:
-
-@multitable @columnfractions .30 .70
-@headitem Meta-character @tab Replaced By
-@item %d @tab  The directory name of the file, equivalent to the
-result of the @command{dirname} utility on the translated pathname.
-@item %f @tab  The filename of the file, equivalent to the result
-of the @command{basename} utility on the translated pathname.
-@item %p @tab  The process ID of the @command{tar} process.
-@item %% @tab  A @samp{%} character.
-@end multitable
-
-Any other @samp{%} characters in @var{string} produce undefined
-results.
-
-If no option @samp{exthdr.name=string} is specified, @command{tar}
-will use the following default value:
-
-@smallexample
-%d/PaxHeaders.%p/%f
-@end smallexample
-
-@item globexthdr.name=@var{string}
-This keyword allows user control over the name that is written into
-the ustar header blocks for global extended header records.  The name
-is obtained from the contents of @var{string}, after making
-the following substitutions:
-
-@multitable @columnfractions .30 .70
-@headitem Meta-character @tab Replaced By
-@item %n @tab An integer that represents the
-sequence number of the global extended header record in the archive,
-starting at 1.
-@item %p @tab The process ID of the @command{tar} process.
-@item %% @tab A @samp{%} character.
-@end multitable
-
-Any other @samp{%} characters in @var{string} produce undefined results.
-
-If no option @samp{globexthdr.name=string} is specified, @command{tar}
-will use the following default value:
-
-@smallexample
-$TMPDIR/GlobalHead.%p.%n
-@end smallexample
-
-@noindent
-where @samp{$TMPDIR} represents the value of the @var{TMPDIR}
-environment variable.  If @var{TMPDIR} is not set, @command{tar}
-uses @samp{/tmp}.
-
-@item @var{keyword}=@var{value}
-When used with one of archive-creation commands, these keyword/value pairs
-will be included at the beginning of the archive in a global extended
-header record.  When used with one of archive-reading commands,
-@command{tar} will behave as if it has encountered these keyword/value
-pairs at the beginning of the archive in a global extended header
-record.
-
-@item @var{keyword}:=@var{value}
-When used with one of archive-creation commands, these keyword/value pairs
-will be included as records at the beginning of an extended header for
-each file.  This is effectively equivalent to @var{keyword}=@var{value}
-form except that it creates no global extended header records.
-
-When used with one of archive-reading commands, @command{tar} will
-behave as if these keyword/value pairs were included as records at the
-end of each extended header; thus, they will override any global or
-file-specific extended header record keywords of the same names.
-For example, in the command:
-
-@smallexample
-tar --format=posix --create \
-    --file archive --pax-option gname:=user .
-@end smallexample
-
-the group name will be forced to a new value for all files
-stored in the archive.
-@end table
+list of keyword options.  @xref{PAX keywords}, for a detailed
+discussion.
 
 @opindex portability, summary
 @item --portability
@@ -6468,7 +6478,7 @@ By default, inclusion members are compared with archive members
 literally @footnote{Notice that earlier @GNUTAR{} versions used 
 globbing for inclusion members, which contradicted to UNIX98
 specification and was not documented. @xref{Changes}, for more
-information on this and other changes} and exclusion members are
+information on this and other changes.} and exclusion members are
 treated as globbing patterns.  For example:
 
 @smallexample
@@ -6542,6 +6552,7 @@ below.  These options accumulate.  For example:
 --ignore-case --exclude='makefile' --no-ignore-case ---exclude='readme'
 @end smallexample
 
+@noindent
 ignores case when excluding @samp{makefile}, but not when excluding
 @samp{readme}.
 
@@ -6864,7 +6875,7 @@ First of all, it is often unsafe to extract archive members with
 absolute file names or those that begin with a @file{../}.  @GNUTAR{}
 takes special precautions when extracting such names and provides a
 special option for handling them, which is described in
-@xref{absolute}.
+@ref{absolute}.
 
 Secondly, you may wish to extract file names without some leading
 directory components, or with otherwise modified names.  In other
@@ -6907,6 +6918,7 @@ Display file or member names with all requested transformations
 applied.
 @end table
 
+@noindent
 For example:
 
 @smallexample
@@ -6975,7 +6987,7 @@ Use case-insensitive matching
 @item x
 @var{regexp} is an @dfn{extended regular expression} (@pxref{Extended
 regexps, Extended regular expressions, Extended regular expressions,
-sed, GNU sed}.
+sed, GNU sed}).
 
 @item @var{number}
 Only replace the @var{number}th match of the @var{regexp}.
@@ -7000,19 +7012,9 @@ s,one,two,
 @end group
 @end smallexample
 
-Changing of delimiter is often useful when the @var{regex} contains
-slashes.  For example, it is more convenient to write:
-
-@smallexample
-s,/,-,
-@end smallexample
-
-@noindent
-instead of
-
-@smallexample
-s/\//-/
-@end smallexample
+Changing delimiters is often useful when the @var{regex} contains
+slashes.  For example, it is more convenient to write @code{s,/,-,} than
+@code{s/\//-/}.
 
 Here are several examples of @option{--transform} usage:
 
@@ -7053,8 +7055,8 @@ component with @file{var/}:
 $ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' /}
 @end smallexample
 
-To test @option{--transform} effect we suggest to use
-@option{--show-transformed-names}:
+To test @option{--transform} effect we suggest using
+@option{--show-transformed-names} option:
 
 @smallexample
 $ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' \
@@ -7583,8 +7585,6 @@ switch to @samp{posix}.
 * Portability::                 Making @command{tar} Archives More Portable
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
-* Standard::                    The Standard Format
-* Extensions::                  @acronym{GNU} Extensions to the Archive Format
 * cpio::                        Comparison of @command{tar} and @command{cpio}
 @end menu
 
@@ -7733,11 +7733,133 @@ To force creation a @GNUTAR{} archive, use option
 
 @cindex POSIX archive format
 @cindex PAX archive format
-The version @value{VERSION} of @GNUTAR{} is able
-to read and create archives conforming to @acronym{POSIX.1-2001} standard.
+Starting from version 1.14 @GNUTAR{} features full support for
+@acronym{POSIX.1-2001} archives.
 
 A @acronym{POSIX} conformant archive will be created if @command{tar}
-was given @option{--format=posix} option.
+was given @option{--format=posix} (@option{--format=pax}) option.  No
+special option is required to read and extract from a @acronym{POSIX}
+archive. 
+
+@menu
+* PAX keywords:: Controlling Extended Header Keywords.
+@end menu
+
+@node PAX keywords
+@subsubsection Controlling Extended Header Keywords
+
+@table @option
+@opindex pax-option
+@item --pax-option=@var{keyword-list}
+Handle keywords in @acronym{PAX} extended headers.  This option is
+equivalent to @option{-o} option of the @command{pax} utility.
+@end table
+
+@var{Keyword-list} is a comma-separated
+list of keyword options, each keyword option taking one of
+the following forms:
+
+@table @code
+@item delete=@var{pattern}
+When used with one of archive-creation commands,
+this option instructs @command{tar} to omit from extended header records
+that it produces any keywords matching the string @var{pattern}.
+
+When used in extract or list mode, this option instructs tar
+to ignore any keywords matching the given @var{pattern} in the extended
+header records.  In both cases, matching is performed using the pattern
+matching notation described in @acronym{POSIX 1003.2}, 3.13
+(@pxref{wildcards}). For example:
+
+@smallexample
+--pax-option delete=security.*
+@end smallexample
+
+would suppress security-related information.
+
+@item exthdr.name=@var{string}
+
+This keyword allows user control over the name that is written into the
+ustar header blocks for the extended headers.  The name is obtained
+from @var{string} after making the following substitutions:
+
+@multitable @columnfractions .25 .55
+@headitem Meta-character @tab Replaced By
+@item %d @tab  The directory name of the file, equivalent to the
+result of the @command{dirname} utility on the translated pathname.
+@item %f @tab  The filename of the file, equivalent to the result
+of the @command{basename} utility on the translated pathname.
+@item %p @tab  The process ID of the @command{tar} process.
+@item %% @tab  A @samp{%} character.
+@end multitable
+
+Any other @samp{%} characters in @var{string} produce undefined
+results.
+
+If no option @samp{exthdr.name=string} is specified, @command{tar}
+will use the following default value:
+
+@smallexample
+%d/PaxHeaders.%p/%f
+@end smallexample
+
+@item globexthdr.name=@var{string}
+This keyword allows user control over the name that is written into
+the ustar header blocks for global extended header records.  The name
+is obtained from the contents of @var{string}, after making
+the following substitutions:
+
+@multitable @columnfractions .25 .55
+@headitem Meta-character @tab Replaced By
+@item %n @tab An integer that represents the
+sequence number of the global extended header record in the archive,
+starting at 1.
+@item %p @tab The process ID of the @command{tar} process.
+@item %% @tab A @samp{%} character.
+@end multitable
+
+Any other @samp{%} characters in @var{string} produce undefined results.
+
+If no option @samp{globexthdr.name=string} is specified, @command{tar}
+will use the following default value:
+
+@smallexample
+$TMPDIR/GlobalHead.%p.%n
+@end smallexample
+
+@noindent
+where @samp{$TMPDIR} represents the value of the @var{TMPDIR}
+environment variable.  If @var{TMPDIR} is not set, @command{tar}
+uses @samp{/tmp}.
+
+@item @var{keyword}=@var{value}
+When used with one of archive-creation commands, these keyword/value pairs
+will be included at the beginning of the archive in a global extended
+header record.  When used with one of archive-reading commands,
+@command{tar} will behave as if it has encountered these keyword/value
+pairs at the beginning of the archive in a global extended header
+record.
+
+@item @var{keyword}:=@var{value}
+When used with one of archive-creation commands, these keyword/value pairs
+will be included as records at the beginning of an extended header for
+each file.  This is effectively equivalent to @var{keyword}=@var{value}
+form except that it creates no global extended header records.
+
+When used with one of archive-reading commands, @command{tar} will
+behave as if these keyword/value pairs were included as records at the
+end of each extended header; thus, they will override any global or
+file-specific extended header record keywords of the same names.
+For example, in the command:
+
+@smallexample
+tar --format=posix --create \
+    --file archive --pax-option gname:=user .
+@end smallexample
+
+the group name will be forced to a new value for all files
+stored in the archive.
+@end table
 
 @node Checksumming
 @subsection Checksumming Problems
@@ -7964,8 +8086,8 @@ The @option{--use-compress-program} option, in particular, lets you
 implement your own filters, not necessarily dealing with
 compression/decomression.  For example, suppose you wish to implement
 PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
-gpg, gpg ---- encryption and signing tool, gpg}).  The following
-script does that: 
+gpg, gpg ---- encryption and signing tool, gpg, GNU Privacy Guard
+Manual}).  The following script does that:  
 
 @smallexample
 @group
@@ -8288,316 +8410,6 @@ It is equivalent to @option{--same-permissions} plus @option{--same-order}.
 Neither do I. --Sergey}
 
 @end table
-
-@node Standard
-@section Basic Tar Format
-@UNREVISED
-
-While an archive may contain many files, the archive itself is a
-single ordinary file.  Like any other file, an archive file can be
-written to a storage device such as a tape or disk, sent through a
-pipe or over a network, saved on the active file system, or even
-stored in another archive.  An archive file is not easy to read or
-manipulate without using the @command{tar} utility or Tar mode in
-@acronym{GNU} Emacs.
-
-Physically, an archive consists of a series of file entries terminated
-by an end-of-archive entry, which consists of two 512 blocks of zero
-bytes.  A file
-entry usually describes one of the files in the archive (an
-@dfn{archive member}), and consists of a file header and the contents
-of the file.  File headers contain file names and statistics, checksum
-information which @command{tar} uses to detect file corruption, and
-information about file types.
-
-Archives are permitted to have more than one member with the same
-member name.  One way this situation can occur is if more than one
-version of a file has been stored in the archive.  For information
-about adding new versions of a file to an archive, see @ref{update}.
-@FIXME-xref{To learn more about having more than one archive member with the
-same name, see -backup node, when it's written.}
-
-In addition to entries describing archive members, an archive may
-contain entries which @command{tar} itself uses to store information.
-@xref{label}, for an example of such an archive entry.
-
-A @command{tar} archive file contains a series of blocks.  Each block
-contains @code{BLOCKSIZE} bytes.  Although this format may be thought
-of as being on magnetic tape, other media are often used.
-
-Each file archived is represented by a header block which describes
-the file, followed by zero or more blocks which give the contents
-of the file.  At the end of the archive file there are two 512-byte blocks
-filled with binary zeros as an end-of-file marker.  A reasonable system
-should write such end-of-file marker at the end of an archive, but
-must not assume that such a block exists when reading an archive.  In
-particular @GNUTAR{} always issues a warning if it does not encounter it.
-
-The blocks may be @dfn{blocked} for physical I/O operations.
-Each record of @var{n} blocks (where @var{n} is set by the
-@option{--blocking-factor=@var{512-size}} (@option{-b @var{512-size}}) option to @command{tar}) is written with a single
-@w{@samp{write ()}} operation.  On magnetic tapes, the result of
-such a write is a single record.  When writing an archive,
-the last record of blocks should be written at the full size, with
-blocks after the zero block containing all zeros.  When reading
-an archive, a reasonable system should properly handle an archive
-whose last record is shorter than the rest, or which contains garbage
-records after a zero block.
-
-The header block is defined in C as follows.  In the @GNUTAR{}
-distribution, this is part of file @file{src/tar.h}:
-
-@smallexample
-@include header.texi
-@end smallexample
-
-All characters in header blocks are represented by using 8-bit
-characters in the local variant of ASCII.  Each field within the
-structure is contiguous; that is, there is no padding used within
-the structure.  Each character on the archive medium is stored
-contiguously.
-
-Bytes representing the contents of files (after the header block
-of each file) are not translated in any way and are not constrained
-to represent characters in any character set.  The @command{tar} format
-does not distinguish text files from binary files, and no translation
-of file contents is performed.
-
-The @code{name}, @code{linkname}, @code{magic}, @code{uname}, and
-@code{gname} are null-terminated character strings.  All other fields
-are zero-filled octal numbers in ASCII.  Each numeric field of width
-@var{w} contains @var{w} minus 1 digits, and a null.
-
-The @code{name} field is the file name of the file, with directory names
-(if any) preceding the file name, separated by slashes.
-
-@FIXME{how big a name before field overflows?}
-
-The @code{mode} field provides nine bits specifying file permissions
-and three bits to specify the Set UID, Set GID, and Save Text
-(@dfn{sticky}) modes.  Values for these bits are defined above.
-When special permissions are required to create a file with a given
-mode, and the user restoring files from the archive does not hold such
-permissions, the mode bit(s) specifying those special permissions
-are ignored.  Modes which are not supported by the operating system
-restoring files from the archive will be ignored.  Unsupported modes
-should be faked up when creating or updating an archive; e.g., the
-group permission could be copied from the @emph{other} permission.
-
-The @code{uid} and @code{gid} fields are the numeric user and group
-ID of the file owners, respectively.  If the operating system does
-not support numeric user or group IDs, these fields should be ignored.
-
-The @code{size} field is the size of the file in bytes; linked files
-are archived with this field specified as zero.  @FIXME-xref{Modifiers, in
-particular the @option{--incremental} (@option{-G}) option.}
-
-The @code{mtime} field is the data modification time of the file at
-the time it was archived.  It is the ASCII representation of the octal
-value of the last time the file's contents were modified, represented
-as an integer number of
-seconds since January 1, 1970, 00:00 Coordinated Universal Time.
-
-The @code{chksum} field is the ASCII representation of the octal value
-of the simple sum of all bytes in the header block.  Each 8-bit
-byte in the header is added to an unsigned integer, initialized to
-zero, the precision of which shall be no less than seventeen bits.
-When calculating the checksum, the @code{chksum} field is treated as
-if it were all blanks.
-
-The @code{typeflag} field specifies the type of file archived.  If a
-particular implementation does not recognize or permit the specified
-type, the file will be extracted as if it were a regular file.  As this
-action occurs, @command{tar} issues a warning to the standard error.
-
-The @code{atime} and @code{ctime} fields are used in making incremental
-backups; they store, respectively, the particular file's access and
-status change times.
-
-The @code{offset} is used by the @option{--multi-volume} (@option{-M}) option, when
-making a multi-volume archive.  The offset is number of bytes into
-the file that we need to restart at to continue the file on the next
-tape, i.e., where we store the location that a continued file is
-continued at.
-
-The following fields were added to deal with sparse files.  A file
-is @dfn{sparse} if it takes in unallocated blocks which end up being
-represented as zeros, i.e., no useful data.  A test to see if a file
-is sparse is to look at the number blocks allocated for it versus the
-number of characters in the file; if there are fewer blocks allocated
-for the file than would normally be allocated for a file of that
-size, then the file is sparse.  This is the method @command{tar} uses to
-detect a sparse file, and once such a file is detected, it is treated
-differently from non-sparse files.
-
-Sparse files are often @code{dbm} files, or other database-type files
-which have data at some points and emptiness in the greater part of
-the file.  Such files can appear to be very large when an @samp{ls
--l} is done on them, when in truth, there may be a very small amount
-of important data contained in the file.  It is thus undesirable
-to have @command{tar} think that it must back up this entire file, as
-great quantities of room are wasted on empty blocks, which can lead
-to running out of room on a tape far earlier than is necessary.
-Thus, sparse files are dealt with so that these empty blocks are
-not written to the tape.  Instead, what is written to the tape is a
-description, of sorts, of the sparse file: where the holes are, how
-big the holes are, and how much data is found at the end of the hole.
-This way, the file takes up potentially far less room on the tape,
-and when the file is extracted later on, it will look exactly the way
-it looked beforehand.  The following is a description of the fields
-used to handle a sparse file:
-
-The @code{sp} is an array of @code{struct sparse}.  Each @code{struct
-sparse} contains two 12-character strings which represent an offset
-into the file and a number of bytes to be written at that offset.
-The offset is absolute, and not relative to the offset in preceding
-array element.
-
-The header can hold four of these @code{struct sparse} at the moment;
-if more are needed, they are not stored in the header.
-
-The @code{isextended} flag is set when an @code{extended_header}
-is needed to deal with a file.  Note that this means that this flag
-can only be set when dealing with a sparse file, and it is only set
-in the event that the description of the file will not fit in the
-allotted room for sparse structures in the header.  In other words,
-an extended_header is needed.
-
-The @code{extended_header} structure is used for sparse files which
-need more sparse structures than can fit in the header.  The header can
-fit 4 such structures; if more are needed, the flag @code{isextended}
-gets set and the next block is an @code{extended_header}.
-
-Each @code{extended_header} structure contains an array of 21
-sparse structures, along with a similar @code{isextended} flag
-that the header had.  There can be an indeterminate number of such
-@code{extended_header}s to describe a sparse file.
-
-@table @asis
-
-@item @code{REGTYPE}
-@itemx @code{AREGTYPE}
-These flags represent a regular file.  In order to be compatible
-with older versions of @command{tar}, a @code{typeflag} value of
-@code{AREGTYPE} should be silently recognized as a regular file.
-New archives should be created using @code{REGTYPE}.  Also, for
-backward compatibility, @command{tar} treats a regular file whose name
-ends with a slash as a directory.
-
-@item @code{LNKTYPE}
-This flag represents a file linked to another file, of any type,
-previously archived.  Such files are identified in Unix by each
-file having the same device and inode number.  The linked-to name is
-specified in the @code{linkname} field with a trailing null.
-
-@item @code{SYMTYPE}
-This represents a symbolic link to another file.  The linked-to name
-is specified in the @code{linkname} field with a trailing null.
-
-@item @code{CHRTYPE}
-@itemx @code{BLKTYPE}
-These represent character special files and block special files
-respectively.  In this case the @code{devmajor} and @code{devminor}
-fields will contain the major and minor device numbers respectively.
-Operating systems may map the device specifications to their own
-local specification, or may ignore the entry.
-
-@item @code{DIRTYPE}
-This flag specifies a directory or sub-directory.  The directory
-name in the @code{name} field should end with a slash.  On systems where
-disk allocation is performed on a directory basis, the @code{size} field
-will contain the maximum number of bytes (which may be rounded to
-the nearest disk block allocation unit) which the directory may
-hold.  A @code{size} field of zero indicates no such limiting.  Systems
-which do not support limiting in this manner should ignore the
-@code{size} field.
-
-@item @code{FIFOTYPE}
-This specifies a FIFO special file.  Note that the archiving of a
-FIFO file archives the existence of this file and not its contents.
-
-@item @code{CONTTYPE}
-This specifies a contiguous file, which is the same as a normal
-file except that, in operating systems which support it, all its
-space is allocated contiguously on the disk.  Operating systems
-which do not allow contiguous allocation should silently treat this
-type as a normal file.
-
-@item @code{A} @dots{} @code{Z}
-These are reserved for custom implementations.  Some of these are
-used in the @acronym{GNU} modified format, as described below.
-
-@end table
-
-Other values are reserved for specification in future revisions of
-the P1003 standard, and should not be used by any @command{tar} program.
-
-The @code{magic} field indicates that this archive was output in
-the P1003 archive format.  If this field contains @code{TMAGIC},
-the @code{uname} and @code{gname} fields will contain the ASCII
-representation of the owner and group of the file respectively.
-If found, the user and group IDs are used rather than the values in
-the @code{uid} and @code{gid} fields.
-
-For references, see ISO/IEC 9945-1:1990 or IEEE Std 1003.1-1990, pages
-169-173 (section 10.1) for @cite{Archive/Interchange File Format}; and
-IEEE Std 1003.2-1992, pages 380-388 (section 4.48) and pages 936-940
-(section E.4.48) for @cite{pax - Portable archive interchange}.
-
-@node Extensions
-@section @acronym{GNU} Extensions to the Archive Format
-@UNREVISED
-
-The @acronym{GNU} format uses additional file types to describe new types of
-files in an archive.  These are listed below.
-
-@table @code
-@item GNUTYPE_DUMPDIR
-@itemx 'D'
-This represents a directory and a list of files created by the
-@option{--incremental} (@option{-G}) option.  The @code{size} field gives the total
-size of the associated list of files.  Each file name is preceded by
-either a @samp{Y} (the file should be in this archive) or an @samp{N}.
-(The file is a directory, or is not stored in the archive.)  Each file
-name is terminated by a null.  There is an additional null after the
-last file name.
-
-@item GNUTYPE_MULTIVOL
-@itemx 'M'
-This represents a file continued from another volume of a multi-volume
-archive created with the @option{--multi-volume} (@option{-M}) option.  The original
-type of the file is not given here.  The @code{size} field gives the
-maximum size of this piece of the file (assuming the volume does
-not end before the file is written out).  The @code{offset} field
-gives the offset from the beginning of the file where this part of
-the file begins.  Thus @code{size} plus @code{offset} should equal
-the original size of the file.
-
-@item GNUTYPE_SPARSE
-@itemx 'S'
-This flag indicates that we are dealing with a sparse file.  Note
-that archiving a sparse file requires special operations to find
-holes in the file, which mark the positions of these holes, along
-with the number of bytes of data to be found after the hole.
-
-@item GNUTYPE_VOLHDR
-@itemx 'V'
-This file type is used to mark the volume header that was given with
-the @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) option when the archive was created.  The @code{name}
-field contains the @code{name} given after the @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) option.
-The @code{size} field is zero.  Only the first file in each volume
-of an archive should have this type.
-
-@end table
-
-You may have trouble reading a @acronym{GNU} format archive on a
-non-@acronym{GNU} system if the options @option{--incremental} (@option{-G}),
-@option{--multi-volume} (@option{-M}), @option{--sparse} (@option{-S}), or @option{--label=@var{archive-label}} (@option{-V @var{archive-label}}) were
-used when writing the archive.  In general, if @command{tar} does not
-use the @acronym{GNU}-added fields of the header, other versions of
-@command{tar} should be able to read the archive.  Otherwise, the
-@command{tar} program will give an error, the most likely one being a
-checksum error.
 
 @node cpio
 @section Comparison of @command{tar} and @command{cpio}
@@ -9655,7 +9467,7 @@ Ordinal number of the volume @command{tar} is about to start.
 
 @vrindex TAR_SUBCOMMAND, info script environment variable
 @item TAR_SUBCOMMAND
-Short option describing the operation @command{tar} is executed.
+Short option describing the operation @command{tar} is executing
 @xref{Operations}, for a complete list of subcommand options.
 
 @vrindex TAR_FORMAT, info script environment variable
@@ -10438,13 +10250,9 @@ Right margin of the text output. Used for wrapping.
 @appendix Genfile
 @include genfile.texi
 
-@node Snapshot Files
-@appendix Format of the Incremental Snapshot Files
-@include snapshot.texi
-
-@node Dumpdir
-@appendix Dumpdir
-@include dumpdir.texi
+@node Tar Internals
+@appendix Tar Internals
+@include intern.texi
 
 @node Free Software Needs Free Documentation
 @appendix Free Software Needs Free Documentation
