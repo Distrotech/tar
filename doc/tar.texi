@@ -10,7 +10,6 @@
 @smallbook
 @c %**end of header
 
-@include config.texi
 @include rendition.texi
 @include value.texi
 
