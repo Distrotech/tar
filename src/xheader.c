@@ -157,7 +157,7 @@ xheader_list_destroy (struct keyword_list **root)
 static void
 xheader_set_single_keyword (char *kw)
 {
-  USAGE_ERROR ((0, 0, _("Keyword %s is unknown or not yet imlemented"), kw));
+  USAGE_ERROR ((0, 0, _("Keyword %s is unknown or not yet implemented"), kw));
 }
 
 static void
@@ -836,8 +836,15 @@ code_time (struct timespec t, char const *keyword, struct xheader *xhdr)
   xheader_print (xhdr, keyword, code_timespec (t, buf));
 }
 
-static bool
-decode_time (struct timespec *ts, char const *arg, char const *keyword)
+enum decode_time_status
+  {
+    decode_time_success,
+    decode_time_range,
+    decode_time_bad_header
+  };
+
+static enum decode_time_status
+_decode_time (struct timespec *ts, char const *arg, char const *keyword)
 {
   time_t s;
   unsigned long int ns = 0;
@@ -853,21 +860,21 @@ decode_time (struct timespec *ts, char const *arg, char const *keyword)
 	{
 	  intmax_t i = strtoimax (arg, &arg_lim, 10);
 	  if (TYPE_SIGNED (time_t) ? i < TYPE_MINIMUM (time_t) : i < 0)
-	    goto out_of_range;
+	    return decode_time_range;
 	  s = i;
 	}
       else
 	{
 	  uintmax_t i = strtoumax (arg, &arg_lim, 10);
 	  if (TYPE_MAXIMUM (time_t) < i)
-	    goto out_of_range;
+	    return decode_time_range;
 	  s = i;
 	}
 
       p = arg_lim;
 
       if (errno == ERANGE)
-	goto out_of_range;
+	return decode_time_range;
 
       if (*p == '.')
 	{
@@ -895,7 +902,7 @@ decode_time (struct timespec *ts, char const *arg, char const *keyword)
 	      if (ns != 0)
 		{
 		  if (s == TYPE_MINIMUM (time_t))
-		    goto out_of_range;
+		    return decode_time_range;
 		  s--;
 		  ns = BILLION - ns;
 		}
@@ -906,19 +913,33 @@ decode_time (struct timespec *ts, char const *arg, char const *keyword)
 	{
 	  ts->tv_sec = s;
 	  ts->tv_nsec = ns;
-	  return true;
+	  return decode_time_success;
 	}
     }
 
-  ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
-	  keyword, arg));
-  return false;
-
- out_of_range:
-  out_of_range_header (keyword, arg, - (uintmax_t) TYPE_MINIMUM (time_t),
-		       TYPE_MAXIMUM (time_t));
-  return false;
+  return decode_time_bad_header;
 }
+
+static bool
+decode_time (struct timespec *ts, char const *arg, char const *keyword)
+{
+  switch (_decode_time (ts, arg, keyword))
+    {
+    case decode_time_success:
+      return true;
+    case decode_time_bad_header:
+      ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
+	      keyword, arg));
+      return false;
+    case decode_time_range:
+      out_of_range_header (keyword, arg, - (uintmax_t) TYPE_MINIMUM (time_t),
+			   TYPE_MAXIMUM (time_t));
+      return false;
+    }
+  return true;
+}
+
+  
 
 static void
 code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
