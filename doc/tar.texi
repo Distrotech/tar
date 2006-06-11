@@ -79,8 +79,13 @@ The first part of this master menu lists the major nodes in this Info
 document.  The rest of the menu lists all the lower level nodes.
 @end ifnottex
 
-@c The master menu, created with texinfo-master-menu, goes here.
-@c FIXME: Submenus for getdate.texi and intern.texi are interpolated by hand.
+@c The master menu goes here.
+@c
+@c NOTE: To update it from within Emacs, make sure mastermenu.el is
+@c loaded and run texinfo-master-menu.
+@c To update it from the command line, run
+@c
+@c    make master-menu
 
 @menu
 * Introduction::
@@ -287,24 +292,25 @@ Crossing File System Boundaries
 * directory::                   Changing Directory
 * absolute::                    Absolute File Names
 
+Date input formats
+
+* General date syntax::            Common rules.
+* Calendar date items::            19 Dec 1994.
+* Time of day items::              9:20pm.
+* Time zone items::                @sc{est}, @sc{pdt}, @sc{gmt}.
+* Day of week items::              Monday and others.
+* Relative items in date strings:: next tuesday, 2 years ago.
+* Pure numbers in date strings::   19931219, 1440.
+* Seconds since the Epoch::        @@1078100502.
+* Specifying time zone rules::     TZ="America/New_York", TZ="UTC0".
+* Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
+
 Controlling the Archive Format
 
 * Portability::                 Making @command{tar} Archives More Portable
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
 * cpio::                        Comparison of @command{tar} and @command{cpio}
-
-Date input formats
-
-* General date syntax::            Common rules.
-* Calendar date items::            19 Dec 1994.
-* Time of day items::              9:20pm.
-* Time zone items::                @sc{est}, @sc{pdt}, @sc{gmt}, ...
-* Day of week items::              Monday and others.
-* Relative items in date strings:: next tuesday, 2 years ago.
-* Pure numbers in date strings::   19931219, 1440.
-* Seconds since the Epoch::        @@1078100502.
-* Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
 
 Making @command{tar} Archives More Portable
 
@@ -354,12 +360,17 @@ Using Multiple Tapes
 * Tape Files::                  Tape Files
 * Tarcat::                      Concatenate Volumes into a Single Archive
 
-GNU tar internals and development
 
-* Genfile::
-* Tar Internals::
-* Standard::
-* Extensions::
+Genfile
+
+* Generate Mode::     File Generation Mode.
+* Status Mode::       File Status Mode.
+* Exec Mode::         Synchronous Execution mode.
+
+Tar Internals
+
+* Standard::           Basic Tar Format
+* Extensions::         @acronym{GNU} Extensions to the Archive Format
 * Snapshot Files::
 * Dumpdir::
 
