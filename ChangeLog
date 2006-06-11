@@ -1,5 +1,8 @@
 2006-06-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/xheader.c (xheader_set_single_keyword): Fix typo.
+	(decode_time): Avoid using gotos.
+
 	* doc/mastermenu.el: New file
 	* doc/Makefile.am (master-menu): New goal
 	* doc/tar.texi: Update master menu
