@@ -29,7 +29,7 @@ tar_TEXINFOS = \
  rendition.texi\
  snapshot.texi\
  value.texi
-EXTRA_DIST = gendocs_template texify.sed
+EXTRA_DIST = gendocs_template mastermenu.el texify.sed
 DISTCLEANFILES=*.info* 
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
@@ -41,6 +41,9 @@ MAKEINFOFLAGS=-D$(RENDITION)
 header.texi: $(top_srcdir)/src/tar.h
 	sed -f $(srcdir)/texify.sed $(top_srcdir)/src/tar.h \
 	  | expand >$@
+
+master-menu: $(tar_TEXINFOS)
+	emacs -batch -l mastermenu.el -f make-master-menu $(info_TEXINFOS)
 
 clean-local:
 	rm -rf manual
