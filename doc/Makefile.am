@@ -45,6 +45,26 @@ header.texi: $(top_srcdir)/src/tar.h
 master-menu: $(tar_TEXINFOS)
 	emacs -batch -l mastermenu.el -f make-master-menu $(info_TEXINFOS)
 
+check-options:
+	@ARGP_HELP_FMT='usage-indent=0,short-opt-col=0,long-opt-col=0,\
+doc-opt-col=0,opt-doc-col=0,header-col=0,rmargin=1' \
+	$(top_builddir)/src/tar --usage | \
+	sed -n 's/^\[--\([^]\=\[]*\).*/\1/p' | sort | uniq > opts.$$$$;\
+	sed -n 's/@opindex *\([^,]*\)$$/\1/p;s/@opindex *\(.*\),.*/\1/p' \
+	    $(info_TEXINFOS) | sort | uniq > docs.$$$$;\
+	(echo 'Not documented options:';\
+	 join -v1 opts.$$$$ docs.$$$$;\
+	 echo 'Non-existing options:';\
+	 join -v2 opts.$$$$ docs.$$$$) > report.$$$$;\
+	 rm opts.$$$$ docs.$$$$;\
+	 if [ -n "`sed '1,2d' report.$$$$`" ]; then \
+	   cat report.$$$$;\
+	   rm report.$$$$;\
+	   exit 1;\
+	 fi;\
+	 rm report.$$$$
+
+
 clean-local:
 	rm -rf manual
 
