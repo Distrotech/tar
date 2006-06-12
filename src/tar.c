@@ -657,8 +657,11 @@ static struct argp_option options[] = {
    GRID+1 },
   {"check-links", 'l', 0, 0,
    N_("print a message if not all links are dumped"), GRID+1 },
-  {"totals", TOTALS_OPTION, 0, 0,
-   N_("print total bytes written while creating archive"), GRID+1 },
+  {"totals", TOTALS_OPTION, N_("SIGNAL"), OPTION_ARG_OPTIONAL,
+   N_("print total bytes after processing the archive; "
+      "with an argument - print total bytes when this SIGNAL is delivered; "
+      "Allowed signals are: SIGHUP, SIGQUIT, SIGINT, SIGUSR1 and SIGUSR2; "
+      "the names without SIG prefix are also accepted"), GRID+1 },
   {"utc", UTC_OPTION, 0, 0,
    N_("print file modification dates in UTC"), GRID+1 },
   {"index-file", INDEX_FILE_OPTION, N_("FILE"), 0,
@@ -814,7 +817,62 @@ set_use_compress_program_option (const char *string)
 
   use_compress_program_option = string;
 }
+
+static RETSIGTYPE
+sigstat (int signo)
+{
+  compute_duration ();
+  print_total_stats ();
+#ifndef HAVE_SIGACTION
+  signal (signo, sigstat);
+#endif
+}
 
+static void
+stat_on_signal (int signo)
+{
+#ifdef HAVE_SIGACTION
+  struct sigaction act;
+  act.sa_handler = sigstat;
+  sigemptyset (&act.sa_mask);
+  act.sa_flags = 0;
+  sigaction (signo, &act, NULL);
+#else
+  signal (signo, sigstat);
+#endif
+}
+
+void
+set_stat_signal (const char *name)
+{
+  static struct sigtab
+  {
+    char *name;
+    int signo;
+  } sigtab[] = {
+    { "SIGUSR1", SIGUSR1 },
+    { "USR1", SIGUSR1 },
+    { "SIGUSR2", SIGUSR2 },
+    { "USR2", SIGUSR2 },
+    { "SIGHUP", SIGHUP },
+    { "HUP", SIGHUP },
+    { "SIGINT", SIGINT },
+    { "INT", SIGINT },
+    { "SIGQUIT", SIGQUIT },
+    { "QUIT", SIGQUIT }
+  };
+  struct sigtab *p;
+  
+  for (p = sigtab; p < sigtab + sizeof (sigtab) / sizeof (sigtab[0]); p++)
+    if (strcmp (p->name, name) == 0)
+      {
+	stat_on_signal (p->signo);
+	return;
+      }
+  FATAL_ERROR ((0, 0, _("Unknown signal name: %s"), name));
+}
+
+
 static volatile int _argp_hang;
 
 enum read_file_list_state  /* Result of reading file name from the list file */
@@ -1576,7 +1634,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case TOTALS_OPTION:
-      totals_option = true;
+      if (arg)
+	set_stat_signal (arg);
+      else
+	totals_option = true;
       break;
 
     case TRANSFORM_OPTION:
@@ -2150,8 +2211,6 @@ main (int argc, char **argv)
 
     case CREATE_SUBCOMMAND:
       create_archive ();
-      if (totals_option)
-	print_total_written ();
       break;
 
     case EXTRACT_SUBCOMMAND:
@@ -2173,6 +2232,9 @@ main (int argc, char **argv)
       read_and (diff_archive);
       break;
     }
+
+  if (totals_option)
+    print_total_stats ();
 
   if (check_links_option)
     check_links ();
