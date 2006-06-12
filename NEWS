@@ -74,10 +74,19 @@ for example, while comparing `tar cv' and `tar tv' outputs.
 ** New incremental snapshot file format keeps information about file names 
 as well as that about directories.
 
-** Option --checkpoint takes an optional argument specifying the number
+** The --checkpoint option takes an optional argument specifying the number
 of records between the two successive checkpoints.   Optional dot
 starting the argument intructs tar to print dots instead of textual
 checkpoints. 
+
+** The --totals option can be used with any tar operation (previous versions
+understood it only with --create).  If an argument to this option is
+given, it specifies the signal upon delivery of which the statistics
+is to be printed.  Both forms of this option (with and without
+argument) can be given to in a single invocation of tar.
+
+* Bug fixes
+** Detect attempts to update compressed archives.
 
 
 version 1.15.90 - Sergey Poznyakoff, 2006-02-19
