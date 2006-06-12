@@ -39,7 +39,7 @@ extern off_t records_written;
 
 /* The number of records skipped at the start of the archive, when
    passing over members that are not deleted.  */
-static off_t records_skipped;
+off_t records_skipped;
 
 /* Move archive descriptor by COUNT records worth.  If COUNT is
    positive we move forward, else we move negative.  If it's a tape,
@@ -294,7 +294,7 @@ delete_archive_members (void)
 		  set_next_block_after (current_header);
 		  blocks_to_skip = (current_stat_info.stat.st_size
 				    + BLOCKSIZE - 1) / BLOCKSIZE;
-
+		  
 		  while (record_end - current_block <= blocks_to_skip)
 		    {
 		      blocks_to_skip -= (record_end - current_block);
