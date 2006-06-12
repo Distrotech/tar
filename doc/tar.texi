@@ -3078,10 +3078,12 @@ During extraction, @command{tar} will extract files to stdout rather
 than to the file system.  @xref{Writing to Standard Output}.
 
 @opindex totals, summary
-@item --totals
+@item --totals[=@var{signo}]
 
-Displays the total number of bytes written after creating an archive.
-@xref{verbose}.
+Displays the total number of bytes transferred when processing an
+archive.  If an argument is given, these data are displayed on
+request, when signal @var{signo} is delivered to @command{tar}.
+@xref{totals}.
 
 @opindex touch, summary
 @item --touch
@@ -3512,11 +3514,62 @@ If @option{--index-file=@var{file}} is specified, @command{tar} sends
 verbose output to @var{file} rather than to standard output or standard
 error.
 
+@anchor{totals}
 @cindex Obtaining total status information
 @opindex totals
-The @option{--totals} option---which is only meaningful when used with
-@option{--create} (@option{-c})---causes @command{tar} to print the total
-amount written to the archive, after it has been fully created.
+The @option{--totals} option causes @command{tar} to print on the
+standard error the total amount of bytes transferred when processing
+an archive.  When creating or appending to an archive, this option
+prints the number of bytes written to the archive and the average
+speed at which they have been written, e.g.:
+
+@smallexample
+@group
+$ @kbd{tar -c -f archive.tar --totals /home}
+Total bytes written: 7924664320 (7.4GiB, 85MiB/s)
+@end group
+@end smallexample
+
+When reading an archive, this option displays the number of bytes
+read:
+
+@smallexample
+@group
+$ @kbd{tar -x -f archive.tar --totals}
+Total bytes read: 7924664320 (7.4GiB, 95MiB/s)
+@end group
+@end smallexample
+
+Finally, when deleting from an archive, the @option{--totals} option
+displays both numbers plus number of bytes removed from the archive:
+
+@smallexample
+@group
+$ @kbd{tar --delete -f foo.tar --totals --wildcards '*~'}
+Total bytes read: 9543680 (9.2MiB, 201MiB/s)
+Total bytes written: 3829760 (3.7MiB, 81MiB/s)
+Total bytes deleted: 1474048
+@end group
+@end smallexample
+
+You can also obtain this information on request.  When
+@option{--totals} is used with an argument, this argument is
+interpreted as a symbolic name of a signal, upon delivery of which the
+statistics is to be printed:
+
+@table @option
+@item --totals=@var{signo}
+Print statistics upon delivery of signal @var{signo}.  Valid arguments
+are: @code{SIGHUP}, @code{SIGQUIT}, @code{SIGINT}, @code{SIGUSR1} and
+@code{SIGUSR2}.  Shortened names without @samp{SIG} prefix are also
+accepted. 
+@end table
+
+Both forms of @option{--totals} option can be used simultaneously.
+Thus, @kbd{tar -x --totals --totals=USR1} instructs @command{tar} to
+extract all members from its default archive and print statistics
+after finishing the extraction, as well as when receiving signal
+@code{SIGUSR1}. 
 
 @anchor{Progress information}
 @cindex Progress information
