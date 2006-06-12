@@ -281,6 +281,7 @@ enum
   OCCURRENCE_OPTION,
   OLD_ARCHIVE_OPTION,
   ONE_FILE_SYSTEM_OPTION,
+  OVERWRITE_DIR_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
   PAX_OPTION,
@@ -416,6 +417,9 @@ static struct argp_option options[] = {
    N_("empty hierarchies prior to extracting directory"), GRID+1 },
   {"no-overwrite-dir", NO_OVERWRITE_DIR_OPTION, 0, 0,
    N_("preserve metadata of existing directories"), GRID+1 },
+  {"overwrite-dir", OVERWRITE_DIR_OPTION, 0, 0,
+   N_("overwrite metadata of existing directories when extracting (default)"),
+   GRID+1 },
 #undef GRID
 
 #define GRID 40
@@ -1519,6 +1523,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
 			  _("Invalid number")));
 	}
+      break;
+
+    case OVERWRITE_DIR_OPTION:
+      old_files_option = DEFAULT_OLD_FILES;
       break;
 
     case OVERWRITE_OPTION:
