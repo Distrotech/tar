@@ -10,6 +10,13 @@
 @smallbook
 @c %**end of header
 
+@c Maintenance notes:
+@c  1. Pay attention to @FIXME{}s and @UNREVISED{}s
+@c  2. Before creating final variant:
+@c    1.1. Run `make check-options' to make sure all options are properly
+@c         documented;
+@c    2.1. Run `make master-menu' (see comment before the master menu).
+
 @include rendition.texi
 @include value.texi
 
@@ -924,6 +931,7 @@ Note that you must double the hyphens properly each time.
 Later in the tutorial, we will give examples using @w{@option{--verbose
 --verbose}}.
 
+@anchor{verbose member listing}
 The full output consists of six fields:
 
 @itemize @bullet
@@ -1387,7 +1395,8 @@ Be sure to use a @option{--file=@var{archive-name}} (@option{-f
 @opindex verbose, using with @option{--list}
 If you use the @option{--verbose} (@option{-v}) option with
 @option{--list}, then @command{tar} will print out a listing
-reminiscent of @w{@samp{ls -l}}, showing owner, file size, and so forth.
+reminiscent of @w{@samp{ls -l}}, showing owner, file size, and so
+forth.  This output is described in detail in @ref{verbose member listing}.
 
 If you had used @option{--verbose} (@option{-v}) mode, the example
 above would look like:
@@ -2716,6 +2725,12 @@ Use case-sensitive matching.
 Print warnings about subprocesses terminated with a non-zero exit
 code. @xref{Writing to an External Program}.
 
+@opindex no-overwrite-dir, summary
+@item --no-overwrite-dir
+
+Preserve metadata of existing directories when extracting files
+from an archive.  @xref{Overwrite Old Files}.
+
 @opindex no-quote-chars, summary
 @item --no-quote-chars=@var{string}
 Remove characters listed in @var{string} from the list of quoted
@@ -3493,11 +3508,11 @@ monitoring @command{tar}.
 With @option{--create} or @option{--extract}, @option{--verbose} used
 once just prints the names of the files or members as they are processed.
 Using it twice causes @command{tar} to print a longer listing
-(reminiscent of @samp{ls -l}) for each member.  Since @option{--list}
-already prints  the names of the members, @option{--verbose} used once
-with @option{--list} causes @command{tar} to print an @samp{ls -l}
-type listing of the files in the archive.  The following examples both
-extract members with long list output:
+(@xref{verbose member listing}, for the description) for each member.
+Since @option{--list} already prints  the names of the members,
+@option{--verbose} used once with @option{--list} causes @command{tar}
+to print an @samp{ls -l} type listing of the files in the archive.
+The following examples both extract members with long list output:
 
 @smallexample
 $ @kbd{tar --extract --file=archive.tar --verbose --verbose}
@@ -3961,7 +3976,7 @@ $ @kbd{tar --list --file=collection.tar}
 @end smallexample
 
 @node multiple
-@subsubsection Multiple Files with the Same Name
+@subsubsection Multiple Members with the Same Name
 
 You can use @option{--append} (@option{-r}) to add copies of files
 which have been updated since the archive was created.  (However, we
@@ -4050,8 +4065,7 @@ charles and/or mib/thomas/dave shevett..}
 Both @option{--update} and @option{--append} work by adding to the end
 of the archive.  When you extract a file from the archive, only the
 version stored last will wind up in the file system, unless you use
-the @option{--backup} option.  @FIXME-ref{Multiple Members with the
-Same Name}
+the @option{--backup} option.  @xref{multiple}, for a detailed discussion.
 
 @menu
 * how to update::
@@ -4119,9 +4133,8 @@ To use @option{--concatenate}, give the first archive with
 @option{--file} option and name the rest of archives to be
 concatenated on the command line.  The members, and their member
 names, will be copied verbatim from those archives to the first one.
-@FIXME-ref{This can cause multiple members to have the same name, for
-information on how this affects reading the archive, Multiple
-Members with the Same Name.}
+@footnote{This can cause multiple members to have the same name, for
+information on how this affects reading the archive, @ref{multiple}.}
 The new, concatenated archive will be called by the same name as the
 one given with the @option{--file} option.  As usual, if you omit
 @option{--file}, @command{tar} will use the value of the environment
@@ -4600,10 +4613,10 @@ in conjunction with the @option{--extract} (@option{--get},
 @option{-x}) operation.  
 
 @table @option
-@opindex preserve-permission
-@opindex same-permission
-@item --preserve-permission
-@itemx --same-permission
+@opindex preserve-permissions
+@opindex same-permissions
+@item --preserve-permissions
+@itemx --same-permissions
 @c @itemx --ignore-umask
 @itemx -p
 Set modes of extracted archive members to those recorded in the
@@ -5005,17 +5018,6 @@ environment variable is used.  And if @env{SIMPLE_BACKUP_SUFFIX} is not
 set, the default is @samp{~}, just as in Emacs.
 
 @end table
-
-Some people express the desire to @emph{always} use the @option{--backup}
-option, by defining some kind of alias or script.  This is not as easy
-as one may think, due to the fact that old style options should appear first
-and consume arguments a bit unpredictably for an alias or script.  But,
-if you are ready to give up using old style options, you may resort to
-using something like (a Bourne shell function here):
-
-@smallexample
-tar () @{ /usr/local/bin/tar --backup $*; @}
-@end smallexample
 
 @node Applications
 @section Notable @command{tar} Usages
@@ -6975,7 +6977,7 @@ altering this behavior:
 
 @anchor{show-transformed-names}
 @table @option
-@opindex --show-transformed-names
+@opindex show-transformed-names
 @item --show-transformed-names
 Display file or member names with all requested transformations
 applied.
@@ -7018,7 +7020,7 @@ In case you need to apply more complex modifications to the file name,
 @GNUTAR{} provides a general-purpose transformation option:
 
 @table @option
-@opindex --transform
+@opindex transform
 @item --transform=@var{expression}
 Modify file names using supplied @var{expression}.
 @end table
@@ -10336,11 +10338,9 @@ Right margin of the text output. Used for wrapping.
 This appendix contains an index of all @GNUTAR{} long command line
 options. The options are listed without the preceeding double-dash.
 
-@FIXME{@itemize
-@item Make sure @emph{all} options are indexed.
-@item Provide an index of short options
-@end itemize}
-
+@FIXME{Provide an index of short options}
+@c Do not forget to check if all options are indexed (see maintenance
+@c notes at the beginning of this document.
 @printindex op
 
 @node Index
