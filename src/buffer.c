@@ -56,6 +56,8 @@ union block *current_block;	/* current block of archive */
 enum access_mode access_mode;	/* how do we handle the archive */
 off_t records_read;		/* number of records read from this archive */
 off_t records_written;		/* likewise, for records written */
+extern off_t records_skipped;   /* number of records skipped at the start
+				   of the archive, defined in delete.c */   
 
 static off_t record_start_block; /* block ordinal at record_start */
 
@@ -166,6 +168,15 @@ void
 set_start_time ()
 {
   gettime (&start_time);
+  volume_start_time = start_time;
+  last_stat_time = start_time;
+}
+
+void
+set_volume_start_time ()
+{
+  gettime (&volume_start_time);
+  last_stat_time = volume_start_time;
 }
 
 void
@@ -173,9 +184,9 @@ compute_duration ()
 {
   struct timespec now;
   gettime (&now);
-  duration += ((now.tv_sec - start_time.tv_sec)
-	       + (now.tv_nsec - start_time.tv_nsec) / 1e9);
-  set_start_time ();
+  duration += ((now.tv_sec - last_stat_time.tv_sec)
+	       + (now.tv_nsec - last_stat_time.tv_nsec) / 1e9);
+  gettime (&last_stat_time);
 }
 
 
@@ -274,24 +285,60 @@ open_compressed_archive ()
 }
 
 
-void
-print_total_written (void)
+static void
+print_stats (FILE *fp, const char *text, tarlong numbytes)
 {
-  tarlong written = prev_written + bytes_written;
   char bytes[sizeof (tarlong) * CHAR_BIT];
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
 
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
-  sprintf (bytes, TARLONG_FORMAT, written);
+  sprintf (bytes, TARLONG_FORMAT, numbytes);
 
-  /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
-  fprintf (stderr, _("Total bytes written: %s (%s, %s/s)\n"), bytes,
-	   human_readable (written, abbr, human_opts, 1, 1),
-	   (0 < duration && written / duration < (uintmax_t) -1
-	    ? human_readable (written / duration, rate, human_opts, 1, 1)
+  fprintf (fp, "%s: %s (%s, %s/s)\n",
+	   text, bytes,
+	   human_readable (numbytes, abbr, human_opts, 1, 1),
+	   (0 < duration && numbytes / duration < (uintmax_t) -1
+	    ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
 	    : "?"));
+}
+
+void
+print_total_stats ()
+{
+  switch (subcommand_option)
+    {
+    case CREATE_SUBCOMMAND:
+    case CAT_SUBCOMMAND:
+    case UPDATE_SUBCOMMAND:
+    case APPEND_SUBCOMMAND:
+      /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
+      print_stats (stderr, _("Total bytes written"),
+		   prev_written + bytes_written);
+      break;
+
+    case DELETE_SUBCOMMAND:
+      {
+	char buf[UINTMAX_STRSIZE_BOUND];
+	print_stats (stderr, _("Total bytes read"),
+		     records_read * record_size);
+	print_stats (stderr, _("Total bytes written"),
+		     prev_written + bytes_written);
+	fprintf (stderr, _("Total bytes deleted: %s\n"),
+		 STRINGIFY_BIGINT ((records_read - records_skipped)
+				    * record_size
+				   - (prev_written + bytes_written), buf));
+      }
+      break;
+
+    case EXTRACT_SUBCOMMAND:
+    case LIST_SUBCOMMAND:
+    case DIFF_SUBCOMMAND:
+      print_stats (stderr, _("Total bytes read"),
+		   records_read * record_size);
+      break;
+    }
 }
 
 /* Compute and return the block ordinal at current_block.  */
@@ -470,6 +517,7 @@ _open_archive (enum access_mode wanted_access)
 	  archive = STDIN_FILENO;
 	  stdlis = stderr;
 	  write_archive_to_stdout = true;
+	  record_end = record_start; /* set up for 1st record = # 0 */
 	  break;
 	}
     }
@@ -494,8 +542,13 @@ _open_archive (enum access_mode wanted_access)
 	break;
 
       case ACCESS_UPDATE:
-	archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
+	archive = rmtopen (archive_name_array[0],
+			   O_RDWR | O_CREAT | O_BINARY,
 			   MODE_RW, rsh_command_option);
+
+	if (check_compressed_archive () != ct_none)
+	  FATAL_ERROR ((0, 0,
+			_("Cannot update compressed archives")));
 	break;
       }
 
@@ -516,14 +569,11 @@ _open_archive (enum access_mode wanted_access)
 
   switch (wanted_access)
     {
-    case ACCESS_UPDATE:
-      records_written = 0;
-      record_end = record_start; /* set up for 1st record = # 0 */
-
     case ACCESS_READ:
       find_next_block ();	/* read it in, check for EOF */
       break;
 
+    case ACCESS_UPDATE:
     case ACCESS_WRITE:
       records_written = 0;
       break;
@@ -591,7 +641,7 @@ archive_write_error (ssize_t status)
   if (totals_option)
     {
       int e = errno;
-      print_total_written ();
+      print_total_stats ();
       errno = e;
     }
 
@@ -1555,8 +1605,7 @@ _gnu_flush_write (size_t buffer_level)
   xheader_destroy (&extended_header);
 
   increase_volume_number ();
-  if (totals_option)
-    prev_written += bytes_written;
+  prev_written += bytes_written;
   bytes_written = 0;
 
   copy_ptr = record_start->buffer + status;
@@ -1634,4 +1683,5 @@ open_archive (enum access_mode wanted_access)
     default:
       break;
     }
+  set_volume_start_time ();
 }
