@@ -193,7 +193,7 @@ check_time (char const *file_name, struct timespec t)
   if (t.tv_sec <= 0)
     WARN ((0, 0, _("%s: implausibly old time stamp %s"),
 	   file_name, tartime (t, true)));
-  else if (timespec_cmp (start_time, t) < 0)
+  else if (timespec_cmp (volume_start_time, t) < 0)
     {
       struct timespec now;
       gettime (&now);
