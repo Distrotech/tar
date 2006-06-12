@@ -1,3 +1,10 @@
+2006-06-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/Makefile.am (check-options): New goal
+	* doc/tar.texi: Update
+	* src/tar.c: Implement --overwrite-dir option (long ago
+	documented). 
+
 2006-06-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Document better the --totals option
