@@ -289,8 +289,12 @@ GLOBAL int archive;
 /* Nonzero when outputting to /dev/null.  */
 GLOBAL bool dev_null_output;
 
-/* Timestamp for when we started execution.  */
-GLOBAL struct timespec start_time;
+/* Timestamps: */ 
+GLOBAL struct timespec start_time;        /* when we started execution */
+GLOBAL struct timespec volume_start_time; /* when the current volume was
+					     opened*/
+GLOBAL struct timespec last_stat_time;    /* when the statistics was last
+					     computed */
 
 GLOBAL struct tar_stat_info current_stat_info;
 
@@ -381,7 +385,7 @@ void flush_write (void);
 void flush_archive (void);
 void init_volume_number (void);
 void open_archive (enum access_mode);
-void print_total_written (void);
+void print_total_stats (void);
 void reset_eof (void);
 void set_next_block_after (union block *);
 void clear_read_error_count (void);
