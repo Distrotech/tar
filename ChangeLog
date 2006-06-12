@@ -1,3 +1,30 @@
+2006-06-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Document better the --totals option
+	* NEWS: Update
+	* src/buffer.c (total_blocks_deleted): New variable
+	(set_start_time): Set volume_start_time and last_stat_time as well
+	(set_volume_start_time): New function
+	(compute_duration): Do not call set_start_time, update
+	last_stat_time instead. Use it in calculation instead of
+	start_time, which is now set only once, upon startup.
+	(print_total_written): Removed.
+	(print_total_stats): New function for printing byte/speed statistics.
+	(_open_archive): Detect attempts to update compressed archives.
+	(_gnu_flush_write): Always update prev_written.
+	(open_archive): Call set_volume_start_time.
+	* src/common.h (volume_start_time,last_stat_time): New globals
+	(print_total_written): Replaced with:
+	(print_total_stats): New function
+	* src/delete.c (records_skipped): Remove static qualifier, the
+	variable is used by print_total_stats in buffer.c
+	* src/extract.c (check_time): Use volume_start_time when checking
+	for timestamp plausability.
+	* src/tar.c: (options, parse_opt): Allow for optional argument to
+	the --totals option, which specifies a signal upon delivery of which
+	the statistics must be output.
+	(main): Call print_total_stats if total_option is set.
+
 2006-06-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (xheader_set_single_keyword): Fix typo.
