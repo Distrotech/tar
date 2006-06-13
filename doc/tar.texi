@@ -1125,7 +1125,7 @@ why we will list the arguments in the order that makes the commands
 easiest to understand (and we encourage you to do the same when you use
 @command{tar}, to avoid errors).
 
-Note that the part of the command which says,
+Note that the sequence
 @option{--file=@-collection.tar} is considered to be @emph{one} argument.
 If you substituted any other string of characters for
 @kbd{collection.tar},  then that string would become the name of the
@@ -2789,11 +2789,12 @@ and group IDs when creating a @command{tar} file, rather than names.
 @xref{Attributes}.
 
 @item -o
-When extracting files, this option is a synonym for
+The function of this option depends on the action @command{tar} is
+performing.  When extracting files, @option{-o} is a synonym for
 @option{--no-same-owner}, i.e.  it prevents @command{tar} from
 restoring ownership of files being extracted.
 
-When creating an archive, @option{-o} is a synonym for
+When creating an archive, it is a synonym for
 @option{--old-archive}.  This behavior is for compatibility
 with previous versions of @GNUTAR{}, and will be
 removed in the future releases.
@@ -2816,7 +2817,7 @@ tar -x -f archive.tar --occurrence filename
 @end smallexample
 
 @noindent
-will extract the first occurrence of @file{filename} from @file{archive.tar}
+will extract the first occurrence of the member @file{filename} from @file{archive.tar}
 and will terminate without scanning to the end of the archive.
 
 @opsummary{old-archive}
@@ -3299,8 +3300,8 @@ successfully.  For example, @w{@samp{tar --version}} might print:
 @smallexample
 tar (GNU tar) @value{VERSION}
 Copyright (C) 2006 Free Software Foundation, Inc.
-This is free software.  You may redistribute copies of it under the terms of
-the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+This is free software.  You may redistribute copies of it under the terms
+of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
 There is NO WARRANTY, to the extent permitted by law.
 
 Written by John Gilmore and Jay Fenlason.
@@ -3702,7 +3703,7 @@ be made available again with full date localization support, once
 ready.  In the meantime, programs not being localizable for dates
 should prefer international dates, that's really the way to go.
 
-Look up @url{http://www.ft.uni-erlangen.de/@/~mskuhn/@/iso-time.html} if you
+Look up @url{http://www.cl.cam.ac.uk/@/~mgk25/@/iso-time.html} if you
 are curious, it contains a detailed explanation of the ISO 8601 standard.
 
 @end table
@@ -3752,8 +3753,8 @@ in the last chapter.  As you may recall, the directory is called
 @samp{collection.tar} and @samp{music.tar}.
 
 We will also use the archive files @samp{afiles.tar} and
-@samp{bfiles.tar}.  @samp{afiles.tar} contains the members @samp{apple},
-@samp{angst}, and @samp{aspic}.  @samp{bfiles.tar} contains the members
+@samp{bfiles.tar}.  The archive @samp{afiles.tar} contains the members @samp{apple},
+@samp{angst}, and @samp{aspic}; @samp{bfiles.tar} contains the members
 @samp{./birds}, @samp{baboon}, and @samp{./box}.
 
 Unless we state otherwise, all practicing you do and examples you follow
