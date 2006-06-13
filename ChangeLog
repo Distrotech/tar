@@ -11,6 +11,8 @@
 	Document --unquote, --no-unquote
 	(Short Option Summary): Build a table of cross-references to the
 	corresponding long options.
+	(Using Multiple Tapes,Multi-Volume Archives): Rewritten
+
 	* doc/value.texi (xopindex,opsummary): New macros
 
 	* doc/Makefile.am (check-options): New goal
