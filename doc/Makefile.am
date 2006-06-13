@@ -50,8 +50,10 @@ check-options:
 doc-opt-col=0,opt-doc-col=0,header-col=0,rmargin=1' \
 	$(top_builddir)/src/tar --usage | \
 	sed -n 's/^\[--\([^]\=\[]*\).*/\1/p' | sort | uniq > opts.$$$$;\
-	sed -n 's/@opindex *\([^,]*\)$$/\1/p;s/@opindex *\(.*\),.*/\1/p' \
-	    $(info_TEXINFOS) | sort | uniq > docs.$$$$;\
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -E - \
+            $(info_TEXINFOS) | \
+	sed -n '/^@macro/,/^@end macro/d;s/@opindex *\([^@,]*\).*/\1/p' \
+	     | sort | uniq > docs.$$$$;\
 	(echo 'Not documented options:';\
 	 join -v1 opts.$$$$ docs.$$$$;\
 	 echo 'Non-existing options:';\
