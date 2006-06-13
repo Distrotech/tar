@@ -1,5 +1,18 @@
 2006-06-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/Makefile.am (check-options): Expand macros before grepping
+	in $(info_TEXINFOS)
+	* doc/rendition.texi (FIXME) [!PROOF_FOOTNOTED]: Enclose in a
+	cartouche
+	* doc/tar.texi: Define op as codeindex. Use special macros to
+	populate it
+	Consequently prefer @dfn{long options} over @dfn{mnemonic
+	options}.
+	Document --unquote, --no-unquote
+	(Short Option Summary): Build a table of cross-references to the
+	corresponding long options.
+	* doc/value.texi (xopindex,opsummary): New macros
+
 	* doc/Makefile.am (check-options): New goal
 	* doc/tar.texi: Update
 	* src/tar.c: Implement --overwrite-dir option (long ago
