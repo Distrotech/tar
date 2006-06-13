@@ -1,6 +1,6 @@
 @c This is part of GNU tar manual.
 @c Copyright (C) 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-@c 2003, 2004 Free Software Foundation, Inc.
+@c 2003, 2004, 2006 Free Software Foundation, Inc.
 @c See file tar.texi for copying conditions.
 
 @c This file contains support for 'renditions' by Fran@,{c}ois Pinard
@@ -62,7 +62,9 @@
 @footnote{@strong{FIXME:} \string\}
 @end ifset
 @ifclear PROOF_FOOTNOTED
+@cartouche
 @strong{<FIXME>} \string\ @strong{</>}
+@end cartouche
 @end ifclear
 @end ifset
 
