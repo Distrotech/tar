@@ -5541,20 +5541,8 @@ This variable affects only @code{backup}.
 Script to be run when it's time to insert a new tape in for the next
 volume.  Administrators may want to tailor this script for their site.
 If this variable isn't set, @GNUTAR{} will display its built-in
-prompt, and will expect confirmation from the console.
-
-The built-in prompt for POSIX locale is:
-
-@smallexample
-Prepare volume #@var{n} for `@var{archive}' and hit return:
-@end smallexample
-
-@noindent
-where @var{n} is the ordinal number of the volume to be created and
-@var{archive} is archive file or device name.
-
-If you run @GNUTAR{} under a different locale, the translation of
-the above prompt to the locale's language will be used.
+prompt, and will expect confirmation from the console.  For the
+description of the default prompt, see @ref{change volume prompt}.
 
 @end defvr
 
@@ -9428,26 +9416,114 @@ failed.
 
 @node Using Multiple Tapes
 @section Using Multiple Tapes
-@UNREVISED
 
 Often you might want to write a large archive, one larger than will fit
 on the actual tape you are using.  In such a case, you can run multiple
 @command{tar} commands, but this can be inconvenient, particularly if you
 are using options like @option{--exclude=@var{pattern}} or dumping entire file systems.
-Therefore, @command{tar} supports multiple tapes automatically.
+Therefore, @command{tar} provides a special mode for creating
+multi-volume archives.
 
-Use @option{--multi-volume} (@option{-M}) on the command line, and
-then @command{tar} will, when it reaches the end of the tape, prompt
-for another tape, and continue the archive.  Each tape will have an
-independent archive, and can be read without needing the other.  (As
-an exception to this, the file that @command{tar} was archiving when
-it ran out of tape will usually be split between the two archives; in
-this case you need to extract from the first archive, using
-@option{--multi-volume}, and then put in the second tape when
-prompted, so @command{tar} can restore both halves of the file.)
+@dfn{Multi-volume} archive is a single @command{tar} archive, stored
+on several media volumes of fixed size.  Although in this section we will
+often call @samp{volume} a @dfn{tape}, there is absolutely no
+requirement for multi-volume archives to be stored on tapes.  Instead,
+they can use whatever media type the user finds convenient, they can
+even be located on files.  
 
-@GNUTAR{} multi-volume archives do not use a truly portable format.
-You need @GNUTAR{} at both ends to process them properly.
+When creating a multi-volume arvhive, @GNUTAR{} continues to fill
+current volume until it runs out of space, then it switches to
+next volume (usually the operator is queried to replace the tape on
+this point), and continues working on the new volume.  This operation
+continues untill all requested files are dumped.  If @GNUTAR{} detects
+end of media while dumping a file, such a file is archived in split
+form.  Some very big files can even be split across several volumes. 
+
+Each volume is itself a valid @GNUTAR{} archive, so it can be read
+without any special options.  Consequently any file member residing
+entirely on one volume can be extracted or otherwise operated upon
+without needing the other volume.  Sure enough, to extract a split
+member you would need all volumes its parts reside on.
+
+Multi-volume archives suffer from several limitations.  In particular,
+they cannot be compressed.
+
+@GNUTAR{} is able to create multi-volume archives of two formats
+(@pxref{Formats}): @samp{GNU} and @samp{POSIX}.
+
+@menu
+* Multi-Volume Archives::       Archives Longer than One Tape or Disk
+* Tape Files::                  Tape Files
+* Tarcat::                      Concatenate Volumes into a Single Archive
+
+@end menu
+
+@node Multi-Volume Archives
+@subsection Archives Longer than One Tape or Disk
+@cindex Multi-volume archives
+
+@opindex multi-volume
+To create an archive that is larger than will fit on a single unit of
+the media, use the @option{--multi-volume} (@option{-M}) option in conjunction with
+the @option{--create} option (@pxref{create}).  A @dfn{multi-volume}
+archive can be manipulated like any other archive (provided the
+@option{--multi-volume} option is specified), but is stored on more
+than one tape or disk.
+
+When you specify @option{--multi-volume}, @command{tar} does not report an
+error when it comes to the end of an archive volume (when reading), or
+the end of the media (when writing).  Instead, it prompts you to load
+a new storage volume.  If the archive is on a magnetic tape, you
+should change tapes when you see the prompt; if the archive is on a
+floppy disk, you should change disks; etc.
+
+@table @option
+@item --multi-volume
+@itemx -M
+Creates a multi-volume archive, when used in conjunction with
+@option{--create} (@option{-c}).  To perform any other operation on a multi-volume
+archive, specify @option{--multi-volume} in conjunction with that
+operation.
+For example:
+
+@smallexample
+$ @kbd{tar --create --multi-volume --file=/dev/tape @var{files}}
+@end smallexample
+@end table
+
+The method @command{tar} uses to detect end of tape is not perfect, and
+fails on some operating systems or on some devices.  If @command{tar}
+cannot detect the end of the tape itself, you can use
+@option{--tape-length} option to inform it about the capacity of the
+tape:
+
+@anchor{tape-length}
+@table @option
+@opindex tape-length
+@item --tape-length=@var{size}
+@itemx -L @var{size}
+Set maximum length of a volume.  The @var{size} argument should then
+be the usable size of the tape in units of 1024 bytes.  This option
+selects @option{--multi-volume} automatically.  For example:
+
+@smallexample
+$ @kbd{tar --create --tape-length=41943040 --file=/dev/tape @var{files}}
+@end smallexample
+@end table
+
+@anchor{change volume prompt}
+When @GNUTAR{} comes to the end of a storage media, it asks you to
+change the volume.  The built-in prompt for POSIX locale
+is@footnote{If you run @GNUTAR{} under a different locale, the
+translation to the locale's language will be used.}: 
+
+@smallexample
+Prepare volume #@var{n} for `@var{archive}' and hit return:
+@end smallexample
+
+@noindent
+where @var{n} is the ordinal number of the volume to be created and
+@var{archive} is archive file or device name.
 
 When prompting for a new tape, @command{tar} accepts any of the following
 responses:
@@ -9461,7 +9537,9 @@ Request @command{tar} to exit immediately.
 Request @command{tar} to write the next volume on the file @var{file-name}.
 @item !
 Request @command{tar} to run a subshell.  This option can be disabled
-by giving @option{--restrict} command line option to @command{tar}.
+by giving @option{--restrict} command line option to
+@command{tar}@footnote{@xref{--restrict}, for more information about
+this option}.
 @item y
 Request @command{tar} to begin writing the next volume.
 @end table
@@ -9469,18 +9547,44 @@ Request @command{tar} to begin writing the next volume.
 (You should only type @samp{y} after you have changed the tape;
 otherwise @command{tar} will write over the volume it just finished.)
 
+@cindex Volume number file
+@cindex volno file
+@anchor{volno-file}
+@opindex volno-file
+The volume number used by @command{tar} in its tape-changing prompt
+can be changed; if you give the
+@option{--volno-file=@var{file-of-number}} option, then
+@var{file-of-number} should be an unexisting file to be created, or
+else, a file already containing a decimal number.  That number will be
+used as the volume number of the first volume written.  When
+@command{tar} is finished, it will rewrite the file with the
+now-current volume number. (This does not change the volume number
+written on a tape label, as per @ref{label}, it @emph{only} affects
+the number used in the prompt.)
+
 @cindex End-of-archive info script
 @cindex Info script
 @anchor{info-script}
 @opindex info-script
 @opindex new-volume-script
-If you want more elaborate behavior than this, give @command{tar} the
-@option{--info-script=@var{script-name}}
-(@option{--new-volume-script=@var{script-name}}, @option{-F
-@var{script-name}}) option.  The file @var{script-name} is expected to
-be a program (or shell script) to be run instead of the normal
-prompting procedure.  It is executed without any command line
-arguments.  Additional data is passed to it via the following
+If you want more elaborate behavior than this, you can write a special
+@dfn{new volume script}, that will be responsible for changing the
+volume, and instruct @command{tar} to use it instead of its normal
+prompting procedure: 
+
+@table @option
+@item --info-script=@var{script-name}
+@itemx --new-volume-script=@var{script-name}
+@itemx -F @var{script-name}
+Specify the full name of the volume script to use.  The script can be
+used to eject cassettes, or to broadcast messages such as
+@samp{Someone please come change my tape} when performing unattended
+backups.
+@end table
+
+The @var{script-name} is executed without any command line
+arguments.  It inherits @command{tar}'s shell environment.
+Additional data is passed to it via the following
 environment variables:
 
 @table @env
@@ -9507,47 +9611,37 @@ Format of the archive being processed. @xref{Formats}, for a complete
 list of archive format names.
 @end table
 
-The info script can instruct @command{tar} to use new archive name,
-by writing in to file descriptor 3 (see below for an
-example).
+The volume script can instruct @command{tar} to use new archive name,
+by writing in to file descriptor 3 (see below for an example).
 
 If the info script fails, @command{tar} exits; otherwise, it begins
 writing the next volume.
 
-The method @command{tar} uses to detect end of tape is not perfect, and
-fails on some operating systems or on some devices.  You can use the
-@option{--tape-length=@var{size}} (@option{-L @var{size}}) option if
-@command{tar} can't detect the end of the tape itself.  This option
-selects @option{--multi-volume} (@option{-M}) automatically. The
-@var{size} argument should then be the usable size of the tape in
-units of 1024 bytes. But for many devices, and floppy disks in
-particular, this option is never required for real, as far as we know.
-
-@cindex Volume number file
-@cindex volno file
-@anchor{volno-file}
-@opindex volno-file
-The volume number used by @command{tar} in its tape-change prompt
-can be changed; if you give the
-@option{--volno-file=@var{file-of-number}} option, then
-@var{file-of-number} should be an unexisting file to be created, or
-else, a file already containing a decimal number.  That number will be
-used as the volume number of the first volume written.  When
-@command{tar} is finished, it will rewrite the file with the
-now-current volume number. (This does not change the volume number
-written on a tape label, as per @ref{label}, it @emph{only} affects
-the number used in the prompt.)
-
 If you want @command{tar} to cycle through a series of files or tape
 drives, there are three approaches to choose from.  First of all, you
-can give @command{tar} multiple @option{--file} options. In this case
+can give @command{tar} multiple @option{--file} options.  In this case
 the specified files will be used, in sequence, as the successive
 volumes of the archive.  Only when the first one in the sequence needs
 to be used again will @command{tar} prompt for a tape change (or run
-the info script).  Secondly, you can use the @samp{n} response to the
-tape-change prompt, and, finally, you can use an info script, that
-writes new archive name to file descriptor.  The following example
-illustrates this approach:
+the info script).  For example, suppose someone has two tape drives on
+a system named @file{/dev/tape0} and @file{/dev/tape1}.  For having
+@GNUTAR{} to switch to the second drive when it needs to write the
+second tape, and then back to the first tape, etc., just do either of:
+
+@smallexample
+$ @kbd{tar --create --multi-volume --file=/dev/tape0 --file=/dev/tape1 @var{files}}
+$ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
+@end smallexample
+
+The second method is to use the @samp{n} response to the tape-change
+prompt.  
+
+Finally, the most flexible approach is to use a volume script, that
+writes new archive name to the file descriptor #3.  For example, the
+following volume script will create a series of archive files, named
+@file{@var{archive}-@var{vol}}, where @var{archive} is the name of the
+archive being created (as given by @option{--file} option) and
+@var{vol} is the ordinal number of the archive being created:
 
 @smallexample
 @group
@@ -9566,50 +9660,22 @@ echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&3
 @end group
 @end smallexample
 
-Each volume of a multi-volume archive is an independent @command{tar}
-archive, complete in itself.  For example, you can list or extract any
-volume alone; just don't specify @option{--multi-volume}
-(@option{-M}).  However, if one file in the archive is split across
-volumes, the only way to extract it successfully is with a
-multi-volume extract command @option{--extract --multi-volume}
-(@option{-xM}) starting on or before the volume where the file begins.
-
-For example, let's presume someone has two tape drives on a system
-named @file{/dev/tape0} and @file{/dev/tape1}.  For having @GNUTAR{}
-to switch to the second drive when it needs to write the
-second tape, and then back to the first tape, etc., just do either of:
+The same script cant be used while listing, comparing or extracting
+from the created archive.  For example:
 
 @smallexample
-$ @kbd{tar --create --multi-volume --file=/dev/tape0 --file=/dev/tape1 @var{files}}
-$ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
+@group
+# @r{Create a multi-volume archive:}
+$ @kbd{tar -c -L1024 -f archive.tar -F new-volume .}
+# @r{Extract from the created archive:}
+$ @kbd{tar -x -f archive.tar -F new-volume .}
+@end group
 @end smallexample
 
-@menu
-* Multi-Volume Archives::       Archives Longer than One Tape or Disk
-* Tape Files::                  Tape Files
-* Tarcat::                      Concatenate Volumes into a Single Archive
-
-@end menu
-
-@node Multi-Volume Archives
-@subsection Archives Longer than One Tape or Disk
-@cindex Multi-volume archives
-@UNREVISED
-
-@opindex multi-volume
-To create an archive that is larger than will fit on a single unit of
-the media, use the @option{--multi-volume} (@option{-M}) option in conjunction with
-the @option{--create} option (@pxref{create}).  A @dfn{multi-volume}
-archive can be manipulated like any other archive (provided the
-@option{--multi-volume} option is specified), but is stored on more
-than one tape or disk.
-
-When you specify @option{--multi-volume}, @command{tar} does not report an
-error when it comes to the end of an archive volume (when reading), or
-the end of the media (when writing).  Instead, it prompts you to load
-a new storage volume.  If the archive is on a magnetic tape, you
-should change tapes when you see the prompt; if the archive is on a
-floppy disk, you should change disks; etc.
+@noindent
+Notice, that the first command had to use @option{-L} option, since
+otherwise @GNUTAR{} will end up writing everything to file
+@file{archive.tar}.
 
 You can read each individual volume of a multi-volume archive as if it
 were an archive by itself.  For example, to list the contents of one
@@ -9626,52 +9692,22 @@ should load the volume where the archive member starts, and use
 volumes as it needs them.  @xref{extracting archives}, for more
 information about extracting archives.
 
-@option{--info-script=@var{script-name}}
-(@option{--new-volume-script=@var{script-name}}, @option{-F
-@var{script-name}}) (@pxref{info-script}) is like
-@option{--multi-volume} (@option{-M}), except that @command{tar} does
-not prompt you directly to change media volumes when a volume is
-full---instead, @command{tar} runs commands you have stored in
-@var{script-name}.  For example, this option can be used to eject
-cassettes, or to broadcast messages such as @samp{Someone please come
-change my tape} when performing unattended backups.  When
-@var{script-name} is done, @command{tar} will assume that the media
-has been changed.
-
 Multi-volume archives can be modified like any other archive.  To add
 files to a multi-volume archive, you need to only mount the last
 volume of the archive media (and new volumes, if needed).  For all
 other operations, you need to use the entire archive.
 
 If a multi-volume archive was labeled using
-@option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
-(@pxref{label}) when it was created, @command{tar} will not
-automatically label volumes which are added later.  To label
-subsequent volumes, specify @option{--label=@var{archive-label}} again
-in conjunction with the @option{--append}, @option{--update} or
-@option{--concatenate} operation.
+@option{--label=@var{archive-label}} (@pxref{label}) when it was
+created, @command{tar} will not automatically label volumes which are
+added later.  To label subsequent volumes, specify
+@option{--label=@var{archive-label}} again in conjunction with the
+@option{--append}, @option{--update} or @option{--concatenate} operation.
 
-@cindex Labeling multi-volume archives
-@FIXME{example}
-
-@FIXME{There should be a sample program here, including an exit
-before end.  Is the exit status even checked in tar?  :-(}
-
-@table @option
-@item --multi-volume
-@itemx -M
-Creates a multi-volume archive, when used in conjunction with
-@option{--create} (@option{-c}).  To perform any other operation on a multi-volume
-archive, specify @option{--multi-volume} in conjunction with that
-operation.
-
-@item --info-script=@var{program-file}
-@itemx --new-volume-script=@var{program-file}
-@itemx -F @var{program-file}
-Creates a multi-volume archive via a script.  Used in conjunction with
-@option{--create} (@option{-c}). @xref{info-script}, dor a detailed discussion.
-@end table
-
+@FIXME{This is no longer true: Multivolume archives in @samp{POSIX}
+format can be extracted using any posix-compliant tar
+implementation.  The split members can then be recreated from parts
+using a simple shell script. Provide more information about it:}
 Beware that there is @emph{no} real standard about the proper way, for
 a @command{tar} archive, to span volume boundaries.  If you have a
 multi-volume created by some vendor's @command{tar}, there is almost
@@ -9748,6 +9784,7 @@ will usually see lots of spurious messages.
 @section Including a Label in the Archive
 @cindex Labeling an archive
 @cindex Labels on the archive media
+@cindex Labeling multi-volume archives
 @UNREVISED
 
 @opindex label
