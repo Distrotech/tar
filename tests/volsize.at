@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-# Description: The size field of a volume header was ignored when listing
+# Description: The size field of a volume header was ignored when listing,
 # but taken into account when extracting. Thus it was possible to hide
 # some files within the archive, placing them after a volume header and
 # manually modifying its size field. Test tarball kindly provided by Tomas.
