@@ -1,3 +1,27 @@
+2006-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (struct name.explicit): Remove
+	Use variable names in all declarations
+	(name_scan): Remove second argument
+	* src/delete.c: Remove second argument from calls to name_scan
+	* src/update.c: Likewise
+	* src/incremen.c (procdir): Use is_individual_file to check for
+	files explicitely specified in the command line. Fixes bug
+	reported by Dat Head on 19 Jun 2006 (descending into mountpoints
+	with --one-file-system in use)
+	* src/misc.c (maybe_backup_file): Second argument is bool
+	* src/names.c (name_next_elt): Call register_individual_file
+	(namelist_match): Remove third argument
+	(name_match): Change return type to bool
+	(name_scan): Remove second argument
+	* src/sparse.c (pax_dump_header): Store original sparse file name
+	in GNU.sparse.name variable. The name field in the ustar header
+	now contains generated name (%d/GNUSparseFile.%p/%f), so that
+	non-pax-aware tars won't extract the file under the original
+	filename.
+	* src/xheader.c (GNU.sparse.name): New variable for storing sparse
+	file name.
+
 2006-06-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/Makefile.am (check-options): Expand macros before grepping
