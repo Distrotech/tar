@@ -412,7 +412,7 @@ remove_any_file (const char *file_name, enum remove_option option)
    so, we do not have to backup block or character devices, nor remote
    entities.  */
 bool
-maybe_backup_file (const char *file_name, int this_is_the_archive)
+maybe_backup_file (const char *file_name, bool this_is_the_archive)
 {
   struct stat file_stat;
 
