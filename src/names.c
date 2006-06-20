@@ -471,7 +471,6 @@ addname (char const *string, int change_dir)
   name->matching_flags = matching_flags;
   name->change_dir = change_dir;
   name->dir_contents = NULL;
-  name->explicit = 1;
 
   *nametail = name;
   nametail = &name->next;
@@ -481,7 +480,7 @@ addname (char const *string, int change_dir)
 /* Find a match for FILE_NAME (whose string length is LENGTH) in the name
    list.  */
 static struct name *
-namelist_match (char const *file_name, size_t length, bool exact)
+namelist_match (char const *file_name, size_t length)
 {
   struct name *p;
 
@@ -497,7 +496,7 @@ namelist_match (char const *file_name, size_t length, bool exact)
 
 /* Return true if and only if name FILE_NAME (from an archive) matches any
    name from the namelist.  */
-int
+bool
 name_match (const char *file_name)
 {
   size_t length = strlen (file_name);
@@ -507,17 +506,17 @@ name_match (const char *file_name)
       struct name *cursor = namelist;
 
       if (!cursor)
-	return 1;
-
+	return true;
+      
       if (cursor->name[0] == 0)
 	{
 	  chdir_do (cursor->change_dir);
 	  namelist = 0;
 	  nametail = &namelist;
-	  return 1;
+	  return true;
 	}
 
-      cursor = namelist_match (file_name, length, false);
+      cursor = namelist_match (file_name, length);
       if (cursor)
 	{
 	  if (!(ISSLASH (file_name[cursor->length]) && recursion_option)
@@ -544,10 +543,10 @@ name_match (const char *file_name)
 	{
 	  name_gather ();	/* read one more */
 	  if (namelist->found_count)
-	    return 0;
+	    return false;
 	}
       else
-	return 0;
+	return false;
     }
 }
 
@@ -781,7 +780,6 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 		}
 	      strcpy (namebuf + name_length, string + 1);
 	      np = addname (namebuf, change_dir);
-	      np->explicit = 0;
 	      add_hierarchy_to_namelist (np, device);
 	    }
 	}
@@ -856,18 +854,15 @@ collect_and_sort_names (void)
     1. It returns a pointer to the name it matched, and doesn't set FOUND
     in structure. The caller will have to do that if it wants to.
     2. If the namelist is empty, it returns null, unlike name_match, which
-    returns TRUE.
-    3. The second argument (EXACT) controls matching algorithm. If it
-    is TRUE, the exact matching is used. However, regular expressions are
-    always matched as such, no matter what the value of EXACT is. */
+    returns TRUE. */
 struct name *
-name_scan (const char *file_name, bool exact)
+name_scan (const char *file_name)
 {
   size_t length = strlen (file_name);
 
   while (1)
     {
-      struct name *cursor = namelist_match (file_name, length, exact);
+      struct name *cursor = namelist_match (file_name, length);
       if (cursor)
 	return cursor;
 
