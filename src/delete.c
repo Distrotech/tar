@@ -174,7 +174,7 @@ delete_archive_members (void)
 	  abort ();
 
 	case HEADER_SUCCESS:
-	  if ((name = name_scan (current_stat_info.file_name, false)) == NULL)
+	  if ((name = name_scan (current_stat_info.file_name)) == NULL)
 	    {
 	      skip_member ();
 	      break;
@@ -285,7 +285,7 @@ delete_archive_members (void)
 
 	  /* Found another header.  */
 
-	  if ((name = name_scan (current_stat_info.file_name, false)) != NULL)
+	  if ((name = name_scan (current_stat_info.file_name)) != NULL)
 	    {
 	      name->found_count++;
 	      if (ISFOUND(name))

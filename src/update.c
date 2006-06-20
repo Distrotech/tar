@@ -131,7 +131,7 @@ update_archive (void)
 	    archive_format = current_format;
 
 	    if (subcommand_option == UPDATE_SUBCOMMAND
-		&& (name = name_scan (current_stat_info.file_name, false)) != NULL)
+		&& (name = name_scan (current_stat_info.file_name)) != NULL)
 	      {
 		struct stat s;
 
