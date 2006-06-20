@@ -886,11 +886,12 @@ pax_dump_header (struct tar_sparse_file *file)
   size_t i;
   char nbuf[UINTMAX_STRSIZE_BOUND];
   struct sp_array *map = file->stat_info->sparse_map;
-    
+  char *save_file_name = NULL;
+  
   /* Store the real file size */
   xheader_store ("GNU.sparse.size", file->stat_info, NULL);
   xheader_store ("GNU.sparse.numblocks", file->stat_info, NULL);
-
+  
   /* FIXME-1.14-1.15.1-1.20: See the comment above.
      Starting with 1.17 this should display a warning about POSIX-incompatible
      keywords being generated. In 1.20, the true branch of the if block below
@@ -907,6 +908,11 @@ pax_dump_header (struct tar_sparse_file *file)
     }
   else
     {
+      xheader_store ("GNU.sparse.name", file->stat_info, NULL);
+      save_file_name = file->stat_info->file_name;
+      file->stat_info->file_name = xheader_format_name (file->stat_info,
+					       "%d/GNUSparseFile.%p/%f", 0);
+
       xheader_string_begin ();
       for (i = 0; i < file->stat_info->sparse_map_avail; i++)
 	{
@@ -922,6 +928,11 @@ pax_dump_header (struct tar_sparse_file *file)
   /* Store the effective (shrunken) file size */
   OFF_TO_CHARS (file->stat_info->archive_file_size, blk->header.size);
   finish_header (file->stat_info, blk, block_ordinal);
+  if (save_file_name)
+    {
+      free (file->stat_info->file_name);
+      file->stat_info->file_name = save_file_name;
+    }
   return true;
 }
 
