@@ -730,7 +730,7 @@ start_header (struct tar_stat_info *st)
   }
 
   {
-    struct timespec mtime = st->mtime;
+    struct timespec mtime = set_mtime_option ? mtime_option : st->mtime;
     if (archive_format == POSIX_FORMAT)
       {
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec
