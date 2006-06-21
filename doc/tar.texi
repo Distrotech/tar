@@ -220,6 +220,7 @@ Updating an Archive
 
 Options Used by @option{--create}
 
+* override::                  Overriding File Metadata.
 * Ignore Failed Read::
 
 Options Used by @option{--extract}
@@ -2536,7 +2537,7 @@ Creates a @acronym{POSIX.1-2001 archive}.
 Files added to the @command{tar} archive will have a group id of @var{group},
 rather than the group from the source file.  @var{group} is first decoded
 as a group symbolic name, but if this interpretation fails, it has to be
-a decimal numeric group ID.  @FIXME-xref{}
+a decimal numeric group ID.  @xref{override}.
 
 Also see the comments for the @option{--owner=@var{user}} option.
 
@@ -2652,18 +2653,19 @@ incremental format.  @xref{Incremental Dumps}.
 
 When adding files to an archive, @command{tar} will use
 @var{permissions} for the archive members, rather than the permissions
-from the files.  The program @command{chmod} and this @command{tar}
-option share the same syntax for what @var{permissions} might be.
-@xref{File permissions, Permissions, File permissions, fileutils,
-@acronym{GNU} file utilities}.  This reference also has useful
-information for those not being overly familiar with the Unix
-permission system.
+from the files.  @var{permissions} can be specified either as an octal
+number or as symbolic permissions, like with
+@command{chmod}. @xref{override}.
 
-Of course, @var{permissions} might be plainly specified as an octal number.
-However, by using generic symbolic modifications to mode bits, this allows
-more flexibility.  For example, the value @samp{a+rw} adds read and write
-permissions for everybody, while retaining executable bits on directories
-or on any other file already marked as executable.
+@opsummary{mtime}
+@item --mtime=@var{date}
+
+When adding files to an archive, @command{tar} will use @var{date} as
+the modification time of members when creating archives, instead of
+their actual modification times.  The value of @var{date} can be
+either a textual date representation (@pxref{Date input formats}) or a
+name of the existing file, starting with @samp{/} or @samp{.}.  In the
+latter case, the modification time of that file is used. @xref{override}.
 
 @opsummary{multi-volume}
 @item --multi-volume
@@ -2701,7 +2703,8 @@ the date.  @xref{after}.
 
 Like @option{--newer}, but add only files whose
 contents have changed (as opposed to just @option{--newer}, which will
-also back up files for which any status information has changed).
+also back up files for which any status information has
+changed).  @xref{after}.
 
 @opsummary{no-anchored}
 @item --no-anchored
@@ -2851,12 +2854,7 @@ Specifies that @command{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
 file.  @var{user} is first decoded as a user symbolic name, but if
 this interpretation fails, it has to be a decimal numeric user ID.
-@FIXME-xref{}
-
-There is no value indicating a missing number, and @samp{0} usually means
-@code{root}.  Some people like to force @samp{0} as the value to offer in
-their distributions for the owner of files, because the @code{root} user is
-anonymous anyway, so that might as well be the owner of anonymous archives.
+@xref{override}.
 
 This option does not affect extraction from archives.
 
@@ -4246,14 +4244,112 @@ The previous chapter described the basics of how to use
 @option{--create}.
 
 @menu
+* override::                  Overriding File Metadata.
 * Ignore Failed Read::
 @end menu
+
+@node override
+@subsection Overriding File Metadata
+
+As described above, a @command{tar} archive keeps, for each member it contains,
+its @dfn{metadata}, such as modification time, mode and ownership of
+the file.  @GNUTAR{} allows to replace these data with other values
+when adding files to the archive.  The options described in this
+section affect creation of archives of any type.  For POSIX archives,
+see also @ref{PAX keywords}, for additional ways of controlling
+metadata, stored in the archive.
+
+@table @option
+@opindex mode
+@item --mode=@var{permissions}
+
+When adding files to an archive, @command{tar} will use
+@var{permissions} for the archive members, rather than the permissions
+from the files.  @var{permissions} can be specified either as an octal
+number or as symbolic permissions, like with
+@command{chmod} (@xref{File permissions, Permissions, File
+permissions, fileutils, @acronym{GNU} file utilities}.  This reference
+also has useful information for those not being overly familiar with
+the UNIX permission system).  Using latter syntax allows for
+more flexibility.  For example, the value @samp{a+rw} adds read and write
+permissions for everybody, while retaining executable bits on directories
+or on any other file already marked as executable:
+
+@smallexample
+$ @kbd{tar -c -f archive.tar --mode='a+rw' .}
+@end smallexample
+
+@item --mtime=@var{date}
+@opindex mtime
+
+When adding files to an archive, @command{tar} will use @var{date} as
+the modification time of members when creating archives, instead of
+their actual modification times.  The argument @var{date} can be
+either a textual date representation in almost arbitrary format
+(@pxref{Date input formats}) or a name of the existing file, starting
+with @samp{/} or @samp{.}.  In the latter case, the modification time
+of that file will be used.
+
+The following example will set the modification date to 00:00:00 UTC,
+January 1, 1970:
+
+@smallexample
+$ @kbd{tar -c -f archive.tar --mtime='1970-01-01' .}
+@end smallexample
+
+@noindent
+When used with @option{--verbose} (@pxref{verbose tutorial}) @GNUTAR{}
+will try to convert the specified date back to its textual
+representation and compare it with the one given with
+@option{--mtime} options.  If the two dates differ, @command{tar} will
+print a warning saying what date it will use.  This is to help user
+ensure he is using the right date.
+
+For example:
+
+@smallexample
+$ @kbd{tar -c -f archive.tar -v --mtime=yesterday .}
+tar: Option --mtime: Treating date `yesterday' as 2006-06-20
+13:06:29.152478
+@dots{}
+@end smallexample
+
+@item --owner=@var{user}
+@opindex owner
+
+Specifies that @command{tar} should use @var{user} as the owner of members
+when creating archives, instead of the user associated with the source
+file.  The argument @var{user} can be either an existing user symbolic
+name, or a decimal numeric user ID.
+
+There is no value indicating a missing number, and @samp{0} usually means
+@code{root}.  Some people like to force @samp{0} as the value to offer in
+their distributions for the owner of files, because the @code{root} user is
+anonymous anyway, so that might as well be the owner of anonymous
+archives.  For example:
+
+@smallexample
+@group
+$ @kbd{tar -c -f archive.tar --owner=0 .}
+# @r{Or:}
+$ @kbd{tar -c -f archive.tar --owner=root .}
+@end group
+@end smallexample
+
+@item --group=@var{group}
+@opindex group
+
+Files added to the @command{tar} archive will have a group id of @var{group},
+rather than the group from the source file.  The argument @var{group}
+can be either an existing group symbolic name, or a decimal numeric group ID.
+@end table
 
 @node Ignore Failed Read
 @subsection Ignore Fail Read
 
 @table @option
 @item --ignore-failed-read
+@opindex ignore-failed-read
 Do not exit with nonzero on unreadable files or directories.
 @end table
 
@@ -7160,6 +7256,21 @@ all the files modified less than two days ago:
 
 @smallexample
 $ @kbd{tar -cf foo.tar --newer-mtime '2 days ago'}
+@end smallexample
+
+When any of these options is used with the option @option{--verbose}
+(@pxref{verbose tutorial}) @GNUTAR{} will try to convert the specified
+date back to its textual representation and compare that with the
+one given with the option.  If the two dates differ, @command{tar} will
+print a warning saying what date it will use.  This is to help user
+ensure he is using the right date.  For example:
+
+@smallexample
+@group
+$ @kbd{tar -c -f archive.tar --after-date='10 days ago' .}
+tar: Option --after-date: Treating date `10 days ago' as 2006-06-11
+13:19:37.232434
+@end group
 @end smallexample
 
 @quotation
