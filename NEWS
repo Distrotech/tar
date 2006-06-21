@@ -1,7 +1,13 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.15.91 - Sergey Poznyakoff, (CVS version)
+version 1.15.92 - Sergey Poznyakoff, (CVS)
+
+* New option --mtime allows to set modification times for all archive
+members during creation. 
+
+
+version 1.15.91 - Sergey Poznyakoff, 2006-06-16
 
 * Incompatible changes
 

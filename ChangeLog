@@ -1,3 +1,17 @@
+2006-06-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi (Overriding File Metadata): New node
+	Document --mtime option.
+	* src/common.h (set_mtime_option,mtime_option): New globals
+	* src/create.c (start_header): Override mtime if requested
+	* src/tar.c: Implement new option, --mtime, allowing to set
+	modification times for all archive members during creation.
+	(struct tar_args): textual_date_option replaced with a linked list
+	textual_date. All references updated.
+	(get_date_or_file,report_textual_dates): New functions. 
+	* configure.ac: Raise version number to 1.15.92
+	* NEWS: Update
+	
 2006-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (struct name.explicit): Remove
