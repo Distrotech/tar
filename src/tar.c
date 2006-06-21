@@ -263,6 +263,7 @@ enum
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
   MODE_OPTION,
+  MTIME_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
   NO_DELAY_DIRECTORY_RESTORE_OPTION,
@@ -444,6 +445,8 @@ static struct argp_option options[] = {
    N_("force NAME as owner for added files"), GRID+1 },
   {"group", GROUP_OPTION, N_("NAME"), 0,
    N_("force NAME as group for added files"), GRID+1 },
+  {"mtime", MTIME_OPTION, N_("DATE-OR-FILE"), 0,
+   N_("set mtime for added files from DATE-OR-FILE"), GRID+1 },
   {"mode", MODE_OPTION, N_("CHANGES"), 0,
    N_("force (symbolic) mode CHANGES for added files"), GRID+1 },
   {"atime-preserve", ATIME_PRESERVE_OPTION,
@@ -608,10 +611,9 @@ static struct argp_option options[] = {
    N_("begin at member MEMBER-NAME in the archive"), GRID+1 },
   {"newer", 'N', N_("DATE-OR-FILE"), 0,
    N_("only store files newer than DATE-OR-FILE"), GRID+1 },
+  {"after-date", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"newer-mtime", NEWER_MTIME_OPTION, N_("DATE"), 0,
    N_("compare date and time when data changed only"), GRID+1 },
-  {"after-date", 'N', N_("DATE"), 0,
-   N_("same as -N"), GRID+1 },
   {"backup", BACKUP_OPTION, N_("CONTROL"), OPTION_ARG_OPTIONAL,
    N_("backup before removal, choose version CONTROL"), GRID+1 },
   {"suffix", SUFFIX_OPTION, N_("STRING"), 0,
@@ -743,8 +745,9 @@ enum wildcards
 
 struct tar_args        /* Variables used during option parsing */
 {
-  char const *textual_date_option; /* Keeps the argument to --newer-mtime
-				      option if it represents a textual date */
+  struct textual_date *textual_date; /* Keeps the arguments to --newer-mtime
+					and/or --date option if they are
+					textual dates */
   enum wildcards wildcards;        /* Wildcard settings (--wildcards/
 				      --no-wildcards) */
   int matching_flags;              /* exclude_fnmatch options */
@@ -874,6 +877,67 @@ set_stat_signal (const char *name)
 	return;
       }
   FATAL_ERROR ((0, 0, _("Unknown signal name: %s"), name));
+}
+
+
+struct textual_date
+{
+  struct textual_date *next;
+  struct timespec *ts;
+  const char *option;
+  const char *date;
+};
+
+static void
+get_date_or_file (struct tar_args *args, const char *option,
+		  const char *str, struct timespec *ts)
+{
+  if (FILE_SYSTEM_PREFIX_LEN (str) != 0
+      || ISSLASH (*str)
+      || *str == '.')
+    {
+      struct stat st;
+      if (deref_stat (dereference_option, str, &st) != 0)
+	{
+	  stat_error (str);
+	  USAGE_ERROR ((0, 0, _("Date sample file not found")));
+	}
+      *ts = get_stat_mtime (&st);
+    }
+  else
+    {
+      if (! get_date (ts, str, NULL))
+	{
+	  WARN ((0, 0, _("Substituting %s for unknown date format %s"),
+		 tartime (*ts, false), quote (str)));
+	  ts->tv_nsec = 0;
+	}
+      else
+	{
+	  struct textual_date *p = xmalloc (sizeof (*p));
+	  p->ts = ts;
+	  p->option = option;
+	  p->date = str;
+	  p->next = args->textual_date;
+	  args->textual_date = p;
+	}
+    }
+}
+
+static void
+report_textual_dates (struct tar_args *args)
+{
+  struct textual_date *p;
+  for (p = args->textual_date; p; )
+    {
+      struct textual_date *next = p->next;
+      char const *treated_as = tartime (*p->ts, true);
+      if (strcmp (p->date, treated_as) != 0)
+	WARN ((0, 0, _("Option %s: Treating date `%s' as %s"),
+	       p->option, p->date, treated_as));
+      free (p);
+      p = next;
+    }
 }
 
 
@@ -1215,6 +1279,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       multi_volume_option = true;
       break;
 
+    case MTIME_OPTION:
+      get_date_or_file (args, "--mtime", arg, &mtime_option);
+      set_mtime_option = true;
+      break;
+      
     case 'n':
       seekable_archive = true;
       break;
@@ -1226,31 +1295,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NEWER_MTIME_OPTION:
       if (NEWER_OPTION_INITIALIZED (newer_mtime_option))
 	USAGE_ERROR ((0, 0, _("More than one threshold date")));
-
-      if (FILE_SYSTEM_PREFIX_LEN (arg) != 0
-	  || ISSLASH (*arg)
-	  || *arg == '.')
-	{
-	  struct stat st;
-	  if (deref_stat (dereference_option, arg, &st) != 0)
-	    {
-	      stat_error (arg);
-	      USAGE_ERROR ((0, 0, _("Date sample file not found")));
-	    }
-	  newer_mtime_option = get_stat_mtime (&st);
-	}
-      else
-	{
-	  if (! get_date (&newer_mtime_option, arg, NULL))
-	    {
-	      WARN ((0, 0, _("Substituting %s for unknown date format %s"),
-		     tartime (newer_mtime_option, false), quote (arg)));
-	      newer_mtime_option.tv_nsec = 0;
-	    }
-	  else
-	    args->textual_date_option = arg;
-	}
-
+      get_date_or_file (args,
+			key == NEWER_MTIME_OPTION ? "--newer-mtime"
+			  : "--after-date", arg, &newer_mtime_option);
       break;
 
     case 'o':
@@ -1829,7 +1876,7 @@ decode_options (int argc, char **argv)
   struct tar_args args;
 
   /* Set some default option values.  */
-  args.textual_date_option = NULL;
+  args.textual_date = NULL;
   args.wildcards = default_wildcards;
   args.matching_flags = 0;
   args.include_anchored = EXCLUDE_ANCHORED;
@@ -2146,13 +2193,8 @@ decode_options (int argc, char **argv)
 	backup_option = false;
     }
 
-  if (verbose_option && args.textual_date_option)
-    {
-      char const *treated_as = tartime (newer_mtime_option, true);
-      if (strcmp (args.textual_date_option, treated_as) != 0)
-	WARN ((0, 0, _("Treating date `%s' as %s"),
-	       args.textual_date_option, treated_as));
-    }
+  if (verbose_option)
+    report_textual_dates (&args);
 }
 
 
