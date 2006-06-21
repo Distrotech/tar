@@ -197,6 +197,11 @@ GLOBAL bool multi_volume_option;
    do not get archived (also see after_date_option above).  */
 GLOBAL struct timespec newer_mtime_option;
 
+/* If true, override actual mtime (see below) */
+GLOBAL bool set_mtime_option;
+/* Value to be put in mtime header field instead of the actual mtime */
+GLOBAL struct timespec mtime_option;
+
 /* Return true if newer_mtime_option is initialized.  */
 #define NEWER_OPTION_INITIALIZED(opt) (0 <= (opt).tv_nsec)
 
