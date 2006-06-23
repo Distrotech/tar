@@ -28,6 +28,7 @@ tar_TEXINFOS = \
  header.texi\
  rendition.texi\
  snapshot.texi\
+ sparse.texi\
  value.texi
 EXTRA_DIST = gendocs_template mastermenu.el texify.sed
 DISTCLEANFILES=*.info* 
