@@ -379,8 +379,15 @@ Tar Internals
 
 * Standard::           Basic Tar Format
 * Extensions::         @acronym{GNU} Extensions to the Archive Format
+* Sparse Formats::     Storing Sparse Files
 * Snapshot Files::
 * Dumpdir::
+
+Storing Sparse Files
+
+* Old GNU Format::
+* PAX 0::                PAX Format, Versions 0.0 and 0.1
+* PAX 1::                PAX Format, Version 1.0
 
 Copying This Manual
 
@@ -1962,12 +1969,11 @@ can cause you to overwrite a number of important files.  We urge you
 to note these differences, and only use the option style(s) which
 makes the most sense to you until you feel comfortable with the others.
 
-Some options @emph{may} take an argument (currently, there are
-two such options: @option{--backup} and @option{--occurrence}).  Such
-options may have at most long and short forms, they do not have old style
-equivalent.  The rules for specifying an argument for such options
-are stricter than those for specifying mandatory arguments.  Please,
-pay special attention to them.
+Some options @emph{may} take an argument.  Such options may have at
+most long and short forms, they do not have old style equivalent.  The
+rules for specifying an argument for such options are stricter than
+those for specifying mandatory arguments.  Please, pay special
+attention to them. 
 
 @menu
 * Long Options::                Long Option Style
@@ -8308,7 +8314,7 @@ treatment of sparse files may be done automatically with any special
 @acronym{GNU} options.  For now, it is an option needing to be specified on
 the command line with the creation or updating of an archive.
 
-Files in the file system occasionally have ``holes.''  A hole in a file
+Files in the file system occasionally have @dfn{holes}.  A @dfn{hole} in a file
 is a section of the file's contents which was never written.  The
 contents of a hole read as all zeros.  On many operating systems,
 actual disk storage is not allocated for holes, but they are counted
