@@ -97,6 +97,9 @@ TESTSUITE_AT = \
  sparse03.at\
  sparsemv.at\
  sparsemvp.at\
+ spmvp00.at\
+ spmvp01.at\
+ spmvp10.at\
  truncate.at\
  update.at\
  volsize.at\
