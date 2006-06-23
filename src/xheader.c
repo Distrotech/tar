@@ -1363,8 +1363,39 @@ volume_filename_decoder (struct tar_stat_info *st, char const *arg,
 {
   decode_string (&continued_file_name, arg);
 }
-  
 
+static void
+sparse_major_coder (struct tar_stat_info const *st, char const *keyword,
+		    struct xheader *xhdr, void const *data)
+{
+  code_num (st->sparse_major, keyword, xhdr);
+}
+
+static void
+sparse_major_decoder (struct tar_stat_info *st, char const *arg,
+		      size_t size)
+{
+  uintmax_t u;
+  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), "GNU.sparse.major"))
+    st->sparse_major = u;
+}
+  
+static void
+sparse_minor_coder (struct tar_stat_info const *st, char const *keyword,
+		      struct xheader *xhdr, void const *data)
+{
+  code_num (st->sparse_minor, keyword, xhdr); 
+}
+
+static void
+sparse_minor_decoder (struct tar_stat_info *st, char const *arg,
+		      size_t size)
+{
+  uintmax_t u;
+  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), "GNU.sparse.minor"))
+    st->sparse_minor = u;
+}
+  
 struct xhdr_tab const xhdr_tab[] = {
   { "atime",	atime_coder,	atime_decoder,	  false },
   { "comment",	dummy_coder,	dummy_decoder,	  false },
@@ -1380,10 +1411,16 @@ struct xhdr_tab const xhdr_tab[] = {
   { "uname",	uname_coder,	uname_decoder,	  false },
 
   /* Sparse file handling */
+  { "GNU.sparse.name",       path_coder, path_decoder,
+    true },
+  { "GNU.sparse.major",      sparse_major_coder, sparse_major_decoder,
+    true },
+  { "GNU.sparse.minor",      sparse_minor_coder, sparse_minor_decoder,
+    true },
+  { "GNU.sparse.realsize",  sparse_size_coder, sparse_size_decoder, true },
+  
   { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder, true },
   { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder,
-    true },
-  { "GNU.sparse.name",       path_coder, path_decoder,
     true },
   /* tar 1.14 - 1.15.1 keywords. Multiple instances of these appeared in 'x'
      headers, and each of them was meaningful. It confilcted with POSIX specs,
@@ -1393,7 +1430,7 @@ struct xhdr_tab const xhdr_tab[] = {
     true },
   { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder,
     true },
-  /* tar >=1.16 keyword, introduced to remove the above-mentioned conflict. */
+  /* tar 1.15.90 keyword, introduced to remove the above-mentioned conflict. */
   { "GNU.sparse.map",        NULL /* Unused, see pax_dump_header() */,
     sparse_map_decoder, false },
 
