@@ -252,7 +252,9 @@ GLOBAL size_t strip_name_components;
 GLOBAL bool show_omitted_dirs_option;
 
 GLOBAL bool sparse_option;
-
+GLOBAL unsigned tar_sparse_major;
+GLOBAL unsigned tar_sparse_minor;
+  
 GLOBAL bool starting_file_option;
 
 /* Specified maximum byte length of each tape volume (multiple of 1024).  */
