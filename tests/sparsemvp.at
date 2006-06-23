@@ -18,28 +18,27 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-AT_SETUP([sparse files in PAX MV archives])
-AT_KEYWORDS([sparse multiv sparsemvp])
-
 # Check if sparse files are correctly split between PAX multi-volume
 # archives.
 # See comment in sparsemv.at for the description.
 
+dnl TAR_MVP_TEST version map1 map2
+m4_define([TAR_MVP_TEST],[
 AT_TAR_CHECK([
 exec <&-
-genfile --sparse --file sparsefile 0 ABCDEFGHIJK 1M ABCDEFGHI || AT_SKIP_TEST
+genfile --sparse --file sparsefile $2 || AT_SKIP_TEST
 echo "Pass 1: Split between data blocks"
 echo "Create archive"
-tar --sparse -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
+tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
 echo "Test archive"
 tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
 tar -d -M -f arc.1 -f arc.2 -f arc.3
 
 echo "Pass 2: Split within a data block"
-genfile --sparse --file sparsefile 0 ABCDEFGHIJ 1M ABCDEFGHI || AT_SKIP_TEST
+genfile --sparse --file sparsefile $3 || AT_SKIP_TEST
 echo "Create archive"
-tar --sparse -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
+tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
 echo "Test archive"
 tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
@@ -57,6 +56,5 @@ Test archive
 sparsefile
 Compare archive
 ],
-[],[],[],[pax])
+[],[],[],[pax])])
 
-AT_CLEANUP
