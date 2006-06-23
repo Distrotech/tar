@@ -1,3 +1,35 @@
+2006-06-23  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/sparse.texi: New file
+	* doc/Makefile.am (tar_TEXINFOS): Add sparse.texi
+	* doc/intern.texi (Sparse Formats): New node
+	* doc/tar.texi: Update master menu
+
+	* src/common.h (tar_sparse_major,tar_sparse_minor): New globals.
+	* src/sparse.c: Implement sparse format versioning. Implement new
+	version (1.0) of PAX sparse format.
+	(pax_sparse_member_p): Fix condition
+	(pax_dump_header): A dispatcher function
+	(pax_dump_header_0,pax_dump_header_1): New functions.
+	(pax_optab): Update
+	(oldgnu_dump_header): Minor fix: make sure
+	sparse_header.isextended is set before calling
+	set_next_block_after
+	* src/tar.c: New option --sparse-version
+	* src/tar.h (struct tar_stat_info.sparse_major,sparse_minor): New
+	members.
+	* src/xheader.c: Implement new keywords: GNU.sparse.name,
+	GNU.sparse.major, GNU.sparse.minor, GNU.sparse.realsize
+
+	* tests/spmpv00.at, tests/spmvp01.at, tests/spmvp10.at: New
+	testcases.
+	
+	* tests/Makefile.am: Add spmvp00.at, spmpv01.at, spmpv10.at
+	* tests/shortrec.at: Explicitely give `-f -' to the tar invocation
+	* tests/sparsemvp.at: Rewritten as an include file.
+	(TAR_MVP_TEST): New macro
+	* tests/testsuite.at: Include sparsemvp.at, spmvp00.at, spmvp01.at, spmvp10.at
+
 2006-06-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi (Overriding File Metadata): New node
