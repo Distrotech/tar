@@ -301,6 +301,7 @@ enum
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
   SHOW_TRANSFORMED_NAMES_OPTION,
+  SPARSE_VERSION_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
   TEST_LABEL_OPTION,
@@ -382,6 +383,8 @@ static struct argp_option options[] = {
 
   {"sparse", 'S', 0, 0,
    N_("handle sparse files efficiently"), GRID+1 },
+  {"sparse-version", SPARSE_VERSION_OPTION, N_("MAJOR[.MINOR]"), 0,
+   N_("set version of the sparse format to use"), GRID+1},
   {"incremental", 'G', 0, 0,
    N_("handle old GNU-format incremental backup"), GRID+1 },
   {"listed-incremental", 'g', N_("FILE"), 0,
@@ -400,7 +403,7 @@ static struct argp_option options[] = {
 
 #define GRID 30
   {NULL, 0, NULL, 0,
-   N_("Overwrite control:\n"), GRID+1 },
+   N_("Overwrite control:"), GRID+1 },
 
   {"verify", 'W', 0, 0,
    N_("attempt to verify the archive after writing it"), GRID+1 },
@@ -627,7 +630,7 @@ static struct argp_option options[] = {
    N_("strip NUMBER leading components from file names on extraction"),
    GRID+1 },
   {"transform", TRANSFORM_OPTION, N_("EXPRESSION"), 0,
-   N_("Use sed replace EXPRESSION to transform file names"), GRID+1 },
+   N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
 #undef GRID
 
 #define GRID 95  
@@ -1341,6 +1344,21 @@ parse_opt (int key, char *arg, struct argp_state *state)
       sparse_option = true;
       break;
 
+    case SPARSE_VERSION_OPTION:
+      {
+	char *p;
+	tar_sparse_major = strtoul (arg, &p, 10);
+	if (*p)
+	  {
+	    if (*p != '.')
+	      USAGE_ERROR ((0, 0, _("Invalid sparse version value")));
+	    tar_sparse_minor = strtoul (p + 1, &p, 10);
+	    if (*p)
+	      USAGE_ERROR ((0, 0, _("Invalid sparse version value")));
+	  }
+      }
+      break;
+	    
     case 't':
       set_subcommand_option (LIST_SUBCOMMAND);
       verbose_option++;
@@ -1885,7 +1903,7 @@ decode_options (int argc, char **argv)
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
   args.version_control_string = 0;
   args.input_files = false;
-
+  
   subcommand_option = UNKNOWN_SUBCOMMAND;
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
@@ -1895,7 +1913,9 @@ decode_options (int argc, char **argv)
   newer_mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
   unquote_option = true;
-
+  tar_sparse_major = 1;
+  tar_sparse_minor = 0;
+  
   owner_option = -1;
   group_option = -1;
 
