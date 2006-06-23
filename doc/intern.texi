@@ -6,6 +6,7 @@
 @menu
 * Standard::           Basic Tar Format
 * Extensions::         @acronym{GNU} Extensions to the Archive Format
+* Sparse Formats::     Storing Sparse Files
 * Snapshot Files::
 * Dumpdir::
 @end menu
@@ -320,6 +321,10 @@ use the @acronym{GNU}-added fields of the header, other versions of
 @command{tar} program will give an error, the most likely one being a
 checksum error.
 
+@node Sparse Formats
+@unnumberedsec Storing Sparse Files
+@include sparse.texi
+
 @node Snapshot Files
 @unnumberedsec Format of the Incremental Snapshot Files
 @include snapshot.texi
@@ -327,3 +332,4 @@ checksum error.
 @node Dumpdir
 @unnumberedsec Dumpdir
 @include dumpdir.texi
+
