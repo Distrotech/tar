@@ -843,7 +843,6 @@ static struct tar_sparse_optab const star_optab = {
 
 /* GNU PAX sparse file format. There are several versions:
 
-
    * 0.0
 
    The initial version of sparse format used by tar 1.14-1.15.1.
@@ -874,7 +873,7 @@ static struct tar_sparse_optab const star_optab = {
    GNU.sparse.size      Real size of the stored file
    GNU.sparse.numblocks Number of blocks in the sparse map
    GNU.sparse.map       Map of non-null data chunks. A string consisting
-                        of comma-separated values "offset,size[,offset,size]..."
+                       of comma-separated values "offset,size[,offset,size]..."
 
    The resulting GNU.sparse.map string can be *very* long. While POSIX does not
    impose any limit on the length of a x header variable, this can confuse some
@@ -882,8 +881,8 @@ static struct tar_sparse_optab const star_optab = {
 
    * 1.0
 
-   Starting from this version, the exact sparse format version is specified explicitely
-   in the header using the following variables:
+   Starting from this version, the exact sparse format version is specified
+   explicitely in the header using the following variables:
 
    GNU.sparse.major     Major version 
    GNU.sparse.minor     Minor version
@@ -898,22 +897,24 @@ static struct tar_sparse_optab const star_optab = {
    "%d/GNUSparseFile.%p/%f".
    
    The sparse map itself is stored in the file data block, preceding the actual
-   file data. It consists of a series of octal numbers of arbitrary length, delimited 
-   by newlines. The map is padded with nulls to the nearest block boundary.
+   file data. It consists of a series of octal numbers of arbitrary length,
+   delimited by newlines. The map is padded with nulls to the nearest block
+   boundary.
 
-   The first number gives the number of entries in the map. Following are map entries,
-   each one consisting of two numbers giving the offset and size of the
-   data block it describes.
+   The first number gives the number of entries in the map. Following are map
+   entries, each one consisting of two numbers giving the offset and size of
+   the data block it describes.
 
    The format is designed in such a way that non-posix aware tars and tars not
-   supporting GNU.sparse.* keywords will extract each sparse file in its condensed
-   form with the file map attached and will place it into a separate directory.
-   Then, using a simple program it would be possible to expand the file to its
-   original form even without GNU tar.
+   supporting GNU.sparse.* keywords will extract each sparse file in its
+   condensed form with the file map attached and will place it into a separate
+   directory. Then, using a simple program it would be possible to expand the
+   file to its original form even without GNU tar.
 
-   Bu default, v.1.0 archives are created. To use other formats, --sparse-version
-   option is provided. Additionally, v.0.0 can be obtained by deleting GNU.sparse.map
-   from 0.1 format: --sparse-version 0.1 --pax-option delete=GNU.sparse.map
+   Bu default, v.1.0 archives are created. To use other formats,
+   --sparse-version option is provided. Additionally, v.0.0 can be obtained
+   by deleting GNU.sparse.map from 0.1 format: --sparse-version 0.1
+   --pax-option delete=GNU.sparse.map
 */
 
 static bool
@@ -962,7 +963,12 @@ pax_dump_header_0 (struct tar_sparse_file *file)
 	  xheader_string_add (",");
 	  xheader_string_add (umaxtostr (map[i].numbytes, nbuf));
 	}
-      xheader_string_end ("GNU.sparse.map");
+      if (!xheader_string_end ("GNU.sparse.map"))
+	{
+	  free (file->stat_info->file_name);
+	  file->stat_info->file_name = save_file_name;
+	  return false;
+	}
     }
   blk = start_header (file->stat_info);
   /* Store the effective (shrunken) file size */
@@ -1058,11 +1064,9 @@ pax_dump_header (struct tar_sparse_file *file)
 {
   file->stat_info->sparse_major = tar_sparse_major;
   file->stat_info->sparse_minor = tar_sparse_minor;
-  
-  if (file->stat_info->sparse_major == 0)
-    pax_dump_header_0 (file);
-  else
-    pax_dump_header_1 (file);
+
+  return (file->stat_info->sparse_major == 0) ?
+           pax_dump_header_0 (file) : pax_dump_header_1 (file);
 }
 
 static bool
@@ -1102,11 +1106,11 @@ pax_decode_header (struct tar_sparse_file *file)
      {                                                             \
        if (dst == buf + UINTMAX_STRSIZE_BOUND -1)                  \
          {                                                         \
-           ERROR ((0, 0, _("%s: numeric overflow in sparse archive member"),   \
+           ERROR ((0, 0, _("%s: numeric overflow in sparse archive member"), \
 	          file->stat_info->orig_file_name));               \
            return false;                                           \
          }                                                         \
-        if (src == endp)                                           \
+       if (src == endp)                                            \
 	 {                                                         \
 	   set_next_block_after (b);                               \
 	   b = find_next_block ();                                 \
