@@ -1036,6 +1036,7 @@ extract_volhdr (char *file_name, int typeflag)
   if (verbose_option)
     fprintf (stdlis, _("Reading %s\n"), quote (current_stat_info.file_name));
   skip_member ();
+  return 0;
 }
 
 static int
