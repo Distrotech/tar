@@ -430,7 +430,7 @@ struct xhdr_tab
   char const *keyword;
   void (*coder) (struct tar_stat_info const *, char const *,
 		 struct xheader *, void const *data);
-  void (*decoder) (struct tar_stat_info *, char const *, size_t);
+  void (*decoder) (struct tar_stat_info *, char const *, char const *, size_t);
   bool protect;
 };
 
@@ -484,7 +484,8 @@ decode_record (char **ptr,
 {
   char *start = *ptr;
   char *p = start;
-  unsigned long int len;
+  uintmax_t u;
+  size_t len;
   char *len_lim;
   char const *keyword;
   char *nextp;
@@ -501,8 +502,13 @@ decode_record (char **ptr,
     }
 
   errno = 0;
-  len = strtoul (p, &len_lim, 10);
-
+  len = u = strtoumax (p, &len_lim, 10);
+  if (len != u || errno == ERANGE)
+    {
+      ERROR ((0, 0, _("Extended header length is out of allowed range")));
+      return false;
+    }
+  
   if (len_max < len)
     {
       int len_len = len_lim - p;
@@ -551,7 +557,7 @@ run_override_list (struct keyword_list *kp, struct tar_stat_info *st)
     {
       struct xhdr_tab const *t = locate_handler (kp->pattern);
       if (t)
-	t->decoder (st, kp->value, strlen (kp->value));
+	t->decoder (st, t->keyword, kp->value, strlen (kp->value));
     }
 }
 
@@ -567,7 +573,7 @@ decx (void *data, char const *keyword, char const *value, size_t size)
 
   t = locate_handler (keyword);
   if (t)
-    t->decoder (st, value, size);
+    t->decoder (st, keyword, value, size);
   else
     ERROR((0, 0, _("Ignoring unknown extended header keyword `%s'"),
 	   keyword));
@@ -746,18 +752,19 @@ xheader_string_add (char const *s)
   x_obstack_grow (&extended_header, s, strlen (s));
 }
 
-void
+bool
 xheader_string_end (char const *keyword)
 {
-  size_t len;
-  size_t p;
-  size_t n = 0;
+  uintmax_t len;
+  uintmax_t p;
+  uintmax_t n = 0;
+  size_t size;
   char nbuf[UINTMAX_STRSIZE_BOUND];
   char const *np;
   char *cp;
 
   if (extended_header.buffer)
-    return;
+    return false;
   extended_header_init ();
 
   len = strlen (keyword) + string_length + 3; /* ' ' + '=' + '\n' */
@@ -771,6 +778,15 @@ xheader_string_end (char const *keyword)
   while (n != p);
 
   p = strlen (keyword) + n + 2;
+  size = p;
+  if (size != p)
+    {
+      ERROR ((0, 0,
+        _("Generated keyword/value pair is too long (keyword=%s, length=%s"),
+	      keyword, nbuf));
+      obstack_free (extended_header.stk, obstack_finish (extended_header.stk));
+      return false;
+    }
   x_obstack_blank (&extended_header, p);
   x_obstack_1grow (&extended_header, '\n');
   cp = obstack_next_free (extended_header.stk) - string_length - p - 1;
@@ -779,6 +795,7 @@ xheader_string_end (char const *keyword)
   *cp++ = ' ';
   cp = stpcpy (cp, keyword);
   *cp++ = '=';
+  return true;
 }
 
 
@@ -983,6 +1000,7 @@ dummy_coder (struct tar_stat_info const *st __attribute__ ((unused)),
 
 static void
 dummy_decoder (struct tar_stat_info *st __attribute__ ((unused)),
+	       char const *keyword __attribute__ ((unused)),
 	       char const *arg __attribute__ ((unused)),
 	       size_t size __attribute__((unused)))
 {
@@ -996,11 +1014,13 @@ atime_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-atime_decoder (struct tar_stat_info *st, char const *arg,
+atime_decoder (struct tar_stat_info *st,
+	       char const *keyword,
+	       char const *arg,
 	       size_t size __attribute__((unused)))
 {
   struct timespec ts;
-  if (decode_time (&ts, arg, "atime"))
+  if (decode_time (&ts, arg, keyword))
     st->atime = ts;
 }
 
@@ -1012,11 +1032,13 @@ gid_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-gid_decoder (struct tar_stat_info *st, char const *arg,
+gid_decoder (struct tar_stat_info *st,
+	     char const *keyword,
+	     char const *arg,
 	     size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (gid_t), "gid"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (gid_t), keyword))
     st->stat.st_gid = u;
 }
 
@@ -1028,7 +1050,9 @@ gname_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-gname_decoder (struct tar_stat_info *st, char const *arg,
+gname_decoder (struct tar_stat_info *st,
+	       char const *keyword __attribute__((unused)),
+	       char const *arg,
 	       size_t size __attribute__((unused)))
 {
   decode_string (&st->gname, arg);
@@ -1042,7 +1066,9 @@ linkpath_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-linkpath_decoder (struct tar_stat_info *st, char const *arg,
+linkpath_decoder (struct tar_stat_info *st,
+		  char const *keyword __attribute__((unused)),
+		  char const *arg,
 		  size_t size __attribute__((unused)))
 {
   decode_string (&st->link_name, arg);
@@ -1056,11 +1082,13 @@ ctime_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-ctime_decoder (struct tar_stat_info *st, char const *arg,
+ctime_decoder (struct tar_stat_info *st,
+	       char const *keyword,
+	       char const *arg,
 	       size_t size __attribute__((unused)))
 {
   struct timespec ts;
-  if (decode_time (&ts, arg, "ctime"))
+  if (decode_time (&ts, arg, keyword))
     st->ctime = ts;
 }
 
@@ -1072,11 +1100,13 @@ mtime_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-mtime_decoder (struct tar_stat_info *st, char const *arg,
+mtime_decoder (struct tar_stat_info *st,
+	       char const *keyword,
+	       char const *arg,
 	       size_t size __attribute__((unused)))
 {
   struct timespec ts;
-  if (decode_time (&ts, arg, "mtime"))
+  if (decode_time (&ts, arg, keyword))
     st->mtime = ts;
 }
 
@@ -1088,7 +1118,9 @@ path_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-path_decoder (struct tar_stat_info *st, char const *arg,
+path_decoder (struct tar_stat_info *st,
+	      char const *keyword __attribute__((unused)),
+	      char const *arg,
 	      size_t size __attribute__((unused)))
 {
   decode_string (&st->orig_file_name, arg);
@@ -1104,11 +1136,13 @@ size_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-size_decoder (struct tar_stat_info *st, char const *arg,
+size_decoder (struct tar_stat_info *st,
+	      char const *keyword,
+	      char const *arg,
 	      size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), "size"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
     st->stat.st_size = u;
 }
 
@@ -1120,11 +1154,13 @@ uid_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-uid_decoder (struct tar_stat_info *st, char const *arg,
+uid_decoder (struct tar_stat_info *st,
+	     char const *keyword,
+	     char const *arg,
 	     size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (uid_t), "uid"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (uid_t), keyword))
     st->stat.st_uid = u;
 }
 
@@ -1136,7 +1172,9 @@ uname_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-uname_decoder (struct tar_stat_info *st, char const *arg,
+uname_decoder (struct tar_stat_info *st,
+	       char const *keyword __attribute__((unused)),
+	       char const *arg,
 	       size_t size __attribute__((unused)))
 {
   decode_string (&st->uname, arg);
@@ -1150,11 +1188,13 @@ sparse_size_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_size_decoder (struct tar_stat_info *st, char const *arg,
+sparse_size_decoder (struct tar_stat_info *st,
+		     char const *keyword,
+		     char const *arg,
 		     size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), "GNU.sparse.size"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
     st->stat.st_size = u;
 }
 
@@ -1167,11 +1207,13 @@ sparse_numblocks_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_numblocks_decoder (struct tar_stat_info *st, char const *arg,
+sparse_numblocks_decoder (struct tar_stat_info *st,
+			  char const *keyword,
+			  char const *arg,
 			  size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, SIZE_MAX, "GNU.sparse.numblocks"))
+  if (decode_num (&u, arg, SIZE_MAX, keyword))
     {
       st->sparse_map_size = u;
       st->sparse_map = xcalloc (u, sizeof st->sparse_map[0]);
@@ -1188,11 +1230,13 @@ sparse_offset_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_offset_decoder (struct tar_stat_info *st, char const *arg,
+sparse_offset_decoder (struct tar_stat_info *st,
+		       char const *keyword,
+		       char const *arg,
 		       size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), "GNU.sparse.offset"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
     {
       if (st->sparse_map_avail < st->sparse_map_size)
 	st->sparse_map[st->sparse_map_avail].offset = u;
@@ -1211,26 +1255,29 @@ sparse_numbytes_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_numbytes_decoder (struct tar_stat_info *st, char const *arg,
+sparse_numbytes_decoder (struct tar_stat_info *st,
+			 char const *keyword,
+			 char const *arg,
 			 size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, SIZE_MAX, "GNU.sparse.numbytes"))
+  if (decode_num (&u, arg, SIZE_MAX, keyword))
     {
       if (st->sparse_map_avail < st->sparse_map_size)
 	st->sparse_map[st->sparse_map_avail++].numbytes = u;
       else
 	ERROR ((0, 0, _("Malformed extended header: excess %s=%s"),
-		"GNU.sparse.numbytes", arg));
+		keyword, arg));
     }
 }
 
 static void
-sparse_map_decoder (struct tar_stat_info *st, char const *arg,
+sparse_map_decoder (struct tar_stat_info *st,
+		    char const *keyword,
+		    char const *arg,
 		    size_t size __attribute__((unused)))
 {
   int offset = 1;
-  static char *keyword = "GNU.sparse.map";
 
   st->sparse_map_avail = 0;
   while (1)
@@ -1304,7 +1351,9 @@ dumpdir_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-dumpdir_decoder (struct tar_stat_info *st, char const *arg,
+dumpdir_decoder (struct tar_stat_info *st,
+		 char const *keyword __attribute__((unused)),
+		 char const *arg,
 		 size_t size)
 {
   st->dumpdir = xmalloc (size);
@@ -1319,7 +1368,10 @@ volume_label_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-volume_label_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+volume_label_decoder (struct tar_stat_info *st,
+		      char const *keyword __attribute__((unused)),
+		      char const *arg,
+		      size_t size __attribute__((unused)))
 {
   decode_string (&volume_label, arg);
 }
@@ -1333,10 +1385,12 @@ volume_size_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-volume_size_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+volume_size_decoder (struct tar_stat_info *st,
+		     char const *keyword,
+		     char const *arg, size_t size)
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), "GNU.volume.size"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), keyword))
     continued_file_size = u;
 }
 
@@ -1350,16 +1404,20 @@ volume_offset_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-volume_offset_decoder (struct tar_stat_info *st, char const *arg, size_t size)
+volume_offset_decoder (struct tar_stat_info *st,
+		       char const *keyword,
+		       char const *arg, size_t size)
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), "GNU.volume.offset"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (uintmax_t), keyword))
     continued_file_offset = u;
 }
 
 static void
-volume_filename_decoder (struct tar_stat_info *st, char const *arg,
-			 size_t size)
+volume_filename_decoder (struct tar_stat_info *st,
+			 char const *keyword __attribute__((unused)),
+			 char const *arg,
+			 size_t size __attribute__((unused)))
 {
   decode_string (&continued_file_name, arg);
 }
@@ -1372,11 +1430,13 @@ sparse_major_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_major_decoder (struct tar_stat_info *st, char const *arg,
+sparse_major_decoder (struct tar_stat_info *st,
+		      char const *keyword,
+		      char const *arg,
 		      size_t size)
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), "GNU.sparse.major"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
     st->sparse_major = u;
 }
   
@@ -1388,11 +1448,13 @@ sparse_minor_coder (struct tar_stat_info const *st, char const *keyword,
 }
 
 static void
-sparse_minor_decoder (struct tar_stat_info *st, char const *arg,
+sparse_minor_decoder (struct tar_stat_info *st,
+		      char const *keyword,
+		      char const *arg,
 		      size_t size)
 {
   uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), "GNU.sparse.minor"))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
     st->sparse_minor = u;
 }
   
@@ -1417,11 +1479,13 @@ struct xhdr_tab const xhdr_tab[] = {
     true },
   { "GNU.sparse.minor",      sparse_minor_coder, sparse_minor_decoder,
     true },
-  { "GNU.sparse.realsize",  sparse_size_coder, sparse_size_decoder, true },
-  
-  { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder, true },
+  { "GNU.sparse.realsize",   sparse_size_coder, sparse_size_decoder,
+    true },
   { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder,
     true },
+
+  /* tar 1.14 - 1.15.90 keywords. */
+  { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder, true },
   /* tar 1.14 - 1.15.1 keywords. Multiple instances of these appeared in 'x'
      headers, and each of them was meaningful. It confilcted with POSIX specs,
      which requires that "when extended header records conflict, the last one
