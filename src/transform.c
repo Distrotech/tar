@@ -64,7 +64,7 @@ struct replace_segm
 
 /* Compiled replacement expression */
 static struct replace_segm *repl_head, *repl_tail;
-static segm_count; /* Number of elements in the above list */
+static size_t segm_count; /* Number of elements in the above list */
 
 static struct replace_segm *
 add_segment (void)
@@ -377,7 +377,6 @@ bool
 _transform_name_to_obstack (char *input)
 {
   regmatch_t *rmp;
-  char *p;
   int rc;
   size_t nmatches = 0;
   enum case_ctl_type case_ctl = ctl_stop,  /* Current case conversion op */
@@ -501,7 +500,7 @@ _transform_name_to_obstack (char *input)
 bool
 transform_name_fp (char **pinput, char *(*fun)(char *))
 {
-    char *str, *p;
+    char *str;
     bool ret = _transform_name_to_obstack (*pinput);
     if (ret)
       {
