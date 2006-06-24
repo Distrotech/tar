@@ -1,3 +1,20 @@
+2006-06-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (print_total_stats): Add default case.
+	* src/common.h (name_init): New prototype.
+	(xheader_string_end): Return bool.
+	* src/extract.c (extract_volhdr): Add missing return
+	* src/incremen.c: Remove not used variables
+	* src/sparse.c (pax_dump_header_0): Return false if
+	xheader_string_end fails (for 0.1 formats).
+	(pax_dump_header): Return meaningful value
+	* src/transform.c (segm_count): Change type to size_t
+	* src/xheader.c (xhdr_tab.decoder): pass keyword as a second
+	argument. All callers changed.
+	(decode_record): Check for numeric overflow
+	(xheader_string_end): Return boolean value. Check for possible
+	numeric overflow
+
 2006-06-23  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/sparse.texi: New file
