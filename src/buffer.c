@@ -338,6 +338,9 @@ print_total_stats ()
       print_stats (stderr, _("Total bytes read"),
 		   records_read * record_size);
       break;
+
+    default:
+      abort ();
     }
 }
 
