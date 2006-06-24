@@ -384,6 +384,7 @@ size_t available_space_after (union block *pointer);
 off_t current_block_ordinal (void);
 void close_archive (void);
 void closeout_volume_number (void);
+void compute_duration (void);
 union block *find_next_block (void);
 void flush_read (void);
 void flush_write (void);
@@ -612,7 +613,7 @@ int gname_to_gid (char const *gname, gid_t *pgid);
 void uid_to_uname (uid_t uid, char **uname);
 int uname_to_uid (char const *uname, uid_t *puid);
 
-void init_names (void);
+void name_init (void);
 void name_add_name (const char *name, int matching_flags);
 void name_add_dir (const char *name);
 void name_term (void);
@@ -680,7 +681,7 @@ void xheader_write_global (void);
 void xheader_set_option (char *string);
 void xheader_string_begin (void);
 void xheader_string_add (char const *s);
-void xheader_string_end (char const *keyword);
+bool xheader_string_end (char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
 char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 			   size_t n);
