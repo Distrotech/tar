@@ -211,7 +211,7 @@ void
 update_parent_directory (const char *name)
 {
   struct directory *directory;
-  char *p, *name_buffer;
+  char *p;
 
   p = dir_name (name);
   directory = find_directory (p);
@@ -234,7 +234,6 @@ procdir (char *name_buffer, struct stat *stat_data,
 {
   struct directory *directory;
   bool nfs = NFS_FILE_STAT (*stat_data);
-  struct name *np;
 
   if ((directory = find_directory (name_buffer)) != NULL)
     {
@@ -946,7 +945,6 @@ read_directory_file (void)
   int fd;
   char *buf = 0;
   size_t bufsize;
-  long lineno = 1;
 
   /* Open the file for both read and write.  That way, we can write
      it later without having to reopen it, and don't have to worry if
