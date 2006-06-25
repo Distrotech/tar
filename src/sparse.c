@@ -409,15 +409,6 @@ sparse_dump_file (int fd, struct tar_stat_info *st)
   return (tar_sparse_done (&file) && rc) ? dump_status_ok : dump_status_short;
 }
 
-/* Returns true if the file represented by stat is a sparse one */
-bool
-sparse_file_p (struct tar_stat_info *st)
-{
-  return (ST_NBLOCKS (st->stat)
-	  < (st->stat.st_size / ST_NBLOCKSIZE
-	     + (st->stat.st_size % ST_NBLOCKSIZE != 0)));
-}
-
 bool
 sparse_member_p (struct tar_stat_info *st)
 {

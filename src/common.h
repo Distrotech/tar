@@ -710,7 +710,6 @@ int sys_exec_info_script (const char **archive_name, int volume_number);
 void report_difference (struct tar_stat_info *st, const char *message, ...);
 
 /* Module sparse.c */
-bool sparse_file_p (struct tar_stat_info *st);
 bool sparse_member_p (struct tar_stat_info *st);
 bool sparse_fixup_header (struct tar_stat_info *st);
 enum dump_status sparse_dump_file (int, struct tar_stat_info *st);
