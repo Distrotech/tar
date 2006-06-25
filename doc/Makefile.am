@@ -24,8 +24,8 @@ tar_TEXINFOS = \
  freemanuals.texi\
  genfile.texi\
  getdate.texi\
- intern.texi\
  header.texi\
+ intern.texi\
  rendition.texi\
  snapshot.texi\
  sparse.texi\
