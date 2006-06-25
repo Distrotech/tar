@@ -384,7 +384,7 @@ static struct argp_option options[] = {
   {"sparse", 'S', 0, 0,
    N_("handle sparse files efficiently"), GRID+1 },
   {"sparse-version", SPARSE_VERSION_OPTION, N_("MAJOR[.MINOR]"), 0,
-   N_("set version of the sparse format to use"), GRID+1},
+   N_("set version of the sparse format to use (implies --sparse)"), GRID+1},
   {"incremental", 'G', 0, 0,
    N_("handle old GNU-format incremental backup"), GRID+1 },
   {"listed-incremental", 'g', N_("FILE"), 0,
@@ -1327,7 +1327,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* Print block numbers for debugging bad tar archives.  */
 
       /* It would surely make sense to exchange -B and -R, but it seems
-	 that -B has been used for a long while in Sun tar ans most
+	 that -B has been used for a long while in Sun tar and most
 	 BSD-derived systems.  This is a consequence of the block/record
 	 terminology confusion.  */
 
@@ -1335,7 +1335,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 's':
-      /* Names to extr are sorted.  */
+      /* Names to extract are sorted.  */
 
       same_order_option = true;
       break;
@@ -1345,6 +1345,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case SPARSE_VERSION_OPTION:
+      sparse_option = true;
       {
 	char *p;
 	tar_sparse_major = strtoul (arg, &p, 10);
