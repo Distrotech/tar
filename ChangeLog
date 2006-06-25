@@ -1,3 +1,18 @@
+2006-06-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* scripts/xsparse.c: A sample utility to expand sparse files
+	extracted by third-party tars. It is not meant to be installed nor
+	to be included in the distribution. It is here, so that it can be
+	obtained either from CVS or from the tar web site.
+	* doc/Makefile.am (tar_TEXINFOS): Sorted
+	* doc/tar.texi (Other Tars): New node describing how to extract
+	GNU-specific member formats using third-party tars.
+	* src/common.h (sparse_file_p): Remove
+	* src/sparse.c: Likewise
+	* src/create.c: Use ST_IS_SPARSE instead of sparse_file_p (update
+	paxutils first)
+	* src/tar.c: --sparse-version turns on --sparse
+	
 2006-06-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (print_total_stats): Add default case.
@@ -45,7 +60,8 @@
 	* tests/shortrec.at: Explicitely give `-f -' to the tar invocation
 	* tests/sparsemvp.at: Rewritten as an include file.
 	(TAR_MVP_TEST): New macro
-	* tests/testsuite.at: Include sparsemvp.at, spmvp00.at, spmvp01.at, spmvp10.at
+	* tests/testsuite.at: Include sparsemvp.at, spmvp00.at,
+	spmvp01.at, spmvp10.at
 
 2006-06-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
