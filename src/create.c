@@ -380,7 +380,7 @@ bool
 file_dumpable_p (struct tar_stat_info *st)
 {
   if (dev_null_output)
-    return totals_option && sparse_option && sparse_file_p (st);
+    return totals_option && sparse_option && ST_IS_SPARSE (st->stat);
   return !(st->archive_file_size == 0
 	   && (st->stat.st_mode & MODE_R) == MODE_R);
 }
@@ -1499,7 +1499,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	{
 	  enum dump_status status;
 
-	  if (fd != -1 && sparse_option && sparse_file_p (st))
+	  if (fd != -1 && sparse_option && ST_IS_SPARSE (st->stat))
 	    {
 	      status = sparse_dump_file (fd, st);
 	      if (status == dump_status_not_implemented)
