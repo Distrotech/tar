@@ -1,3 +1,7 @@
+2006-06-26  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Update
+
 2006-06-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* scripts/xsparse.c: A sample utility to expand sparse files
