@@ -3055,6 +3055,13 @@ names.  @xref{listing member and file names}.
 Invokes a @acronym{GNU} extension when adding files to an archive that handles
 sparse files efficiently.  @xref{sparse}.
 
+@opsummary{sparse-version}
+@item --sparse-version=@var{version}
+
+Specified the @dfn{format version} to use when archiving sparse
+files.  Implies @option{--sparse}.  @xref{sparse}. For the description
+of the supported sparse formats, @xref{Sparse Formats}.
+
 @opsummary{starting-file}
 @item --starting-file=@var{name}
 @itemx -K @var{name}
@@ -7726,11 +7733,470 @@ to create archives in @samp{gnu} format, however, future version will
 switch to @samp{posix}.
 
 @menu
-* Portability::                 Making @command{tar} Archives More Portable
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
+* Portability::                 Making @command{tar} Archives More Portable
 * cpio::                        Comparison of @command{tar} and @command{cpio}
 @end menu
+
+@node Compression
+@section Using Less Space through Compression
+
+@menu
+* gzip::                        Creating and Reading Compressed Archives
+* sparse::                      Archiving Sparse Files
+@end menu
+
+@node gzip
+@subsection Creating and Reading Compressed Archives
+@cindex Compressed archives
+@cindex Storing archives in compressed format
+
+@GNUTAR{} is able to create and read compressed archives.  It supports
+@command{gzip} and @command{bzip2} compression programs.  For backward
+compatibilty, it also supports @command{compress} command, although
+we strongly recommend against using it, since there is a patent
+covering the algorithm it uses and you could be sued for patent
+infringement merely by running @command{compress}!  Besides, it is less
+effective than @command{gzip} and @command{bzip2}.
+
+Creating a compressed archive is simple: you just specify a
+@dfn{compression option} along with the usual archive creation
+commands.  The compression option is @option{-z} (@option{--gzip}) to
+create a @command{gzip} compressed archive, @option{-j}
+(@option{--bzip2}) to create a @command{bzip2} compressed archive, and
+@option{-Z} (@option{--compress}) to use @command{compress} program.
+For example:
+
+@smallexample
+$ @kbd{tar cfz archive.tar.gz .}
+@end smallexample
+
+Reading compressed archive is even simpler: you don't need to specify
+any additional options as @GNUTAR{} recognizes its format
+automatically.  Thus, the following commands will list and extract the
+archive created in previous example:
+
+@smallexample
+# List the compressed archive
+$ @kbd{tar tf archive.tar.gz}
+# Extract the compressed archive
+$ @kbd{tar xf archive.tar.gz}
+@end smallexample
+
+The only case when you have to specify a decompression option while
+reading the archive is when reading from a pipe or from a tape drive
+that does not support random access.  However, in this case @GNUTAR{}
+will indicate which option you should use.  For example:
+
+@smallexample
+$ @kbd{cat archive.tar.gz | tar tf -}
+tar: Archive is compressed.  Use -z option
+tar: Error is not recoverable: exiting now
+@end smallexample
+
+If you see such diagnostics, just add the suggested option to the
+invocation of @GNUTAR{}:
+
+@smallexample
+$ @kbd{cat archive.tar.gz | tar tfz -}
+@end smallexample
+
+Notice also, that there are several restrictions on operations on
+compressed archives.  First of all, compressed archives cannot be
+modified, i.e., you cannot update (@option{--update} (@option{-u})) them or delete
+(@option{--delete}) members from them.  Likewise, you cannot append
+another @command{tar} archive to a compressed archive using
+@option{--append} (@option{-r})).  Secondly, multi-volume archives cannot be
+compressed.
+
+The following table summarizes compression options used by @GNUTAR{}.
+
+@table @option
+@opindex gzip
+@opindex ungzip
+@item -z
+@itemx --gzip
+@itemx --ungzip
+Filter the archive through @command{gzip}.
+
+You can use @option{--gzip} and @option{--gunzip} on physical devices
+(tape drives, etc.) and remote files as well as on normal files; data
+to or from such devices or remote files is reblocked by another copy
+of the @command{tar} program to enforce the specified (or default) record
+size.  The default compression parameters are used; if you need to
+override them, set @env{GZIP} environment variable, e.g.:
+
+@smallexample
+$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
+@end smallexample
+
+@noindent
+Another way would be to avoid the @option{--gzip} (@option{--gunzip}, @option{--ungzip}, @option{-z}) option and run
+@command{gzip} explicitly:
+
+@smallexample
+$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
+@end smallexample
+
+@cindex corrupted archives
+About corrupted compressed archives: @command{gzip}'ed files have no
+redundancy, for maximum compression.  The adaptive nature of the
+compression scheme means that the compression tables are implicitly
+spread all over the archive.  If you lose a few blocks, the dynamic
+construction of the compression tables becomes unsynchronized, and there
+is little chance that you could recover later in the archive.
+
+There are pending suggestions for having a per-volume or per-file
+compression in @GNUTAR{}.  This would allow for viewing the
+contents without decompression, and for resynchronizing decompression at
+every volume or file, in case of corrupted archives.  Doing so, we might
+lose some compressibility.  But this would have make recovering easier.
+So, there are pros and cons.  We'll see!
+
+@opindex bzip2
+@item -j
+@itemx --bzip2
+Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
+
+@opindex compress
+@opindex uncompress
+@item -Z
+@itemx --compress
+@itemx --uncompress
+Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
+
+The @acronym{GNU} Project recommends you not use
+@command{compress}, because there is a patent covering the algorithm it
+uses.  You could be sued for patent infringement merely by running
+@command{compress}.
+
+@opindex use-compress-program
+@item --use-compress-program=@var{prog}
+Use external compression program @var{prog}.  Use this option if you
+have a compression program that @GNUTAR{} does not support.  There
+are two requirements to which @var{prog} should comply:
+
+First, when called without options, it should read data from standard
+input, compress it and output it on standard output.
+
+Secondly, if called with @option{-d} argument, it should do exactly
+the opposite, i.e., read the compressed data from the standard input
+and produce uncompressed data on the standard output.
+@end table
+
+@cindex gpg, using with tar
+@cindex gnupg, using with tar
+@cindex Using encrypted archives
+The @option{--use-compress-program} option, in particular, lets you
+implement your own filters, not necessarily dealing with
+compression/decomression.  For example, suppose you wish to implement
+PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
+gpg, gpg ---- encryption and signing tool, gpg, GNU Privacy Guard
+Manual}).  The following script does that:  
+
+@smallexample
+@group
+#! /bin/sh
+case $1 in
+-d) gpg --decrypt - | gzip -d -c;;
+'') gzip -c | gpg -s ;;
+*)  echo "Unknown option $1">&2; exit 1;;
+esac
+@end group
+@end smallexample
+
+Suppose you name it @file{gpgz} and save it somewhere in your
+@env{PATH}.  Then the following command will create a commpressed
+archive signed with your private key:
+
+@smallexample
+$ @kbd{tar -cf foo.tar.gpgz --use-compress=gpgz .}
+@end smallexample
+
+@noindent
+Likewise, the following command will list its contents:
+
+@smallexample
+$ @kbd{tar -tf foo.tar.gpgz --use-compress=gpgz .}
+@end smallexample
+
+@ignore
+The above is based on the following discussion:
+
+     I have one question, or maybe it's a suggestion if there isn't a way
+     to do it now.  I would like to use @option{--gzip}, but I'd also like
+     the output to be fed through a program like @acronym{GNU}
+     @command{ecc} (actually, right now that's @samp{exactly} what I'd like
+     to use :-)), basically adding ECC protection on top of compression.
+     It seems as if this should be quite easy to do, but I can't work out
+     exactly how to go about it.  Of course, I can pipe the standard output
+     of @command{tar} through @command{ecc}, but then I lose (though I
+     haven't started using it yet, I confess) the ability to have
+     @command{tar} use @command{rmt} for it's I/O (I think).
+
+     I think the most straightforward thing would be to let me specify a
+     general set of filters outboard of compression (preferably ordered,
+     so the order can be automatically reversed on input operations, and
+     with the options they require specifiable), but beggars shouldn't be
+     choosers and anything you decide on would be fine with me.
+
+     By the way, I like @command{ecc} but if (as the comments say) it can't
+     deal with loss of block sync, I'm tempted to throw some time at adding
+     that capability.  Supposing I were to actually do such a thing and
+     get it (apparently) working, do you accept contributed changes to
+     utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
+ 
+  Isn't that exactly the role of the
+  @option{--use-compress-prog=@var{program}} option? 
+  I never tried it myself, but I suspect you may want to write a
+  @var{prog} script or program able to filter stdin to stdout to
+  way you want.  It should recognize the @option{-d} option, for when
+  extraction is needed rather than creation.
+
+  It has been reported that if one writes compressed data (through the
+  @option{--gzip} or @option{--compress} options) to a DLT and tries to use
+  the DLT compression mode, the data will actually get bigger and one will
+  end up with less space on the tape.
+@end ignore
+
+@node sparse
+@subsection Archiving Sparse Files
+@cindex Sparse Files
+
+Files in the file system occasionally have @dfn{holes}.  A @dfn{hole}
+in a file is a section of the file's contents which was never written.
+The contents of a hole reads as all zeros.  On many operating systems,
+actual disk storage is not allocated for holes, but they are counted
+in the length of the file.  If you archive such a file, @command{tar}
+could create an archive longer than the original.  To have @command{tar}
+attempt to recognize the holes in a file, use @option{--sparse}
+(@option{-S}).  When you use this option, then, for any file using
+less disk space than would be expected from its length, @command{tar}
+searches the file for consecutive stretches of zeros.  It then records
+in the archive for the file where the consecutive stretches of zeros
+are, and only archives the ``real contents'' of the file.  On
+extraction (using @option{--sparse} is not needed on extraction) any
+such files have holes created wherever the continuous stretches of zeros
+were found.  Thus, if you use @option{--sparse}, @command{tar} archives
+won't take more space than the original.
+
+@table @option
+@opindex sparse
+@item -S
+@itemx --sparse
+This option istructs @command{tar} to test each file for sparseness
+before attempting to archive it.  If the file is found to be sparse it
+is treated specially, thus allowing to decrease the amount of space
+used by its image in the archive.
+
+This option is meaningful only when creating or updating archives.  It
+has no effect on extraction.
+@end table
+
+Consider using @option{--sparse} when performing file system backups,
+to avoid archiving the expanded forms of files stored sparsely in the
+system. 
+
+Even if your system has no sparse files currently, some may be
+created in the future.  If you use @option{--sparse} while making file
+system backups as a matter of course, you can be assured the archive
+will never take more space on the media than the files take on disk
+(otherwise, archiving a disk filled with sparse files might take
+hundreds of tapes).  @xref{Incremental Dumps}.
+
+However, be aware that @option{--sparse} option presents a serious
+drawback.  Namely, in order to determine if the file is sparse
+@command{tar} has to read it before trying to archive it, so in total
+the file is read @strong{twice}.  So, always bear in mind that the
+time needed to process all files with this option is roughly twice
+the time needed to archive them without it.
+@FIXME{A technical note:
+
+Programs like @command{dump} do not have to read the entire file; by
+examining the file system directly, they can determine in advance
+exactly where the holes are and thus avoid reading through them.  The
+only data it need read are the actual allocated data blocks.
+@GNUTAR{} uses a more portable and straightforward
+archiving approach, it would be fairly difficult that it does
+otherwise.  Elizabeth Zwicky writes to @file{comp.unix.internals}, on
+1990-12-10:
+
+@quotation
+What I did say is that you cannot tell the difference between a hole and an
+equivalent number of nulls without reading raw blocks.  @code{st_blocks} at
+best tells you how many holes there are; it doesn't tell you @emph{where}.
+Just as programs may, conceivably, care what @code{st_blocks} is (care
+to name one that does?), they may also care where the holes are (I have
+no examples of this one either, but it's equally imaginable).
+
+I conclude from this that good archivers are not portable.  One can
+arguably conclude that if you want a portable program, you can in good
+conscience restore files with as many holes as possible, since you can't
+get it right.
+@end quotation
+}
+
+@cindex sparse formats, defined
+When using @samp{POSIX} archive format, @GNUTAR{} is able to store
+sparse files using in three distinct ways, called @dfn{sparse
+formats}.  A sparse format is identified by its @dfn{number},
+consisting, as usual of two decimal numbers, delimited by a dot.  By
+default, format @samp{1.0} is used.  If, for some reason, you wish to
+use an earlier format, you can select it using
+@option{--sparse-version} option. 
+
+@table @option
+@opindex sparse-version
+@item --sparse-version=@var{version}
+
+Select the format to store sparse files in.  Valid @var{version} values
+are: @samp{0.0}, @samp{0.1} and @samp{1.0}.  @xref{Sparse Formats},
+for a detailed description of each format.
+@end table
+
+Using @option{--sparse-format} option implies @option{--sparse}.
+
+@node Attributes
+@section Handling File Attributes
+@UNREVISED
+
+When @command{tar} reads files, it updates their access times.  To
+avoid this, use the @option{--atime-preserve[=METHOD]} option, which can either
+reset the access time retroactively or avoid changing it in the first
+place.
+
+Handling of file attributes
+
+@table @option
+@opindex atime-preserve
+@item --atime-preserve
+@itemx --atime-preserve=replace
+@itemx --atime-preserve=system
+Preserve the access times of files that are read.  This works only for
+files that you own, unless you have superuser privileges.
+
+@option{--atime-preserve=replace} works on most systems, but it also
+restores the data modification time and updates the status change
+time.  Hence it doesn't interact with incremental dumps nicely
+(@pxref{Incremental Dumps}), and it can set access or data modification times
+incorrectly if other programs access the file while @command{tar} is
+running.
+
+@option{--atime-preserve=system} avoids changing the access time in
+the first place, if the operating system supports this.
+Unfortunately, this may or may not work on any given operating system
+or file system.  If @command{tar} knows for sure it won't work, it
+complains right away.
+
+Currently @option{--atime-preserve} with no operand defaults to
+@option{--atime-preserve=replace}, but this is intended to change to
+@option{--atime-preserve=system} when the latter is better-supported.
+
+@opindex touch
+@item -m
+@itemx --touch
+Do not extract data modification time.
+
+When this option is used, @command{tar} leaves the data modification times
+of the files it extracts as the times when the files were extracted,
+instead of setting it to the times recorded in the archive.
+
+This option is meaningless with @option{--list} (@option{-t}).
+
+@opindex same-owner
+@item --same-owner
+Create extracted files with the same ownership they have in the
+archive.
+
+This is the default behavior for the superuser,
+so this option is meaningful only for non-root users, when @command{tar}
+is executed on those systems able to give files away.  This is
+considered as a security flaw by many people, at least because it
+makes quite difficult to correctly account users for the disk space
+they occupy.  Also, the @code{suid} or @code{sgid} attributes of
+files are easily and silently lost when files are given away.
+
+When writing an archive, @command{tar} writes the user id and user name
+separately.  If it can't find a user name (because the user id is not
+in @file{/etc/passwd}), then it does not write one.  When restoring,
+it tries to look the name (if one was written) up in
+@file{/etc/passwd}.  If it fails, then it uses the user id stored in
+the archive instead. 
+
+@opindex no-same-owner
+@item --no-same-owner
+@itemx -o
+Do not attempt to restore ownership when extracting.  This is the
+default behavior for ordinary users, so this option has an effect
+only for the superuser.
+
+@opindex numeric-owner
+@item --numeric-owner
+The @option{--numeric-owner} option allows (ANSI) archives to be written
+without user/group name information or such information to be ignored
+when extracting.  It effectively disables the generation and/or use
+of user/group name information.  This option forces extraction using
+the numeric ids from the archive, ignoring the names.
+
+This is useful in certain circumstances, when restoring a backup from
+an emergency floppy with different passwd/group files for example.
+It is otherwise impossible to extract files with the right ownerships
+if the password file in use during the extraction does not match the
+one belonging to the file system(s) being extracted.  This occurs,
+for example, if you are restoring your files after a major crash and
+had booted from an emergency floppy with no password file or put your
+disk into another machine to do the restore.
+
+The numeric ids are @emph{always} saved into @command{tar} archives.
+The identifying names are added at create time when provided by the
+system, unless @option{--old-archive} (@option{-o}) is used.  Numeric ids could be
+used when moving archives between a collection of machines using
+a centralized management for attribution of numeric ids to users
+and groups.  This is often made through using the NIS capabilities.
+
+When making a @command{tar} file for distribution to other sites, it
+is sometimes cleaner to use a single owner for all files in the
+distribution, and nicer to specify the write permission bits of the
+files as stored in the archive independently of their actual value on
+the file system.  The way to prepare a clean distribution is usually
+to have some Makefile rule creating a directory, copying all needed
+files in that directory, then setting ownership and permissions as
+wanted (there are a lot of possible schemes), and only then making a
+@command{tar} archive out of this directory, before cleaning
+everything out.  Of course, we could add a lot of options to
+@GNUTAR{} for fine tuning permissions and ownership.
+This is not the good way, I think.  @GNUTAR{} is
+already crowded with options and moreover, the approach just explained
+gives you a great deal of control already.
+
+@xopindex{same-permissions, short description}
+@xopindex{preserve-permissions, short description}
+@item -p
+@itemx --same-permissions
+@itemx --preserve-permissions
+Extract all protection information.
+
+This option causes @command{tar} to set the modes (access permissions) of
+extracted files exactly as recorded in the archive.  If this option
+is not used, the current @code{umask} setting limits the permissions
+on extracted files.  This option is by default enabled when
+@command{tar} is executed by a superuser.
+
+
+This option is meaningless with @option{--list} (@option{-t}).
+
+@opindex preserve
+@item --preserve
+Same as both @option{--same-permissions} and @option{--same-order}.
+
+The @option{--preserve} option has no equivalent short option name.
+It is equivalent to @option{--same-permissions} plus @option{--same-order}.
+
+@FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)
+Neither do I. --Sergey}
+
+@end table
 
 @node Portability
 @section Making @command{tar} Archives More Portable
@@ -7823,7 +8289,7 @@ information recorded by newer @command{tar} programs.  To create an
 archive in V7 format (not ANSI), which can be read by these old
 versions, specify the @option{--format=v7} option in
 conjunction with the @option{--create} (@option{-c}) (@command{tar} also
-accepts @option{--portability} or @samp{op-old-archive} for this
+accepts @option{--portability} or @option{--old-archive} for this
 option).  When you specify it,
 @command{tar} leaves out information about directories, pipes, fifos,
 contiguous files, and device files, and specifies file ownership by
@@ -7836,7 +8302,9 @@ In most cases, a @emph{new} format archive can be read by an @emph{old}
 @command{tar} program without serious trouble, so this option should
 seldom be needed.  On the other hand, most modern @command{tar}s are
 able to read old format archives, so it might be safer for you to
-always use @option{--format=v7} for your distributions.
+always use @option{--format=v7} for your distributions.  Notice,
+however, that @samp{ustar} format is a better alternative, as it is
+free from many of @samp{v7}'s drawbacks.
 
 @node ustar
 @subsection Ustar Archive Format
@@ -7869,7 +8337,7 @@ incompatible with the current @acronym{POSIX} specification, and with
 
 In the majority of cases, @command{tar} will be configured to create
 this format by default.  This will change in the future releases, since
-we plan to make @samp{posix} format the default.
+we plan to make @samp{POSIX} format the default.
 
 To force creation a @GNUTAR{} archive, use option
 @option{--format=gnu}.
@@ -8376,8 +8844,8 @@ block       897:   65391 -rw-r--r--  gray/users Jun 24 20:06 2006 README
 (as usual, ignore the warnings about unknown keywords.)
 
 @item
-Let the size of the sparse member be @var{size}, its block number be
-@var{Bs} and the block number of the next member be @var{Bn}.
+Let @var{size} be the size of the sparse member, @var{Bs} be its block number
+and @var{Bn} be the block number of the next member.
 Compute: 
 
 @smallexample
@@ -8422,484 +8890,6 @@ Expanding file `GNUSparseFile.28124/sparsefile' to `sparsefile'
 Done
 @end group
 @end smallexample
-
-@node Compression
-@section Using Less Space through Compression
-
-@menu
-* gzip::                        Creating and Reading Compressed Archives
-* sparse::                      Archiving Sparse Files
-@end menu
-
-@node gzip
-@subsection Creating and Reading Compressed Archives
-@cindex Compressed archives
-@cindex Storing archives in compressed format
-
-@GNUTAR{} is able to create and read compressed archives.  It supports
-@command{gzip} and @command{bzip2} compression programs.  For backward
-compatibilty, it also supports @command{compress} command, although
-we strongly recommend against using it, since there is a patent
-covering the algorithm it uses and you could be sued for patent
-infringement merely by running @command{compress}!  Besides, it is less
-effective than @command{gzip} and @command{bzip2}.
-
-Creating a compressed archive is simple: you just specify a
-@dfn{compression option} along with the usual archive creation
-commands.  The compression option is @option{-z} (@option{--gzip}) to
-create a @command{gzip} compressed archive, @option{-j}
-(@option{--bzip2}) to create a @command{bzip2} compressed archive, and
-@option{-Z} (@option{--compress}) to use @command{compress} program.
-For example:
-
-@smallexample
-$ @kbd{tar cfz archive.tar.gz .}
-@end smallexample
-
-Reading compressed archive is even simpler: you don't need to specify
-any additional options as @GNUTAR{} recognizes its format
-automatically.  Thus, the following commands will list and extract the
-archive created in previous example:
-
-@smallexample
-# List the compressed archive
-$ @kbd{tar tf archive.tar.gz}
-# Extract the compressed archive
-$ @kbd{tar xf archive.tar.gz}
-@end smallexample
-
-The only case when you have to specify a decompression option while
-reading the archive is when reading from a pipe or from a tape drive
-that does not support random access.  However, in this case @GNUTAR{}
-will indicate which option you should use.  For example:
-
-@smallexample
-$ @kbd{cat archive.tar.gz | tar tf -}
-tar: Archive is compressed.  Use -z option
-tar: Error is not recoverable: exiting now
-@end smallexample
-
-If you see such diagnostics, just add the suggested option to the
-invocation of @GNUTAR{}:
-
-@smallexample
-$ @kbd{cat archive.tar.gz | tar tfz -}
-@end smallexample
-
-Notice also, that there are several restrictions on operations on
-compressed archives.  First of all, compressed archives cannot be
-modified, i.e., you cannot update (@option{--update} (@option{-u})) them or delete
-(@option{--delete}) members from them.  Likewise, you cannot append
-another @command{tar} archive to a compressed archive using
-@option{--append} (@option{-r})).  Secondly, multi-volume archives cannot be
-compressed.
-
-The following table summarizes compression options used by @GNUTAR{}.
-
-@table @option
-@opindex gzip
-@opindex ungzip
-@item -z
-@itemx --gzip
-@itemx --ungzip
-Filter the archive through @command{gzip}.
-
-You can use @option{--gzip} and @option{--gunzip} on physical devices
-(tape drives, etc.) and remote files as well as on normal files; data
-to or from such devices or remote files is reblocked by another copy
-of the @command{tar} program to enforce the specified (or default) record
-size.  The default compression parameters are used; if you need to
-override them, set @env{GZIP} environment variable, e.g.:
-
-@smallexample
-$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
-@end smallexample
-
-@noindent
-Another way would be to avoid the @option{--gzip} (@option{--gunzip}, @option{--ungzip}, @option{-z}) option and run
-@command{gzip} explicitly:
-
-@smallexample
-$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
-@end smallexample
-
-@cindex corrupted archives
-About corrupted compressed archives: @command{gzip}'ed files have no
-redundancy, for maximum compression.  The adaptive nature of the
-compression scheme means that the compression tables are implicitly
-spread all over the archive.  If you lose a few blocks, the dynamic
-construction of the compression tables becomes unsynchronized, and there
-is little chance that you could recover later in the archive.
-
-There are pending suggestions for having a per-volume or per-file
-compression in @GNUTAR{}.  This would allow for viewing the
-contents without decompression, and for resynchronizing decompression at
-every volume or file, in case of corrupted archives.  Doing so, we might
-lose some compressibility.  But this would have make recovering easier.
-So, there are pros and cons.  We'll see!
-
-@opindex bzip2
-@item -j
-@itemx --bzip2
-Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
-
-@opindex compress
-@opindex uncompress
-@item -Z
-@itemx --compress
-@itemx --uncompress
-Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
-
-The @acronym{GNU} Project recommends you not use
-@command{compress}, because there is a patent covering the algorithm it
-uses.  You could be sued for patent infringement merely by running
-@command{compress}.
-
-@opindex use-compress-program
-@item --use-compress-program=@var{prog}
-Use external compression program @var{prog}.  Use this option if you
-have a compression program that @GNUTAR{} does not support.  There
-are two requirements to which @var{prog} should comply:
-
-First, when called without options, it should read data from standard
-input, compress it and output it on standard output.
-
-Secondly, if called with @option{-d} argument, it should do exactly
-the opposite, i.e., read the compressed data from the standard input
-and produce uncompressed data on the standard output.
-@end table
-
-@cindex gpg, using with tar
-@cindex gnupg, using with tar
-@cindex Using encrypted archives
-The @option{--use-compress-program} option, in particular, lets you
-implement your own filters, not necessarily dealing with
-compression/decomression.  For example, suppose you wish to implement
-PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
-gpg, gpg ---- encryption and signing tool, gpg, GNU Privacy Guard
-Manual}).  The following script does that:  
-
-@smallexample
-@group
-#! /bin/sh
-case $1 in
--d) gpg --decrypt - | gzip -d -c;;
-'') gzip -c | gpg -s ;;
-*)  echo "Unknown option $1">&2; exit 1;;
-esac
-@end group
-@end smallexample
-
-Suppose you name it @file{gpgz} and save it somewhere in your
-@env{PATH}.  Then the following command will create a commpressed
-archive signed with your private key:
-
-@smallexample
-$ @kbd{tar -cf foo.tar.gpgz --use-compress=gpgz .}
-@end smallexample
-
-@noindent
-Likewise, the following command will list its contents:
-
-@smallexample
-$ @kbd{tar -tf foo.tar.gpgz --use-compress=gpgz .}
-@end smallexample
-
-@ignore
-The above is based on the following discussion:
-
-     I have one question, or maybe it's a suggestion if there isn't a way
-     to do it now.  I would like to use @option{--gzip}, but I'd also like
-     the output to be fed through a program like @acronym{GNU}
-     @command{ecc} (actually, right now that's @samp{exactly} what I'd like
-     to use :-)), basically adding ECC protection on top of compression.
-     It seems as if this should be quite easy to do, but I can't work out
-     exactly how to go about it.  Of course, I can pipe the standard output
-     of @command{tar} through @command{ecc}, but then I lose (though I
-     haven't started using it yet, I confess) the ability to have
-     @command{tar} use @command{rmt} for it's I/O (I think).
-
-     I think the most straightforward thing would be to let me specify a
-     general set of filters outboard of compression (preferably ordered,
-     so the order can be automatically reversed on input operations, and
-     with the options they require specifiable), but beggars shouldn't be
-     choosers and anything you decide on would be fine with me.
-
-     By the way, I like @command{ecc} but if (as the comments say) it can't
-     deal with loss of block sync, I'm tempted to throw some time at adding
-     that capability.  Supposing I were to actually do such a thing and
-     get it (apparently) working, do you accept contributed changes to
-     utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
- 
-  Isn't that exactly the role of the
-  @option{--use-compress-prog=@var{program}} option? 
-  I never tried it myself, but I suspect you may want to write a
-  @var{prog} script or program able to filter stdin to stdout to
-  way you want.  It should recognize the @option{-d} option, for when
-  extraction is needed rather than creation.
-
-  It has been reported that if one writes compressed data (through the
-  @option{--gzip} or @option{--compress} options) to a DLT and tries to use
-  the DLT compression mode, the data will actually get bigger and one will
-  end up with less space on the tape.
-@end ignore
-
-@node sparse
-@subsection Archiving Sparse Files
-@cindex Sparse Files
-@UNREVISED
-
-@table @option
-@opindex sparse
-@item -S
-@itemx --sparse
-Handle sparse files efficiently.
-@end table
-
-This option causes all files to be put in the archive to be tested for
-sparseness, and handled specially if they are.  The @option{--sparse}
-(@option{-S}) option is useful when many @code{dbm} files, for example, are being
-backed up.  Using this option dramatically decreases the amount of
-space needed to store such a file.
-
-In later versions, this option may be removed, and the testing and
-treatment of sparse files may be done automatically with any special
-@acronym{GNU} options.  For now, it is an option needing to be specified on
-the command line with the creation or updating of an archive.
-
-Files in the file system occasionally have @dfn{holes}.  A @dfn{hole} in a file
-is a section of the file's contents which was never written.  The
-contents of a hole read as all zeros.  On many operating systems,
-actual disk storage is not allocated for holes, but they are counted
-in the length of the file.  If you archive such a file, @command{tar}
-could create an archive longer than the original.  To have @command{tar}
-attempt to recognize the holes in a file, use @option{--sparse} (@option{-S}).  When
-you use this option, then, for any file using less disk space than
-would be expected from its length, @command{tar} searches the file for
-consecutive stretches of zeros.  It then records in the archive for
-the file where the consecutive stretches of zeros are, and only
-archives the ``real contents'' of the file.  On extraction (using
-@option{--sparse} is not needed on extraction) any such
-files have holes created wherever the continuous stretches of zeros
-were found. Thus, if you use @option{--sparse}, @command{tar} archives
-won't take more space than the original.
-
-A file is sparse if it contains blocks of zeros whose existence is
-recorded, but that have no space allocated on disk.  When you specify
-the @option{--sparse} option in conjunction with the @option{--create}
-(@option{-c}) operation, @command{tar} tests all files for sparseness
-while archiving. If @command{tar} finds a file to be sparse, it uses a
-sparse representation of the file in the archive.  @xref{create}, for
-more information about creating archives.
-
-@option{--sparse} is useful when archiving files, such as dbm files,
-likely to contain many nulls.  This option dramatically
-decreases the amount of space needed to store such an archive.
-
-@quotation
-@strong{Please Note:} Always use @option{--sparse} when performing file
-system backups, to avoid archiving the expanded forms of files stored
-sparsely in the system.
-
-Even if your system has no sparse files currently, some may be
-created in the future.  If you use @option{--sparse} while making file
-system backups as a matter of course, you can be assured the archive
-will never take more space on the media than the files take on disk
-(otherwise, archiving a disk filled with sparse files might take
-hundreds of tapes).  @xref{Incremental Dumps}.
-@end quotation
-
-@command{tar} ignores the @option{--sparse} option when reading an archive.
-
-@table @option
-@item --sparse
-@itemx -S
-Files stored sparsely in the file system are represented sparsely in
-the archive.  Use in conjunction with write operations.
-@end table
-
-However, users should be well aware that at archive creation time,
-@GNUTAR{} still has to read whole disk file to
-locate the @dfn{holes}, and so, even if sparse files use little space
-on disk and in the archive, they may sometimes require inordinate
-amount of time for reading and examining all-zero blocks of a file.
-Although it works, it's painfully slow for a large (sparse) file, even
-though the resulting tar archive may be small.  (One user reports that
-dumping a @file{core} file of over 400 megabytes, but with only about
-3 megabytes of actual data, took about 9 minutes on a Sun Sparcstation
-ELC, with full CPU utilization.)
-
-This reading is required in all cases and is not related to the fact
-the @option{--sparse} option is used or not, so by merely @emph{not}
-using the option, you are not saving time@footnote{Well!  We should say
-the whole truth, here.  When @option{--sparse} is selected while creating
-an archive, the current @command{tar} algorithm requires sparse files to be
-read twice, not once.  We hope to develop a new archive format for saving
-sparse files in which one pass will be sufficient.}.
-
-Programs like @command{dump} do not have to read the entire file; by
-examining the file system directly, they can determine in advance
-exactly where the holes are and thus avoid reading through them.  The
-only data it need read are the actual allocated data blocks.
-@GNUTAR{} uses a more portable and straightforward
-archiving approach, it would be fairly difficult that it does
-otherwise.  Elizabeth Zwicky writes to @file{comp.unix.internals}, on
-1990-12-10:
-
-@quotation
-What I did say is that you cannot tell the difference between a hole and an
-equivalent number of nulls without reading raw blocks.  @code{st_blocks} at
-best tells you how many holes there are; it doesn't tell you @emph{where}.
-Just as programs may, conceivably, care what @code{st_blocks} is (care
-to name one that does?), they may also care where the holes are (I have
-no examples of this one either, but it's equally imaginable).
-
-I conclude from this that good archivers are not portable.  One can
-arguably conclude that if you want a portable program, you can in good
-conscience restore files with as many holes as possible, since you can't
-get it right.
-@end quotation
-
-@node Attributes
-@section Handling File Attributes
-@UNREVISED
-
-When @command{tar} reads files, it updates their access times.  To
-avoid this, use the @option{--atime-preserve[=METHOD]} option, which can either
-reset the access time retroactively or avoid changing it in the first
-place.
-
-Handling of file attributes
-
-@table @option
-@opindex atime-preserve
-@item --atime-preserve
-@itemx --atime-preserve=replace
-@itemx --atime-preserve=system
-Preserve the access times of files that are read.  This works only for
-files that you own, unless you have superuser privileges.
-
-@option{--atime-preserve=replace} works on most systems, but it also
-restores the data modification time and updates the status change
-time.  Hence it doesn't interact with incremental dumps nicely
-(@pxref{Backups}), and it can set access or data modification times
-incorrectly if other programs access the file while @command{tar} is
-running.
-
-@option{--atime-preserve=system} avoids changing the access time in
-the first place, if the operating system supports this.
-Unfortunately, this may or may not work on any given operating system
-or file system.  If @command{tar} knows for sure it won't work, it
-complains right away.
-
-Currently @option{--atime-preserve} with no operand defaults to
-@option{--atime-preserve=replace}, but this is intended to change to
-@option{--atime-preserve=system} when the latter is better-supported.
-
-@opindex touch
-@item -m
-@itemx --touch
-Do not extract data modification time.
-
-When this option is used, @command{tar} leaves the data modification times
-of the files it extracts as the times when the files were extracted,
-instead of setting it to the times recorded in the archive.
-
-This option is meaningless with @option{--list} (@option{-t}).
-
-@opindex same-owner
-@item --same-owner
-Create extracted files with the same ownership they have in the
-archive.
-
-This is the default behavior for the superuser,
-so this option is meaningful only for non-root users, when @command{tar}
-is executed on those systems able to give files away.  This is
-considered as a security flaw by many people, at least because it
-makes quite difficult to correctly account users for the disk space
-they occupy.  Also, the @code{suid} or @code{sgid} attributes of
-files are easily and silently lost when files are given away.
-
-When writing an archive, @command{tar} writes the user id and user name
-separately.  If it can't find a user name (because the user id is not
-in @file{/etc/passwd}), then it does not write one.  When restoring,
-it tries to look the name (if one was written) up in
-@file{/etc/passwd}.  If it fails, then it uses the user id stored in
-the archive instead. 
-
-@opindex no-same-owner
-@item --no-same-owner
-@itemx -o
-Do not attempt to restore ownership when extracting.  This is the
-default behavior for ordinary users, so this option has an effect
-only for the superuser.
-
-@opindex numeric-owner
-@item --numeric-owner
-The @option{--numeric-owner} option allows (ANSI) archives to be written
-without user/group name information or such information to be ignored
-when extracting.  It effectively disables the generation and/or use
-of user/group name information.  This option forces extraction using
-the numeric ids from the archive, ignoring the names.
-
-This is useful in certain circumstances, when restoring a backup from
-an emergency floppy with different passwd/group files for example.
-It is otherwise impossible to extract files with the right ownerships
-if the password file in use during the extraction does not match the
-one belonging to the file system(s) being extracted.  This occurs,
-for example, if you are restoring your files after a major crash and
-had booted from an emergency floppy with no password file or put your
-disk into another machine to do the restore.
-
-The numeric ids are @emph{always} saved into @command{tar} archives.
-The identifying names are added at create time when provided by the
-system, unless @option{--old-archive} (@option{-o}) is used.  Numeric ids could be
-used when moving archives between a collection of machines using
-a centralized management for attribution of numeric ids to users
-and groups.  This is often made through using the NIS capabilities.
-
-When making a @command{tar} file for distribution to other sites, it
-is sometimes cleaner to use a single owner for all files in the
-distribution, and nicer to specify the write permission bits of the
-files as stored in the archive independently of their actual value on
-the file system.  The way to prepare a clean distribution is usually
-to have some Makefile rule creating a directory, copying all needed
-files in that directory, then setting ownership and permissions as
-wanted (there are a lot of possible schemes), and only then making a
-@command{tar} archive out of this directory, before cleaning
-everything out.  Of course, we could add a lot of options to
-@GNUTAR{} for fine tuning permissions and ownership.
-This is not the good way, I think.  @GNUTAR{} is
-already crowded with options and moreover, the approach just explained
-gives you a great deal of control already.
-
-@xopindex{same-permissions, short description}
-@xopindex{preserve-permissions, short description}
-@item -p
-@itemx --same-permissions
-@itemx --preserve-permissions
-Extract all protection information.
-
-This option causes @command{tar} to set the modes (access permissions) of
-extracted files exactly as recorded in the archive.  If this option
-is not used, the current @code{umask} setting limits the permissions
-on extracted files.  This option is by default enabled when
-@command{tar} is executed by a superuser.
-
-
-This option is meaningless with @option{--list} (@option{-t}).
-
-@opindex preserve
-@item --preserve
-Same as both @option{--same-permissions} and @option{--same-order}.
-
-The @option{--preserve} option has no equivalent short option name.
-It is equivalent to @option{--same-permissions} plus @option{--same-order}.
-
-@FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)
-Neither do I. --Sergey}
-
-@end table
 
 @node cpio
 @section Comparison of @command{tar} and @command{cpio}
