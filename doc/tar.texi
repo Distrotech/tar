@@ -8577,7 +8577,7 @@ If a member is split between several volumes of an old GNU format archive
 most third party @command{tar} implementation will fail to extract
 it.  To extract it, use @command{tarcat} program (@pxref{Tarcat}).
 This program is available from
-@uref{http://www.gnu.org/@/software/@/tar/@/utils/@/tarcat, @GNUTAR{}
+@uref{http://www.gnu.org/@/software/@/tar/@/utils/@/tarcat.html, @GNUTAR{}
 home page}.  It concatenates several archive volumes into a single
 valid archive.  For example, if you have three volumes named from
 @file{vol-1.tar} to @file{vol-2.tar}, you can do the following to
@@ -8687,7 +8687,7 @@ a condensed file to its original form, by adding zero bloks (or
 
 To expand a file, you will need a simple auxiliary program called
 @command{xsparse}.  It is available in source form from
-@uref{http://www.gnu.org/@/software/@/tar/@/utils/@/xsparse, @GNUTAR{}
+@uref{http://www.gnu.org/@/software/@/tar/@/utils/@/xsparse.html, @GNUTAR{}
 home page}.
 
 Let's begin with archive members in @dfn{sparse format
