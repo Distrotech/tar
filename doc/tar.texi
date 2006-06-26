@@ -13,9 +13,9 @@
 @c Maintenance notes:
 @c  1. Pay attention to @FIXME{}s and @UNREVISED{}s
 @c  2. Before creating final variant:
-@c    1.1. Run `make check-options' to make sure all options are properly
+@c    2.1. Run `make check-options' to make sure all options are properly
 @c         documented;
-@c    2.1. Run `make master-menu' (see comment before the master menu).
+@c    2.2. Run `make master-menu' (see comment before the master menu).
 
 @include rendition.texi
 @include value.texi
@@ -526,7 +526,7 @@ pipes).  @command{tar} may even access remote devices or files (as archives).
 You can use @command{tar} archives in many ways.  We want to stress a few
 of them: storage, backup, and transportation.
 
-@FIXME{the following table entries need a bit of work..}
+@FIXME{the following table entries need a bit of work.}
 @table @asis
 @item Storage
 Often, @command{tar} archives are used to store related files for
@@ -8573,6 +8573,7 @@ describe the required procedures in detail.
 @node Split Recovery
 @subsubsection Extracting Members Split Between Volumes
 
+@cindex Mutli-volume archives, extracting using non-GNU tars
 If a member is split between several volumes of an old GNU format archive
 most third party @command{tar} implementation will fail to extract
 it.  To extract it, use @command{tarcat} program (@pxref{Tarcat}).
@@ -8587,6 +8588,7 @@ extract them using a third-party @command{tar}:
 $ @kbd{tarcat vol-1.tar vol-2.tar vol-3.tar | tar xf -}
 @end smallexample
 
+@cindex Mutli-volume archives in PAX format, extracting using non-GNU tars
 You could use this approach for many (although not all) PAX
 format archives as well.  However, extracting split members from a PAX
 archive is a much easier task, because PAX volumes are constructed in
@@ -8678,6 +8680,7 @@ members.  Read further to learn more about them.
 @node Sparse Recovery
 @subsubsection Extracting Sparse Members
 
+@cindex sparse files, extracting with non-GNU tars
 Any @command{tar} implementation will be able to extract sparse members from a
 PAX archive.  However, the extracted files will be @dfn{condensed},
 i.e. any zero blocks will be removed from them.  When we restore such
@@ -8685,11 +8688,13 @@ a condensed file to its original form, by adding zero bloks (or
 @dfn{holes}) back to their original locations, we call this process
 @dfn{expanding} a compressed sparse file.
 
+@pindex xsparse
 To expand a file, you will need a simple auxiliary program called
 @command{xsparse}.  It is available in source form from
 @uref{http://www.gnu.org/@/software/@/tar/@/utils/@/xsparse.html, @GNUTAR{}
 home page}.
 
+@cindex sparse files v.1.0, extracting with non-GNU tars
 Let's begin with archive members in @dfn{sparse format
 version 1.0}@footnote{@xref{PAX 1}.}, which are the easiest to expand.
 The condensed file will contain both file map and file data, so no
@@ -8792,6 +8797,9 @@ Done
 @end group
 @end smallexample
 
+@anchor{extracting sparse v.0.x}
+@cindex sparse files v.0.1, extracting with non-GNU tars
+@cindex sparse files v.0.0, extracting with non-GNU tars
 An @dfn{extended header} is a special @command{tar} archive header
 that precedes an archive member and contains a set of
 @dfn{variables}, describing the member properties that cannot be
@@ -10165,22 +10173,10 @@ added later.  To label subsequent volumes, specify
 @option{--label=@var{archive-label}} again in conjunction with the
 @option{--append}, @option{--update} or @option{--concatenate} operation.
 
-@FIXME{This is no longer true: Multivolume archives in @samp{POSIX}
-format can be extracted using any posix-compliant tar
-implementation.  The split members can then be recreated from parts
-using a simple shell script. Provide more information about it:}
-Beware that there is @emph{no} real standard about the proper way, for
-a @command{tar} archive, to span volume boundaries.  If you have a
-multi-volume created by some vendor's @command{tar}, there is almost
-no chance you could read all the volumes with @GNUTAR{}.
-The converse is also true: you may not expect
-multi-volume archives created by @GNUTAR{} to be
-fully recovered by vendor's @command{tar}.  Since there is little
-chance that, in mixed system configurations, some vendor's
-@command{tar} will work on another vendor's machine, and there is a
-great chance that @GNUTAR{} will work on most of
-them, your best bet is to install @GNUTAR{} on all
-machines between which you know exchange of files is possible.
+Notice that multi-volume support is a GNU extension and the archives
+created in this mode should be read only using @GNUTAR{}.  If you
+absolutely have to process such archives using a third-party @command{tar}
+implementation, read @ref{Split Recovery}.
 
 @node Tape Files
 @subsection Tape Files
