@@ -175,8 +175,9 @@ The real name of the sparse file is stored in the variable
 @code{GNU.sparse.name}.  Thus, those @command{tar} implementations
 that are not aware of GNU extensions will at least extract the files
 into separate directories, giving the user a possibility to expand it
-afterwards @FIXME-ref{how to extract sparse file using third-party
-@command{tar}s}.
+afterwards.  @xref{extracting sparse v.0.x, Extraction of sparse
+members in v.0.1 format}, for the detailed description of how to
+restore such members using non-GNU @command{tar}s.
 
 The resulting @code{GNU.sparse.map} string can be @emph{very} long.
 Although POSIX does not impose any limit on the length of a @code{x}
