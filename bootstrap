@@ -71,7 +71,13 @@ update_po() {
     *)     POFILE=${1}.po;;
     esac
     echo "$0: getting translation for $1..."
-    wget -r --cache=off $TP_URL/$POFILE
+    (cd po;
+     wget -r --cache=off -O $POFILE $TP_URL/$POFILE || exit
+     LANG=`expr $POFILE : '\(.*\)\.po'`
+     if ! grep -q $LANG LINGUAS; then
+	mv LINGUAS LINGUAS.$$
+	(echo $LANG; cat LINGUAS.$$) | sort > LINGUAS
+     fi)
   else
     echo "$0: getting translations into po..."
     (cd po &&
