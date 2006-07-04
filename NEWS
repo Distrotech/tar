@@ -6,6 +6,9 @@ version 1.15.92 - Sergey Poznyakoff, (CVS)
 * New option --mtime allows to set modification times for all archive
 members during creation. 
 
+* Bug fixes
+** Avoid running off file descriptors when using multiple -C options.
+
 
 version 1.15.91 - Sergey Poznyakoff, 2006-06-16
 

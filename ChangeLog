@@ -9,6 +9,7 @@
 	descriptors.
 	* src/tar.c (main): Call closeopen
 	* doc/tar.texi: Update --directory description
+	* NEWS: Update
 	
 2006-06-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
