@@ -88,7 +88,7 @@ tar_GNULIB
 # paxutils modules
 tar_PAXUTILS
 
-AC_CHECK_FUNCS(fsync lstat mkfifo readlink strerror symlink setlocale utimes)
+AC_CHECK_FUNCS(fsync getdtablesize lstat mkfifo readlink strerror symlink setlocale utimes)
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([time],,, [#include <time.h>])
