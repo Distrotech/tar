@@ -1,7 +1,19 @@
+2006-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac (AC_CHECK_FUNCS): Check for getdtablesize
+	* src/common.h (closeopen): New function
+	* src/misc.c (chdir_arg): Use x2nrealloc to reallocate wd.
+	(get_max_open_files,closeopen): New functions
+	(chdir_do): Do not use save_cwd if it was already used more than
+	max_open_files-4 times to avoid running off the file
+	descriptors.
+	* src/tar.c (main): Call closeopen
+	* doc/tar.texi: Update --directory description
+	
 2006-06-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Update. Add cross-references.
-	* doc/sparse.texi: Add Add cross-references.
+	* doc/sparse.texi: Add cross-references.
 
 2006-06-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
