@@ -18,10 +18,13 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 #include <rmt.h>
 #include "common.h"
 #include <quotearg.h>
 #include <save-cwd.h>
+#include <xgetcwd.h>
 #include <unlinkdir.h>
 #include <utimens.h>
 
@@ -542,8 +545,14 @@ chdir_arg (char const *dir)
 {
   if (wds == wd_alloc)
     {
-      wd_alloc = 2 * (wd_alloc + 1);
-      wd = xrealloc (wd, sizeof *wd * wd_alloc);
+      if (wd_alloc == 0)
+	{
+	  wd_alloc = 2;
+	  wd = xmalloc (sizeof *wd * wd_alloc);
+	}
+      else
+	wd = x2nrealloc (wd, &wd_alloc, sizeof *wd);
+
       if (! wds)
 	{
 	  wd[wds].name = ".";
@@ -568,13 +577,41 @@ chdir_arg (char const *dir)
   return wds++;
 }
 
+/* Return maximum number of open files */
+int
+get_max_open_files ()
+{
+#if defined _SC_OPEN_MAX
+  return sysconf (_SC_OPEN_MAX);
+#elif defined RLIMIT_NOFILE
+  struct rlimit rlim;
+
+  if (getrlimit(RLIMIT_NOFILE, &rlim) == 0)
+    return rlim.rlim_max;
+#elif defined HAVE_GETDTABLESIZE
+  return getdtablesize ();
+#endif
+  return -1;
+}
+
+/* Close all descriptors, except the first three */
+void
+closeopen ()
+{
+  int i;
+
+  for (i = get_max_open_files () - 1; i > 2; i--)
+    close (i);
+}
+  
 /* Change to directory I.  If I is 0, change to the initial working
    directory; otherwise, I must be a value returned by chdir_arg.  */
 void
 chdir_do (int i)
 {
   static int previous;
-
+  static int saved_count;
+  
   if (previous != i)
     {
       struct wd *prev = &wd[previous];
@@ -583,7 +620,15 @@ chdir_do (int i)
       if (! prev->saved)
 	{
 	  prev->saved = 1;
-	  if (save_cwd (&prev->saved_cwd) != 0)
+	  saved_count++;
+	  /* Make sure we still have at least one descriptor available */
+	  if (saved_count >= get_max_open_files () - 4)
+	    {
+	      /* Force restore_cwd to use chdir_long */
+	      prev->saved_cwd.desc = -1;
+	      prev->saved_cwd.name = xgetcwd ();
+	    }
+	  else if (save_cwd (&prev->saved_cwd) != 0)
 	    FATAL_ERROR ((0, 0, _("Cannot save working directory")));
 	}
 
