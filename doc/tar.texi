@@ -7418,7 +7418,6 @@ mentioned by name on the standard error.
 
 @node directory
 @subsection Changing the Working Directory
-@UNREVISED
 
 @FIXME{need to read over this node now for continuity; i've switched
 things around some.}
@@ -7504,12 +7503,10 @@ For instance, the file list for the above example will be:
 
 @smallexample
 @group
--C
-/etc
+-C/etc
 passwd
 hosts
--C
-/lib
+--directory=/lib
 libc.a
 @end group
 @end smallexample
@@ -7520,9 +7517,6 @@ To use it, you would invoke @command{tar} as follows:
 @smallexample
 $ @kbd{tar -c -f foo.tar --files-from list}
 @end smallexample
-
-Notice also that you can only use the short option variant in the file
-list, i.e., always use @option{-C}, not @option{--directory}.
 
 The interpretation of @option{--directory} is disabled by
 @option{--null} option.
@@ -8581,7 +8575,7 @@ This program is available from
 @uref{http://www.gnu.org/@/software/@/tar/@/utils/@/tarcat.html, @GNUTAR{}
 home page}.  It concatenates several archive volumes into a single
 valid archive.  For example, if you have three volumes named from
-@file{vol-1.tar} to @file{vol-2.tar}, you can do the following to
+@file{vol-1.tar} to @file{vol-3.tar}, you can do the following to
 extract them using a third-party @command{tar}:
 
 @smallexample
@@ -8589,10 +8583,10 @@ $ @kbd{tarcat vol-1.tar vol-2.tar vol-3.tar | tar xf -}
 @end smallexample
 
 @cindex Mutli-volume archives in PAX format, extracting using non-GNU tars
-You could use this approach for many (although not all) PAX
+You could use this approach for most (although not all) PAX
 format archives as well.  However, extracting split members from a PAX
 archive is a much easier task, because PAX volumes are constructed in
-such a way that each part of a split member is extracted as a
+such a way that each part of a split member is extracted to a
 different file by @command{tar} implementations that are not aware of
 GNU extensions.  More specifically, the very first part retains its
 original name, and all subsequent parts are named using the pattern:
@@ -8616,7 +8610,7 @@ created the archive.
 @item %n @tab  Ordinal number of this particular part.
 @end multitable
 
-For example, if, a file @file{var/longfile} was split during archive
+For example, if the file @file{var/longfile} was split during archive
 creation between three volumes, and the creator @command{tar} process
 had process ID @samp{27962}, then the member names will be:
 
@@ -8735,7 +8729,7 @@ you can explicitely specify output file name as a second argument to
 the command:
 
 @smallexample
-$ @kbd{xsparse @file{cond-file}}
+$ @kbd{xsparse @file{cond-file} @file{out-file}}
 @end smallexample
 
 It is often a good idea to run @command{xsparse} in @dfn{dry run} mode
@@ -8763,7 +8757,7 @@ $ @kbd{xsparse /home/gray/GNUSparseFile.6058/sparsefile}
 The program behaves the same way all UNIX utilities do: it will keep
 quiet unless it has simething important to tell you (e.g. an error
 condition or something).  If you wish it to produce verbose output,
-similar to that from the dry run mode, give it @option{-v} option:
+similar to that from the dry run mode, use @option{-v} option:
 
 @smallexample
 @group
@@ -8823,14 +8817,14 @@ manually extract the headers.  We recommend the following algorithm:
 
 @enumerate 1
 @item 
-Consult the documentation for your @command{tar} implementation for an
-option that will print @dfn{block numbers} along with the archive
+Consult the documentation of your @command{tar} implementation for an
+option that prints @dfn{block numbers} along with the archive
 listing (analogous to @GNUTAR{}'s @option{-R} option).  For example,
 @command{star} has @option{-block-number}.
 
 @item
-Obtain the verbose listing using the @samp{block number} option, and
-find the position of the sparse member in question and the member
+Obtain verbose listing using the @samp{block number} option, and
+find block numbers of the sparse member in question and the member
 immediately following it.  For example, running @command{star} on our
 archive we obtain:
 
