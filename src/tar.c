@@ -2240,6 +2240,9 @@ main (int argc, char **argv)
   /* Make sure we have first three descriptors available */
   stdopen ();
 
+  /* Close all inherited open descriptors, except for the first three */
+  closeopen ();
+  
   /* Pre-allocate a few structures.  */
 
   allocated_archive_names = 10;
