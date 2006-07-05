@@ -55,8 +55,6 @@
 @c Output various FIXME information only in PROOF rendition.
 
 @macro FIXME{string}
-@allow-recursion
-@quote-arg
 @ifset PROOF
 @ifset PROOF_FOOTNOTED
 @footnote{@strong{FIXME:} \string\}
@@ -71,14 +69,12 @@
 @end macro
 
 @macro FIXME-ref{string}
-@quote-arg
 @ifset PROOF
 @strong{<REF>} \string\ @strong{</>}
 @end ifset
 @end macro
 
 @macro FIXME-pxref{string}
-@quote-arg
 @ifset PROOF
 @strong{<PXREF>} \string\ @strong{</>}
 @end ifset
@@ -86,7 +82,6 @@
 @end macro
 
 @macro FIXME-xref{string}
-@quote-arg
 @ifset PROOF
 @strong{<XREF>} \string\ @strong{</>}
 @end ifset
