@@ -79,7 +79,7 @@ TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 # Usual value is:
 # /usr/share/texmf/pdftex/plain/misc:/usr/share/texmf/pdftex/config
 manual:
-	TEXINPUTS=$(srcdir):$(top_srcdir)/config:$(TEXINPUTS) \
+	TEXINPUTS=$(srcdir):$(top_srcdir)/build-tex:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
 	$(GENDOCS) tar 'GNU tar manual'
