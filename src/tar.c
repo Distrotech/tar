@@ -2198,6 +2198,16 @@ decode_options (int argc, char **argv)
       break;
     }
 
+  /* Initialize stdlis */
+  if (index_file_name)
+    {
+      stdlis = fopen (index_file_name, "w");
+      if (! stdlis)
+	open_error (index_file_name);
+    }
+  else
+    stdlis = to_stdout_option ? stderr : stdout;
+
   archive_name_cursor = archive_name_array;
 
   /* Prepare for generating backup names.  */
