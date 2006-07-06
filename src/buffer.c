@@ -436,16 +436,6 @@ _open_archive (enum access_mode wanted_access)
 {
   int backed_up_flag = 0;
 
-  if (index_file_name)
-    {
-      stdlis = freopen (index_file_name, "w", stdout);
-      if (! stdlis)
-	open_error (index_file_name);
-      close_stdout_set_file_name (index_file_name);
-    }
-  else
-    stdlis = to_stdout_option ? stderr : stdout;
-
   if (record_size == 0)
     FATAL_ERROR ((0, 0, _("Invalid value for record_size")));
 
@@ -484,10 +474,6 @@ _open_archive (enum access_mode wanted_access)
 	  abort (); /* Should not happen */
 	  break;
 	}
-
-      if (wanted_access == ACCESS_WRITE
-	  && strcmp (archive_name_array[0], "-") == 0)
-	stdlis = stderr;
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
     {
@@ -513,12 +499,10 @@ _open_archive (enum access_mode wanted_access)
 
 	case ACCESS_WRITE:
 	  archive = STDOUT_FILENO;
-	  stdlis = stderr;
 	  break;
 
 	case ACCESS_UPDATE:
 	  archive = STDIN_FILENO;
-	  stdlis = stderr;
 	  write_archive_to_stdout = true;
 	  record_end = record_start; /* set up for 1st record = # 0 */
 	  break;
