@@ -1,3 +1,19 @@
+2006-07-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	tar --index-file=FILE --file=- sent the archive to FILE, and
+	the listing to stderr. Bug reported by Marcin Gryszkalis
+	<mg@fork.pl> 
+	
+	* src/buffer.c (_open_archive): Remove stdlis initialization
+	* src/tar.c (decode_options): Initialize stdlis
+	* tests/indexfile.at: New test case
+	* tests/testsuite.at: Include indexfile.at
+	* tests/Makefile.am (TESTSUITE_AT): Add indexfile.at
+
+2006-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap (update_po): Fix single translation update 
+
 2006-07-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/Makefile.am (manual): Fix TEXINPUTS
