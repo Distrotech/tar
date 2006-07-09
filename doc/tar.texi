@@ -796,7 +796,7 @@ Similarly, the term ``command'' can be confusing, as it is often used in
 two different ways.  People sometimes refer to @command{tar} ``commands''.
 A @command{tar} @dfn{command} is the entire command line of user input
 which tells @command{tar} what to do --- including the operation, options,
-and any arguments (file names, pipes, other commands, etc).  However,
+and any arguments (file names, pipes, other commands, etc.).  However,
 you will also sometimes hear the term ``the @command{tar} command''.  When
 the word ``command'' is used specifically like this, a person is usually
 referring to the @command{tar} @emph{operation}, not the whole line.
@@ -995,7 +995,7 @@ not encounter this.
 The archive member is a GNU @dfn{volume header} (@pxref{Tape Files}).
 
 @item --Continued at byte @var{n}--
-Encountered only at the beginning of a multy-volume archive
+Encountered only at the beginning of a multi-volume archive
 (@pxref{Using Multiple Tapes}).  This archive member is a continuation
 from the previous volume. The number @var{n} gives the offset where
 the original file was split.  
@@ -2807,7 +2807,7 @@ and group IDs when creating a @command{tar} file, rather than names.
 @item -o
 The function of this option depends on the action @command{tar} is
 performing.  When extracting files, @option{-o} is a synonym for
-@option{--no-same-owner}, i.e.  it prevents @command{tar} from
+@option{--no-same-owner}, i.e., it prevents @command{tar} from
 restoring ownership of files being extracted.
 
 When creating an archive, it is a synonym for
@@ -2980,7 +2980,7 @@ appending it to an archive.  @xref{remove files}.
 @item --restrict
 
 Disable use of some potentially harmful @command{tar} options.
-Currently this option disables shell invocaton from multi-volume menu
+Currently this option disables shell invocation from multi-volume menu
 (@pxref{Using Multiple Tapes}).
 
 @opsummary{rmt-command}
@@ -3406,7 +3406,7 @@ information about @GNUTAR{} is this Texinfo documentation.
 
 @opindex show-defaults
 @GNUTAR{} has some predefined defaults that are used when you do not
-explicitely specify another values.  To obtain a list of such
+explicitly specify another values.  To obtain a list of such
 defaults, use @option{--show-defaults} option.  This will output the
 values in the form of @command{tar} command line options:
 
@@ -3690,7 +3690,7 @@ consequence of doing so.  The usual consequence is that the single
 file, which was meant to be saved, is rather destroyed.
 @end enumerate
 
-So, recognizing the likelihood and the catastrophical nature of these
+So, recognizing the likelihood and the catastrophic nature of these
 errors, @GNUTAR{} now takes some distance from elegance, and
 cowardly refuses to create an archive when @option{--create} option is
 given, there are no arguments besides options, and
@@ -4461,7 +4461,7 @@ The @option{--ignore-zeros} (@option{-i}) option is turned off by default becaus
 versions of @command{tar} write garbage after the end-of-archive entry,
 since that part of the media is never supposed to be read.  @GNUTAR{}
 does not write after the end of an archive, but seeks to
-maintain compatiblity among archiving utilities.
+maintain compatibility among archiving utilities.
 
 @table @option
 @item --ignore-zeros
@@ -4676,7 +4676,7 @@ archive, instead of current umask settings.  Use in conjunction with
 @node Directory Modification Times and Permissions
 @unnumberedsubsubsec Directory Modification Times and Permissions
 
-After sucessfully extracting a file member, @GNUTAR{} normally
+After successfully extracting a file member, @GNUTAR{} normally
 restores its permissions and modification times, as described in the
 previous sections.  This cannot be done for directories, because
 after extracting a directory @command{tar} will almost certainly
@@ -4707,9 +4707,9 @@ incremental archives (@pxref{Incremental Dumps}).  The member order in
 an incremental archive is reversed: first all directory members are
 stored, followed by other (non-directory) members.  So, when extracting
 from incremental archives, @GNUTAR{} alters the above procedure.  It
-remebers all restored directories, and restores their meta-data
+remembers all restored directories, and restores their meta-data
 only after the entire archive has been processed.  Notice, that you do
-not need to specity any special options for that, as @GNUTAR{}
+not need to specify any special options for that, as @GNUTAR{}
 automatically detects archives in incremental format.
 
 There may be cases, when such processing is required for normal archives
@@ -4792,7 +4792,7 @@ or even like this if you want to process the concatenation of the files:
 tar -xOzf foo.tgz bigfile1 bigfile2 | process
 @end smallexample
 
-Hovewer, @option{--to-command} may be more convenient for use with
+However, @option{--to-command} may be more convenient for use with
 multiple files. See the next section.
 
 @node Writing to an External Program
@@ -5395,7 +5395,7 @@ then in order to restore the exact contents the file system  had when
 the last level was created, you will need to restore from all backups
 in turn.  Continuing our example, to restore the state of @file{/usr}
 file system, one would do@footnote{Notice, that since both archives
-were created withouth @option{-P} option (@pxref{absolute}), these
+were created without @option{-P} option (@pxref{absolute}), these
 commands should be run from the root file system.}:
 
 @smallexample
@@ -5423,7 +5423,7 @@ Versions of @GNUTAR{} up to 1.15.1 used to dump verbatim binary
 contents of the DUMPDIR header (with terminating nulls) when
 @option{--incremental} or @option{--listed-incremental} option was
 given, no matter what the verbosity level.  This behavior, and,
-especially, the binary output it produced were considered incovenient
+especially, the binary output it produced were considered inconvenient
 and were changed in version 1.16}:
 
 @smallexample
@@ -5574,7 +5574,7 @@ normally be the host that actually contains the file system.  However,
 the host machine must have @GNUTAR{} installed, and
 must be able to access the directory containing the backup scripts and
 their support files using the same file name that is used on the
-machine where the scripts are run (i.e.  what @command{pwd} will print
+machine where the scripts are run (i.e., what @command{pwd} will print
 when in that directory on that machine).  If the host that contains
 the file system does not have this capability, you can specify another
 host as long as it can access the file system through NFS.
@@ -5623,7 +5623,7 @@ to use public key authentication.
 
 @defvr {Backup variable} RSH_COMMAND
 
-Full file name of @command{rsh} binary on remote mashines.  This will
+Full file name of @command{rsh} binary on remote machines.  This will
 be passed via @option{--rsh-command} option to the remote invocation
 of @GNUTAR{}.
 @end defvr
@@ -5908,7 +5908,7 @@ Force backup even if today's log file already exists.
 @item -v[@var{level}]
 @itemx --verbose[=@var{level}]
 Set verbosity level.  The higher the level is, the more debugging
-information will be output during execution.  Devault @var{level}
+information will be output during execution.  Default @var{level}
 is 100, which means the highest debugging level.
 
 @item -t @var{start-time}
@@ -5980,7 +5980,7 @@ Start restoring from the given backup level, instead of the default 0.
 @item -v[@var{level}]
 @itemx --verbose[=@var{level}]
 Set verbosity level.  The higher the level is, the more debugging
-information will be output during execution.  Devault @var{level}
+information will be output during execution.  Default @var{level}
 is 100, which means the highest debugging level.
 
 @item -h
@@ -6083,7 +6083,7 @@ floppy disk, or CD write drive.
 If you do not name the archive, @command{tar} uses the value of the
 environment variable @env{TAPE} as the file name for the archive.  If
 that is not available, @command{tar} uses a default, compiled-in archive
-name, usually that for tape unit zero (i.e.  @file{/dev/tu00}).
+name, usually that for tape unit zero (i.e., @file{/dev/tu00}).
 
 @cindex Standard input and output
 @cindex tar to standard input and output
@@ -6658,7 +6658,7 @@ b.c
 Notice quoting of the pattern to prevent the shell from interpreting
 it.
 
-The effect of @option{--wildcards} option is cancelled by
+The effect of @option{--wildcards} option is canceled by
 @option{--no-wildcards}.  This can be used to pass part of
 the command line arguments verbatim and other part as globbing
 patterns.  For example, the following invocation:
@@ -7131,7 +7131,7 @@ Only replace the @var{number}th match of the @var{regexp}.
 Note: the @var{posix} standard does not specify what should happen
 when you mix the @samp{g} and @var{number} modifiers.  @GNUTAR{}
 follows the GNU @command{sed} implementation in this regard, so
-the the interaction is defined to be: ignore matches before the
+the interaction is defined to be: ignore matches before the
 @var{number}th, and then match and replace all matches from the
 @var{number}th on.
                                    
@@ -7681,7 +7681,7 @@ cases the maximum file name length will be shorter than 256
 characters.
 @item The maximum length of a symbolic link name is limited to
 100 characters.
-@item Maximum size of a file the archive is able to accomodate
+@item Maximum size of a file the archive is able to accommodate
 is 8GB
 @item Maximum value of UID/GID is 2097151.
 @item Maximum number of bits in device major and minor numbers is 21.
@@ -7748,7 +7748,7 @@ switch to @samp{posix}.
 
 @GNUTAR{} is able to create and read compressed archives.  It supports
 @command{gzip} and @command{bzip2} compression programs.  For backward
-compatibilty, it also supports @command{compress} command, although
+compatibility, it also supports @command{compress} command, although
 we strongly recommend against using it, since there is a patent
 covering the algorithm it uses and you could be sued for patent
 infringement merely by running @command{compress}!  Besides, it is less
@@ -7884,7 +7884,7 @@ and produce uncompressed data on the standard output.
 @cindex Using encrypted archives
 The @option{--use-compress-program} option, in particular, lets you
 implement your own filters, not necessarily dealing with
-compression/decomression.  For example, suppose you wish to implement
+compression/decompression.  For example, suppose you wish to implement
 PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
 gpg, gpg ---- encryption and signing tool, gpg, GNU Privacy Guard
 Manual}).  The following script does that:  
@@ -7901,7 +7901,7 @@ esac
 @end smallexample
 
 Suppose you name it @file{gpgz} and save it somewhere in your
-@env{PATH}.  Then the following command will create a commpressed
+@env{PATH}.  Then the following command will create a compressed
 archive signed with your private key:
 
 @smallexample
@@ -7979,7 +7979,7 @@ won't take more space than the original.
 @opindex sparse
 @item -S
 @itemx --sparse
-This option istructs @command{tar} to test each file for sparseness
+This option instructs @command{tar} to test each file for sparseness
 before attempting to archive it.  If the file is found to be sparse it
 is treated specially, thus allowing to decrease the amount of space
 used by its image in the archive.
@@ -8544,7 +8544,7 @@ POSIX-aware tars.}
 @node Other Tars
 @subsection How to Extract GNU-Specific Data Using Other @command{tar} Implementations
 
-In previous sections you became acquainted with various quircks
+In previous sections you became acquainted with various quirks
 necessary to make your archives portable.  Sometimes you may need to
 extract archives containing GNU-specific members using some
 third-party @command{tar} implementation or an older version of
@@ -8636,7 +8636,7 @@ $ rm -f GNUFileParts.27962
 
 Notice, that if the @command{tar} implementation you use supports PAX
 format archives, it will probably emit warnings about unknown keywords
-during extraction.  They will lool like this:
+during extraction.  They will look like this:
 
 @smallexample
 @group
@@ -8651,7 +8651,7 @@ Unknown extended header keyword 'GNU.volume.offset' ignored.
 You can safely ignore these warnings.
 
 If your @command{tar} implementation is not PAX-aware, you will get
-more warnigns and more files generated on your disk, e.g.:
+more warnings and more files generated on your disk, e.g.:
 
 @smallexample
 @group
@@ -8677,7 +8677,7 @@ members.  Read further to learn more about them.
 @cindex sparse files, extracting with non-GNU tars
 Any @command{tar} implementation will be able to extract sparse members from a
 PAX archive.  However, the extracted files will be @dfn{condensed},
-i.e. any zero blocks will be removed from them.  When we restore such
+i.e., any zero blocks will be removed from them.  When we restore such
 a condensed file to its original form, by adding zero bloks (or
 @dfn{holes}) back to their original locations, we call this process
 @dfn{expanding} a compressed sparse file.
@@ -8725,7 +8725,7 @@ name will be @file{@var{dir}/@var{name}}.
 @end enumerate
 
 In the unlikely case when this algorithm does not suite your needs,
-you can explicitely specify output file name as a second argument to
+you can explicitly specify output file name as a second argument to
 the command:
 
 @smallexample
@@ -9428,7 +9428,7 @@ examples of format parameter considerations.
 @opindex blocking-factor
 The data in an archive is grouped into blocks, which are 512 bytes.
 Blocks are read and written in whole number multiples called
-@dfn{records}.  The number of blocks in a record (i.e.  the size of a
+@dfn{records}.  The number of blocks in a record (i.e., the size of a
 record in units of 512 bytes) is called the @dfn{blocking factor}.
 The @option{--blocking-factor=@var{512-size}} (@option{-b
 @var{512-size}}) option specifies the blocking factor of an archive.
@@ -9486,7 +9486,7 @@ it would normally.  To extract files from an archive with a non-standard
 blocking factor (particularly if you're not sure what the blocking factor
 is), you can usually use the @option{--read-full-records} (@option{-B}) option while
 specifying a blocking factor larger then the blocking factor of the archive
-(i.e.  @samp{tar --extract --read-full-records --blocking-factor=300}.
+(i.e., @samp{tar --extract --read-full-records --blocking-factor=300}.
 @xref{list}, for more information on the @option{--list} (@option{-t})
 operation.  @xref{Reading}, for a more detailed explanation of that option.
 
@@ -9894,11 +9894,11 @@ requirement for multi-volume archives to be stored on tapes.  Instead,
 they can use whatever media type the user finds convenient, they can
 even be located on files.  
 
-When creating a multi-volume arvhive, @GNUTAR{} continues to fill
+When creating a multi-volume archive, @GNUTAR{} continues to fill
 current volume until it runs out of space, then it switches to
 next volume (usually the operator is queried to replace the tape on
 this point), and continues working on the new volume.  This operation
-continues untill all requested files are dumped.  If @GNUTAR{} detects
+continues until all requested files are dumped.  If @GNUTAR{} detects
 end of media while dumping a file, such a file is archived in split
 form.  Some very big files can even be split across several volumes. 
 
@@ -10017,7 +10017,7 @@ otherwise @command{tar} will write over the volume it just finished.)
 The volume number used by @command{tar} in its tape-changing prompt
 can be changed; if you give the
 @option{--volno-file=@var{file-of-number}} option, then
-@var{file-of-number} should be an unexisting file to be created, or
+@var{file-of-number} should be an non-existing file to be created, or
 else, a file already containing a decimal number.  That number will be
 used as the volume number of the first volume written.  When
 @command{tar} is finished, it will rewrite the file with the
@@ -10147,7 +10147,7 @@ To extract an archive member from one volume (assuming it is described
 that volume), use @option{--extract}, again without
 @option{--multi-volume}.
 
-If an archive member is split across volumes (i.e.  its entry begins on
+If an archive member is split across volumes (i.e., its entry begins on
 one volume of the media and ends on another), you need to specify
 @option{--multi-volume} to extract it successfully.  In this case, you
 should load the volume where the archive member starts, and use
@@ -10268,7 +10268,7 @@ creating multiple volume archives.
 @cindex Listing volume label
   The volume label will be displayed by @option{--list} along with
 the file contents.  If verbose display is requested, it will also be
-explicitely marked as in the example below:
+explicitly marked as in the example below:
 
 @smallexample
 @group
@@ -10313,7 +10313,7 @@ with using @option{--label} option, @command{tar} will first check if
 the archive label matches the one specified and will refuse to proceed
 if it does not.  Use this as a safety precaution to avoid accidentally
 overwriting existing archives.  For example, if you wish to add files
-to @file{archive}, presumably labelled with string @samp{My volume},
+to @file{archive}, presumably labeled with string @samp{My volume},
 you will get:
 
 @smallexample
@@ -10325,7 +10325,7 @@ tar: Archive not labeled to match `My volume'
 
 @noindent
 in case its label does not match.  This will work even if
-@file{archive} is not labelled at all.
+@file{archive} is not labeled at all.
 
   Similarly, @command{tar} will refuse to list or extract the
 archive if its label doesn't match the @var{archive-label}
@@ -10556,7 +10556,7 @@ This option is deprecated.  Please use @option{--format=posix} instead.
 @appendix Configuring Help Summary
 
 Running @kbd{tar --help} displays the short @command{tar} option
-summary (@pxref{help}). This summary is organised by @dfn{groups} of
+summary (@pxref{help}). This summary is organized by @dfn{groups} of
 semantically close options. The options within each group are printed
 in the following order: a short option, eventually followed by a list
 of corresponding long option names, followed by a short description of
@@ -10790,7 +10790,7 @@ Right margin of the text output. Used for wrapping.
 @appendix Index of Command Line Options
 
 This appendix contains an index of all @GNUTAR{} long command line
-options. The options are listed without the preceeding double-dash.
+options. The options are listed without the preceding double-dash.
 For a cross-reference of short command line options, @ref{Short Option Summary}.
 
 @printindex op

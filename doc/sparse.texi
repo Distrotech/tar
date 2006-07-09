@@ -132,8 +132,8 @@ This format presented the following two problems:
 @item
 Whereas the POSIX specification allows a variable to appear multiple
 times in a header, it requires that only the last occurrence be
-meaningful.  Thus, multiple ocurrences of @code{GNU.sparse.offset} and
-@code{GNU.sparse.numbytes} are conficting with the POSIX specs.
+meaningful.  Thus, multiple occurrences of @code{GNU.sparse.offset} and
+@code{GNU.sparse.numbytes} are conflicting with the POSIX specs.
 
 @item
 Attempting to extract such archives using a third-party @command{tar}s

@@ -6,7 +6,7 @@
 
   A @dfn{snapshot file} (or @dfn{directory file}) is created during
 incremental backups (@pxref{Incremental Dumps}).  It
-contains the status of the filesystem at the time of the dump and is
+contains the status of the file system at the time of the dump and is
 used to determine which files were modified since the last backup.
 
   @GNUTAR{} version @value{VERSION} supports two snapshot file
@@ -47,7 +47,7 @@ time of the last backup. First number is the number of seconds, the
 second one is the number of nanoseconds, since the beginning of the
 epoch.
 
-  Following lines contain directory metadate, one line per
+  Following lines contain directory metadata, one line per
 directory. The line format is:
 
 @smallexample

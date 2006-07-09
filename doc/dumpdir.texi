@@ -125,7 +125,7 @@ corresponding directory, in variable @code{GNU.dumpdir}.
 @item GNU and old GNU archives
 
 These formats implement special header type @samp{D}, which is similar
-to ustar header @samp{5} (directory), except that it preceeds a data
+to ustar header @samp{5} (directory), except that it precedes a data
 block containing the dumpdir.
 @end itemize
 
