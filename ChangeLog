@@ -1,3 +1,12 @@
+2006-07-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Ralf Wildenhues
+
+2006-07-09  Ralf Wildenhues   <Ralf.Wildenhues@gmx.de>
+
+	* doc/dumpdir.texi, doc/snapshot.texi, doc/sparse.texi,
+        doc/tar.texi: Fix some typos.	
+
 2006-07-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	tar --index-file=FILE --file=- sent the archive to FILE, and
