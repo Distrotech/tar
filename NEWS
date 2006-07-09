@@ -8,6 +8,8 @@ members during creation.
 
 * Bug fixes
 ** Avoid running off file descriptors when using multiple -C options.
+** tar --index-file=FILE --file=- sent the archive to FILE, and
+the listing to stderr.
 
 
 version 1.15.91 - Sergey Poznyakoff, 2006-06-16
