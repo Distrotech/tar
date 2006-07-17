@@ -1,3 +1,11 @@
+2006-07-16  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to recent gnulib changes.
+	* lib/.cvsignore: Remove atexit.c, exit.c, getndelim2.c, getndelim2.h,
+	pathmax.h, paxconvert.c, paxerror.h, xstrdup.c.
+	Add inttypes.h, mktime.c, wcwidth.h, xstrndup.c, xstrndup.h.
+	* src/create.c (start_header): Adjust to API change to mode_adjust.
+
 2006-07-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Add Ralf Wildenhues
@@ -6,14 +14,14 @@
 2006-07-09  Ralf Wildenhues   <Ralf.Wildenhues@gmx.de>
 
 	* doc/dumpdir.texi, doc/snapshot.texi, doc/sparse.texi,
-        doc/tar.texi: Fix some typos.	
+        doc/tar.texi: Fix some typos.
 
 2006-07-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	tar --index-file=FILE --file=- sent the archive to FILE, and
 	the listing to stderr. Bug reported by Marcin Gryszkalis
-	<mg@fork.pl> 
-	
+	<mg@fork.pl>
+
 	* src/buffer.c (_open_archive): Remove stdlis initialization
 	* src/tar.c (decode_options): Initialize stdlis
 	* tests/indexfile.at: New test case
@@ -25,11 +33,11 @@
 	* doc/Makefile.am (manual): Fix TEXINPUTS
 	* doc/rendition.texi (FIXME): Do not use deprecated @quote-args.
 	Do not use @allow-recursion. In its current form the macro is not
-	recursive. 
-	
+	recursive.
+
 2006-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
-	* bootstrap (update_po): Fix single translation update 
+	* bootstrap (update_po): Fix single translation update
 
 2006-07-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -43,7 +51,7 @@
 	* src/tar.c (main): Call closeopen
 	* doc/tar.texi: Update --directory description
 	* NEWS: Update
-	
+
 2006-06-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Update. Add cross-references.
@@ -63,7 +71,7 @@
 	* src/create.c: Use ST_IS_SPARSE instead of sparse_file_p (update
 	paxutils first)
 	* src/tar.c: --sparse-version turns on --sparse
-	
+
 2006-06-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (print_total_stats): Add default case.
@@ -106,7 +114,7 @@
 
 	* tests/spmpv00.at, tests/spmvp01.at, tests/spmvp10.at: New
 	testcases.
-	
+
 	* tests/Makefile.am: Add spmvp00.at, spmpv01.at, spmpv10.at
 	* tests/shortrec.at: Explicitely give `-f -' to the tar invocation
 	* tests/sparsemvp.at: Rewritten as an include file.
@@ -124,10 +132,10 @@
 	modification times for all archive members during creation.
 	(struct tar_args): textual_date_option replaced with a linked list
 	textual_date. All references updated.
-	(get_date_or_file,report_textual_dates): New functions. 
+	(get_date_or_file,report_textual_dates): New functions.
 	* configure.ac: Raise version number to 1.15.92
 	* NEWS: Update
-	
+
 2006-06-20  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (struct name.explicit): Remove
@@ -172,7 +180,7 @@
 	* doc/Makefile.am (check-options): New goal
 	* doc/tar.texi: Update
 	* src/tar.c: Implement --overwrite-dir option (long ago
-	documented). 
+	documented).
 
 2006-06-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -239,7 +247,7 @@
 	argument means "print dots instead of textual checkpoints".
 	(tar_help): New function
 	* src/transform.c: Minor fixes.
-	
+
 2006-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* gnulib.modules: Add mkdtemp
@@ -250,12 +258,12 @@
 	(purge_directory): Re-implement renaming. Introduce
 	'X' control code.
 	(make_tmp_dir_name): Remove
-	
+
 	* src/transform.c (set_transform_expr,_transform_name_to_obstack):
 	Implement NUMBER flag.
 	(add_char_segment): Fix length assignement
 
-	* doc/tar.texi: Update 
+	* doc/tar.texi: Update
 
 2006-06-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -277,7 +285,7 @@
 	* tests/multiv04.at: Use genfile --files-from
 
 	(Above changes need new genfile.c from paxutils)
-	
+
 	* TODO: Update
 	* NEWS: Update
 	* doc/tar.texi: Update
@@ -297,7 +305,7 @@
 2006-05-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (make_directory): Fix initialization of struct
-	directory. 
+	directory.
 
 2006-05-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -347,7 +355,7 @@
 	* tests/append.at, tests/append01.at, tests/extrac01.at,
 	tests/options.at, tests/options02.at, tests/same-order01.at,
 	tests/same-order02.at: Make AT_SETUP more readable.
-	
+
 2006-05-23  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (change_tape_menu): Fix typo (uninitialized
@@ -395,12 +403,12 @@
 	(AT_STAR_PREREQ): Provide md5 sum.
 
 	* lib/.cvsignore: Update
-	
+
 2006-05-08  Sergey Poznyakoff  <gray@gnu.org.ua>
-	
-	* tests/testsuite.at (AT_SORT_PREREQ, AT_UNPRIVILEGED_PREREQ): New 
+
+	* tests/testsuite.at (AT_SORT_PREREQ, AT_UNPRIVILEGED_PREREQ): New
 	defines
-	
+
 	* tests/extrac04.at, tests/incr03.at, tests/listed02.at,
 	tests/pipe.at, tests/rename01.at, tests/rename02.at,
 	tests/rename03.at, tests/same-order01.at: Call
@@ -413,8 +421,8 @@
 	directories. Handle renamed directories more effectively
 	(initial implementation, more updates to follow).
 	Source tree before this point is tagged
-	alpha_1_15_90_incremental_1. 
-	
+	alpha_1_15_90_incremental_1.
+
         * NEWS: Update
         * configure.ac: Raise version number to 1.15.91
 	* src/common.h (rename_directory,append_incremental_renames): New
@@ -438,12 +446,12 @@
 	(procdir): Change return type to struct directory. Return
 	immediately if the directory was already initialized. Discover
 	directory renames using directory_meta_table.
-	(append_incremental_renames): New function.	
+	(append_incremental_renames): New function.
         (read_directory_file, write_directory_file): Use new snapshot file
         format.
 	* src/names.c (collect_and_sort_names): Update dir_contents of the
 	first non-fake name entry when in listed incremental mode.
-	
+
         * tests/incr03.at: New testcase
 	* tests/rename01.at: New testcase
 	* tests/rename02.at: New testcase
@@ -465,12 +473,12 @@
 	tests/pipe.at, tests/same-order01.at, tests/same-order02.at,
 	tests/sparse01.at, tests/sparse03.at: Always use genfile --file,
 	this enables extra error checking.
-	 
+
 	* tests/multiv03.at: Attempt to extract a member with truncated
 	file name from the archive.
-	
+
 	* src/buffer.c (_open_archive): Remove unnecessary argument to
-	check_compressed_archive. 
+	check_compressed_archive.
 
 2006-04-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -484,7 +492,7 @@
 
 	* src/extract.c (extract_dir): Fix toggling existing directory
 	permissions (Debian bug #361077). Use parts of patch provided by
-	Ian Jackson <iwj@ubuntu.com>. 
+	Ian Jackson <iwj@ubuntu.com>.
 	* src/compare.c: Minor changes
 	* src/incremen.c (directory.new): New member
 	(note_directory,find_directory: Use make_directory to create
@@ -492,8 +500,8 @@
 	(procdir): Avoid duplicating  directories in the incremental
 	backup map.
 	* tests/Makefile.am (TESTSUITE_AT): Add extrac06.at
-	* tests/testsuite.at: Include extrac06.at 
-	
+	* tests/testsuite.at: Include extrac06.at
+
 2006-03-18  Ralf Wildenhues  <Ralf.Wildenhues@gmx.de> (trivial change)
 
 	* tests/atlocal.in (PATH): Add build-aux from the source tree,

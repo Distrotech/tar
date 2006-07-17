@@ -26,7 +26,6 @@ argp-pvh.c
 argp-xinl.c
 argp.h
 asnprintf.c
-atexit.c
 backupfile.c
 backupfile.h
 basename.c
@@ -45,7 +44,6 @@ error.c
 error.h
 exclude.c
 exclude.h
-exit.c
 exit.h
 exitfail.c
 exitfail.h
@@ -70,8 +68,6 @@ getdelim.c
 getdelim.h
 getline.c
 getline.h
-getndelim2.c
-getndelim2.h
 getopt.c
 getopt.h
 getopt1.c
@@ -89,6 +85,7 @@ imaxtostr.c
 intprops.h
 inttostr.c
 inttostr.h
+inttypes.h
 lchown.c
 lchown.h
 localcharset.c
@@ -108,6 +105,7 @@ minmax.h
 mkdirat.c
 mkdtemp.c
 mkdtemp.h
+mktime.c
 modechange.c
 modechange.h
 obstack.c
@@ -118,10 +116,7 @@ openat-die.c
 openat-priv.h
 openat.c
 openat.h
-pathmax.h
-paxconvert.c
 paxerror.c
-paxerror.h
 paxexit.c
 paxlib.h
 paxnames.c
@@ -210,13 +205,15 @@ version-etc.c
 version-etc.h
 vsnprintf.c
 vsnprintf.h
+wcwidth.h
 xalloc-die.c
 xalloc.h
 xgetcwd.c
 xgetcwd.h
 xmalloc.c
 xsize.h
-xstrdup.c
+xstrndup.c
+xstrndup.h
 xstrtol.c
 xstrtol.h
 xstrtoul.c

@@ -128,7 +128,7 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
   char const *minval_string;
   char const *maxval_string = STRINGIFY_BIGINT (maxval, maxbuf);
   char const *value_string;
-    
+
   if (gnu_format)
     {
       uintmax_t m = maxval + 1 ? maxval + 1 : maxval / 2 + 1;
@@ -138,7 +138,7 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
     }
   else
     minval_string = "0";
-  
+
   if (negative)
     {
       char *p = STRINGIFY_BIGINT (- value, valbuf + 1);
@@ -147,7 +147,7 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
     }
   else
     value_string = STRINGIFY_BIGINT (value, valbuf);
-	  
+
   if (substitute)
     {
       int negsub;
@@ -236,7 +236,7 @@ to_chars (int negative, uintmax_t value, size_t valsize,
     }
   else
     substitute = NULL; /* No substitution for formats, other than GNU */
-  
+
   return to_chars_subst (negative, gnu_format, value, valsize, substitute,
 			 where, size, type);
 }
@@ -663,7 +663,8 @@ start_header (struct tar_stat_info *st)
   if (mode_option)
     st->stat.st_mode =
       ((st->stat.st_mode & ~MODE_ALL)
-       | mode_adjust (st->stat.st_mode, mode_option, initial_umask));
+       | mode_adjust (st->stat.st_mode, S_ISDIR (st->stat.st_mode) != 0,
+		      initial_umask, mode_option, NULL));
 
   /* Paul Eggert tried the trivial test ($WRITER cf a b; $READER tvf a)
      for a few tars and came up with the following interoperability
@@ -1523,7 +1524,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    }
 
 	  file_count_links (st);
-	  
+
 	  ok = status == dump_status_ok;
 	}
 
