@@ -243,6 +243,7 @@ case ${GNULIB_SRCDIR--} in
 esac
 
 <$GNULIB_SRCDIR/gnulib-tool || exit
+gnulib_tool="$GNULIB_SRCDIR/gnulib-tool --assume-autoconf=latest-stable"
 
 get_modules gnulib.modules
 
@@ -253,14 +254,14 @@ while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
   gnulib_modules=`
     (echo "$gnulib_modules"
      for gnulib_module in $gnulib_modules; do
-       $GNULIB_SRCDIR/gnulib-tool --extract-dependencies $gnulib_module
+       $gnulib_tool --extract-dependencies $gnulib_module
      done) | sort -u
   `
 done
 
 gnulib_files=`
   (for gnulib_module in $gnulib_modules; do
-     $GNULIB_SRCDIR/gnulib-tool --extract-filelist $gnulib_module
+     $gnulib_tool --extract-filelist $gnulib_module
    done) | sort -u
 `
 
@@ -296,7 +297,7 @@ echo "$0: Creating m4/gnulib.m4"
  echo "AC_DEFUN([tar_GNULIB],["
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
-    $GNULIB_SRCDIR/gnulib-tool --extract-autoconf-snippet $gnulib_module
+    $gnulib_tool --extract-autoconf-snippet $gnulib_module
  done | sed '/AM_GNU_GETTEXT/d'
  echo "])") > ./m4/gnulib.m4
 
@@ -306,7 +307,7 @@ echo "$0: Creating lib/Makefile.am"
 
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
-    $GNULIB_SRCDIR/gnulib-tool --extract-automake-snippet $gnulib_module
+    $gnulib_tool --extract-automake-snippet $gnulib_module
  done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
 
 # Get translations.
