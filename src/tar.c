@@ -2038,13 +2038,6 @@ decode_options (int argc, char **argv)
 		   | FORMAT_MASK (GNU_FORMAT)
 		   | FORMAT_MASK (POSIX_FORMAT));
 
-  if (multi_volume_option
-      && archive_format == POSIX_FORMAT
-      && subcommand_option == CREATE_SUBCOMMAND
-      && !tape_length_option)
-    USAGE_ERROR ((0, 0,
-		  _("creating multi-volume archives in posix format requires using --tape-length (-L) option")));
-
   if (occurrence_option)
     {
       if (!args.input_files)
