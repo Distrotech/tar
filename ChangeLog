@@ -1,3 +1,17 @@
+2006-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/tar.c (decode_options): Do not require -L with -M -Hpax.
+	It could be needed in future, but currently it is not.
+	* src/create.c (to_chars_subst): Update comment regarding OLDGNU
+	vs. GNU format differences.
+	(mode_to_chars): Treat OLDGNU_FORMAT same as GNU_FORMAT. Fixes bug
+	reported by TAMUKI Shoichi <tamuki@linet.gr.jp>, which caused
+	equivalent `tar cf ...' and `tar rf ...' commands to produce
+	different archives.
+	
+	* tests/append02.at: New test case
+	* tests/Makefile.am, tests/testsuite.at: Add append02.at
+
 2006-07-20  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap: Adjust to today's change to gnulib-tool by invoking
