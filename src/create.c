@@ -152,8 +152,13 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
     {
       int negsub;
       uintmax_t sub = substitute (&negsub) & maxval;
-      /* FIXME: This is the only place where GNU_FORMAT differs from
-	 OLDGNU_FORMAT. Apart from this they are completely identical. */
+      /* NOTE: This is one of the few places where GNU_FORMAT differs from
+	 OLDGNU_FORMAT.  The actual differences are:
+
+	 1. In OLDGNU_FORMAT all strings in a tar header end in \0
+	 2. Incremental archives use oldgnu_header.
+	 
+	 Apart from this they are completely identical. */
       uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
       char subbuf[UINTMAX_STRSIZE_BOUND + 1];
       char *sub_string = STRINGIFY_BIGINT (s, subbuf + 1);
@@ -291,7 +296,8 @@ mode_to_chars (mode_t v, char *p, size_t s)
       && S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC
       && archive_format != POSIX_FORMAT
       && archive_format != USTAR_FORMAT
-      && archive_format != GNU_FORMAT)
+      && archive_format != GNU_FORMAT
+      && archive_format != OLDGNU_FORMAT)
     {
       negative = v < 0;
       u = v;
