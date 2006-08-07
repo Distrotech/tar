@@ -326,7 +326,8 @@ Examples:\n\
   tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.\n\
   tar -tvf archive.tar         # List all files in archive.tar verbosely.\n\
   tar -xf archive.tar          # Extract all files from archive.tar.\n\
-\vThe backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
+\n\
+The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
 The version control may be set with --backup or VERSION_CONTROL, values are:\n\n\
   none, off       never make backups\n\
   t, numbered     make numbered backups\n\
@@ -633,7 +634,7 @@ static struct argp_option options[] = {
    N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
 #undef GRID
 
-#define GRID 95  
+#define GRID 95
   {NULL, 0, NULL, 0,
    N_("File name matching options (affect both exclude and include patterns):"),
    GRID },
@@ -654,7 +655,7 @@ static struct argp_option options[] = {
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
    N_("wildcards match `/' (default for exclusion)"), GRID+1 },
 #undef GRID
-  
+
 #define GRID 100
   {NULL, 0, NULL, 0,
    N_("Informative output:"), GRID },
@@ -774,7 +775,7 @@ struct tar_args        /* Variables used during option parsing */
   | (args)->matching_flags \
   | recursion_option)
 
-#ifdef REMOTE_SHELL                                                       
+#ifdef REMOTE_SHELL
 # define DECL_SHOW_DEFAULT_SETTINGS(stream, printer)                      \
 {                                                                         \
   printer (stream,                                                        \
@@ -802,7 +803,7 @@ struct tar_args        /* Variables used during option parsing */
 static void
 show_default_settings (FILE *fp)
      DECL_SHOW_DEFAULT_SETTINGS(fp, fprintf)
-     
+
 static void
 show_default_settings_fs (argp_fmtstream_t fs)
      DECL_SHOW_DEFAULT_SETTINGS(fs, argp_fmtstream_printf)
@@ -872,7 +873,7 @@ set_stat_signal (const char *name)
     { "QUIT", SIGQUIT }
   };
   struct sigtab *p;
-  
+
   for (p = sigtab; p < sigtab + sizeof (sigtab) / sizeof (sigtab[0]); p++)
     if (strcmp (p->name, name) == 0)
       {
@@ -1122,11 +1123,11 @@ tar_help (struct argp_state *state)
 		   ARGP_HELP_STD_HELP & ~ARGP_HELP_BUG_ADDR);
   /* FIXME: use struct uparams.rmargin (from argp-help.c) instead of 79 */
   fs = argp_make_fmtstream (state->out_stream, 0, 79, 0);
-  
+
   argp_fmtstream_printf (fs, "\n%s\n\n",
 		       _("Valid arguments for --quoting-style options are:"));
   tar_list_quoting_styles (fs, "  ");
-	
+
   argp_fmtstream_puts (fs, _("\n*This* tar defaults to:\n"));
   show_default_settings_fs (fs);
   argp_fmtstream_putc (fs, '\n');
@@ -1286,7 +1287,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       get_date_or_file (args, "--mtime", arg, &mtime_option);
       set_mtime_option = true;
       break;
-      
+
     case 'n':
       seekable_archive = true;
       break;
@@ -1359,7 +1360,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	  }
       }
       break;
-	    
+
     case 't':
       set_subcommand_option (LIST_SUBCOMMAND);
       verbose_option++;
@@ -1717,7 +1718,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case TRANSFORM_OPTION:
       set_transform_expr (arg);
       break;
-      
+
     case USE_COMPRESS_PROGRAM_OPTION:
       set_use_compress_program_option (arg);
       break;
@@ -1904,7 +1905,7 @@ decode_options (int argc, char **argv)
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
   args.version_control_string = 0;
   args.input_files = false;
-  
+
   subcommand_option = UNKNOWN_SUBCOMMAND;
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
@@ -1916,7 +1917,7 @@ decode_options (int argc, char **argv)
   unquote_option = true;
   tar_sparse_major = 1;
   tar_sparse_minor = 0;
-  
+
   owner_option = -1;
   group_option = -1;
 
@@ -2019,7 +2020,7 @@ decode_options (int argc, char **argv)
   /* Warn about implicit use of the wildcards in command line arguments.
      See TODO */
   warn_regex_usage = args.wildcards == default_wildcards;
-  
+
   /* Derive option values and check option consistency.  */
 
   if (archive_format == DEFAULT_FORMAT)
@@ -2245,7 +2246,7 @@ main (int argc, char **argv)
 
   /* Close all inherited open descriptors, except for the first three */
   closeopen ();
-  
+
   /* Pre-allocate a few structures.  */
 
   allocated_archive_names = 10;
