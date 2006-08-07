@@ -46,7 +46,7 @@ enum children
 #define DIR_IS_FOUND(d) ((d)->flags & DIRF_FOUND)
 #define DIR_IS_NEW(d) ((d)->flags & DIRF_NEW)
 #define DIR_IS_RENAMED(d) ((d)->flags & DIRF_RENAMED)
-		       
+
 #define DIR_SET_FLAG(d,f) (d)->flags |= (f)
 #define DIR_CLEAR_FLAG(d,f) (d)->flags &= ~(f)
 
@@ -127,7 +127,7 @@ make_directory (const char *name)
     directory->name[namelen-1] = 0;
   return directory;
 }
-  
+
 /* Create and link a new directory entry for directory NAME, having a
    device number DEV and an inode number INO, with NFS indicating
    whether it is an NFS device and FOUND indicating whether we have
@@ -154,7 +154,7 @@ note_directory (char const *name, struct timespec mtime,
     }
   else
     directory->contents = NULL;
-  
+
   if (! ((directory_table
 	  || (directory_table = hash_initialize (0, 0,
 						 hash_directory_name,
@@ -239,7 +239,7 @@ procdir (char *name_buffer, struct stat *stat_data,
     {
       if (DIR_IS_INITED (directory))
 	return directory;
-      
+
       /* With NFS, the same file can have two different devices
 	 if an NFS directory is mounted in multiple locations,
 	 which is relatively common when automounting.
@@ -278,7 +278,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 	}
       else
 	directory->children = CHANGED_CHILDREN;
-      
+
       DIR_SET_FLAG (directory, DIRF_FOUND);
     }
   else
@@ -310,7 +310,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 	  if (verbose)
 	    WARN ((0, 0, _("%s: Directory is new"),
 		   quotearg_colon (name_buffer)));
-	  directory->children = 
+	  directory->children =
 	    (listed_incremental_option
 	     || (OLDER_STAT_TIME (*stat_data, m)
 		 || (after_date_option
@@ -326,11 +326,11 @@ procdir (char *name_buffer, struct stat *stat_data,
       /* ... except if it was explicitely given in the command line */
       && !is_individual_file (name_buffer))
     directory->children = NO_CHILDREN;
-  else if (children == ALL_CHILDREN) 
+  else if (children == ALL_CHILDREN)
     directory->children = ALL_CHILDREN;
 
   DIR_SET_FLAG (directory, DIRF_INIT);
-  
+
   return directory;
 }
 
@@ -343,7 +343,7 @@ dumpdir_locate (const char *dump, const char *name)
     while (*dump)
       {
 	/* Ignore 'R' (rename) and 'X' (tempname) entries, since they break
-	   alphabetical ordering. 
+	   alphabetical ordering.
 	   They normally do not occur in dumpdirs from the snapshot files,
 	   but this function is also used by purge_directory, which operates
 	   on a dumpdir from the archive, hence the need for this test. */
@@ -387,7 +387,7 @@ compare_dirnames (const void *first, const void *second)
    DIR must be returned by a previous call to savedir().
 
    File names in DIRECTORY->contents must be sorted
-   alphabetically. 
+   alphabetically.
 
    DIRECTORY->contents is replaced with the created template. Each entry is
    prefixed with ' ' if it was present in DUMP and with 'Y' otherwise. */
@@ -461,7 +461,7 @@ scan_directory (char *dir_name, dev_t device)
   size_t name_length;		/* used length in name_buffer */
   struct stat stat_data;
   struct directory *directory;
-  
+
   if (! dirp)
     savedir_error (dir_name);
 
@@ -475,7 +475,7 @@ scan_directory (char *dir_name, dev_t device)
   if (deref_stat (dereference_option, name_buffer, &stat_data))
     {
       stat_diag (name_buffer);
-      /* FIXME: used to be 
+      /* FIXME: used to be
            children = CHANGED_CHILDREN;
 	 but changed to: */
       free (name_buffer);
@@ -484,7 +484,7 @@ scan_directory (char *dir_name, dev_t device)
     }
 
   directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
-    
+
   if (dirp && directory->children != NO_CHILDREN)
     {
       char  *entry;	/* directory entry being scanned */
@@ -504,7 +504,7 @@ scan_directory (char *dir_name, dev_t device)
 	      name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
 	    }
 	  strcpy (name_buffer + name_length, entry + 1);
-	  
+
 	  if (excluded_name (name_buffer))
 	    *entry = 'N';
 	  else
@@ -515,7 +515,7 @@ scan_directory (char *dir_name, dev_t device)
 		  *entry = 'N';
 		  continue;
 		}
-	      
+
 	      if (S_ISDIR (stat_data.st_mode))
 		{
 		  procdir (name_buffer, &stat_data, device,
@@ -523,15 +523,15 @@ scan_directory (char *dir_name, dev_t device)
 			   verbose_option);
 		  *entry = 'D';
 		}
-	      
+
 	      else if (one_file_system_option && device != stat_data.st_dev)
 		*entry = 'N';
 
 	      else if (*entry == 'Y')
 		/* New entry, skip further checks */;
-	      
+
 	      /* FIXME: if (S_ISHIDDEN (stat_data.st_mode))?? */
-	      
+
 	      else if (OLDER_STAT_TIME (stat_data, m)
 		       && (!after_date_option
 			   || OLDER_STAT_TIME (stat_data, c)))
@@ -541,7 +541,7 @@ scan_directory (char *dir_name, dev_t device)
 	    }
 	}
     }
-  
+
   free (name_buffer);
   if (dirp)
     free (dirp);
@@ -570,7 +570,7 @@ rename_handler (void *data, void *proc_data)
 {
   struct directory *dir = data;
   struct obstack *stk = proc_data;
-  
+
   if (DIR_IS_RENAMED (dir))
     {
       struct directory *prev, *p;
@@ -620,7 +620,7 @@ append_incremental_renames (const char *dump)
 
   if (directory_table == NULL)
     return dump;
-  
+
   obstack_init (&stk);
   if (dump)
     {
@@ -629,7 +629,7 @@ append_incremental_renames (const char *dump)
     }
   else
     size = 0;
-  
+
   hash_do_for_each (directory_table, rename_handler, &stk);
   if (obstack_object_size (&stk) != size)
     {
@@ -661,7 +661,8 @@ read_incr_db_01 (int version, const char *initbuf)
 {
   int n;
   uintmax_t u;
-  time_t t = u;
+  time_t sec;
+  long int nsec;
   char *buf = 0;
   size_t bufsize;
   char *ebuf;
@@ -682,41 +683,49 @@ read_incr_db_01 (int version, const char *initbuf)
       buf = strdup (initbuf);
       bufsize = strlen (buf) + 1;
     }
-  
-  t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
-  if (buf == ebuf || (u == 0 && errno == EINVAL))
-    ERROR ((0, 0, "%s:%ld: %s",
+
+  sec = TYPE_MINIMUM (time_t);
+  nsec = -1;
+  errno = 0;
+  u = strtoumax (buf, &ebuf, 10);
+  if (!errno && TYPE_MAXIMUM (time_t) < u)
+    errno = ERANGE;
+  if (errno || buf == ebuf)
+    ERROR ((0, errno, "%s:%ld: %s",
 	    quotearg_colon (listed_incremental_option),
 	    lineno,
 	    _("Invalid time stamp")));
-  else if (t != u)
-    ERROR ((0, 0, "%s:%ld: %s",
-	    quotearg_colon (listed_incremental_option),
-	    lineno,
-	    _("Time stamp out of range")));
-  else if (version == 1)
-    {
-      newer_mtime_option.tv_sec = t;
-
-      t = u = (errno = 0, strtoumax (buf, &ebuf, 10));
-      if (buf == ebuf || (u == 0 && errno == EINVAL))
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option),
-		lineno,
-		_("Invalid time stamp")));
-      else if (t != u)
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option),
-		lineno,
-		_("Time stamp out of range")));
-      newer_mtime_option.tv_nsec = t;
-    }
   else
     {
-      /* pre-1 incremental format does not contain nanoseconds */
-      newer_mtime_option.tv_sec = t;
-      newer_mtime_option.tv_nsec = 0;
+      sec = u;
+
+      if (version == 1 && *ebuf)
+	{
+	  char const *buf_ns = ebuf + 1;
+	  errno = 0;
+	  u = strtoumax (buf_ns, &ebuf, 10);
+	  if (!errno && BILLION <= u)
+	    errno = ERANGE;
+	  if (errno || buf_ns == ebuf)
+	    {
+	      ERROR ((0, errno, "%s:%ld: %s",
+		      quotearg_colon (listed_incremental_option),
+		      lineno,
+		      _("Invalid time stamp")));
+	      sec = TYPE_MINIMUM (time_t);
+	    }
+	  else
+	    nsec = u;
+	}
+      else
+	{
+	  /* pre-1 incremental format does not contain nanoseconds */
+	  nsec = 0;
+	}
     }
+  newer_mtime_option.tv_sec = sec;
+  newer_mtime_option.tv_nsec = nsec;
+
 
   while (0 < (n = getline (&buf, &bufsize, listed_incremental_stream)))
     {
@@ -725,65 +734,79 @@ read_incr_db_01 (int version, const char *initbuf)
       bool nfs = buf[0] == '+';
       char *strp = buf + nfs;
       struct timespec mtime;
-      
+
       lineno++;
-      
+
       if (buf[n - 1] == '\n')
 	buf[n - 1] = '\0';
-      
+
       if (version == 1)
 	{
 	  errno = 0;
-	  mtime.tv_sec = u = strtoumax (strp, &ebuf, 10);
-	  if (!isspace (*ebuf))
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Invalid modification time (seconds)")));
-	  else if (mtime.tv_sec != u)
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Modification time (seconds) out of range")));
+	  u = strtoumax (strp, &ebuf, 10);
+	  if (!errno && TYPE_MAXIMUM (time_t) < u)
+	    errno = ERANGE;
+	  if (errno || strp == ebuf || *ebuf != ' ')
+	    {
+	      ERROR ((0, errno, "%s:%ld: %s",
+		      quotearg_colon (listed_incremental_option), lineno,
+		      _("Invalid modification time (seconds)")));
+	      sec = (time_t) -1;
+	    }
+	  else
+	    sec = u;
 	  strp = ebuf;
-	  
+
 	  errno = 0;
-	  mtime.tv_nsec = u = strtoumax (strp, &ebuf, 10);
-	  if (!isspace (*ebuf))
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Invalid modification time (nanoseconds)")));
-	  else if (mtime.tv_nsec != u)
-	    ERROR ((0, 0, "%s:%ld: %s",
-		    quotearg_colon (listed_incremental_option), lineno,
-		    _("Modification time (nanoseconds) out of range")));
+	  u = strtoumax (strp, &ebuf, 10);
+	  if (!errno && BILLION <= u)
+	    errno = ERANGE;
+	  if (errno || strp == ebuf || *ebuf != ' ')
+	    {
+	      ERROR ((0, errno, "%s:%ld: %s",
+		      quotearg_colon (listed_incremental_option), lineno,
+		      _("Invalid modification time (nanoseconds)")));
+	      nsec = -1;
+	    }
+	  else
+	    nsec = u;
+	  mtime.tv_sec = sec;
+	  mtime.tv_nsec = nsec;
 	  strp = ebuf;
 	}
       else
 	memset (&mtime, 0, sizeof mtime);
-      
+
       errno = 0;
-      dev = u = strtoumax (strp, &ebuf, 10);
-      if (!isspace (*ebuf))
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option), lineno,
-		_("Invalid device number")));
-      else if (dev != u)
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option), lineno,
-		_("Device number out of range")));
+      u = strtoumax (strp, &ebuf, 10);
+      if (!errno && TYPE_MAXIMUM (dev_t) < u)
+	errno = ERANGE;
+      if (errno || strp == ebuf || *ebuf != ' ')
+	{
+	  ERROR ((0, errno, "%s:%ld: %s",
+		  quotearg_colon (listed_incremental_option), lineno,
+		  _("Invalid device number")));
+	  dev = (dev_t) -1;
+	}
+      else
+	dev = u;
       strp = ebuf;
 
       errno = 0;
-      ino = u = strtoumax (strp, &ebuf, 10);
-      if (!isspace (*ebuf))
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option), lineno,
-		_("Invalid inode number")));
-      else if (ino != u)
-	ERROR ((0, 0, "%s:%ld: %s",
-		quotearg_colon (listed_incremental_option), lineno,
-		_("Inode number out of range")));
+      u = strtoumax (strp, &ebuf, 10);
+      if (!errno && TYPE_MAXIMUM (ino_t) < u)
+	errno = ERANGE;
+      if (errno || strp == ebuf || *ebuf != ' ')
+	{
+	  ERROR ((0, errno, "%s:%ld: %s",
+		  quotearg_colon (listed_incremental_option), lineno,
+		  _("Invalid inode number")));
+	  ino = (ino_t) -1;
+	}
+      else
+	ino = u;
       strp = ebuf;
-      
+
       strp++;
       unquote_string (strp);
       note_directory (strp, mtime, dev, ino, nfs, false, NULL);
@@ -810,31 +833,128 @@ read_obstack (FILE *fp, struct obstack *stk, size_t *pcount)
 }
 
 /* Read from file FP a nul-terminated string and convert it to
-   uintmax_t. Return the resulting value in PVAL.
+   intmax_t.  Return the resulting value in PVAL.  Assume '-' has
+   already been read.
 
-   Throw fatal error if the string cannot be converted.
-   
-   Return the last character read or EOF on end of file. */
+   Throw a fatal error if the string cannot be converted or if the
+   converted value is less than MIN_VAL.  */
 
-static int
-read_num (FILE *fp, uintmax_t *pval)
+static void
+read_negative_num (FILE *fp, intmax_t min_val, intmax_t *pval)
 {
   int c;
   size_t i;
-  char buf[UINTMAX_STRSIZE_BOUND], *ep;
+  char buf[INT_BUFSIZE_BOUND (intmax_t)];
+  char *ep;
+  buf[0] = '-';
 
-  for (i = 0, c = getc (fp); c != EOF && c != 0; c = getc (fp), i++)
+  for (i = 1; ISDIGIT (c = getc (fp)); i++)
     {
       if (i == sizeof buf - 1)
 	FATAL_ERROR ((0, 0, _("Field too long while reading snapshot file")));
       buf[i] = c;
     }
+
+  if (c < 0)
+    {
+      if (ferror (fp))
+	FATAL_ERROR ((0, errno, _("Read error in snapshot file")));
+      else
+	FATAL_ERROR ((0, 0, _("Unexpected EOF in snapshot file")));
+    }
+
   buf[i] = 0;
+  errno = 0;
+  *pval = strtoimax (buf, &ep, 10);
+  if (c || errno || *pval < min_val)
+    FATAL_ERROR ((0, errno, _("Unexpected field value in snapshot file")));
+}
+
+/* Read from file FP a nul-terminated string and convert it to
+   uintmax_t.  Return the resulting value in PVAL.  Assume C has
+   already been read.
+
+   Throw a fatal error if the string cannot be converted or if the
+   converted value exceeds MAX_VAL.
+
+   Return the last character read or EOF on end of file. */
+
+static int
+read_unsigned_num (int c, FILE *fp, uintmax_t max_val, uintmax_t *pval)
+{
+  size_t i;
+  char buf[UINTMAX_STRSIZE_BOUND], *ep;
+
+  for (i = 0; ISDIGIT (c); i++)
+    {
+      if (i == sizeof buf - 1)
+	FATAL_ERROR ((0, 0, _("Field too long while reading snapshot file")));
+      buf[i] = c;
+      c = getc (fp);
+    }
+
+  if (c < 0)
+    {
+      if (ferror (fp))
+	FATAL_ERROR ((0, errno, _("Read error in snapshot file")));
+      else if (i == 0)
+	return c;
+      else
+	FATAL_ERROR ((0, 0, _("Unexpected EOF in snapshot file")));
+    }
+
+  buf[i] = 0;
+  errno = 0;
   *pval = strtoumax (buf, &ep, 10);
-  if (*ep)
-    FATAL_ERROR ((0, 0, _("Unexpected field value in snapshot file")));
+  if (c || errno || max_val < *pval)
+    FATAL_ERROR ((0, errno, _("Unexpected field value in snapshot file")));
   return c;
-}  
+}
+
+/* Read from file FP a nul-terminated string and convert it to
+   uintmax_t.  Return the resulting value in PVAL.
+
+   Throw a fatal error if the string cannot be converted or if the
+   converted value exceeds MAX_VAL.
+
+   Return the last character read or EOF on end of file. */
+
+static int
+read_num (FILE *fp, uintmax_t max_val, uintmax_t *pval)
+{
+  return read_unsigned_num (getc (fp), fp, max_val, pval);
+}
+
+/* Read from FP two NUL-terminated strings representing a struct
+   timespec.  Return the resulting value in PVAL.
+
+   Throw a fatal error if the string cannot be converted.  */
+
+static void
+read_timespec (FILE *fp, struct timespec *pval)
+{
+  int c = getc (fp);
+  intmax_t i;
+  uintmax_t u;
+
+  if (c == '-')
+    {
+      read_negative_num (fp, TYPE_MINIMUM (time_t), &i);
+      c = 0;
+      pval->tv_sec = i;
+    }
+  else
+    {
+      c = read_unsigned_num (c, fp, TYPE_MAXIMUM (time_t), &u);
+      pval->tv_sec = u;
+    }
+
+  if (c || read_num (fp, BILLION - 1, &u))
+    FATAL_ERROR ((0, 0, "%s: %s",
+		  quotearg_colon (listed_incremental_option),
+		  _("Unexpected EOF in snapshot file")));
+  pval->tv_nsec = u;
+}
 
 /* Read incremental snapshot format 2 */
 static void
@@ -842,28 +962,10 @@ read_incr_db_2 ()
 {
   uintmax_t u;
   struct obstack stk;
-  
+
   obstack_init (&stk);
 
-  if (read_num (listed_incremental_stream, &u))
-    FATAL_ERROR ((0, 0, "%s: %s",
-		  quotearg_colon (listed_incremental_option), 
-		  _("Error reading time stamp")));
-  newer_mtime_option.tv_sec = u;
-  if (newer_mtime_option.tv_sec != u)
-    FATAL_ERROR ((0, 0, "%s: %s",
-		  quotearg_colon (listed_incremental_option),
-		  _("Time stamp out of range")));
-
-  if (read_num (listed_incremental_stream, &u))
-    FATAL_ERROR ((0, 0, "%s: %s",
-		  quotearg_colon (listed_incremental_option), 
-		  _("Error reading time stamp")));
-  newer_mtime_option.tv_nsec = u;
-  if (newer_mtime_option.tv_nsec != u)
-    FATAL_ERROR ((0, 0, "%s: %s",
-		  quotearg_colon (listed_incremental_option),
-		  _("Time stamp out of range")));
+  read_timespec (listed_incremental_stream, &newer_mtime_option);
 
   for (;;)
     {
@@ -874,43 +976,21 @@ read_incr_db_2 ()
       char *name;
       char *content;
       size_t s;
-      
-      if (read_num (listed_incremental_stream, &u))
+
+      if (read_num (listed_incremental_stream, 1, &u))
 	return; /* Normal return */
 
       nfs = u;
-      
-      if (read_num (listed_incremental_stream, &u))
-	break;
-      mtime.tv_sec = u;
-      if (mtime.tv_sec != u)
-	FATAL_ERROR ((0, 0, "%s: %s",
-		      quotearg_colon (listed_incremental_option), 
-		      _("Modification time (seconds) out of range")));
-      
-      if (read_num (listed_incremental_stream, &u))
-	break;
-      mtime.tv_nsec = u;
-      if (mtime.tv_nsec != u)
-	FATAL_ERROR ((0, 0, "%s: %s",
-		      quotearg_colon (listed_incremental_option), 
-		      _("Modification time (nanoseconds) out of range")));
 
-      if (read_num (listed_incremental_stream, &u))
+      read_timespec (listed_incremental_stream, &mtime);
+
+      if (read_num (listed_incremental_stream, TYPE_MAXIMUM (dev_t), &u))
 	break;
       dev = u;
-      if (dev != u)
-	FATAL_ERROR ((0, 0, "%s: %s",
-		      quotearg_colon (listed_incremental_option), 
-		      _("Device number out of range")));
 
-      if (read_num (listed_incremental_stream, &u))
+      if (read_num (listed_incremental_stream, TYPE_MAXIMUM (ino_t), &u))
 	break;
       ino = u;
-      if (ino != u)
-	FATAL_ERROR ((0, 0, "%s: %s",
-		      quotearg_colon (listed_incremental_option), 
-		      _("Inode number out of range")));
 
       if (read_obstack (listed_incremental_stream, &stk, &s))
 	break;
@@ -921,16 +1001,16 @@ read_incr_db_2 ()
 	;
       if (getc (listed_incremental_stream) != 0)
 	FATAL_ERROR ((0, 0, "%s: %s",
-		      quotearg_colon (listed_incremental_option), 
+		      quotearg_colon (listed_incremental_option),
 		      _("Missing record terminator")));
-      
+
       content = obstack_finish (&stk);
       note_directory (name, mtime, dev, ino, nfs, false, content);
       obstack_free (&stk, content);
     }
   FATAL_ERROR ((0, 0, "%s: %s",
-		quotearg_colon (listed_incremental_option), 
-		_("Unexpected EOF")));
+		quotearg_colon (listed_incremental_option),
+		_("Unexpected EOF in snapshot file")));
 }
 
 /* Read incremental snapshot file (directory file).
@@ -967,7 +1047,7 @@ read_directory_file (void)
   if (0 < getline (&buf, &bufsize, listed_incremental_stream))
     {
       char *ebuf;
-      int incremental_version;
+      uintmax_t incremental_version;
 
       if (strncmp (buf, PACKAGE_NAME, sizeof PACKAGE_NAME - 1) == 0)
 	{
@@ -978,7 +1058,7 @@ read_directory_file (void)
 	    if (!*ebuf)
 	      ERROR((1, 0, _("Bad incremental file format")));
 
-	  incremental_version = (errno = 0, strtoumax (ebuf+1, &ebuf, 10));
+	  incremental_version = strtoumax (ebuf + 1, NULL, 10);
 	}
       else
 	incremental_version = 0;
@@ -993,12 +1073,12 @@ read_directory_file (void)
 	case TAR_INCREMENTAL_VERSION:
 	  read_incr_db_2 ();
 	  break;
-	  
+
 	default:
-	  ERROR ((1, 0, _("Unsupported incremental format version: %d"),
+	  ERROR ((1, 0, _("Unsupported incremental format version: %"PRIuMAX),
 		  incremental_version));
 	}
-      
+
     }
 
   if (ferror (listed_incremental_stream))
@@ -1022,7 +1102,9 @@ write_directory_file_entry (void *entry, void *data)
 
       s = DIR_IS_NFS (directory) ? "1" : "0";
       fwrite (s, 2, 1, fp);
-      s = umaxtostr (directory->mtime.tv_sec, buf);
+      s = (TYPE_SIGNED (time_t)
+	   ? imaxtostr (directory->mtime.tv_sec, buf)
+	   : umaxtostr (directory->mtime.tv_sec, buf));
       fwrite (s, strlen (s) + 1, 1, fp);
       s = umaxtostr (directory->mtime.tv_nsec, buf);
       fwrite (s, strlen (s) + 1, 1, fp);
@@ -1065,7 +1147,9 @@ write_directory_file (void)
   fprintf (fp, "%s-%s-%d\n", PACKAGE_NAME, PACKAGE_VERSION,
 	   TAR_INCREMENTAL_VERSION);
 
-  s = umaxtostr (start_time.tv_sec, buf);
+  s = (TYPE_SIGNED (time_t)
+       ? imaxtostr (start_time.tv_sec, buf)
+       : umaxtostr (start_time.tv_sec, buf));
   fwrite (s, strlen (s) + 1, 1, fp);
   s = umaxtostr (start_time.tv_nsec, buf);
   fwrite (s, strlen (s) + 1, 1, fp);
@@ -1138,7 +1222,7 @@ dumpdir_ok (char *dumpdir)
   char *p;
   int has_tempdir = 0;
   int expect = 0;
-  
+
   for (p = dumpdir; *p; p += strlen (p) + 1)
     {
       if (expect && *p != expect)
@@ -1160,7 +1244,7 @@ dumpdir_ok (char *dumpdir)
 	  else
 	    has_tempdir = 1;
 	  break;
-	  
+
 	case 'R':
 	  if (p[1] == 0)
 	    {
@@ -1175,14 +1259,14 @@ dumpdir_ok (char *dumpdir)
 	    }
 	  expect = 'T';
 	  break;
-	    
+
 	case 'T':
 	  if (expect != 'T')
 	    {
 	      ERROR ((0, 0,
 		      _("Malformed dumpdir: 'T' not preceeded by 'R'")));
 	      return false;
-	    }  
+	    }
 	  if (p[1] == 0 && !has_tempdir)
 	    {
 	      ERROR ((0, 0,
@@ -1191,7 +1275,7 @@ dumpdir_ok (char *dumpdir)
 	    }
 	  expect = 0;
 	  break;
-	  
+
 	case 'N':
 	case 'Y':
 	case 'D':
@@ -1216,7 +1300,7 @@ dumpdir_ok (char *dumpdir)
 
   return true;
 }
-      
+
 /* Examine the directories under directory_name and delete any
    files that were not there at the time of the back-up. */
 static bool
@@ -1225,7 +1309,7 @@ try_purge_directory (char const *directory_name)
   char *current_dir;
   char *cur, *arc, *p;
   char *temp_stub = NULL;
-  
+
   if (!is_dumpdir (&current_stat_info))
     return false;
 
@@ -1239,13 +1323,13 @@ try_purge_directory (char const *directory_name)
   /* Verify if dump directory is sane */
   if (!dumpdir_ok (current_stat_info.dumpdir))
     return false;
-	
+
   /* Process renames */
   for (arc = current_stat_info.dumpdir; *arc; arc += strlen (arc) + 1)
     {
       if (*arc == 'X')
 	{
-#define TEMP_DIR_TEMPLATE "tar.XXXXXX"	  
+#define TEMP_DIR_TEMPLATE "tar.XXXXXX"
 	  size_t len = strlen (arc + 1);
 	  temp_stub = xrealloc (temp_stub, len + 1 + sizeof TEMP_DIR_TEMPLATE);
 	  memcpy (temp_stub, arc + 1, len);
@@ -1273,7 +1357,7 @@ try_purge_directory (char const *directory_name)
 	    src = temp_stub;
 	  else if (*dst == 0)
 	    dst = temp_stub;
-	    
+
 	  if (!rename_directory (src, dst))
 	    {
 	      free (temp_stub);
@@ -1286,7 +1370,7 @@ try_purge_directory (char const *directory_name)
     }
 
   free (temp_stub);
-  
+
   /* Process deletes */
   p = NULL;
   for (cur = current_dir; *cur; cur += strlen (cur) + 1)
@@ -1334,7 +1418,7 @@ try_purge_directory (char const *directory_name)
 	}
     }
   free (p);
-  
+
   free (current_dir);
   return true;
 }
@@ -1345,7 +1429,7 @@ purge_directory (char const *directory_name)
   if (!try_purge_directory (directory_name))
     skip_member ();
 }
-     
+
 void
 list_dumpdir (char *buffer, size_t size)
 {
