@@ -33,6 +33,8 @@ charset.alias
 chdir-long.c
 chdir-long.h
 chown.c
+close-stream.c
+close-stream.h
 closeout.c
 closeout.h
 config.charset
@@ -158,6 +160,8 @@ stat-macros.h
 stat-time.h
 stdbool.h
 stdbool_.h
+stdint.h
+stdint_.h
 stpcpy.c
 stpcpy.h
 strcase.h

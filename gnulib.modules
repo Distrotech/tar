@@ -22,6 +22,7 @@ gettext
 gettime
 hash
 human
+inttypes
 lchown
 localcharset
 memset
@@ -38,6 +39,7 @@ savedir
 setenv
 stat-time
 stdbool
+stdint
 stpcpy
 strdup
 strtol

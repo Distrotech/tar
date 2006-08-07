@@ -1,3 +1,47 @@
+2006-08-07  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap: Redo po file retrieval to match Bison's method,
+	since the translation project changed its index format.
+	Don't use --assume-autoconf; it's now replaced
+	by looking in configure.ac.
+	(m4/codeset.m4, m4/intdiv.m4, m4/inttypes-pri.m4, m4/isc-posix.m4):
+	(m4/lcmessage.m4, m4/onceonly_2_57.m4, m4/gettext.m4, m4/glibc21.m4):
+	(m4/inttypes_h.m4, m4/lib-ld.m4, m4/lib-prefix.m4, m4/po.m4):
+	(m4/stdint_h.m4, m4/uintmax_t.m4, m4/ulonglong.m4):
+	Don't rename to ..._gl.m4, as this is no longer needed.
+	(m4/geteext.m4): Patch to remove the need for intl/*.
+	Use autopoint manually, then remove the intl files,
+	then undo changes to gnulib files that autoreconf made,
+	and then run aclocal/autoconf/autoheader/automake.
+	This makes our bootstrap procedure closer to Bison's.
+	(po/Makevars): Generate automatically.
+	* configure.ac (AC_PREREQ): Update from 2.59 to 2.60.
+	(gl_AC_TYPE_INTMAX_T, jm_AC_TYPE_UINTMAX_T): Remove.
+	* gnulib.modules: Add inttypes, stdint.
+	* lib/.cvsignore: Add close-stream.c, close-stream.h,
+	stdint.h, stdint_.h.
+	* po/Makefile: Remove; now automatically generated.
+
+	* src/incremen.c (read_incr_db_01): Check input strings more
+	carefully.  Do not pass arbitrary char values to isspace, as
+	this has undefined behavior.  Likewise for assigning arbitrary
+	uintmax_t values to other types.
+	(read_negative_num, read_unsigned_num, read_timespec):
+	New functions, to check input values a bit more carefuly.
+	(read_num): Use read_unsigned_num.  New arg MAX_VAL;
+	all callers changed.
+	(read_incr_db_2): Use these new functions.
+	Use a consistent diagnostic for unexpected EOF.
+	(read_directory_file): Do not assign arbitrary uintmax_t value
+	to int.
+	(read_timespec, write_directory_file_entry, write_directory_file):
+	Handle negative time_t values correctly.  We don't bother to do
+	this with pre-2 formats, since presumably the time stamps were
+	output incorrectly.
+
+	* src/tar.c (doc): Don't use \v in an argument to gettext;
+	gettext 0.15 rejects this.
+
 2006-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Do not require -L with -M -Hpax.
@@ -8,7 +52,7 @@
 	reported by TAMUKI Shoichi <tamuki@linet.gr.jp>, which caused
 	equivalent `tar cf ...' and `tar rf ...' commands to produce
 	different archives.
-	
+
 	* tests/append02.at: New test case
 	* tests/Makefile.am, tests/testsuite.at: Add append02.at
 

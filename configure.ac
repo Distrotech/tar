@@ -22,7 +22,7 @@ AC_INIT([GNU tar], [1.15.92], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h:config.hin])
-AC_PREREQ([2.59])
+AC_PREREQ([2.60])
 AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 dist-shar std-options])
 
 gl_USE_SYSTEM_EXTENSIONS
@@ -80,8 +80,6 @@ AC_CHECK_TYPE(dev_t, unsigned)
 AC_CHECK_TYPE(ino_t, unsigned)
 
 gt_TYPE_SSIZE_T
-gl_AC_TYPE_INTMAX_T
-jm_AC_TYPE_UINTMAX_T
 
 # gnulib modules
 tar_GNULIB
