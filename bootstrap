@@ -137,7 +137,7 @@ get_translations() {
   ' |
   sh &&
   ls "$subdir"/*.po | sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
-:  rm "$subdir/$domain.html"
+  rm "$subdir/$domain.html"
 }
 
 update_po() {
