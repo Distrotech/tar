@@ -1,5 +1,13 @@
 2006-08-07  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* src/tar.c: Work around limitation imposed by gettext 0.15
+	by concatenating strings with "\v" after translation.
+	(doc): Remove, splitting into:
+	(doc0, doc1): New constants.
+	(argp): Don't use doc; just initialize to NULL.
+	(initialize_argp_doc): New function.
+	(decode_options): Use it.
+
 	* bootstrap: Redo po file retrieval to match Bison's method,
 	since the translation project changed its index format.
 	Don't use --assume-autoconf; it's now replaced

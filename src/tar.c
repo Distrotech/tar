@@ -320,13 +320,16 @@ enum
 
 const char *argp_program_version = "tar (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
-static char doc[] = N_("GNU `tar' saves many files together into a single tape or disk archive, and can restore individual files from the archive.\n\
+static char const doc0[] = N_("\
+GNU `tar' saves many files together into a single tape or disk archive, \
+and can restore individual files from the archive.\n\
 \n\
 Examples:\n\
   tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.\n\
   tar -tvf archive.tar         # List all files in archive.tar verbosely.\n\
   tar -xf archive.tar          # Extract all files from archive.tar.\n\
-\n\
+");
+static char const doc1[] = N_("\
 The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
 The version control may be set with --backup or VERSION_CONTROL, values are:\n\n\
   none, off       never make backups\n\
@@ -1859,11 +1862,26 @@ static struct argp argp = {
   options,
   parse_opt,
   N_("[FILE]..."),
-  doc,
+  NULL,
   NULL,
   NULL,
   NULL
 };
+
+/* Initialize the argp documentation.  gettext 0.15 dislikes doc
+   strings containing '\v', so insert '\v' after translation.  */
+
+static void
+initialize_argp_doc (void)
+{
+  char const *xdoc0 = _(doc0); size_t xlen0 = strlen (xdoc0);
+  char const *xdoc1 = _(doc1); size_t xlen1 = strlen (xdoc1);
+  char *doc = xmalloc (xlen0 + 1 + xlen1 + 1);
+  memcpy (doc, xdoc0, xlen0);
+  doc[xlen0] = '\v';
+  memcpy (doc + xlen0 + 1, doc1, xlen1 + 1);;
+  argp.doc = doc;
+}
 
 void
 usage (int status)
@@ -1920,6 +1938,8 @@ decode_options (int argc, char **argv)
 
   owner_option = -1;
   group_option = -1;
+
+  initialize_argp_doc ();
 
   /* Convert old-style tar call by exploding option element and rearranging
      options accordingly.  */
