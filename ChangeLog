@@ -1,3 +1,9 @@
+2006-08-09  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap: Don't exclude ja.po; it is working again.
+	Don't remove all old .po files if we're merely updating one.
+	* po/.cvsignore: Add Makevars.
+
 2006-08-07  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/tar.c: Work around limitation imposed by gettext 0.15

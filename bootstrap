@@ -109,7 +109,10 @@ get_translations() {
   po_file=$3
 
   echo "$0: getting translations into $subdir for $domain..."
-  (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`) &&
+
+  case $po_file in
+  '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
+  esac &&
 
   $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
 
@@ -123,11 +126,11 @@ get_translations() {
   awk -v domain="$domain" -v po_file="$po_file" -v subdir="$subdir" '
     {
       lang = $1
-      if (po_file == (lang ".po")) next
+      if (po_file && po_file != (lang ".po")) next
 
       # Work around bugs in translations uncovered by gettext 0.15.
       # This workaround can be removed once the translations are fixed.
-      if (lang == "hu" || lang == "ja" || lang == "ky" || lang == "zh_TW") next
+      if (lang == "hu" || lang == "ky" || lang == "zh_TW") next
 
       ver = $2
       urlfmt = ""
@@ -146,10 +149,7 @@ update_po() {
     *.po)  POFILE=$1;;
     *)     POFILE=${1}.po;;
     esac
-    get_translations po $package "$POFILE" &&
-    LANG=`expr $POFILE : '\(.*\)\.po'` &&
-    { grep -q $LANG po/LINGUAS ||
-        (echo $LANG; cat po/LINGUAS) | sort -o po/LINGUAS; }
+    get_translations po $package "$POFILE"
   else
     get_translations po $package
   fi
