@@ -403,10 +403,25 @@ do
 done
 
 
-# Put bug-reporting address into po/Makevars.
-echo "$0: sed '/^MSGID_BUGS_ADDRESS *=/s/=.*/= bug-$package@gnu.org/' po/Makevars.template >po/Makevars ..."
-sed '/^MSGID_BUGS_ADDRESS *=/s/=.*/= bug-'"$package"'@gnu.org/' po/Makevars.template >po/Makevars
-
+# Create gettext configuration.
+echo "$0: Creating po/Makevars from po/Makevars.template ..."
+sed '
+  /^MSGID_BUGS_ADDRESS *=/s/=.*/= bug-'"$package"'@gnu.org/
+  /^XGETTEXT_OPTIONS *=/{
+    s/$/ \\/
+    a\
+	--flag=_:1:pass-c-format \\\
+	--flag=N_:1:pass-c-format \\\
+	--flag=error:3:c-format --flag=error_at_line:5:c-format \\\
+	--flag=asnprintf:3:c-format --flag=vasnprintf:3:c-format \\\
+	--flag=argp_error:2:c-format \\\
+	--flag=__argp_error:2:c-format \\\
+	--flag=argp_failure:4:c-format \\\
+	--flag=__argp_failure:4:c-format \\\
+	--flag=argp_fmtstream_printf:2:c-format \\\
+	--flag=__argp_fmtstream_printf:2:c-format
+  }
+' po/Makevars.template >po/Makevars
 
 
 echo "$0: done.  Now you can run './configure'."

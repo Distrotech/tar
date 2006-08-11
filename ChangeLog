@@ -1,5 +1,15 @@
 2006-08-11  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* bootstrap: Set XGETTEXT_OPTIONS to flag our printf-format functions,
+	so that translators are warned about strings that are formats but
+	don't look like formats.  This might help prevent core dumps.
+	* configure.ac (AM_GNU_GETTEXT): Upgrade to need-formatstring-macros.
+	Suggested by Eric Blake to avoid problems like
+	<http://lists.gnu.org/archive/html/bug-coreutils/2006-07/msg00087.html>.
+	(AM_GNU_GETTEXT_VERSION): Upgrade from 0.12.1 to 0.15.  The gettext
+	manual says we should use the version number normally expected of
+	maintainers, neither more nor less.
+
 	* bootstrap (get_translations):
 	Don't exclude ky.po; it is working again.
 
