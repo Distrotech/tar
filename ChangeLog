@@ -1,6 +1,12 @@
+2006-08-11  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* bootstrap (get_translations):
+	Don't exclude ky.po; it is working again.
+
 2006-08-09  Paul Eggert  <eggert@cs.ucla.edu>
 
-	* bootstrap: Don't exclude ja.po; it is working again.
+	* bootstrap (get_translations):
+	Don't exclude ja.po; it is working again.
 	Don't remove all old .po files if we're merely updating one.
 	* po/.cvsignore: Add Makevars.
 

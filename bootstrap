@@ -130,7 +130,7 @@ get_translations() {
 
       # Work around bugs in translations uncovered by gettext 0.15.
       # This workaround can be removed once the translations are fixed.
-      if (lang == "hu" || lang == "ky" || lang == "zh_TW") next
+      if (lang == "hu" || lang == "zh_TW") next
 
       ver = $2
       urlfmt = ""
