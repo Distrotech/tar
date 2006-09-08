@@ -14,6 +14,7 @@ that you have the latest stable version.
 - Gettext <http://www.gnu.org/software/gettext/>
 - Gzip <http://www.gnu.org/software/gzip/>
 - M4 <http://www.gnu.org/software/m4/>
+- Texinfo <http://www.gnu.org/software/texinfo>
 - Wget <http://www.gnu.org/software/wget/>
 
 As of this writing, the latest stable version of Gzip is 1.2.4 but we
