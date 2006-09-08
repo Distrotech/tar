@@ -1,3 +1,13 @@
+2006-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (try_purge_directory): Initialize struct st.  Fix
+	condition for selecting candidates for removal.
+	* README-alpha: List texinfo among build prerequisites for the CVS
+	version.
+
+	* bootstrap (intl_files_to_remove): Do not remove m4/inttypes-h.m4
+	and m4/inttypes-pri.m4
+
 2006-08-11  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* bootstrap: Set XGETTEXT_OPTIONS to flag our printf-format functions,
