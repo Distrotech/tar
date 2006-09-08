@@ -369,8 +369,6 @@ intl_files_to_remove='
   m4/glibc2.m4
   m4/intdiv0.m4
   m4/intmax.m4
-  m4/inttypes-h.m4
-  m4/inttypes-pri.m4
   m4/lcmessage.m4
   m4/lock.m4
   m4/printf-posix.m4
@@ -381,6 +379,7 @@ rm -fr $intl_files_to_remove || exit
 
 
 # Undo changes to gnulib files that autoreconf made.
+
 for gnulib_file in $gnulib_files; do
   test ! -f $gnulib_file || cmp -s $gnulib_file $GNULIB_SRCDIR/$gnulib_file || {
     rm -f $gnulib_file &&
