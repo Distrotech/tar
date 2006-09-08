@@ -1,3 +1,11 @@
+2006-09-08  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to latest gnulib.
+	* lib/.cvsignore: Add at-func.c, configmake.h, fchmodat.c,
+	fcntl.h, fcntl_.h, inttypes_.h, lstat.c, lstat.h.
+	* tests/testsuite.at (AT_TAR_MKHIER): Use install-sh -d
+	rather than the no-longer-included mkinstalldirs.
+
 2006-09-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (try_purge_directory): Initialize struct st.  Fix

@@ -55,7 +55,7 @@ dnl match second argument, skip the test.
 
 m4_define([AT_TARBALL_PREREQ],[
 test -z "$[]TEST_DATA_DIR" && AT_SKIP_TEST
-tarball_prereq $1 $2 $[]TEST_DATA_DIR $[]TEST_DATA_URL || AT_SKIP_TEST]) 
+tarball_prereq $1 $2 $[]TEST_DATA_DIR $[]TEST_DATA_URL || AT_SKIP_TEST])
 
 dnl AT_TARBALL_PREREQ(tarball, md5sum) - Same for star testfiles
 m4_define([AT_STAR_PREREQ],[
@@ -84,7 +84,7 @@ test $result -eq 0 && AT_SKIP_TEST
 ])
 
 m4_define([AT_TAR_MKHIER],[
-mkinstalldirs $1 >/dev/null
+install-sh -d $1 >/dev/null
 m4_if([$2],,,genfile --file [$1]/[$2])])
 
 m4_include([sparsemvp.at])
@@ -183,4 +183,3 @@ m4_include([star/ustar-big-2g.at])
 m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
-
