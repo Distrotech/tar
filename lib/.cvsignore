@@ -26,6 +26,7 @@ argp-pvh.c
 argp-xinl.c
 argp.h
 asnprintf.c
+at-func.c
 backupfile.c
 backupfile.h
 basename.c
@@ -38,6 +39,7 @@ close-stream.h
 closeout.c
 closeout.h
 config.charset
+configmake.h
 creat-safer.c
 dirname.c
 dirname.h
@@ -49,9 +51,12 @@ exclude.h
 exit.h
 exitfail.c
 exitfail.h
+fchmodat.c
 fchown-stub.c
 fcntl--.h
 fcntl-safer.h
+fcntl.h
+fcntl_.h
 fd-safer.c
 fileblocks.c
 fnmatch.c
@@ -88,11 +93,14 @@ intprops.h
 inttostr.c
 inttostr.h
 inttypes.h
+inttypes_.h
 lchown.c
 lchown.h
 localcharset.c
 localcharset.h
 localedir.h
+lstat.c
+lstat.h
 malloc.c
 mbchar.c
 mbchar.h
