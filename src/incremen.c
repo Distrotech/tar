@@ -1381,22 +1381,23 @@ try_purge_directory (char const *directory_name)
 	free (p);
       p = new_name (directory_name, cur);
 
-      if (!(entry = dumpdir_locate (current_stat_info.dumpdir, cur))
-	  || (*entry == 'D' && S_ISDIR (st.st_mode))
-	  || (*entry == 'Y' && !S_ISDIR (st.st_mode)))
+      if (deref_stat (false, p, &st))
 	{
-	  if (deref_stat (false, p, &st))
+	  if (errno != ENOENT) /* FIXME: Maybe keep a list of renamed
+				  dirs and check it here? */
 	    {
-	      if (errno != ENOENT) /* FIXME: Maybe keep a list of renamed
-				      dirs and check it here? */
-		{
-		  stat_diag (p);
-		  WARN ((0, 0, _("%s: Not purging directory: unable to stat"),
-			 quotearg_colon (p)));
-		}
-	      continue;
+	      stat_diag (p);
+	      WARN ((0, 0, _("%s: Not purging directory: unable to stat"),
+		     quotearg_colon (p)));
 	    }
-	  else if (one_file_system_option && st.st_dev != root_device)
+	  continue;
+	}
+
+      if (!(entry = dumpdir_locate (current_stat_info.dumpdir, cur))
+	  || (*entry == 'D' && !S_ISDIR (st.st_mode))
+	  || (*entry == 'Y' && S_ISDIR (st.st_mode)))
+	{
+	  if (one_file_system_option && st.st_dev != root_device)
 	    {
 	      WARN ((0, 0,
 		     _("%s: directory is on a different device: not purging"),
