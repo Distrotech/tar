@@ -78,7 +78,7 @@ scripts.
 
 ** `--disable-largefile' omits support for large files, even if the
 operating system supports large files.  Typically, large files are
-those larger on 2 GB on a 32-bit host.
+those larger than 2 GB on a 32-bit host.
 
 * Installation hints
 
