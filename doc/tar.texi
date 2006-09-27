@@ -8800,8 +8800,8 @@ that precedes an archive member and contains a set of
 stored in the standard @code{ustar} header.  While optional for
 expanding sparse version 1.0 members, use of extended headers is
 mandatory when expanding sparse members in older sparse formats: v.0.0
-and v.0.1 (The sparse formats are described in detail in @pxref{Sparse
-Formats}).  So, for this format, the question is: how to obtain
+and v.0.1 (The sparse formats are described in detail in @ref{Sparse
+Formats}.)  So, for this format, the question is: how to obtain
 extended headers from the archive? 
 
 If you use a @command{tar} implementation that does not support PAX
