@@ -266,7 +266,7 @@ copy_files ${PAXUTILS_SRCDIR}/m4 m4
 echo "$0: Creating m4/paxutils.m4"
 (echo "# This file is generated automatically. Please, do not edit."
  echo "#"
- echo "AC_DEFUN([tar_PAXUTILS],["
+ echo "AC_DEFUN([${package}_PAXUTILS],["
  cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
  echo "])") > ./m4/paxutils.m4
 
@@ -336,7 +336,7 @@ sed '
 echo "$0: Creating m4/gnulib.m4"
 (echo "# This file is generated automatically. Please, do not edit."
  echo "#"
- echo "AC_DEFUN([tar_GNULIB],["
+ echo "AC_DEFUN([${package}_GNULIB],["
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
     $gnulib_tool --extract-autoconf-snippet $gnulib_module
@@ -350,7 +350,7 @@ echo "$0: Creating lib/Makefile.am"
  for gnulib_module in $gnulib_modules; do
     echo "# $gnulib_module"
     $gnulib_tool --extract-automake-snippet $gnulib_module
- done | sed 's/lib_SOURCES/libtar_a_SOURCES/g' ) > lib/Makefile.am
+ done | sed "s/lib_SOURCES/lib${package}_a_SOURCES/g" ) > lib/Makefile.am
 
 # Get translations.
 if test "$DOWNLOAD_PO" = "yes"; then
