@@ -782,7 +782,7 @@ xheader_string_end (char const *keyword)
   if (size != p)
     {
       ERROR ((0, 0,
-        _("Generated keyword/value pair is too long (keyword=%s, length=%s"),
+        _("Generated keyword/value pair is too long (keyword=%s, length=%s)"),
 	      keyword, nbuf));
       obstack_free (extended_header.stk, obstack_finish (extended_header.stk));
       return false;
