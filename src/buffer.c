@@ -1020,7 +1020,8 @@ new_volume (enum access_mode mode)
   assign_string (&volume_label, NULL);
   assign_string (&continued_file_name, NULL);
   continued_file_size = continued_file_offset = 0;
-
+  current_block = record_start;
+  
   if (rmtclose (archive) != 0)
     close_warn (*archive_name_cursor);
 
@@ -1114,22 +1115,24 @@ try_new_volume ()
   size_t status;
   union block *header;
   struct tar_stat_info dummy;
-	
+  int access;
+  
   switch (subcommand_option)
     {
     case APPEND_SUBCOMMAND:
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
-      if (!new_volume (ACCESS_UPDATE))
-	return true;
+      access = ACCESS_UPDATE;
       break;
 
     default:
-      if (!new_volume (ACCESS_READ))
-	return true;
+      access = ACCESS_READ;
       break;
     }
 
+  if (!new_volume (access))
+    return true;
+  
   while ((status = rmtread (archive, record_start->buffer, record_size))
 	 == SAFE_READ_ERROR)
     archive_read_error ();
