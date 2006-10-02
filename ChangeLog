@@ -1,9 +1,17 @@
+2006-10-02  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Joerg Weilbier
+	* src/buffer.c (new_volume): Initialize current_block
+	* src/xheader.c (xheader_string_end): Fix diagnostic message.
+	* tests/multiv05.at: New testcase.
+	* tests/Makefile.am, tests/testsuite.at: Add multiv05.at
+
 2006-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Use ${package} instead of hardcoding package name
 	* doc/tar.texi: Minor fix
 	* src/tar.c (doc0, doc1, initialize_argp_doc): Removed.  Rely on
-	the new argp method instead
+	the new argp method instead.
 
 2006-09-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
