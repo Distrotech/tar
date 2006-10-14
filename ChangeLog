@@ -1,3 +1,13 @@
+2006-10-14  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (_open_archive): Make sure stdlis is set to stderr
+	when we are writing archive to stdout (unless --index-file is
+	used). Bug introduced on 2006-07-06.
+	* tests/Makefile.am: New test verbose.at
+	* tests/testsuite.at: Likewise
+	* tests/indexfile.at (AT_KEYWORDS): Add stdout keyword
+	* tests/verbose.at: New test case
+
 2006-10-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Add Joerg Weilbier
