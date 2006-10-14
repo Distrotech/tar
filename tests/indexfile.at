@@ -24,7 +24,7 @@
 # References: <200607061943.06645.mg@fork.pl>
 
 AT_SETUP([tar --index-file=FILE --file=-])
-AT_KEYWORDS([indexfile])
+AT_KEYWORDS([stdout indexfile])
 
 AT_TAR_CHECK([
 
