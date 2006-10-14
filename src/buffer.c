@@ -474,6 +474,11 @@ _open_archive (enum access_mode wanted_access)
 	  abort (); /* Should not happen */
 	  break;
 	}
+
+      if (!index_file_name
+	  && wanted_access == ACCESS_WRITE
+	  && strcmp (archive_name_array[0], "-") == 0)
+	stdlis = stderr;
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
     {
@@ -499,12 +504,16 @@ _open_archive (enum access_mode wanted_access)
 
 	case ACCESS_WRITE:
 	  archive = STDOUT_FILENO;
+	  if (!index_file_name)
+	    stdlis = stderr;
 	  break;
 
 	case ACCESS_UPDATE:
 	  archive = STDIN_FILENO;
 	  write_archive_to_stdout = true;
 	  record_end = record_start; /* set up for 1st record = # 0 */
+	  if (!index_file_name)
+	    stdlis = stderr;
 	  break;
 	}
     }
