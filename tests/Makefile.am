@@ -64,6 +64,7 @@ TESTSUITE_AT = \
  extrac05.at\
  extrac06.at\
  gzip.at\
+ grow.at\
  incremental.at\
  incr01.at\
  incr02.at\

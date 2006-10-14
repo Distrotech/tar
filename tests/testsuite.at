@@ -175,6 +175,7 @@ m4_include([volsize.at])
 m4_include([comprec.at])
 
 m4_include([truncate.at])
+m4_include([grow.at])
 
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
