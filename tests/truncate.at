@@ -24,14 +24,16 @@
 # http://lists.gnu.org/archive/html/bug-tar/2005-05/msg00008.html
 #
 # The test case is based on the script by Frank Heckenbach <frank@g-n-u.de>
+# Additionally, the test verifies if tar exits with code 1 (file differs).
 
 AT_SETUP([truncate])
-AT_KEYWORDS([truncated files])
+AT_KEYWORDS([truncate filechange])
 
 AT_TAR_CHECK([
 genfile --file foo --length 50000k
 genfile --file baz
 genfile --run 'tar -vcf bar foo baz' --checkpoint 10 --length 49995k --truncate foo
+echo Exit status: $?
 echo separator
 sleep 1
 dd if=/dev/zero of=foo bs=1k seek=49995 count=5 >/dev/null 2>&1
@@ -39,13 +41,13 @@ tar dvf bar],
 [1],
 [foo
 baz
+Exit status: 1
 separator
 foo
 foo: Mod time differs
 baz
 ],
 [tar: foo: File shrank by 5120 bytes; padding with zeros
-tar: Error exit delayed from previous errors
 ])
 
 AT_CLEANUP
