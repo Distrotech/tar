@@ -974,8 +974,8 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 			   size_left),
 		 quotearg_colon (st->orig_file_name),
 		 STRINGIFY_BIGINT (size_left, buf)));
-	  if (! ignore_failed_read_option)
-	    exit_status = TAREXIT_FAILURE;
+	  if (! ignore_failed_read_option) 
+	    exit_status = TAREXIT_DIFFERS;
 	  pad_archive (size_left - (bufsize-count));
 	  return dump_status_short;
 	}
@@ -1399,6 +1399,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 {
   union block *header;
   char type;
+  off_t original_size;
   struct timespec original_ctime;
   struct timespec restore_times[2];
   off_t block_ordinal = -1;
@@ -1418,7 +1419,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       stat_diag (p);
       return;
     }
-  st->archive_file_size = st->stat.st_size;
+  st->archive_file_size = original_size = st->stat.st_size;
   st->atime = restore_times[0] = get_stat_atime (&st->stat);
   st->mtime = restore_times[1] = get_stat_mtime (&st->stat);
   st->ctime = original_ctime = get_stat_ctime (&st->stat);
@@ -1555,9 +1556,14 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
       if (ok)
 	{
-	  if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime) != 0)
-	    WARN ((0, 0, _("%s: file changed as we read it"),
-		   quotearg_colon (p)));
+	  if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime) != 0
+	      || original_size < final_stat.st_size)
+	    {
+	      WARN ((0, 0, _("%s: file changed as we read it"),
+		     quotearg_colon (p)));
+	      if (exit_status == TAREXIT_SUCCESS)
+		exit_status = TAREXIT_DIFFERS;
+	    }
 	  else if (atime_preserve_option == replace_atime_preserve
 		   && set_file_atime (fd, p, restore_times) != 0)
 	    utime_error (p);
