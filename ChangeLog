@@ -1,5 +1,17 @@
 2006-10-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* doc/tar.texi (Synopsis): Document tar exit codes.
+	* src/create.c (dump_regular_file,dump_file0): Set exit_status to
+	TAREXIT_DIFFERS if the file being dumped was truncated or
+	otherwise changed.
+	* src/tar.c: Do not attempt to close stderr after call to
+	close_stdout.
+	* tests/grow.at: New test case
+	* tests/Makefile.am: New test grow.at
+	* tests/testsuite.at: Likewise
+	* tests/truncate.at (AT_KEYWORDS): Keyword `filechange'
+	Test tar exit status.
+
 	* src/buffer.c (_open_archive): Make sure stdlis is set to stderr
 	when we are writing archive to stdout (unless --index-file is
 	used). Bug introduced on 2006-07-06.
