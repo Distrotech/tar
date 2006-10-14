@@ -2327,13 +2327,14 @@ main (int argc, char **argv)
   free (archive_name_array);
   name_term ();
 
-  if (stdlis == stdout)
-    close_stdout ();
-
   if (exit_status == TAREXIT_FAILURE)
     error (0, 0, _("Error exit delayed from previous errors"));
-  if (ferror (stderr) || fclose (stderr) != 0)
+
+  if (stdlis == stdout)
+    close_stdout ();
+  else if (ferror (stderr) || fclose (stderr) != 0) 
     exit_status = TAREXIT_FAILURE;
+
   return exit_status;
 }
 
