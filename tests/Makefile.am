@@ -107,6 +107,7 @@ TESTSUITE_AT = \
  update.at\
  volsize.at\
  volume.at\
+ verbose.at\
  version.at\
  star/gtarfail.at\
  star/gtarfail2.at\
