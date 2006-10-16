@@ -3,6 +3,10 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 version 1.15.92 - Sergey Poznyakoff, (CVS)
 
+* After creating an archive, tar exits with code 1 if some files were
+changed while being read.  Previous versions exited with code 2 (fatal
+error), and only if some files were truncated while being archived.
+
 * New option --mtime allows to set modification times for all archive
 members during creation. 
 
