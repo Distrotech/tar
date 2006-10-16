@@ -1,3 +1,8 @@
+2006-10-16  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* Makefile.am (dist-hook): Create a cpio archive.
+	* NEWS: Update
+
 2006-10-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi (Synopsis): Document tar exit codes.
