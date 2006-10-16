@@ -22,3 +22,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = ChangeLog.1 PORTS
 SUBDIRS = doc lib rmt src scripts po tests
 
+dist-hook: 
+	-rm -f $(distdir).cpio
+	find $(distdir) | cpio -Hcrc -o | \
+          GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
