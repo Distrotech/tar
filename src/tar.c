@@ -406,7 +406,7 @@ static struct argp_option options[] = {
 
 #define GRID 30
   {NULL, 0, NULL, 0,
-   N_("Overwrite control:"), GRID+1 },
+   N_("Overwrite control:"), GRID },
 
   {"verify", 'W', 0, 0,
    N_("attempt to verify the archive after writing it"), GRID+1 },
@@ -488,7 +488,7 @@ static struct argp_option options[] = {
 
 #define GRID 60
   {NULL, 0, NULL, 0,
-   N_("Device selection and switching:\n"), GRID+1 },
+   N_("Device selection and switching:"), GRID },
 
   {"file", 'f', N_("ARCHIVE"), 0,
    N_("use archive file or device ARCHIVE"), GRID+1 },
@@ -527,7 +527,7 @@ static struct argp_option options[] = {
 
 #define GRID 70
   {NULL, 0, NULL, 0,
-   N_("Device blocking:"), GRID+1 },
+   N_("Device blocking:"), GRID },
 
   {"blocking-factor", 'b', N_("BLOCKS"), 0,
    N_("BLOCKS x 512 bytes per record"), GRID+1 },
