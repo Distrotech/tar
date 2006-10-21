@@ -26,3 +26,6 @@ dist-hook:
 	-rm -f $(distdir).cpio
 	find $(distdir) | cpio -Hcrc -o | \
           GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
+
+distclean-local:
+	-rm -f $(PACKAGE)-$(VERSION).cpio.gz
