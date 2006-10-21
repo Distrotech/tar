@@ -1,3 +1,8 @@
+2006-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS, configure.ac: Version 1.16
+	* Makefile.am (distclean-local): New rule
+
 2006-10-17  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c: Fix help output formatting.  Thanks Benno
