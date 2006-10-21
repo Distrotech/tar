@@ -1,7 +1,7 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.15.92 - Sergey Poznyakoff, (CVS)
+version 1.16 - Sergey Poznyakoff, 2006-10-21
 
 * After creating an archive, tar exits with code 1 if some files were
 changed while being read.  Previous versions exited with code 2 (fatal
