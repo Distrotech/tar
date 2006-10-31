@@ -871,7 +871,7 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
       if (h && ! h->after_links
 	  && strncmp (file_name, h->file_name, h->file_name_len) == 0
 	  && ISSLASH (file_name[h->file_name_len])
-	  && (base_name (file_name) == file_name + h->file_name_len + 1))
+	  && (last_component (file_name) == file_name + h->file_name_len + 1))
 	{
 	  do
 	    {

@@ -264,7 +264,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, size_t n)
 	case 'f':
 	  if (st)
 	    {
-	      base = base_name (st->orig_file_name);
+	      base = last_component (st->orig_file_name);
 	      len += strlen (base) - 2;
 	    }
 	  break;
