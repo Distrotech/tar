@@ -1,3 +1,8 @@
+2006-10-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/extract.c, src/xheader.c: Call last_component instead of
+	base_name. The latter returns a malloced string since 2006-03-11. 
+
 2006-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS, configure.ac: Version 1.16
