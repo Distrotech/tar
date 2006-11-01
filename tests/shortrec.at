@@ -28,7 +28,7 @@ AT_KEYWORDS([shortrec.at])
 AT_TAR_CHECK([
 mkdir directory
 (cd directory && touch a b c d e f g h i j k l m n o p q r)
-tar -c -b 1 directory | tar -t -f - >/dev/null
+tar -c -b 1 -f - directory | tar -t -f - >/dev/null
 tar -c -b 1 -f archive directory
 tar -t -f archive >/dev/null
 tar -t -f - < archive >/dev/null
