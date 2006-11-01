@@ -953,7 +953,8 @@ enum read_file_list_state  /* Result of reading file name from the list file */
   {
     file_list_success,     /* OK, name read successfully */
     file_list_end,         /* End of list file */
-    file_list_zero         /* Zero separator encountered where it should not */
+    file_list_zero,        /* Zero separator encountered where it should not */
+    file_list_skip         /* Empty (zero-length) entry encountered, skip it */
   };
 
 /* Read from FP a sequence of characters up to FILENAME_TERMINATOR and put them
@@ -971,13 +972,15 @@ read_name_from_file (FILE *fp, struct obstack *stk)
 	{
 	  /* We have read a zero separator. The file possibly is
 	     zero-separated */
-	  /* FATAL_ERROR((0, 0, N_("file name contains null character"))); */
 	  return file_list_zero;
 	}
       obstack_1grow (stk, c);
       counter++;
     }
 
+  if (counter == 0 && c != EOF)
+    return file_list_skip;
+  
   obstack_1grow (stk, 0);
 
   return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
@@ -1058,31 +1061,42 @@ update_argv (const char *filename, struct argp_state *state)
 	open_fatal (filename);
     }
 
-  while ((read_state = read_name_from_file (fp, &argv_stk)) == file_list_success)
-    count++;
-
-  if (read_state == file_list_zero)
+  while ((read_state = read_name_from_file (fp, &argv_stk)) != file_list_end)
     {
-      size_t size;
+      switch (read_state)
+	{
+	case file_list_success:
+	  count++;
+	  break;
+	  
+	case file_list_end: /* won't happen, just to pacify gcc */
+	  break;
 
-      WARN ((0, 0, N_("%s: file name read contains nul character"),
-	     quotearg_colon (filename)));
+	case file_list_zero:
+	  {
+	    size_t size;
 
-      /* Prepare new stack contents */
-      size = obstack_object_size (&argv_stk);
-      p = obstack_finish (&argv_stk);
-      for (; size > 0; size--, p++)
-	if (*p)
-	  obstack_1grow (&argv_stk, *p);
-        else
-	  obstack_1grow (&argv_stk, '\n');
-      obstack_1grow (&argv_stk, 0);
-      count = 1;
+	    WARN ((0, 0, N_("%s: file name read contains nul character"),
+		   quotearg_colon (filename)));
 
-      /* Read rest of files using new filename terminator */
-      filename_terminator = 0;
-      while (read_name_from_file (fp, &argv_stk) == file_list_success)
-	count++;
+	    /* Prepare new stack contents */
+	    size = obstack_object_size (&argv_stk);
+	    p = obstack_finish (&argv_stk);
+	    for (; size > 0; size--, p++)
+	      if (*p)
+		obstack_1grow (&argv_stk, *p);
+	      else
+		obstack_1grow (&argv_stk, '\n');
+	    obstack_1grow (&argv_stk, 0);
+	    count = 1;
+	    /* Read rest of files using new filename terminator */
+	    filename_terminator = 0;
+	    break;
+	  }
+	  
+	case file_list_skip:
+	  break;
+	}
     }
 
   if (!is_stdin)
