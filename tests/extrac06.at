@@ -31,7 +31,7 @@
 #
 
 AT_SETUP([mode of extracted directories])
-AT_KEYWORDS([extract extract06])
+AT_KEYWORDS([extract extract06 directory mode])
 
 AT_TAR_CHECK([
 
