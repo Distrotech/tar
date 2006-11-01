@@ -46,6 +46,8 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 ## ------------ ##
 
 TESTSUITE_AT = \
+ T-empty.at\
+ T-null.at\
  testsuite.at\
  append.at\
  append01.at\
@@ -63,6 +65,7 @@ TESTSUITE_AT = \
  extrac04.at\
  extrac05.at\
  extrac06.at\
+ extrac07.at\
  gzip.at\
  grow.at\
  incremental.at\
