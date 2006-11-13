@@ -44,19 +44,22 @@ AT_TAR_CHECK([
 genfile --file file1
 genfile --file file2
 
+# Make sure file timestamps in the archive will not differ
+MTIME="--mtime=@0"
+
 # For PAX archives, we need to make sure extended header names are
-# reproducible.
+# reproducible and that their contents won't change with time 
 if test $[]TEST_TAR_FORMAT = posix; then
-  TAR_OPTIONS="$TAR_OPTIONS --pax-option=exthdr.name=%d/PaxHeaders/%f"
+  TAR_OPTIONS="$TAR_OPTIONS --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=mtime,delete=atime,delete=ctime"
 fi
 
 echo Creating archive.1
-tar cf archive.1 file1 file2
+tar $MTIME -cf archive.1 file1 file2
 
 echo Creating archive.2
-tar cfT archive.2 /dev/null
-tar rf archive.2 file1
-tar rf archive.2 file2
+tar $MTIME -cf archive.2 -T /dev/null
+tar $MTIME -rf archive.2 file1
+tar $MTIME -rf archive.2 file2
 
 echo Comparing archives
 cmp archive.1 archive.2
