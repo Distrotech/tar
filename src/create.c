@@ -742,7 +742,7 @@ start_header (struct tar_stat_info *st)
       {
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec
 	    || mtime.tv_nsec != 0)
-	  xheader_store ("mtime", st, NULL);
+	  xheader_store ("mtime", st, &mtime);
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec)
 	  mtime.tv_sec = 0;
       }
