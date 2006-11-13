@@ -1,3 +1,13 @@
+2006-11-13  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/xheader.c (mtime_coder): Treat non-null data as a pointer to
+	struct timespec, overriding st->mtime
+	* src/create.c (start_header): Pass mtime as a call-specific data
+	to xheader_store.
+	
+	* tests/truncate.at: Do not use 'k' modifier in dd options.
+	* tests/append02.at: Do not depend on command timing.  
+
 2006-11-01  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (enum read_file_list_state.file_list_skip): New value
