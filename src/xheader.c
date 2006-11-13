@@ -1094,9 +1094,10 @@ ctime_decoder (struct tar_stat_info *st,
 
 static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
-	     struct xheader *xhdr, void const *data __attribute__ ((unused)))
+	     struct xheader *xhdr, void const *data)
 {
-  code_time (st->mtime, keyword, xhdr);
+  const struct timespec mtime = data ? *(struct timespec *) data : st->mtime;
+  code_time (mtime, keyword, xhdr);
 }
 
 static void
