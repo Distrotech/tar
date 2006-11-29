@@ -1331,10 +1331,10 @@ rename_directory (char *src, char *dst)
 	      e = errno;
 	    }
 	  break;
-		    
+
 	case EXDEV:
 	  /* FIXME: Fall back to recursive copying */
-	  
+
 	default:
 	  break;
 	}
@@ -1346,7 +1346,7 @@ rename_directory (char *src, char *dst)
     }
   return true;
 }
-      
+
 void
 fatal_exit (void)
 {

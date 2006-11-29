@@ -4,9 +4,9 @@
 	struct timespec, overriding st->mtime
 	* src/create.c (start_header): Pass mtime as a call-specific data
 	to xheader_store.
-	
+
 	* tests/truncate.at: Do not use 'k' modifier in dd options.
-	* tests/append02.at: Do not depend on command timing.  
+	* tests/append02.at: Do not depend on command timing.
 
 2006-11-01  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -26,7 +26,7 @@
 2006-10-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/extract.c, src/xheader.c: Call last_component instead of
-	base_name. The latter returns a malloced string since 2006-03-11. 
+	base_name. The latter returns a malloced string since 2006-03-11.
 
 2006-10-21  Sergey Poznyakoff  <gray@gnu.org.ua>
 

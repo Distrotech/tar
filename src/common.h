@@ -254,7 +254,7 @@ GLOBAL bool show_omitted_dirs_option;
 GLOBAL bool sparse_option;
 GLOBAL unsigned tar_sparse_major;
 GLOBAL unsigned tar_sparse_minor;
-  
+
 GLOBAL bool starting_file_option;
 
 /* Specified maximum byte length of each tape volume (multiple of 1024).  */
@@ -296,7 +296,7 @@ GLOBAL int archive;
 /* Nonzero when outputting to /dev/null.  */
 GLOBAL bool dev_null_output;
 
-/* Timestamps: */ 
+/* Timestamps: */
 GLOBAL struct timespec start_time;        /* when we started execution */
 GLOBAL struct timespec volume_start_time; /* when the current volume was
 					     opened*/
@@ -727,5 +727,3 @@ bool utf8_convert (bool to_utf, char const *input, char **output);
 void set_transform_expr (const char *expr);
 bool transform_name (char **pinput);
 bool transform_name_fp (char **pinput, char *(*fun)(char *));
-     
-     

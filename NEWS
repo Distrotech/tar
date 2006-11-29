@@ -8,7 +8,7 @@ changed while being read.  Previous versions exited with code 2 (fatal
 error), and only if some files were truncated while being archived.
 
 * New option --mtime allows to set modification times for all archive
-members during creation. 
+members during creation.
 
 * Bug fixes
 ** Avoid running off file descriptors when using multiple -C options.
@@ -34,14 +34,14 @@ no longer uses globbing by default.  For example, the above invocation
 is now interpreted as a request to extract from the archive the file
 named '*.c'.
 
-To treat member names as globbing patterns, use --wildcards option.  
+To treat member names as globbing patterns, use --wildcards option.
 If you wish tar to mimic the behavior of versions up to 1.15.90,
 add --wildcards to the value of the environment variable TAR_OPTIONS.
 
 The exact way in which tar interprets member names is controlled by the
 following command line options:
 
-     --wildcards              use wildcards 
+     --wildcards              use wildcards
      --anchored               patterns match file name start
      --ignore-case            ignore case
      --wildcards-match-slash  wildcards match `/'
@@ -49,7 +49,7 @@ following command line options:
 Each of these options has a '--no-' counterpart that disables its
 effect (e.g. --no-wildcards).
 
-These options affect both the interpretation of member names from 
+These options affect both the interpretation of member names from
 command line and that of the exclusion patterns (given with --exclude
 and --exclude-from options). The defaults are:
 
@@ -65,7 +65,7 @@ case-sensitive matching for the rest of command line, one could write:
 
 ** Short option -l is now an alias of --check-links option, which complies
 with UNIX98.  This ends the transition period started with version 1.14.
-  
+
 * New features
 
 ** New option --transform allows to transform file names before storing them
@@ -80,19 +80,19 @@ will add 'prefix/' to all file names stored in foo.tar.
 versions it worked only with --extract.
 
 ** New option --show-transformed-names enables display of transformed file
-or archive.   It generalizes --show-stored-names option, introduced in 
-1.15.90.  In particular, when creating an archive in verbose mode, it lists 
+or archive.   It generalizes --show-stored-names option, introduced in
+1.15.90.  In particular, when creating an archive in verbose mode, it lists
 member names as stored in the archive, i.e., with any eventual prefixes
 removed and file name transformations applied.  The option is useful,
 for example, while comparing `tar cv' and `tar tv' outputs.
 
-** New incremental snapshot file format keeps information about file names 
+** New incremental snapshot file format keeps information about file names
 as well as that about directories.
 
 ** The --checkpoint option takes an optional argument specifying the number
 of records between the two successive checkpoints.   Optional dot
 starting the argument intructs tar to print dots instead of textual
-checkpoints. 
+checkpoints.
 
 ** The --totals option can be used with any tar operation (previous versions
 understood it only with --create).  If an argument to this option is

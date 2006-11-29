@@ -40,7 +40,7 @@ tar_SOURCES = \
  update.c\
  utf8.c
 
-INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib 
+INCLUDES = -I$(top_srcdir)/lib -I../ -I../lib
 
 tar.o: ../lib/localedir.h
 
