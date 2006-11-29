@@ -320,5 +320,3 @@ union block
   struct star_in_header star_in_header;
   struct star_ext_header star_ext_header;
 };
-
-
