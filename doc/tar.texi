@@ -20,7 +20,7 @@
 @include rendition.texi
 @include value.texi
 
-@defcodeindex op  
+@defcodeindex op
 
 @c Put everything in one index (arbitrarily chosen to be the concept index).
 @syncodeindex fn cp
@@ -898,7 +898,7 @@ clear, and we will give many examples both using and not using
 @option{--verbose} to show the differences.
 
 Each instance of @option{--verbose} on the command line increases the
-verbosity level by one, so if you need more details on the output, 
+verbosity level by one, so if you need more details on the output,
 specify it twice.
 
 When reading archives (@option{--list}, @option{--extract},
@@ -911,7 +911,7 @@ In contrast, when writing archives (@option{--create}, @option{--append},
 default.  So, a single @option{--verbose} option shows the file names
 being added to the archive, while two @option{--verbose} options
 enable the full listing.
-   
+
 For example, to create an archive in verbose mode:
 
 @smallexample
@@ -998,7 +998,7 @@ The archive member is a GNU @dfn{volume header} (@pxref{Tape Files}).
 Encountered only at the beginning of a multi-volume archive
 (@pxref{Using Multiple Tapes}).  This archive member is a continuation
 from the previous volume. The number @var{n} gives the offset where
-the original file was split.  
+the original file was split.
 
 @item --Mangled file names--
 This archive member contains @dfn{mangled file names} declarations,
@@ -1378,7 +1378,7 @@ particular archive contains.  You can use the @option{--list}
 appear in the archive, as well as various attributes of the files at
 the time they were archived.  For example, you can examine the archive
 @file{collection.tar} that you created in the last section with the
-command, 
+command,
 
 @smallexample
 $ @kbd{tar --list --file=collection.tar}
@@ -1580,7 +1580,7 @@ mistakenly deleted one of the files you had placed in the archive
 @file{collection.tar} earlier (say, @file{blues}), you can extract it
 from the archive without changing the archive's structure.  Its
 contents will be identical to the original file @file{blues} that you
-deleted. 
+deleted.
 
 First, make sure you are in the @file{practice} directory, and list the
 files in the directory.  Now, delete the file, @samp{blues}, and list
@@ -1630,7 +1630,7 @@ Here, @option{--wildcards} instructs @command{tar} to treat
 command line arguments as globbing patterns and @option{--no-anchored}
 informs it that the patterns apply to member names after any @samp{/}
 delimiter.  The use of globbing patterns is discussed in detail in
-@xref{wildcards}. 
+@xref{wildcards}.
 
 You can extract a file to standard output by combining the above options
 with the @option{--to-stdout} (@option{-O}) option (@pxref{Writing to Standard
@@ -2000,7 +2000,7 @@ Some options @emph{may} take an argument.  Such options may have at
 most long and short forms, they do not have old style equivalent.  The
 rules for specifying an argument for such options are stricter than
 those for specifying mandatory arguments.  Please, pay special
-attention to them. 
+attention to them.
 
 @menu
 * Long Options::                Long Option Style
@@ -2453,7 +2453,7 @@ total number of hard links for the file, a warning message will be
 output @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
 synonym for @option{--one-file-system}.  The current semantics, which
 complies to UNIX98, was introduced with version
-1.15.91. @xref{Changes}, for more information.}. 
+1.15.91. @xref{Changes}, for more information.}.
 
 @opsummary{compress}
 @opsummary{uncompress}
@@ -2596,7 +2596,7 @@ options to @command{tar} and exit. @xref{help}.
 @opsummary{ignore-case}
 @item --ignore-case
 Ignore case when matching member or file names with
-patterns. @xref{controlling pattern-matching}. 
+patterns. @xref{controlling pattern-matching}.
 
 @opsummary{ignore-command-error}
 @item --ignore-command-error
@@ -2908,7 +2908,7 @@ discussion, @xref{transform}.
 
 To see transformed member names in verbose listings, use
 @option{--show-transformed-names} option
-(@pxref{show-transformed-names}).  
+(@pxref{show-transformed-names}).
 
 @opsummary{quote-chars}
 @item --quote-chars=@var{string}
@@ -3297,7 +3297,7 @@ them with the equivalent long option.
 @item -m @tab @ref{--touch}.
 
 @item -o @tab When creating, @ref{--no-same-owner}, when extracting ---
-@ref{--portability}. 
+@ref{--portability}.
 
 The later usage is deprecated.  It is retained for compatibility with
 the earlier versions of @GNUTAR{}.  In the future releases
@@ -3433,7 +3433,7 @@ values in the form of @command{tar} command line options:
 @smallexample
 @group
 @kbd{tar --show-defaults}
---format=gnu -f- -b20 --quoting-style=escape 
+--format=gnu -f- -b20 --quoting-style=escape
 --rmt-command=/etc/rmt --rsh-command=/usr/bin/rsh
 @end group
 @end smallexample
@@ -3548,14 +3548,14 @@ statistics is to be printed:
 Print statistics upon delivery of signal @var{signo}.  Valid arguments
 are: @code{SIGHUP}, @code{SIGQUIT}, @code{SIGINT}, @code{SIGUSR1} and
 @code{SIGUSR2}.  Shortened names without @samp{SIG} prefix are also
-accepted. 
+accepted.
 @end table
 
 Both forms of @option{--totals} option can be used simultaneously.
 Thus, @kbd{tar -x --totals --totals=USR1} instructs @command{tar} to
 extract all members from its default archive and print statistics
 after finishing the extraction, as well as when receiving signal
-@code{SIGUSR1}. 
+@code{SIGUSR1}.
 
 @anchor{Progress information}
 @cindex Progress information
@@ -3960,7 +3960,7 @@ archive in the order in which they were archived.  Thus, when the
 archive is extracted, a file archived later in time will replace a
 file of the same name which was archived earlier, even though the
 older version of the file will remain in the archive unless you delete
-all versions of the file. 
+all versions of the file.
 
 Supposing you change the file @file{blues} and then append the changed
 version to @file{collection.tar}.  As you saw above, the original
@@ -4272,7 +4272,7 @@ tar: funk not found in archive
 The spirit behind the @option{--compare} (@option{--diff},
 @option{-d}) option is to check whether the archive represents the
 current state of files on disk, more than validating the integrity of
-the archive media.  For this later goal, @xref{verify}. 
+the archive media.  For this later goal, @xref{verify}.
 
 @node create options
 @section Options Used by @option{--create}
@@ -4679,7 +4679,7 @@ Use in conjunction with @option{--extract} (@option{--get}, @option{-x}).
 To set the modes (access permissions) of extracted files to those
 recorded for those files in the archive, use @option{--same-permissions}
 in conjunction with the @option{--extract} (@option{--get},
-@option{-x}) operation.  
+@option{-x}) operation.
 
 @table @option
 @opindex preserve-permissions
@@ -6170,7 +6170,7 @@ can be inhibited by using the @option{--force-local} option.
 When the archive is being created to @file{/dev/null}, @GNUTAR{}
 tries to minimize input and output operations.  The Amanda backup
 system, when used with @GNUTAR{}, has an initial sizing pass which
-uses this feature. 
+uses this feature.
 
 @node Selecting Archive Members
 @section Selecting Archive Members
@@ -6198,9 +6198,9 @@ name, replacing @dfn{escape sequences} according to the following
 table:
 
 @multitable @columnfractions 0.20 0.60
-@headitem Escape @tab Replaced with    
+@headitem Escape @tab Replaced with
 @item \a         @tab Audible bell (ASCII 7)
-@item \b         @tab Backspace (ASCII 8)  
+@item \b         @tab Backspace (ASCII 8)
 @item \f         @tab Form feed (ASCII 12)
 @item \n         @tab New line (ASCII 10)
 @item \r         @tab Carriage return (ASCII 13)
@@ -6256,7 +6256,7 @@ By default, @command{tar} takes file names from the command line.  However,
 there are other ways to specify file or member names, or to modify the
 manner in which @command{tar} selects the files or members upon which to
 operate.  In general, these methods work both for specifying the names
-of files and archive members. 
+of files and archive members.
 
 @node files
 @section Reading Names from a File
@@ -6268,7 +6268,7 @@ Instead of giving the names of files or archive members on the command
 line, you can put the names into a file, and then use the
 @option{--files-from=@var{file-of-names}} (@option{-T
 @var{file-of-names}}) option to @command{tar}.  Give the name of the
-file which contains the list of files to include as the argument to 
+file which contains the list of files to include as the argument to
 @option{--files-from}.  In the list, the file names should be separated by
 newlines.  You will frequently use this option when you have generated
 the list of files to archive with the @command{find} utility.
@@ -6397,7 +6397,7 @@ The @option{--null} option causes
 @option{--files-from=@var{file-of-names}} (@option{-T @var{file-of-names}})
 to read file names terminated by a @code{NUL} instead of a newline, so
 files whose names contain newlines can be archived using
-@option{--files-from}. 
+@option{--files-from}.
 
 @table @option
 @opindex null
@@ -6448,7 +6448,7 @@ Causes @command{tar} to ignore files that match the @var{pattern}.
 @findex exclude
 The @option{--exclude=@var{pattern}} option prevents any file or
 member whose name matches the shell wildcard (@var{pattern}) from
-being operated on. 
+being operated on.
 For example, to create an archive with all the contents of the directory
 @file{src} except for files whose names end in @file{.o}, use the
 command @samp{tar -cf src.tar --exclude='*.o' src}.
@@ -6546,7 +6546,7 @@ might fail.
 @item
 @FIXME{The change in semantics must have occurred before 1.11,
 so I doubt if it is worth mentioning at all. Anyway, should at
-least specify in which version the semantics changed.} 
+least specify in which version the semantics changed.}
 In earlier versions of @command{tar}, what is now the
 @option{--exclude-from} option was called @option{--exclude} instead.
 Now, @option{--exclude} applies to patterns listed on the command
@@ -6631,7 +6631,7 @@ There are no inclusion members in create mode (@option{--create} and
 command line refer to @emph{files}, not archive members.
 
 By default, inclusion members are compared with archive members
-literally @footnote{Notice that earlier @GNUTAR{} versions used 
+literally @footnote{Notice that earlier @GNUTAR{} versions used
 globbing for inclusion members, which contradicted to UNIX98
 specification and was not documented. @xref{Changes}, for more
 information on this and other changes.} and exclusion members are
@@ -6659,7 +6659,7 @@ This behavior can be altered by using the following options:
 @table @option
 @opindex wildcards
 @item --wildcards
-Treat all member names as wildcards. 
+Treat all member names as wildcards.
 
 @opindex no-wildcards
 @item --no-wildcards
@@ -6842,7 +6842,7 @@ Quoting styles:
 No quoting, display each character as is:
 
 @smallexample
-@group 
+@group
 $ @kbd{tar tf arch.tar --quoting-style=literal}
 ./
 ./a space
@@ -6985,7 +6985,7 @@ quoting style would not quote them.
 @end table
 
 For example, using @samp{escape} quoting (compare with the usual
-escape listing above): 
+escape listing above):
 
 @smallexample
 @group
@@ -7058,7 +7058,7 @@ $ @kbd{tar -xf usr.tar --strip=2 usr/include/stdlib.h}
 
 The option @option{--strip=2} instructs @command{tar} to strip the
 two leading components (@file{usr/} and @file{include/}) off the file
-name. 
+name.
 
 If you add to the above invocation @option{--verbose} (@option{-v})
 option, you will note that the verbose listing still contains the
@@ -7154,7 +7154,7 @@ follows the GNU @command{sed} implementation in this regard, so
 the interaction is defined to be: ignore matches before the
 @var{number}th, and then match and replace all matches from the
 @var{number}th on.
-                                   
+
 @end table
 
 Any delimiter can be used in lieue of @samp{/}, the only requirement being
@@ -7222,7 +7222,7 @@ $ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' \
 If both @option{--strip-components} and @option{--transform} are used
 together, then @option{--transform} is applied first, and the required
 number of components is then stripped from its result.
-    
+
 @node after
 @section Operating Only on New Files
 @UNREVISED
@@ -7907,7 +7907,7 @@ implement your own filters, not necessarily dealing with
 compression/decompression.  For example, suppose you wish to implement
 PGP encryption on top of compression, using @command{gpg} (@pxref{Top,
 gpg, gpg ---- encryption and signing tool, gpg, GNU Privacy Guard
-Manual}).  The following script does that:  
+Manual}).  The following script does that:
 
 @smallexample
 @group
@@ -7960,9 +7960,9 @@ The above is based on the following discussion:
      that capability.  Supposing I were to actually do such a thing and
      get it (apparently) working, do you accept contributed changes to
      utilities like that?  (Leigh Clayton @file{loc@@soliton.com}, May 1995).
- 
+
   Isn't that exactly the role of the
-  @option{--use-compress-prog=@var{program}} option? 
+  @option{--use-compress-prog=@var{program}} option?
   I never tried it myself, but I suspect you may want to write a
   @var{prog} script or program able to filter stdin to stdout to
   way you want.  It should recognize the @option{-d} option, for when
@@ -8010,7 +8010,7 @@ has no effect on extraction.
 
 Consider using @option{--sparse} when performing file system backups,
 to avoid archiving the expanded forms of files stored sparsely in the
-system. 
+system.
 
 Even if your system has no sparse files currently, some may be
 created in the future.  If you use @option{--sparse} while making file
@@ -8058,7 +8058,7 @@ formats}.  A sparse format is identified by its @dfn{number},
 consisting, as usual of two decimal numbers, delimited by a dot.  By
 default, format @samp{1.0} is used.  If, for some reason, you wish to
 use an earlier format, you can select it using
-@option{--sparse-version} option. 
+@option{--sparse-version} option.
 
 @table @option
 @opindex sparse-version
@@ -8136,7 +8136,7 @@ separately.  If it can't find a user name (because the user id is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
 it tries to look the name (if one was written) up in
 @file{/etc/passwd}.  If it fails, then it uses the user id stored in
-the archive instead. 
+the archive instead.
 
 @opindex no-same-owner
 @item --no-same-owner
@@ -8367,7 +8367,7 @@ Starting from version 1.14 @GNUTAR{} features full support for
 A @acronym{POSIX} conformant archive will be created if @command{tar}
 was given @option{--format=posix} (@option{--format=pax}) option.  No
 special option is required to read and extract from a @acronym{POSIX}
-archive. 
+archive.
 
 @menu
 * PAX keywords:: Controlling Extended Header Keywords.
@@ -8570,7 +8570,7 @@ extract archives containing GNU-specific members using some
 third-party @command{tar} implementation or an older version of
 @GNUTAR{}.  Of course your best bet is to have @GNUTAR{} installed,
 but if it is for some reason impossible, this section will explain
-how to cope without it. 
+how to cope without it.
 
 When we speak about @dfn{GNU-specific} members we mean two classes of
 them: members split between the volumes of a multi-volume archive and
@@ -8677,7 +8677,7 @@ more warnings and more files generated on your disk, e.g.:
 @group
 $ @kbd{tar xf vol-1.tar}
 var/PaxHeaders.27962/longfile: Unknown file type 'x', extracted as
-normal file 
+normal file
 Unexpected EOF in archive
 $ @kbd{tar xf vol-2.tar}
 tmp/GlobalHead.27962.1: Unknown file type 'g', extracted as normal file
@@ -8714,7 +8714,7 @@ version 1.0}@footnote{@xref{PAX 1}.}, which are the easiest to expand.
 The condensed file will contain both file map and file data, so no
 additional data will be needed to restore it.  If the original file
 name was @file{@var{dir}/@var{name}}, then the condensed file will be
-named @file{@var{dir}/@/GNUSparseFile.@var{n}/@/@var{name}}, where 
+named @file{@var{dir}/@/GNUSparseFile.@var{n}/@/@var{name}}, where
 @var{n} is a decimal number@footnote{technically speaking, @var{n} is a
 @dfn{process ID} of the @command{tar} process which created the
 archive (@pxref{PAX keywords}).}.
@@ -8822,10 +8822,10 @@ expanding sparse version 1.0 members, use of extended headers is
 mandatory when expanding sparse members in older sparse formats: v.0.0
 and v.0.1 (The sparse formats are described in detail in @ref{Sparse
 Formats}.)  So, for this format, the question is: how to obtain
-extended headers from the archive? 
+extended headers from the archive?
 
 If you use a @command{tar} implementation that does not support PAX
-format, extended headers for each member will be extracted as a 
+format, extended headers for each member will be extracted as a
 separate file.  If we represent the member name as
 @file{@var{dir}/@var{name}}, then the extended header file will be
 named @file{@var{dir}/@/PaxHeaders.@var{n}/@/@var{name}}, where
@@ -8836,7 +8836,7 @@ does support PAX headers, because in this case you will have to
 manually extract the headers.  We recommend the following algorithm:
 
 @enumerate 1
-@item 
+@item
 Consult the documentation of your @command{tar} implementation for an
 option that prints @dfn{block numbers} along with the archive
 listing (analogous to @GNUTAR{}'s @option{-R} option).  For example,
@@ -8868,7 +8868,7 @@ block       897:   65391 -rw-r--r--  gray/users Jun 24 20:06 2006 README
 @item
 Let @var{size} be the size of the sparse member, @var{Bs} be its block number
 and @var{Bn} be the block number of the next member.
-Compute: 
+Compute:
 
 @smallexample
 @var{N} = @var{Bs} - @var{Bn} - @var{size}/512 - 2
@@ -9912,7 +9912,7 @@ on several media volumes of fixed size.  Although in this section we will
 often call @samp{volume} a @dfn{tape}, there is absolutely no
 requirement for multi-volume archives to be stored on tapes.  Instead,
 they can use whatever media type the user finds convenient, they can
-even be located on files.  
+even be located on files.
 
 When creating a multi-volume archive, @GNUTAR{} continues to fill
 current volume until it runs out of space, then it switches to
@@ -9920,7 +9920,7 @@ next volume (usually the operator is queried to replace the tape on
 this point), and continues working on the new volume.  This operation
 continues until all requested files are dumped.  If @GNUTAR{} detects
 end of media while dumping a file, such a file is archived in split
-form.  Some very big files can even be split across several volumes. 
+form.  Some very big files can even be split across several volumes.
 
 Each volume is itself a valid @GNUTAR{} archive, so it can be read
 without any special options.  Consequently any file member residing
@@ -9998,7 +9998,7 @@ $ @kbd{tar --create --tape-length=41943040 --file=/dev/tape @var{files}}
 When @GNUTAR{} comes to the end of a storage media, it asks you to
 change the volume.  The built-in prompt for POSIX locale
 is@footnote{If you run @GNUTAR{} under a different locale, the
-translation to the locale's language will be used.}: 
+translation to the locale's language will be used.}:
 
 @smallexample
 Prepare volume #@var{n} for `@var{archive}' and hit return:
@@ -10053,7 +10053,7 @@ the number used in the prompt.)
 If you want more elaborate behavior than this, you can write a special
 @dfn{new volume script}, that will be responsible for changing the
 volume, and instruct @command{tar} to use it instead of its normal
-prompting procedure: 
+prompting procedure:
 
 @table @option
 @item --info-script=@var{script-name}
@@ -10117,7 +10117,7 @@ $ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
 @end smallexample
 
 The second method is to use the @samp{n} response to the tape-change
-prompt.  
+prompt.
 
 Finally, the most flexible approach is to use a volume script, that
 writes new archive name to the file descriptor #3.  For example, the
