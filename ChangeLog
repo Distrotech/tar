@@ -1,5 +1,7 @@
 2006-11-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/xheader.c (xheader_read): Remove unused variable
+
 	* po/POTFILES.in: Remove src/mangle.c
 
 	* bootstrap: Implement --update-po and .bootstrap
