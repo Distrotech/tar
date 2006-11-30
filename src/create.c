@@ -33,6 +33,65 @@ struct link
     size_t nlink;
     char name[1];
   };
+
+struct exclude_tag
+{
+  const char *name;
+  size_t length;
+  struct exclude_tag *next;
+};
+
+static struct exclude_tag *exclude_tags;
+
+void
+add_exclude_tag (const char *name)
+{
+  struct exclude_tag *tag = xmalloc (sizeof tag[0]);
+  tag->next = exclude_tags;
+  tag->name = name;
+  tag->length = strlen (name);
+  exclude_tags = tag;
+}
+
+static bool
+check_exclude_tags (char *dirname)
+{
+  static char *tagname;
+  static size_t tagsize;
+  struct exclude_tag *tag;
+  size_t dlen = strlen (dirname);
+  char *nptr = NULL;
+  char *ret = NULL;
+  
+  for (tag = exclude_tags; tag; tag = tag->next)
+    {
+      size_t size = dlen + tag->length + 1;
+      if (size > tagsize)
+	{
+	  tagsize = size;
+	  tagname = xrealloc (tagname, tagsize);
+	}
+
+      if (!nptr)
+	{
+	  strcpy (tagname, dirname);
+	  nptr = tagname + dlen;
+	}
+      strcpy (nptr, tag->name);
+      if (access (tagname, F_OK) == 0)
+	{
+	  if (verbose_option)
+	    WARN ((0, 0,
+		   _("%s: contains a cache directory tag %s; not dumped"),
+		   quotearg_colon (dirname),
+		   quotearg_n (1, tag->name)));
+	  return true;
+	}
+    }
+
+  return false;
+}
+
 
 /* The maximum uintmax_t value that can be represented with DIGITS digits,
    assuming that each digit is BITS_PER_DIGIT wide.  */
@@ -983,6 +1042,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
   return dump_status_ok;
 }
 
+
 /* Look in directory DIRNAME for a cache directory tag file
    with the magic name "CACHEDIR.TAG" and a standard header,
    as described at:
@@ -1000,7 +1060,7 @@ check_cache_directory (char *dirname)
   static char tagname[] = "CACHEDIR.TAG";
   char *tagpath;
   int fd;
-  int tag_present = false;
+  bool tag_present = false;
 
   tagpath = xmalloc (strlen (dirname) + strlen (tagname) + 1);
   strcpy (tagpath, dirname);
@@ -1123,6 +1183,9 @@ dump_dir0 (char *directory,
 	       quotearg_colon (st->orig_file_name)));
       return;
     }
+
+  if (check_exclude_tags (st->orig_file_name))
+    return;
 
   {
     char const *entry;

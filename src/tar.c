@@ -255,6 +255,7 @@ enum
   DELETE_OPTION,
   EXCLUDE_CACHES_OPTION,
   EXCLUDE_OPTION,
+  EXCLUDE_TAG_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   HANG_OPTION,
@@ -604,6 +605,8 @@ static struct argp_option options[] = {
    N_("exclude patterns listed in FILE"), GRID+1 },
   {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
    N_("exclude directories containing a cache tag"), GRID+1 },
+  {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
+   N_("exclude directories containing FILE"), GRID+1 }, 
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
@@ -1507,6 +1510,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       exclude_caches_option = true;
       break;
 
+    case EXCLUDE_TAG_OPTION:
+      add_exclude_tag (arg);
+      break;
+      
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
