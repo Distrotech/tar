@@ -1,6 +1,14 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
+* Support for reading ustar type 'N' header logical records has been removed.
+  This GNU extension was generated only by very old versions of GNU 'tar'.
+  Unfortunately its implementation had security holes; see
+  <http://archives.neohapsis.com/archives/fulldisclosure/2006-11/0344.html>.
+  We don't expect that any tar archives in practical use have type 'N'
+  records, but if you have one and you trust its contents, you can
+  decode it with GNU tar 1.16 or earlier.
+
 version 1.16 - Sergey Poznyakoff, 2006-10-21
 
 * After creating an archive, tar exits with code 1 if some files were

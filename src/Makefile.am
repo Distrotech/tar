@@ -30,7 +30,6 @@ tar_SOURCES = \
  xheader.c\
  incremen.c\
  list.c\
- mangle.c\
  misc.c\
  names.c\
  sparse.c\

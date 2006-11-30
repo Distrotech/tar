@@ -1,5 +1,15 @@
 2006-11-29  Paul Eggert  <eggert@cs.ucla.edu>
 
+	* NEWS: Remove support for mangled names.
+	* doc/tar.texi (verbose tutorial): Likewise.
+	* src/Makefile.am (tar_SOURCES): Remove mangle.c.
+	* src/common.h (extract_mangle): Remove decl.
+	* src/extract.c (extract_mangle_wrapper): Remove.
+	(prepare_to_extract): Remove support for mangled names.
+	* src/list.c (read_and, print_header): Likewise.
+	* src/mangle.c: Remove.
+	* src/tar.h (GNUTYPE_NAMES): Remove.
+
 	Port to latest gnulib.  There were a lot of changes, so the
 	simplest way to get this up and running was to switch to coreutils
 	bootstrap procedure.  I noticed one feature missing after this

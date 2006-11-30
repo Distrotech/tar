@@ -1000,12 +1000,6 @@ Encountered only at the beginning of a multi-volume archive
 from the previous volume. The number @var{n} gives the offset where
 the original file was split.
 
-@item --Mangled file names--
-This archive member contains @dfn{mangled file names} declarations,
-a special member type that was used by early versions of @GNUTAR{}.
-You probably will never encounter this, unless you are reading a very
-old archive.
-
 @item  unknown file type @var{c}
 An archive member of unknown type. @var{c} is the type character from
 the archive header.  If you encounter such a message, it means that

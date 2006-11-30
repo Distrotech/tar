@@ -107,7 +107,6 @@ read_and (void (*do_something) (void))
 		{
 		case GNUTYPE_VOLHDR:
 		case GNUTYPE_MULTIVOL:
-		case GNUTYPE_NAMES:
 		  break;
 
 		case DIRTYPE:
@@ -1047,10 +1046,6 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  modes[0] = 'M';
 	  break;
 
-	case GNUTYPE_NAMES:
-	  modes[0] = 'N';
-	  break;
-
 	case GNUTYPE_LONGNAME:
 	case GNUTYPE_LONGLINK:
 	  modes[0] = 'L';
@@ -1233,10 +1228,6 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 		  (UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset),
 		   uintbuf));
 	  fprintf (stdlis, _("--Continued at byte %s--\n"), size);
-	  break;
-
-	case GNUTYPE_NAMES:
-	  fprintf (stdlis, _("--Mangled file names--\n"));
 	  break;
 	}
     }

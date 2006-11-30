@@ -165,6 +165,7 @@ struct oldgnu_header
    'A' Solaris Access Control List
    'E' Solaris Extended Attribute File
    'I' Inode only, as in 'star'
+   'N' Obsolete GNU tar, for file names that do not fit into the main header.
    'X' POSIX 1003.1-2001 eXtended (VU version)  */
 
 /* This is a dir entry that contains the names of files that were in the
@@ -179,9 +180,6 @@ struct oldgnu_header
 
 /* This is the continuation of a file that began on another volume.  */
 #define GNUTYPE_MULTIVOL 'M'
-
-/* For storing filenames that do not fit into the main header.  */
-#define GNUTYPE_NAMES 'N'
 
 /* This is for sparse files.  */
 #define GNUTYPE_SPARSE 'S'

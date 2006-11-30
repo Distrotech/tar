@@ -546,10 +546,6 @@ enum read_header tar_checksum (union block *header, bool silent);
 void skip_file (off_t size);
 void skip_member (void);
 
-/* Module mangle.c.  */
-
-void extract_mangle (void);
-
 /* Module misc.c.  */
 
 void assign_string (char **dest, const char *src);

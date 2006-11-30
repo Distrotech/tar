@@ -1024,13 +1024,6 @@ extract_fifo (char *file_name, int typeflag)
 #endif
 
 static int
-extract_mangle_wrapper (char *file_name, int typeflag)
-{
-  extract_mangle ();
-  return 0;
-}
-
-static int
 extract_volhdr (char *file_name, int typeflag)
 {
   if (verbose_option)
@@ -1119,10 +1112,6 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
 
     case GNUTYPE_VOLHDR:
       *fun = extract_volhdr;
-      break;
-
-    case GNUTYPE_NAMES:
-      *fun = extract_mangle_wrapper;
       break;
 
     case GNUTYPE_MULTIVOL:
