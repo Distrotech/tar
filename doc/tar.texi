@@ -2505,6 +2505,11 @@ patterns in the file @var{file}.  @xref{exclude}.
 Automatically excludes all directories
 containing a cache directory tag.  @xref{exclude}.
 
+@opsummary{exclude-tag}
+@item --exclude-tag=@var{file}
+
+Exclude all directories, containing file named @var{file}.  @xref{exclude}.
+
 @opsummary{file}
 @item --file=@var{archive}
 @itemx -f @var{archive}
@@ -6480,6 +6485,43 @@ specified in @url{http://www.brynosaurus.com/cachedir/spec.html}.
 Various applications write cache directory tags into directories they
 use to hold regenerable, non-precious data, so that such data can be
 more easily excluded from backups.
+
+@findex exclude-tag
+Another option, @option{--exclude-tag}, provides a generalization of
+this concept.  It takes a single argument, a file name to look for.
+Any directory that contains this file will be excluded from the dump.
+
+@table @option
+@opindex exclude-tag
+@item --exclude-tag=@var{file}
+Causes @command{tar} to ignore directories containing @var{file}.
+@end table
+
+You can specify as many exclusion tags as you like.
+
+Notice, that when speaking about ``excluding the directory'' we mean
+that the files and subdirectories it contains will not get into the
+archive, while the entry for the directory itself will, e.g.:
+
+@smallexample
+$ @kbd{find dir}
+dir
+dir/blues
+dir/jazz
+dir/folk
+dir/folk/tagfile
+$ @kbd{tar -cf archive.tar --extract-tag=tagfile -v}
+dir/
+dir/blues
+dir/jazz
+dir/folk/
+./tar: dir/folk/: contains a cache directory tag tagfile; not dumped
+$ @kbd{tar -tf archive.tar}
+dir/
+dir/blues
+dir/jazz
+dir/folk/
+@end smallexample
 
 @menu
 * problems with exclude::
