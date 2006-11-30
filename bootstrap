@@ -49,11 +49,17 @@ Options:
  --force                  Attempt to bootstrap even if the sources seem
                           not to have been checked out.
  --skip-po                Do not download po files.
+ --update-po[=LANG]       Update po file(s) and exit.
  --cvs-user=USERNAME      Set the CVS username to be used when accessing
                           the gnulib repository.
 
-If the file .bootstrap.conf exists in the current working directory, its
+If the file bootstrap.conf exists in the current working directory, its
 contents are read as shell variables to configure the bootstrap.
+
+Local defaults can be provided by placing the file \`.bootstrap' in the
+current working directory.  The file is read after bootstrap.conf, comments
+and empty lines are removed, shell variables expanded and the result is
+prepended to the command line options. 
 
 Running without arguments will suffice in most cases.
 "
@@ -159,6 +165,12 @@ copy=false
 # Override the default configuration, if necessary.
 test -r bootstrap.conf && . ./bootstrap.conf
 
+# Read local configuration file
+if [ -r .bootstrap ]; then
+  echo "$0: Reading configuration file .bootstrap"
+  eval set -- "`sed 's/#.*$//;/^$/d' .bootstrap | tr '\n' ' '` $*"
+fi
+
 # Translate configuration into internal form.
 
 # Parse options.
@@ -176,7 +188,11 @@ do
   --cvs-user=*)
     CVS_USER=`expr "$option" : '--cvs-user=\(.*\)'`;;
   --skip-po | --no-po) # --no-po is for compatibility with 'tar' tradition.
-    SKIP_PO=t;;
+    DOWNLOAD_PO=skip;;
+  --update-po=*)
+    DOWNLOAD_PO=`expr "$option" : '--update-po=\(.*\)'`;;
+  --update-po)
+    DOWNLOAD_PO=only;;
   --force)
     CVS_only_file=;;
   --copy)
@@ -193,6 +209,80 @@ if test -n "$CVS_only_file" && test ! -r "$CVS_only_file"; then
 fi
 
 echo "$0: Bootstrapping CVS $package..."
+
+# Get translations.
+
+get_translations() {
+  subdir=$1
+  domain=$2
+  po_file=$3
+
+  case $WGET_COMMAND in
+  '')
+    echo "$0: wget not available; skipping translations";;
+  ?*)
+    echo "$0: getting ${po_file:-translations} into $subdir for $domain..."  &&
+    case $po_file in
+    '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
+    esac &&
+  
+    $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
+
+    sed -n 's|.*"http://[^"]*/translation/teams/PO/\([^/"]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\1.\2|p' <"$subdir/$domain.html" |
+    sort -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
+    awk -F. '
+      { if (lang && $1 != lang) print lang, ver }
+      { lang = $1; ver = substr($0, index($0, ".") + 1) }
+      END { if (lang) print lang, ver }
+    ' | awk -v domain="$domain" -v po_file="$po_file" -v subdir="$subdir" '
+      {
+	lang = $1
+        if (po_file && po_file != (lang ".po")) next
+	
+	ver = $2
+	urlfmt = ""
+	printf "{ $WGET_COMMAND -O %s/%s.po '\'"$TP_PO_URL"'/%s/%s-%s.%s.po'\'' &&\n", subdir, lang, lang, domain, ver, lang
+	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
+	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
+	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
+      }
+      END { print ":" }
+    ' | WGET_COMMAND="$WGET_COMMAND" sh;;
+  esac &&
+  ls "$subdir"/*.po 2>/dev/null |
+    sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
+  rm -f "$subdir/$domain.html"
+}
+
+case `wget --help` in
+*'--no-cache'*)
+    WGET_COMMAND='wget -nv --no-cache';;
+*'--cache=on/off'*)
+    WGET_COMMAND='wget -nv --cache=off';;
+*'--non-verbose'*)
+    WGET_COMMAND='wget -nv';;
+*)
+    WGET_COMMAND='';;
+esac
+
+case $DOWNLOAD_PO in
+'skip')
+  ;;
+'')
+  get_translations po $package || exit
+  ;;
+'only')
+  get_translations po $package
+  exit
+  ;;
+*.po)
+  get_translations po $package "$DOWNLOAD_PO"
+  exit
+  ;;
+*)
+  get_translations po $package "${DOWNLOAD_PO}.po"
+  exit
+esac
 
 # Get paxutils files.
 
@@ -258,65 +348,6 @@ esac
 
 gnulib_tool=$GNULIB_SRCDIR/gnulib-tool
 <$gnulib_tool || exit
-
-# Get translations.
-
-get_translations() {
-  subdir=$1
-  domain=$2
-
-  case $WGET_COMMAND in
-  '')
-    echo "$0: wget not available; skipping translations";;
-  ?*)
-    echo "$0: getting translations into $subdir for $domain..." &&
-
-    (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`) &&
-    $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
-
-    sed -n 's|.*"http://[^"]*/translation/teams/PO/\([^/"]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\1.\2|p' <"$subdir/$domain.html" |
-    sort -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
-    awk -F. '
-      { if (lang && $1 != lang) print lang, ver }
-      { lang = $1; ver = substr($0, index($0, ".") + 1) }
-      END { if (lang) print lang, ver }
-    ' | awk -v domain="$domain" -v subdir="$subdir" '
-      {
-	lang = $1
-	ver = $2
-	urlfmt = ""
-	printf "{ $WGET_COMMAND -O %s/%s.po '\'"$TP_PO_URL"'/%s/%s-%s.%s.po'\'' &&\n", subdir, lang, lang, domain, ver, lang
-	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
-	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
-	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
-      }
-      END { print ":" }
-    ' | WGET_COMMAND="$WGET_COMMAND" sh;;
-  esac &&
-  ls "$subdir"/*.po 2>/dev/null |
-    sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
-  rm -f "$subdir/$domain.html"
-}
-
-case $SKIP_PO in
-'')
-  case `wget --help` in
-  *'--no-cache'*)
-    WGET_COMMAND='wget -nv --no-cache';;
-  *'--cache=on/off'*)
-    WGET_COMMAND='wget -nv --cache=off';;
-  *'--non-verbose'*)
-    WGET_COMMAND='wget -nv';;
-  *)
-    WGET_COMMAND='';;
-  esac
-
-  get_translations po $package || exit
-
-  if test -d runtime-po; then
-    get_translations runtime-po $package-runtime || exit
-  fi;;
-esac
 
 symlink_to_gnulib()
 {
