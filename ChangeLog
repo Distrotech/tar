@@ -7,6 +7,8 @@
 	later if need be.
 	* README-cvs, bootstrap.conf: New files.
 	* lib/.cvsignore: Remove Makefile.am, printf-parse.c, vasnprintf.c.
+	Add fstatat.c, gnulib.mk, openat-proc.c, same-inode.h, stat_.h,
+	tempname.c, tempname.h, uinttostr.c.
 	* lib/printf-parse.c, lib/vasnprintf.c: New files, from coreutils,
 	to override gnulib, so that we don't need xsize.h.
 	* bootstrap: Replace with coreutils bootstrap, except add support
