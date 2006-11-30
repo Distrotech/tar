@@ -1,3 +1,13 @@
+2006-11-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* po/POTFILES.in: Remove src/mangle.c
+
+	* bootstrap: Implement --update-po and .bootstrap
+
+	* src/create.c (dump_dir0): Implement --exclude-tag option
+	* src/tar.c: Likewise
+	* doc/tar.texi (exclude): Document --exclude-tag
+
 2006-11-29  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* NEWS: Remove support for mangled names.
