@@ -41,10 +41,11 @@
 
 #include <argmatch.h>
 #include <closeout.h>
+#include <configmake.h>
 #include <exitfail.h>
 #include <getdate.h>
-#include <localedir.h>
 #include <rmt.h>
+#include <rmt-command.h>
 #include <prepargs.h>
 #include <quotearg.h>
 #include <version-etc.h>
@@ -980,7 +981,7 @@ read_name_from_file (FILE *fp, struct obstack *stk)
 
   if (counter == 0 && c != EOF)
     return file_list_skip;
-  
+
   obstack_1grow (stk, 0);
 
   return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
@@ -1068,7 +1069,7 @@ update_argv (const char *filename, struct argp_state *state)
 	case file_list_success:
 	  count++;
 	  break;
-	  
+
 	case file_list_end: /* won't happen, just to pacify gcc */
 	  break;
 
@@ -1093,7 +1094,7 @@ update_argv (const char *filename, struct argp_state *state)
 	    filename_terminator = 0;
 	    break;
 	  }
-	  
+
 	case file_list_skip:
 	  break;
 	}
@@ -2346,7 +2347,7 @@ main (int argc, char **argv)
 
   if (stdlis == stdout)
     close_stdout ();
-  else if (ferror (stderr) || fclose (stderr) != 0) 
+  else if (ferror (stderr) || fclose (stderr) != 0)
     exit_status = TAREXIT_FAILURE;
 
   return exit_status;

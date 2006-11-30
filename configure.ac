@@ -25,11 +25,12 @@ AC_CONFIG_HEADERS([config.h:config.hin])
 AC_PREREQ([2.60])
 AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 dist-shar std-options])
 
-gl_USE_SYSTEM_EXTENSIONS
 AC_PROG_CC
 AC_EXEEXT
 AC_PROG_RANLIB
 AC_PROG_YACC
+gl_EARLY
+
 AC_SYS_LARGEFILE
 AC_ISC_POSIX
 AC_C_INLINE
@@ -82,7 +83,7 @@ AC_CHECK_TYPE(ino_t, unsigned)
 gt_TYPE_SSIZE_T
 
 # gnulib modules
-tar_GNULIB
+gl_INIT
 # paxutils modules
 tar_PAXUTILS
 
@@ -213,7 +214,7 @@ AC_CHECK_TYPE(iconv_t,:,
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION([0.15])
+AM_GNU_GETTEXT_VERSION([0.16])
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)

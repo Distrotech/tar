@@ -1,6 +1,5 @@
 .deps
 Makefile
-Makefile.am
 Makefile.in
 __fpending.c
 __fpending.h
@@ -133,7 +132,6 @@ paxnames.c
 pipe-safer.c
 printf-args.c
 printf-args.h
-printf-parse.c
 printf-parse.h
 quote.c
 quote.h
@@ -209,7 +207,6 @@ unsetenv.c
 utime.c
 utimens.c
 utimens.h
-vasnprintf.c
 vasnprintf.h
 verify.h
 version-etc-fsf.c

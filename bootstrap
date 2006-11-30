@@ -21,10 +21,8 @@
 
 # Written by Paul Eggert and Sergey Poznyakoff.
 
-package=tar
-
-# Translation Project URL, for the registry of all projects.
-TP_URL='http://www.iro.umontreal.ca/translation/registry.cgi?domain='
+nl='
+'
 
 # Ensure file names are sorted consistently across platforms.
 # Also, ensure diagnostics are in English, e.g., "wget --help" below.
@@ -32,215 +30,182 @@ LC_ALL=C
 export LC_ALL
 
 usage() {
- cat <<EOF
- usage: $0 [--gnulib-srcdir=DIR][--paxutils-srcdir=DIR][--cvs-auth=AUTH-METHOD][--cvs-user=USERNAME][--no-po]
- Options are:
- --paxutils-srcdir=DIRNAME    Specify the local directory where paxutils
-                              sources reside. Use this if you already
-                              have paxutils sources on your machine, and
-                              do not want to waste your bandwidth dowloading
-                              them again.
- --gnulib-srcdir=DIRNAME      Specify the local directory where gnulib
-                              sources reside. Use this if you already
-                              have gnulib sources on your machine, and
-                              do not want to waste your bandwidth dowloading
-                              them again.
- --cvs-auth=METHOD            Set the CVS access method used for downloading
-                              gnulib files. METHOD is one of the keywords
-                              accepted by cvs -d option (see info cvs
-                              repository).
- --cvs-user=USERNAME          Set the CVS username to be used when accessing
-                              the gnulib repository.
- --no-po                      Do not download po files.
- --update-po[=LANG]           Update po file(s) and exit.
+  echo >&2 "\
+Usage: $0 [OPTION]...
+Bootstrap this package from the checked-out sources.
 
-If the file \`.bootstrap' exists in the current working directory, its
-contents is read, comments and empty lines removed, shell variables expanded
-and the result is prepended to the command line options.
+Options:
+ --paxutils-srcdir=DIRNAME  Specify the local directory where paxutils
+                          sources reside. Use this if you already
+                          have paxutils sources on your machine, and
+                          do not want to waste your bandwidth dowloading
+                          them again.
+ --gnulib-srcdir=DIRNAME  Specify the local directory where gnulib
+                          sources reside.  Use this if you already
+                          have gnulib sources on your machine, and
+                          do not want to waste your bandwidth dowloading
+                          them again.
+ --copy                   Copy files instead of creating symbolic links.
+ --force                  Attempt to bootstrap even if the sources seem
+                          not to have been checked out.
+ --skip-po                Do not download po files.
+ --cvs-user=USERNAME      Set the CVS username to be used when accessing
+                          the gnulib repository.
 
-Running without arguments will suffice in most cases. It is equivalent
-to
+If the file .bootstrap.conf exists in the current working directory, its
+contents are read as shell variables to configure the bootstrap.
 
-    ./bootstrap --cvs-auth=pserver
-
-EOF
+Running without arguments will suffice in most cases.
+"
 }
 
-# Read configuration file
-if [ -r .bootstrap ]; then
-  echo "$0: Reading configuration file .bootstrap"
-  eval set -- "`sed 's/#.*$//;/^$/d' .bootstrap | tr '\n' ' '` $*"
-fi
+checkout() {
+  if [ ! -d $1 ]; then
+    echo "$0: getting $1 files..."
+
+    case ${CVS_AUTH-pserver} in
+    pserver)
+      CVS_PREFIX=':pserver:anonymous@';;
+    ssh)
+      CVS_PREFIX="$CVS_USER${CVS_USER+@}";;
+    *)
+      echo "$0: $CVS_AUTH: Unknown CVS access method" >&2
+      exit 1;;
+    esac
+
+    case $CVS_RSH in
+    '') CVS_RSH=ssh; export CVS_RSH;;
+    esac
+
+    trap "cleanup $1" 1 2 13 15
+
+    cvs -z3 -q -d ${CVS_PREFIX}cvs.savannah.gnu.org:/cvsroot/"$1" co $1 ||
+      cleanup $1
+
+    trap - 1 2 13 15
+  fi
+}
+
+cleanup() {
+  status=$?
+  rm -fr $1
+  exit $status
+}
+
+# Configuration.
+
+# List of gnulib modules needed.
+gnulib_modules=
+
+# Any gnulib files needed that are not in modules.
+gnulib_files=
+
+# Translation Project URL, for the registry of all projects
+# and for the translation-team master directory.
+TP_URL='http://www.iro.umontreal.ca/translation/registry.cgi?domain='
+TP_PO_URL='http://www.iro.umontreal.ca/translation/teams/PO/'
+
+extract_package_name='
+  /^AC_INIT(/{
+     /.*,.*,.*,/{
+       s///
+       s/[][]//g
+       p
+       q
+     }
+     s/AC_INIT(\[*//
+     s/]*,.*//
+     s/^GNU //
+     y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/
+     s/[^A-Za-z0-9_]/-/g
+     p
+  }
+'
+package=`sed -n "$extract_package_name" configure.ac` || exit
+
+# Extra files from gnulib, which override files from other sources.
+gnulib_extra_files='
+	build-aux/announce-gen
+	build-aux/install-sh
+	build-aux/missing
+	build-aux/mdate-sh
+	build-aux/texinfo.tex
+	build-aux/depcomp
+	build-aux/config.guess
+	build-aux/config.sub
+	doc/INSTALL
+'
+
+# Other locale categories that need message catalogs.
+EXTRA_LOCALE_CATEGORIES=
+
+# Additional xgettext options to use.  Use "\\\newline" to break lines.
+XGETTEXT_OPTIONS='\\\
+ --flag=_:1:pass-c-format\\\
+ --flag=N_:1:pass-c-format\\\
+ --flag=error:3:c-format --flag=error_at_line:5:c-format\\\
+'
+
+# Files we don't want to import.
+excluded_files=
+
+# File that should exist in the top directory of a checked out hierarchy,
+# but not in a distribution tarball.
+CVS_only_file=README-cvs
+
+# Whether to use copies instead of symlinks.
+copy=false
+
+# Override the default configuration, if necessary.
+test -r bootstrap.conf && . ./bootstrap.conf
+
+# Translate configuration into internal form.
 
 # Parse options.
 
-DOWNLOAD_PO=yes
 for option
 do
   case $option in
   --help)
     usage
     exit;;
-  --gnulib-srcdir=*)
-    GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
   --paxutils-srcdir=*)
     PAXUTILS_SRCDIR=`expr "$option" : '--paxutils-srcdir=\(.*\)'`;;
-  --cvs-auth=*)
-    CVS_AUTH=`expr "$option" : '--cvs-auth=\(.*\)'`;;
+  --gnulib-srcdir=*)
+    GNULIB_SRCDIR=`expr "$option" : '--gnulib-srcdir=\(.*\)'`;;
   --cvs-user=*)
     CVS_USER=`expr "$option" : '--cvs-user=\(.*\)'`;;
-  --no-po)
-    DOWNLOAD_PO=no;;
-  --update-po=*)
-    DOWNLOAD_PO=`expr "$option" : '--update-po=\(.*\)'`;;
-  --update-po)
-    DOWNLOAD_PO=only;;
+  --skip-po | --no-po) # --no-po is for compatibility with 'tar' tradition.
+    SKIP_PO=t;;
+  --force)
+    CVS_only_file=;;
+  --copy)
+    copy=true;;
   *)
     echo >&2 "$0: $option: unknown option"
     exit 1;;
   esac
 done
 
-# Get translations.
-
-get_translations() {
-  subdir=$1
-  domain=$2
-  po_file=$3
-
-  echo "$0: getting translations into $subdir for $domain..."
-
-  case $po_file in
-  '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
-  esac &&
-
-  $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
-
-  sed -n 's|.*"http://[^"]*/translation/teams/PO/\([^/"]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\1.\2|p' <"$subdir/$domain.html" |
-  sort -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
-  awk -F. '
-    { if (lang && $1 != lang) print lang, ver }
-    { lang = $1; ver = substr($0, index($0, ".") + 1) }
-    END { if (lang) print lang, ver }
-  ' |
-  awk -v domain="$domain" -v po_file="$po_file" -v subdir="$subdir" '
-    {
-      lang = $1
-      if (po_file && po_file != (lang ".po")) next
-
-      # Work around bugs in translations uncovered by gettext 0.15.
-      # This workaround can be removed once the translations are fixed.
-      if (lang == "hu" || lang == "zh_TW") next
-
-      ver = $2
-      urlfmt = ""
-      printf "$WGET_COMMAND -O %s/%s.po 'http://www.iro.umontreal.ca/translation/teams/PO/%s/%s-%s.%s.po' &&\n", subdir, lang, lang, domain, ver, lang
-    }
-    END { print ":" }
-  ' |
-  sh &&
-  ls "$subdir"/*.po | sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
-  rm "$subdir/$domain.html"
-}
-
-update_po() {
-  if [ $# = 1 ]; then
-    case $1 in
-    *.po)  POFILE=$1;;
-    *)     POFILE=${1}.po;;
-    esac
-    get_translations po $package "$POFILE"
-  else
-    get_translations po $package
-  fi
-}
-
-case $DOWNLOAD_PO in
-no) ;;
-*)
-  case `wget --help` in
-  *'--no-cache'*)
-    no_cache='--no-cache';;
-  *'--cache=on/off'*)
-    no_cache='--cache=off';;
-  *)
-    no_cache='';;
-  esac
-
-  WGET_COMMAND="wget -nv $no_cache"
-  export WGET_COMMAND
-esac
-
-case $DOWNLOAD_PO in
-only)	update_po
-	exit
-	;;
-no|yes) ;;
-*)	update_po $DOWNLOAD_PO
-	exit
-esac
-
+if test -n "$CVS_only_file" && test ! -r "$CVS_only_file"; then
+  echo "$0: Bootstrapping from a non-checked-out distribution is risky." >&2
+  exit 1
+fi
 
 echo "$0: Bootstrapping CVS $package..."
 
-build_cvs_prefix() {
-  CVS_PREFIX=:${1}:
-  if [ "${2}" != - ]; then
-    CVS_PREFIX=${CVS_PREFIX}${2}@
-  fi
-  if [ "$1" = "ext" ]; then
-    if [ -z "${CVS_RSH}" ]; then
-       CVS_RSH=ssh
-       export CVS_RSH
-    fi
-  fi
-}
+# Get paxutils files.
 
-# checkout package
-checkout() {
-  if [ ! -d $1 ]; then
-    echo "$0: getting $1 files..."
-
-    trap exit 1 2 13 15
-    trap 'rm -fr $1; exit 1' 0
-
-    case "${CVS_AUTH-pserver}" in
-    pserver) build_cvs_prefix pserver ${CVS_USER:-anonymous}
-             ;;
-    gserver|server)
-	     build_cvs_prefix $CVS_AUTH ${CVS_USER--}
-	     ;;
-    ext)     build_cvs_prefix $CVS_AUTH ${CVS_USER--}
-             ;;
-    *)       echo "$0: Unknown CVS access method" >&2
-	     exit 1;;
-    esac
-    cvs -q -d ${CVS_PREFIX}cvs.sv.gnu.org:/cvsroot/$1 co $1 || exit
-
-    trap - 0
-  fi
-}
-
-gnulib_modules=
-newline='
-'
-
-get_modules() {
-  new_gnulib_modules=`sed '/^[	 ]*#/d; /^[	 ]*$/d' $*`
-  case $gnulib_modules,$new_gnulib_modules in
-  ?*,?*) new_gnulib_modules=$newline$new_gnulib_modules;;
-  esac
-  gnulib_modules=$gnulib_modules$new_gnulib_modules
-}
-
-# Get paxutils files
 case ${PAXUTILS_SRCDIR--} in
 -) checkout paxutils
    PAXUTILS_SRCDIR=paxutils
 esac
 
 if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
-  get_modules $PAXUTILS_SRCDIR/gnulib.modules
+  gnulib_modules=`
+    (echo "$gnulib_modules"; grep '^[^#]' $PAXUTILS_SRCDIR/gnulib.modules) |
+    sort -u
+  `
 fi
 
 # copy_files srcdir dstdir
@@ -286,110 +251,265 @@ copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
--) checkout gnulib
-   GNULIB_SRCDIR=gnulib
+-)
+  checkout gnulib
+  GNULIB_SRCDIR=gnulib
 esac
 
 gnulib_tool=$GNULIB_SRCDIR/gnulib-tool
 <$gnulib_tool || exit
 
-get_modules gnulib.modules
-
-gnulib_modules=`echo "$gnulib_modules" | sort -u`
-previous_gnulib_modules=
-while [ "$gnulib_modules" != "$previous_gnulib_modules" ]; do
-  previous_gnulib_modules=$gnulib_modules
-  gnulib_modules=`
-    (echo "$gnulib_modules"
-     for gnulib_module in $gnulib_modules; do
-       $gnulib_tool --extract-dependencies $gnulib_module
-     done) | sort -u
-  `
-done
-
-gnulib_files=`
-  (for gnulib_module in $gnulib_modules; do
-     $gnulib_tool --extract-filelist $gnulib_module
-   done) | sort -u
-`
-
-gnulib_dirs=`echo "$gnulib_files" | sed 's,/[^/]*$,,' | sort -u`
-mkdir -p $gnulib_dirs || exit
-
-for gnulib_file in $gnulib_files; do
-  dest=$gnulib_file
-  rm -f $dest &&
-  echo "$0: Copying file $GNULIB_SRCDIR/$gnulib_file" &&
-  cp -p $GNULIB_SRCDIR/$gnulib_file $dest || exit
-done
-
-# This suppresses a bogus diagnostic
-# "warning: macro `AM_LANGINFO_CODESET' not found in library".
-echo "$0: patching m4/gettext.m4 to remove need for intl/* ..."
-sed '
-  /^AC_DEFUN(\[AM_INTL_SUBDIR],/,/^]/c\
-    AC_DEFUN([AM_INTL_SUBDIR], [])
-  /^AC_DEFUN(\[gt_INTL_SUBDIR_CORE],/,/^]/c\
-    AC_DEFUN([gt_INTL_SUBDIR_CORE], [])
-' m4/gettext.m4 >m4/gettext_gl.m4 || exit
-
-echo "$0: Creating m4/gnulib.m4"
-(echo "# This file is generated automatically. Please, do not edit."
- echo "#"
- echo "AC_DEFUN([${package}_GNULIB],["
- for gnulib_module in $gnulib_modules; do
-    echo "# $gnulib_module"
-    $gnulib_tool --extract-autoconf-snippet $gnulib_module
- done | sed '/AM_GNU_GETTEXT/d'
- echo "])") > ./m4/gnulib.m4
-
-echo "$0: Creating lib/Makefile.am"
-(echo "# This file is generated automatically. Do not edit!"
- cat lib/Makefile.tmpl
-
- for gnulib_module in $gnulib_modules; do
-    echo "# $gnulib_module"
-    $gnulib_tool --extract-automake-snippet $gnulib_module
- done | sed "s/lib_SOURCES/lib${package}_a_SOURCES/g" ) > lib/Makefile.am
-
 # Get translations.
-if test "$DOWNLOAD_PO" = "yes"; then
-  update_po
-fi
+
+get_translations() {
+  subdir=$1
+  domain=$2
+
+  case $WGET_COMMAND in
+  '')
+    echo "$0: wget not available; skipping translations";;
+  ?*)
+    echo "$0: getting translations into $subdir for $domain..." &&
+
+    (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`) &&
+    $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
+
+    sed -n 's|.*"http://[^"]*/translation/teams/PO/\([^/"]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\1.\2|p' <"$subdir/$domain.html" |
+    sort -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
+    awk -F. '
+      { if (lang && $1 != lang) print lang, ver }
+      { lang = $1; ver = substr($0, index($0, ".") + 1) }
+      END { if (lang) print lang, ver }
+    ' | awk -v domain="$domain" -v subdir="$subdir" '
+      {
+	lang = $1
+	ver = $2
+	urlfmt = ""
+	printf "{ $WGET_COMMAND -O %s/%s.po '\'"$TP_PO_URL"'/%s/%s-%s.%s.po'\'' &&\n", subdir, lang, lang, domain, ver, lang
+	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
+	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
+	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
+      }
+      END { print ":" }
+    ' | WGET_COMMAND="$WGET_COMMAND" sh;;
+  esac &&
+  ls "$subdir"/*.po 2>/dev/null |
+    sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
+  rm -f "$subdir/$domain.html"
+}
+
+case $SKIP_PO in
+'')
+  case `wget --help` in
+  *'--no-cache'*)
+    WGET_COMMAND='wget -nv --no-cache';;
+  *'--cache=on/off'*)
+    WGET_COMMAND='wget -nv --cache=off';;
+  *'--non-verbose'*)
+    WGET_COMMAND='wget -nv';;
+  *)
+    WGET_COMMAND='';;
+  esac
+
+  get_translations po $package || exit
+
+  if test -d runtime-po; then
+    get_translations runtime-po $package-runtime || exit
+  fi;;
+esac
+
+symlink_to_gnulib()
+{
+  src=$GNULIB_SRCDIR/$1
+  dst=${2-$1}
+
+  test -f "$src" && {
+    if $copy; then
+      {
+	test ! -h "$dst" || {
+	  echo "$0: rm -f $dst" &&
+	  rm -f "$dst"
+	}
+      } &&
+      test -f "$dst" &&
+      cmp -s "$src" "$dst" || {
+	echo "$0: cp -fp $src $dst" &&
+	cp -fp "$src" "$dst"
+      }
+    else
+      test -h "$dst" &&
+      src_ls=`ls -diL "$src" 2>/dev/null` && set $src_ls && src_i=$1 &&
+      dst_ls=`ls -diL "$dst" 2>/dev/null` && set $dst_ls && dst_i=$1 &&
+      test "$src_i" = "$dst_i" || {
+	dot_dots=
+	case $src in
+	/*) ;;
+	*)
+	  case /$dst/ in
+	  *//* | */../* | */./* | /*/*/*/*/*/)
+	     echo >&2 "$0: invalid symlink calculation: $src -> $dst"
+	     exit 1;;
+	  /*/*/*/*/)	dot_dots=../../../;;
+	  /*/*/*/)	dot_dots=../../;;
+	  /*/*/)	dot_dots=../;;
+	  esac;;
+	esac
+
+	echo "$0: ln -fs $dot_dots$src $dst" &&
+	ln -fs "$dot_dots$src" "$dst"
+      }
+    fi
+  }
+}
+
+cp_mark_as_generated()
+{
+  cp_src=$1
+  cp_dst=$2
+
+  if cmp -s "$cp_src" "$GNULIB_SRCDIR/$cp_dst"; then
+    symlink_to_gnulib "$cp_dst"
+  else
+    case $cp_dst in
+      *.[ch])             c1='/* '; c2=' */';;
+      *.texi)             c1='@c '; c2=     ;;
+      *.m4|*/Make*|Make*) c1='# ' ; c2=     ;;
+      *)                  c1=     ; c2=     ;;
+    esac
+
+    if test -z "$c1"; then
+      cmp -s "$cp_src" "$cp_dst" || {
+	echo "$0: cp -f $cp_src $cp_dst" &&
+	cp -f "$cp_src" "$cp_dst"
+      }
+    else
+      # Copy the file first to get proper permissions if it
+      # doesn't already exist.  Then overwrite the copy.
+      cp "$cp_src" "$cp_dst-t" &&
+      (
+	echo "$c1-*- buffer-read-only: t -*- vi: set ro:$c2" &&
+	echo "${c1}DO NOT EDIT! GENERATED AUTOMATICALLY!$c2" &&
+	cat "$cp_src"
+      ) > $cp_dst-t &&
+      if cmp -s "$cp_dst-t" "$cp_dst"; then
+	rm -f "$cp_dst-t"
+      else
+	echo "$0: cp $cp_src $cp_dst # with edits" &&
+	mv -f "$cp_dst-t" "$cp_dst"
+      fi
+    fi
+  fi
+}
+
+version_controlled_file() {
+  dir=$1
+  file=$2
+  found=no
+  if test -d CVS; then
+    grep -F "/$file/" $dir/CVS/Entries 2>/dev/null |
+	     grep '^/[^/]*/[0-9]' > /dev/null && found=yes
+  elif test -d .git; then
+    git-rm -n "$dir/$file" > /dev/null 2>&1 && found=yes
+  else
+    echo "$0: no version control for $dir/$file?" >&2
+  fi
+  test $found = yes
+}
+
+slurp() {
+  for dir in . `(cd $1 && find * -type d -print)`; do
+    copied=
+    sep=
+    for file in `ls $1/$dir`; do
+      test -d $1/$dir/$file && continue
+      for excluded_file in $excluded_files; do
+	test "$dir/$file" = "$excluded_file" && continue 2
+      done
+      if test $file = Makefile.am; then
+        copied=$copied${sep}gnulib.mk; sep=$nl
+	remove_intl='/^[^#].*\/intl/s/^/#/'
+        sed "$remove_intl" $1/$dir/$file | cmp -s - $dir/gnulib.mk || {
+	  echo "$0: Copying $1/$dir/$file to $dir/gnulib.mk ..." &&
+	  rm -f $dir/gnulib.mk &&
+	  sed "$remove_intl" $1/$dir/$file >$dir/gnulib.mk
+	}
+      elif { test "${2+set}" = set && test -r $2/$dir/$file; } ||
+	   version_controlled_file $dir $file; then
+	echo "$0: $dir/$file overrides $1/$dir/$file"
+      else
+	copied=$copied$sep$file; sep=$nl
+	if test $file = gettext.m4; then
+	  echo "$0: patching m4/gettext.m4 to remove need for intl/* ..."
+	  rm -f $dir/$file
+	  sed '
+	    /^AC_DEFUN(\[AM_INTL_SUBDIR],/,/^]/c\
+	      AC_DEFUN([AM_INTL_SUBDIR], [
+	    /^AC_DEFUN(\[gt_INTL_SUBDIR_CORE],/,/^]/c\
+	      AC_DEFUN([gt_INTL_SUBDIR_CORE], [])
+	    $a\
+	      AC_DEFUN([gl_LOCK_EARLY], [])
+	  ' $1/$dir/$file >$dir/$file
+	else
+	  cp_mark_as_generated $1/$dir/$file $dir/$file
+	fi
+      fi || exit
+    done
+
+    for dot_ig in .cvsignore .gitignore; do
+      ig=$dir/$dot_ig
+      if test -n "$copied" && test -f $ig; then
+	echo "$copied" | sort -u - $ig | cmp -s - $ig ||
+	echo "$copied" | sort -u - $ig -o $ig || exit
+      fi
+    done
+  done
+}
+
+
+# Create boot temporary directories to import from gnulib and gettext.
+
+bt='.#bootmp'
+bt2=${bt}2
+rm -fr $bt $bt2 &&
+mkdir $bt $bt2 || exit
+
+# Import from gnulib.
+
+test -d build-aux || {
+  echo "$0: mkdir build-aux ..." &&
+  mkdir build-aux
+} || exit
+gnulib_tool_options="\
+ --import\
+ --no-changelog\
+ --aux-dir $bt/build-aux\
+ --doc-base $bt/doc\
+ --lib lib$package\
+ --m4-base $bt/m4/\
+ --source-base $bt/lib/\
+ --tests-base $bt/tests\
+ --local-dir gl\
+"
+echo "$0: $gnulib_tool $gnulib_tool_options --import ..."
+$gnulib_tool $gnulib_tool_options --import $gnulib_modules &&
+slurp $bt || exit
+
+for file in $gnulib_files; do
+  symlink_to_gnulib $file || exit
+done
+
+
+# Import from gettext.
+
+echo "$0: (cd $bt2; autopoint) ..."
+cp configure.ac $bt2 &&
+(cd $bt2 && autopoint && rm configure.ac) &&
+slurp $bt2 $bt || exit
+
+rm -fr $bt $bt2 || exit
+
 
 # Reconfigure, getting other files.
-
-echo "$0: autopoint --force ..."
-autopoint --force || exit
-
-# We don't need intl, so remove it.
-intl_files_to_remove='
-  intl
-  m4/gettext.m4
-  m4/glibc2.m4
-  m4/intdiv0.m4
-  m4/intmax.m4
-  m4/lcmessage.m4
-  m4/lock.m4
-  m4/printf-posix.m4
-  m4/visibility.m4
-'
-echo $0: rm -fr $intl_files_to_remove ...
-rm -fr $intl_files_to_remove || exit
-
-
-# Undo changes to gnulib files that autoreconf made.
-
-for gnulib_file in $gnulib_files; do
-  test ! -f $gnulib_file || cmp -s $gnulib_file $GNULIB_SRCDIR/$gnulib_file || {
-    rm -f $gnulib_file &&
-    echo "$0: Copying file $GNULIB_SRCDIR/$gnulib_file again" &&
-    cp -p $GNULIB_SRCDIR/$gnulib_file $gnulib_file || exit
-  }
-done
-
-# Make sure aclocal.m4 is not older than input files.
-sleep 1
 
 for command in \
   'aclocal --force -I m4' \
@@ -402,25 +522,46 @@ do
 done
 
 
+# Get some extra files from gnulib, overriding existing files.
+
+for file in $gnulib_extra_files; do
+  case $file in
+  */INSTALL) dst=INSTALL;;
+  *) dst=$file;;
+  esac
+  symlink_to_gnulib $file $dst || exit
+done
+
+
 # Create gettext configuration.
 echo "$0: Creating po/Makevars from po/Makevars.template ..."
+rm -f po/Makevars
 sed '
+  /^EXTRA_LOCALE_CATEGORIES *=/s/=.*/= '"$EXTRA_LOCALE_CATEGORIES"'/
   /^MSGID_BUGS_ADDRESS *=/s/=.*/= bug-'"$package"'@gnu.org/
   /^XGETTEXT_OPTIONS *=/{
     s/$/ \\/
     a\
-	--flag=_:1:pass-c-format \\\
-	--flag=N_:1:pass-c-format \\\
-	--flag=error:3:c-format --flag=error_at_line:5:c-format \\\
-	--flag=asnprintf:3:c-format --flag=vasnprintf:3:c-format \\\
-	--flag=argp_error:2:c-format \\\
-	--flag=__argp_error:2:c-format \\\
-	--flag=argp_failure:4:c-format \\\
-	--flag=__argp_failure:4:c-format \\\
-	--flag=argp_fmtstream_printf:2:c-format \\\
-	--flag=__argp_fmtstream_printf:2:c-format
+	'"$XGETTEXT_OPTIONS"' $${end_of_xgettext_options+}
   }
 ' po/Makevars.template >po/Makevars
 
+if test -d runtime-po; then
+  # Similarly for runtime-po/Makevars, but not quite the same.
+  rm -f runtime-po/Makevars
+  sed '
+    /^DOMAIN *=.*/s/=.*/= '"$package"'-runtime/
+    /^subdir *=.*/s/=.*/= runtime-po/
+    /^MSGID_BUGS_ADDRESS *=/s/=.*/= bug-'"$package"'@gnu.org/
+    /^XGETTEXT_OPTIONS *=/{
+      s/$/ \\/
+      a\
+	  '"$XGETTEXT_OPTIONS_RUNTIME"' $${end_of_xgettext_options+}
+    }
+  ' <po/Makevars.template >runtime-po/Makevars
+
+  # Copy identical files from po to runtime-po.
+  (cd po && cp -p Makefile.in.in *-quot *.header *.sed *.sin ../runtime-po)
+fi
 
 echo "$0: done.  Now you can run './configure'."

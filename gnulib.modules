@@ -6,6 +6,7 @@ argmatch
 argp
 backupfile
 closeout
+configmake
 dirname
 error
 exclude

@@ -1,3 +1,28 @@
+2006-11-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Port to latest gnulib.  There were a lot of changes, so the
+	simplest way to get this up and running was to switch to coreutils
+	bootstrap procedure.  I noticed one feature missing after this
+	merge: the ability to update a single .po file.  I can add that
+	later if need be.
+	* README-cvs, bootstrap.conf: New files.
+	* lib/.cvsignore: Remove Makefile.am, printf-parse.c, vasnprintf.c.
+	* lib/printf-parse.c, lib/vasnprintf.c: New files, from coreutils,
+	to override gnulib, so that we don't need xsize.h.
+	* bootstrap: Replace with coreutils bootstrap, except add support
+	for paxutils.
+	* configure.ac (gl_USE_SYSTEM_EXTENSIONS): Remove, as gl_EARLY now
+	does this.
+	(gl_EARLY, gl_INIT): Add.
+	(tar_GNULIB): Remove.
+	* gnulib.modules: Add configmake.
+	* lib/Makefile.tmpl: Remove, replacing with....
+	* lib/Makefile.am: New file.
+	* src/Makefile.am (tar.o): Remove dependency: Automake does this
+	for us.
+	* src/tar.c: Include <configmake.h> and <rmt-command.h>, not
+	<localedir.h>.
+
 2006-11-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (mtime_coder): Treat non-null data as a pointer to
