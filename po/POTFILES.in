@@ -46,7 +46,6 @@ src/delete.c
 src/extract.c
 src/incremen.c
 src/list.c
-src/mangle.c
 src/misc.c
 src/names.c
 src/tar.c
