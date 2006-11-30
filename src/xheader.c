@@ -647,12 +647,10 @@ void
 xheader_read (union block *p, size_t size)
 {
   size_t j = 0;
-  size_t nblocks;
 
   free (extended_header.buffer);
   size += BLOCKSIZE;
   extended_header.size = size;
-  nblocks = (size + BLOCKSIZE - 1) / BLOCKSIZE;
   extended_header.buffer = xmalloc (size + 1);
   extended_header.buffer[size] = '\0';
 
