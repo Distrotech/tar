@@ -37,7 +37,8 @@ enum permstatus
   /* This file may have existed already; its permissions are unknown.  */
   UNKNOWN_PERMSTATUS,
 
-  /* This file was created using the permissions from the archive.  */
+  /* This file was created using the permissions from the archive,
+     except with S_IRWXG | S_IRWXO masked out if 0 < same_owner_option.  */
   ARCHIVED_PERMSTATUS,
 
   /* This is an intermediate directory; the archive did not specify
@@ -149,12 +150,15 @@ set_mode (char const *file_name,
     {
       mode = stat_info->st_mode;
 
-      /* If we created the file and it has a usual mode, then its mode
-	 is normally set correctly already.  But on many hosts, some
+      /* If we created the file and it has a mode that we set already
+	 with O_CREAT, then its mode is often set correctly already.
+	 But if we are changing ownership, the mode's group and and
+	 other permission bits were omitted originally, so it's less
+	 likely that the mode is OK now.  Also, on many hosts, some
 	 directories inherit the setgid bits from their parents, so we
 	 we must set directories' modes explicitly.  */
-      if (permstatus == ARCHIVED_PERMSTATUS
-	  && ! (mode & ~ MODE_RWX)
+      if ((permstatus == ARCHIVED_PERMSTATUS
+	   && ! (mode & ~ (0 < same_owner_option ? S_IRWXU : MODE_RWX)))
 	  && typeflag != DIRTYPE
 	  && typeflag != GNUTYPE_DUMPDIR)
 	return;
@@ -217,7 +221,7 @@ check_time (char const *file_name, struct timespec t)
 /* Restore stat attributes (owner, group, mode and times) for
    FILE_NAME, using information given in *ST.
    If CUR_INFO is nonzero, *CUR_INFO is the
-   file's currernt status.
+   file's current status.
    If not restoring permissions, invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.
@@ -265,11 +269,11 @@ set_stat (char const *file_name,
 	}
 
       /* Some systems allow non-root users to give files away.  Once this
-	 done, it is not possible anymore to change file permissions, so we
-	 have to set permissions prior to possibly giving files away.  */
-
-      set_mode (file_name, &st->stat, cur_info,
-		invert_permissions, permstatus, typeflag);
+	 done, it is not possible anymore to change file permissions.
+	 However, setting file permissions now would be incorrect, since
+	 they would apply to the wrong user, and there would be a race
+	 condition.  So, don't use systems that allow non-root users to
+	 give files away.  */
     }
 
   if (0 < same_owner_option && permstatus != INTERDIR_PERMSTATUS)
@@ -278,29 +282,36 @@ set_stat (char const *file_name,
 	 the symbolic link itself.  In this case, a mere chown would change
 	 the attributes of the file the symbolic link is pointing to, and
 	 should be avoided.  */
+      int chown_result = 1;
 
       if (typeflag == SYMTYPE)
 	{
 #if HAVE_LCHOWN
-	  if (lchown (file_name, st->stat.st_uid, st->stat.st_gid) < 0)
-	    chown_error_details (file_name,
-				 st->stat.st_uid, st->stat.st_gid);
+	  chown_result = lchown (file_name, st->stat.st_uid, st->stat.st_gid);
 #endif
 	}
       else
 	{
-	  if (chown (file_name, st->stat.st_uid, st->stat.st_gid) < 0)
-	    chown_error_details (file_name,
-				 st->stat.st_uid, st->stat.st_gid);
-
-	  /* On a few systems, and in particular, those allowing to give files
-	     away, changing the owner or group destroys the suid or sgid bits.
-	     So let's attempt setting these bits once more.  */
-	  if (st->stat.st_mode & (S_ISUID | S_ISGID | S_ISVTX))
-	    set_mode (file_name, &st->stat, 0,
-		      invert_permissions, permstatus, typeflag);
+	  chown_result = chown (file_name, st->stat.st_uid, st->stat.st_gid);
 	}
+
+      if (chown_result == 0)
+	{
+	  /* Changing the owner can flip st_mode bits in some cases, so
+	     ignore cur_info if it might be obsolete now.  */
+	  if (cur_info
+	      && cur_info->st_mode & S_IXUGO
+	      && cur_info->st_mode & (S_ISUID | S_ISGID))
+	    cur_info = NULL;
+	}
+      else if (chown_result < 0)
+	chown_error_details (file_name,
+			     st->stat.st_uid, st->stat.st_gid);
     }
+
+  if (typeflag != SYMTYPE)
+    set_mode (file_name, &st->stat, cur_info,
+	      invert_permissions, permstatus, typeflag);
 }
 
 /* Remember to restore stat attributes (owner, group, mode and times)
@@ -374,7 +385,8 @@ repair_delayed_set_stat (char const *dir,
 	  data->atime = current_stat_info.atime;
 	  data->mtime = current_stat_info.mtime;
 	  data->invert_permissions =
-	    (MODE_RWX & (current_stat_info.stat.st_mode ^ st.st_mode));
+	    ((current_stat_info.stat.st_mode ^ st.st_mode)
+	     & MODE_RWX & ~ current_umask);
 	  data->permstatus = ARCHIVED_PERMSTATUS;
 	  return;
 	}
@@ -626,8 +638,9 @@ extract_dir (char *file_name, int typeflag)
   else if (typeflag == GNUTYPE_DUMPDIR)
     skip_member ();
 
-  mode = (current_stat_info.stat.st_mode |
-	   (we_are_root ? 0 : MODE_WXUSR)) & MODE_RWX;
+  mode = current_stat_info.stat.st_mode | (we_are_root ? 0 : MODE_WXUSR);
+  if (0 < same_owner_option || current_stat_info.stat.st_mode & ~ MODE_RWX)
+    mode &= S_IRWXU;
 
   while ((status = mkdir (file_name, mode)))
     {
@@ -670,7 +683,8 @@ extract_dir (char *file_name, int typeflag)
     {
       if (status == 0)
 	delay_set_stat (file_name, &current_stat_info,
-			MODE_RWX & (mode ^ current_stat_info.stat.st_mode),
+			((mode ^ current_stat_info.stat.st_mode)
+			 & MODE_RWX & ~ current_umask),
 			ARCHIVED_PERMSTATUS);
       else /* For an already existing directory, invert_perms must be 0 */
 	delay_set_stat (file_name, &current_stat_info,
@@ -682,14 +696,13 @@ extract_dir (char *file_name, int typeflag)
 
 
 static int
-open_output_file (char *file_name, int typeflag)
+open_output_file (char *file_name, int typeflag, mode_t mode)
 {
   int fd;
   int openflag = (O_WRONLY | O_BINARY | O_CREAT
 		  | (old_files_option == OVERWRITE_OLD_FILES
 		     ? O_TRUNC
 		     : O_EXCL));
-  mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
 
 #if O_CTG
   /* Contiguous files (on the Masscomp) have to specify the size in
@@ -728,6 +741,9 @@ extract_file (char *file_name, int typeflag)
   size_t count;
   size_t written;
   int interdir_made = 0;
+  mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
+  mode_t invert_permissions =
+    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
 
   /* FIXME: deal with protection issues.  */
 
@@ -745,7 +761,7 @@ extract_file (char *file_name, int typeflag)
   else
     {
       do
-	fd = open_output_file (file_name, typeflag);
+	fd = open_output_file (file_name, typeflag, mode ^ invert_permissions);
       while (fd < 0 && maybe_recoverable (file_name, &interdir_made));
 
       if (fd < 0)
@@ -810,7 +826,7 @@ extract_file (char *file_name, int typeflag)
   if (to_command_option)
     sys_wait_command ();
   else
-    set_stat (file_name, &current_stat_info, NULL, 0,
+    set_stat (file_name, &current_stat_info, NULL, invert_permissions,
 	      (old_files_option == OVERWRITE_OLD_FILES ?
 	       UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
 	      typeflag);
@@ -988,16 +1004,19 @@ extract_node (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
+  mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
+  mode_t invert_permissions =
+    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
 
   do
-    status = mknod (file_name, current_stat_info.stat.st_mode,
+    status = mknod (file_name, mode ^ invert_permissions,
 		    current_stat_info.stat.st_rdev);
   while (status && maybe_recoverable (file_name, &interdir_made));
 
   if (status != 0)
     mknod_error (file_name);
   else
-    set_stat (file_name, &current_stat_info, NULL, 0,
+    set_stat (file_name, &current_stat_info, NULL, invert_permissions,
 	      ARCHIVED_PERMSTATUS, typeflag);
   return status;
 }
@@ -1009,13 +1028,16 @@ extract_fifo (char *file_name, int typeflag)
 {
   int status;
   int interdir_made = 0;
+  mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
+  mode_t invert_permissions =
+    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
 
-  while ((status = mkfifo (file_name, current_stat_info.stat.st_mode)))
+  while ((status = mkfifo (file_name, mode)) != 0)
     if (!maybe_recoverable (file_name, &interdir_made))
       break;
 
   if (status == 0)
-    set_stat (file_name, &current_stat_info, NULL, 0,
+    set_stat (file_name, &current_stat_info, NULL, invert_permissions,
 	      ARCHIVED_PERMSTATUS, typeflag);
   else
     mkfifo_error (file_name);

@@ -9,6 +9,10 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
   records, but if you have one and you trust its contents, you can
   decode it with GNU tar 1.16 or earlier.
 
+* Race conditions have been fixed that in some cases briefly allowed
+  files extracted by 'tar -x --same-owner' (or plain 'tar -x', when
+  running as root) to be accessed by users that they shouldn't have been.
+
 version 1.16 - Sergey Poznyakoff, 2006-10-21
 
 * After creating an archive, tar exits with code 1 if some files were

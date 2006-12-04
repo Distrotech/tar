@@ -1,3 +1,22 @@
+2006-12-04  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* NEWS: Fix some race conditions with tar -x --same-owner.
+	* src/extract.c (ARCHIVED_PERMSTATS): Add a comment saying that
+	S_IRWXG | S_IRWXO might be masked out.
+	(set_mode): Set the mode if some bits were masked out originally.
+	(set_stat): Don't chmod before chown, as that might temporarily
+	grant permissions that we don't want to grant.  The chmod was
+	there only to work around broken hosts, so add a comment advising
+	users not to use those broken hosts instead.
+	(repair_delayed_set_stat, extract_dir):
+	Remember to mask out current umask before inverting permissions.
+	(extract_dir): If the owner might change, or if the mode has
+	special bits, create the directory 700 at first, but restore it later.
+	(open_output_file): New arg mode; all uses changed.
+	(extract_file, extract_node, extract_fifo): If the owner might
+	change, omit group and other bits at first, but restore them after
+	changing the owner.
+
 2006-12-04  Jim Meyering  <jim@meyering.net>
 
 	* doc/tar.texi (Long Options): Remove doubled word.
