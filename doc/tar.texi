@@ -2009,7 +2009,7 @@ attention to them.
 Each option has at least one @dfn{long} (or @dfn{mnemonic}) name starting with two
 dashes in a row, e.g., @option{--list}.  The long names are more clear than
 their corresponding short or old names.  It sometimes happens that a
-single long option has many different different names which are
+single long option has many different names which are
 synonymous, such as @option{--compare} and @option{--diff}.  In addition,
 long option names can be given unique abbreviations.  For example,
 @option{--cre} can be used in place of @option{--create} because there is no
