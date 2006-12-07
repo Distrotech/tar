@@ -1,6 +1,17 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
+version 1.16.1
+
+* New option --exclude-tag allows to specify "exclusion tag files", i.e. 
+  files the appearance of which in a directory means that the directory
+  should not be archived.
+
+* The --exclude-cache option excludes directories that contain the
+  CACHEDIR.TAG file from being archived.  Previous versions excluded
+  only the directory contents, while the directories themselves were
+  still added to the archive. 
+
 * Support for reading ustar type 'N' header logical records has been removed.
   This GNU extension was generated only by very old versions of GNU 'tar'.
   Unfortunately its implementation had security holes; see
@@ -13,6 +24,7 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
   files extracted by 'tar -x --same-owner' (or plain 'tar -x', when
   running as root) to be accessed by users that they shouldn't have been.
 
+  
 version 1.16 - Sergey Poznyakoff, 2006-10-21
 
 * After creating an archive, tar exits with code 1 if some files were
