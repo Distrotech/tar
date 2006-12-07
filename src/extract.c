@@ -766,6 +766,7 @@ extract_file (char *file_name, int typeflag)
 
       if (fd < 0)
 	{
+	  skip_member ();
 	  open_error (file_name);
 	  return 1;
 	}
