@@ -6495,13 +6495,10 @@ Any directory that contains this file will be excluded from the dump.
 @opindex exclude-tag
 @item --exclude-tag=@var{file}
 Causes @command{tar} to ignore directories containing @var{file}.
+Multiple @option{--exclude-tag} options can be given.
 @end table
 
-You can specify as many exclusion tags as you like.
-
-Notice, that when speaking about ``excluding the directory'' we mean
-that the files and subdirectories it contains will not get into the
-archive, while the entry for the directory itself will, e.g.:
+For example:
 
 @smallexample
 $ @kbd{find dir}
@@ -6510,17 +6507,15 @@ dir/blues
 dir/jazz
 dir/folk
 dir/folk/tagfile
-$ @kbd{tar -cf archive.tar --extract-tag=tagfile -v}
+$ @kbd{tar -cf archive.tar --exclude-tag=tagfile -v}
 dir/
 dir/blues
 dir/jazz
-dir/folk/
 ./tar: dir/folk/: contains a cache directory tag tagfile; not dumped
 $ @kbd{tar -tf archive.tar}
 dir/
 dir/blues
 dir/jazz
-dir/folk/
 @end smallexample
 
 @menu
