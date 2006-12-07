@@ -28,4 +28,4 @@ dist-hook:
           GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
 
 distclean-local:
-	-rm -f $(PACKAGE)-$(VERSION).cpio.gz
+	-rm -f $(distdir).cpio.gz
