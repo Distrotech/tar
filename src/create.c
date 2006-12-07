@@ -1173,20 +1173,7 @@ dump_dir0 (char *directory,
 	       quotearg_colon (st->orig_file_name)));
       return;
     }
-
-  if (exclude_caches_option
-      && check_cache_directory(st->orig_file_name))
-    {
-      if (verbose_option)
-	WARN ((0, 0,
-	       _("%s: contains a cache directory tag; not dumped"),
-	       quotearg_colon (st->orig_file_name)));
-      return;
-    }
-
-  if (check_exclude_tags (st->orig_file_name))
-    return;
-
+  
   {
     char const *entry;
     size_t entry_len;
@@ -1236,9 +1223,6 @@ dump_dir (int fd, struct tar_stat_info *st, int top_level, dev_t parent_device)
       savedir_diag (st->orig_file_name);
       return false;
     }
-
-  ensure_slash (&st->orig_file_name);
-  ensure_slash (&st->file_name);
 
   dump_dir0 (directory, st, top_level, parent_device);
 
@@ -1560,6 +1544,22 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
       if (is_dir)
 	{
+	  ensure_slash (&st->orig_file_name);
+	  ensure_slash (&st->file_name);
+
+	  if (exclude_caches_option
+	      && check_cache_directory (st->orig_file_name))
+	    {
+	      if (verbose_option)
+		WARN ((0, 0,
+		       _("%s: contains a cache directory tag; not dumped"),
+		       quotearg_colon (st->orig_file_name)));
+	      return;
+	    }
+	  
+	  if (check_exclude_tags (st->orig_file_name))
+	    return;
+
 	  ok = dump_dir (fd, st, top_level, parent_device);
 
 	  /* dump_dir consumes FD if successful.  */
