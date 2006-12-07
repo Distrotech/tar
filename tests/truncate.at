@@ -36,7 +36,7 @@ genfile --run 'tar -vcf bar foo baz' --checkpoint 10 --length 49995k --truncate 
 echo Exit status: $?
 echo separator
 sleep 1
-dd if=/dev/zero of=foo bs=1024 seek=49995 count=5 >/dev/null 2>&1
+genfile --file foo --seek 49995k --length 5k --pattern=zeros
 tar dvf bar],
 [1],
 [foo
