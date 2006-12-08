@@ -298,6 +298,24 @@ if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
   `
 fi
 
+ignore_file_list=
+cleanup_ifl() {
+	test -n "$ignore_file_list" && rm -f $ignore_file_list
+}
+
+trap 'cleanup_ifl' 1 2 3 15
+
+# ignorefile DIR FILE 
+#  add FILE to the temporary ignorelist in the directory DIR
+ignorefile() {
+  file=$1/.ignore.$$ 
+  echo "$2" >> $file
+  if `echo $ignore_list | grep -qv $file`; then
+    ignore_file_list="$ignore_file_list
+$file"
+  fi
+}  
+
 # copy_files srcdir dstdir
 copy_files() {
   for file in `cat $1/DISTFILES`
@@ -314,6 +332,7 @@ copy_files() {
     fi
     echo "$0: Copying file $1/$file to $2/$dst"
     cp -p $1/$file $2/$dst
+    ignorefile $2 $dst
   done
 }
 
@@ -324,6 +343,7 @@ echo "$0: Creating m4/paxutils.m4"
  echo "AC_DEFUN([${package}_PAXUTILS],["
  cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
  echo "])") > ./m4/paxutils.m4
+ignorefile m4 paxutils.m4
 
 if [ -d rmt ]; then
    :
@@ -497,9 +517,14 @@ $copied"
       fi
 
       ig=$dir/$dot_ig
+      if [ -f $dir/.ignore.$$ ]; then
+         tfile=$dir/.ignore.$$
+      else
+         tfile=
+      fi
       if test -f $ig; then
 	  echo "$copied" | sort -u - $ig | cmp -s - $ig ||
-	  echo "$copied" | sort -u - $ig -o $ig
+	  echo "$copied" | sort -u - $ig $tfile -o $ig
       else
           copied="$dot_ig
 $copied"	  
@@ -515,7 +540,7 @@ stamp-po
 $package.pot
 $copied"
           fi  
-          echo "$copied" | sort -u -o $ig
+          echo "$copied" | sort -u - $tfile -o $ig
       fi || exit
     fi
   done
@@ -619,5 +644,5 @@ if test -d runtime-po; then
   # Copy identical files from po to runtime-po.
   (cd po && cp -p Makefile.in.in *-quot *.header *.sed *.sin ../runtime-po)
 fi
-
+cleanup_ifl
 echo "$0: done.  Now you can run './configure'."
