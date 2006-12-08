@@ -4,12 +4,12 @@ Please send GNU tar bug reports to <bug-tar@gnu.org>
 version 1.16.1
 
 * New option --exclude-tag allows to specify "exclusion tag files", i.e. 
-  files the appearance of which in a directory means that the directory
-  should not be archived.
+  files whose presence in a directory means that the directory should not 
+  be archived.
 
 * The --exclude-cache option excludes directories that contain the
   CACHEDIR.TAG file from being archived.  Previous versions excluded
-  only the directory contents, while the directories themselves were
+  directory contents only, while the directories themselves were
   still added to the archive. 
 
 * Support for reading ustar type 'N' header logical records has been removed.
