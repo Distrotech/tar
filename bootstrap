@@ -486,13 +486,38 @@ slurp() {
       fi || exit
     done
 
-    for dot_ig in .cvsignore .gitignore; do
-      ig=$dir/$dot_ig
-      if test -n "$copied" && test -f $ig; then
-	echo "$copied" | sort -u - $ig | cmp -s - $ig ||
-	echo "$copied" | sort -u - $ig -o $ig || exit
+    if test -n "$copied"; then
+      copied="Makefile
+Makefile.in
+$copied"
+      if test -d CVS; then
+	dot_ig=.cvsignore
+      else
+        dor_ig=.gitignore
       fi
-    done
+
+      ig=$dir/$dot_ig
+      if test -f $ig; then
+	  echo "$copied" | sort -u - $ig | cmp -s - $ig ||
+	  echo "$copied" | sort -u - $ig -o $ig
+      else
+          copied="$dot_ig
+$copied"	  
+	  if [ "$dir" = "po" ]; then
+	    copied="LINGUAS
+Makevars
+POTFILES
+*.mo
+*.gmo
+*.po
+remove-potcdate.sed
+stamp-po
+$package.pot
+$copied"
+          fi  
+          echo "$copied" | sort -u -o $ig
+      fi || exit
+    fi
   done
 }
 
