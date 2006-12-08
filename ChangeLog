@@ -1,3 +1,10 @@
+2006-12-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac: Raise version number to 1.16.1
+	* bootstrap (slurp): Create .(cvs|git)ignore if not present
+	* po/.cvsignore, m4/.cvsignore: Remove automatically generated
+	files.
+
 2006-12-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update
