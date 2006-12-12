@@ -225,7 +225,7 @@ xheader_set_option (char *string)
                               to the result of the basename
                               utility on the translated file name.
      %p                       The process ID of the pax process.
-     %n                       The value of the 3rd argument.  
+     %n                       The value of the 3rd argument.
      %%                       A '%' character. */
 
 char *
@@ -331,7 +331,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, size_t n)
     }
 
   free (dirp);
-  
+
   /* Do not allow it to end in a slash */
   while (q > buf && ISSLASH (q[-1]))
     q--;
@@ -508,7 +508,7 @@ decode_record (char **ptr,
       ERROR ((0, 0, _("Extended header length is out of allowed range")));
       return false;
     }
-  
+
   if (len_max < len)
     {
       int len_len = len_lim - p;
@@ -954,7 +954,7 @@ decode_time (struct timespec *ts, char const *arg, char const *keyword)
   return true;
 }
 
-  
+
 
 static void
 code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
@@ -1094,8 +1094,8 @@ static void
 mtime_coder (struct tar_stat_info const *st, char const *keyword,
 	     struct xheader *xhdr, void const *data)
 {
-  const struct timespec mtime = data ? *(struct timespec *) data : st->mtime;
-  code_time (mtime, keyword, xhdr);
+  struct timespec const *mtime = data;
+  code_time (mtime ? *mtime : st->mtime, keyword, xhdr);
 }
 
 static void
@@ -1379,8 +1379,8 @@ static void
 volume_size_coder (struct tar_stat_info const *st, char const *keyword,
 		   struct xheader *xhdr, void const *data)
 {
-  off_t v = *(off_t*)data;
-  code_num (v, keyword, xhdr);
+  off_t const *v = data;
+  code_num (*v, keyword, xhdr);
 }
 
 static void
@@ -1398,8 +1398,8 @@ static void
 volume_offset_coder (struct tar_stat_info const *st, char const *keyword,
 		     struct xheader *xhdr, void const *data)
 {
-  off_t v = *(off_t*)data;
-  code_num (v, keyword, xhdr);
+  off_t const *v = data;
+  code_num (*v, keyword, xhdr);
 }
 
 static void
@@ -1438,12 +1438,12 @@ sparse_major_decoder (struct tar_stat_info *st,
   if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
     st->sparse_major = u;
 }
-  
+
 static void
 sparse_minor_coder (struct tar_stat_info const *st, char const *keyword,
 		      struct xheader *xhdr, void const *data)
 {
-  code_num (st->sparse_minor, keyword, xhdr); 
+  code_num (st->sparse_minor, keyword, xhdr);
 }
 
 static void
@@ -1456,7 +1456,7 @@ sparse_minor_decoder (struct tar_stat_info *st,
   if (decode_num (&u, arg, TYPE_MAXIMUM (unsigned), keyword))
     st->sparse_minor = u;
 }
-  
+
 struct xhdr_tab const xhdr_tab[] = {
   { "atime",	atime_coder,	atime_decoder,	  false },
   { "comment",	dummy_coder,	dummy_decoder,	  false },

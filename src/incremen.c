@@ -20,6 +20,7 @@
 #include <system.h>
 #include <getline.h>
 #include <hash.h>
+#include <mkdtemp.h>
 #include <quotearg.h>
 #include "common.h"
 
@@ -378,7 +379,9 @@ dumpdir_size (const char *p)
 static int
 compare_dirnames (const void *first, const void *second)
 {
-  return strcmp (*(const char**)first, *(const char**)second);
+  char const *const *name1 = first;
+  char const *const *name2 = second;
+  return strcmp (*name1, *name2);
 }
 
 /* Compare dumpdir array from DIRECTORY with directory listing DIR and

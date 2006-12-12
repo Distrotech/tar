@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -588,10 +588,12 @@ get_max_open_files ()
 
   if (getrlimit(RLIMIT_NOFILE, &rlim) == 0)
     return rlim.rlim_max;
+  return -1;
 #elif defined HAVE_GETDTABLESIZE
   return getdtablesize ();
-#endif
+#else
   return -1;
+#endif
 }
 
 /* Close all descriptors, except the first three */
@@ -603,7 +605,7 @@ closeopen ()
   for (i = get_max_open_files () - 1; i > 2; i--)
     close (i);
 }
-  
+
 /* Change to directory I.  If I is 0, change to the initial working
    directory; otherwise, I must be a value returned by chdir_arg.  */
 void
@@ -611,7 +613,7 @@ chdir_do (int i)
 {
   static int previous;
   static int saved_count;
-  
+
   if (previous != i)
     {
       struct wd *prev = &wd[previous];

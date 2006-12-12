@@ -417,6 +417,7 @@ enum dump_status
     dump_status_not_implemented
   };
 
+void add_exclude_tag (const char *name);
 bool file_dumpable_p (struct tar_stat_info *st);
 void create_archive (void);
 void pad_archive (off_t size_left);
