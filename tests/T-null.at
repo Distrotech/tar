@@ -31,7 +31,7 @@ echo jeden > file-list
 cat temp1 >> file-list
 
 genfile -f "jeden
-dwa"
+dwa" || AT_SKIP_TEST
 genfile -f trzy
 
 tar cfTv archive file-list | sort
