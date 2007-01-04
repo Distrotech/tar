@@ -1,7 +1,7 @@
 /* GNU dump extensions to tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -578,7 +578,7 @@ rename_handler (void *data, void *proc_data)
     {
       struct directory *prev, *p;
 
-      /* Detect eventual cycles and clear DIRF_RENAMED flag, so this entries
+      /* Detect eventual cycles and clear DIRF_RENAMED flag, so these entries
 	 are ignored when hit by this function next time.
 	 If the chain forms a cycle, prev points to the entry DIR is renamed
 	 from. In this case it still retains DIRF_RENAMED flag, which will be
@@ -1437,6 +1437,7 @@ purge_directory (char const *directory_name)
 void
 list_dumpdir (char *buffer, size_t size)
 {
+  int state = 0;
   while (size)
     {
       switch (*buffer)
@@ -1447,7 +1448,12 @@ list_dumpdir (char *buffer, size_t size)
 	case 'R':
 	case 'T':
 	case 'X':
-	  fprintf (stdlis, "%c ", *buffer);
+	  fprintf (stdlis, "%c", *buffer);
+	  if (state == 0)
+	    {
+	      fprintf (stdlis, " ");
+	      state = 1;
+	    }
 	  buffer++;
 	  size--;
 	  break;
@@ -1456,6 +1462,7 @@ list_dumpdir (char *buffer, size_t size)
 	  fputc ('\n', stdlis);
 	  buffer++;
 	  size--;
+	  state = 0;
 	  break;
 
 	default:
