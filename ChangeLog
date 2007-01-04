@@ -1,3 +1,7 @@
+2007-01-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/compare.c (read_and_process): Fix type of "size"
+
 2006-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/T-null.at: Skip the test if genfile is not able to create
