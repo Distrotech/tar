@@ -1,5 +1,13 @@
 2007-01-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/compare.c (diff_dumpdir): Compare directory contents using
+	dumpdir_cmp.  Do not free dumpdir_buffer, it will leave the
+	incremental directory table in the inconsistent state and trigger
+	full dump.
+	(read_and_process): Process dumpdirs no matter what the archive
+	format.
+	* src/incremen.c (list_dumpdir): Minor fixes.
+
 	* src/compare.c (read_and_process): Fix type of "size"
 
 2006-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
