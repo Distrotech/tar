@@ -138,7 +138,7 @@ read_and_process (struct tar_stat_info *st, int (*processor) (size_t, char *))
 {
   union block *data_block;
   size_t data_size;
-  size_t size = st->stat.st_size;
+  off_t size = st->stat.st_size;
 
   mv_begin (st);
   while (size)
