@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -110,27 +110,10 @@ process_rawdata (size_t bytes, char *buffer)
   return 1;
 }
 
-/* Directory contents, only for GNUTYPE_DUMPDIR.  */
-
-static char *dumpdir_cursor;
-
-static int
-process_dumpdir (size_t bytes, char *buffer)
-{
-  if (memcmp (buffer, dumpdir_cursor, bytes))
-    {
-      report_difference (&current_stat_info, _("Contents differ"));
-      return 0;
-    }
-
-  dumpdir_cursor += bytes;
-  return 1;
-}
-
 /* Some other routine wants SIZE bytes in the archive.  For each chunk
    of the archive, call PROCESSOR with the size of the chunk, and the
    address of the chunk it can work with.  The PROCESSOR should return
-   nonzero for success.  It it return error once, continue skipping
+   nonzero for success.  Once it returns error, continue skipping
    without calling PROCESSOR anymore.  */
 
 static void
@@ -345,6 +328,41 @@ diff_special (void)
     report_difference (&current_stat_info, _("Mode differs"));
 }
 
+static int
+dumpdir_cmp (const char *a, const char *b)
+{
+  size_t len;
+  
+  while (*a)
+    switch (*a)
+      {
+      case 'Y':
+      case 'N':
+	if (!strchr ("YN", *b))
+	  return 1;
+	if (strcmp(a + 1, b + 1))
+	  return 1;
+	len = strlen (a) + 1;
+	a += len;
+	b += len;
+	break;
+	
+      case 'D':
+	if (strcmp(a, b))
+	  return 1;
+	len = strlen (a) + 1;
+	a += len;
+	b += len;
+	break;
+	
+      case 'R':
+      case 'T':
+      case 'X':
+	return *b;
+      }
+  return *b;
+}
+
 static void
 diff_dumpdir (void)
 {
@@ -366,9 +384,8 @@ diff_dumpdir (void)
 
   if (dumpdir_buffer)
     {
-      dumpdir_cursor = dumpdir_buffer;
-      read_and_process (&current_stat_info, process_dumpdir);
-      free (dumpdir_buffer);
+      if (dumpdir_cmp (current_stat_info.dumpdir, dumpdir_buffer))
+	report_difference (&current_stat_info, _("Contents differ"));
     }
   else
     read_and_process (&current_stat_info, process_noop);
@@ -484,10 +501,9 @@ diff_archive (void)
       break;
 
     case GNUTYPE_DUMPDIR:
-      diff_dumpdir ();
-      /* Fall through.  */
-
     case DIRTYPE:
+      if (is_dumpdir (&current_stat_info))
+	diff_dumpdir ();
       diff_dir ();
       break;
 
