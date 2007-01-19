@@ -43,6 +43,7 @@ stdbool
 stdint
 stpcpy
 strdup
+strerror
 strtol
 strtoul
 timespec
