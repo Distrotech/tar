@@ -1,6 +1,15 @@
 GNU tar NEWS - User visible changes.
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
+version 1.16.2
+
+* Fix archivation of sparse files in posix mode.  Previous versions padded
+  sparse members with spurious zero blocks.
+  
+* Fix operation of --verify --listed-incremental.  Version 1.16.1 produced
+  a full dump when both options were given.
+
+
 version 1.16.1
 
 * New option --exclude-tag allows to specify "exclusion tag files", i.e. 
@@ -865,7 +874,7 @@ Versions 1.07 back to 1.00 by Jay Fenlason.
 
 
 Copyright (C) 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2003,
-2004, 2005, 2006 Free Software Foundation, Inc.
+2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 
