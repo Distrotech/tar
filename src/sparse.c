@@ -1,6 +1,6 @@
 /* Functions for dealing with sparse files
 
-   Copyright (C) 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -466,7 +466,7 @@ sparse_skip_file (struct tar_stat_info *st)
   file.fd = -1;
 
   rc = tar_sparse_decode_header (&file);
-  skip_file (file.stat_info->archive_file_size);
+  skip_file (file.stat_info->archive_file_size - file.dumped_size);
   return (tar_sparse_done (&file) && rc) ? dump_status_ok : dump_status_short;
 }
 
@@ -1014,6 +1014,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
     }
   size = (size + BLOCKSIZE - 1) / BLOCKSIZE;
   file->stat_info->archive_file_size += size * BLOCKSIZE;
+  file->dumped_size += size * BLOCKSIZE;
   
   /* Store sparse file identification */
   xheader_store ("GNU.sparse.major", file->stat_info, NULL);
@@ -1104,7 +1105,8 @@ pax_decode_header (struct tar_sparse_file *file)
        if (src == endp)                                            \
 	 {                                                         \
 	   set_next_block_after (b);                               \
-	   b = find_next_block ();                                 \
+           file->dumped_size += BLOCKSIZE;                         \
+           b = find_next_block ();                                 \
            src = b->buffer;                                        \
 	   endp = b->buffer + BLOCKSIZE;                           \
 	 }                                                         \
@@ -1115,6 +1117,7 @@ pax_decode_header (struct tar_sparse_file *file)
  } while (0)                       
 
       set_next_block_after (current_header);
+      file->dumped_size += BLOCKSIZE;
       blk = find_next_block ();
       p = blk->buffer;
       COPY_BUF (blk,nbuf,p);
