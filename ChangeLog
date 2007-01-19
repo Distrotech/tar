@@ -1,3 +1,15 @@
+2007-01-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* gnulib.modules: Require strerror
+	* doc/gendocs_template: Fix typos
+	* scripts/xsparse.c (expand_sparse): use ftruncate to handle the
+	trailing hole
+	* src/sparse.c (sparse_skip_file,pax_dump_header_1)
+	(pax_decode_header): Keep track of the number of bytes
+	written.
+	* configure.ac: Version 1.16.2
+	* NEWS: Update
+	
 2007-01-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/compare.c (diff_dumpdir): Compare directory contents using
