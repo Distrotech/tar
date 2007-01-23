@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -150,8 +150,18 @@ GLOBAL int check_links_option;
 /* Patterns that match file names to be excluded.  */
 GLOBAL struct exclude *excluded;
 
-/* Exclude directories containing a cache directory tag. */
-GLOBAL bool exclude_caches_option;
+enum exclusion_tag_type
+  {
+    exclusion_tag_none,
+     /* Exclude the directory contents, but preserve the directory
+	itself and the exclusion tag file */
+    exclusion_tag_contents,
+    /* Exclude everything below the directory, preserving the directory
+       itself */
+    exclusion_tag_under,
+    /* Exclude entire directory  */
+    exclusion_tag_all,   
+  };
 
 /* Specified value to be put into tar file in place of stat () results, or
    just -1 if such an override should not take place.  */
@@ -417,7 +427,10 @@ enum dump_status
     dump_status_not_implemented
   };
 
-void add_exclude_tag (const char *name);
+void add_exclusion_tag (const char *name, enum exclusion_tag_type type,
+			bool (*)(const char*));
+bool cachedir_file_p (const char *name);
+
 bool file_dumpable_p (struct tar_stat_info *st);
 void create_archive (void);
 void pad_archive (off_t size_left);
