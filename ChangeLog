@@ -1,3 +1,21 @@
+2007-01-23  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Document --exclude-caches* and --exclude-tag*
+	options.
+	* src/common.h (exclude_caches_option): Remove
+	(enum exclusion_tag_type): New data type
+	(add_exclude_tag): Rename to add_exclusion_tag
+	(cachedir_file_p): New prototype
+	* src/create.c (struct exclude_tag): rename to exclusion_tag
+	(check_exclusion_tags): New function
+	(cachedir_file_p): New function (from check_cache_directory)
+	(dump_dir0,dump_file0): Use check_exclusion_tags
+	* src/tar.c: New options --exclude-caches-all,
+	--exclude-caches-under, --exclude-tag-all, --exclude-tag-under
+	* tests/exclude.at: New file
+	* tests/Makefile.am (TESTSUITE_AT): Add exclude.at
+	* tests/testsuite.at: Add exclude.at
+
 2007-01-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* gnulib.modules: Require strerror
