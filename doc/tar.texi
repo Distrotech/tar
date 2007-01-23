@@ -35,7 +35,7 @@ This manual is for @acronym{GNU} @command{tar} (version
 from archives.
 
 Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -2502,13 +2502,42 @@ patterns in the file @var{file}.  @xref{exclude}.
 @opsummary{exclude-caches}
 @item --exclude-caches
 
-Automatically excludes all directories
-containing a cache directory tag.  @xref{exclude}.
+Exclude from dump any directory containing a valid cache directory
+tag file, but still dump the directory node and the tag file itself.
+
+@xref{exclude}.
+
+@opsummary{exclude-caches-under}
+@item --exclude-caches-under
+
+Exclude from dump any directory containing a valid cache directory
+tag file, but still dump the directory node itself.
+
+@xref{exclude}.
+
+@opsummary{exclude-caches-all}
+@item --exclude-caches-all
+
+Exclude from dump any directory containing a valid cache directory
+tag file.  @xref{exclude}.
 
 @opsummary{exclude-tag}
 @item --exclude-tag=@var{file}
 
-Exclude all directories, containing file named @var{file}.  @xref{exclude}.
+Exclude from dump any directory containing file named @var{file}, but
+dump the directory node and @var{file} itself.  @xref{exclude}.
+
+@opsummary{exclude-tag-under}
+@item --exclude-tag-under=@var{file}
+
+Exclude from dump the contents of any directory containing file
+named @var{file}, but dump the directory node itself.  @xref{exclude}.
+
+@opsummary{exclude-tag-all}
+@item --exclude-tag-all=@var{file}
+
+Exclude from dump any directory containing file named @var{file}.
+@xref{exclude}. 
 
 @opsummary{file}
 @item --file=@var{archive}
@@ -6470,15 +6499,9 @@ called as @w{@samp{tar -c -X foo .}} and the file @file{foo} contains a
 single line @file{*.o}, no files whose names end in @file{.o} will be
 added to the archive.
 
-@table @option
-@opindex exclude-caches
-@item --exclude-caches
-Causes @command{tar} to ignore directories containing a cache directory tag.
-@end table
-
 @findex exclude-caches
-When creating an archive, the @option{--exclude-caches} option causes
-@command{tar} to exclude all directories that contain a @dfn{cache
+When creating an archive, the @option{--exclude-caches} option family
+causes @command{tar} to exclude all directories that contain a @dfn{cache
 directory tag}. A cache directory tag is a short file with the
 well-known name @file{CACHEDIR.TAG} and having a standard header
 specified in @url{http://www.brynosaurus.com/cachedir/spec.html}.
@@ -6486,36 +6509,105 @@ Various applications write cache directory tags into directories they
 use to hold regenerable, non-precious data, so that such data can be
 more easily excluded from backups.
 
+There are three @samp{exclude-caches} option, providing a different
+exclusion semantics:
+
+@table @option
+@opindex exclude-caches
+@item --exclude-caches
+Do not archive the contents of the directory, but archive the
+directory itself and the @file{CACHEDIR.TAG} file.
+
+@opindex exclude-caches-under
+@item --exclude-caches-under
+Do not archive the contents of the directory, nor the
+@file{CACHEDIR.TAG} file, archive only the directory itself.
+
+@opindex exclude-caches-all
+@item --exclude-caches-all
+Omit directories containing @file{CACHEDIR.TAG} file entirely.
+@end table
+
 @findex exclude-tag
-Another option, @option{--exclude-tag}, provides a generalization of
+Another option family, @option{--exclude-tag}, provides a generalization of
 this concept.  It takes a single argument, a file name to look for.
 Any directory that contains this file will be excluded from the dump.
+Similarly to @samp{exclude-caches}, there are three options in this
+option family:
 
 @table @option
 @opindex exclude-tag
 @item --exclude-tag=@var{file}
-Causes @command{tar} to ignore directories containing @var{file}.
-Multiple @option{--exclude-tag} options can be given.
+Do not dump the contents of the directory, but dump the
+directory itself and the @var{file}.
+
+@opindex exclude-tag-under
+@item --exclude-tag-under=@var{file}
+Do not dump the contents of the directory, nor the
+@var{file}, archive only the directory itself.
+
+@opindex exclude-tag-all
+@item --exclude-tag-all=@var{file}
+Omit directories containing @var{file} file entirely.
 @end table
 
-For example:
+Multiple @option{--exclude-tag*} options can be given.
+
+For example, given this directory:
 
 @smallexample
+@group
 $ @kbd{find dir}
 dir
 dir/blues
 dir/jazz
 dir/folk
 dir/folk/tagfile
-$ @kbd{tar -cf archive.tar --exclude-tag=tagfile -v}
+dir/folk/sanjuan
+dir/folk/trote
+@end group
+@end smallexample
+
+The @option{--exclude-tag} will produce the following:
+
+@smallexample
+$ @kbd{tar -cf archive.tar --exclude-tag=tagfile -v dir}
 dir/
 dir/blues
 dir/jazz
-./tar: dir/folk/: contains a cache directory tag tagfile; not dumped
-$ @kbd{tar -tf archive.tar}
+dir/folk/
+tar: dir/folk/: contains a cache directory tag tagfile;
+  contents not dumped
+dir/folk/tagfile
+@end smallexample
+
+Both the @file{dir/folk} directory and its tagfile are preserved in
+the archive, however the rest of files in this directory are not.
+
+Now, using the @option{--exclude-tag-under} option will exclude
+@file{tagfile} from the dump, while still preserving the directory
+itself, as shown in this example:
+
+@smallexample
+$ @kbd{tar -cf archive.tar --exclude-tag-under=tagfile -v dir}
 dir/
 dir/blues
 dir/jazz
+dir/folk/
+./tar: dir/folk/: contains a cache directory tag tagfile;
+  contents not dumped
+@end smallexample
+
+Finally, using @option{--exclude-tag-all} omits the @file{dir/folk}
+directory entirely:
+
+@smallexample
+$ @kbd{tar -cf archive.tar --exclude-tag-all=tagfile -v dir}
+dir/
+dir/blues
+dir/jazz
+./tar: dir/folk/: contains a cache directory tag tagfile;
+  directory not dumped
 @end smallexample
 
 @menu
