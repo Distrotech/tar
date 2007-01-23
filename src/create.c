@@ -1,7 +1,7 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -34,36 +34,53 @@ struct link
     char name[1];
   };
 
-struct exclude_tag
+struct exclusion_tag
 {
   const char *name;
   size_t length;
-  struct exclude_tag *next;
+  enum exclusion_tag_type type;
+  bool (*predicate) (const char *name);
+  struct exclusion_tag *next;
 };
 
-static struct exclude_tag *exclude_tags;
+static struct exclusion_tag *exclusion_tags;
 
 void
-add_exclude_tag (const char *name)
+add_exclusion_tag (const char *name, enum exclusion_tag_type type,
+		   bool (*predicate) (const char *name))
 {
-  struct exclude_tag *tag = xmalloc (sizeof tag[0]);
-  tag->next = exclude_tags;
+  struct exclusion_tag *tag = xmalloc (sizeof tag[0]);
+  tag->next = exclusion_tags;
   tag->name = name;
+  tag->type = type;
+  tag->predicate = predicate;
   tag->length = strlen (name);
-  exclude_tags = tag;
+  exclusion_tags = tag;
 }
 
-static bool
-check_exclude_tags (char *dirname)
+static void
+exclusion_tag_warning (const char *dirname, const char *tagname,
+		       const char *message)
+{
+  if (verbose_option)
+    WARN ((0, 0,
+	   _("%s: contains a cache directory tag %s; %s"),
+	   quotearg_colon (dirname),
+	   quotearg_n (1, tagname),
+	   message));
+}
+
+static enum exclusion_tag_type 
+check_exclusion_tags (char *dirname, const char **tag_file_name)
 {
   static char *tagname;
   static size_t tagsize;
-  struct exclude_tag *tag;
+  struct exclusion_tag *tag;
   size_t dlen = strlen (dirname);
   char *nptr = NULL;
   char *ret = NULL;
   
-  for (tag = exclude_tags; tag; tag = tag->next)
+  for (tag = exclusion_tags; tag; tag = tag->next)
     {
       size_t size = dlen + tag->length + 1;
       if (size > tagsize)
@@ -78,18 +95,45 @@ check_exclude_tags (char *dirname)
 	  nptr = tagname + dlen;
 	}
       strcpy (nptr, tag->name);
-      if (access (tagname, F_OK) == 0)
+      if (access (tagname, F_OK) == 0
+	  && (!tag->predicate || tag->predicate (tagname)))
 	{
-	  if (verbose_option)
-	    WARN ((0, 0,
-		   _("%s: contains a cache directory tag %s; not dumped"),
-		   quotearg_colon (dirname),
-		   quotearg_n (1, tag->name)));
-	  return true;
+	  if (tag_file_name)
+	    *tag_file_name = tag->name;
+	  return tag->type;
 	}
     }
 
-  return false;
+  return exclusion_tag_none;
+}
+
+/* Exclusion predicate to test if the named file (usually "CACHEDIR.TAG")
+   contains a valid header, as described at:
+	http://www.brynosaurus.com/cachedir
+   Applications can write this file into directories they create
+   for use as caches containing purely regenerable, non-precious data,
+   allowing us to avoid archiving them if --exclude-caches is specified. */
+
+#define CACHEDIR_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
+#define CACHEDIR_SIGNATURE_SIZE (sizeof CACHEDIR_SIGNATURE - 1)
+
+bool
+cachedir_file_p (const char *name)
+{
+  bool tag_present = false;
+  int fd = open (name, O_RDONLY);
+  if (fd >= 0)
+    {
+      static char tagbuf[CACHEDIR_SIGNATURE_SIZE];
+
+      if (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE)
+	  == CACHEDIR_SIGNATURE_SIZE
+	  && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0)
+	tag_present = true;
+
+      close (fd);
+    }
+  return tag_present;
 }
 
 
@@ -1043,53 +1087,13 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 }
 
 
-/* Look in directory DIRNAME for a cache directory tag file
-   with the magic name "CACHEDIR.TAG" and a standard header,
-   as described at:
-	http://www.brynosaurus.com/cachedir
-   Applications can write this file into directories they create
-   for use as caches containing purely regenerable, non-precious data,
-   allowing us to avoid archiving them if --exclude-caches is specified. */
-
-#define CACHEDIR_SIGNATURE "Signature: 8a477f597d28d172789f06886806bc55"
-#define CACHEDIR_SIGNATURE_SIZE (sizeof CACHEDIR_SIGNATURE - 1)
-
-static bool
-check_cache_directory (char *dirname)
-{
-  static char tagname[] = "CACHEDIR.TAG";
-  char *tagpath;
-  int fd;
-  bool tag_present = false;
-
-  tagpath = xmalloc (strlen (dirname) + strlen (tagname) + 1);
-  strcpy (tagpath, dirname);
-  strcat (tagpath, tagname);
-
-  fd = open (tagpath, O_RDONLY);
-  if (fd >= 0)
-    {
-      static char tagbuf[CACHEDIR_SIGNATURE_SIZE];
-
-      if (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE)
-	  == CACHEDIR_SIGNATURE_SIZE
-	  && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0)
-	tag_present = true;
-
-      close (fd);
-    }
-
-  free (tagpath);
-
-  return tag_present;
-}
-
 static void
 dump_dir0 (char *directory,
 	   struct tar_stat_info *st, int top_level, dev_t parent_device)
 {
   dev_t our_device = st->stat.st_dev;
-
+  const char *tag_file_name;
+  
   if (!is_avoided_name (st->orig_file_name))
     {
       union block *blk = NULL;
@@ -1171,34 +1175,61 @@ dump_dir0 (char *directory,
 	WARN ((0, 0,
 	       _("%s: file is on a different filesystem; not dumped"),
 	       quotearg_colon (st->orig_file_name)));
-      return;
     }
-  
-  {
-    char const *entry;
-    size_t entry_len;
-    char *name_buf = xstrdup (st->orig_file_name);
-    size_t name_size = strlen (name_buf);
-    size_t name_len = name_size;
-
-    /* Now output all the files in the directory.  */
-    /* FIXME: Should speed this up by cd-ing into the dir.  */
-
-    for (entry = directory; (entry_len = strlen (entry)) != 0;
-	 entry += entry_len + 1)
-      {
-	if (name_size < name_len + entry_len)
+  else
+    {
+      char *name_buf;
+      size_t name_size;
+      
+      switch (check_exclusion_tags (st->orig_file_name, &tag_file_name))
+	{
+	case exclusion_tag_none:
+	case exclusion_tag_all:
 	  {
-	    name_size = name_len + entry_len;
-	    name_buf = xrealloc (name_buf, name_size + 1);
-	  }
-	strcpy (name_buf + name_len, entry);
-	if (!excluded_name (name_buf))
-	  dump_file (name_buf, 0, our_device);
-      }
+	    char const *entry;
+	    size_t entry_len;
+	    size_t name_len;
 
-    free (name_buf);
-  }
+	    name_buf = xstrdup (st->orig_file_name);
+	    name_size = name_len = strlen (name_buf);
+
+	    /* Now output all the files in the directory.  */
+	    /* FIXME: Should speed this up by cd-ing into the dir.  */
+
+	    for (entry = directory; (entry_len = strlen (entry)) != 0;
+		 entry += entry_len + 1)
+	      {
+		if (name_size < name_len + entry_len)
+		  {
+		    name_size = name_len + entry_len;
+		    name_buf = xrealloc (name_buf, name_size + 1);
+		  }
+		strcpy (name_buf + name_len, entry);
+		if (!excluded_name (name_buf))
+		  dump_file (name_buf, 0, our_device);
+	      }
+	    
+	    free (name_buf);
+	  }
+	  break;
+
+	case exclusion_tag_contents:
+	  exclusion_tag_warning (st->orig_file_name, tag_file_name,
+				 _("contents not dumped"));
+	  name_size = strlen (st->orig_file_name) + strlen (tag_file_name) + 1;
+	  name_buf = xmalloc (name_size);
+	  strcpy (name_buf, st->orig_file_name);
+	  strcat (name_buf, tag_file_name);
+	  dump_file (name_buf, 0, our_device);
+	  free (name_buf);
+	  break;
+      
+	case exclusion_tag_under:
+	  exclusion_tag_warning (st->orig_file_name, tag_file_name,
+				 _("contents not dumped"));
+	  break;
+	}
+    }
 }
 
 /* Ensure exactly one trailing slash.  */
@@ -1544,22 +1575,18 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
       if (is_dir)
 	{
+	  const char *tag_file_name;
 	  ensure_slash (&st->orig_file_name);
 	  ensure_slash (&st->file_name);
 
-	  if (exclude_caches_option
-	      && check_cache_directory (st->orig_file_name))
+	  if (check_exclusion_tags (st->orig_file_name, &tag_file_name)
+	      == exclusion_tag_all)
 	    {
-	      if (verbose_option)
-		WARN ((0, 0,
-		       _("%s: contains a cache directory tag; not dumped"),
-		       quotearg_colon (st->orig_file_name)));
+	      exclusion_tag_warning (st->orig_file_name, tag_file_name,
+				     _("directory not dumped"));
 	      return;
 	    }
 	  
-	  if (check_exclude_tags (st->orig_file_name))
-	    return;
-
 	  ok = dump_dir (fd, st, top_level, parent_device);
 
 	  /* dump_dir consumes FD if successful.  */
