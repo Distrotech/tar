@@ -1,7 +1,7 @@
 /* A tar (tape archiver) program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -254,8 +254,12 @@ enum
   DELAY_DIRECTORY_RESTORE_OPTION,
   DELETE_OPTION,
   EXCLUDE_CACHES_OPTION,
+  EXCLUDE_CACHES_UNDER_OPTION,
+  EXCLUDE_CACHES_ALL_OPTION,
   EXCLUDE_OPTION,
   EXCLUDE_TAG_OPTION,
+  EXCLUDE_TAG_UNDER_OPTION,
+  EXCLUDE_TAG_ALL_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   HANG_OPTION,
@@ -604,9 +608,20 @@ static struct argp_option options[] = {
   {"exclude-from", 'X', N_("FILE"), 0,
    N_("exclude patterns listed in FILE"), GRID+1 },
   {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
-   N_("exclude directories containing a cache tag"), GRID+1 },
+   N_("exclude contents of directories containing CACHEDIR.TAG, "
+      "except for the tag file itself"), GRID+1 },
+  {"exclude-caches-under", EXCLUDE_CACHES_UNDER_OPTION, 0, 0,
+   N_("exclude everything under directories containing CACHEDIR.TAG"),
+   GRID+1 },
+  {"exclude-caches-all", EXCLUDE_CACHES_ALL_OPTION, 0, 0,
+   N_("exclude directories containing CACHEDIR.TAG"), GRID+1 },
   {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
-   N_("exclude directories containing FILE"), GRID+1 }, 
+   N_("exclude contents of directories containing FILE, except"
+      " for FILE itself"), GRID+1 }, 
+  {"exclude-tag-under", EXCLUDE_TAG_UNDER_OPTION, N_("FILE"), 0,
+   N_("exclude everything under directories containing FILE"), GRID+1 },
+  {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
+   N_("exclude directories containing FILE"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
@@ -1507,11 +1522,30 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case EXCLUDE_CACHES_OPTION:
-      exclude_caches_option = true;
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_contents,
+			 cachedir_file_p);
+      break;
+
+    case EXCLUDE_CACHES_UNDER_OPTION:
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_under,
+			 cachedir_file_p);
+      break;
+
+    case EXCLUDE_CACHES_ALL_OPTION:
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_all,
+			 cachedir_file_p);
       break;
 
     case EXCLUDE_TAG_OPTION:
-      add_exclude_tag (arg);
+      add_exclusion_tag (arg, exclusion_tag_contents, NULL);
+      break;
+      
+    case EXCLUDE_TAG_UNDER_OPTION:
+      add_exclusion_tag (arg, exclusion_tag_under, NULL);
+      break;
+      
+    case EXCLUDE_TAG_ALL_OPTION:
+      add_exclusion_tag (arg, exclusion_tag_all, NULL);
       break;
       
     case FORCE_LOCAL_OPTION:
