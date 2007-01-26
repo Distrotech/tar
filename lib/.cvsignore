@@ -52,6 +52,7 @@ exitfail.c
 exitfail.h
 fchmodat.c
 fchown-stub.c
+fchownat.c
 fcntl--.h
 fcntl-safer.h
 fcntl.h
@@ -99,7 +100,6 @@ lchown.c
 lchown.h
 localcharset.c
 localcharset.h
-localedir.h
 lstat.c
 lstat.h
 malloc.c
@@ -151,6 +151,7 @@ regex_internal.c
 regex_internal.h
 regexec.c
 rmdir.c
+rmt-command.h
 rmt.h
 rpmatch.c
 rtapelib.c
@@ -165,7 +166,6 @@ savedir.c
 savedir.h
 setenv.c
 setenv.h
-size_max.h
 stat-macros.h
 stat-time.h
 stat_.h
@@ -181,6 +181,9 @@ strchrnul.c
 strchrnul.h
 strdup.c
 strdup.h
+strerror.c
+string.h
+string_.h
 stripslash.c
 strncasecmp.c
 strndup.c
@@ -195,6 +198,8 @@ strtoll.c
 strtoul.c
 strtoull.c
 strtoumax.c
+sys
+sys_time_.h
 sysexit_.h
 sysexits.h
 system-ioctl.h
@@ -208,6 +213,7 @@ uinttostr.c
 umaxtostr.c
 unistd--.h
 unistd-safer.h
+unistd_.h
 unlinkdir.c
 unlinkdir.h
 unlocked-io.h
@@ -222,13 +228,14 @@ version-etc.c
 version-etc.h
 vsnprintf.c
 vsnprintf.h
+wchar_.h
+wctype_.h
 wcwidth.h
 xalloc-die.c
 xalloc.h
 xgetcwd.c
 xgetcwd.h
 xmalloc.c
-xsize.h
 xstrndup.c
 xstrndup.h
 xstrtol.c

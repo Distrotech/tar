@@ -1,3 +1,12 @@
+2007-01-26  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to recent gnulib changes.
+	* lib/.cvsignore: Add fchownat.c, rmt-command.h, strerror.c, string.h,
+	string_.h, sys, sys_time_.h, unistd_.h, wchar_.h, wctype_.h.
+	Remove localedir.h, size_max.h, xsize.h.
+	* src/xheader.c: Don't include stpcpy.h; no longer needed, now that
+	gnulib string.h defines stpcpy on all platforms.
+
 2007-01-23  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Document --exclude-caches* and --exclude-tag*
@@ -27,7 +36,7 @@
 	written.
 	* configure.ac: Version 1.16.2
 	* NEWS: Update
-	
+
 2007-01-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/compare.c (diff_dumpdir): Compare directory contents using
@@ -43,7 +52,7 @@
 2006-12-13  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/T-null.at: Skip the test if genfile is not able to create
-	the filename with an embedded newline. 
+	the filename with an embedded newline.
 
 2006-12-12  Paul Eggert  <eggert@cs.ucla.edu>
 
@@ -8113,31 +8122,28 @@
 	time_from_oct, uid_from_oct, uintmax_from_oct): New decls.
 	(print_for_mkdir): 2nd arg is now mode_t.
 
-See ChangeLog.1 for earlier changes.
+	-----
 
+	See ChangeLog.1 for earlier changes.
 
-
-Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006
-Free Software Foundation, Inc.
+	-----
 
-This file is part of GNU tar.
+	Copyright (C) 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2006, 2007
+	Free Software Foundation, Inc.
 
-GNU tar is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2, or (at your option)
-any later version.
+	This file is part of GNU tar.
 
-GNU tar is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+	GNU tar is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2, or (at your option)
+	any later version.
 
-You should have received a copy of the GNU General Public License
-along with GNU tar; see the file COPYING.  If not, write to
-the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301, USA.
-
-Local Variables:
-mode: change-log
-version-control: never
-End:
+	GNU tar is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with GNU tar; see the file COPYING.  If not, write to
+	the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+	Boston, MA 02110-1301, USA.
