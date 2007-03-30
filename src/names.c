@@ -812,6 +812,10 @@ collect_and_sort_names (void)
       next_name = name->next;
       if (name->found_count || name->dir_contents)
 	continue;
+      if (name->matching_flags & EXCLUDE_WILDCARDS)
+	/* NOTE: EXCLUDE_ANCHORED is not relevant here */
+	/* FIXME: just skip regexps for now */
+	continue;
       chdir_do (name->change_dir);
       if (name->name[0] == 0)
 	continue;
