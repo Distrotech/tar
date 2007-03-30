@@ -1178,11 +1178,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
   switch (key)
     {
-      case ARGP_KEY_ARG:
-	/* File name or non-parsed option, because of ARGP_IN_ORDER */
-	name_add_name (arg, MAKE_INCL_OPTIONS (args));
-	args->input_files = true;
-	break;
+    case ARGP_KEY_ARG:
+      /* File name or non-parsed option, because of ARGP_IN_ORDER */
+      name_add_name (arg, MAKE_INCL_OPTIONS (args));
+      args->input_files = true;
+      break;
 
     case 'A':
       set_subcommand_option (CAT_SUBCOMMAND);
