@@ -572,8 +572,7 @@ all_names_found (struct tar_stat_info *p)
   len = strlen (p->file_name);
   for (cursor = namelist; cursor; cursor = cursor->next)
     {
-      if (cursor->matching_flags /* FIXME: check this */
-	  || (!WASFOUND (cursor) && cursor->name[0])
+      if ((cursor->name[0] && !WASFOUND (cursor))
 	  || (len >= cursor->length && ISSLASH (p->file_name[cursor->length])))
 	return false;
     }
@@ -812,10 +811,6 @@ collect_and_sort_names (void)
     {
       next_name = name->next;
       if (name->found_count || name->dir_contents)
-	continue;
-      if (name->matching_flags & EXCLUDE_WILDCARDS)
-	/* NOTE: EXCLUDE_ANCHORED is not relevant here */
-	/* FIXME: just skip regexps for now */
 	continue;
       chdir_do (name->change_dir);
       if (name->name[0] == 0)
