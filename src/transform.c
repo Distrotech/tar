@@ -498,21 +498,21 @@ _transform_name_to_obstack (char *input)
 }
   
 bool
-transform_name_fp (char **pinput, char *(*fun)(char *))
+transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *dat)
 {
     char *str;
     bool ret = _transform_name_to_obstack (*pinput);
     if (ret)
       {
 	str = obstack_finish (&stk);
-	assign_string (pinput, fun ? fun (str) : str);
+	assign_string (pinput, fun ? fun (str, dat) : str);
 	obstack_free (&stk, str);
       }
     else if (fun)
       {
 	str = *pinput;
 	*pinput = NULL;
-	assign_string (pinput, fun (str));
+	assign_string (pinput, fun (str, dat));
 	free (str);
 	ret = true;
       }
@@ -522,6 +522,6 @@ transform_name_fp (char **pinput, char *(*fun)(char *))
 bool
 transform_name (char **pinput)
 {
-  return transform_name_fp (pinput, NULL);
+  return transform_name_fp (pinput, NULL, NULL);
 }
 
