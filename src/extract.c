@@ -914,10 +914,12 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
 static int
 extract_link (char *file_name, int typeflag)
 {
-  char const *link_name = safer_name_suffix (current_stat_info.link_name,
-                                             true, absolute_names_option);
   int interdir_made = 0;
+  char const *link_name;
 
+  transform_member_name (&current_stat_info.link_name, true);
+  link_name = current_stat_info.link_name;
+  
   if (! absolute_names_option && contains_dot_dot (link_name))
     return create_placeholder_file (file_name, false, &interdir_made);
 
@@ -971,6 +973,8 @@ extract_symlink (char *file_name, int typeflag)
 #ifdef HAVE_SYMLINK
   int status;
   int interdir_made = 0;
+
+  transform_member_name (&current_stat_info.link_name, true);
 
   if (! absolute_names_option
       && (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
