@@ -20,7 +20,6 @@
 #include <system.h>
 #include <getline.h>
 #include <hash.h>
-#include <mkdtemp.h>
 #include <quotearg.h>
 #include "common.h"
 
