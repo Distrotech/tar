@@ -1,5 +1,7 @@
 Suggestions for improving GNU tar.
 
+* <45BEC0DB.8040903@unix-beratung.de>
+
 * Incorporate fixes from major distributions, e.g., Debian GNU/Linux.
 
 * Add support for restoring file time stamps to sub-second resolution,
@@ -9,10 +11,6 @@ Suggestions for improving GNU tar.
   OSes like FreeBSD that have the lutimes and lchmod functions.
 
 * --append should bail out if the two archives are of different types.
-
-* Add support for GNU private keywords in POSIX 1003.1-2001 headers,
-so that the GNU extensions (--incremental, --label and
---multi-volume) may be used with POSIX archives.
 
 * Add support for a 'pax' command that conforms to POSIX 1003.1-2001.
   This would unify paxutils with tar.
