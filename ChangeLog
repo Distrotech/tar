@@ -1,3 +1,10 @@
+2007-03-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* TODO: Update
+	* bootstrap (slurp): Remove any occurrences of $bt from the
+	generated gnulib.mk
+	* src/incremen.c: Do not include mkdtemp.h
+
 2007-01-26  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Adjust to recent gnulib changes.
