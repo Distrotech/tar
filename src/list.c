@@ -467,9 +467,11 @@ read_header (bool raw_extended_headers)
 }
 
 static char *
-decode_xform (char *file_name)
+decode_xform (char *file_name, void *data)
 {
-  file_name = safer_name_suffix (file_name, false, absolute_names_option);
+  bool link_target = *(bool*)data;
+  file_name = safer_name_suffix (file_name, link_target,
+				 absolute_names_option);
   if (strip_name_components)
     {
       size_t prefix_len = stripped_prefix_len (file_name,
@@ -479,6 +481,12 @@ decode_xform (char *file_name)
       file_name += prefix_len;
     }
   return file_name;
+}
+
+bool
+transform_member_name (char **pinput, bool lnk)
+{
+  return transform_name_fp (pinput, decode_xform, &lnk);
 }
 
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
@@ -599,7 +607,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	stat_info->is_dumpdir = true;
     }
 
-  transform_name_fp (&stat_info->file_name, decode_xform);
+  transform_member_name (&stat_info->file_name, false);
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
