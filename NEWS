@@ -9,6 +9,12 @@ version 1.16.2
 * Fix operation of --verify --listed-incremental.  Version 1.16.1 produced
   a full dump when both options were given.
 
+* Fix --occurence.  In previous versions it continued scanning the archive
+  even though all requested members has already been extracted.
+
+* The options --transform and --strip-components affect hard and soft link
+  targets.
+   
 
 version 1.16.1
 

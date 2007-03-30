@@ -1,5 +1,15 @@
 2007-03-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/common.h (transform_name_fp): Change signature
+	(transform_member_name): New function
+	* src/extract.c (extract_link, extract_symlink): Use
+	transform_member_name instead of safer_name_suffix so that
+	--transform and --strip-components affect links as well.
+	* src/list.c (transform_member_name): New function
+	(decode_header): Use transform_member_name
+	* src/names.c (all_names_found): Remove check for matching_flags. 
+	* NEWS: Update
+	
 	* TODO: Update
 	* bootstrap (slurp): Remove any occurrences of $bt from the
 	generated gnulib.mk
