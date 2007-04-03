@@ -2,7 +2,8 @@
 
 	* src/tar.c (main): Move closeopen after decode_options to
 	allow shell process substitution to work.
-
+	* tests/extrac07.at: Expect a warning on stderr.
+	
 2007-03-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (transform_name_fp): Change signature
