@@ -14,7 +14,10 @@ version 1.16.2
 
 * The options --transform and --strip-components affect hard and soft link
   targets.
-   
+
+* End-of-volume script can send the new volume name to tar by writing
+  it to the file descriptor $TAR_FD.
+     
 
 version 1.16.1
 

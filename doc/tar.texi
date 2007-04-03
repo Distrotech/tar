@@ -10215,10 +10215,15 @@ Short option describing the operation @command{tar} is executing
 @item TAR_FORMAT
 Format of the archive being processed. @xref{Formats}, for a complete
 list of archive format names.
+
+@vrindex TAR_FD, info script environment variable
+@item TAR_FD
+File descriptor which can be used to communicate the new volume
+name to @command{tar}.
 @end table
 
 The volume script can instruct @command{tar} to use new archive name,
-by writing in to file descriptor 3 (see below for an example).
+by writing in to file descriptor @env{$TAR_FD} (see below for an example).
 
 If the info script fails, @command{tar} exits; otherwise, it begins
 writing the next volume.
@@ -10243,7 +10248,7 @@ The second method is to use the @samp{n} response to the tape-change
 prompt.
 
 Finally, the most flexible approach is to use a volume script, that
-writes new archive name to the file descriptor #3.  For example, the
+writes new archive name to the file descriptor @env{$TAR_FD}.  For example, the
 following volume script will create a series of archive files, named
 @file{@var{archive}-@var{vol}}, where @var{archive} is the name of the
 archive being created (as given by @option{--file} option) and
@@ -10262,7 +10267,7 @@ case $TAR_SUBCOMMAND in
 *)        exit 1
 esac
 
-echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&3
+echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&$TAR_FD
 @end group
 @end smallexample
 
