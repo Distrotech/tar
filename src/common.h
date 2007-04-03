@@ -160,7 +160,7 @@ enum exclusion_tag_type
        itself */
     exclusion_tag_under,
     /* Exclude entire directory  */
-    exclusion_tag_all,   
+    exclusion_tag_all,
   };
 
 /* Specified value to be put into tar file in place of stat () results, or
@@ -592,7 +592,6 @@ void undo_last_backup (void);
 
 int deref_stat (bool deref, char const *name, struct stat *buf);
 
-void closeopen (void);
 int chdir_arg (char const *dir);
 void chdir_do (int dir);
 
