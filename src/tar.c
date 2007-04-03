@@ -617,7 +617,7 @@ static struct argp_option options[] = {
    N_("exclude directories containing CACHEDIR.TAG"), GRID+1 },
   {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
    N_("exclude contents of directories containing FILE, except"
-      " for FILE itself"), GRID+1 }, 
+      " for FILE itself"), GRID+1 },
   {"exclude-tag-under", EXCLUDE_TAG_UNDER_OPTION, N_("FILE"), 0,
    N_("exclude everything under directories containing FILE"), GRID+1 },
   {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
@@ -1539,15 +1539,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case EXCLUDE_TAG_OPTION:
       add_exclusion_tag (arg, exclusion_tag_contents, NULL);
       break;
-      
+
     case EXCLUDE_TAG_UNDER_OPTION:
       add_exclusion_tag (arg, exclusion_tag_under, NULL);
       break;
-      
+
     case EXCLUDE_TAG_ALL_OPTION:
       add_exclusion_tag (arg, exclusion_tag_all, NULL);
       break;
-      
+
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
@@ -2319,9 +2319,6 @@ main (int argc, char **argv)
   /* Decode options.  */
 
   decode_options (argc, argv);
-
-  /* Close all inherited open descriptors, except for the first three */
-  closeopen ();
 
   name_init ();
 
