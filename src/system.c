@@ -826,9 +826,9 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
 				 archive_format : current_format), 1);
+  setenv ("TAR_FD", STRINGIFY_BIGINT (p[PWRITE], uintbuf), 1);
 
   xclose (p[PREAD]);
-  xdup2 (p[PWRITE], 3);
 
   argv[0] = "/bin/sh";
   argv[1] = "-c";
