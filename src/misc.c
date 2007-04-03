@@ -18,8 +18,6 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
-#include <sys/time.h>
-#include <sys/resource.h>
 #include <rmt.h>
 #include "common.h"
 #include <quotearg.h>
@@ -577,42 +575,12 @@ chdir_arg (char const *dir)
   return wds++;
 }
 
-/* Return maximum number of open files */
-int
-get_max_open_files ()
-{
-#if defined _SC_OPEN_MAX
-  return sysconf (_SC_OPEN_MAX);
-#elif defined RLIMIT_NOFILE
-  struct rlimit rlim;
-
-  if (getrlimit(RLIMIT_NOFILE, &rlim) == 0)
-    return rlim.rlim_max;
-  return -1;
-#elif defined HAVE_GETDTABLESIZE
-  return getdtablesize ();
-#else
-  return -1;
-#endif
-}
-
-/* Close all descriptors, except the first three */
-void
-closeopen ()
-{
-  int i;
-
-  for (i = get_max_open_files () - 1; i > 2; i--)
-    close (i);
-}
-
 /* Change to directory I.  If I is 0, change to the initial working
    directory; otherwise, I must be a value returned by chdir_arg.  */
 void
 chdir_do (int i)
 {
   static int previous;
-  static int saved_count;
 
   if (previous != i)
     {
@@ -621,17 +589,30 @@ chdir_do (int i)
 
       if (! prev->saved)
 	{
+	  int err = 0;
 	  prev->saved = 1;
-	  saved_count++;
-	  /* Make sure we still have at least one descriptor available */
-	  if (saved_count >= get_max_open_files () - 4)
+	  if (save_cwd (&prev->saved_cwd) != 0)
+	    err = errno;
+	  else if (0 <= prev->saved_cwd.desc)
 	    {
-	      /* Force restore_cwd to use chdir_long */
-	      prev->saved_cwd.desc = -1;
-	      prev->saved_cwd.name = xgetcwd ();
+	      /* Make sure we still have at least one descriptor available.  */
+	      int fd1 = prev->saved_cwd.desc;
+	      int fd2 = dup (fd1);
+	      if (0 <= fd2)
+		close (fd2);
+	      else if (errno == EMFILE)
+		{
+		  /* Force restore_cwd to use chdir_long.  */
+		  close (fd1);
+		  prev->saved_cwd.desc = -1;
+		  prev->saved_cwd.name = xgetcwd ();
+		}
+	      else
+		err = errno;
 	    }
-	  else if (save_cwd (&prev->saved_cwd) != 0)
-	    FATAL_ERROR ((0, 0, _("Cannot save working directory")));
+
+	  if (err)
+	    FATAL_ERROR ((0, err, _("Cannot save working directory")));
 	}
 
       if (curr->saved)
