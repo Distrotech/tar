@@ -1,3 +1,13 @@
+2007-04-03  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/common.h (closeopen): Remove decl.
+	* src/misc.c: Don't include <sys/time.h>, <sys/resource.h>; no longer
+	needed.
+	(get_max_open_files, closeopen): Remove.  All callers removed.
+	(chdir_dir): Use a different technique, which doesn't rely on closing
+	all open files.
+	* src/tar.c (main): Don't call closeopen.
+
 2007-04-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update
