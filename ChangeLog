@@ -1,3 +1,10 @@
+2007-04-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update
+	* doc/tar.texi: Update
+	* src/system.c (sys_exec_info_script): Store the
+	inter-communication fd in the environment variable TAR_FD
+
 2007-04-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (main): Move closeopen after decode_options to
