@@ -1,3 +1,13 @@
+2007-04-12  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to latest Gnulib.
+	* lib/.cvsignore: Add dirfd.c, dirfd.h, float+.h, mbscasecmp.c,
+	stdio.h, stdio_.h, stdlib.h, stdlib_.h, time.h, time_.h, unistd.h.
+	Remove exit.h, getcwd.h, mempcpy.h, memrchr.h, mkdtemp.h, stpcpy.h,
+	strcase.h, strchrnul.h, strdup.h, strndup.h, strnlen.h, time_r.h,
+	vsnprintf.h.
+	* m4/.cvsignore: Remove localedir.h.  Sort.
+
 2007-04-03  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/common.h (closeopen): Remove decl.
@@ -20,7 +30,7 @@
 	* src/tar.c (main): Move closeopen after decode_options to
 	allow shell process substitution to work.
 	* tests/extrac07.at: Expect a warning on stderr.
-	
+
 2007-03-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (transform_name_fp): Change signature
@@ -30,9 +40,9 @@
 	--transform and --strip-components affect links as well.
 	* src/list.c (transform_member_name): New function
 	(decode_header): Use transform_member_name
-	* src/names.c (all_names_found): Remove check for matching_flags. 
+	* src/names.c (all_names_found): Remove check for matching_flags.
 	* NEWS: Update
-	
+
 	* TODO: Update
 	* bootstrap (slurp): Remove any occurrences of $bt from the
 	generated gnulib.mk

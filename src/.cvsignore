@@ -1,7 +1,6 @@
-Makefile.in
-Makefile
-localedir.h
-rmt
-tar
 .deps
 .gdbinit
+Makefile
+Makefile.in
+rmt
+tar
