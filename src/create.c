@@ -1195,7 +1195,6 @@ dump_dir0 (char *directory,
 
 	    /* Now output all the files in the directory.  */
 	    /* FIXME: Should speed this up by cd-ing into the dir.  */
-
 	    for (entry = directory; (entry_len = strlen (entry)) != 0;
 		 entry += entry_len + 1)
 	      {
@@ -1646,7 +1645,10 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
       if (ok)
 	{
-	  if (timespec_cmp (get_stat_ctime (&final_stat), original_ctime) != 0
+	  if ((timespec_cmp (get_stat_ctime (&final_stat), original_ctime) != 0
+	       /* Original ctime will change if the file is a directory and
+		  --remove-files is given */
+	       && !(remove_files_option && is_dir))
 	      || original_size < final_stat.st_size)
 	    {
 	      WARN ((0, 0, _("%s: file changed as we read it"),
