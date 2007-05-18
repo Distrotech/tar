@@ -1,3 +1,8 @@
+2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (dump_file0): Original ctime cannot be used as a
+	directory change indicator if --remove-files is given.
+
 2007-04-12  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Adjust to latest Gnulib.
