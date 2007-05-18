@@ -8821,7 +8821,7 @@ members.  Read further to learn more about them.
 Any @command{tar} implementation will be able to extract sparse members from a
 PAX archive.  However, the extracted files will be @dfn{condensed},
 i.e., any zero blocks will be removed from them.  When we restore such
-a condensed file to its original form, by adding zero bloks (or
+a condensed file to its original form, by adding zero blocks (or
 @dfn{holes}) back to their original locations, we call this process
 @dfn{expanding} a compressed sparse file.
 
@@ -8867,7 +8867,7 @@ name will be @file{@var{dir}/@var{name}}.
 @file{@var{name}}.
 @end enumerate
 
-In the unlikely case when this algorithm does not suite your needs,
+In the unlikely case when this algorithm does not suit your needs,
 you can explicitly specify output file name as a second argument to
 the command:
 
@@ -8941,10 +8941,10 @@ An @dfn{extended header} is a special @command{tar} archive header
 that precedes an archive member and contains a set of
 @dfn{variables}, describing the member properties that cannot be
 stored in the standard @code{ustar} header.  While optional for
-expanding sparse version 1.0 members, use of extended headers is
+expanding sparse version 1.0 members, the use of extended headers is
 mandatory when expanding sparse members in older sparse formats: v.0.0
 and v.0.1 (The sparse formats are described in detail in @ref{Sparse
-Formats}.)  So, for this format, the question is: how to obtain
+Formats}.)  So, for these formats, the question is: how to obtain
 extended headers from the archive?
 
 If you use a @command{tar} implementation that does not support PAX
