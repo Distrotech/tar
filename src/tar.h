@@ -268,6 +268,14 @@ struct sp_array
   size_t numbytes;
 };
 
+struct xheader
+{
+  struct obstack *stk;
+  size_t size;
+  char *buffer;
+  uintmax_t string_length;
+};
+
 struct tar_stat_info
 {
   char *orig_file_name;     /* name of file read from the archive header */
@@ -301,6 +309,9 @@ struct tar_stat_info
   size_t sparse_map_size;   /* Size of the sparse map */
   struct sp_array *sparse_map;
 
+  /* Extended headers */
+  struct xheader xhdr;
+  
   /* For dumpdirs */
   bool is_dumpdir;          /* Is the member a dumpdir? */
   bool skipped;             /* The member contents is already read
