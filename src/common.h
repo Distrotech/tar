@@ -416,6 +416,7 @@ void mv_end (void);
 void mv_total_size (off_t size);
 void mv_size_left (off_t size);
 
+void buffer_write_global_xheader (void);
 
 /* Module create.c.  */
 
@@ -512,14 +513,6 @@ enum read_header
   HEADER_FAILURE		/* ill-formed header, or bad checksum */
 };
 
-struct xheader
-{
-  struct obstack *stk;
-  size_t size;
-  char *buffer;
-};
-
-GLOBAL struct xheader extended_header;
 extern union block *current_header;
 extern enum archive_format current_format;
 extern size_t recent_long_name_blocks;
@@ -675,23 +668,22 @@ void update_archive (void);
 
 /* Module xheader.c.  */
 
+void xheader_init (struct xheader *xhdr);
 void xheader_decode (struct tar_stat_info *stat);
-void xheader_decode_global (void);
-void xheader_store (char const *keyword, struct tar_stat_info const *st,
+void xheader_decode_global (struct xheader *xhdr);
+void xheader_store (char const *keyword, struct tar_stat_info *st,
 		    void const *data);
-void xheader_read (union block *header, size_t size);
+void xheader_read (struct xheader *xhdr, union block *header, size_t size);
 void xheader_write (char type, char *name, struct xheader *xhdr);
-void xheader_write_global (void);
+void xheader_write_global (struct xheader *xhdr);
 void xheader_finish (struct xheader *hdr);
 void xheader_destroy (struct xheader *hdr);
 char *xheader_xhdr_name (struct tar_stat_info *st);
 char *xheader_ghdr_name (void);
-void xheader_write (char type, char *name, struct xheader *xhdr);
-void xheader_write_global (void);
 void xheader_set_option (char *string);
-void xheader_string_begin (void);
-void xheader_string_add (char const *s);
-bool xheader_string_end (char const *keyword);
+void xheader_string_begin (struct xheader *xhdr);
+void xheader_string_add (struct xheader *xhdr, char const *s);
+bool xheader_string_end (struct xheader *xhdr, char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
 char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 			   size_t n);
