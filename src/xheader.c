@@ -34,7 +34,6 @@ static void xheader_set_single_keyword (char *) __attribute__ ((noreturn));
 /* Used by xheader_finish() */
 static void code_string (char const *string, char const *keyword,
 			 struct xheader *xhdr);
-static void extended_header_init (void);
 
 /* Number of global headers written so far. */
 static size_t global_header_count;
@@ -404,7 +403,7 @@ xheader_write (char type, char *name, struct xheader *xhdr)
 }
 
 void
-xheader_write_global (void)
+xheader_write_global (struct xheader *xhdr)
 {
   char *name;
   struct keyword_list *kp;
@@ -412,12 +411,11 @@ xheader_write_global (void)
   if (!keyword_global_override_list)
     return;
 
-  extended_header_init ();
+  xheader_init (xhdr);
   for (kp = keyword_global_override_list; kp; kp = kp->next)
-    code_string (kp->value, kp->pattern, &extended_header);
-  xheader_finish (&extended_header);
-  xheader_write (XGLTYPE, name = xheader_ghdr_name (),
-		 &extended_header);
+    code_string (kp->value, kp->pattern, xhdr);
+  xheader_finish (xhdr);
+  xheader_write (XGLTYPE, name = xheader_ghdr_name (), xhdr);
   free (name);
 }
 
@@ -477,7 +475,8 @@ xheader_protected_keyword_p (const char *keyword)
 /* Decode a single extended header record, advancing *PTR to the next record.
    Return true on success, false otherwise.  */
 static bool
-decode_record (char **ptr,
+decode_record (struct xheader *xhdr,
+	       char **ptr,
 	       void (*handler) (void *, char const *, char const *, size_t),
 	       void *data)
 {
@@ -488,7 +487,7 @@ decode_record (char **ptr,
   char *len_lim;
   char const *keyword;
   char *nextp;
-  size_t len_max = extended_header.buffer + extended_header.size - start;
+  size_t len_max = xhdr->buffer + xhdr->size - start;
 
   while (*p == ' ' || *p == '\t')
     p++;
@@ -584,10 +583,10 @@ xheader_decode (struct tar_stat_info *st)
   run_override_list (keyword_global_override_list, st);
   run_override_list (global_header_override_list, st);
 
-  if (extended_header.size)
+  if (st->xhdr.size)
     {
-      char *p = extended_header.buffer + BLOCKSIZE;
-      while (decode_record (&p, decx, st))
+      char *p = st->xhdr.buffer + BLOCKSIZE;
+      while (decode_record (&st->xhdr, &p, decx, st))
 	continue;
     }
   run_override_list (keyword_override_list, st);
@@ -602,35 +601,35 @@ decg (void *data, char const *keyword, char const *value,
 }
 
 void
-xheader_decode_global (void)
+xheader_decode_global (struct xheader *xhdr)
 {
-  if (extended_header.size)
+  if (xhdr->size)
     {
-      char *p = extended_header.buffer + BLOCKSIZE;
+      char *p = xhdr->buffer + BLOCKSIZE;
 
       xheader_list_destroy (&global_header_override_list);
-      while (decode_record (&p, decg, &global_header_override_list))
+      while (decode_record (xhdr, &p, decg, &global_header_override_list))
 	continue;
     }
 }
 
-static void
-extended_header_init (void)
+void
+xheader_init (struct xheader *xhdr)
 {
-  if (!extended_header.stk)
+  if (!xhdr->stk)
     {
-      extended_header.stk = xmalloc (sizeof *extended_header.stk);
-      obstack_init (extended_header.stk);
+      xhdr->stk = xmalloc (sizeof *xhdr->stk);
+      obstack_init (xhdr->stk);
     }
 }
 
 void
-xheader_store (char const *keyword, struct tar_stat_info const *st,
+xheader_store (char const *keyword, struct tar_stat_info *st,
 	       void const *data)
 {
   struct xhdr_tab const *t;
 
-  if (extended_header.buffer)
+  if (st->xhdr.buffer)
     return;
   t = locate_handler (keyword);
   if (!t || !t->coder)
@@ -638,20 +637,20 @@ xheader_store (char const *keyword, struct tar_stat_info const *st,
   if (xheader_keyword_deleted_p (keyword)
       || xheader_keyword_override_p (keyword))
     return;
-  extended_header_init ();
-  t->coder (st, keyword, &extended_header, data);
+  xheader_init (&st->xhdr);
+  t->coder (st, keyword, &st->xhdr, data);
 }
 
 void
-xheader_read (union block *p, size_t size)
+xheader_read (struct xheader *xhdr, union block *p, size_t size)
 {
   size_t j = 0;
 
-  free (extended_header.buffer);
+  xheader_init (xhdr);
   size += BLOCKSIZE;
-  extended_header.size = size;
-  extended_header.buffer = xmalloc (size + 1);
-  extended_header.buffer[size] = '\0';
+  xhdr->size = size;
+  xhdr->buffer = xmalloc (size + 1);
+  xhdr->buffer[size] = '\0';
 
   do
     {
@@ -660,7 +659,7 @@ xheader_read (union block *p, size_t size)
       if (len > BLOCKSIZE)
 	len = BLOCKSIZE;
 
-      memcpy (&extended_header.buffer[j], p->buffer, len);
+      memcpy (&xhdr->buffer[j], p->buffer, len);
       set_next_block_after (p);
 
       p = find_next_block ();
@@ -731,26 +730,25 @@ xheader_destroy (struct xheader *xhdr)
 
 
 /* Buildable strings */
-static uintmax_t string_length;
 
 void
-xheader_string_begin ()
+xheader_string_begin (struct xheader *xhdr)
 {
-  string_length = 0;
+  xhdr->string_length = 0;
 }
 
 void
-xheader_string_add (char const *s)
+xheader_string_add (struct xheader *xhdr, char const *s)
 {
-  if (extended_header.buffer)
+  if (xhdr->buffer)
     return;
-  extended_header_init ();
-  string_length += strlen (s);
-  x_obstack_grow (&extended_header, s, strlen (s));
+  xheader_init (xhdr);
+  xhdr->string_length += strlen (s);
+  x_obstack_grow (xhdr, s, strlen (s));
 }
 
 bool
-xheader_string_end (char const *keyword)
+xheader_string_end (struct xheader *xhdr, char const *keyword)
 {
   uintmax_t len;
   uintmax_t p;
@@ -760,11 +758,11 @@ xheader_string_end (char const *keyword)
   char const *np;
   char *cp;
 
-  if (extended_header.buffer)
+  if (xhdr->buffer)
     return false;
-  extended_header_init ();
+  xheader_init (xhdr);
 
-  len = strlen (keyword) + string_length + 3; /* ' ' + '=' + '\n' */
+  len = strlen (keyword) + xhdr->string_length + 3; /* ' ' + '=' + '\n' */
 
   do
     {
@@ -781,13 +779,13 @@ xheader_string_end (char const *keyword)
       ERROR ((0, 0,
         _("Generated keyword/value pair is too long (keyword=%s, length=%s)"),
 	      keyword, nbuf));
-      obstack_free (extended_header.stk, obstack_finish (extended_header.stk));
+      obstack_free (xhdr->stk, obstack_finish (xhdr->stk));
       return false;
     }
-  x_obstack_blank (&extended_header, p);
-  x_obstack_1grow (&extended_header, '\n');
-  cp = obstack_next_free (extended_header.stk) - string_length - p - 1;
-  memmove (cp + p, cp, string_length);
+  x_obstack_blank (xhdr, p);
+  x_obstack_1grow (xhdr, '\n');
+  cp = obstack_next_free (xhdr->stk) - xhdr->string_length - p - 1;
+  memmove (cp + p, cp, xhdr->string_length);
   cp = stpcpy (cp, np);
   *cp++ = ' ';
   cp = stpcpy (cp, keyword);
