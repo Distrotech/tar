@@ -27,7 +27,7 @@ tarball_prereq() {
       wget -q --directory-prefix=$3 $4/$1
     fi
   fi  
-  echo "$2  $3/$1" | md5sum --status --check - 
+  echo "$2  $3/$1" | md5sum --status --check - >/dev/null 2>&1
 }
 
 
