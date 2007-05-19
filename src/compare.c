@@ -602,7 +602,6 @@ verify_volume (void)
 
       diff_archive ();
       tar_stat_destroy (&current_stat_info);
-      xheader_destroy (&extended_header);
     }
 
   access_mode = ACCESS_WRITE;

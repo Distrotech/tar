@@ -945,16 +945,19 @@ pax_dump_header_0 (struct tar_sparse_file *file)
       file->stat_info->file_name = xheader_format_name (file->stat_info,
 					       "%d/GNUSparseFile.%p/%f", 0);
 
-      xheader_string_begin ();
+      xheader_string_begin (&file->stat_info->xhdr);
       for (i = 0; i < file->stat_info->sparse_map_avail; i++)
 	{
 	  if (i)
-	    xheader_string_add (",");
-	  xheader_string_add (umaxtostr (map[i].offset, nbuf));
-	  xheader_string_add (",");
-	  xheader_string_add (umaxtostr (map[i].numbytes, nbuf));
+	    xheader_string_add (&file->stat_info->xhdr, ",");
+	  xheader_string_add (&file->stat_info->xhdr,
+			      umaxtostr (map[i].offset, nbuf));
+	  xheader_string_add (&file->stat_info->xhdr, ",");
+	  xheader_string_add (&file->stat_info->xhdr,
+			      umaxtostr (map[i].numbytes, nbuf));
 	}
-      if (!xheader_string_end ("GNU.sparse.map"))
+      if (!xheader_string_end (&file->stat_info->xhdr,
+			       "GNU.sparse.map"))
 	{
 	  free (file->stat_info->file_name);
 	  file->stat_info->file_name = save_file_name;

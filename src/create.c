@@ -711,10 +711,10 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
   char *p;
   int type;
 
-  if (extended_header.buffer || extended_header.stk == NULL)
+  if (st->xhdr.buffer || st->xhdr.stk == NULL)
     return old_header;
 
-  xheader_finish (&extended_header);
+  xheader_finish (&st->xhdr);
   memcpy (hp.buffer, old_header, sizeof (hp));
   if (global)
     {
@@ -726,7 +726,7 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
       type = XHDTYPE;
       p = xheader_xhdr_name (st);
     }
-  xheader_write (type, p, &extended_header);
+  xheader_write (type, p, &st->xhdr);
   free (p);
   header = find_next_block ();
   memcpy (header, &hp.buffer, sizeof (hp.buffer));
@@ -1269,7 +1269,7 @@ create_archive (void)
   const char *p;
 
   open_archive (ACCESS_WRITE);
-  xheader_write_global ();
+  buffer_write_global_xheader ();
 
   if (incremental_option)
     {

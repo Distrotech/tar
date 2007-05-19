@@ -307,10 +307,10 @@ delete_archive_members (void)
 	    }
 	  /* Copy header.  */
 
-	  if (extended_header.size)
+	  if (current_stat_info.xhdr.size)
 	    {
-	      write_recent_bytes (extended_header.buffer,
-				  extended_header.size);
+	      write_recent_bytes (current_stat_info.xhdr.buffer,
+				  current_stat_info.xhdr.size);
 	    }
 	  else
 	    {

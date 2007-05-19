@@ -110,7 +110,7 @@ update_archive (void)
 
   name_gather ();
   open_archive (ACCESS_UPDATE);
-  xheader_write_global ();
+  buffer_write_global_xheader ();
 
   while (!found_end)
     {
@@ -181,7 +181,6 @@ update_archive (void)
 	}
 
       tar_stat_destroy (&current_stat_info);
-      xheader_destroy (&extended_header);
       previous_status = status;
     }
 

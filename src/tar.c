@@ -2408,6 +2408,7 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->gname);
   free (st->sparse_map);
   free (st->dumpdir);
+  xheader_destroy (&st->xhdr);
   memset (st, 0, sizeof (*st));
 }
 

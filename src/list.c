@@ -76,7 +76,6 @@ read_and (void (*do_something) (void))
     {
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
-      xheader_destroy (&extended_header);
 
       status = read_header (false);
       switch (status)
@@ -387,12 +386,16 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
 	    }
 	  else if (header->header.typeflag == XHDTYPE
 		   || header->header.typeflag == SOLARIS_XHDTYPE)
-	    xheader_read (header, OFF_FROM_HEADER (header->header.size));
+	    xheader_read (&info->xhdr, header,
+			  OFF_FROM_HEADER (header->header.size));
 	  else if (header->header.typeflag == XGLTYPE)
 	    {
-	      xheader_read (header, OFF_FROM_HEADER (header->header.size));
-	      xheader_decode_global ();
-	      xheader_destroy (&extended_header);
+	      struct xheader xhdr;
+	      memset (&xhdr, 0, sizeof xhdr);
+	      xheader_read (&xhdr, header,
+			    OFF_FROM_HEADER (header->header.size));
+	      xheader_decode_global (&xhdr);
+	      xheader_destroy (&xhdr);
 	    }
 
 	  /* Loop!  */
@@ -518,7 +521,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	  && ISOCTAL (header->star_header.ctime[0])
 	  && header->star_header.ctime[11] == ' ')
 	format = STAR_FORMAT;
-      else if (extended_header.size)
+      else if (stat_info->xhdr.size)
 	format = POSIX_FORMAT;
       else
 	format = USTAR_FORMAT;
