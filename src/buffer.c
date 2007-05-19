@@ -121,6 +121,15 @@ static off_t save_totsize;	/* total size of file we are writing, only
 static off_t save_sizeleft;	/* where we are in the file we are writing,
 				   only valid if save_name is nonzero */
 
+
+static struct tar_stat_info dummy;
+
+void
+buffer_write_global_xheader ()
+{
+  xheader_write_global (&dummy.xhdr);
+}
+
 void
 mv_begin (struct tar_stat_info *st)
 {
@@ -1123,7 +1132,6 @@ try_new_volume ()
 {
   size_t status;
   union block *header;
-  struct tar_stat_info dummy;
   int access;
   
   switch (subcommand_option)
@@ -1295,7 +1303,7 @@ static void
 _write_volume_label (const char *str)
 {
   if (archive_format == POSIX_FORMAT)
-    xheader_store ("GNU.volume.label", NULL, str);
+    xheader_store ("GNU.volume.label", &dummy, str);
   else
     {
       union block *label = find_next_block ();
@@ -1412,9 +1420,9 @@ add_multi_volume_header (void)
   if (archive_format == POSIX_FORMAT)
     {
       off_t d = real_s_totsize - real_s_sizeleft;
-      xheader_store ("GNU.volume.filename", NULL, real_s_name);
-      xheader_store ("GNU.volume.size", NULL, &real_s_sizeleft);
-      xheader_store ("GNU.volume.offset", NULL, &d);
+      xheader_store ("GNU.volume.filename", &dummy, real_s_name);
+      xheader_store ("GNU.volume.size", &dummy, &real_s_sizeleft);
+      xheader_store ("GNU.volume.offset", &dummy, &d);
     }
   else
     gnu_add_multi_volume_header ();
@@ -1601,7 +1609,7 @@ _gnu_flush_write (size_t buffer_level)
   if (!new_volume (ACCESS_WRITE))
     return;
 
-  xheader_destroy (&extended_header);
+  tar_stat_destroy (&dummy);
 
   increase_volume_number ();
   prev_written += bytes_written;
@@ -1619,7 +1627,9 @@ _gnu_flush_write (size_t buffer_level)
   if (real_s_name)
     add_multi_volume_header ();
 
-  write_extended (true, NULL, find_next_block ());
+  write_extended (true, &dummy, find_next_block ());
+  tar_stat_destroy (&dummy);
+  
   if (real_s_name)
     add_chunk_header ();
   header = find_next_block ();
