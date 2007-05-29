@@ -1,3 +1,8 @@
+2007-05-29  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/misc.c (set_file_atime): Use gl_futimens, not futimens,
+	due to gnulib change.
+
 2007-05-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (buffer_write_global_xheader): New function
@@ -16,7 +21,7 @@
 	(xheader_write_global,xheader_write,xheader_string_begin)
 	(xheader_string_add,xheader_string_end): Take xhdr as first
 	argument.
-	
+
 	* src/buffer.c (buffer_write_global_xheader): New function
 	Update to use new xheader calls.
 
@@ -27,7 +32,7 @@
 	* tests/T-null.at: Minor fix
 	* tests/atlocal.in (tarball_prereq): Discard eventual md5sum
 	output.
-	
+
 2007-05-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/create.c (dump_file0): Original ctime cannot be used as a

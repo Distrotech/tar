@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -516,7 +516,7 @@ set_file_atime (int fd, char const *file, struct timespec const timespec[2])
     }
 #endif
 
-  return futimens (fd, file, timespec);
+  return gl_futimens (fd, file, timespec);
 }
 
 /* A description of a working directory.  */
