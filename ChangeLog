@@ -1,3 +1,8 @@
+2007-05-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/xheader.c (decx): Unknown pax keywords produce a warning,
+	not error.
+
 2007-05-29  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/misc.c (set_file_atime): Use gl_futimens, not futimens,
