@@ -10,6 +10,8 @@
 	* src/list.c (decode_xform): Exempt symbolic links from component
 	stripping and name suffix normalization.  
 
+	* tests/extrac07.at: Update
+		
 2007-05-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (decx): Unknown pax keywords produce a warning,
