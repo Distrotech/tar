@@ -725,7 +725,14 @@ bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
 
 /* Module transform.c */
+typedef enum
+  {
+    xform_regfile,
+    xform_link,
+    xform_symlink
+  } xform_type;
+
 void set_transform_expr (const char *expr);
 bool transform_name (char **pinput);
-bool transform_member_name (char **pinput, bool lnk);
+bool transform_member_name (char **pinput, xform_type type);
 bool transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *);
