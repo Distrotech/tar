@@ -1,3 +1,15 @@
+2007-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Fix bug, introduced on 2007-03-30.
+	
+	* src/common.h (xform_type): New data type
+	(transform_member_name): Last argument is of xform_type type
+	All callers updated
+
+	* src/extract.c: Update calls to transform_member_name
+	* src/list.c (decode_xform): Exempt symbolic links from component
+	stripping and name suffix normalization.  
+
 2007-05-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (decx): Unknown pax keywords produce a warning,
