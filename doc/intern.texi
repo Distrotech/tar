@@ -96,7 +96,7 @@ The @code{name} field is the file name of the file, with directory names
 @FIXME{how big a name before field overflows?}
 
 The @code{mode} field provides nine bits specifying file permissions
-and three bits to specify the Set UID, Set GID, and Save Text
+and three bits to specify the Set @acronym{UID}, Set @acronym{GID}, and Save Text
 (@dfn{sticky}) modes.  Values for these bits are defined above.
 When special permissions are required to create a file with a given
 mode, and the user restoring files from the archive does not hold such
@@ -107,8 +107,8 @@ should be faked up when creating or updating an archive; e.g., the
 group permission could be copied from the @emph{other} permission.
 
 The @code{uid} and @code{gid} fields are the numeric user and group
-ID of the file owners, respectively.  If the operating system does
-not support numeric user or group IDs, these fields should be ignored.
+@acronym{ID} of the file owners, respectively.  If the operating system does
+not support numeric user or group @acronym{ID}s, these fields should be ignored.
 
 The @code{size} field is the size of the file in bytes; linked files
 are archived with this field specified as zero.  @FIXME-xref{Modifiers, in
@@ -258,7 +258,7 @@ The @code{magic} field indicates that this archive was output in
 the P1003 archive format.  If this field contains @code{TMAGIC},
 the @code{uname} and @code{gname} fields will contain the ASCII
 representation of the owner and group of the file respectively.
-If found, the user and group IDs are used rather than the values in
+If found, the user and group @acronym{ID}s are used rather than the values in
 the @code{uid} and @code{gid} fields.
 
 For references, see ISO/IEC 9945-1:1990 or IEEE Std 1003.1-1990, pages

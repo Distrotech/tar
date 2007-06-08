@@ -685,16 +685,16 @@ file system.  You should have some basic understanding of directory
 structure and how files are named according to which directory they are
 in.  You should understand concepts such as standard output and standard
 input, what various definitions of the term ``argument'' mean, and the
-differences between relative and absolute path names.  @FIXME{and what
+differences between relative and absolute file names.  @FIXME{and what
 else?}
 
 @item
 This manual assumes that you are working from your own home directory
 (unless we state otherwise).  In this tutorial, you will create a
-directory to practice @command{tar} commands in.  When we show path names,
-we will assume that those paths are relative to your home directory.
-For example, my home directory path is @file{/home/fsf/melissa}.  All of
-my examples are in a subdirectory of the directory named by that path
+directory to practice @command{tar} commands in.  When we show file names,
+we will assume that those names are relative to your home directory.
+For example, my home directory is @file{/home/fsf/melissa}.  All of
+my examples are in a subdirectory of the directory named by that file
 name; the subdirectory is called @file{practice}.
 
 @item
@@ -957,7 +957,7 @@ format=verbose, Verbose listing, fileutils, GNU file utilities}).
 
 @item Owner name and group separated by a slash character.
 If these data are not available (for example, when listing a @samp{v7} format
-archive), numeric ID values are printed instead.
+archive), numeric @acronym{ID} values are printed instead.
 
 @item Size of the file, in bytes.
 
@@ -1090,7 +1090,7 @@ is a subdirectory of your home directory.
 
 Now @command{cd} to the directory named @file{practice}; @file{practice}
 is now your @dfn{working directory}.  (@emph{Please note}: Although
-the full path name of this directory is
+the full file name of this directory is
 @file{/@var{homedir}/practice}, in our examples we will refer to
 this directory as @file{practice}; the @var{homedir} is presumed.
 
@@ -1459,7 +1459,7 @@ using @samp{list}.  In this case, @command{tar} will only list the
 names of members you identify.  For example, @w{@kbd{tar --list
 --file=afiles.tar apple}} would only print @file{apple}.
 
-Because @command{tar} preserves paths, file names must be specified as
+Because @command{tar} preserves file names, these must be specified as
 they appear in the archive (i.e., relative to the directory from which
 the archive was created).  Therefore, it is essential when specifying
 member names to @command{tar} that you give the exact member names.
@@ -2558,7 +2558,7 @@ command-line.  @xref{files}.
 @opsummary{force-local}
 @item --force-local
 
-Forces @command{tar} to interpret the filename given to @option{--file}
+Forces @command{tar} to interpret the file name given to @option{--file}
 as a local file, even if it looks like a remote tape drive name.
 @xref{local and remote archives}.
 
@@ -2595,10 +2595,10 @@ Creates a @acronym{POSIX.1-2001 archive}.
 @opsummary{group}
 @item --group=@var{group}
 
-Files added to the @command{tar} archive will have a group id of @var{group},
+Files added to the @command{tar} archive will have a group @acronym{ID} of @var{group},
 rather than the group from the source file.  @var{group} is first decoded
 as a group symbolic name, but if this interpretation fails, it has to be
-a decimal numeric group ID.  @xref{override}.
+a decimal numeric group @acronym{ID}.  @xref{override}.
 
 Also see the comments for the @option{--owner=@var{user}} option.
 
@@ -2647,7 +2647,7 @@ archive, which normally signals EOF.  @xref{Reading}.
 @item --incremental
 @itemx -G
 
-Used to inform @command{tar} that it is working with an old
+Informs @command{tar} that it is working with an old
 @acronym{GNU}-format incremental backup archive.  It is intended
 primarily for backwards compatibility only.  @xref{Incremental Dumps},
 for a detailed discussion of incremental archives.
@@ -2775,9 +2775,10 @@ An exclude pattern can match any subsequence of the name's components.
 @opsummary{no-delay-directory-restore}
 @item --no-delay-directory-restore
 
-Setting modification times and permissions of extracted
-directories when all files from this directory has been
-extracted. This is the default. @xref{Directory Modification Times and Permissions}.
+Modification times and permissions of extracted
+directories are set when all files from this directory have been
+extracted.  This is the default.
+@xref{Directory Modification Times and Permissions}.
 
 @opsummary{no-ignore-case}
 @item --no-ignore-case
@@ -2786,7 +2787,7 @@ Use case-sensitive matching.
 
 @opsummary{no-ignore-command-error}
 @item --no-ignore-command-error
-Print warnings about subprocesses terminated with a non-zero exit
+Print warnings about subprocesses that terminated with a nonzero exit
 code. @xref{Writing to an External Program}.
 
 @opsummary{no-overwrite-dir}
@@ -2841,7 +2842,7 @@ Wildcards do not match @samp{/}.
 @item --null
 
 When @command{tar} is using the @option{--files-from} option, this option
-instructs @command{tar} to expect filenames terminated with @option{NUL}, so
+instructs @command{tar} to expect file names terminated with @acronym{NUL}, so
 @command{tar} can correctly work with file names that contain newlines.
 @xref{nul}.
 
@@ -2861,7 +2862,7 @@ restoring ownership of files being extracted.
 When creating an archive, it is a synonym for
 @option{--old-archive}.  This behavior is for compatibility
 with previous versions of @GNUTAR{}, and will be
-removed in the future releases.
+removed in future releases.
 
 @xref{Changes}, for more information.
 
@@ -2914,7 +2915,7 @@ from an archive.  @xref{Overwrite Old Files}.
 Specifies that @command{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
 file.  @var{user} is first decoded as a user symbolic name, but if
-this interpretation fails, it has to be a decimal numeric user ID.
+this interpretation fails, it has to be a decimal numeric user @acronym{ID}.
 @xref{override}.
 
 This option does not affect extraction from archives.
@@ -3008,7 +3009,7 @@ archive.  @xref{Blocking Factor}.
 @opsummary{recursion}
 @item --recursion
 
-With this option, @command{tar} recurses into directories.
+With this option, @command{tar} recurses into directories (default).
 @xref{recurse}.
 
 @opsummary{recursive-unlink}
@@ -3082,7 +3083,7 @@ $ tar --show-defaults
 @opsummary{show-omitted-dirs}
 @item --show-omitted-dirs
 
-Instructs @command{tar} to mention directories its skipping over when
+Instructs @command{tar} to mention the directories it is skipping when
 operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 
 @opsummary{show-transformed-names}
@@ -3092,8 +3093,8 @@ operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
 
 Display file or member names after applying any transformations
 (@pxref{transform}).  In particular, when used in conjunction with one of
-archive creation operations it instructs tar to list the member names
-stored in the archive, as opposed to the actual file
+the archive creation operations it instructs @command{tar} to list the
+member names stored in the archive, as opposed to the actual file
 names.  @xref{listing member and file names}.
 
 @opsummary{sparse}
@@ -3106,7 +3107,7 @@ sparse files efficiently.  @xref{sparse}.
 @opsummary{sparse-version}
 @item --sparse-version=@var{version}
 
-Specified the @dfn{format version} to use when archiving sparse
+Specifies the @dfn{format version} to use when archiving sparse
 files.  Implies @option{--sparse}.  @xref{sparse}. For the description
 of the supported sparse formats, @xref{Sparse Formats}.
 
@@ -3121,8 +3122,7 @@ files in the archive until it finds one that matches @var{name}.
 @opsummary{strip-components}
 @item --strip-components=@var{number}
 Strip given @var{number} of leading components from file names before
-extraction.@footnote{This option was called @option{--strip-path} in
-version 1.14.} For example, if archive @file{archive.tar} contained
+extraction.  For example, if archive @file{archive.tar} contained
 @file{/some/file/name}, then running
 
 @smallexample
@@ -3218,9 +3218,9 @@ Display file modification dates in @acronym{UTC}.  This option implies
 @item --verbose
 @itemx -v
 
-Specifies that @command{tar} should be more verbose about the operations its
-performing.  This option can be specified multiple times for some
-operations to increase the amount of information displayed.
+Specifies that @command{tar} should be more verbose about the
+operations it is performing.  This option can be specified multiple
+times for some operations to increase the amount of information displayed.
 @xref{verbose}.
 
 @opsummary{verify}
@@ -3241,7 +3241,7 @@ status, all on standard output, and then exit successfully.
 @item --volno-file=@var{file}
 
 Used in conjunction with @option{--multi-volume}.  @command{tar} will
-keep track of which volume of a multi-volume archive its working in
+keep track of which volume of a multi-volume archive it is working in
 @var{file}.  @xref{volno-file}.
 
 @opsummary{wildcards}
@@ -3328,7 +3328,7 @@ them with the equivalent long option.
 @ref{--portability}.
 
 The later usage is deprecated.  It is retained for compatibility with
-the earlier versions of @GNUTAR{}.  In the future releases
+the earlier versions of @GNUTAR{}.  In future releases
 @option{-o} will be equivalent to @option{--no-same-owner} only.
 
 @item -p @tab @ref{--preserve-permissions}.
@@ -4388,7 +4388,7 @@ tar: Option --mtime: Treating date `yesterday' as 2006-06-20
 Specifies that @command{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
 file.  The argument @var{user} can be either an existing user symbolic
-name, or a decimal numeric user ID.
+name, or a decimal numeric user @acronym{ID}.
 
 There is no value indicating a missing number, and @samp{0} usually means
 @code{root}.  Some people like to force @samp{0} as the value to offer in
@@ -4407,9 +4407,9 @@ $ @kbd{tar -c -f archive.tar --owner=root .}
 @item --group=@var{group}
 @opindex group
 
-Files added to the @command{tar} archive will have a group id of @var{group},
+Files added to the @command{tar} archive will have a group @acronym{ID} of @var{group},
 rather than the group from the source file.  The argument @var{group}
-can be either an existing group symbolic name, or a decimal numeric group ID.
+can be either an existing group symbolic name, or a decimal numeric group @acronym{ID}.
 @end table
 
 @node Ignore Failed Read
@@ -4461,7 +4461,7 @@ in conjunction with the @option{--extract} or @option{--list} operations.
 
 The @option{--read-full-records} (@option{-B}) option is turned on by default when
 @command{tar} reads an archive from standard input, or from a remote
-machine.  This is because on BSD Unix systems, attempting to read a
+machine.  This is because on @acronym{BSD} Unix systems, attempting to read a
 pipe returns however much happens to be in the pipe, even if it is
 less than was requested.  If this option were not enabled, @command{tar}
 would fail as soon as it read an incomplete record from the pipe.
@@ -5635,7 +5635,7 @@ in a separate file.  This file is usually named
 
 @defvr {Backup variable} DIRLIST
 
-A path to the file containing the list of the file systems to backup
+The name of the file that contains a list of file systems to backup
 or restore.  By default it is @file{/etc/backup/dirs}.
 @end defvr
 
@@ -5653,7 +5653,7 @@ in a separate file.  This file is usually named
 
 @defvr {Backup variable} FILELIST
 
-A path to the file containing the list of the individual files to backup
+The name of the file that contains a list of individual files to backup
 or restore.  By default it is @file{/etc/backup/files}.
 @end defvr
 
@@ -5804,7 +5804,7 @@ Current backup or restore level.
 Name or IP address of the host machine being dumped or restored.
 
 @item fs
-Full path name to the file system being dumped or restored.
+Full file name of the file system being dumped or restored.
 
 @item fsname
 File system name with directory separators replaced with colons.  This
@@ -6227,15 +6227,15 @@ table:
 
 @multitable @columnfractions 0.20 0.60
 @headitem Escape @tab Replaced with
-@item \a         @tab Audible bell (ASCII 7)
-@item \b         @tab Backspace (ASCII 8)
-@item \f         @tab Form feed (ASCII 12)
-@item \n         @tab New line (ASCII 10)
-@item \r         @tab Carriage return (ASCII 13)
-@item \t         @tab Horizontal tabulation (ASCII 9)
-@item \v         @tab Vertical tabulation (ASCII 11)
-@item \?         @tab ASCII 127
-@item \@var{n}   @tab ASCII @var{n} (@var{n} should be an octal number
+@item \a         @tab Audible bell (@acronym{ASCII} 7)
+@item \b         @tab Backspace (@acronym{ASCII} 8)
+@item \f         @tab Form feed (@acronym{ASCII} 12)
+@item \n         @tab New line (@acronym{ASCII} 10)
+@item \r         @tab Carriage return (@acronym{ASCII} 13)
+@item \t         @tab Horizontal tabulation (@acronym{ASCII} 9)
+@item \v         @tab Vertical tabulation (@acronym{ASCII} 11)
+@item \?         @tab @acronym{ASCII} 127
+@item \@var{n}   @tab @acronym{ASCII} @var{n} (@var{n} should be an octal number
                  of up to 3 digits)
 @end multitable
 
@@ -6623,8 +6623,8 @@ pitfalls:
 
 @itemize @bullet
 @item
-The main operating mode of @command{tar} does not act on a path name
-explicitly listed on the command line if one of its file name
+The main operating mode of @command{tar} does not act on a file name
+explicitly listed on the command line, if one of its file name
 components is excluded.  In the example above, if
 you create an archive and exclude files that end with @samp{*.o}, but
 explicitly name the file @samp{dir.o/foo} after all the options have been
@@ -6886,7 +6886,7 @@ quoting}.  The characters in question are:
 @item Non-printable control characters:
 
 @multitable @columnfractions 0.20 0.10 0.60
-@headitem Character @tab ASCII @tab Character name
+@headitem Character @tab @acronym{ASCII} @tab Character name
 @item \a @tab 7  @tab Audible bell
 @item \b @tab 8  @tab Backspace
 @item \f @tab 12 @tab Form feed
@@ -6896,7 +6896,7 @@ quoting}.  The characters in question are:
 @item \v @tab 11 @tab Vertical tabulation
 @end multitable
 
-@item Space (ASCII 32)
+@item Space (@acronym{ASCII} 32)
 
 @item Single and double quotes (@samp{'} and @samp{"})
 
@@ -7783,7 +7783,7 @@ sparse file handling and incremental archives.  Unfortunately these
 features were implemented in a way incompatible with other archive
 formats.
 
-Archives in @samp{gnu} format are able to hold pathnames of unlimited
+Archives in @samp{gnu} format are able to hold file names of unlimited
 length.
 
 @item oldgnu
@@ -7799,7 +7799,7 @@ are:
 @item The maximum length of a symbolic link is limited to 99 characters.
 @item It is impossible to store special files (block and character
 devices, fifos etc.)
-@item Maximum value of user or group ID is limited to 2097151 (7777777
+@item Maximum value of user or group @acronym{ID} is limited to 2097151 (7777777
 octal)
 @item V7 archives do not contain symbolic ownership information (user
 and group name of the file owner).
@@ -7807,7 +7807,7 @@ and group name of the file owner).
 
 This format has traditionally been used by Automake when producing
 Makefiles.  This practice will change in the future, in the meantime,
-however this means that projects containing filenames more than 99
+however this means that projects containing file names more than 99
 characters long will not be able to use @GNUTAR{} @value{VERSION} and
 Automake prior to 1.9.
 
@@ -7818,7 +7818,7 @@ special files.  However, it imposes several restrictions as well:
 
 @enumerate
 @item The maximum length of a file name is limited to 256 characters,
-provided that the filename can be split at directory separator in
+provided that the file name can be split at a directory separator in
 two parts, first of them being at most 155 bytes long.  So, in most
 cases the maximum file name length will be shorter than 256
 characters.
@@ -7838,7 +7838,7 @@ currently does not produce them.
 @item posix
 Archive format defined by @acronym{POSIX.1-2001} specification.  This is the
 most flexible and feature-rich format.  It does not impose any
-restrictions on file sizes or filename lengths.  This format is quite
+restrictions on file sizes or file name lengths.  This format is quite
 recent, so not all tar implementations are able to handle it properly.
 However, this format is designed in such a way that any tar
 implementation able to read @samp{ustar} archives will be able to read
@@ -7855,7 +7855,7 @@ The following table summarizes the limitations of each of these
 formats:
 
 @multitable @columnfractions .10 .20 .20 .20 .20
-@headitem Format @tab UID @tab File Size @tab Path Name @tab Devn
+@headitem Format @tab UID @tab File Size @tab File Name @tab Devn
 @item gnu    @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
 @item oldgnu @tab 1.8e19 @tab Unlimited @tab Unlimited @tab 63
 @item v7     @tab 2097151 @tab 8GB @tab 99 @tab n/a
@@ -8254,11 +8254,11 @@ makes quite difficult to correctly account users for the disk space
 they occupy.  Also, the @code{suid} or @code{sgid} attributes of
 files are easily and silently lost when files are given away.
 
-When writing an archive, @command{tar} writes the user id and user name
-separately.  If it can't find a user name (because the user id is not
+When writing an archive, @command{tar} writes the user @acronym{ID} and user name
+separately.  If it can't find a user name (because the user @acronym{ID} is not
 in @file{/etc/passwd}), then it does not write one.  When restoring,
 it tries to look the name (if one was written) up in
-@file{/etc/passwd}.  If it fails, then it uses the user id stored in
+@file{/etc/passwd}.  If it fails, then it uses the user @acronym{ID} stored in
 the archive instead.
 
 @opindex no-same-owner
@@ -8371,7 +8371,7 @@ archives and archive labels) in GNU and PAX formats.}
 @subsection Portable Names
 
 Use portable file and member names.  A name is portable if it contains
-only ASCII letters and digits, @samp{/}, @samp{.}, @samp{_}, and
+only @acronym{ASCII} letters and digits, @samp{/}, @samp{.}, @samp{_}, and
 @samp{-}; it cannot be empty, start with @samp{-} or @samp{//}, or
 contain @samp{/-}.  Avoid deep directory nesting.  For portability to
 old Unix hosts, limit your file name components to 14 characters or
@@ -8473,7 +8473,7 @@ incompatible with the current @acronym{POSIX} specification, and with
 @command{tar} programs that follow it.
 
 In the majority of cases, @command{tar} will be configured to create
-this format by default.  This will change in the future releases, since
+this format by default.  This will change in future releases, since
 we plan to make @samp{POSIX} format the default.
 
 To force creation a @GNUTAR{} archive, use option
@@ -8520,7 +8520,7 @@ When used in extract or list mode, this option instructs tar
 to ignore any keywords matching the given @var{pattern} in the extended
 header records.  In both cases, matching is performed using the pattern
 matching notation described in @acronym{POSIX 1003.2}, 3.13
-(@pxref{wildcards}). For example:
+(@pxref{wildcards}).  For example:
 
 @smallexample
 --pax-option delete=security.*
@@ -8537,10 +8537,11 @@ from @var{string} after making the following substitutions:
 @multitable @columnfractions .25 .55
 @headitem Meta-character @tab Replaced By
 @item %d @tab  The directory name of the file, equivalent to the
-result of the @command{dirname} utility on the translated pathname.
-@item %f @tab  The filename of the file, equivalent to the result
-of the @command{basename} utility on the translated pathname.
-@item %p @tab  The process ID of the @command{tar} process.
+result of the @command{dirname} utility on the translated file name.
+@item %f @tab  The name of the file with the directory information
+stripped, equivalent to the result of the @command{basename} utility
+on the translated file name. 
+@item %p @tab  The process @acronym{ID} of the @command{tar} process.
 @item %% @tab  A @samp{%} character.
 @end multitable
 
@@ -8565,7 +8566,7 @@ the following substitutions:
 @item %n @tab An integer that represents the
 sequence number of the global extended header record in the archive,
 starting at 1.
-@item %p @tab The process ID of the @command{tar} process.
+@item %p @tab The process @acronym{ID} of the @command{tar} process.
 @item %% @tab A @samp{%} character.
 @end multitable
 
@@ -8616,7 +8617,7 @@ stored in the archive.
 @subsection Checksumming Problems
 
 SunOS and HP-UX @command{tar} fail to accept archives created using
-@GNUTAR{} and containing non-ASCII file names, that
+@GNUTAR{} and containing non-@acronym{ASCII} file names, that
 is, file names having characters with the eight bit set, because they
 use signed checksums, while @GNUTAR{} uses unsigned
 checksums while creating archives, as per @acronym{POSIX} standards.  On
@@ -8671,7 +8672,7 @@ choose, bear in mind that the @acronym{GNU} format uses
 two's-complement base-256 notation to store values that do not fit
 into standard @acronym{ustar} range.  Such archives can generally be
 read only by a @GNUTAR{} implementation.  Moreover, they sometimes
-cannot be correctly restored on another hosts even by @GNUTAR{}. For
+cannot be correctly restored on another hosts even by @GNUTAR{}.  For
 example, using two's complement representation for negative time
 stamps that assumes a signed 32-bit @code{time_t} generates archives
 that are not portable to hosts with differing @code{time_t}
@@ -8748,14 +8749,14 @@ have the following meaning:
 result of the @command{dirname} utility on its full name.
 @item %f @tab  The file name of the file, equivalent to the result
 of the @command{basename} utility on its full name.
-@item %p @tab  The process ID of the @command{tar} process that
+@item %p @tab  The process @acronym{ID} of the @command{tar} process that
 created the archive.
 @item %n @tab  Ordinal number of this particular part.
 @end multitable
 
 For example, if the file @file{var/longfile} was split during archive
 creation between three volumes, and the creator @command{tar} process
-had process ID @samp{27962}, then the member names will be:
+had process @acronym{ID} @samp{27962}, then the member names will be:
 
 @smallexample
 var/longfile
@@ -8839,7 +8840,7 @@ additional data will be needed to restore it.  If the original file
 name was @file{@var{dir}/@var{name}}, then the condensed file will be
 named @file{@var{dir}/@/GNUSparseFile.@var{n}/@/@var{name}}, where
 @var{n} is a decimal number@footnote{technically speaking, @var{n} is a
-@dfn{process ID} of the @command{tar} process which created the
+@dfn{process @acronym{ID}} of the @command{tar} process which created the
 archive (@pxref{PAX keywords}).}.
 
 To expand a version 1.0 file, run @command{xsparse} as follows:
@@ -9043,20 +9044,20 @@ Done
 @FIXME{Reorganize the following material}
 
 The @command{cpio} archive formats, like @command{tar}, do have maximum
-pathname lengths.  The binary and old ASCII formats have a max path
-length of 256, and the new ASCII and CRC ASCII formats have a max
-path length of 1024.  @acronym{GNU} @command{cpio} can read and write archives
-with arbitrary pathname lengths, but other @command{cpio} implementations
+file name lengths.  The binary and old @acronym{ASCII} formats have a maximum file
+length of 256, and the new @acronym{ASCII} and @acronym{CRC ASCII} formats have a max
+file length of 1024.  @acronym{GNU} @command{cpio} can read and write archives
+with arbitrary file name lengths, but other @command{cpio} implementations
 may crash unexplainedly trying to read them.
 
-@command{tar} handles symbolic links in the form in which it comes in BSD;
+@command{tar} handles symbolic links in the form in which it comes in @acronym{BSD};
 @command{cpio} doesn't handle symbolic links in the form in which it comes
 in System V prior to SVR4, and some vendors may have added symlinks
 to their system without enhancing @command{cpio} to know about them.
 Others may have enhanced it in a way other than the way I did it
 at Sun, and which was adopted by AT&T (and which is, I think, also
 present in the @command{cpio} that Berkeley picked up from AT&T and put
-into a later BSD release---I think I gave them my changes).
+into a later @acronym{BSD} release---I think I gave them my changes).
 
 (SVR4 does some funny stuff with @command{tar}; basically, its @command{cpio}
 can handle @command{tar} format input, and write it on output, and it
@@ -9065,16 +9066,16 @@ anything to enhance @command{tar} as a result.)
 
 @command{cpio} handles special files; traditional @command{tar} doesn't.
 
-@command{tar} comes with V7, System III, System V, and BSD source;
-@command{cpio} comes only with System III, System V, and later BSD
+@command{tar} comes with V7, System III, System V, and @acronym{BSD} source;
+@command{cpio} comes only with System III, System V, and later @acronym{BSD}
 (4.3-tahoe and later).
 
 @command{tar}'s way of handling multiple hard links to a file can handle
-file systems that support 32-bit inumbers (e.g., the BSD file system);
-@command{cpio}s way requires you to play some games (in its "binary"
-format, i-numbers are only 16 bits, and in its "portable ASCII" format,
-they're 18 bits---it would have to play games with the "file system ID"
-field of the header to make sure that the file system ID/i-number pairs
+file systems that support 32-bit inumbers (e.g., the @acronym{BSD} file system);
+@command{cpio}s way requires you to play some games (in its ``binary''
+format, i-numbers are only 16 bits, and in its ``portable @acronym{ASCII}'' format,
+they're 18 bits---it would have to play games with the "file system @acronym{ID}"
+field of the header to make sure that the file system @acronym{ID}/i-number pairs
 of different files were always different), and I don't know which
 @command{cpio}s, if any, play those games.  Those that don't might get
 confused and think two files are the same file when they're not, and
@@ -9375,7 +9376,7 @@ that can be backspaced with the @code{MTIOCTOP} @code{ioctl}.
 This means that the @option{--append}, @option{--concatenate}, and
 @option{--delete} commands will not work on any other kind of file.
 Some media simply cannot be backspaced, which means these commands and
-options will never be able to work on them. These non-backspacing
+options will never be able to work on them.  These non-backspacing
 media include pipes and cartridge tape drives.
 
 Some other media can be backspaced, and @command{tar} will work on them
@@ -9753,17 +9754,17 @@ are stored on a single physical tape.
 @xopindex{read-full-records, short description}
 @item -B
 @itemx --read-full-records
-Reblock as we read (for reading 4.2BSD pipes).
+Reblock as we read (for reading 4.2@acronym{BSD} pipes).
 
 If @option{--read-full-records} is used, @command{tar}
 will not panic if an attempt to read a record from the archive does
-not return a full record. Instead, @command{tar} will keep reading
+not return a full record.  Instead, @command{tar} will keep reading
 until it has obtained a full
 record.
 
 This option is turned on by default when @command{tar} is reading
 an archive from standard input, or from a remote machine.  This is
-because on BSD Unix systems, a read of a pipe will return however
+because on @acronym{BSD} Unix systems, a read of a pipe will return however
 much happens to be in the pipe, even if it is less than @command{tar}
 requested.  If this option was not used, @command{tar} would fail as
 soon as it read an incomplete record from the pipe.
