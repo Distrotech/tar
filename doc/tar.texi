@@ -2740,15 +2740,6 @@ multi-volume @command{tar} archive.  @xref{Using Multiple Tapes}.
 
 (see --info-script)
 
-@opsummary{seek}
-@item --seek
-@itemx -n
-
-Assume that the archive media supports seeks to arbitrary
-locations.  Usually @command{tar} determines automatically whether
-the archive can be seeked or not.  This option is intended for use
-in cases when such recognition fails.
-
 @opsummary{newer}
 @item --newer=@var{date}
 @itemx --after-date=@var{date}
@@ -2920,39 +2911,6 @@ this interpretation fails, it has to be a decimal numeric user @acronym{ID}.
 
 This option does not affect extraction from archives.
 
-@opsummary{transform}
-@item --transform=@var{sed-expr}
-
-Transform file or member names using @command{sed} replacement expression
-@var{sed-expr}.  For example,
-
-@smallexample
-$ @kbd{tar cf archive.tar --transform 's,^\./,usr/,' .}
-@end smallexample
-
-@noindent
-will add to @file{archive} files from the current working directory,
-replacing initial @samp{./} prefix with @samp{usr/}. For the detailed
-discussion, @xref{transform}.
-
-To see transformed member names in verbose listings, use
-@option{--show-transformed-names} option
-(@pxref{show-transformed-names}).
-
-@opsummary{quote-chars}
-@item --quote-chars=@var{string}
-Always quote characters from @var{string}, even if the selected
-quoting style would not quote them (@pxref{quoting styles}).
-
-@opsummary{quoting-style}
-@item --quoting-style=@var{style}
-Set quoting style to use when printing member and file names
-(@pxref{quoting styles}). Valid @var{style} values are:
-@code{literal}, @code{shell}, @code{shell-always}, @code{c},
-@code{escape}, @code{locale}, and @code{clocale}. Default quoting
-style is @code{escape}, unless overridden while configuring the
-package.
-
 @opsummary{pax-option}
 @item --pax-option=@var{keyword-list}
 This option is meaningful only with @acronym{POSIX.1-2001} archives
@@ -2992,6 +2950,20 @@ users' umask from the permissions specified in the archive and uses
 that number as the permissions to create the destination file.
 Specifying this option instructs @command{tar} that it should use the
 permissions directly from the archive.  @xref{Setting Access Permissions}.
+
+@opsummary{quote-chars}
+@item --quote-chars=@var{string}
+Always quote characters from @var{string}, even if the selected
+quoting style would not quote them (@pxref{quoting styles}).
+
+@opsummary{quoting-style}
+@item --quoting-style=@var{style}
+Set quoting style to use when printing member and file names
+(@pxref{quoting styles}). Valid @var{style} values are:
+@code{literal}, @code{shell}, @code{shell-always}, @code{c},
+@code{escape}, @code{locale}, and @code{clocale}. Default quoting
+style is @code{escape}, unless overridden while configuring the
+package.
 
 @opsummary{read-full-records}
 @item --read-full-records
@@ -3066,6 +3038,15 @@ effect only for ordinary users.  @xref{Attributes}.
 @item --same-permissions
 
 (See @option{--preserve-permissions}; @pxref{Setting Access Permissions}.)
+
+@opsummary{seek}
+@item --seek
+@itemx -n
+
+Assume that the archive media supports seeks to arbitrary
+locations.  Usually @command{tar} determines automatically whether
+the archive can be seeked or not.  This option is intended for use
+in cases when such recognition fails.
 
 @opsummary{show-defaults}
 @item --show-defaults
@@ -3179,6 +3160,25 @@ request, when signal @var{signo} is delivered to @command{tar}.
 Sets the data modification time of extracted files to the extraction time,
 rather than the data modification time stored in the archive.
 @xref{Data Modification Times}.
+
+@opsummary{transform}
+@item --transform=@var{sed-expr}
+
+Transform file or member names using @command{sed} replacement expression
+@var{sed-expr}.  For example,
+
+@smallexample
+$ @kbd{tar cf archive.tar --transform 's,^\./,usr/,' .}
+@end smallexample
+
+@noindent
+will add to @file{archive} files from the current working directory,
+replacing initial @samp{./} prefix with @samp{usr/}. For the detailed
+discussion, @xref{transform}.
+
+To see transformed member names in verbose listings, use
+@option{--show-transformed-names} option
+(@pxref{show-transformed-names}).
 
 @opsummary{uncompress}
 @item --uncompress
