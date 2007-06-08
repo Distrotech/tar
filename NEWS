@@ -5,33 +5,33 @@ version 1.17 - Sergey Poznyakoff, 2007-06-08
 
 * Fix archivation of sparse files in posix mode.  Previous versions padded
   sparse members with spurious zero blocks.
-  
+
 * Fix operation of --verify --listed-incremental.  Version 1.16.1 produced
   a full dump when both options were given.
 
-* Fix --occurence.  In previous versions it continued scanning the archive
+* Fix --occurrence.  In previous versions it continued scanning the archive
   even though all requested members has already been extracted.
 
 * Scope of --transform and --strip-components options.
 
 In addition to affecting regular archive members, the --transform
 option affects hard and soft link targets and the --strip-components
-option affects hard link targets as well. 
+option affects hard link targets as well.
 
 * End-of-volume script can send the new volume name to tar by writing
   it to the file descriptor stored in the environment variable `TAR_FD'.
-     
+
 
 version 1.16.1 - Sergey Poznyakoff, 2006-12-09
 
-* New option --exclude-tag allows to specify "exclusion tag files", i.e. 
-  files whose presence in a directory means that the directory should not 
+* New option --exclude-tag allows to specify "exclusion tag files", i.e.
+  files whose presence in a directory means that the directory should not
   be archived.
 
 * The --exclude-cache option excludes directories that contain the
   CACHEDIR.TAG file from being archived.  Previous versions excluded
   directory contents only, while the directories themselves were
-  still added to the archive. 
+  still added to the archive.
 
 * Support for reading ustar type 'N' header logical records has been removed.
   This GNU extension was generated only by very old versions of GNU 'tar'.
@@ -45,7 +45,7 @@ version 1.16.1 - Sergey Poznyakoff, 2006-12-09
   files extracted by 'tar -x --same-owner' (or plain 'tar -x', when
   running as root) to be accessed by users that they shouldn't have been.
 
-  
+
 version 1.16 - Sergey Poznyakoff, 2006-10-21
 
 * After creating an archive, tar exits with code 1 if some files were
