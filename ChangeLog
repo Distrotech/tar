@@ -6,6 +6,9 @@
 	`file name' otherwise.
 	Fix various errors (based on patch by Benno Schulenberg)
 
+	* doc/tar.texi (Operation Summary): Restore alphabetical order of
+	the options.
+	
 2007-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix bug, introduced on 2007-03-30.
