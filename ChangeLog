@@ -1,3 +1,11 @@
+2007-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi, doc/intern.texi: Replace: s/filename/file name/;
+	s/(ASCII|ID|BSD)/@acronym{&}/;s/"[^"]+"/``&''/
+	Use `path' only when it refers to search paths, use
+	`file name' otherwise.
+	Fix various errors (based on patch by Benno Schulenberg)
+
 2007-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix bug, introduced on 2007-03-30.
