@@ -1,7 +1,7 @@
-GNU tar NEWS - User visible changes.
+GNU tar NEWS - User visible changes. 2007-06-08
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
-version 1.16.2
+version 1.17 - Sergey Poznyakoff, 2007-06-08
 
 * Fix archivation of sparse files in posix mode.  Previous versions padded
   sparse members with spurious zero blocks.
@@ -12,14 +12,17 @@ version 1.16.2
 * Fix --occurence.  In previous versions it continued scanning the archive
   even though all requested members has already been extracted.
 
-* The options --transform and --strip-components affect hard and soft link
-  targets.
+* Scope of --transform and --strip-components options.
+
+In addition to affecting regular archive members, the --transform
+option affects hard and soft link targets and the --strip-components
+option affects hard link targets as well. 
 
 * End-of-volume script can send the new volume name to tar by writing
-  it to the file descriptor $TAR_FD.
+  it to the file descriptor stored in the environment variable `TAR_FD'.
      
 
-version 1.16.1
+version 1.16.1 - Sergey Poznyakoff, 2006-12-09
 
 * New option --exclude-tag allows to specify "exclusion tag files", i.e. 
   files whose presence in a directory means that the directory should not 
@@ -226,7 +229,7 @@ Consequently, the file pointer was set off and the next member
 was not processed correctly.
 ** Previous version created invalid archives when files shrink
 during reading.
-** Compare mode (tar d) hanged when trying to compare file contents.
+** Compare mode (tar d) hung when trying to compare file contents.
 ** Previous versions in certain cases failed to restore directory
 modification times.
 ** When creating an archive, do not attempt to store files whose
@@ -905,4 +908,8 @@ Boston, MA 02110-1301, USA.
 Local variables:
 mode: outline
 paragraph-separate: "[	]*$"
+eval: (add-hook 'write-file-hooks 'time-stamp)
+time-stamp-start: "changes. "
+time-stamp-format: "%:y-%02m-%02d"
+time-stamp-end: "\n"
 end:
