@@ -1,3 +1,7 @@
+2007-06-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* tests/exclude.at: Sort the output.
+
 2007-06-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac, NEWS: Raise version number to 1.17
