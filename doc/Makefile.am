@@ -20,6 +20,7 @@
 info_TEXINFOS = tar.texi
 tar_TEXINFOS = \
  dumpdir.texi\
+ tar-snapshot-edit.texi\
  fdl.texi\
  freemanuals.texi\
  genfile.texi\
