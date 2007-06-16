@@ -109,6 +109,7 @@ Appendices
 
 * Changes::
 * Configuring Help Summary::
+* Fixing Snapshot Files::
 * Tar Internals::
 * Genfile::
 * Free Software Needs Free Documentation::
@@ -315,10 +316,15 @@ Date input formats
 
 Controlling the Archive Format
 
-* Portability::                 Making @command{tar} Archives More Portable
 * Compression::                 Using Less Space through Compression
 * Attributes::                  Handling File Attributes
+* Portability::                 Making @command{tar} Archives More Portable
 * cpio::                        Comparison of @command{tar} and @command{cpio}
+
+Using Less Space through Compression
+
+* gzip::                        Creating and Reading Compressed Archives
+* sparse::                      Archiving Sparse Files
 
 Making @command{tar} Archives More Portable
 
@@ -341,11 +347,6 @@ How to Extract GNU-Specific Data Using Other @command{tar} Implementations
 
 * Split Recovery::       Members Split Between Volumes
 * Sparse Recovery::      Sparse Members
-
-Using Less Space through Compression
-
-* gzip::                        Creating and Reading Compressed Archives
-* sparse::                      Archiving Sparse Files
 
 Tapes and Other Archive Media
 
@@ -5406,6 +5407,7 @@ unreliable if you modify a file's time stamps during dumping (e.g.,
 with the @option{--atime-preserve=replace} option), or if you set the clock
 backwards.
 
+@cindex Device numbers, using in incremental backups
 Metadata stored in snapshot files include device numbers, which,
 obviously is supposed to be a non-volatile value.  However, it turns
 out that NFS devices have undependable values when an automounter
@@ -5415,6 +5417,11 @@ two NFS devices numbers over time.  The solution implemented currently
 is to considers all NFS devices as being equal when it comes to
 comparing directories; this is fairly gross, but there does not seem
 to be a better way to go.
+
+If you are using the @i{Linux} kernel, the device numbers can also
+change when upgrading to some newer versions of the kernel.  This can
+cause the next backup to be full backup on the affected filesystems.
+@xref{Fixing Snapshot Files}, for the information on how to handle this case.
 
 Note that incremental archives use @command{tar} extensions and may
 not be readable by non-@acronym{GNU} versions of the @command{tar} program.
@@ -10913,6 +10920,10 @@ output. Default is 12.
 @deftypevr {Help Output} offset rmargin
 Right margin of the text output. Used for wrapping.
 @end deftypevr
+
+@node Fixing Snapshot Files
+@appendix Fixing Snapshot Files
+@include tar-snapshot-edit.texi
 
 @node Tar Internals
 @appendix Tar Internals
