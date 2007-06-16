@@ -1,0 +1,58 @@
+@c This is part of the paxutils manual.
+@c Copyright (C) 2007 Free Software Foundation, Inc.
+@c This file is distributed under GFDL 1.1 or any later version
+@c published by the Free Software Foundation.
+
+@cindex Device numbers, changing
+@cindex snapshot files, editing
+@cindex snapshot files, fixing device numbers
+  Sometimes device numbers can change after upgrading your kernel
+version or recofiguring the harvare.  Reportedly this is the case with 
+some newer @i{Linux} kernels, when using @acronym{LVM}.  In majority of
+cases this change is unnoticed by the users.  However, it influences
+@command{tar} incremental backups: the device number is stored in tar
+snapshot files (@pxref{Snapshot Files}) and is used to determine whether
+the file has changed since the last backup.  If the device numbers
+change for some reason, the next backup you run will be a full backup.
+
+@pindex tar-snapshot-edit
+  To minimize the impact in these cases, GNU @command{tar} comes with
+the @command{tar-snapshot-edit} utility for inspecting and updating
+device numbers in snapshot files.  The utility, written by
+Dustin J.@: Mitchell, is available from
+@uref{http://www.gnu.org/@/software/@/tar/@/utils/@/tar-snapshot-edit.html,
+@GNUTAR{} home page}. 
+
+  To obtain the device numbers used in the snapshot file, run 
+
+@smallexample
+$ @kbd{tar-snapshot-edit @var{snapfile}}
+@end smallexample
+
+@noindent
+where @var{snapfile} is the name of the snapshot file (you can supply as many
+files as you wish in a single command line ).
+
+To update all occurrences of the given device number in the file, use
+@option{-r} option.  It takes a single argument of the form
+@samp{@var{olddev}-@var{newdev}},  where @var{olddev} is the device number
+used in the snapshot file, and @var{newdev} is the corresponding new device
+number.  Both numbers may be specified in hex (e.g., @samp{0xfe01}),
+decimal (e.g., @samp{65025}), or as a major:minor number pair (e.g.,
+@samp{254:1}).  To change several device numbers at once, specify them
+in a single comma-separated list, as in
+@option{-r 0x3060-0x4500,0x307-0x4600}.
+
+Before updating the snapshot file, it is a good idea to create a backup
+copy of it.  This is accomplished by @samp{-b} option.  The name of the
+backup file is obtained by appending @samp{~} to the original file name.
+
+An example session:
+@smallexample
+$ @kbd{tar-snapshot-edit /var/backup/snap.a}
+file version 2
+/tmp/snap: Device 0x0306 occurs 634 times.
+$ @kbd{tar-snapshot-edit -b -r 0x0306-0x4500 /var/backup/snap.a}
+file version 2
+@end smallexample
+

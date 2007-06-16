@@ -1,0 +1,328 @@
+#! /usr/bin/perl -w
+# Display and edit the 'dev' field in tar's snapshots
+# Copyright (C) 2007 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+# Author: Dustin J. Mitchell <dustin@zmanda.com>
+#
+# This script is capable of replacing values in the 'dev' field of an
+# incremental backup 'snapshot' file.  This is useful when the device
+# used to store files in a tar archive changes, without the files
+# themselves changing.  This may happen when, for example, a device
+# driver changes major or minor numbers.
+
+use Getopt::Std;
+
+## reading
+
+sub read_incr_db ($) {
+    my $filename = shift;
+    open(my $file, "<$filename") || die "Could not open '$filename' for reading";
+
+    my $header_str = <$file>;
+    my $file_version;
+    if ($header_str =~ /^GNU tar-[^-]*-([0-9]+)\n$/) {
+	$file_version = $1+0;
+    } else {
+	$file_version = 0;
+    }
+
+    print "file version $file_version\n";
+
+    if ($file_version == 0) {
+	return read_incr_db_0($file, $header_str);
+    } elsif ($file_version == 1) {
+	return read_incr_db_1($file);
+    } elsif ($file_version == 2) {
+	return read_incr_db_2($file);
+    } else {
+	die "Unrecognized snapshot version in header '$header_str'";
+    }
+}
+
+sub read_incr_db_0 ($$) {
+    my $file = shift;
+    my $header_str = shift;
+
+    my $hdr_timestamp_sec = $header_str;
+    chop $hdr_timestamp_sec;
+    my $hdr_timestamp_nsec = ''; # not present in file format 0
+
+    my @dirs;
+
+    while (<$file>) {
+	/^([0-9]*) ([0-9]*) (.*)\n$/ || die("Bad snapshot line $_");
+
+	push @dirs, { dev=>$1,
+		      ino=>$2,
+		      name=>$3 };
+    }
+
+    close($file);
+
+    # file version, timestamp, timestamp, dir list
+    return [ 0, $hdr_timestamp_sec, $hdr_timestamp_nsec, \@dirs ];
+}
+
+sub read_incr_db_1 ($) {
+    my $file = shift;
+
+    my $timestamp = <$file>; # "sec nsec"
+    my ($hdr_timestamp_sec, $hdr_timestamp_nsec) = ($timestamp =~ /([0-9]*) ([0-9]*)/);
+
+    my @dirs;
+
+    while (<$file>) {
+	/^([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) (.*)\n$/ || die("Bad snapshot line $_");
+
+	push @dirs, { timestamp_sec=>$1,
+		      timestamp_nsec=>$2,
+		      dev=>$3,
+		      ino=>$4,
+		      name=>$5 };
+    }
+
+    close($file);
+
+    # file version, timestamp, timestamp, dir list
+    return [ 1, $hdr_timestamp_sec, $hdr_timestamp_nsec, \@dirs ];
+}
+
+sub read_incr_db_2 ($) {
+    my $file = shift;
+
+    $/="\0"; # $INPUT_RECORD_SEPARATOR
+    my $hdr_timestamp_sec = <$file>;
+    chop $hdr_timestamp_sec;
+    my $hdr_timestamp_nsec = <$file>;
+    chop $hdr_timestamp_nsec;
+    my @dirs;
+
+    while (1) {
+	last if eof($file);
+
+	my $nfs = <$file>;
+	my $timestamp_sec = <$file>;
+	my $timestamp_nsec = <$file>;
+	my $dev = <$file>;
+	my $ino = <$file>;
+	my $name = <$file>;
+
+	# get rid of trailing NULs
+	chop $nfs;
+	chop $timestamp_sec;
+	chop $timestamp_nsec;
+	chop $dev;
+	chop $ino;
+	chop $name;
+
+	my @dirents;
+	while (my $dirent = <$file>) {
+	    chop $dirent;
+	    push @dirents, $dirent;
+	    last if ($dirent eq "");
+	}
+	die "missing terminator" unless (<$file> eq "\0");
+
+	push @dirs, { nfs=>$nfs,
+		      timestamp_sec=>$timestamp_sec,
+		      timestamp_nsec=>$timestamp_nsec,
+		      dev=>$dev,
+		      ino=>$ino,
+		      name=>$name,
+		      dirents=>\@dirents };
+    }
+
+    close($file);
+    $/ = "\n"; # reset to normal
+
+    # file version, timestamp, timestamp, dir list
+    return [ 2, $hdr_timestamp_sec, $hdr_timestamp_nsec, \@dirs ];
+}
+
+## display
+
+sub show_device_counts ($$) {
+    my $info = shift;
+    my $filename = shift;
+    my %devices;
+    foreach my $dir (@{${@$info}[3]}) {
+	my $dev = ${%$dir}{'dev'};
+	$devices{$dev}++;
+    }
+
+    foreach $dev (sort keys %devices) {
+	printf "$filename: Device 0x%04x occurs $devices{$dev} times.\n", $dev;
+    }
+}
+
+## editing
+
+sub replace_device_number ($@) {
+    my $info = shift(@_);
+    my @repl = @_;
+
+    foreach my $dir (@{${@$info}[3]}) {
+        foreach $x (@repl) {
+	    if (${%$dir}{'dev'} eq $$x[0]) {
+	        ${%$dir}{'dev'} = $$x[1];
+                last;
+            }
+	}
+    }
+}
+
+## writing
+
+sub write_incr_db ($$) {
+    my $info = shift;
+    my $filename = shift;
+    my $file_version = $$info[0];
+
+    open($file, ">$filename") || die "Could not open '$filename' for writing";
+
+    if ($file_version == 0) {
+	write_incr_db_0($info, $file);
+    } elsif ($file_version == 1) {
+	write_incr_db_1($info, $file);
+    } elsif ($file_version == 2) {
+	write_incr_db_2($info, $file);
+    } else {
+	die "Unknown file version $file_version.";
+    }
+
+    close($file);
+}
+
+sub write_incr_db_0 ($$) {
+    my $info = shift;
+    my $file = shift;
+    
+    my $timestamp_sec = $info->[1];
+    print $file "$timestamp_sec\n";
+
+    foreach my $dir (@{${@$info}[3]}) {
+	print $file "${%$dir}{'dev'} ";
+	print $file "${%$dir}{'ino'} ";
+	print $file "${%$dir}{'name'}\n";
+    }
+}
+
+
+sub write_incr_db_1 ($$) {
+    my $info = shift;
+    my $file = shift;
+    
+    print $file "GNU tar-1.15-1\n";
+
+    my $timestamp_sec = $info->[1];
+    my $timestamp_nsec = $info->[2];
+    print $file "$timestamp_sec $timestamp_nsec\n";
+
+    foreach my $dir (@{${@$info}[3]}) {
+	print $file "${%$dir}{'timestamp_sec'} ";
+	print $file "${%$dir}{'timestamp_nsec'} ";
+	print $file "${%$dir}{'dev'} ";
+	print $file "${%$dir}{'ino'} ";
+	print $file "${%$dir}{'name'}\n";
+    }
+}
+
+
+sub write_incr_db_2 ($$) {
+    my $info = shift;
+    my $file = shift;
+    
+    print $file "GNU tar-1.16-2\n";
+
+    my $timestamp_sec = $info->[1];
+    my $timestamp_nsec = $info->[2];
+    print $file $timestamp_sec . "\0";
+    print $file $timestamp_nsec . "\0";
+
+    foreach my $dir (@{${@$info}[3]}) {
+	print $file ${%$dir}{'nfs'} . "\0";
+	print $file ${%$dir}{'timestamp_sec'} . "\0";
+	print $file ${%$dir}{'timestamp_nsec'} . "\0";
+	print $file ${%$dir}{'dev'} . "\0";
+	print $file ${%$dir}{'ino'} . "\0";
+	print $file ${%$dir}{'name'} . "\0";
+	foreach my $dirent (@{${%$dir}{'dirents'}}) {
+	    print $file $dirent . "\0";
+	}
+	print $file "\0";
+    }
+}
+
+## main
+
+sub main {
+    our ($opt_b, $opt_r, $opt_h);
+    getopts('br:h');
+    HELP_MESSAGE() if ($opt_h || $#ARGV == -1 || ($opt_b && !$opt_r));
+
+    my @repl;
+    if ($opt_r) {
+	foreach my $spec (split(/,/, $opt_r)) {
+	    ($spec =~ /^([^-]+)-([^-]+)/) || die "Invalid replacement specification '$opt_r'";
+	    push @repl, [interpret_dev($1), interpret_dev($2)];
+	}
+    }
+
+    foreach my $snapfile (@ARGV) {
+	my $info = read_incr_db($snapfile);
+	if ($opt_r ) {
+	    if ($opt_b) {
+		rename($snapfile, $snapfile . "~") || die "Could not rename '$snapfile' to backup";
+	    }
+
+	    replace_device_number($info, @repl);
+	    write_incr_db($info, $snapfile);
+	} else {
+	    show_device_counts($info, $snapfile);
+	}
+    }
+}
+
+sub HELP_MESSAGE {
+    print "Usage: tar-snapshot-edit.pl [-r 'DEV1-DEV2[,DEV3-DEV4...]' [-b]] SNAPFILE [SNAPFILE [..]]\n";
+    print "\n";
+    print "  Without -r, summarize the 'device' values in each SNAPFILE.\n";
+    print "\n";
+    print "  With -r, replace occurrences of DEV1 with DEV2 in each SNAPFILE.\n";
+    print "  DEV1 and DEV2 may be specified in hex (e.g., 0xfe01), decimal (e.g.,\n";
+    print "  65025), or MAJ:MIN (e.g., 254:1).  To replace multiple occurrences,\n";
+    print "  separate them with commas.  If -b is also specified, backup\n";
+    print "  files (ending with '~') will be created.\n";
+    exit 1;
+}
+
+sub interpret_dev ($) {
+    my $dev = shift;
+
+    if ($dev =~ /^([0-9]+):([0-9]+)$/) {
+	return $1 * 256 + $2;
+    } elsif ($dev =~ /^0x[0-9a-fA-F]+$/) {
+	return oct $dev;
+    } elsif ($dev =~ /^[0-9]+$/) {
+	return $dev+0;
+    } else {
+	die "Invalid device specification '$dev'";
+    }
+}
+
+main
