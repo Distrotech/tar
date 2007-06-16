@@ -39,6 +39,8 @@ chmod -w dir
 echo Create the archive
 tar cf archive dir || exit 1
 
+chmod +w dir
+
 echo Extract
 mkdir out
 tar -C out -xvf archive
