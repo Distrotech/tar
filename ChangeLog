@@ -1,3 +1,9 @@
+2007-06-21  Eric Blake  <ebb9@byu.net>
+
+        Resolve testsuite failures 40-42 on cygwin.
+        * tests/testsuite.at (AT_TAR_MKHIER): Skip tests when long
+        file names cannot be created.
+
 2007-06-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/Makefile.am (tar_TEXINFOS): Add tar-snapshot-edit.texi
