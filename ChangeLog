@@ -1,3 +1,9 @@
+2007-06-21  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* tests/testsuite.at (AT_TAR_MKHIER): Skip test if genfile is
+	unable to create the file
+	* tests/lustar01.at: Likewise
+
 2007-06-21  Eric Blake  <ebb9@byu.net>
 
         Resolve testsuite failures 40-42 on cygwin.
