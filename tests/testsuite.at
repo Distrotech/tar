@@ -84,8 +84,8 @@ test $result -eq 0 && AT_SKIP_TEST
 ])
 
 m4_define([AT_TAR_MKHIER],[
-install-sh -d $1 >/dev/null || AT_SKIP_TEST
-m4_if([$2],,,genfile --file [$1]/[$2])])
+install-sh -d $1 >/dev/null dnl
+m4_if([$2],,,&& genfile --file [$1]/[$2]) || AT_SKIP_TEST])
 
 m4_include([sparsemvp.at])
 
