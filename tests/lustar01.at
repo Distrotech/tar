@@ -25,7 +25,7 @@ m4_define([LONGNAME],
           [this_is_a_very_long_name_for_a_file_designed_to_test_generation_of_ustar_archives_by_gnu_tar_semicolon_it_will_not_fit_the_name_field_and_cannot_be_split_between_name_and_prefix])
 
 AT_TAR_CHECK([
-genfile --file=LONGNAME
+genfile --file=LONGNAME || AT_SKIP_TEST
 tar cf archive LONGNAME
 ],
 [2],
