@@ -28,6 +28,8 @@ at-func.c
 backupfile.c
 backupfile.h
 basename.c
+canonicalize-lgpl.c
+canonicalize.h
 chdir-long.c
 chdir-long.h
 chown.c
@@ -37,17 +39,20 @@ closeout.c
 closeout.h
 config.charset
 creat-safer.c
+dirent_.h
 dirfd.c
 dirfd.h
 dirname.c
 dirname.h
 dup-safer.c
+dup2.c
 error.c
 error.h
 exclude.c
 exclude.h
 exitfail.c
 exitfail.h
+fchdir.c
 fchmodat.c
 fchown-stub.c
 fchownat.c
@@ -56,6 +61,8 @@ fcntl-safer.h
 fcntl_.h
 fd-safer.c
 fileblocks.c
+float+.h
+float_.h
 fnmatch.c
 fnmatch_.h
 fnmatch_loop.c
@@ -117,6 +124,7 @@ openat-priv.h
 openat-proc.c
 openat.c
 openat.h
+pathmax.h
 paxerror.c
 paxexit.c
 paxlib.h
@@ -124,11 +132,13 @@ paxnames.c
 pipe-safer.c
 printf-args.c
 printf-args.h
+printf-parse.c
 printf-parse.h
 quote.c
 quote.h
 quotearg.c
 quotearg.h
+readlink.c
 ref-add.sin
 ref-del.sin
 regcomp.c
@@ -199,6 +209,7 @@ unsetenv.c
 utime.c
 utimens.c
 utimens.h
+vasnprintf.c
 vasnprintf.h
 verify.h
 version-etc-fsf.c
@@ -213,6 +224,7 @@ xalloc.h
 xgetcwd.c
 xgetcwd.h
 xmalloc.c
+xsize.h
 xstrndup.c
 xstrndup.h
 xstrtol.c
