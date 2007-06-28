@@ -108,8 +108,9 @@ gnulib_files=
 
 # Translation Project URL, for the registry of all projects
 # and for the translation-team master directory.
-TP_URL='http://www.iro.umontreal.ca/translation/registry.cgi?domain='
-TP_PO_URL='http://www.iro.umontreal.ca/translation/teams/PO/'
+tp_url() {
+	echo "http://translationproject.org/domain/$1.html"
+}
 
 extract_package_name='
   /^AC_INIT(/{
@@ -221,33 +222,35 @@ get_translations() {
   '')
     echo "$0: wget not available; skipping translations";;
   ?*)
-    echo "$0: getting ${po_file:-translations} into $subdir for $domain..."  &&
+    url=`tp_url $domain`
+    baseurl=`expr "$url" : '\(.*\)/.*'`
+    echo "$0: getting translations into $subdir for $domain..." &&
     case $po_file in
     '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
     esac &&
-  
-    $WGET_COMMAND -O "$subdir/$domain.html" "$TP_URL$domain" &&
 
-    sed -n 's|.*"http://[^"]*/translation/teams/PO/\([^/"]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\1.\2|p' <"$subdir/$domain.html" |
-    sort -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
-    awk -F. '
-      { if (lang && $1 != lang) print lang, ver }
-      { lang = $1; ver = substr($0, index($0, ".") + 1) }
-      END { if (lang) print lang, ver }
-    ' | awk -v domain="$domain" -v po_file="$po_file" -v subdir="$subdir" '
+    $WGET_COMMAND -O "$subdir/$domain.html" "$url" &&
+
+    sed -n 's|.*href="\(.*\)/\([^/][^/]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\2:\3:\1|p' <"$subdir/$domain.html" |
+    sort -t: -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
+    awk -F: '
+      { if (lang && $1 != lang) print lang, ver, $3 }
+      { lang = $1; ver = $2 }
+      END { if (lang) print lang, ver, $3 }
+    ' | awk -v domain="$domain" -v baseurl="$baseurl" -v subdir="$subdir" \
+            -v po_file="$po_file" '
       {
 	lang = $1
         if (po_file && po_file != (lang ".po")) next
-	
 	ver = $2
-	urlfmt = ""
-	printf "{ $WGET_COMMAND -O %s/%s.po '\'"$TP_PO_URL"'/%s/%s-%s.%s.po'\'' &&\n", subdir, lang, lang, domain, ver, lang
+	printf "{ $WGET_COMMAND -O %s/%s.po %s/%s/%s/%s-%s.%s.po &&\n", subdir, lang, baseurl, $3, lang, domain, ver, lang
 	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
 	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
 	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
       }
       END { print ":" }
-    ' | WGET_COMMAND="$WGET_COMMAND" sh;;
+    ' | WGET_COMMAND="$WGET_COMMAND" sh 
+    ;;
   esac &&
   ls "$subdir"/*.po 2>/dev/null |
     sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
