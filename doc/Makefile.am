@@ -32,7 +32,6 @@ tar_TEXINFOS = \
  sparse.texi\
  value.texi
 EXTRA_DIST = gendocs_template mastermenu.el texify.sed
-DISTCLEANFILES=*.info* 
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
 # Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.

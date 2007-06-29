@@ -102,6 +102,9 @@ localcharset.h
 lstat.c
 lstat.h
 malloc.c
+malloca.c
+malloca.h
+malloca.valgrind
 mbchar.c
 mbchar.h
 mbscasecmp.c

@@ -1,5 +1,13 @@
-GNU tar NEWS - User visible changes. 2007-06-08
+GNU tar NEWS - User visible changes. 2007-06-29
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.18 - Sergey Poznyakoff, 2007-06-29
+
+* Licensed under the GPLv3
+
+* Fixed several bugs in the testsuite
+
 
 version 1.17 - Sergey Poznyakoff, 2007-06-08
 
