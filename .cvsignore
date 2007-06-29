@@ -3,7 +3,6 @@
 *.tar
 .bootstrap
 ABOUT-NLS
-COPYING
 INSTALL
 Makefile
 Makefile.in
