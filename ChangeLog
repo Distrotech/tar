@@ -1,5 +1,11 @@
 2007-08-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* src/names.c (contains_dot_dot): Fix double-dot recognition in
+	case of duplicate /. Patch by Dmitry V. Levin.
+
+	* bootstrap (symlink_to_gnulib): Make sure the target directory
+	exists and create it if it does not.
+	
 	* doc/tar.texi: Fix a typo.
 
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
