@@ -10279,7 +10279,7 @@ echo $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME >&$TAR_FD
 @end group
 @end smallexample
 
-The same script cant be used while listing, comparing or extracting
+The same script can be used while listing, comparing or extracting
 from the created archive.  For example:
 
 @smallexample
