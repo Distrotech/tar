@@ -372,6 +372,12 @@ esac
 gnulib_tool=$GNULIB_SRCDIR/gnulib-tool
 <$gnulib_tool || exit
 
+ensure_dir_exists()
+{
+  d=`dirname $dst`
+  test -d "$d" || mkdir -p -- "$d"
+}
+
 symlink_to_gnulib()
 {
   src=$GNULIB_SRCDIR/$1
@@ -388,6 +394,7 @@ symlink_to_gnulib()
       test -f "$dst" &&
       cmp -s "$src" "$dst" || {
 	echo "$0: cp -fp $src $dst" &&
+	ensure_dir_exists $dst &&
 	cp -fp "$src" "$dst"
       }
     else
@@ -410,6 +417,7 @@ symlink_to_gnulib()
 	esac
 
 	echo "$0: ln -fs $dot_dots$src $dst" &&
+	ensure_dir_exists $dst &&
 	ln -fs "$dot_dots$src" "$dst"
       }
     fi
