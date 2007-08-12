@@ -1,3 +1,7 @@
+2007-08-12  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Fix a typo.
+
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Update for the change of the TP URL
