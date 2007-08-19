@@ -1,3 +1,8 @@
+2007-08-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Gnulib initialization destroyed paxutils m4 files.
+	Initialize paxutils structure after that of gnulib.
+
 2007-08-12  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/names.c (contains_dot_dot): Fix double-dot recognition in
