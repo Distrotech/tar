@@ -339,28 +339,6 @@ copy_files() {
   done
 }
 
-copy_files ${PAXUTILS_SRCDIR}/m4 m4
-echo "$0: Creating m4/paxutils.m4"
-(echo "# This file is generated automatically. Please, do not edit."
- echo "#"
- echo "AC_DEFUN([${package}_PAXUTILS],["
- cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
- echo "])") > ./m4/paxutils.m4
-ignorefile m4 paxutils.m4
-
-if [ -d rmt ]; then
-   :
-else
-   mkdir rmt
-fi
-
-for dir in doc rmt lib tests
-do
-	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
-done
-
-copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
-
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
@@ -600,6 +578,28 @@ slurp $bt2 $bt || exit
 
 rm -fr $bt $bt2 || exit
 
+# Import from paxutils
+copy_files ${PAXUTILS_SRCDIR}/m4 m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([${package}_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/m4/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
+ignorefile m4 paxutils.m4
+
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+for dir in doc rmt lib tests
+do
+	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
+done
+
+copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
 
 # Reconfigure, getting other files.
 
