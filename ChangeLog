@@ -1,3 +1,10 @@
+2007-08-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (check_compressed_archive): Detect files smaller
+	than 512 bytes.
+	* tests/shortfile.at: New test case for the above change.
+	* tests/testsuite.at, tests/Makefile.am: Add shortfile.at
+
 2007-08-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Gnulib initialization destroyed paxutils m4 files.
