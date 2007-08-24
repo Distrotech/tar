@@ -235,14 +235,16 @@ check_compressed_archive ()
 {
   struct zip_magic const *p;
   bool sfr;
-
+  bool short_file = false;
+  
   /* Prepare global data needed for find_next_block: */
   record_end = record_start; /* set up for 1st record = # 0 */
   sfr = read_full_records;
   read_full_records = true; /* Suppress fatal error on reading a partial
 			       record */
-  find_next_block ();
-
+  if (find_next_block () == 0)
+    short_file = true;
+  
   /* Restore global values */
   read_full_records = sfr;
 
@@ -253,6 +255,9 @@ check_compressed_archive ()
   for (p = magic + 1; p < magic + NMAGIC; p++)
     if (memcmp (record_start->buffer, p->magic, p->length) == 0)
       return p->type;
+
+  if (short_file)
+    ERROR ((0, 0, _("This does not look like a tar archive")));
 
   return ct_none;
 }
