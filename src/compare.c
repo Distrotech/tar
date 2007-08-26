@@ -368,9 +368,9 @@ diff_dumpdir (void)
 {
   char *dumpdir_buffer;
   dev_t dev = 0;
-  struct stat stat;
+  struct stat stat_data;
 
-  if (deref_stat (true, current_stat_info.file_name, &stat))
+  if (deref_stat (true, current_stat_info.file_name, &stat_data))
     {
       if (errno == ENOENT)
 	stat_warn (current_stat_info.file_name);
@@ -378,7 +378,7 @@ diff_dumpdir (void)
 	stat_error (current_stat_info.file_name);
     }
   else
-    dev = stat.st_dev;
+    dev = stat_data.st_dev;
 
   dumpdir_buffer = get_directory_contents (current_stat_info.file_name, dev);
 
