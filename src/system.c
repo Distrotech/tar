@@ -17,7 +17,6 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
-#include <getline.h>
 #include <setenv.h>
 
 #include "common.h"
@@ -697,7 +696,7 @@ stat_to_env (char *name, char type, struct tar_stat_info *st)
     }
 }
 
-static pid_t pid;
+static pid_t global_pid;
 static RETSIGTYPE (*pipe_handler) (int sig);
 
 int
@@ -708,9 +707,9 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
 
   xpipe (p);
   pipe_handler = signal (SIGPIPE, SIG_IGN);
-  pid = xfork ();
+  global_pid = xfork ();
 
-  if (pid != 0)
+  if (global_pid != 0)
     {
       xclose (p[PREAD]);
       return p[PWRITE];
@@ -737,14 +736,14 @@ sys_wait_command (void)
 {
   int status;
 
-  if (pid < 0)
+  if (global_pid < 0)
     return;
 
   signal (SIGPIPE, pipe_handler);
-  while (waitpid (pid, &status, 0) == -1)
+  while (waitpid (global_pid, &status, 0) == -1)
     if (errno != EINTR)
       {
-        pid = -1;
+        global_pid = -1;
         waitpid_error (to_command_option);
         return;
       }
@@ -753,18 +752,18 @@ sys_wait_command (void)
     {
       if (!ignore_command_error_option && WEXITSTATUS (status))
 	ERROR ((0, 0, _("%lu: Child returned status %d"),
-		(unsigned long) pid, WEXITSTATUS (status)));
+		(unsigned long) global_pid, WEXITSTATUS (status)));
     }
   else if (WIFSIGNALED (status))
     {
       WARN ((0, 0, _("%lu: Child terminated on signal %d"),
-	     (unsigned long) pid, WTERMSIG (status)));
+	     (unsigned long) global_pid, WTERMSIG (status)));
     }
   else
     ERROR ((0, 0, _("%lu: Child terminated on unknown reason"),
-	    (unsigned long) pid));
+	    (unsigned long) global_pid));
 
-  pid = -1;
+  global_pid = -1;
 }
 
 int

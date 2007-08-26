@@ -22,7 +22,6 @@
 #include <system.h>
 
 #include <fnmatch.h>
-#include <getline.h>
 #include <argp.h>
 #include <argp-namefrob.h>
 #include <argp-fmtstream.h>
@@ -1934,23 +1933,23 @@ usage (int status)
 /* Parse the options for tar.  */
 
 static struct argp_option *
-find_argp_option (struct argp_option *options, int letter)
+find_argp_option (struct argp_option *o, int letter)
 {
   for (;
-       !(options->name == NULL
-	 && options->key == 0
-	 && options->arg == 0
-	 && options->flags == 0
-	 && options->doc == NULL); options++)
-    if (options->key == letter)
-      return options;
+       !(o->name == NULL
+	 && o->key == 0
+	 && o->arg == 0
+	 && o->flags == 0
+	 && o->doc == NULL); o++)
+    if (o->key == letter)
+      return o;
   return NULL;
 }
 
 static void
 decode_options (int argc, char **argv)
 {
-  int index;
+  int idx;
   struct tar_args args;
 
   /* Set some default option values.  */
@@ -2041,7 +2040,7 @@ decode_options (int argc, char **argv)
   prepend_default_options (getenv ("TAR_OPTIONS"), &argc, &argv);
 
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP,
-		  &index, &args))
+		  &idx, &args))
     exit (TAREXIT_FAILURE);
 
 
@@ -2069,9 +2068,9 @@ decode_options (int argc, char **argv)
     }
 
   /* Handle operands after any "--" argument.  */
-  for (; index < argc; index++)
+  for (; idx < argc; idx++)
     {
-      name_add_name (argv[index], MAKE_INCL_OPTIONS (&args));
+      name_add_name (argv[idx], MAKE_INCL_OPTIONS (&args));
       args.input_files = true;
     }
 

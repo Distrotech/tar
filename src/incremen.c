@@ -18,7 +18,6 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <system.h>
-#include <getline.h>
 #include <hash.h>
 #include <quotearg.h>
 #include "common.h"
@@ -455,9 +454,9 @@ makedumpdir (struct directory *directory, const char *dir)
 
 /* Recursively scan the given directory. */
 static char *
-scan_directory (char *dir_name, dev_t device)
+scan_directory (char *dir, dev_t device)
 {
-  char *dirp = savedir (dir_name);	/* for scanning directory */
+  char *dirp = savedir (dir);	/* for scanning directory */
   char *name_buffer;		/* directory, `/', and directory member */
   size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
   size_t name_length;		/* used length in name_buffer */
@@ -465,12 +464,12 @@ scan_directory (char *dir_name, dev_t device)
   struct directory *directory;
 
   if (! dirp)
-    savedir_error (dir_name);
+    savedir_error (dir);
 
-  name_buffer_size = strlen (dir_name) + NAME_FIELD_SIZE;
+  name_buffer_size = strlen (dir) + NAME_FIELD_SIZE;
   name_buffer = xmalloc (name_buffer_size + 2);
-  strcpy (name_buffer, dir_name);
-  if (! ISSLASH (dir_name[strlen (dir_name) - 1]))
+  strcpy (name_buffer, dir);
+  if (! ISSLASH (dir[strlen (dir) - 1]))
     strcat (name_buffer, "/");
   name_length = strlen (name_buffer);
 
@@ -552,9 +551,9 @@ scan_directory (char *dir_name, dev_t device)
 }
 
 char *
-get_directory_contents (char *dir_name, dev_t device)
+get_directory_contents (char *dir, dev_t device)
 {
-  return scan_directory (dir_name, device);
+  return scan_directory (dir, device);
 }
 
 

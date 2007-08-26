@@ -26,7 +26,6 @@
 
 #include <closeout.h>
 #include <fnmatch.h>
-#include <getline.h>
 #include <human.h>
 #include <quotearg.h>
 
@@ -591,7 +590,7 @@ _open_archive (enum access_mode wanted_access)
 }
 
 static void
-do_checkpoint (bool write)
+do_checkpoint (bool do_write)
 {
   if (checkpoint_option && !(++checkpoint % checkpoint_option))
     {
@@ -603,7 +602,7 @@ do_checkpoint (bool write)
 	  break;
 
 	case checkpoint_text:
-	  if (write)
+	  if (do_write)
 	    /* TRANSLATORS: This is a ``checkpoint of write operation'',
 	     *not* ``Writing a checkpoint''.
 	     E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
@@ -1137,22 +1136,22 @@ try_new_volume ()
 {
   size_t status;
   union block *header;
-  int access;
+  enum access_mode acc;
   
   switch (subcommand_option)
     {
     case APPEND_SUBCOMMAND:
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
-      access = ACCESS_UPDATE;
+      acc = ACCESS_UPDATE;
       break;
 
     default:
-      access = ACCESS_READ;
+      acc = ACCESS_READ;
       break;
     }
 
-  if (!new_volume (access))
+  if (!new_volume (acc))
     return true;
   
   while ((status = rmtread (archive, record_start->buffer, record_size))
