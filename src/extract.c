@@ -1,7 +1,7 @@
 /* Extract files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -593,13 +593,13 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 
       if (! skip_this_one)
 	{
-	  struct tar_stat_info st;
-	  st.stat.st_mode = data->mode;
-	  st.stat.st_uid = data->uid;
-	  st.stat.st_gid = data->gid;
-	  st.atime = data->atime;
-	  st.mtime = data->mtime;
-	  set_stat (data->file_name, &st, cur_info,
+	  struct tar_stat_info sb;
+	  sb.stat.st_mode = data->mode;
+	  sb.stat.st_uid = data->uid;
+	  sb.stat.st_gid = data->gid;
+	  sb.atime = data->atime;
+	  sb.mtime = data->mtime;
+	  set_stat (data->file_name, &sb, cur_info,
 		    data->invert_permissions, data->permstatus, DIRTYPE);
 	}
 
