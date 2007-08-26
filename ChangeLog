@@ -1,4 +1,31 @@
+2007-08-25  Jim Meyering  <jim@meyering.net>
+
+	Don't include <getline.h>.  No longer needed.
+	* src/incremen.c: Don't include <getline.h>.  No longer needed.
+	* src/buffer.c: Likewise.
+	* src/system.c: Likewise.
+	* src/tar.c: Likewise.
+
+	Avoid shadowing and unused-variable warnings.
+	* src/create.c (check_exclusion_tags): Remove declaration of unused
+	local, "ret".
+	* src/compare.c (diff_dumpdir): Rename stat->stat_data to avoid
+	shadowing the syscall.
+	* src/buffer.c (do_checkpoint): Don't shadow the write syscall.
+	(try_new_volume): Avoid shadowing "access".
+	* src/tar.c (decode_options): Rename index->idx to avoid shadowing.
+	(find_argp_option): Rename option->o to avoid shadowing.
+	* src/incremen.c (scan_directory): Rename local, dir_name->dir,
+	to avoid shadowing the function.
+	(get_directory_contents): Likewise.
+	* src/system.c (global_pid): Rename from "pid", to avoid being
+	shadowed by locals.
+	* src/extract.c (apply_nonancestor_delayed_set_stat):
+	Rename st->sb to avoid shadowing another local.
+
 2007-08-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac, NEWS: Raise version number to 1.18.1
 
 	* src/buffer.c (check_compressed_archive): Detect files smaller
 	than 512 bytes.
