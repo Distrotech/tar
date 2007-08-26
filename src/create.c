@@ -78,7 +78,6 @@ check_exclusion_tags (char *dirname, const char **tag_file_name)
   struct exclusion_tag *tag;
   size_t dlen = strlen (dirname);
   char *nptr = NULL;
-  char *ret = NULL;
   
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
