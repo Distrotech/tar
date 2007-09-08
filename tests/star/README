@@ -2,9 +2,12 @@ This directory contains scripts for testing GNU tar using
 star "test archives". The archives themselves can be obtained
 from http://download.berlios.de/pub/star/testscripts.
 
-The tests are ignored unless environment variable STAR_TESTSCRIPTS
-is set and points to the directory where the test archives reside.
-Sample usage:
+These tests are disabled by default. There are two ways to run
+them.  The simplest is by `make check-full' command.  It requires wget
+and GNU md5sum to be installed. If you don't have these utilities,
+download the test archives manually and set the environment variable
+STAR_TESTSCRIPTS to point to the directory where they reside, for
+example:
 
 	make STAR_TESTSCRIPTS=testdir check
 or	
