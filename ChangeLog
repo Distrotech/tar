@@ -1,3 +1,9 @@
+2007-09-14  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* AUTHORS: Remove unnecessary information.  Just list the
+	principal authors.
+	* THANKS: Remove info duplicated from AUTHORS.
+
 2007-08-25  Jim Meyering  <jim@meyering.net>
 
 	Don't include <getline.h>.  No longer needed.
@@ -44,13 +50,13 @@
 
 	* bootstrap (symlink_to_gnulib): Make sure the target directory
 	exists and create it if it does not.
-	
+
 	* doc/tar.texi: Fix a typo.
 
 2007-06-28  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Update for the change of the TP URL
-	
+
 2007-06-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
         Relicense under GPLv3
@@ -72,7 +78,7 @@
 	* doc/Makefile.am (tar_TEXINFOS): Add tar-snapshot-edit.texi
 	* doc/tar-snapshot-edit.texi: New file
 	* doc/tar.texi (Fixing Snapshot Files): New appendix
-	
+
 	* scripts/tar-snapshot-edit: New file
 	* tests/extrac07.at: Add back write permissions on dir
 
@@ -92,21 +98,21 @@
 
 	* doc/tar.texi (Operation Summary): Restore alphabetical order of
 	the options.
-	
+
 2007-06-02  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Fix bug, introduced on 2007-03-30.
-	
+
 	* src/common.h (xform_type): New data type
 	(transform_member_name): Last argument is of xform_type type
 	All callers updated
 
 	* src/extract.c: Update calls to transform_member_name
 	* src/list.c (decode_xform): Exempt symbolic links from component
-	stripping and name suffix normalization.  
+	stripping and name suffix normalization.
 
 	* tests/extrac07.at: Update
-		
+
 2007-05-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c (decx): Unknown pax keywords produce a warning,

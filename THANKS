@@ -1,11 +1,6 @@
 GNU tar THANKS file
 
-Public domain tar was written by John Gilmore, with contributions
-from Henry Spencer, Fred Fish, Ian Darwin, Geoff Collyer, Stan Barber,
-Guy Harris, Dave Brower, Richard Todd, Michael Rendell, Stu Heiss and
-Rich $alz.  The FSF version, named GNU tar, was derived from PDTAR by
-Jay Fenlason and Joy Kendall, and was maintained in turn by François
-Pinard, Paul Eggert and Sergey Poznyakoff.
+Please see the AUTHORS file for the list of principal authors.
 
 Many people further contributed to GNU tar by reporting problems,
 suggesting various improvements or submitting actual code.  Here is a
