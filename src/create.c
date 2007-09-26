@@ -58,7 +58,7 @@ add_exclusion_tag (const char *name, enum exclusion_tag_type type,
   exclusion_tags = tag;
 }
 
-static void
+void
 exclusion_tag_warning (const char *dirname, const char *tagname,
 		       const char *message)
 {
@@ -70,18 +70,19 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 	   message));
 }
 
-static enum exclusion_tag_type 
+enum exclusion_tag_type 
 check_exclusion_tags (char *dirname, const char **tag_file_name)
 {
   static char *tagname;
   static size_t tagsize;
   struct exclusion_tag *tag;
   size_t dlen = strlen (dirname);
+  int addslash = dirname[dlen-1] != '/';
   char *nptr = NULL;
   
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
-      size_t size = dlen + tag->length + 1;
+      size_t size = dlen + addslash + tag->length + 1;
       if (size > tagsize)
 	{
 	  tagsize = size;
@@ -92,6 +93,8 @@ check_exclusion_tags (char *dirname, const char **tag_file_name)
 	{
 	  strcpy (tagname, dirname);
 	  nptr = tagname + dlen;
+	  if (addslash)
+	    *nptr++ = '/';
 	}
       strcpy (nptr, tag->name);
       if (access (tagname, F_OK) == 0
@@ -1182,8 +1185,11 @@ dump_dir0 (char *directory,
       
       switch (check_exclusion_tags (st->orig_file_name, &tag_file_name))
 	{
-	case exclusion_tag_none:
 	case exclusion_tag_all:
+	  /* Handled in dump_file0 */
+	  break;
+	  
+	case exclusion_tag_none:
 	  {
 	    char const *entry;
 	    size_t entry_len;
