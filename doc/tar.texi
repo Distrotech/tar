@@ -2540,6 +2540,14 @@ named @var{file}, but dump the directory node itself.  @xref{exclude}.
 Exclude from dump any directory containing file named @var{file}.
 @xref{exclude}. 
 
+@opsummary{exclude-vcs}
+@item --exclude-vcs
+
+Exclude from dump directories and files, that are internal for some
+widely used version control systems.
+
+@xref{exclude}.
+
 @opsummary{file}
 @item --file=@var{archive}
 @itemx -f @var{archive}
@@ -6506,6 +6514,42 @@ called as @w{@samp{tar -c -X foo .}} and the file @file{foo} contains a
 single line @file{*.o}, no files whose names end in @file{.o} will be
 added to the archive.
 
+Notice, that lines from @var{file} are read verbatim. One of the
+frequent errors is leaving some extra whitespace after a file name,
+which is difficult to catch using text editors.
+
+However, empty lines are OK.
+
+@cindex version control system, excluding files
+@cindex VCS, excluding files
+@cindex SCCS, excluding files
+@cindex RCS, excluding files
+@cindex CVS, excluding files
+@cindex SVN, excluding files
+@cindex git, excluding files
+@table @option
+@opindex exclude-vcs
+@item --exclude-vcs
+Exclude files and directories used by some version control systems.
+@end table
+
+As of version @value{VERSION}, the following files are excluded:
+
+@itemize @bullet
+@item @file{CVS/}, and everything under it
+@item @file{RCS/}, and everything under it
+@item @file{SCCS/}, and everything under it
+@item @file{.git/}, and everything under it
+@item @file{.gitignore}
+@item @file{.cvsignore}
+@item @file{.svn/}, and everything under it
+@item @file{.arch-ids/}, and everything under it
+@item @file{@{arch@}/}, and everything under it
+@item @file{=RELEASE-ID}
+@item @file{=meta-update}
+@item @file{=update}
+@end itemize
+
 @findex exclude-caches
 When creating an archive, the @option{--exclude-caches} option family
 causes @command{tar} to exclude all directories that contain a @dfn{cache
@@ -6516,7 +6560,7 @@ Various applications write cache directory tags into directories they
 use to hold regenerable, non-precious data, so that such data can be
 more easily excluded from backups.
 
-There are three @samp{exclude-caches} option, providing a different
+There are three @samp{exclude-caches} options, each providing a different
 exclusion semantics:
 
 @table @option

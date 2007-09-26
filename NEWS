@@ -1,8 +1,23 @@
-GNU tar NEWS - User visible changes. 2007-08-24
+GNU tar NEWS - User visible changes. 2007-09-26
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
 version 1.18.1 (CVS)
+
+* New option --exclude-vcs
+
+Excludes directories and files, internal to some widely used version
+control systems, e.g. "CVS/", ".svn/", etc.
+
+* --exclude-tag and --exclude-cache options
+
+The following options now work with incremental archives as well:
+
+  --exclude-caches       
+  --exclude-caches-all   
+  --exclude-tag
+  --exclude-tag-all
+  --exclude-tag-under
 
 * Fix --version output.
 
