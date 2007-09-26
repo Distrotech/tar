@@ -259,6 +259,7 @@ enum
   EXCLUDE_TAG_OPTION,
   EXCLUDE_TAG_UNDER_OPTION,
   EXCLUDE_TAG_ALL_OPTION,
+  EXCLUDE_VCS_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
   HANG_OPTION,
@@ -621,6 +622,8 @@ static struct argp_option options[] = {
    N_("exclude everything under directories containing FILE"), GRID+1 },
   {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
    N_("exclude directories containing FILE"), GRID+1 },
+  {"exclude-vcs", EXCLUDE_VCS_OPTION, NULL, 0,
+   N_("exclude version control system directories"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
@@ -784,6 +787,7 @@ struct tar_args        /* Variables used during option parsing */
   bool input_files;                /* True if some input files where given */
 };
 
+
 #define MAKE_EXCL_OPTIONS(args) \
  ((((args)->wildcards != disable_wildcards) ? EXCLUDE_WILDCARDS : 0) \
   | (args)->matching_flags \
@@ -795,6 +799,37 @@ struct tar_args        /* Variables used during option parsing */
   | (args)->matching_flags \
   | recursion_option)
 
+void
+exclude_vcs_files ()
+{
+  int i;
+  static char *vcs_file[] = {
+    /* CVS: */
+    "CVS",
+    ".cvsignore",
+    /* RCS: */
+    "RCS",
+    /* SCCS: */
+    "SCCS",
+    /* SVN: */
+    ".svn",
+    /* git: */
+    ".git",
+    ".gitignore",
+    /* Arch: */
+    ".arch-ids",
+    "{arch}",
+    "=RELEASE-ID",
+    "=meta-update",
+    "=update",
+    NULL
+  };
+
+  for (i = 0; vcs_file[i]; i++)
+    add_exclude (excluded, vcs_file[i], 0);
+}
+
+
 #ifdef REMOTE_SHELL
 # define DECL_SHOW_DEFAULT_SETTINGS(stream, printer)                      \
 {                                                                         \
@@ -1547,6 +1582,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       add_exclusion_tag (arg, exclusion_tag_all, NULL);
       break;
 
+    case EXCLUDE_VCS_OPTION:
+      exclude_vcs_files ();
+      break;
+      
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
