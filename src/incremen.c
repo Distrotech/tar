@@ -62,6 +62,8 @@ struct directory
     unsigned flags;             /* See DIRF_ macros above */
     struct directory *orig;     /* If the directory was renamed, points to
 				   the original directory structure */
+    const char *tagfile;        /* Tag file, if the directory falls under
+				   exclusion_tag_under */
     char name[1];		/* file name of directory */
   };
 
@@ -124,6 +126,7 @@ make_directory (const char *name)
   strcpy (directory->name, name);
   if (ISSLASH (directory->name[namelen-1]))
     directory->name[namelen-1] = 0;
+  directory->tagfile = NULL;
   return directory;
 }
 
@@ -229,7 +232,8 @@ static struct directory *
 procdir (char *name_buffer, struct stat *stat_data,
 	 dev_t device,
 	 enum children children,
-	 bool verbose)
+	 bool verbose,
+	 char *entry)
 {
   struct directory *directory;
   bool nfs = NFS_FILE_STAT (*stat_data);
@@ -329,6 +333,40 @@ procdir (char *name_buffer, struct stat *stat_data,
     directory->children = ALL_CHILDREN;
 
   DIR_SET_FLAG (directory, DIRF_INIT);
+
+  {
+    const char *tag_file_name;
+    size_t len;
+    
+    switch (check_exclusion_tags (name_buffer, &tag_file_name))
+      {
+      case exclusion_tag_all:
+	/* This warning can be duplicated by code in dump_file0, but only
+	   in case when the topmost directory being archived contains
+	   an exclusion tag. */
+	exclusion_tag_warning (name_buffer, tag_file_name,
+			       _("directory not dumped"));
+	if (entry)
+	  *entry = 'N';
+	directory->children = NO_CHILDREN;
+	break;
+
+      case exclusion_tag_contents:
+	exclusion_tag_warning (name_buffer, tag_file_name,
+			       _("contents not dumped"));
+	directory->children = NO_CHILDREN;
+	break;
+	
+      case exclusion_tag_under:
+	exclusion_tag_warning (name_buffer, tag_file_name,
+			       _("contents not dumped"));
+	directory->tagfile = tag_file_name;
+	break;
+	
+      case exclusion_tag_none:
+	break;
+      }
+  }
 
   return directory;
 }
@@ -436,9 +474,17 @@ makedumpdir (struct directory *directory, const char *dir)
       const char *loc = dumpdir_locate (dump, array[i]);
       if (loc)
 	{
-	  *new_dump_ptr++ = ' ';
+	  if (directory->tagfile)
+	    *new_dump_ptr = strcmp (directory->tagfile, array[i]) == 0 ?
+		               ' ' : 'I';
+	  else
+	    *new_dump_ptr = ' ';
+	  new_dump_ptr++;
 	  dump = loc + strlen (loc) + 1;
 	}
+      else if (directory->tagfile)
+	*new_dump_ptr++ = strcmp (directory->tagfile, array[i]) == 0 ?
+		               ' ' : 'I';
       else
 	*new_dump_ptr++ = 'Y'; /* New entry */
 
@@ -462,7 +508,7 @@ scan_directory (char *dir, dev_t device)
   size_t name_length;		/* used length in name_buffer */
   struct stat stat_data;
   struct directory *directory;
-
+  
   if (! dirp)
     savedir_error (dir);
 
@@ -484,8 +530,9 @@ scan_directory (char *dir, dev_t device)
       return NULL;
     }
 
-  directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false);
-
+  directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false,
+		       NULL);
+  
   if (dirp && directory->children != NO_CHILDREN)
     {
       char  *entry;	/* directory entry being scanned */
@@ -506,7 +553,9 @@ scan_directory (char *dir, dev_t device)
 	    }
 	  strcpy (name_buffer + name_length, entry + 1);
 
-	  if (excluded_name (name_buffer))
+	  if (*entry == 'I') /* Ignored entry */
+	    *entry = 'N';
+	  else if (excluded_name (name_buffer))
 	    *entry = 'N';
 	  else
 	    {
@@ -519,10 +568,10 @@ scan_directory (char *dir, dev_t device)
 
 	      if (S_ISDIR (stat_data.st_mode))
 		{
+		  *entry = 'D';
 		  procdir (name_buffer, &stat_data, device,
 			   directory->children,
-			   verbose_option);
-		  *entry = 'D';
+			   verbose_option, entry);
 		}
 
 	      else if (one_file_system_option && device != stat_data.st_dev)
