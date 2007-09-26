@@ -1,3 +1,28 @@
+2007-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Implement --exclude-tag* and --exclude-cache* options for listed
+	incremental archives.
+	New option --exclude-vcs to exclude VCS-specific files and
+	directories. 
+	
+	* NEWS: Update
+	* doc/tar.texi: Document --exclude-vcs option
+	* src/common.h (exclusion_tag_warning, check_exclusion_tags): New
+	prototypes.
+	* src/create.c (exclusion_tag_warning, check_exclusion_tags):
+	Remove static qualifier.
+	(check_exclusion_tags): account for dirname without terminating
+	slash.
+	(dump_dir0): exclusion_tag_all is handled elsewhere.
+	* src/incremen.c (struct directory): New member tagfile
+	(make_directory): Initialize tagfile to NULL
+	(procdir): New argument: entry
+	Hanlde exclusion tags.
+	(makedumpdir): Take into account directory->tagfile.
+	(scan_directory): Hanlde exclusion tags.
+	* src/tar.c: New option --exclude-vcs
+	(exclude_vcs_files): New function
+	
 2007-09-14  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* AUTHORS: Remove unnecessary information.  Just list the
