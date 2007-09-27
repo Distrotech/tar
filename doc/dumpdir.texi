@@ -1,5 +1,5 @@
 @c This is part of the paxutils manual.
-@c Copyright (C) 2006 Free Software Foundation, Inc.
+@c Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c This file is distributed under GFDL 1.1 or any later version
 @c published by the Free Software Foundation.
@@ -38,7 +38,7 @@ changed since the last backup.
 
 @item R
 This code requests renaming of the @var{filename} to the name
-specified with the following @samp{T} command.
+specified with the @samp{T} command, that immediately follows it.
 
 @item T
 Specify target file name for @samp{R} command (see below).
@@ -90,9 +90,9 @@ New incremental dump was made.
 @end enumerate
 
   This case cannot be handled by three successive renames, since
-renaming @file{a} to @file{b} will destroy existing directory.
-To handle such case a temporary directory is required. @GNUTAR{}
-will create the following dumpdir (newlines have been added for
+renaming @file{a} to @file{b} will destroy the existing directory.
+To correctly process it, @GNUTAR{} needs a temporary directory, so
+it creates the following dumpdir (newlines have been added for
 readability): 
 
 @smallexample
