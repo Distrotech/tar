@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2007-09-26
+GNU tar NEWS - User visible changes. 2007-09-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.18.1 (CVS)
+version 1.18.90 (CVS)
 
 * New option --exclude-vcs
 
