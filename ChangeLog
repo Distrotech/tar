@@ -1,5 +1,8 @@
 2007-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* configure.ac: Raise version number to 1.18.90
+	* NEWS: Likewise
+
 	* doc/snapshot.texi: Document version 2.
 	* doc/dumpdir.texi: Update.
 
