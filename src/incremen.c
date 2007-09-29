@@ -609,10 +609,17 @@ get_directory_contents (char *dir, dev_t device)
 static void
 obstack_code_rename (struct obstack *stk, char *from, char *to)
 {
+  char *s;
+
+  s = from[0] == 0 ? from :
+                     safer_name_suffix (from, false, absolute_names_option);
   obstack_1grow (stk, 'R');
-  obstack_grow (stk, from, strlen (from) + 1);
+  obstack_grow (stk, s, strlen (s) + 1);
+
+  s = to[0] == 0 ? to:
+                   safer_name_suffix (to, false, absolute_names_option);
   obstack_1grow (stk, 'T');
-  obstack_grow (stk, to, strlen (to) + 1);
+  obstack_grow (stk, s, strlen (s) + 1);
 }
 
 static bool
