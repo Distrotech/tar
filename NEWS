@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2007-09-27
+GNU tar NEWS - User visible changes. 2007-09-29
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -19,9 +19,16 @@ The following options now work with incremental archives as well:
   --exclude-tag-all
   --exclude-tag-under
 
+* Fix handling of renamed files in listed incremental archives.
+
+Previous versions always stored absolute file names in rename
+records, even if -P was not used. This is fixed: rename records
+contain file names processed in accordance with the command line
+settings.
+  
 * Fix --version output.
 
-* Recognition of broken archive.
+* Recognition of broken archives.
 
 When supplied an archive smaller than 512 bytes in reading mode (-x,
 -t), the previous version of tar silently ignored it, exiting with

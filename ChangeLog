@@ -1,3 +1,9 @@
+2007-09-29  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (obstack_code_rename): Apply safer_name_suffix to
+	name arguments before storing them in T and R records. Reported by
+	Nicholas Cole.
+
 2007-09-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac: Raise version number to 1.18.90
