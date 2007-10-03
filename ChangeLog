@@ -1,3 +1,8 @@
+2007-10-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (try_purge_directory): Ensure that arguments to T
+	and R are safe.
+
 2007-09-29  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (obstack_code_rename): Apply safer_name_suffix to
