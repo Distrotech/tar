@@ -1410,6 +1410,19 @@ try_purge_directory (char const *directory_name)
 	  arc += strlen (arc) + 1;
 	  dst = arc + 1;
 
+	  /* Ensure that neither source nor destination are absolute file
+	     names (unless permitted by -P option), and that they do not
+	     contain dubious parts (e.g. ../).
+
+	     This is an extra safety precaution. Besides, it might be
+	     necessary to extract from archives created with tar versions
+	     prior to 1.19. */
+	  
+	  if (*src)
+	    src = safer_name_suffix (src, false, absolute_names_option);
+	  if (*dst)
+	    dst = safer_name_suffix (dst, false, absolute_names_option);
+	  
 	  if (*src == 0)
 	    src = temp_stub;
 	  else if (*dst == 0)
