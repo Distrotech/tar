@@ -19,7 +19,11 @@
 # 02110-1301, USA.
 
 AT_SETUP([files-from: 0-separated file without -0])
-AT_KEYWORDS([files-from null])
+AT_KEYWORDS([files-from null T-null])
+
+AT_DATA([expout],[jeden\ndwa
+trzy
+])
 
 AT_TAR_CHECK([
 AT_SORT_PREREQ
@@ -37,9 +41,7 @@ genfile -f trzy
 tar cfTv archive file-list | sort
 ],
 [0],
-[jeden\ndwa
-trzy
-],
+[expout],
 [tar: file-list: file name read contains nul character
 ],[],[],[ustar]) # Testing one format is enough
 
