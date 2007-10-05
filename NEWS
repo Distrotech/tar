@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2007-09-29
+GNU tar NEWS - User visible changes. 2007-10-05
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -36,6 +36,8 @@ code 0. It is fixed. Tar now issues the following diagnostic message:
 'This does not look like a tar archive', and exits with code 2.
 
 * Fix double-dot recognition in archive member names in case of duplicate '/.'.
+
+* Fix file padding in case of truncation of the input file to zero size.
 
 
 version 1.18 - Sergey Poznyakoff, 2007-06-29

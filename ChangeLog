@@ -1,3 +1,9 @@
+2007-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (dump_regular_file): Fix file padding in case of
+	truncation to zero size.
+	* NEWS: Update
+
 2007-10-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* tests/T-null.at: Use AT_DATA for sample output.
