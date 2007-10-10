@@ -1,3 +1,8 @@
+2007-10-10  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac, NEWS: Raise version number to 1.19
+	* tests/star/README: Update
+
 2007-10-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/create.c (dump_regular_file): Fix file padding in case of

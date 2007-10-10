@@ -52,9 +52,9 @@ containing very large files (in this case -- 10 GB).
 
 This is a test for compliance to POSIX.1-1990 tar specification. It
 requires two files: ustar-all-quicktest.tar and quicktest.filelist,
-(they usually reside in star/tartest directory), and `tartest' program
+(they usually reside in star/testscripts directory), and `tartest' program
 (also part of star distribution). The test must be run only with root
-privileges, so it is a good idea to test contents of
+privileges, so it is a good idea to verify the contents of
 ustar-all-quicktest.tar before running it.
 
 If `tartest' is not in your PATH, use TARTEST variable to specify its
