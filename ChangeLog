@@ -1,3 +1,11 @@
+2007-10-11  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Adjust to recent gnulib changes.
+	* configure.ac: Dont' check for strerror, since gnulib now does this.
+	* .cvsignore: Add m4, tar-[0-9]*.
+	* lib/.cvsignore: Adjust to various gnulib file name changes.
+	Add .deps, rmt-command.h.
+
 2007-10-10  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac, NEWS: Raise version number to 1.19
@@ -35,8 +43,8 @@
 	Implement --exclude-tag* and --exclude-cache* options for listed
 	incremental archives.
 	New option --exclude-vcs to exclude VCS-specific files and
-	directories. 
-	
+	directories.
+
 	* NEWS: Update
 	* doc/tar.texi: Document --exclude-vcs option
 	* src/common.h (exclusion_tag_warning, check_exclusion_tags): New
@@ -54,7 +62,7 @@
 	(scan_directory): Hanlde exclusion tags.
 	* src/tar.c: New option --exclude-vcs
 	(exclude_vcs_files): New function
-	
+
 2007-09-14  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* AUTHORS: Remove unnecessary information.  Just list the
