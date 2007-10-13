@@ -1,3 +1,9 @@
+2007-10-12  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* src/utf8.c (string_ascii_p): Recode to avoid bogus GCC 4.2.1
+	warning about "comparison is always true due to limited range of
+	data type" when char is unsigned.
+
 2007-10-11  Paul Eggert  <eggert@cs.ucla.edu>
 
 	Adjust to recent gnulib changes.

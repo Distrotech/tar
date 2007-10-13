@@ -91,7 +91,7 @@ bool
 string_ascii_p (char const *p)
 {
   for (; *p; p++)
-    if (! (0 <= *p && *p <= 127))
+    if (*p & ~0x7f)
       return false;
   return true;
 }
