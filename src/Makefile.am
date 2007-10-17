@@ -33,6 +33,7 @@ tar_SOURCES = \
  misc.c\
  names.c\
  sparse.c\
+ suffix.c\
  system.c\
  tar.c\
  transform.c\
