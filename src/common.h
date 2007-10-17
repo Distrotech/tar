@@ -740,3 +740,6 @@ void set_transform_expr (const char *expr);
 bool transform_name (char **pinput);
 bool transform_member_name (char **pinput, xform_type type);
 bool transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *);
+
+/* Module suffix.c */
+void set_comression_program_by_suffix (const char *name, const char *defprog);
