@@ -2402,6 +2402,13 @@ a read-only loopback mount, or use the @samp{noatime} mount option
 available on some systems.  However, mounting typically requires
 superuser privileges and can be a pain to manage.
 
+@opsummary{auto-compress}
+@item --auto-compress
+@itemx -a
+
+During a @option{--create} operation, enables automatic compressed
+format recognition based on the archive suffix. @xref{gzip}.
+
 @opsummary{backup}
 @item --backup=@var{backup-type}
 
@@ -2717,6 +2724,12 @@ During a @option{--create} operation, specifies that the archive that
 backup, using @var{snapshot-file} to determine which files to backup.
 With other operations, informs @command{tar} that the archive is in
 incremental format.  @xref{Incremental Dumps}.
+
+@opsummary{lzma}
+@item --lzma
+
+This option tells @command{tar} to read or write archives through
+@command{lzma}.  @xref{gzip}.
 
 @opsummary{mode}
 @item --mode=@var{permissions}
@@ -7941,24 +7954,46 @@ switch to @samp{posix}.
 @cindex Storing archives in compressed format
 
 @GNUTAR{} is able to create and read compressed archives.  It supports
-@command{gzip} and @command{bzip2} compression programs.  For backward
-compatibility, it also supports @command{compress} command, although
-we strongly recommend against using it, since there is a patent
-covering the algorithm it uses and you could be sued for patent
-infringement merely by running @command{compress}!  Besides, it is less
-effective than @command{gzip} and @command{bzip2}.
+@command{gzip}, @command{bzip2} and @command{lzma} compression
+programs.  For backward compatibility, it also supports
+@command{compress} command, although we strongly recommend against
+using it, since there is a patent covering the algorithm it uses and
+you could be sued for patent infringement merely by running
+@command{compress}!  Besides, it is by far less effective than other
+compression programs.
 
 Creating a compressed archive is simple: you just specify a
 @dfn{compression option} along with the usual archive creation
 commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
-(@option{--bzip2}) to create a @command{bzip2} compressed archive, and
+(@option{--bzip2}) to create a @command{bzip2} compressed archive,
+@command{lzma} to create an @asis{LZMA} compressed archive and
 @option{-Z} (@option{--compress}) to use @command{compress} program.
 For example:
 
 @smallexample
 $ @kbd{tar cfz archive.tar.gz .}
 @end smallexample
+
+You can also let @GNUTAR{} select the compression program basing on
+the suffix of the archive file name. This is done using
+@option{--auto-compress} (@option{-a}) command line option. For
+example, the following invocation will use @command{bzip2} for
+compression:
+
+@smallexample
+$ @kbd{tar cfa archive.tar.bz2 .}
+@end smallexample
+
+@noindent
+whereas the following one will use @command{lzma}:
+
+@smallexample
+$ @kbd{tar cfa archive.tar.lzma .}
+@end smallexample
+
+For a complete list of file name suffixes recognized by @GNUTAR{},
+@ref{auto-compress}. 
 
 Reading compressed archive is even simpler: you don't need to specify
 any additional options as @GNUTAR{} recognizes its format
@@ -8001,6 +8036,28 @@ compressed.
 The following table summarizes compression options used by @GNUTAR{}.
 
 @table @option
+@anchor{auto-compress}
+@opindex auto-compress
+@item --auto-compress
+@itemx -a
+Select a compression program to use by the archive file name
+suffix. The following suffixes are recognized:
+
+@multitable @columnfractions 0.3 0.6
+@headitem Suffix @tab Compression program
+@item @samp{.gz} @tab @command{gzip}
+@item @samp{.tgz} @tab @command{gzip}
+@item @samp{.taz} @tab @command{gzip}
+@item @samp{.Z} @tab @command{compress}
+@item @samp{.taZ} @tab @command{compress}
+@item @samp{.bz2} @tab @command{bzip2}
+@item @samp{.tz2} @tab @command{bzip2}
+@item @samp{.tbz2} @tab @command{bzip2}
+@item @samp{.tbz} @tab @command{bzip2}
+@item @samp{.lzma} @tab @command{lzma}
+@item @samp{.tlz} @tab @command{lzma}
+@end multitable
+
 @opindex gzip
 @opindex ungzip
 @item -z
@@ -8046,6 +8103,10 @@ So, there are pros and cons.  We'll see!
 @item -j
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
+
+@opindex lzma
+@item --lzma
+Filter the archive through @command{lzma}.  Otherwise like @option{--gzip}.
 
 @opindex compress
 @opindex uncompress

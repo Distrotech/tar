@@ -9,6 +9,7 @@
 	* src/tar.c: New options --auto-compress (-a) and --lzma
 	* THANKS: Add Lasse Collin and Jean-Pierre Demailly.
 	* NEWS: Update
+	* doc/tar.texi: Update
 	
 2007-10-12  Paul Eggert  <eggert@cs.ucla.edu>
 
