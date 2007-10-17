@@ -268,6 +268,7 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
+  LZMA_OPTION,
   MODE_OPTION,
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
@@ -345,7 +346,7 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
 
 /* NOTE:
 
-   Available option letters are DEIJQY and aeqy. Consider the following
+   Available option letters are DEIJQY and eqy. Consider the following
    assignments:
 
    [For Solaris tar compatibility =/= Is it important at all?]
@@ -574,20 +575,29 @@ static struct argp_option options[] = {
    N_("control pax keywords"), GRID+8 },
   {"label", 'V', N_("TEXT"), 0,
    N_("create archive with volume name TEXT; at list/extract time, use TEXT as a globbing pattern for volume name"), GRID+8 },
-  {"bzip2", 'j', 0, 0,
-   N_("filter the archive through bzip2"), GRID+8 },
-  {"gzip", 'z', 0, 0,
-   N_("filter the archive through gzip"), GRID+8 },
-  {"gunzip", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
-  {"ungzip", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
-  {"compress", 'Z', 0, 0,
-   N_("filter the archive through compress"), GRID+8 },
-  {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+8 },
-  {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
-   N_("filter through PROG (must accept -d)"), GRID+8 },
 #undef GRID
 
 #define GRID 90
+  {NULL, 0, NULL, 0,
+   N_("Compression options:"), GRID },
+  {"auto-compress", 'a', 0, 0,
+   N_("use archive suffix to determine the compression program"), GRID+1 },
+  {"bzip2", 'j', 0, 0,
+   N_("filter the archive through bzip2"), GRID+1 },
+  {"gzip", 'z', 0, 0,
+   N_("filter the archive through gzip"), GRID+1 },
+  {"gunzip", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"ungzip", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"compress", 'Z', 0, 0,
+   N_("filter the archive through compress"), GRID+1 },
+  {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"lzma", LZMA_OPTION, 0, 0,
+   N_("filter the archive through lzma"), GRID+1 },
+  {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
+   N_("filter through PROG (must accept -d)"), GRID+1 },
+#undef GRID
+  
+#define GRID 100
   {NULL, 0, NULL, 0,
    N_("Local file selection:"), GRID },
 
@@ -647,7 +657,7 @@ static struct argp_option options[] = {
    N_("backup before removal, override usual suffix ('~' unless overridden by environment variable SIMPLE_BACKUP_SUFFIX)"), GRID+1 },
 #undef GRID
 
-#define GRID 92
+#define GRID 110
   {NULL, 0, NULL, 0,
    N_("File name transformations:"), GRID },
   {"strip-components", STRIP_COMPONENTS_OPTION, N_("NUMBER"), 0,
@@ -657,7 +667,7 @@ static struct argp_option options[] = {
    N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
 #undef GRID
 
-#define GRID 95
+#define GRID 120
   {NULL, 0, NULL, 0,
    N_("File name matching options (affect both exclude and include patterns):"),
    GRID },
@@ -679,7 +689,7 @@ static struct argp_option options[] = {
    N_("wildcards match `/' (default for exclusion)"), GRID+1 },
 #undef GRID
 
-#define GRID 100
+#define GRID 130
   {NULL, 0, NULL, 0,
    N_("Informative output:"), GRID },
 
@@ -720,7 +730,7 @@ static struct argp_option options[] = {
    N_("disable quoting for characters from STRING"), GRID+1 },
 #undef GRID
 
-#define GRID 110
+#define GRID 140
   {NULL, 0, NULL, 0,
    N_("Compatibility options:"), GRID },
 
@@ -728,7 +738,7 @@ static struct argp_option options[] = {
    N_("when creating, same as --old-archive; when extracting, same as --no-same-owner"), GRID+1 },
 #undef GRID
 
-#define GRID 120
+#define GRID 150
   {NULL, 0, NULL, 0,
    N_("Other options:"), GRID },
 
@@ -785,6 +795,8 @@ struct tar_args        /* Variables used during option parsing */
   char const *backup_suffix_string;   /* --suffix option argument */
   char const *version_control_string; /* --backup option argument */
   bool input_files;                /* True if some input files where given */
+  int compress_autodetect;         /* True if compression autodetection should
+				      be attempted when creating archives */
 };
 
 
@@ -1222,6 +1234,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (CAT_SUBCOMMAND);
       break;
 
+    case 'a':
+      args->compress_autodetect = true;
+      break;
+      
     case 'b':
       {
 	uintmax_t u;
@@ -1341,6 +1357,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case LZMA_OPTION:
+      set_use_compress_program_option ("lzma");
+      break;
+      
     case 'm':
       touch_option = true;
       break;
@@ -2001,7 +2021,8 @@ decode_options (int argc, char **argv)
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
   args.version_control_string = 0;
   args.input_files = false;
-
+  args.compress_autodetect = false;
+  
   subcommand_option = UNKNOWN_SUBCOMMAND;
   archive_format = DEFAULT_FORMAT;
   blocking_factor = DEFAULT_BLOCKING;
@@ -2262,6 +2283,10 @@ decode_options (int argc, char **argv)
       if (!args.input_files && !files_from_option)
 	USAGE_ERROR ((0, 0,
 		      _("Cowardly refusing to create an empty archive")));
+      if (args.compress_autodetect && archive_names
+	  && strcmp (archive_name_array[0], "-"))
+	set_comression_program_by_suffix (archive_name_array[0],
+					  use_compress_program_option);
       break;
 
     case EXTRACT_SUBCOMMAND:
