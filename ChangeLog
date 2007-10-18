@@ -1,3 +1,9 @@
+2007-10-18  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi (gzip): Remove compression patent
+	warning. According to Brett Smith, the patent is
+	expired. 
+
 2007-10-17  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/suffix.c: New file. Compress format detection by archive
