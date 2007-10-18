@@ -336,7 +336,6 @@ procdir (char *name_buffer, struct stat *stat_data,
 
   {
     const char *tag_file_name;
-    size_t len;
     
     switch (check_exclusion_tags (name_buffer, &tag_file_name))
       {

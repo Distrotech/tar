@@ -301,8 +301,8 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
   size_t size, written;
   union block *next_long_name = 0;
   union block *next_long_link = 0;
-  size_t next_long_name_blocks;
-  size_t next_long_link_blocks;
+  size_t next_long_name_blocks = 0;
+  size_t next_long_link_blocks = 0;
 
   while (1)
     {

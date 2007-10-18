@@ -1,8 +1,15 @@
+2007-10-18  Jim Meyering  <jim@meyering.net>
+
+	Avoid compiler warnings.
+	* src/list.c (read_header_primitive): Define two locals, to
+	avoid incorrect "may be used uninitialized" warnings.
+	* src/incremen.c (procdir): Remove decl of unused local, "len".
+
 2007-10-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi (gzip): Remove compression patent
 	warning. According to Brett Smith, the patent is
-	expired. 
+	expired.
 
 2007-10-17  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -16,7 +23,7 @@
 	* THANKS: Add Lasse Collin and Jean-Pierre Demailly.
 	* NEWS: Update
 	* doc/tar.texi: Update
-	
+
 2007-10-12  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* src/utf8.c (string_ascii_p): Recode to avoid bogus GCC 4.2.1
