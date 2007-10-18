@@ -7957,10 +7957,8 @@ switch to @samp{posix}.
 @command{gzip}, @command{bzip2} and @command{lzma} compression
 programs.  For backward compatibility, it also supports
 @command{compress} command, although we strongly recommend against
-using it, since there is a patent covering the algorithm it uses and
-you could be sued for patent infringement merely by running
-@command{compress}!  Besides, it is by far less effective than other
-compression programs.
+using it, because it is by far less effective than other compression
+programs@footnote{It also had patent problems in the past.}.
 
 Creating a compressed archive is simple: you just specify a
 @dfn{compression option} along with the usual archive creation
@@ -8114,11 +8112,6 @@ Filter the archive through @command{lzma}.  Otherwise like @option{--gzip}.
 @itemx --compress
 @itemx --uncompress
 Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
-
-The @acronym{GNU} Project recommends you not use
-@command{compress}, because there is a patent covering the algorithm it
-uses.  You could be sued for patent infringement merely by running
-@command{compress}.
 
 @opindex use-compress-program
 @item --use-compress-program=@var{prog}
