@@ -1,5 +1,26 @@
 2007-10-29  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Update
+	* configure.ac: Version 1.19.1
+	* po/POTFILES.in: Add src/checkpoint.c
+	* src/Makefile.am (tar_SOURCES): add checkpoint.c
+	* src/checkpoint.c: New file - checkpoint handling.
+	* src/buffer.c (checkpoint, do_checkpoint): Remove.
+	(_flush_write, simple_flush_read, _gnu_flush_read): Use
+	checkpoint_run.
+	* src/common.h (enum checkpoint_style): Remove.
+	(checkpoint_style): Remove.
+	(DEFAULT_CHECKPOINT): New define.
+	(hard_dereference_option): New variable.
+	(sys_exec_checkpoint_script): New declaration.
+	* src/create.c (file_count_links): do nothing if
+	hard_dereference_option is set.
+	* src/system.c (sys_exec_checkpoint_script): New function.
+	(sys_exec_info_script): Restore SIGPIPE handler.
+	* src/tar.c: (parse_opt): New options --hard-dereference,
+	--checkpoint-action. 
+	(decode_options): Call checkpoint_finish_compile.
+	
 	* src/system.c (sys_exec_info_script): Initialize buf. Problem
 	reported by Bengt-Arne Fjellner.
 
