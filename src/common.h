@@ -130,19 +130,13 @@ GLOBAL enum backup_type backup_type;
 GLOBAL bool block_number_option;
 
 GLOBAL unsigned checkpoint_option;
-
-enum checkpoint_style
-  {
-    checkpoint_text,
-    checkpoint_dot
-  };
-
-GLOBAL enum checkpoint_style checkpoint_style;
+#define DEFAULT_CHECKPOINT 10
 
 /* Specified name of compression program, or "gzip" as implied by -z.  */
 GLOBAL const char *use_compress_program_option;
 
 GLOBAL bool dereference_option;
+GLOBAL bool hard_dereference_option;
 
 /* Print a message if not all links are dumped */
 GLOBAL int check_links_option;
@@ -711,6 +705,9 @@ bool sys_get_archive_stat (void);
 int sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st);
 void sys_wait_command (void);
 int sys_exec_info_script (const char **archive_name, int volume_number);
+void sys_exec_checkpoint_script (const char *script_name,
+				 const char *archive_name,
+				 int checkpoint_number);
 
 /* Module compare.c */
 void report_difference (struct tar_stat_info *st, const char *message, ...);
@@ -743,3 +740,8 @@ bool transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *);
 
 /* Module suffix.c */
 void set_comression_program_by_suffix (const char *name, const char *defprog);
+
+/* Module checkpoint.c */
+void checkpoint_compile_action (const char *str);
+void checkpoint_finish_compile (void);
+void checkpoint_run (bool do_write);
