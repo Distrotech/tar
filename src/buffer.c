@@ -74,9 +74,6 @@ static int read_error_count;
 /* Have we hit EOF yet?  */
 static bool hit_eof;
 
-/* Checkpointing counter */
-static unsigned checkpoint;
-
 static bool read_full_records = false;
 
 /* We're reading, but we just read the last block and it's time to update.
@@ -591,43 +588,13 @@ _open_archive (enum access_mode wanted_access)
     }
 }
 
-static void
-do_checkpoint (bool do_write)
-{
-  if (checkpoint_option && !(++checkpoint % checkpoint_option))
-    {
-      switch (checkpoint_style)
-	{
-	case checkpoint_dot:
-	  fputc ('.', stdlis);
-	  fflush (stdlis);
-	  break;
-
-	case checkpoint_text:
-	  if (do_write)
-	    /* TRANSLATORS: This is a ``checkpoint of write operation'',
-	     *not* ``Writing a checkpoint''.
-	     E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
-	     *not* ``Escribiendo un punto de comprobaci@'on'' */
-	    WARN ((0, 0, _("Write checkpoint %u"), checkpoint));
-	  else
-	    /* TRANSLATORS: This is a ``checkpoint of read operation'',
-	       *not* ``Reading a checkpoint''.
-	       E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
-	       *not* ``Leyendo un punto de comprobaci@'on'' */
-	    WARN ((0, 0, _("Read checkpoint %u"), checkpoint));
-	  break;
-	}
-    }
-}  
-
 /* Perform a write to flush the buffer.  */
 ssize_t
 _flush_write (void)
 {
   ssize_t status;
 
-  do_checkpoint (true);
+  checkpoint_run (true);
   if (tape_length_option && tape_length_option <= bytes_written)
     {
       errno = ENOSPC;
@@ -637,7 +604,7 @@ _flush_write (void)
     status = record_size;
   else
     status = sys_write_archive_buffer ();
-
+  
   return status;
 }
 
@@ -1466,7 +1433,7 @@ simple_flush_read (void)
 {
   size_t status;		/* result from system call */
 
-  do_checkpoint (false);
+  checkpoint_run (false);
   
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
@@ -1525,7 +1492,7 @@ _gnu_flush_read (void)
 {
   size_t status;		/* result from system call */
 
-  do_checkpoint (false);
+  checkpoint_run (false);
   
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
