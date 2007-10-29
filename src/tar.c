@@ -250,7 +250,9 @@ enum
   ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
   CHECKPOINT_OPTION,
+  CHECKPOINT_ACTION_OPTION,
   DELAY_DIRECTORY_RESTORE_OPTION,
+  HARD_DEREFERENCE_OPTION,
   DELETE_OPTION,
   EXCLUDE_CACHES_OPTION,
   EXCLUDE_CACHES_UNDER_OPTION,
@@ -644,6 +646,8 @@ static struct argp_option options[] = {
    N_("don't strip leading `/'s from file names"), GRID+1 },
   {"dereference", 'h', 0, 0,
    N_("follow symlinks; archive and dump the files they point to"), GRID+1 },
+  {"hard-dereference", HARD_DEREFERENCE_OPTION, 0, 0,
+   N_("follow hard links; archive and dump the files they refer to"), GRID+1 },
   {"starting-file", 'K', N_("MEMBER-NAME"), 0,
    N_("begin at member MEMBER-NAME in the archive"), GRID+1 },
   {"newer", 'N', N_("DATE-OR-FILE"), 0,
@@ -695,8 +699,11 @@ static struct argp_option options[] = {
 
   {"verbose", 'v', 0, 0,
    N_("verbosely list files processed"), GRID+1 },
-  {"checkpoint", CHECKPOINT_OPTION, N_("[.]NUMBER"), OPTION_ARG_OPTIONAL,
+  {"checkpoint", CHECKPOINT_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("display progress messages every NUMBERth record (default 10)"),
+   GRID+1 },
+  {"checkpoint-action", CHECKPOINT_ACTION_OPTION, N_("ACTION"), 0,
+   N_("execute ACTION on each checkpoint"),
    GRID+1 },
   {"check-links", 'l', 0, 0,
    N_("print a message if not all links are dumped"), GRID+1 },
@@ -1308,6 +1315,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       dereference_option = true;
       break;
 
+    case HARD_DEREFERENCE_OPTION:
+      hard_dereference_option = true;
+      break;
+      
     case 'i':
       /* Ignore zero blocks (eofs).  This can't be the default,
 	 because Unix tar writes two blocks of zeros, then pads out
@@ -1541,7 +1552,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 	  if (*arg == '.')
 	    {
-	      checkpoint_style = checkpoint_dot;
+	      checkpoint_compile_action (".");
 	      arg++;
 	    }
 	  checkpoint_option = strtoul (arg, &p, 0);
@@ -1550,9 +1561,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			  _("--checkpoint value is not an integer")));
 	}
       else
-	checkpoint_option = 10;
+	checkpoint_option = DEFAULT_CHECKPOINT;
       break;
 
+    case CHECKPOINT_ACTION_OPTION:
+      checkpoint_compile_action (arg);
+      break;
+      
     case BACKUP_OPTION:
       backup_option = true;
       if (arg)
@@ -2339,6 +2354,8 @@ decode_options (int argc, char **argv)
 	backup_option = false;
     }
 
+  checkpoint_finish_compile ();
+  
   if (verbose_option)
     report_textual_dates (&args);
 }
