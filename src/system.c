@@ -785,7 +785,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
 
       int rc;
       int status;
-      char *buf;
+      char *buf = NULL;
       size_t size = 0;
       FILE *fp;
 
