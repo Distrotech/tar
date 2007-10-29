@@ -773,9 +773,10 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   char *argv[4];
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   int p[2];
-
+  static RETSIGTYPE (*saved_handler) (int sig);
+  
   xpipe (p);
-  pipe_handler = signal (SIGPIPE, SIG_IGN);
+  saved_handler = signal (SIGPIPE, SIG_IGN);
 
   pid = xfork ();
 
@@ -800,10 +801,13 @@ sys_exec_info_script (const char **archive_name, int volume_number)
       while (waitpid (pid, &status, 0) == -1)
 	if (errno != EINTR)
 	  {
+	    signal (SIGPIPE, saved_handler);
 	    waitpid_error (info_script_option);
 	    return -1;
 	  }
 
+      signal (SIGPIPE, saved_handler);
+      
       if (WIFEXITED (status))
 	{
 	  if (WEXITSTATUS (status) == 0 && rc > 0)
@@ -839,5 +843,49 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   exec_fatal (info_script_option);
 }
 
+void
+sys_exec_checkpoint_script (const char *script_name,
+			    const char *archive_name,
+			    int checkpoint_number)
+{
+  pid_t pid;
+  char *argv[4];
+  char uintbuf[UINTMAX_STRSIZE_BOUND];
+
+  pid = xfork ();
+
+  if (pid != 0)
+    {
+      /* Master */
+
+      int status;
+
+      while (waitpid (pid, &status, 0) == -1)
+	if (errno != EINTR)
+	  {
+	    waitpid_error (script_name);
+	    break;
+	  }
+
+      return;
+    }
+
+  /* Child */
+  setenv ("TAR_VERSION", PACKAGE_VERSION, 1);
+  setenv ("TAR_ARCHIVE", archive_name, 1);
+  setenv ("TAR_CHECKPOINT", STRINGIFY_BIGINT (checkpoint_number, uintbuf), 1);
+  setenv ("TAR_SUBCOMMAND", subcommand_string (subcommand_option), 1);
+  setenv ("TAR_FORMAT",
+	  archive_format_string (current_format == DEFAULT_FORMAT ?
+				 archive_format : current_format), 1);
+  argv[0] = "/bin/sh";
+  argv[1] = "-c";
+  argv[2] = (char*) script_name;
+  argv[3] = NULL;
+
+  execv (argv[0], argv);
+
+  exec_fatal (script_name);
+}
 
 #endif /* not MSDOS */
