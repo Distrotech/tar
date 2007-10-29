@@ -1,8 +1,9 @@
-GNU tar NEWS - User visible changes. 2007-10-17
+GNU tar NEWS - User visible changes. 2007-10-29
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-(CVS)
+version 1.19.1 (CVS)
+
 * New option --auto-compress (-a)
 
 With --create, selects compression algorithm basing on the suffix
@@ -11,6 +12,19 @@ of the archive file name.
 * New option --lzma
 
 Selects LZMA compression algorithm
+
+* New option --hard-dereference
+
+During archive creation, dereferences hard links and stores the files
+they refer to, instead of creating usual hard link members (type '1').
+
+* New option --checkpoint-action
+
+This action allows to specify an action to be executed upon hitting a
+checkpoint.  Recognized actions are: dot, echo (the default),
+echo=string, and sleep=value.  Any number of `--checkpoint-action'
+options can be specified, the actions will be executed in order of
+their appearance in the command line.  
 
 
 version 1.19 - Sergey Poznyakoff, 2007-10-10
