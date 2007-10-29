@@ -1422,6 +1422,8 @@ dump_hard_link (struct tar_stat_info *st)
 static void
 file_count_links (struct tar_stat_info *st)
 {
+  if (hard_dereference_option)
+    return;
   if (st->stat.st_nlink > 1)
     {
       struct link *duplicate;
