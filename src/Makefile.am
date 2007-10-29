@@ -23,6 +23,7 @@ bin_PROGRAMS = tar
 noinst_HEADERS = arith.h common.h tar.h
 tar_SOURCES = \
  buffer.c\
+ checkpoint.c\
  compare.c\
  create.c\
  delete.c\
