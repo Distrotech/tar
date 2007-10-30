@@ -176,6 +176,7 @@ Invoking @GNUTAR{}
 * help::
 * defaults::
 * verbose::
+* checkpoints::
 * interactive::
 
 The Three Option Styles
@@ -330,6 +331,7 @@ Making @command{tar} Archives More Portable
 
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
+* hard links::                  Hard Links
 * old::                         Old V7 Archives
 * ustar::                       Ustar Archives
 * gnu::                         GNU and old GNU format archives.
@@ -1801,6 +1803,7 @@ and @option{--interactive} options (@pxref{interactive}).
 * help::
 * defaults::
 * verbose::
+* checkpoints::
 * interactive::
 @end menu
 
@@ -2443,8 +2446,45 @@ This option tells @command{tar} to read or write archives through
 This option directs @command{tar} to print periodic checkpoint
 messages as it reads through the archive.  It is intended for when you
 want a visual indication that @command{tar} is still running, but
-don't want to see @option{--verbose} output.  For a detailed
-description, see @ref{Progress information}.
+don't want to see @option{--verbose} output.  You can also instruct
+@command{tar} to execute a list of actions on each checkpoint, see
+@option{--checklist-action} below.  For a detailed description, see
+@ref{checkpoints}.
+
+@opsummary{checkpoint-action}
+@item --checkpoint-action=@var{action}
+Instruct @command{tar} to execute an action upon hitting a
+breakpoint.  Here we give only a brief outline.  @xref{checkpoints},
+for a complete description.
+
+The @var{action} argument can be one of the following:
+
+@table @asis
+@item echo
+Display a textual message on the standard error, with the status and
+number of the checkpoint.  This is the default.
+
+@item echo=@var{string}
+Display @var{string} on the standard error.  Before output, the string
+is subject to meta-character expansion.
+
+@item dot
+@itemx .
+Print a single dot on the standard listing stream.
+
+@item sleep=@var{time}
+Wait for @var{time} seconds.
+
+@item exec=@var{command}
+Execute the given @var{command}.
+@end table
+
+Several @option{--checkpoint-action} options can be specified.  The
+supplied actions will be executed in order of their appearance in the
+command line. 
+
+Using @option{--checkpoint-action} without @option{--checkpoint}
+assumes default checkpoint frequency of one checkpoint per 10 records.
 
 @opsummary{check-links}
 @item --check-links
@@ -2456,6 +2496,8 @@ output @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
 synonym for @option{--one-file-system}.  The current semantics, which
 complies to UNIX98, was introduced with version
 1.15.91. @xref{Changes}, for more information.}.
+
+@xref{hard links}.
 
 @opsummary{compress}
 @opsummary{uncompress}
@@ -2629,6 +2671,13 @@ Also see the comments for the @option{--owner=@var{user}} option.
 This option tells @command{tar} to read or write archives through
 @command{gzip}, allowing @command{tar} to directly operate on several
 kinds of compressed archives transparently.  @xref{gzip}.
+
+@opsummary{hard-dereference}
+@item --hard-dereference
+When creating an archive, dereference hard links and store the files
+they refer to, instead of creating usual hard link members.
+
+@xref{hard links}.
 
 @opsummary{help}
 @item --help
@@ -2906,9 +2955,7 @@ Synonym for @option{--format=v7}.
 @item --one-file-system
 Used when creating an archive.  Prevents @command{tar} from recursing into
 directories that are on different file systems from the current
-directory @footnote{Earlier versions of @GNUTAR{} understood @option{-l} as a
-synonym for @option{--one-file-system}.  This has changed in version
-1.15.91. @xref{Changes}, for more information.}.
+directory.
 
 @opsummary{overwrite}
 @item --overwrite
@@ -3609,7 +3656,6 @@ after finishing the extraction, as well as when receiving signal
 
 @anchor{Progress information}
 @cindex Progress information
-@opindex checkpoint
 The @option{--checkpoint} option prints an occasional message
 as @command{tar} reads or writes the archive.  It is designed for
 those who don't need the more detailed (and voluminous) output of
@@ -3627,12 +3673,18 @@ tar: Write checkpoint 3000
 
 This example shows the default checkpoint message used by
 @command{tar}.  If you place a dot immediately after the equal
-sign, it will print a @samp{.} at each checkpoint.  For example:
+sign, it will print a @samp{.} at each checkpoint@footnote{This is
+actually a shortcut for @option{--checkpoint=@var{n}
+--checkpoint-action=dot}.  @xref{checkpoints, dot}.}.  For example:
 
 @smallexample
 $ @kbd{tar -c --checkpoint=.1000} /var
 ...
 @end smallexample
+
+The @option{--checkpoint} option provides a flexible mechanism for
+executing arbitrary actions upon hitting checkpoints, see the next
+section (@pxref{checkpoints}), for more information on it.
 
 @opindex show-omitted-dirs
 @anchor{show-omitted-dirs}
@@ -3666,6 +3718,172 @@ choose among several backup tapes when retrieving a file later, in
 favor of the tape where the file appears earliest (closest to the
 front of the tape).  @xref{backup}.
 
+@node checkpoints
+@section Checkpoints
+@cindex checkpoints, defined
+@opindex checkpoint
+@opindex checkpoint-action
+
+A @dfn{checkpoint} is a moment of time before writing @var{n}th record to
+the archive (a @dfn{write checkpoint}), or before reading @var{n}th record
+from the archive (a @dfn{read checkpoint}).  Checkpoints allow to
+periodically execute arbitrary actions.
+
+The checkpoint facility is enabled using the following option:
+
+@table @option
+@xopindex{checkpoint, defined}
+@item --checkpoint[=@var{n}]
+Schedule checkpoints before writing or reading each @var{n}th record.
+The default value for @var{n} is 10.
+@end table
+
+A list of arbitrary @dfn{actions} can be executed at each checkpoint.
+These actions include: pausing, displaying textual messages, and
+executing arbitrary external programs.  Actions are defined using
+the @option{--checkpoint-action} option.
+
+@table @option
+@xopindex{checkpoint-action, defined}
+@item --checkpoint-action=@var{action}
+Execute an @var{action} at each checkpoint.
+@end table
+
+@cindex @code{echo}, checkpoint action
+The simplest value of @var{action} is @samp{echo}.  It instructs
+@command{tar} to display the default message on the standard error
+stream upon arriving at each checkpoint.  The default message is (in
+@acronym{POSIX} locale) @samp{Write checkpoint @var{n}}, for write
+checkpoints, and @samp{Read checkpoint @var{n}}, for read checkpoints.
+Here, @var{n} represents ordinal number of the checkpoint.
+
+In another locales, translated versions of this message are used.
+
+This is the default action, so running:
+
+@smallexample
+$ @kbd{tar -c --checkpoint=1000 --checkpoint-action=echo} /var
+@end smallexample
+
+@noindent
+is equivalent to:
+
+@smallexample
+$ @kbd{tar -c --checkpoint=1000} /var
+@end smallexample
+
+The @samp{echo} action also allows to supply a customized message.
+You do so by placing an equals sign and the message right after it,
+e.g.:
+
+@smallexample
+--checkpoint-action="echo=Hit %s checkpoint #%u"
+@end smallexample
+
+The @samp{%s} and @samp{%u} in the above example are
+@dfn{meta-characters}.  The @samp{%s} meta-character is replaced with
+the @dfn{type} of the checkpoint: @samp{write} or
+@samp{read} (or a corresponding translated version in locales other
+than @acronym{POSIX}).  The @samp{%u} meta-character is replaced with
+the ordinal number of the checkpoint.  Thus, the above example could
+produce the following output when used with the @option{--create}
+option:
+
+@smallexample
+tar: Hit write checkpoint #10
+tar: Hit write checkpoint #20
+tar: Hit write checkpoint #30
+@end smallexample
+
+Aside from meta-character expansion, the message string is subject to
+@dfn{unquoting}, during which the backslash @dfn{escape sequences} are
+replaced with their corresponding @acronym{ASCII} characters
+(@pxref{escape sequences}).  E.g. the following action will produce an
+audible bell and the message described above at each checkpoint:
+
+@smallexample
+--checkpoint-action='echo=\aHit %s checkpoint #%u'
+@end smallexample
+
+@cindex @code{dot}, checkpoint action
+Another available checkpoint action is @samp{dot} (or @samp{.}).  It
+instructs @command{tar} to print a single dot on the standard listing
+stream, e.g.:
+
+@smallexample
+$ @kbd{tar -c --checkpoint=1000 --checkpoint-action=dot} /var
+...
+@end smallexample
+
+For compatibility with previous @GNUTAR{} versions, this action can
+be abbreviated by placing a dot in front of the checkpoint frequency,
+as shown in the previous section.
+
+@cindex @code{sleep}, checkpoint action
+Yet another action, @samp{sleep}, pauses @command{tar} for a specified
+amount of seconds.  The following example will stop for 30 seconds at each
+checkpoint: 
+
+@smallexample
+$ @kbd{tar -c --checkpoint=1000 --checkpoint-action=sleep=30}
+@end smallexample
+
+@cindex @code{exec}, checkpoint action
+Finally, the @code{exec} action executes a given external program.
+For example:
+
+@smallexample
+$ @kbd{tar -c --checkpoint=1000 --checkpoint-action=exec=/sbin/cpoint}
+@end smallexample
+
+This program is executed using @command{/bin/sh -c}, with no
+additional arguments.  Its exit code is ignored.  It gets a copy of
+@command{tar}'s environment plus the following variables:
+
+@table @env
+@vrindex TAR_VERSION, checkpoint script environment
+@item TAR_VERSION
+@GNUTAR{} version number.
+
+@vrindex TAR_ARCHIVE, checkpoint script environment
+@item TAR_ARCHIVE
+The name of the archive @command{tar} is processing.
+
+@vrindex TAR_CHECKPOINT, checkpoint script environment
+@item TAR_CHECKPOINT
+The checkpoint number.
+
+@vrindex TAR_SUBCOMMAND, checkpoint script environment
+@item TAR_SUBCOMMAND
+A short option describing the operation @command{tar} is executing
+@xref{Operations}, for a complete list of subcommand options.
+
+@vrindex TAR_FORMAT, checkpoint script environment
+@item TAR_FORMAT
+Format of the archive being processed. @xref{Formats}, for a complete
+list of archive format names.
+@end table
+
+Any number of actions can be defined, by supplying several
+@option{--checkpoint-action} options in the command line.  For
+example, the command below displays two messages, pauses
+execution for 30 seconds and executes the @file{/sbin/cpoint} script:
+
+@example
+@group
+$ @kbd{tar -c -f arc.tar \
+       --checkpoint-action='\aecho=Hit %s checkpoint #%u' \
+       --checkpoint-action='echo=Sleeping for 30 seconds' \
+       --checkpoint-action='sleep=30' \
+       --checkpoint-action='exec=/sbin/cpoint'}
+@end group
+@end example
+
+This example also illustrates the fact that
+@option{--checkpoint-action} can be used without
+@option{--checkpoint}.  In this case, the default checkpoint frequency
+(at each 10th record) is assumed.
+       
 @node interactive
 @section Asking for Confirmation During Operations
 @cindex Interactive operation
@@ -4887,7 +5105,7 @@ option is used.
 The command can obtain the information about the file it processes
 from the following environment variables:
 
-@table @var
+@table @env
 @vrindex TAR_FILETYPE, to-command environment
 @item TAR_FILETYPE
 Type of the file. It is a single letter with the following meaning:
@@ -6948,7 +7166,7 @@ quoting}.  The characters in question are:
 
 @itemize @bullet
 @item Non-printable control characters:
-
+@anchor{escape sequences}
 @multitable @columnfractions 0.20 0.10 0.60
 @headitem Character @tab @acronym{ASCII} @tab Character name
 @item \a @tab 7  @tab Audible bell
@@ -8462,6 +8680,7 @@ archives and archive labels) in GNU and PAX formats.}
 @menu
 * Portable Names::              Portable Names
 * dereference::                 Symbolic Links
+* hard links::                  Hard Links
 * old::                         Old V7 Archives
 * ustar::                       Ustar Archives
 * gnu::                         GNU and old GNU format archives.
@@ -8518,6 +8737,100 @@ So, for portable archives, do not archive symbolic links as such,
 and use @option{--dereference} (@option{-h}): many systems do not support
 symbolic links, and moreover, your distribution might be unusable if
 it contains unresolved symbolic links.
+
+@node hard links
+@subsection Hard Links
+@UNREVISED{}
+@cindex File names, using hard links
+@cindex hard links, dereferencing
+@cindex dereferencing hard links
+
+Normally, when @command{tar} archives a hard link, it writes a
+block to the archive naming the target of the link (a @samp{1} type
+block).  In that way, the actual file contents is stored in file only
+once.  For example, consider the following two files:
+
+@smallexample
+@group
+$ ls
+-rw-r--r--   2 gray staff       4 2007-10-30 15:11 one
+-rw-r--r--   2 gray staff       4 2007-10-30 15:11 jeden
+@end group
+@end smallexample
+
+Here, @file{jeden} is a link to @file{one}.  When archiving this
+directory with a verbose level 2, you will get an output similar to
+the following:
+
+@smallexample
+$ tar cfvv ../archive.tar .
+drwxr-xr-x gray/staff        0 2007-10-30 15:13 ./
+-rw-r--r-- gray/staff        4 2007-10-30 15:11 ./jeden
+hrw-r--r-- gray/staff        0 2007-10-30 15:11 ./one link to ./jeden
+@end smallexample
+
+The last line shows that, instead of storing two copies of the file,
+@command{tar} stored it only once, under the name @file{jeden}, and
+stored file @file{one} as a hard link to this file.
+
+It may be important to know that all hard links to the given file are
+stored in the archive.  For example, this may be necessary for exact
+reproduction of the file system.  The following option does that:
+
+@table @option
+@xopindex{check-links, described}
+@item --check-links
+@itemx -l
+Check the number of links dumped for each processed file.  If this
+number does not match the total number of hard links for the file, print
+a warning message.
+@end table
+
+For example, trying to archive only file @file{jeden} with this option
+produces the following diagnostics:
+
+@smallexample
+$ tar -c -f ../archive.tar jeden
+tar: Missing links to `jeden'.
+@end smallexample
+
+Although creating special records for hard links helps keep a faithful
+record of the file system contents and makes archives more compact, it
+may present some difficulties when extracting individual members from
+the archive.  For example, trying to extract file @file{one} from the
+archive created in previous examples produces, in the absense of file
+@file{jeden}:
+
+@smallexample
+$ tar xf archive.tar ./one
+tar: ./one: Cannot hard link to `./jeden': No such file or directory
+tar: Error exit delayed from previous errors
+@end smallexample
+
+The reason for this behavior is that @command{tar} cannot seek back in
+the archive to the previous member (in this case, @file{one}), to
+extract it@footnote{There are plans to fix this in future releases.}.
+If you wish to avoid such problems at the cost of a bigger archive,
+use the following option:
+
+@table @option
+@xopindex{hard-dereference, described}
+@item --hard-dereference
+Dereference hard links and store the files they refer to.
+@end table
+
+For example, trying this option on our two sample files, we get two
+copies in the archive, each of which can then be extracted
+independently of the other:
+
+@smallexample
+@group
+$ tar -c -vv -f ../archive.tar --hard-dereference .
+drwxr-xr-x gray/staff        0 2007-10-30 15:13 ./
+-rw-r--r-- gray/staff        4 2007-10-30 15:11 ./jeden
+-rw-r--r-- gray/staff        4 2007-10-30 15:11 ./one
+@end group
+@end smallexample
 
 @node old
 @subsection Old V7 Archives
@@ -10314,7 +10627,7 @@ Ordinal number of the volume @command{tar} is about to start.
 
 @vrindex TAR_SUBCOMMAND, info script environment variable
 @item TAR_SUBCOMMAND
-Short option describing the operation @command{tar} is executing
+A short option describing the operation @command{tar} is executing
 @xref{Operations}, for a complete list of subcommand options.
 
 @vrindex TAR_FORMAT, info script environment variable
