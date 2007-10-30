@@ -82,5 +82,5 @@ manual:
 	TEXINPUTS=$(srcdir):$(top_srcdir)/build-tex:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
-	$(GENDOCS) tar 'GNU tar manual'
+	$(GENDOCS) --texi2html tar 'GNU tar manual'
 
