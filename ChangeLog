@@ -1,3 +1,12 @@
+2007-10-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/Makefile.am: Use texi2html and the CVS version of gendocs.sh
+	to create HTML versions of the manual.
+	* doc/gendocs_template: Likewise.
+	* doc/tar.texi: Document --hard-dereference and
+	--checkpoint-action options. Improve documentation of
+	--check-links.
+
 2007-10-29  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update
