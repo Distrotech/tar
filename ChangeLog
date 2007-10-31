@@ -1,3 +1,12 @@
+2007-10-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/checkpoint.c: New actions: bell and ttyout
+	* src/system.c (sys_exec_info_script)
+	(sys_exec_checkpoint_script): pass the current blocking factor in
+	TAR_BLOCKING_FACTOR environment variable.
+	* doc/tar.texi: Update
+	* NEWS: Update
+	
 2007-10-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/Makefile.am: Use texi2html and the CVS version of gendocs.sh

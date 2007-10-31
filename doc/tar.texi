@@ -2460,6 +2460,13 @@ for a complete description.
 The @var{action} argument can be one of the following:
 
 @table @asis
+@item bell
+Produce an audible bell on the console.
+
+@item dot
+@itemx .
+Print a single dot on the standard listing stream.
+
 @item echo
 Display a textual message on the standard error, with the status and
 number of the checkpoint.  This is the default.
@@ -2468,15 +2475,14 @@ number of the checkpoint.  This is the default.
 Display @var{string} on the standard error.  Before output, the string
 is subject to meta-character expansion.
 
-@item dot
-@itemx .
-Print a single dot on the standard listing stream.
+@item exec=@var{command}
+Execute the given @var{command}.
 
 @item sleep=@var{time}
 Wait for @var{time} seconds.
 
-@item exec=@var{command}
-Execute the given @var{command}.
+@item ttyout=@var{string}
+Output @var{string} on the current console (@file{/dev/tty}).
 @end table
 
 Several @option{--checkpoint-action} options can be specified.  The
@@ -3805,6 +3811,26 @@ audible bell and the message described above at each checkpoint:
 --checkpoint-action='echo=\aHit %s checkpoint #%u'
 @end smallexample
 
+@cindex @code{bell}, checkpoint action
+There is also a special action which produces an audible signal:
+@samp{bell}.  It is not equivalent to @samp{echo='\a'}, because
+@samp{bell} sends the bell directly to the console (@file{/dev/tty}),
+whereas @samp{echo='\a'} sends it to the standard error.  
+
+@cindex @code{ttyout}, checkpoint action
+The @samp{ttyout=@var{string}} action outputs @var{string} to
+@file{/dev/tty}, so it can be used even if the standard output is
+redirected elsewhere.  The @var{string} is subject to the same
+modifications as with @samp{echo} action.  In contrast to the latter,
+@samp{ttyout} does not prepend @command{tar} executable name to the
+string, nor does it output a newline after it.  For example, the
+following action will print the checkpoint message at the same screen
+line, overwriting any previous message:
+
+@smallexample
+--checkpoint-action="ttyout=\rHit %s checkpoint #%u"
+@end smallexample
+
 @cindex @code{dot}, checkpoint action
 Another available checkpoint action is @samp{dot} (or @samp{.}).  It
 instructs @command{tar} to print a single dot on the standard listing
@@ -3848,6 +3874,10 @@ additional arguments.  Its exit code is ignored.  It gets a copy of
 @vrindex TAR_ARCHIVE, checkpoint script environment
 @item TAR_ARCHIVE
 The name of the archive @command{tar} is processing.
+
+@vrindex TAR_BLOCKING_FACTOR, checkpoint script environment
+@item TAR_BLOCKING_FACTOR
+Current blocking factor (@pxref{Blocking}. 
 
 @vrindex TAR_CHECKPOINT, checkpoint script environment
 @item TAR_CHECKPOINT
@@ -10620,6 +10650,10 @@ environment variables:
 @vrindex TAR_ARCHIVE, info script environment variable
 @item TAR_ARCHIVE
 The name of the archive @command{tar} is processing.
+
+@vrindex TAR_BLOCKING_FACTOR, info script environment variable
+@item TAR_BLOCKING_FACTOR
+Current blocking factor (@pxref{Blocking}. 
 
 @vrindex TAR_VOLUME, info script environment variable
 @item TAR_VOLUME

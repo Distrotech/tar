@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2007-10-29
+GNU tar NEWS - User visible changes. 2007-10-31
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -25,6 +25,11 @@ checkpoint.  Recognized actions are: dot, echo (the default),
 echo=string, and sleep=value.  Any number of `--checkpoint-action'
 options can be specified, the actions will be executed in order of
 their appearance in the command line.  
+
+* Info (end-of-volume) scripts
+
+The value of the blocking factor is made available to info and
+checkpoint scripts via environment variable TAR_BLOCKING_FACTOR.
 
 
 version 1.19 - Sergey Poznyakoff, 2007-10-10
