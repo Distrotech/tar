@@ -825,6 +825,8 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   setenv ("TAR_VERSION", PACKAGE_VERSION, 1);
   setenv ("TAR_ARCHIVE", *archive_name, 1);
   setenv ("TAR_VOLUME", STRINGIFY_BIGINT (volume_number, uintbuf), 1);
+  setenv ("TAR_BLOCKING_FACTOR",
+	  STRINGIFY_BIGINT (blocking_factor, uintbuf), 1);
   setenv ("TAR_SUBCOMMAND", subcommand_string (subcommand_option), 1);
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
@@ -874,6 +876,8 @@ sys_exec_checkpoint_script (const char *script_name,
   setenv ("TAR_VERSION", PACKAGE_VERSION, 1);
   setenv ("TAR_ARCHIVE", archive_name, 1);
   setenv ("TAR_CHECKPOINT", STRINGIFY_BIGINT (checkpoint_number, uintbuf), 1);
+  setenv ("TAR_BLOCKING_FACTOR",
+	  STRINGIFY_BIGINT (blocking_factor, uintbuf), 1);
   setenv ("TAR_SUBCOMMAND", subcommand_string (subcommand_option), 1);
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
