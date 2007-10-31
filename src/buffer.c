@@ -219,7 +219,7 @@ static struct zip_magic const magic[] = {
   { ct_compress, 2, "\037\235", "compress", "-Z" },
   { ct_gzip,     2, "\037\213", "gzip", "-z"  },
   { ct_bzip2,    3, "BZh",      "bzip2", "-j" },
-  { ct_lzma,     6, "\xFFLZMA", "lzma", "-a" }, /* FIXME: ???? */
+  { ct_lzma,     6, "\xFFLZMA", "lzma", "--lzma" }, /* FIXME: ???? */
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
