@@ -21,7 +21,9 @@
 enum checkpoint_opcode
   {
     cop_dot,
+    cop_bell,
     cop_echo,
+    cop_ttyout,
     cop_sleep,
     cop_exec
   };
@@ -78,6 +80,8 @@ checkpoint_compile_action (const char *str)
   
   if (strcmp (str, ".") == 0 || strcmp (str, "dot") == 0)
     alloc_action (cop_dot);
+  if (strcmp (str, "bell") == 0)
+    alloc_action (cop_bell);
   else if (strcmp (str, "echo") == 0)
     alloc_action (cop_echo);
   else if (strncmp (str, "echo=", 5) == 0)
@@ -89,6 +93,11 @@ checkpoint_compile_action (const char *str)
     {
       act = alloc_action (cop_exec);
       act->v.command = copy_string_unquote (str + 5);
+    }
+  else if (strncmp (str, "ttyout=", 7) == 0)
+    {
+      act = alloc_action (cop_ttyout);
+      act->v.command = copy_string_unquote (str + 7);
     }
   else if (strncmp (str, "sleep=", 6) == 0)
     {
@@ -178,7 +187,8 @@ static void
 run_checkpoint_actions (bool do_write)
 {
   struct checkpoint_action *p;
-
+  FILE *tty = NULL;
+  
   for (p = checkpoint_action; p; p = p->next)
     {
       switch (p->opcode)
@@ -186,6 +196,16 @@ run_checkpoint_actions (bool do_write)
 	case cop_dot:
 	  fputc ('.', stdlis);
 	  fflush (stdlis);
+	  break;
+
+	case cop_bell:
+	  if (!tty)
+	    tty = fopen ("/dev/tty", "w");
+	  if (tty)
+	    {
+	      fputc ('\a', tty);
+	      fflush (tty);
+	    }
 	  break;
 	  
 	case cop_echo:
@@ -213,6 +233,19 @@ run_checkpoint_actions (bool do_write)
 	  }
 	  break;
 	  
+	case cop_ttyout:
+	  if (!tty)
+	    tty = fopen ("/dev/tty", "w");
+	  if (tty)
+	    {
+	      char *tmp = expand_checkpoint_string (p->v.command, do_write,
+						    checkpoint);
+	      fprintf (tty, "%s", tmp);
+	      fflush (tty);
+	      free (tmp);
+	    }
+	  break;
+	  
 	case cop_sleep:
 	  sleep (p->v.time);
 	  break;
@@ -224,6 +257,8 @@ run_checkpoint_actions (bool do_write)
 	  break;
 	}
     }
+  if (tty)
+    fclose (tty);
 }
 
 void
