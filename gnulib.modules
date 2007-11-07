@@ -13,6 +13,7 @@ exclude
 exitfail
 fileblocks
 fnmatch-gnu
+fseeko
 ftruncate
 full-write
 getdate
@@ -38,6 +39,7 @@ safe-read
 save-cwd
 savedir
 setenv
+snprintf
 stat-time
 stdbool
 stdint
