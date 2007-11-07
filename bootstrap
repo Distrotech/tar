@@ -51,7 +51,7 @@ Options:
  --skip-po                Do not download po files.
  --update-po[=LANG]       Update po file(s) and exit.
  --cvs-user=USERNAME      Set the CVS username to be used when accessing
-                          the gnulib repository.
+                          the paxutils repository.
 
 If the file bootstrap.conf exists in the current working directory, its
 contents are read as shell variables to configure the bootstrap.
@@ -69,24 +69,34 @@ checkout() {
   if [ ! -d $1 ]; then
     echo "$0: getting $1 files..."
 
-    case ${CVS_AUTH-pserver} in
-    pserver)
-      CVS_PREFIX=':pserver:anonymous@';;
-    ssh)
-      CVS_PREFIX="$CVS_USER${CVS_USER+@}";;
-    *)
-      echo "$0: $CVS_AUTH: Unknown CVS access method" >&2
-      exit 1;;
-    esac
+    case $1 in
+    paxutils)
+      case ${CVS_AUTH-pserver} in
+      pserver)
+        CVS_PREFIX=':pserver:anonymous@';;
+      ssh)
+        CVS_PREFIX="$CVS_USER${CVS_USER+@}";;
+      *)
+        echo "$0: $CVS_AUTH: Unknown CVS access method" >&2
+        exit 1;;
+      esac
 
-    case $CVS_RSH in
-    '') CVS_RSH=ssh; export CVS_RSH;;
+      case $CVS_RSH in
+      '') CVS_RSH=ssh; export CVS_RSH;;
+      esac
+
+      CVSURL=${CVS_PREFIX}cvs.savannah.gnu.org:/cvsroot/"$1"
+      ;;
+      
+    gnulib)
+      CVSURL=:pserver:anonymous@pserver.git.sv.gnu.org:/gnulib.git
+      ;;
+      
     esac
 
     trap "cleanup $1" 1 2 13 15
 
-    cvs -z3 -q -d ${CVS_PREFIX}cvs.savannah.gnu.org:/cvsroot/"$1" co $1 ||
-      cleanup $1
+    cvs -z3 -q -d $CVSURL co $1 || cleanup $1
 
     trap - 1 2 13 15
   fi
