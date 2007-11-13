@@ -1,3 +1,9 @@
+2007-11-12  Jim Meyering  <meyering@redhat.com>
+
+	Don't read from name[-1].
+	* src/incremen.c (make_directory): Handle namelen == 0, since
+	find_directory_meta calls make_directory ("").
+
 2007-11-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap (checkout): Use URL of the gnulib CVS mirror.
@@ -11,7 +17,7 @@
 	TAR_BLOCKING_FACTOR environment variable.
 	* doc/tar.texi: Update
 	* NEWS: Update
-	
+
 2007-10-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/Makefile.am: Use texi2html and the CVS version of gendocs.sh
@@ -41,9 +47,9 @@
 	* src/system.c (sys_exec_checkpoint_script): New function.
 	(sys_exec_info_script): Restore SIGPIPE handler.
 	* src/tar.c: (parse_opt): New options --hard-dereference,
-	--checkpoint-action. 
+	--checkpoint-action.
 	(decode_options): Call checkpoint_finish_compile.
-	
+
 	* src/system.c (sys_exec_info_script): Initialize buf. Problem
 	reported by Bengt-Arne Fjellner.
 

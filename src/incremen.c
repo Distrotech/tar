@@ -124,8 +124,8 @@ make_directory (const char *name)
   directory->orig = NULL;
   directory->flags = false;
   strcpy (directory->name, name);
-  if (ISSLASH (directory->name[namelen-1]))
-    directory->name[namelen-1] = 0;
+  if (namelen && ISSLASH (directory->name[namelen - 1]))
+    directory->name[namelen - 1] = 0;
   directory->tagfile = NULL;
   return directory;
 }
@@ -336,7 +336,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 
   {
     const char *tag_file_name;
-    
+
     switch (check_exclusion_tags (name_buffer, &tag_file_name))
       {
       case exclusion_tag_all:
@@ -355,13 +355,13 @@ procdir (char *name_buffer, struct stat *stat_data,
 			       _("contents not dumped"));
 	directory->children = NO_CHILDREN;
 	break;
-	
+
       case exclusion_tag_under:
 	exclusion_tag_warning (name_buffer, tag_file_name,
 			       _("contents not dumped"));
 	directory->tagfile = tag_file_name;
 	break;
-	
+
       case exclusion_tag_none:
 	break;
       }
@@ -507,7 +507,7 @@ scan_directory (char *dir, dev_t device)
   size_t name_length;		/* used length in name_buffer */
   struct stat stat_data;
   struct directory *directory;
-  
+
   if (! dirp)
     savedir_error (dir);
 
@@ -531,7 +531,7 @@ scan_directory (char *dir, dev_t device)
 
   directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false,
 		       NULL);
-  
+
   if (dirp && directory->children != NO_CHILDREN)
     {
       char  *entry;	/* directory entry being scanned */
@@ -1416,12 +1416,12 @@ try_purge_directory (char const *directory_name)
 	     This is an extra safety precaution. Besides, it might be
 	     necessary to extract from archives created with tar versions
 	     prior to 1.19. */
-	  
+
 	  if (*src)
 	    src = safer_name_suffix (src, false, absolute_names_option);
 	  if (*dst)
 	    dst = safer_name_suffix (dst, false, absolute_names_option);
-	  
+
 	  if (*src == 0)
 	    src = temp_stub;
 	  else if (*dst == 0)
