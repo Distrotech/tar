@@ -100,6 +100,7 @@ TESTSUITE_AT = \
  same-order01.at\
  same-order02.at\
  shortfile.at\
+ shortupd.at\
  shortrec.at\
  sparse01.at\
  sparse02.at\
