@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2007-10-31
+GNU tar NEWS - User visible changes. 2007-12-05
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -30,6 +30,10 @@ their appearance in the command line.
 
 The value of the blocking factor is made available to info and
 checkpoint scripts via environment variable TAR_BLOCKING_FACTOR.
+
+* Bugfixes.
+** Fix bug introduced in version 1.19: tar refused to update non-existing
+archives.
 
 
 version 1.19 - Sergey Poznyakoff, 2007-10-10

@@ -1,3 +1,13 @@
+2007-12-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (check_compressed_archive): Do not bail out if the
+	file is too short, set boolean flag, passed as an argument
+	instead.  This fixes a bug introduced on 2007-08-24. See also
+	tests/shortupd.at.
+	
+	* tests/Makefile.am, tests/testsuite.at: Add shortupd.at.
+	* tests/shortupd.at: New test.
+
 2007-11-12  Jim Meyering  <meyering@redhat.com>
 
 	Don't read from name[-1].
