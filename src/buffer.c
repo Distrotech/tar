@@ -229,19 +229,21 @@ static struct zip_magic const magic[] = {
 
 /* Check if the file ARCHIVE is a compressed archive. */
 enum compress_type
-check_compressed_archive ()
+check_compressed_archive (bool *pshort)
 {
   struct zip_magic const *p;
   bool sfr;
-  bool short_file = false;
+  bool temp;
+
+  if (!pshort)
+    pshort = &temp;
   
   /* Prepare global data needed for find_next_block: */
   record_end = record_start; /* set up for 1st record = # 0 */
   sfr = read_full_records;
   read_full_records = true; /* Suppress fatal error on reading a partial
 			       record */
-  if (find_next_block () == 0)
-    short_file = true;
+  *pshort = find_next_block () == 0;
   
   /* Restore global values */
   read_full_records = sfr;
@@ -253,9 +255,6 @@ check_compressed_archive ()
   for (p = magic + 1; p < magic + NMAGIC; p++)
     if (memcmp (record_start->buffer, p->magic, p->length) == 0)
       return p->type;
-
-  if (short_file)
-    ERROR ((0, 0, _("This does not look like a tar archive")));
 
   return ct_none;
 }
@@ -273,11 +272,16 @@ open_compressed_archive ()
 
   if (!multi_volume_option)
     {
-      enum compress_type type = check_compressed_archive ();
+      bool shortfile;
+      enum compress_type type = check_compressed_archive (&shortfile);
 
       if (type == ct_none)
-	return archive;
-
+	{
+	  if (shortfile)
+	    ERROR ((0, 0, _("This does not look like a tar archive")));
+	  return archive;
+	}
+      
       /* FD is not needed any more */
       rmtclose (archive);
 
@@ -502,15 +506,18 @@ _open_archive (enum access_mode wanted_access)
 	{
 	case ACCESS_READ:
 	  {
+	    bool shortfile;
 	    enum compress_type type;
 
 	    archive = STDIN_FILENO;
 
-	    type = check_compressed_archive ();
+	    type = check_compressed_archive (&shortfile);
 	    if (type != ct_none)
 	      FATAL_ERROR ((0, 0,
 			    _("Archive is compressed. Use %s option"),
 			    compress_option (type)));
+	    if (shortfile)
+	      ERROR ((0, 0, _("This does not look like a tar archive")));
 	  }
 	  break;
 
@@ -554,7 +561,7 @@ _open_archive (enum access_mode wanted_access)
 			   O_RDWR | O_CREAT | O_BINARY,
 			   MODE_RW, rsh_command_option);
 
-	if (check_compressed_archive () != ct_none)
+	if (check_compressed_archive (NULL) != ct_none)
 	  FATAL_ERROR ((0, 0,
 			_("Cannot update compressed archives")));
 	break;
