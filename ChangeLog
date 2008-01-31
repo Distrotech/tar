@@ -1,10 +1,20 @@
+2008-01-30  Paul Eggert  <eggert@cs.ucla.edu>
+
+	* doc/tar.texi: Update Back-Cover text to reflect new GNU wording.
+
+2007-12-17  Paul Eggert  <eggert@cs.ucla.edu>
+
+	Exit with nonzero status if a close fails on an archive.
+	Problem (and initial trivial fix)
+	* src/buffer.c (close_archive, new_volume): close_error, not close_warn.
+
 2007-12-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (check_compressed_archive): Do not bail out if the
 	file is too short, set boolean flag, passed as an argument
 	instead.  This fixes a bug introduced on 2007-08-24. See also
 	tests/shortupd.at.
-	
+
 	* tests/Makefile.am, tests/testsuite.at: Add shortupd.at.
 	* tests/shortupd.at: New test.
 

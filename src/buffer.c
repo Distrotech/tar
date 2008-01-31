@@ -833,7 +833,7 @@ close_archive (void)
     verify_volume ();
 
   if (rmtclose (archive) != 0)
-    close_warn (*archive_name_cursor);
+    close_error (*archive_name_cursor);
 
   sys_wait_for_child (child_pid);
 
@@ -1021,7 +1021,7 @@ new_volume (enum access_mode mode)
   current_block = record_start;
   
   if (rmtclose (archive) != 0)
-    close_warn (*archive_name_cursor);
+    close_error (*archive_name_cursor);
 
   archive_name_cursor++;
   if (archive_name_cursor == archive_name_array + archive_names)

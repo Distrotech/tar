@@ -45,9 +45,9 @@ Invariant Sections, with the Front-Cover Texts being ``A GNU Manual,''
 and with the Back-Cover Texts as in (a) below.  A copy of the license
 is included in the section entitled "GNU Free Documentation License".
 
-(a) The FSF's Back-Cover Text is: ``You are free to copy and modify
-this GNU Manual.  Buying copies from GNU Press supports the FSF in
-developing GNU and promoting software freedom.''
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.  Buying copies from the FSF
+supports it in developing GNU and promoting software freedom.''
 @end quotation
 @end copying
 
@@ -2487,7 +2487,7 @@ Output @var{string} on the current console (@file{/dev/tty}).
 
 Several @option{--checkpoint-action} options can be specified.  The
 supplied actions will be executed in order of their appearance in the
-command line. 
+command line.
 
 Using @option{--checkpoint-action} without @option{--checkpoint}
 assumes default checkpoint frequency of one checkpoint per 10 records.
@@ -2593,7 +2593,7 @@ named @var{file}, but dump the directory node itself.  @xref{exclude}.
 @item --exclude-tag-all=@var{file}
 
 Exclude from dump any directory containing file named @var{file}.
-@xref{exclude}. 
+@xref{exclude}.
 
 @opsummary{exclude-vcs}
 @item --exclude-vcs
@@ -3815,7 +3815,7 @@ audible bell and the message described above at each checkpoint:
 There is also a special action which produces an audible signal:
 @samp{bell}.  It is not equivalent to @samp{echo='\a'}, because
 @samp{bell} sends the bell directly to the console (@file{/dev/tty}),
-whereas @samp{echo='\a'} sends it to the standard error.  
+whereas @samp{echo='\a'} sends it to the standard error.
 
 @cindex @code{ttyout}, checkpoint action
 The @samp{ttyout=@var{string}} action outputs @var{string} to
@@ -3848,7 +3848,7 @@ as shown in the previous section.
 @cindex @code{sleep}, checkpoint action
 Yet another action, @samp{sleep}, pauses @command{tar} for a specified
 amount of seconds.  The following example will stop for 30 seconds at each
-checkpoint: 
+checkpoint:
 
 @smallexample
 $ @kbd{tar -c --checkpoint=1000 --checkpoint-action=sleep=30}
@@ -3877,7 +3877,7 @@ The name of the archive @command{tar} is processing.
 
 @vrindex TAR_BLOCKING_FACTOR, checkpoint script environment
 @item TAR_BLOCKING_FACTOR
-Current blocking factor (@pxref{Blocking}. 
+Current blocking factor (@pxref{Blocking}.
 
 @vrindex TAR_CHECKPOINT, checkpoint script environment
 @item TAR_CHECKPOINT
@@ -3913,7 +3913,7 @@ This example also illustrates the fact that
 @option{--checkpoint-action} can be used without
 @option{--checkpoint}.  In this case, the default checkpoint frequency
 (at each 10th record) is assumed.
-       
+
 @node interactive
 @section Asking for Confirmation During Operations
 @cindex Interactive operation
@@ -8239,7 +8239,7 @@ $ @kbd{tar cfa archive.tar.lzma .}
 @end smallexample
 
 For a complete list of file name suffixes recognized by @GNUTAR{},
-@ref{auto-compress}. 
+@ref{auto-compress}.
 
 Reading compressed archive is even simpler: you don't need to specify
 any additional options as @GNUTAR{} recognizes its format
@@ -8988,7 +8988,7 @@ from @var{string} after making the following substitutions:
 result of the @command{dirname} utility on the translated file name.
 @item %f @tab  The name of the file with the directory information
 stripped, equivalent to the result of the @command{basename} utility
-on the translated file name. 
+on the translated file name.
 @item %p @tab  The process @acronym{ID} of the @command{tar} process.
 @item %% @tab  A @samp{%} character.
 @end multitable
@@ -10653,7 +10653,7 @@ The name of the archive @command{tar} is processing.
 
 @vrindex TAR_BLOCKING_FACTOR, info script environment variable
 @item TAR_BLOCKING_FACTOR
-Current blocking factor (@pxref{Blocking}. 
+Current blocking factor (@pxref{Blocking}.
 
 @vrindex TAR_VOLUME, info script environment variable
 @item TAR_VOLUME
