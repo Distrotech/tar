@@ -1,3 +1,9 @@
+2008-02-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/transform.c: Support multiple --transform options. Support
+	semicolon-separated lists of replace expressions.
+	* NEWS, tar.texi: Document changes to the --transform option.
+
 2008-01-30  Paul Eggert  <eggert@cs.ucla.edu>
 
 	* doc/tar.texi: Update Back-Cover text to reflect new GNU wording.
@@ -6,7 +12,8 @@
 
 	Exit with nonzero status if a close fails on an archive.
 	Problem (and initial trivial fix)
-	* src/buffer.c (close_archive, new_volume): close_error, not close_warn.
+	* src/buffer.c (close_archive, new_volume): close_error, not
+	close_warn. 
 
 2007-12-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 
