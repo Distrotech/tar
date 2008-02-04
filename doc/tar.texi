@@ -35,7 +35,7 @@ This manual is for @acronym{GNU} @command{tar} (version
 from archives.
 
 Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
@@ -3440,7 +3440,7 @@ successfully.  For example, @w{@samp{tar --version}} might print:
 
 @smallexample
 tar (GNU tar) @value{VERSION}
-Copyright (C) 2006 Free Software Foundation, Inc.
+Copyright (C) 2008 Free Software Foundation, Inc.
 This is free software.  You may redistribute copies of it under the terms
 of the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
 There is NO WARRANTY, to the extent permitted by law.
@@ -7565,6 +7565,9 @@ replacement for each file name part that matches @var{regexp}.  Both
 @var{regexp} and @var{replace} are described in detail in
 @ref{The "s" Command, The "s" Command, The `s' Command, sed, GNU sed}.
 
+As in @command{sed}, you can give several replace expressions,
+separated by a semicolon.
+
 Supported @var{flags} are:
 
 @table @samp
@@ -7657,6 +7660,18 @@ $ @kbd{tar -cf arch.tar --transform='s,^usr/,var/,' \
 If both @option{--strip-components} and @option{--transform} are used
 together, then @option{--transform} is applied first, and the required
 number of components is then stripped from its result.
+
+You can use as many @option{--transform} options in a single command
+line as you want.  The specified expressions will then be applied in
+order of their appearance.  For example, the following two invocations
+are equivalent:
+
+@smallexample
+$ @kbd{tar -cf arch.tar --transform='s,/usr/var,/var/' \
+                        --transform='s,/usr/local,/usr/,'}
+$ @kbd{tar -cf arch.tar \
+               --transform='s,/usr/var,/var/;s,/usr/local,/usr/,'}
+@end smallexample
 
 @node after
 @section Operating Only on New Files

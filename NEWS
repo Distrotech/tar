@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2007-12-05
+GNU tar NEWS - User visible changes. 2008-02-04
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -25,6 +25,14 @@ checkpoint.  Recognized actions are: dot, echo (the default),
 echo=string, and sleep=value.  Any number of `--checkpoint-action'
 options can be specified, the actions will be executed in order of
 their appearance in the command line.  
+
+* The --transform option.
+
+Any number of `--transform' options can be given in the command line.
+The specified transformations will be applied in turn.
+
+The argument to `--transform' option can be a list of replace
+expressions, separated by a semicolon (as in `sed').
 
 * Info (end-of-volume) scripts
 
