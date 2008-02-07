@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2008-02-04
+GNU tar NEWS - User visible changes. 2008-02-07
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -33,6 +33,10 @@ The specified transformations will be applied in turn.
 
 The argument to `--transform' option can be a list of replace
 expressions, separated by a semicolon (as in `sed').
+
+Filename transformations are applied to symbolic link targets
+during both creation and extraction.  Tar 1.19 used them only
+during extraction.
 
 * Info (end-of-volume) scripts
 

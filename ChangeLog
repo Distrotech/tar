@@ -1,3 +1,9 @@
+2008-02-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update.
+	* src/create.c (dump_file0): Apply transform_name to symlink
+	targets.
+
 2008-02-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/transform.c: Support multiple --transform options. Support
