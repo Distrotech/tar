@@ -1706,6 +1706,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	}
       buffer[size] = '\0';
       assign_string (&st->link_name, buffer);
+      transform_name (&st->link_name);
       if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
 	write_long_link (st);
 
@@ -1714,7 +1715,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       header = start_header (st);
       if (!header)
 	return;
-      tar_copy_str (header->header.linkname, buffer, NAME_FIELD_SIZE);
+      tar_copy_str (header->header.linkname, st->link_name, NAME_FIELD_SIZE);
       header->header.typeflag = SYMTYPE;
       finish_header (st, header, block_ordinal);
       /* nothing more to do to it */
