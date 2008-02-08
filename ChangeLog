@@ -1,3 +1,12 @@
+2008-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update.
+	* configure.ac: Version 1.19.90
+	* po/POTFILES.in: Add missing files.
+	* src/compare.c (verify_volume): Honor --ignore-zeros.
+	Proposed by Jan-Benedict Glaw.
+	* tests/shortfile.at (AT_KEYWORDS): Add shortfile0.
+
 2008-02-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update.

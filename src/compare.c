@@ -597,9 +597,23 @@ verify_volume (void)
 			    "VERIFY FAILURE: %d invalid headers detected",
 			    counter), counter));
 	}
-      if (status == HEADER_ZERO_BLOCK || status == HEADER_END_OF_FILE)
+      if (status == HEADER_END_OF_FILE)
 	break;
+      if (status == HEADER_ZERO_BLOCK)
+	{
+	  set_next_block_after (current_header);
+          if (!ignore_zeros_option)
+            {
+	      char buf[UINTMAX_STRSIZE_BOUND];
 
+	      status = read_header (false);
+	      if (status == HEADER_ZERO_BLOCK)
+	        break;
+	      WARN ((0, 0, _("A lone zero block at %s"),
+	  	    STRINGIFY_BIGINT (current_block_ordinal (), buf)));
+            }
+	}
+      
       diff_archive ();
       tar_stat_destroy (&current_stat_info);
     }

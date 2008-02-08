@@ -71,6 +71,7 @@ fnmatch.in.h
 fnmatch_loop.c
 fpending.c
 fpending.h
+fseeko.c
 fstatat.c
 ftruncate.c
 full-write.c
@@ -104,6 +105,7 @@ inttypes.in.h
 lchown.c
 localcharset.c
 localcharset.h
+lseek.c
 lstat.c
 lstat.h
 malloc.c
@@ -175,6 +177,7 @@ savedir.h
 setenv.c
 setenv.h
 sleep.c
+snprintf.c
 stat-macros.h
 stat-time.h
 stdbool.h

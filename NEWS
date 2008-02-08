@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2008-02-07
+GNU tar NEWS - User visible changes. 2008-02-08
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.19.1 (CVS)
+version 1.19.90 (CVS)
 
 * New option --auto-compress (-a)
 
@@ -22,9 +22,10 @@ they refer to, instead of creating usual hard link members (type '1').
 
 This action allows to specify an action to be executed upon hitting a
 checkpoint.  Recognized actions are: dot, echo (the default),
-echo=string, and sleep=value.  Any number of `--checkpoint-action'
-options can be specified, the actions will be executed in order of
-their appearance in the command line.  
+echo=string, ttyout=string, exec=cmdline, and sleep=value.  Any number
+of `--checkpoint-action' options can be specified, the actions will be
+executed in order of their appearance in the command line.  See
+chapter 3.8 "Checkpoints" for a complete description.
 
 * The --transform option.
 
@@ -37,6 +38,9 @@ expressions, separated by a semicolon (as in `sed').
 Filename transformations are applied to symbolic link targets
 during both creation and extraction.  Tar 1.19 used them only
 during extraction.
+
+For a detailed description, see chapter 6.7 "Modifying File and Member
+Names". 
 
 * Info (end-of-volume) scripts
 
