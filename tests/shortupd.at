@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Fixing improper small file recognition in version 1.18 (see shortfile.at
+# and ChangeLog:2007-08-24), introduced another bug: when updating a
+# non-existing archive, tar-1.19 complained about its not being a tar archive
+# and exited immediately, leaving the created zero-sized file after it.
+#
+# This bug was fixed on 2007-12-05.
 #
 # Reported by: Ozan @,{C}a@v{g}layan <ozancag@gmail.com>
 # References: <4755A82A.9060607@gmail.com>
