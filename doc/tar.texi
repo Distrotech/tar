@@ -8228,7 +8228,7 @@ Creating a compressed archive is simple: you just specify a
 commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
 (@option{--bzip2}) to create a @command{bzip2} compressed archive,
-@command{lzma} to create an @asis{LZMA} compressed archive and
+@option{--lzma} to create an @asis{LZMA} compressed archive and
 @option{-Z} (@option{--compress}) to use @command{compress} program.
 For example:
 
