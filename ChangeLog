@@ -1,3 +1,7 @@
+2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Fix a typo. Reported by Denis Excoffier.
+
 2008-02-08  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update.
