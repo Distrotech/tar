@@ -13,7 +13,7 @@ if test -z "$TEST_DATA_DIR"; then
   TEST_DATA_DIR=$abs_builddir
 fi
 
-STAR_DATA_URL=http://download.berlios.de/pub/star/testscripts
+STAR_DATA_URL=ftp://ftp.berlios.de/pub/star/testscripts
 if test -z "$STAR_TESTSCRIPTS"; then
   STAR_TESTSCRIPTS=$TEST_DATA_DIR
 fi  

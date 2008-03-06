@@ -1,6 +1,6 @@
 This directory contains scripts for testing GNU tar using
 star "test archives". The archives themselves can be obtained
-from http://download.berlios.de/pub/star/testscripts.
+from ftp://ftp.berlios.de/pub/star/testscripts.
 
 These tests are disabled by default. There are two ways to run
 them.  The simplest is by `make check-full' command.  It requires wget

@@ -1,3 +1,13 @@
+2008-03-06  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap: Use rsync to get translations.
+	* doc/tar.texi: Minor change.
+	* lib/.cvsignore: Update
+	* po/.cvsignore: Update
+	* src/system.c: Remove include setenv.h.
+	* tests/atlocal.in (STAR_DATA_URL): Update.
+	* tests/star/README: Update URL. 
+
 2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Fix a typo. Reported by Denis Excoffier.

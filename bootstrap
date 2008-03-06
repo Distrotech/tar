@@ -49,7 +49,7 @@ Options:
  --force                  Attempt to bootstrap even if the sources seem
                           not to have been checked out.
  --skip-po                Do not download po files.
- --update-po[=LANG]       Update po file(s) and exit.
+ --update-po              Update po files and exit.
  --cvs-user=USERNAME      Set the CVS username to be used when accessing
                           the paxutils repository.
 
@@ -116,11 +116,13 @@ gnulib_modules=
 # Any gnulib files needed that are not in modules.
 gnulib_files=
 
-# Translation Project URL, for the registry of all projects
-# and for the translation-team master directory.
-tp_url() {
-	echo "http://translationproject.org/domain/$1.html"
-}
+# The command to download all .po files for a specified domain into
+# a specified directory.  Fill in the first %s is the domain name, and
+# the second with the destination directory.  Use rsync's -L and -r
+# options because the latest/%s directory and the .po files within are
+# all symlinks.
+po_download_command_format=\
+"rsync -Lrtvz 'translationproject.org::tp/latest/%s/' '%s'"
 
 extract_package_name='
   /^AC_INIT(/{
@@ -223,78 +225,60 @@ echo "$0: Bootstrapping CVS $package..."
 
 # Get translations.
 
-get_translations() {
+download_po_files() {
   subdir=$1
   domain=$2
-  po_file=$3
-
-  case $WGET_COMMAND in
-  '')
-    echo "$0: wget not available; skipping translations";;
-  ?*)
-    url=`tp_url $domain`
-    baseurl=`expr "$url" : '\(.*\)/.*'`
-    echo "$0: getting translations into $subdir for $domain..." &&
-    case $po_file in
-    '') (cd $subdir && rm -f dummy `ls | sed -n '/\.gmo$/p; /\.po/p'`);;
-    esac &&
-
-    $WGET_COMMAND -O "$subdir/$domain.html" "$url" &&
-
-    sed -n 's|.*href="\(.*\)/\([^/][^/]*\)/'"$domain"'-\([^/"]*\)\.[^."]*\.po".*|\2:\3:\1|p' <"$subdir/$domain.html" |
-    sort -t: -k 1,1 -k 2,2n -k2,2 -k3,3n -k3,3 -k4,4n -k4,4 -k5,5n -k5.5 |
-    awk -F: '
-      { if (lang && $1 != lang) print lang, ver, $3 }
-      { lang = $1; ver = $2 }
-      END { if (lang) print lang, ver, $3 }
-    ' | awk -v domain="$domain" -v baseurl="$baseurl" -v subdir="$subdir" \
-            -v po_file="$po_file" '
-      {
-	lang = $1
-        if (po_file && po_file != (lang ".po")) next
-	ver = $2
-	printf "{ $WGET_COMMAND -O %s/%s.po %s/%s/%s/%s-%s.%s.po &&\n", subdir, lang, baseurl, $3, lang, domain, ver, lang
-	printf "  msgfmt -c -o /dev/null %s/%s.po || {\n", subdir, lang
-	printf "    echo >&2 '\'"$0"': omitting translation for %s'\''\n", lang
-	printf "    rm -f %s/%s.po; }; } &&\n", subdir, lang
-      }
-      END { print ":" }
-    ' | WGET_COMMAND="$WGET_COMMAND" sh 
-    ;;
-  esac &&
-  ls "$subdir"/*.po 2>/dev/null |
-    sed 's|.*/||; s|\.po$||' >"$subdir/LINGUAS" &&
-  rm -f "$subdir/$domain.html"
+  echo "$0: getting translations into $subdir for $domain..."
+  cmd=`printf "$po_download_command_format" "$domain" "$subdir"`
+  eval "$cmd"
 }
 
-case `wget --help` in
-*'--no-cache'*)
-    WGET_COMMAND='wget -nv --no-cache';;
-*'--cache=on/off'*)
-    WGET_COMMAND='wget -nv --cache=off';;
-*'--non-verbose'*)
-    WGET_COMMAND='wget -nv';;
-*)
-    WGET_COMMAND='';;
-esac
+# Download .po files to $po_dir/.reference and copy only the new
+# or modified ones into $po_dir.  Also update $po_dir/LINGUAS.
+update_po_files() {
+  # Directory containing primary .po files.
+  # Overwrite them only when we're sure a .po file is new.
+  po_dir=$1
+  domain=$2
+
+  # Download *.po files into this dir.
+  # Usually contains *.s1 checksum files.
+  ref_po_dir="$po_dir/.reference"
+
+  test -d $ref_po_dir || mkdir $ref_po_dir || return
+  download_po_files $ref_po_dir $domain \
+    && ls "$ref_po_dir"/*.po 2>/dev/null |
+      sed 's|.*/||; s|\.po$||' > "$po_dir/LINGUAS"
+
+  langs=`cd $ref_po_dir && echo *.po|sed 's/\.po//g'`
+  test "$langs" = '*' && langs=x
+  for po in `cd $ref_po_dir && echo *.po|sed 's/\.po//g'`; do
+    case $po in x) continue;; esac
+    new_po="$ref_po_dir/$po.po"
+    cksum_file="$ref_po_dir/$po.s1"
+    if ! test -f "$cksum_file" ||
+	! test -f "$po_dir/$po.po" ||
+	! sha1sum -c --status "$cksum_file" < "$new_po" > /dev/null; then
+      echo "updated $po_dir/$po.po..."
+      cp "$new_po" "$po_dir/$po.po" && sha1sum < "$new_po" > "$cksum_file"
+    fi
+  done
+}
 
 case $DOWNLOAD_PO in
 'skip')
   ;;
 '')
-  get_translations po $package || exit
+  if test -d po; then
+    update_po_files po $package || exit
+  fi
   ;;
 'only')
-  get_translations po $package
+  if test -d po; then
+    update_po_files po $package || exit
+  fi
   exit
   ;;
-*.po)
-  get_translations po $package "$DOWNLOAD_PO"
-  exit
-  ;;
-*)
-  get_translations po $package "${DOWNLOAD_PO}.po"
-  exit
 esac
 
 # Get paxutils files.

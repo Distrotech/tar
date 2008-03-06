@@ -87,6 +87,7 @@ getopt.h
 getopt.in.h
 getopt1.c
 getopt_int.h
+getpagesize.c
 getpagesize.h
 gettext.h
 gettime.c
@@ -196,6 +197,7 @@ streq.h
 strerror.c
 string.h
 string.in.h
+strings.in.h
 stripslash.c
 strncasecmp.c
 strndup.c

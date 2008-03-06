@@ -1765,6 +1765,7 @@ use @w{@kbd{tar --list --verbose}} to list them correctly.
 
 @node going further
 @section Going Further Ahead in this Manual
+@UNREVISED
 
 @FIXME{need to write up a node here about the things that are going to
 be in the rest of the manual.}
