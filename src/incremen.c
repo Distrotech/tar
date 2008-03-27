@@ -250,7 +250,8 @@ procdir (char *name_buffer, struct stat *stat_data,
 	 directories, consider all NFS devices as equal,
 	 relying on the i-node to establish differences.  */
 
-      if (! (((DIR_IS_NFS (directory) & nfs)
+      if (! ((!check_device_option
+	      || (DIR_IS_NFS (directory) && nfs)
 	      || directory->device_number == stat_data->st_dev)
 	     && directory->inode_number == stat_data->st_ino))
 	{

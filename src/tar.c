@@ -249,6 +249,7 @@ enum
   ANCHORED_OPTION = CHAR_MAX + 1,
   ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
+  CHECK_DEVICE_OPTION,
   CHECKPOINT_OPTION,
   CHECKPOINT_ACTION_OPTION,
   DELAY_DIRECTORY_RESTORE_OPTION,
@@ -275,6 +276,7 @@ enum
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
+  NO_CHECK_DEVICE_OPTION,
   NO_DELAY_DIRECTORY_RESTORE_OPTION,
   NO_IGNORE_CASE_OPTION,
   NO_IGNORE_COMMAND_ERROR_OPTION,
@@ -411,6 +413,12 @@ static struct argp_option options[] = {
       " NUMBER defaults to 1"), GRID+1 },
   {"seek", 'n', NULL, 0,
    N_("archive is seekable"), GRID+1 },
+  {"no-check-device", NO_CHECK_DEVICE_OPTION, NULL, 0,
+   N_("do not check device numbers when creating incremental archives"),
+   GRID+1 },
+  {"check-device", CHECK_DEVICE_OPTION, NULL, 0,
+   N_("check device numbers when creating incremental archives (default)"),
+   GRID+1 },
 #undef GRID
 
 #define GRID 30
@@ -1545,6 +1553,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			" on this platform")));
       break;
 
+    case CHECK_DEVICE_OPTION:
+      check_device_option = true;
+      break;
+      
+    case NO_CHECK_DEVICE_OPTION:
+      check_device_option = false;
+      break;
+      
     case CHECKPOINT_OPTION:
       if (arg)
 	{
@@ -2053,6 +2069,8 @@ decode_options (int argc, char **argv)
   owner_option = -1;
   group_option = -1;
 
+  check_device_option = true;
+  
   /* Convert old-style tar call by exploding option element and rearranging
      options accordingly.  */
 

@@ -188,6 +188,8 @@ GLOBAL enum old_files old_files_option;
 
 /* Specified file name for incremental list.  */
 GLOBAL const char *listed_incremental_option;
+/* Check device numbers when doing incremental dumps. */
+GLOBAL bool check_device_option;
 
 /* Specified mode change string.  */
 GLOBAL struct mode_change *mode_option;

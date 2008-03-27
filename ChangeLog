@@ -1,3 +1,16 @@
+2008-03-27  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (check_device_option): New global.
+	* src/incremen.c (procdir): Use boolean and instead of bitwise
+	one. Patch by Jean-Louis Martineau.
+	Compare device numbers only if check_device_option is set.
+	* src/tar.c: New command line options --no-check-device and
+	--check-device. Proposed by Jean-Louis Martineau.
+	(parse_opt): Hanlde new options.
+	(decode_options): Initialize check_device_option to true.
+	
+	* THANKS: Update
+
 2008-03-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap: Use rsync to get translations.
