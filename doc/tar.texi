@@ -453,11 +453,8 @@ concepts of using a Unix-type operating system; @pxref{Tutorial}.)
 The third chapter presents the remaining five operations, and
 information about using @command{tar} options and option syntax.
 
-@FIXME{this sounds more like a @acronym{GNU} Project Manuals Concept [tm] more
-than the reality.  should think about whether this makes sense to say
-here, or not.}  The other chapters are meant to be used as a
-reference.  Each chapter presents everything that needs to be said
-about a specific topic.
+The other chapters are meant to be used as a reference.  Each chapter
+presents everything that needs to be said about a specific topic.
 
 One of the chapters (@pxref{Date input formats}) exists in its
 entirety in other @acronym{GNU} manuals, and is mostly self-contained.
@@ -687,7 +684,7 @@ change between directories; and how to figure out where you are in the
 file system.  You should have some basic understanding of directory
 structure and how files are named according to which directory they are
 in.  You should understand concepts such as standard output and standard
-input, what various definitions of the term ``argument'' mean, and the
+input, what various definitions of the term @samp{argument} mean, and the
 differences between relative and absolute file names.  @FIXME{and what
 else?}
 
@@ -752,10 +749,9 @@ You can write most of the @command{tar} operations and options in any
 of three forms: long (mnemonic) form, short form, and old style.  Some
 of the operations and options have no short or ``old'' forms; however,
 the operations and options which we will cover in this tutorial have
-corresponding abbreviations.  @FIXME{make sure this is still the case,
-at the end}We will indicate those abbreviations appropriately to get
-you used to seeing them.  (Note that the ``old style'' option forms
-exist in @GNUTAR{} for compatibility with Unix
+corresponding abbreviations.  We will indicate those abbreviations
+appropriately to get you used to seeing them.  (Note that the ``old
+style'' option forms exist in @GNUTAR{} for compatibility with Unix
 @command{tar}.  In this book we present a full discussion of this way
 of writing options and operations (@pxref{Old Options}), and we discuss
 the other two styles of writing options (@xref{Long Options}, and
@@ -2441,6 +2437,12 @@ record.  @xref{Blocking Factor}.
 This option tells @command{tar} to read or write archives through
 @code{bzip2}.  @xref{gzip}.
 
+@opsummary{check-device}
+@item --check-device
+Check device numbers when creating a list of modified files for
+incremental archiving.  This is the default.  @xref{device numbers},
+for a detailed description. 
+
 @opsummary{checkpoint}
 @item --checkpoint[=@var{number}]
 
@@ -2840,6 +2842,12 @@ changed).  @xref{after}.
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
 @xref{controlling pattern-matching}.
+
+@opsummary{no-check-device}
+@item --no-check-device
+Do not check device numbers when creating a list of modified files
+for incremental archiving.  @xref{device numbers}, for
+a detailed description. 
 
 @opsummary{no-delay-directory-restore}
 @item --no-delay-directory-restore
@@ -5677,21 +5685,40 @@ unreliable if you modify a file's time stamps during dumping (e.g.,
 with the @option{--atime-preserve=replace} option), or if you set the clock
 backwards.
 
+@anchor{device numbers}
 @cindex Device numbers, using in incremental backups
 Metadata stored in snapshot files include device numbers, which,
-obviously is supposed to be a non-volatile value.  However, it turns
-out that NFS devices have undependable values when an automounter
+obviously are supposed to be a non-volatile values.  However, it turns
+out that @acronym{NFS} devices have undependable values when an automounter
 gets in the picture.  This can lead to a great deal of spurious
 redumping in incremental dumps, so it is somewhat useless to compare
-two NFS devices numbers over time.  The solution implemented currently
-is to considers all NFS devices as being equal when it comes to
-comparing directories; this is fairly gross, but there does not seem
-to be a better way to go.
+two @acronym{NFS} devices numbers over time.  The solution implemented
+currently is to considers all @acronym{NFS} devices as being equal
+when it comes to comparing directories; this is fairly gross, but
+there does not seem to be a better way to go.
 
-If you are using the @i{Linux} kernel, the device numbers can also
-change when upgrading to some newer versions of the kernel.  This can
-cause the next backup to be full backup on the affected filesystems.
-@xref{Fixing Snapshot Files}, for the information on how to handle this case.
+Apart from using @acronym{NFS}, there are a number of cases where
+relying on device numbers can cause spurious redumping of unmodified
+files.  For example, this occurs when archiving @acronym{LVM} snapshot
+volumes.  To avoid this, use @option{--no-check-device} option:
+
+@table @option
+@xopindex{no-check-device, described}
+@item --no-check-device
+Do not rely on device numbers when preparing a list of changed files
+for an incremental dump.
+
+@xopindex{check-device, described}
+@item --check-device
+Use device numbers when preparing a list of changed files
+for an incremental dump.  This is the default behavior.  The purpose
+of this option is to undo the effect of the @option{--no-check-device}
+if it was given in @env{TAR_OPTIONS} environment variable
+(@pxref{TAR_OPTIONS}). 
+@end table
+
+There is also another way to cope with changing device numbers.  It is
+described in detail in @ref{Fixing Snapshot Files}.
 
 Note that incremental archives use @command{tar} extensions and may
 not be readable by non-@acronym{GNU} versions of the @command{tar} program.
@@ -5902,7 +5929,7 @@ their support files using the same file name that is used on the
 machine where the scripts are run (i.e., what @command{pwd} will print
 when in that directory on that machine).  If the host that contains
 the file system does not have this capability, you can specify another
-host as long as it can access the file system through NFS.
+host as long as it can access the file system through @acronym{NFS}.
 
 If the list of file systems is very long you may wish to put it
 in a separate file.  This file is usually named
@@ -7285,7 +7312,7 @@ $ @kbd{tar tf arch.tar --quoting-style=literal}
 ./a'single'quote
 ./a"double"quote
 ./a\backslash
-./a	tab
+./a     tab
 ./a
 newline
 @end group
@@ -7307,7 +7334,7 @@ $ @kbd{tar tf arch.tar --quoting-style=shell}
 './a'\''single'\''quote'
 './a"double"quote'
 './a\backslash'
-'./a	tab'
+'./a    tab'
 './a
 newline'
 @end group
@@ -7325,7 +7352,7 @@ $ @kbd{tar tf arch.tar --quoting-style=shell-always}
 './a'\''single'\''quote'
 './a"double"quote'
 './a\backslash'
-'./a	tab'
+'./a    tab'
 './a
 newline'
 @end group
@@ -8289,11 +8316,12 @@ $ @kbd{cat archive.tar.gz | tar tfz -}
 
 Notice also, that there are several restrictions on operations on
 compressed archives.  First of all, compressed archives cannot be
-modified, i.e., you cannot update (@option{--update} (@option{-u})) them or delete
-(@option{--delete}) members from them.  Likewise, you cannot append
-another @command{tar} archive to a compressed archive using
-@option{--append} (@option{-r})).  Secondly, multi-volume archives cannot be
-compressed.
+modified, i.e., you cannot update (@option{--update} (@option{-u}))
+them or delete (@option{--delete}) members from them or
+add (@option{--append} (@option{-r})) members to them.  Likewise, you
+cannot append another @command{tar} archive to a compressed archive using
+@option{--concatenate} (@option{-A})).  Secondly, multi-volume
+archives cannot be compressed.
 
 The following table summarizes compression options used by @GNUTAR{}.
 
@@ -10732,7 +10760,7 @@ name=`expr $TAR_ARCHIVE : '\(.*\)-.*'`
 case $TAR_SUBCOMMAND in
 -c)       ;;
 -d|-x|-t) test -r $@{name:-$TAR_ARCHIVE@}-$TAR_VOLUME || exit 1
-	  ;;
+          ;;
 *)        exit 1
 esac
 

@@ -72,19 +72,28 @@
 @ifset PROOF
 @strong{<REF>} \string\ @strong{</>}
 @end ifset
+@ifclear PROOF
+@cite{\string\}
+@end ifclear
 @end macro
 
 @macro FIXME-pxref{string}
 @ifset PROOF
-@strong{<PXREF>} \string\ @strong{</>}
+See @strong{<PXREF>} \string\ @strong{</>}
 @end ifset
+@ifclear PROOF
+See @cite{\string\}
+@end ifclear
 
 @end macro
 
 @macro FIXME-xref{string}
 @ifset PROOF
-@strong{<XREF>} \string\ @strong{</>}
+See @strong{<XREF>} \string\ @strong{</>}
 @end ifset
+@ifclear PROOF
+See @cite{\string\}
+@end ifclear
 @end macro
 
 @c End of rendition.texi

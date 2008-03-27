@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2008-02-08
+GNU tar NEWS - User visible changes. 2008-03-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -26,6 +26,18 @@ echo=string, ttyout=string, exec=cmdline, and sleep=value.  Any number
 of `--checkpoint-action' options can be specified, the actions will be
 executed in order of their appearance in the command line.  See
 chapter 3.8 "Checkpoints" for a complete description.
+
+* New options --no-check-device, --check-device.
+
+The `--no-check-device' option disables comparing device numbers during
+preparatory stage of an incremental dump.  This allows to avoid
+creating full dumps if the device numbers change (e.g. when using an
+LVM snapshot).
+
+The `--check-device' option enables comparing device numbers.  This is
+the default.  This option is provided to undo the effect of the previous
+`--no-check-device' option, e.g. if it was set in TAR_OPTIONS
+environment variable.
 
 * The --transform option.
 

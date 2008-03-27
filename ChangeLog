@@ -1,5 +1,14 @@
 2008-03-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
+	* NEWS: Document --no-check-device and --check-device.
+	* doc/rendition.texi: Change the way FIXME-*refs are handled in
+	!PROOF. 
+	* doc/intern.texi, doc/tar.texi: Update.
+	* doc/untabify.el: New file.
+	* doc/Makefile.am (EXTRA_DIST): Add untabify.el
+	(untabify, final, check-format, check-refs, check-fixmes)
+	(check-unrevised, all-check-docs, check-docs): New rules.
+	
 	* src/common.h (check_device_option): New global.
 	* src/incremen.c (procdir): Use boolean and instead of bitwise
 	one. Patch by Jean-Louis Martineau.

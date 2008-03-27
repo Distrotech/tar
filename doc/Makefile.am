@@ -31,7 +31,7 @@ tar_TEXINFOS = \
  snapshot.texi\
  sparse.texi\
  value.texi
-EXTRA_DIST = gendocs_template mastermenu.el texify.sed
+EXTRA_DIST = gendocs_template mastermenu.el texify.sed untabify.el
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
 # Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.
@@ -45,6 +45,18 @@ header.texi: $(top_srcdir)/src/tar.h
 
 master-menu: $(tar_TEXINFOS)
 	emacs -batch -l mastermenu.el -f make-master-menu $(info_TEXINFOS)
+
+untabify:
+	emacs -batch -l untabify.el $(info_TEXINFOS) $(tar_TEXINFOS)
+
+final: untabify master-menu
+
+# Checking
+check-format:
+	@if test -n "`cat $(info_TEXINFOS) $(tar_TEXINFOS) | tr -d -c '\t'`"; then \
+		echo "Sources contain tabs; run make untabify"; \
+		false; \
+	fi
 
 check-options:
 	@ARGP_HELP_FMT='usage-indent=0,short-opt-col=0,long-opt-col=0,\
@@ -67,6 +79,52 @@ doc-opt-col=0,opt-doc-col=0,header-col=0,rmargin=1' \
 	 fi;\
 	 rm report.$$$$
 
+check-refs:
+	@for file in $(info_TEXINFOS) $(tar_TEXINFOS); \
+	do \
+	  sed -e = $$file | \
+           sed -n 'N;/@FIXME-.*ref/{s/\(^[0-9][0-9]*\).*@FIXME-.*ref{\([^}]*\).*/'$$file':\1: \2/gp}'; \
+	done > $@-t; \
+	if [ -s $@-t ]; then \
+	  echo "Unresolved cross-references:"; \
+	  cat $@-t;\
+	  rm $@-t; \
+	else \
+	  rm -f $@-t; \
+	fi
+
+check-fixmes:
+	@for file in $(info_TEXINFOS); \
+	do \
+	  sed -e = $$file | \
+           sed -n 'N;/@FIXME{/{s/\(^[0-9][0-9]*\).*@FIXME{\([^}]*\).*/'$$file':\1: \2/gp}'; \
+	done > $@-t; \
+	if [ -s $@-t ]; then \
+	  echo "Unresolved FIXMEs:"; \
+	  cat $@-t; \
+	  rm $@-t; \
+	  false; \
+	else \
+          rm -f $@-t; \
+	fi
+
+check-unrevised:
+	@grep -Hn @UNREVISED $(info_TEXINFOS) > $@-t; \
+	if [ -s $@-t ]; then \
+	  echo "Unrevised nodes:"; \
+	  cat $@-t; \
+	  rm $@-t; \
+	  false;\
+	else \
+          rm $@-t; \
+	fi
+
+all-check-docs: check-format check-options check-refs check-fixmes check-unrevised
+
+check-docs: 
+	$(MAKE) -k all-check-docs
+
+#
 
 clean-local:
 	rm -rf manual
