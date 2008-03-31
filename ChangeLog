@@ -1,3 +1,8 @@
+2008-03-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/create.c (dump_file0): Count links only for actually dumped
+	files. 
+
 2008-03-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Document --no-check-device and --check-device.
