@@ -1616,6 +1616,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    case dump_status_ok:
 	    case dump_status_short:
 	      mv_end ();
+	      file_count_links (st);
 	      break;
 
 	    case dump_status_fail:
@@ -1624,8 +1625,6 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    case dump_status_not_implemented:
 	      abort ();
 	    }
-
-	  file_count_links (st);
 
 	  ok = status == dump_status_ok;
 	}
