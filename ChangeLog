@@ -1,3 +1,21 @@
+2008-02-20  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* configure.ac: Raise version number to 1.20
+	* src/compare.c (diff_dumpdir): const.
+	* src/common.h (dumpdir_t,dumpdir_iter_t): New data types.
+	(dumpdir_create0,dumpdir_create,dumpdir_free,dumpdir_locate)
+	(dumpdir_first,dumpdir_next): New functions.
+	* src/incremen.c (dumpdir_create0,dumpdir_create,dumpdir_free)
+	(dumpdir_first,dumpdir_next): New functions.
+	(dumpdir_locate): Rewrite using binary search.
+	(struct directory): Change members char *contents, *icontents to
+	struct dumpdir *dump, *idump. All references updated.
+	(note_directory): Last arg is const.
+	* src/names.c (add_hierarchy_to_namelist): buffer is const.
+	* tests/incr03.at, tests/incr04.at, tests/rename02.at,
+	tests/rename03.at: Insert calls to sleep between creation of files
+	and adding them to the archive.
+	
 2008-03-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/create.c (dump_file0): Count links only for actually dumped
