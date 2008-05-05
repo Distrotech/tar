@@ -366,7 +366,7 @@ dumpdir_cmp (const char *a, const char *b)
 static void
 diff_dumpdir (void)
 {
-  char *dumpdir_buffer;
+  const char *dumpdir_buffer;
   dev_t dev = 0;
   struct stat stat_data;
 

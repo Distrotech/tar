@@ -734,7 +734,7 @@ static void
 add_hierarchy_to_namelist (struct name *name, dev_t device)
 {
   char *file_name = name->name;
-  char *buffer = get_directory_contents (file_name, device);
+  const char *buffer = get_directory_contents (file_name, device);
 
   if (! buffer)
     name->dir_contents = "\0\0\0\0";
@@ -746,7 +746,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 				 : NAME_FIELD_SIZE);
       char *namebuf = xmalloc (allocated_length + 1);
 				/* FIXME: + 2 above?  */
-      char *string;
+      const char *string;
       size_t string_length;
       int change_dir = name->change_dir;
 

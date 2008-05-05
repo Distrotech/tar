@@ -34,6 +34,8 @@ mkdir directory
 genfile --file=directory/x
 genfile --file=directory/y
 
+sleep 1
+
 tar -cf archive.1 -g db directory
 
 mv directory/x directory/z

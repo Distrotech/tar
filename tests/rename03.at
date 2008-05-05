@@ -39,6 +39,8 @@ genfile --file foo/b/fileb
 mkdir foo/c
 genfile --file foo/c/filec
 
+sleep 1
+
 echo "First dump"
 echo "First dump">&2
 tar -g incr -cf arch.1 -v foo 2>tmperr

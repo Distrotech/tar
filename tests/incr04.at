@@ -38,6 +38,8 @@ awk 'BEGIN {
     printf("NAME_PREFIX[%03d]\n", i);
   }' < /dev/null | genfile --files-from -
 
+sleep 1
+
 echo "Initial dump"
 tar cvf a0.tar -g a.sna a
 mv a/b a/c

@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -489,8 +489,18 @@ bool rename_directory (char *src, char *dst);
 void delete_archive_members (void);
 
 /* Module incremen.c.  */
+typedef struct dumpdir *dumpdir_t;
+typedef struct dumpdir_iter *dumpdir_iter_t;
 
-char *get_directory_contents (char *dir_name, dev_t device);
+dumpdir_t dumpdir_create0 (const char *contents, const char *cmask);
+dumpdir_t dumpdir_create (const char *contents);
+void dumpdir_free (dumpdir_t);
+char *dumpdir_locate (dumpdir_t dump, const char *name);
+char *dumpdir_next (dumpdir_iter_t itr);
+char *dumpdir_first (dumpdir_t dump, int all, dumpdir_iter_t *pitr);
+
+
+const char *get_directory_contents (char *dir_name, dev_t device);
 const char *append_incremental_renames (const char *dump);
 void read_directory_file (void);
 void write_directory_file (void);

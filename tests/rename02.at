@@ -34,6 +34,8 @@ genfile --file foo/bar/file.r
 mkdir foo/bar/baz
 genfile --file foo/bar/baz/file.z
 
+sleep 1
+
 echo "Creating base archive"
 tar -g incr -cf arch.1 -v foo
 
