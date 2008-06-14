@@ -1,3 +1,15 @@
+2008-06-14  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi (exclude): Document support for new VCS.
+	* THANKS: Update.
+	* NEWS: Update.	
+	* tests/multiv05.at: Fix typos.
+	* tests/volsize.at: Remove a TZ dependency.
+	
+2008-06-14  Dan Drake <dan@dandrake.org> (tiny change)
+
+	* src/tar.c (exclude_vcs_files): Support for Bazaar, Mercurial and Darcs.
+
 2008-05-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (main): Reword the "delayed error" message. New
