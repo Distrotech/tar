@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2008-03-27
+GNU tar NEWS - User visible changes. 2008-04-14
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.19.90 (CVS)
+version 1.20 - Sergey Poznyakoff, 2008-04-14
 
 * New option --auto-compress (-a)
 
