@@ -6816,10 +6816,16 @@ However, empty lines are OK.
 @cindex CVS, excluding files
 @cindex SVN, excluding files
 @cindex git, excluding files
+@cindex Bazaar, excluding files
+@cindex Arch, excluding files
+@cindex Mercurial, excluding files
+@cindex Darcs, excluding files
 @table @option
 @opindex exclude-vcs
 @item --exclude-vcs
-Exclude files and directories used by some version control systems.
+Exclude files and directories used by following version control
+systems: @samp{CVS}, @samp{RCS}, @samp{SCCS}, @samp{SVN}, @samp{Arch},
+@samp{Bazaar}, @samp{Mercurial}, and @samp{Darcs}.
 @end table
 
 As of version @value{VERSION}, the following files are excluded:
@@ -6837,6 +6843,13 @@ As of version @value{VERSION}, the following files are excluded:
 @item @file{=RELEASE-ID}
 @item @file{=meta-update}
 @item @file{=update}
+@item @file{.bzr}
+@item @file{.bzrignore}
+@item @file{.bzrtags}
+@item @file{.hg}
+@item @file{.hgignore}
+@item @file{.hgrags}
+@item @file{_darcs}
 @end itemize
 
 @findex exclude-caches
