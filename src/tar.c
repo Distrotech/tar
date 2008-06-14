@@ -849,6 +849,16 @@ exclude_vcs_files ()
     "=RELEASE-ID",
     "=meta-update",
     "=update",
+    /* Bazaar */
+    ".bzr",
+    ".bzrignore",
+    ".bzrtags",
+    /* Mercurial */
+    ".hg",
+    ".hgignore",
+    ".hgtags",
+    /* darcs */
+    "_darcs",
     NULL
   };
 
