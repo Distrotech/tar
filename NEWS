@@ -1,7 +1,31 @@
-GNU tar NEWS - User visible changes. 2008-04-14
+GNU tar NEWS - User visible changes. 2008-06-26
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
+version 1.20.90 (CVS)
+
+* New short option -J
+
+A shortcut for --lzma.
+
+* New option --lzop
+
+* New option --no-auto-compress
+
+Cancels the effect of previous --auto-compress (-a) option.
+
+* Compressed format recognition
+
+If tar is unable to determine archive compression format, it falls
+back to using archive suffix to determine it.
+
+* VCS support.
+
+Using --exclude-vcs handles also files used internally by Bazaar,
+Mercurial and Darcs.
+
+
+
 version 1.20 - Sergey Poznyakoff, 2008-04-14
 
 * New option --auto-compress (-a)

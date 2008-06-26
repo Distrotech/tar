@@ -271,11 +271,11 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
-  LZMA_OPTION,
   MODE_OPTION,
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
   NO_ANCHORED_OPTION,
+  NO_AUTO_COMPRESS_OPTION,
   NO_CHECK_DEVICE_OPTION,
   NO_DELAY_DIRECTORY_RESTORE_OPTION,
   NO_IGNORE_CASE_OPTION,
@@ -350,7 +350,7 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
 
 /* NOTE:
 
-   Available option letters are DEIJQY and eqy. Consider the following
+   Available option letters are DEIQY and eqy. Consider the following
    assignments:
 
    [For Solaris tar compatibility =/= Is it important at all?]
@@ -592,6 +592,9 @@ static struct argp_option options[] = {
    N_("Compression options:"), GRID },
   {"auto-compress", 'a', 0, 0,
    N_("use archive suffix to determine the compression program"), GRID+1 },
+  {"no-auto-compress", NO_AUTO_COMPRESS_OPTION, 0, 0,
+   N_("do not use use archive suffix to determine the compression program"),
+   GRID+1 },
   {"bzip2", 'j', 0, 0,
    N_("filter the archive through bzip2"), GRID+1 },
   {"gzip", 'z', 0, 0,
@@ -601,7 +604,7 @@ static struct argp_option options[] = {
   {"compress", 'Z', 0, 0,
    N_("filter the archive through compress"), GRID+1 },
   {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
-  {"lzma", LZMA_OPTION, 0, 0,
+  {"lzma", 'J', 0, 0,
    N_("filter the archive through lzma"), GRID+1 },
   {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
    N_("filter through PROG (must accept -d)"), GRID+1 },
@@ -1262,6 +1265,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'a':
       args->compress_autodetect = true;
       break;
+
+    case NO_AUTO_COMPRESS_OPTION:
+      args->compress_autodetect = false;
+      break;
       
     case 'b':
       {
@@ -1355,6 +1362,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_use_compress_program_option ("bzip2");
       break;
 
+    case 'J':
+      set_use_compress_program_option ("lzma");
+      break;
+      
     case 'k':
       /* Don't replace existing files.  */
       old_files_option = KEEP_OLD_FILES;
@@ -1386,10 +1397,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
-    case LZMA_OPTION:
-      set_use_compress_program_option ("lzma");
-      break;
-      
     case 'm':
       touch_option = true;
       break;

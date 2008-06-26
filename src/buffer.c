@@ -198,11 +198,13 @@ compute_duration ()
 /* Compression detection */
 
 enum compress_type {
-  ct_none,
+  ct_tar,              /* Plain tar file */
+  ct_none,             /* Unknown compression type */
   ct_compress,
   ct_gzip,
   ct_bzip2,
-  ct_lzma
+  ct_lzma,
+  ct_lzop
 };
 
 struct zip_magic
@@ -215,11 +217,13 @@ struct zip_magic
 };
 
 static struct zip_magic const magic[] = {
+  { ct_tar },
   { ct_none, },
   { ct_compress, 2, "\037\235", "compress", "-Z" },
   { ct_gzip,     2, "\037\213", "gzip", "-z"  },
   { ct_bzip2,    3, "BZh",      "bzip2", "-j" },
-  { ct_lzma,     6, "\xFFLZMA", "lzma", "--lzma" }, /* FIXME: ???? */
+  { ct_lzma,     6, "\xFFLZMA", "lzma", "-J" }, /* FIXME: ???? */
+  { ct_lzop,     4, "\211LZO",  "lzop", "--lzop" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
@@ -250,9 +254,9 @@ check_compressed_archive (bool *pshort)
 
   if (tar_checksum (record_start, true) == HEADER_SUCCESS)
     /* Probably a valid header */
-    return ct_none;
+    return ct_tar;
 
-  for (p = magic + 1; p < magic + NMAGIC; p++)
+  for (p = magic + 2; p < magic + NMAGIC; p++)
     if (memcmp (record_start->buffer, p->magic, p->length) == 0)
       return p->type;
 
@@ -272,14 +276,30 @@ open_compressed_archive ()
 
   if (!multi_volume_option)
     {
-      bool shortfile;
-      enum compress_type type = check_compressed_archive (&shortfile);
-
-      if (type == ct_none)
+      if (!use_compress_program_option)
 	{
-	  if (shortfile)
-	    ERROR ((0, 0, _("This does not look like a tar archive")));
-	  return archive;
+	  bool shortfile;
+	  enum compress_type type = check_compressed_archive (&shortfile);
+
+	  switch (type)
+	    {
+	    case ct_tar:
+	      if (shortfile)
+		ERROR ((0, 0, _("This does not look like a tar archive")));
+	      return archive;
+      
+	    case ct_none:
+	      if (shortfile)
+		ERROR ((0, 0, _("This does not look like a tar archive")));
+	      set_comression_program_by_suffix (archive_name_array[0], NULL);
+	      if (!use_compress_program_option)
+		return archive;
+	      break;
+
+	    default:
+	      use_compress_program_option = compress_program (type);
+	      break;
+	    }
 	}
       
       /* FD is not needed any more */
@@ -289,7 +309,6 @@ open_compressed_archive ()
 			  check_compressed_archive */
 
       /* Open compressed archive */
-      use_compress_program_option = compress_program (type);
       child_pid = sys_child_open_for_uncompress ();
       read_full_records = true;
     }
@@ -512,7 +531,7 @@ _open_archive (enum access_mode wanted_access)
 	    archive = STDIN_FILENO;
 
 	    type = check_compressed_archive (&shortfile);
-	    if (type != ct_none)
+	    if (type != ct_tar && type != ct_none)
 	      FATAL_ERROR ((0, 0,
 			    _("Archive is compressed. Use %s option"),
 			    compress_option (type)));
@@ -561,9 +580,16 @@ _open_archive (enum access_mode wanted_access)
 			   O_RDWR | O_CREAT | O_BINARY,
 			   MODE_RW, rsh_command_option);
 
-	if (check_compressed_archive (NULL) != ct_none)
-	  FATAL_ERROR ((0, 0,
-			_("Cannot update compressed archives")));
+	switch (check_compressed_archive (NULL))
+	  {
+	  case ct_none:
+	  case ct_tar:
+	    break;
+
+	  default:
+	    FATAL_ERROR ((0, 0,
+			  _("Cannot update compressed archives")));
+	  }
 	break;
       }
 

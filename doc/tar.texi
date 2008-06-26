@@ -2407,7 +2407,8 @@ superuser privileges and can be a pain to manage.
 @itemx -a
 
 During a @option{--create} operation, enables automatic compressed
-format recognition based on the archive suffix. @xref{gzip}.
+format recognition based on the archive suffix.  The effect of this
+option is cancelled by @option{--no-auto-compress}.  @xref{gzip}.
 
 @opsummary{backup}
 @item --backup=@var{backup-type}
@@ -2785,9 +2786,15 @@ incremental format.  @xref{Incremental Dumps}.
 
 @opsummary{lzma}
 @item --lzma
+@itemx -J
 
 This option tells @command{tar} to read or write archives through
 @command{lzma}.  @xref{gzip}.
+
+@item --lzop
+
+This option tells @command{tar} to read or write archives through
+@command{lzop}.  @xref{gzip}.
 
 @opsummary{mode}
 @item --mode=@var{permissions}
@@ -2842,6 +2849,12 @@ changed).  @xref{after}.
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
 @xref{controlling pattern-matching}.
+
+@opsummary{no-auto-compress}
+@item --no-auto-compress
+
+Disables automatic compressed format recognition based on the archive
+suffix.  @xref{--auto-compress}.  @xref{gzip}.
 
 @opsummary{no-check-device}
 @item --no-check-device
@@ -3358,6 +3371,8 @@ them with the equivalent long option.
 
 @item -G @tab @ref{--incremental}.
 
+@item -J @tab @ref{--lzma}.
+
 @item -K @tab @ref{--starting-file}.
 
 @item -L @tab @ref{--tape-length}.
@@ -3411,7 +3426,7 @@ them with the equivalent long option.
 @item -o @tab When creating, @ref{--no-same-owner}, when extracting ---
 @ref{--portability}.
 
-The later usage is deprecated.  It is retained for compatibility with
+The latter usage is deprecated.  It is retained for compatibility with
 the earlier versions of @GNUTAR{}.  In future releases
 @option{-o} will be equivalent to @option{--no-same-owner} only.
 
@@ -8257,8 +8272,13 @@ switch to @samp{posix}.
 @cindex Compressed archives
 @cindex Storing archives in compressed format
 
+@cindex gzip
+@cindex bzip2
+@cindex lzma
+@cindex lzop
+@cindex compress
 @GNUTAR{} is able to create and read compressed archives.  It supports
-@command{gzip}, @command{bzip2} and @command{lzma} compression
+@command{gzip}, @command{bzip2}, @command{lzma} and @command{lzop} compression
 programs.  For backward compatibility, it also supports
 @command{compress} command, although we strongly recommend against
 using it, because it is by far less effective than other compression
@@ -8269,7 +8289,8 @@ Creating a compressed archive is simple: you just specify a
 commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
 (@option{--bzip2}) to create a @command{bzip2} compressed archive,
-@option{--lzma} to create an @asis{LZMA} compressed archive and
+@option{-J} (@option{--lzma}) to create an @asis{LZMA} compressed
+archive, @option{--lzop} to create an @asis{LSOP} archive, and
 @option{-Z} (@option{--compress}) to use @command{compress} program.
 For example:
 
@@ -8309,6 +8330,12 @@ $ @kbd{tar tf archive.tar.gz}
 $ @kbd{tar xf archive.tar.gz}
 @end smallexample
 
+The format recognition algorithm is based on @dfn{signatures}, a
+special byte sequences in the beginning of file, that are specific for
+certain compression formats.  If this approach fails, @command{tar}
+falls back to using archive name suffix to determine its format
+(@xref{auto-compress}, for a list of recognized suffixes).
+
 The only case when you have to specify a decompression option while
 reading the archive is when reading from a pipe or from a tape drive
 that does not support random access.  However, in this case @GNUTAR{}
@@ -8344,7 +8371,7 @@ The following table summarizes compression options used by @GNUTAR{}.
 @item --auto-compress
 @itemx -a
 Select a compression program to use by the archive file name
-suffix. The following suffixes are recognized:
+suffix.  The following suffixes are recognized:
 
 @multitable @columnfractions 0.3 0.6
 @headitem Suffix @tab Compression program
@@ -8359,6 +8386,7 @@ suffix. The following suffixes are recognized:
 @item @samp{.tbz} @tab @command{bzip2}
 @item @samp{.lzma} @tab @command{lzma}
 @item @samp{.tlz} @tab @command{lzma}
+@item @samp{.lzo} @tab @command{lzop}
 @end multitable
 
 @opindex gzip
@@ -8409,7 +8437,13 @@ Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
 
 @opindex lzma
 @item --lzma
+@itemx -J
 Filter the archive through @command{lzma}.  Otherwise like @option{--gzip}.
+
+@opindex lzop
+@item --lzop
+Filter the archive through @command{lzop}.  Otherwise like
+@option{--gzip}.
 
 @opindex compress
 @opindex uncompress
