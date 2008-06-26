@@ -64,12 +64,12 @@ test $status = 0
 [
 -----
 tar: file: Cannot open: Permission denied
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 -----
 tar: file: Warning: Cannot open: Permission denied
 -----
 tar: directory: Cannot open: Permission denied
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 -----
 tar: directory: Warning: Cannot open: Permission denied
 ])

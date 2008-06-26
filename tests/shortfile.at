@@ -33,7 +33,7 @@ tar tf foo
 [2],
 [],
 [tar: This does not look like a tar archive
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 ],
 [],[],[gnu])
 

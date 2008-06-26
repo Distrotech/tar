@@ -149,6 +149,8 @@ quote.c
 quote.h
 quotearg.c
 quotearg.h
+rawmemchr.c
+rawmemchr.valgrind
 readlink.c
 realloc.c
 ref-add.sed
@@ -181,10 +183,12 @@ sleep.c
 snprintf.c
 stat-macros.h
 stat-time.h
+stdarg.in.h
 stdbool.h
 stdbool.in.h
 stdint.h
 stdint.in.h
+stdio-impl.h
 stdio.h
 stdio.in.h
 stdlib.h
@@ -192,6 +196,7 @@ stdlib.in.h
 stpcpy.c
 strcasecmp.c
 strchrnul.c
+strchrnul.valgrind
 strdup.c
 streq.h
 strerror.c

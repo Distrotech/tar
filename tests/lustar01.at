@@ -31,7 +31,7 @@ tar cf archive LONGNAME
 [2],
 [],
 [tar: LONGNAME: file name is too long (cannot be split); not dumped
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 ],[],[],[ustar])
 
 AT_CLEANUP

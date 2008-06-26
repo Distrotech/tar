@@ -36,7 +36,7 @@ tar cf archive PREFIX_155
 [2],
 [],
 [tar: PREFIX_155/: file name is too long (cannot be split); not dumped
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 ],[],[],[ustar])
 
 AT_CLEANUP

@@ -40,7 +40,7 @@ tar tf archive
 DIR/
 ],
 [tar: DIR/FILE: file name is too long (max 99); not dumped
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 ],
 [],[],[v7])
 

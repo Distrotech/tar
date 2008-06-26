@@ -1224,7 +1224,15 @@ try_new_volume ()
 
       if (real_s_totsize - real_s_sizeleft != continued_file_offset)
 	{
-	  WARN ((0, 0, _("This volume is out of sequence")));
+	  char totsizebuf[UINTMAX_STRSIZE_BOUND];
+	  char s1buf[UINTMAX_STRSIZE_BOUND];
+	  char s2buf[UINTMAX_STRSIZE_BOUND];
+
+	  WARN ((0, 0, _("This volume is out of sequence (%s - %s != %s)"),
+		 STRINGIFY_BIGINT (real_s_totsize, totsizebuf),
+		 STRINGIFY_BIGINT (real_s_sizeleft, s1buf),
+		 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
+	 
 	  return false;
 	}
     }
@@ -1581,11 +1589,18 @@ _gnu_flush_write (size_t buffer_level)
       return;
     }
 
+  if (status % BLOCKSIZE)
+    {
+      ERROR ((0, 0, _("write did not end on a block boundary")));
+      archive_write_error (status);
+    }
+  
   /* In multi-volume mode. */
   /* ENXIO is for the UNIX PC.  */
   if (status < 0 && errno != ENOSPC && errno != EIO && errno != ENXIO)
     archive_write_error (status);
 
+  real_s_sizeleft -= status;
   if (!new_volume (ACCESS_WRITE))
     return;
 
@@ -1597,6 +1612,7 @@ _gnu_flush_write (size_t buffer_level)
 
   copy_ptr = record_start->buffer + status;
   copy_size = buffer_level - status;
+		   
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();

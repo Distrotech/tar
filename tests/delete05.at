@@ -42,7 +42,7 @@ tar tf archive
 to
 ],
 [tar: tre: Not found in archive
-tar: Error exit delayed from previous errors
+tar: Exiting with failure status due to previous errors
 ])
 
 AT_CLEANUP

@@ -59,6 +59,10 @@ Names".
 The value of the blocking factor is made available to info and
 checkpoint scripts via environment variable TAR_BLOCKING_FACTOR.
 
+* Incremental archives
+
+Improved (sped up) extracting from incremental archives.
+
 * Bugfixes.
 ** Fix bug introduced in version 1.19: tar refused to update non-existing
 archives.
