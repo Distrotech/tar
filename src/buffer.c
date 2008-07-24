@@ -33,30 +33,30 @@
 #include <rmt.h>
 
 /* Number of retries before giving up on read.  */
-#define	READ_ERROR_MAX 10
+#define READ_ERROR_MAX 10
 
 /* Globbing pattern to append to volume label if initial match failed.  */
 #define VOLUME_LABEL_APPEND " Volume [1-9]*"
 
 /* Variables.  */
 
-static tarlong prev_written;	/* bytes written on previous volumes */
-static tarlong bytes_written;	/* bytes written on this volume */
-static void *record_buffer[2];	/* allocated memory */
+static tarlong prev_written;    /* bytes written on previous volumes */
+static tarlong bytes_written;   /* bytes written on this volume */
+static void *record_buffer[2];  /* allocated memory */
 union block *record_buffer_aligned[2];
 static int record_index;
 
 /* FIXME: The following variables should ideally be static to this
    module.  However, this cannot be done yet.  The cleanup continues!  */
 
-union block *record_start;	/* start of record of archive */
-union block *record_end;	/* last+1 block of archive record */
-union block *current_block;	/* current block of archive */
-enum access_mode access_mode;	/* how do we handle the archive */
-off_t records_read;		/* number of records read from this archive */
-off_t records_written;		/* likewise, for records written */
+union block *record_start;      /* start of record of archive */
+union block *record_end;        /* last+1 block of archive record */
+union block *current_block;     /* current block of archive */
+enum access_mode access_mode;   /* how do we handle the archive */
+off_t records_read;             /* number of records read from this archive */
+off_t records_written;          /* likewise, for records written */
 extern off_t records_skipped;   /* number of records skipped at the start
-				   of the archive, defined in delete.c */   
+                                   of the archive, defined in delete.c */   
 
 static off_t record_start_block; /* block ordinal at record_start */
 
@@ -96,10 +96,10 @@ uintmax_t continued_file_size;
 uintmax_t continued_file_offset;
 
 
-static int volno = 1;		/* which volume of a multi-volume tape we're
-				   on */
-static int global_volno = 1;	/* volume number to print in external
-				   messages */
+static int volno = 1;           /* which volume of a multi-volume tape we're
+                                   on */
+static int global_volno = 1;    /* volume number to print in external
+                                   messages */
 
 bool write_archive_to_stdout;
 
@@ -111,11 +111,11 @@ static off_t real_s_sizeleft;
 
 
 /* Multi-volume tracking support */
-static char *save_name;		/* name of the file we are currently writing */
-static off_t save_totsize;	/* total size of file we are writing, only
-				   valid if save_name is nonzero */
-static off_t save_sizeleft;	/* where we are in the file we are writing,
-				   only valid if save_name is nonzero */
+static char *save_name;         /* name of the file we are currently writing */
+static off_t save_totsize;      /* total size of file we are writing, only
+                                   valid if save_name is nonzero */
+static off_t save_sizeleft;     /* where we are in the file we are writing,
+                                   only valid if save_name is nonzero */
 
 
 static struct tar_stat_info dummy;
@@ -190,7 +190,7 @@ compute_duration ()
   struct timespec now;
   gettime (&now);
   duration += ((now.tv_sec - last_stat_time.tv_sec)
-	       + (now.tv_nsec - last_stat_time.tv_nsec) / 1e9);
+               + (now.tv_nsec - last_stat_time.tv_nsec) / 1e9);
   gettime (&last_stat_time);
 }
 
@@ -246,7 +246,7 @@ check_compressed_archive (bool *pshort)
   record_end = record_start; /* set up for 1st record = # 0 */
   sfr = read_full_records;
   read_full_records = true; /* Suppress fatal error on reading a partial
-			       record */
+                               record */
   *pshort = find_next_block () == 0;
   
   /* Restore global values */
@@ -270,43 +270,43 @@ int
 open_compressed_archive ()
 {
   archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
-		     MODE_RW, rsh_command_option);
+                     MODE_RW, rsh_command_option);
   if (archive == -1)
     return archive;
 
   if (!multi_volume_option)
     {
       if (!use_compress_program_option)
-	{
-	  bool shortfile;
-	  enum compress_type type = check_compressed_archive (&shortfile);
+        {
+          bool shortfile;
+          enum compress_type type = check_compressed_archive (&shortfile);
 
-	  switch (type)
-	    {
-	    case ct_tar:
-	      if (shortfile)
-		ERROR ((0, 0, _("This does not look like a tar archive")));
-	      return archive;
+          switch (type)
+            {
+            case ct_tar:
+              if (shortfile)
+                ERROR ((0, 0, _("This does not look like a tar archive")));
+              return archive;
       
-	    case ct_none:
-	      if (shortfile)
-		ERROR ((0, 0, _("This does not look like a tar archive")));
-	      set_comression_program_by_suffix (archive_name_array[0], NULL);
-	      if (!use_compress_program_option)
-		return archive;
-	      break;
+            case ct_none:
+              if (shortfile)
+                ERROR ((0, 0, _("This does not look like a tar archive")));
+              set_comression_program_by_suffix (archive_name_array[0], NULL);
+              if (!use_compress_program_option)
+                return archive;
+              break;
 
-	    default:
-	      use_compress_program_option = compress_program (type);
-	      break;
-	    }
-	}
+            default:
+              use_compress_program_option = compress_program (type);
+              break;
+            }
+        }
       
       /* FD is not needed any more */
       rmtclose (archive);
 
       hit_eof = false; /* It might have been set by find_next_block in
-			  check_compressed_archive */
+                          check_compressed_archive */
 
       /* Open compressed archive */
       child_pid = sys_child_open_for_uncompress ();
@@ -332,11 +332,11 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
   sprintf (bytes, TARLONG_FORMAT, numbytes);
 
   fprintf (fp, "%s: %s (%s, %s/s)\n",
-	   text, bytes,
-	   human_readable (numbytes, abbr, human_opts, 1, 1),
-	   (0 < duration && numbytes / duration < (uintmax_t) -1
-	    ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
-	    : "?"));
+           text, bytes,
+           human_readable (numbytes, abbr, human_opts, 1, 1),
+           (0 < duration && numbytes / duration < (uintmax_t) -1
+            ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
+            : "?"));
 }
 
 void
@@ -350,20 +350,20 @@ print_total_stats ()
     case APPEND_SUBCOMMAND:
       /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
       print_stats (stderr, _("Total bytes written"),
-		   prev_written + bytes_written);
+                   prev_written + bytes_written);
       break;
 
     case DELETE_SUBCOMMAND:
       {
-	char buf[UINTMAX_STRSIZE_BOUND];
-	print_stats (stderr, _("Total bytes read"),
-		     records_read * record_size);
-	print_stats (stderr, _("Total bytes written"),
-		     prev_written + bytes_written);
-	fprintf (stderr, _("Total bytes deleted: %s\n"),
-		 STRINGIFY_BIGINT ((records_read - records_skipped)
-				    * record_size
-				   - (prev_written + bytes_written), buf));
+        char buf[UINTMAX_STRSIZE_BOUND];
+        print_stats (stderr, _("Total bytes read"),
+                     records_read * record_size);
+        print_stats (stderr, _("Total bytes written"),
+                     prev_written + bytes_written);
+        fprintf (stderr, _("Total bytes deleted: %s\n"),
+                 STRINGIFY_BIGINT ((records_read - records_skipped)
+                                    * record_size
+                                   - (prev_written + bytes_written), buf));
       }
       break;
 
@@ -371,7 +371,7 @@ print_total_stats ()
     case LIST_SUBCOMMAND:
     case DIFF_SUBCOMMAND:
       print_stats (stderr, _("Total bytes read"),
-		   records_read * record_size);
+                   records_read * record_size);
       break;
 
     default:
@@ -408,13 +408,13 @@ find_next_block (void)
   if (current_block == record_end)
     {
       if (hit_eof)
-	return 0;
+        return 0;
       flush_archive ();
       if (current_block == record_end)
-	{
-	  hit_eof = true;
-	  return 0;
-	}
+        {
+          hit_eof = true;
+          return 0;
+        }
     }
   return current_block;
 }
@@ -494,103 +494,103 @@ _open_archive (enum access_mode wanted_access)
   if (use_compress_program_option)
     {
       switch (wanted_access)
-	{
-	case ACCESS_READ:
-	  child_pid = sys_child_open_for_uncompress ();
-	  read_full_records = true;
-	  record_end = record_start; /* set up for 1st record = # 0 */
-	  break;
+        {
+        case ACCESS_READ:
+          child_pid = sys_child_open_for_uncompress ();
+          read_full_records = true;
+          record_end = record_start; /* set up for 1st record = # 0 */
+          break;
 
-	case ACCESS_WRITE:
-	  child_pid = sys_child_open_for_compress ();
-	  break;
+        case ACCESS_WRITE:
+          child_pid = sys_child_open_for_compress ();
+          break;
 
-	case ACCESS_UPDATE:
-	  abort (); /* Should not happen */
-	  break;
-	}
+        case ACCESS_UPDATE:
+          abort (); /* Should not happen */
+          break;
+        }
 
       if (!index_file_name
-	  && wanted_access == ACCESS_WRITE
-	  && strcmp (archive_name_array[0], "-") == 0)
-	stdlis = stderr;
+          && wanted_access == ACCESS_WRITE
+          && strcmp (archive_name_array[0], "-") == 0)
+        stdlis = stderr;
     }
   else if (strcmp (archive_name_array[0], "-") == 0)
     {
       read_full_records = true; /* could be a pipe, be safe */
       if (verify_option)
-	FATAL_ERROR ((0, 0, _("Cannot verify stdin/stdout archive")));
+        FATAL_ERROR ((0, 0, _("Cannot verify stdin/stdout archive")));
 
       switch (wanted_access)
-	{
-	case ACCESS_READ:
-	  {
-	    bool shortfile;
-	    enum compress_type type;
+        {
+        case ACCESS_READ:
+          {
+            bool shortfile;
+            enum compress_type type;
 
-	    archive = STDIN_FILENO;
+            archive = STDIN_FILENO;
 
-	    type = check_compressed_archive (&shortfile);
-	    if (type != ct_tar && type != ct_none)
-	      FATAL_ERROR ((0, 0,
-			    _("Archive is compressed. Use %s option"),
-			    compress_option (type)));
-	    if (shortfile)
-	      ERROR ((0, 0, _("This does not look like a tar archive")));
-	  }
-	  break;
+            type = check_compressed_archive (&shortfile);
+            if (type != ct_tar && type != ct_none)
+              FATAL_ERROR ((0, 0,
+                            _("Archive is compressed. Use %s option"),
+                            compress_option (type)));
+            if (shortfile)
+              ERROR ((0, 0, _("This does not look like a tar archive")));
+          }
+          break;
 
-	case ACCESS_WRITE:
-	  archive = STDOUT_FILENO;
-	  if (!index_file_name)
-	    stdlis = stderr;
-	  break;
+        case ACCESS_WRITE:
+          archive = STDOUT_FILENO;
+          if (!index_file_name)
+            stdlis = stderr;
+          break;
 
-	case ACCESS_UPDATE:
-	  archive = STDIN_FILENO;
-	  write_archive_to_stdout = true;
-	  record_end = record_start; /* set up for 1st record = # 0 */
-	  if (!index_file_name)
-	    stdlis = stderr;
-	  break;
-	}
+        case ACCESS_UPDATE:
+          archive = STDIN_FILENO;
+          write_archive_to_stdout = true;
+          record_end = record_start; /* set up for 1st record = # 0 */
+          if (!index_file_name)
+            stdlis = stderr;
+          break;
+        }
     }
   else if (verify_option)
     archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
-		       MODE_RW, rsh_command_option);
+                       MODE_RW, rsh_command_option);
   else
     switch (wanted_access)
       {
       case ACCESS_READ:
-	archive = open_compressed_archive ();
-	break;
+        archive = open_compressed_archive ();
+        break;
 
       case ACCESS_WRITE:
-	if (backup_option)
-	  {
-	    maybe_backup_file (archive_name_array[0], 1);
-	    backed_up_flag = 1;
-	  }
-	archive = rmtcreat (archive_name_array[0], MODE_RW,
-			    rsh_command_option);
-	break;
+        if (backup_option)
+          {
+            maybe_backup_file (archive_name_array[0], 1);
+            backed_up_flag = 1;
+          }
+        archive = rmtcreat (archive_name_array[0], MODE_RW,
+                            rsh_command_option);
+        break;
 
       case ACCESS_UPDATE:
-	archive = rmtopen (archive_name_array[0],
-			   O_RDWR | O_CREAT | O_BINARY,
-			   MODE_RW, rsh_command_option);
+        archive = rmtopen (archive_name_array[0],
+                           O_RDWR | O_CREAT | O_BINARY,
+                           MODE_RW, rsh_command_option);
 
-	switch (check_compressed_archive (NULL))
-	  {
-	  case ct_none:
-	  case ct_tar:
-	    break;
+        switch (check_compressed_archive (NULL))
+          {
+          case ct_none:
+          case ct_tar:
+            break;
 
-	  default:
-	    FATAL_ERROR ((0, 0,
-			  _("Cannot update compressed archives")));
-	  }
-	break;
+          default:
+            FATAL_ERROR ((0, 0,
+                          _("Cannot update compressed archives")));
+          }
+        break;
       }
 
   if (archive < 0
@@ -599,7 +599,7 @@ _open_archive (enum access_mode wanted_access)
       int saved_errno = errno;
 
       if (backed_up_flag)
-	undo_last_backup ();
+        undo_last_backup ();
       errno = saved_errno;
       open_fatal (archive_name_array[0]);
     }
@@ -611,7 +611,7 @@ _open_archive (enum access_mode wanted_access)
   switch (wanted_access)
     {
     case ACCESS_READ:
-      find_next_block ();	/* read it in, check for EOF */
+      find_next_block ();       /* read it in, check for EOF */
       break;
 
     case ACCESS_UPDATE:
@@ -680,32 +680,32 @@ archive_read_error (void)
 static void
 short_read (size_t status)
 {
-  size_t left;			/* bytes left */
-  char *more;			/* pointer to next byte to read */
+  size_t left;                  /* bytes left */
+  char *more;                   /* pointer to next byte to read */
 
   more = record_start->buffer + status;
   left = record_size - status;
 
   while (left % BLOCKSIZE != 0
-	 || (left && status && read_full_records))
+         || (left && status && read_full_records))
     {
       if (status)
-	while ((status = rmtread (archive, more, left)) == SAFE_READ_ERROR)
-	  archive_read_error ();
+        while ((status = rmtread (archive, more, left)) == SAFE_READ_ERROR)
+          archive_read_error ();
 
       if (status == 0)
-	break;
+        break;
 
       if (! read_full_records)
-	{
-	  unsigned long rest = record_size - left;
+        {
+          unsigned long rest = record_size - left;
 
-	  FATAL_ERROR ((0, 0,
-			ngettext ("Unaligned block (%lu byte) in archive",
-				  "Unaligned block (%lu bytes) in archive",
-				  rest),
-			rest));
-	}
+          FATAL_ERROR ((0, 0,
+                        ngettext ("Unaligned block (%lu byte) in archive",
+                                  "Unaligned block (%lu bytes) in archive",
+                                  rest),
+                        rest));
+        }
 
       /* User warned us about this.  Fix up.  */
 
@@ -721,10 +721,10 @@ short_read (size_t status)
     {
       unsigned long rsize = (record_size - left) / BLOCKSIZE;
       WARN ((0, 0,
-	     ngettext ("Record size = %lu block",
-		       "Record size = %lu blocks",
-		       rsize),
-	     rsize));
+             ngettext ("Record size = %lu block",
+                       "Record size = %lu blocks",
+                       rsize),
+             rsize));
     }
 
   record_end = record_start + (record_size - left) / BLOCKSIZE;
@@ -791,16 +791,16 @@ backspace_output (void)
       position = 0;
     if (rmtlseek (archive, position, SEEK_SET) != position)
       {
-	/* Lseek failed.  Try a different method.  */
+        /* Lseek failed.  Try a different method.  */
 
-	WARN ((0, 0,
-	       _("Cannot backspace archive file; it may be unreadable without -i")));
+        WARN ((0, 0,
+               _("Cannot backspace archive file; it may be unreadable without -i")));
 
-	/* Replace the first part of the record with NULs.  */
+        /* Replace the first part of the record with NULs.  */
 
-	if (record_start->buffer != output_start)
-	  memset (record_start->buffer, 0,
-		  output_start - record_start->buffer);
+        if (record_start->buffer != output_start)
+          memset (record_start->buffer, 0,
+                  output_start - record_start->buffer);
       }
   }
 }
@@ -849,7 +849,7 @@ close_archive (void)
     {
       flush_archive ();
       if (current_block > record_start)
-	flush_archive ();
+        flush_archive ();
     }
 
   sys_drain_input_pipe ();
@@ -881,13 +881,13 @@ init_volume_number (void)
   if (file)
     {
       if (fscanf (file, "%d", &global_volno) != 1
-	  || global_volno < 0)
-	FATAL_ERROR ((0, 0, _("%s: contains invalid volume number"),
-		      quotearg_colon (volno_file_option)));
+          || global_volno < 0)
+        FATAL_ERROR ((0, 0, _("%s: contains invalid volume number"),
+                      quotearg_colon (volno_file_option)));
       if (ferror (file))
-	read_error (volno_file_option);
+        read_error (volno_file_option);
       if (fclose (file) != 0)
-	close_error (volno_file_option);
+        close_error (volno_file_option);
     }
   else if (errno != ENOENT)
     open_error (volno_file_option);
@@ -903,9 +903,9 @@ closeout_volume_number (void)
     {
       fprintf (file, "%d\n", global_volno);
       if (ferror (file))
-	write_error (volno_file_option);
+        write_error (volno_file_option);
       if (fclose (file) != 0)
-	close_error (volno_file_option);
+        close_error (volno_file_option);
     }
   else
     open_error (volno_file_option);
@@ -932,92 +932,92 @@ change_tape_menu (FILE *read_file)
     {
       fputc ('\007', stderr);
       fprintf (stderr,
-	       _("Prepare volume #%d for %s and hit return: "),
-	       global_volno + 1, quote (*archive_name_cursor));
+               _("Prepare volume #%d for %s and hit return: "),
+               global_volno + 1, quote (*archive_name_cursor));
       fflush (stderr);
 
       if (getline (&input_buffer, &size, read_file) <= 0)
-	{
-	  WARN ((0, 0, _("EOF where user reply was expected")));
+        {
+          WARN ((0, 0, _("EOF where user reply was expected")));
 
-	  if (subcommand_option != EXTRACT_SUBCOMMAND
-	      && subcommand_option != LIST_SUBCOMMAND
-	      && subcommand_option != DIFF_SUBCOMMAND)
-	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
+          if (subcommand_option != EXTRACT_SUBCOMMAND
+              && subcommand_option != LIST_SUBCOMMAND
+              && subcommand_option != DIFF_SUBCOMMAND)
+            WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
-	  fatal_exit ();
-	}
+          fatal_exit ();
+        }
 
       if (input_buffer[0] == '\n'
-	  || input_buffer[0] == 'y'
-	  || input_buffer[0] == 'Y')
-	break;
+          || input_buffer[0] == 'y'
+          || input_buffer[0] == 'Y')
+        break;
 
       switch (input_buffer[0])
-	{
-	case '?':
-	  {
-	    fprintf (stderr, _("\
+        {
+        case '?':
+          {
+            fprintf (stderr, _("\
  n name        Give a new file name for the next (and subsequent) volume(s)\n\
  q             Abort tar\n\
  y or newline  Continue operation\n"));
             if (!restrict_option)
               fprintf (stderr, _(" !             Spawn a subshell\n"));
-	    fprintf (stderr, _(" ?             Print this list\n"));
-	  }
-	  break;
+            fprintf (stderr, _(" ?             Print this list\n"));
+          }
+          break;
 
-	case 'q':
-	  /* Quit.  */
+        case 'q':
+          /* Quit.  */
 
-	  WARN ((0, 0, _("No new volume; exiting.\n")));
+          WARN ((0, 0, _("No new volume; exiting.\n")));
 
-	  if (subcommand_option != EXTRACT_SUBCOMMAND
-	      && subcommand_option != LIST_SUBCOMMAND
-	      && subcommand_option != DIFF_SUBCOMMAND)
-	    WARN ((0, 0, _("WARNING: Archive is incomplete")));
+          if (subcommand_option != EXTRACT_SUBCOMMAND
+              && subcommand_option != LIST_SUBCOMMAND
+              && subcommand_option != DIFF_SUBCOMMAND)
+            WARN ((0, 0, _("WARNING: Archive is incomplete")));
 
-	  fatal_exit ();
+          fatal_exit ();
 
-	case 'n':
-	  /* Get new file name.  */
+        case 'n':
+          /* Get new file name.  */
 
-	  {
-	    char *name;
-	    char *cursor;
+          {
+            char *name;
+            char *cursor;
 
-	    for (name = input_buffer + 1;
-		 *name == ' ' || *name == '\t';
-		 name++)
-	      ;
+            for (name = input_buffer + 1;
+                 *name == ' ' || *name == '\t';
+                 name++)
+              ;
 
-	    for (cursor = name; *cursor && *cursor != '\n'; cursor++)
-	      ;
-	    *cursor = '\0';
+            for (cursor = name; *cursor && *cursor != '\n'; cursor++)
+              ;
+            *cursor = '\0';
 
-	    if (name[0])
-	      {
-		/* FIXME: the following allocation is never reclaimed.  */
-		*archive_name_cursor = xstrdup (name);
-		stop = true;
-	      }
-	    else
-	      fprintf (stderr, "%s",
-		       _("File name not specified. Try again.\n"));
-	  }
-	  break;
+            if (name[0])
+              {
+                /* FIXME: the following allocation is never reclaimed.  */
+                *archive_name_cursor = xstrdup (name);
+                stop = true;
+              }
+            else
+              fprintf (stderr, "%s",
+                       _("File name not specified. Try again.\n"));
+          }
+          break;
 
-	case '!':
-	  if (!restrict_option)
-	    {
-	      sys_spawn_shell ();
-	      break;
-	    }
-	  /* FALL THROUGH */
+        case '!':
+          if (!restrict_option)
+            {
+              sys_spawn_shell ();
+              break;
+            }
+          /* FALL THROUGH */
 
-	default:
-	  fprintf (stderr, _("Invalid input. Type ? for help.\n"));
-	}
+        default:
+          fprintf (stderr, _("Invalid input. Type ? for help.\n"));
+        }
     }
   free (input_buffer);
 }
@@ -1063,15 +1063,15 @@ new_volume (enum access_mode mode)
       /* We have to prompt from now on.  */
 
       if (info_script_option)
-	{
-	  if (volno_file_option)
-	    closeout_volume_number ();
-	  if (sys_exec_info_script (archive_name_cursor, global_volno+1))
-	    FATAL_ERROR ((0, 0, _("%s command failed"),
-			  quote (info_script_option)));
-	}
+        {
+          if (volno_file_option)
+            closeout_volume_number ();
+          if (sys_exec_info_script (archive_name_cursor, global_volno+1))
+            FATAL_ERROR ((0, 0, _("%s command failed"),
+                          quote (info_script_option)));
+        }
       else
-	change_tape_menu (read_file);
+        change_tape_menu (read_file);
     }
 
   if (strcmp (archive_name_cursor[0], "-") == 0)
@@ -1081,33 +1081,33 @@ new_volume (enum access_mode mode)
     }
   else if (verify_option)
     archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
-		       rsh_command_option);
+                       rsh_command_option);
   else
     switch (mode)
       {
       case ACCESS_READ:
-	archive = rmtopen (*archive_name_cursor, O_RDONLY, MODE_RW,
-			   rsh_command_option);
-	break;
+        archive = rmtopen (*archive_name_cursor, O_RDONLY, MODE_RW,
+                           rsh_command_option);
+        break;
 
       case ACCESS_WRITE:
-	if (backup_option)
-	  maybe_backup_file (*archive_name_cursor, 1);
-	archive = rmtcreat (*archive_name_cursor, MODE_RW,
-			    rsh_command_option);
-	break;
+        if (backup_option)
+          maybe_backup_file (*archive_name_cursor, 1);
+        archive = rmtcreat (*archive_name_cursor, MODE_RW,
+                            rsh_command_option);
+        break;
 
       case ACCESS_UPDATE:
-	archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
-			   rsh_command_option);
-	break;
+        archive = rmtopen (*archive_name_cursor, O_RDWR | O_CREAT, MODE_RW,
+                           rsh_command_option);
+        break;
       }
 
   if (archive < 0)
     {
       open_warn (*archive_name_cursor);
       if (!verify_option && mode == ACCESS_WRITE && backup_option)
-	undo_last_backup ();
+        undo_last_backup ();
       prompt = 1;
       goto tryagain;
     }
@@ -1157,7 +1157,7 @@ try_new_volume ()
     return true;
   
   while ((status = rmtread (archive, record_start->buffer, record_size))
-	 == SAFE_READ_ERROR)
+         == SAFE_READ_ERROR)
     archive_read_error ();
 
   if (status != record_size)
@@ -1171,40 +1171,40 @@ try_new_volume ()
     {
     case XGLTYPE:
       {
-	if (!read_header0 (&dummy))
-	  return false;
-	xheader_decode (&dummy); /* decodes values from the global header */
-	tar_stat_destroy (&dummy);
-	if (!real_s_name)
-	  {
-	    /* We have read the extended header of the first member in
-	       this volume. Put it back, so next read_header works as
-	       expected. */
-	    current_block = record_start;
-	  }
-	break;
+        if (!read_header0 (&dummy))
+          return false;
+        xheader_decode (&dummy); /* decodes values from the global header */
+        tar_stat_destroy (&dummy);
+        if (!real_s_name)
+          {
+            /* We have read the extended header of the first member in
+               this volume. Put it back, so next read_header works as
+               expected. */
+            current_block = record_start;
+          }
+        break;
       }
 
     case GNUTYPE_VOLHDR:
       if (!read_header0 (&dummy))
-	return false;
+        return false;
       tar_stat_destroy (&dummy);
       assign_string (&volume_label, current_header->header.name);
       set_next_block_after (header);
       header = find_next_block ();
       if (header->header.typeflag != GNUTYPE_MULTIVOL)
-	break;
+        break;
       /* FALL THROUGH */
 
     case GNUTYPE_MULTIVOL:
       if (!read_header0 (&dummy))
-	return false;
+        return false;
       tar_stat_destroy (&dummy);
       assign_string (&continued_file_name, current_header->header.name);
       continued_file_size =
-	UINTMAX_FROM_HEADER (current_header->header.size);
+        UINTMAX_FROM_HEADER (current_header->header.size);
       continued_file_offset =
-	UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
+        UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset);
       break;
 
     default:
@@ -1215,52 +1215,52 @@ try_new_volume ()
     {
       uintmax_t s;
       if (!continued_file_name
-	  || strcmp (continued_file_name, real_s_name))
-	{
-	  if ((archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
-	      && strlen (real_s_name) >= NAME_FIELD_SIZE
-	      && strncmp (continued_file_name, real_s_name,
-			  NAME_FIELD_SIZE) == 0)
-	    WARN ((0, 0,
+          || strcmp (continued_file_name, real_s_name))
+        {
+          if ((archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
+              && strlen (real_s_name) >= NAME_FIELD_SIZE
+              && strncmp (continued_file_name, real_s_name,
+                          NAME_FIELD_SIZE) == 0)
+            WARN ((0, 0,
  _("%s is possibly continued on this volume: header contains truncated name"),
-		   quote (real_s_name)));
-	  else
-	    {
-	      WARN ((0, 0, _("%s is not continued on this volume"),
-		     quote (real_s_name)));
-	      return false;
-	    }
-	}
+                   quote (real_s_name)));
+          else
+            {
+              WARN ((0, 0, _("%s is not continued on this volume"),
+                     quote (real_s_name)));
+              return false;
+            }
+        }
 
       s = continued_file_size + continued_file_offset;
 
       if (real_s_totsize != s || s < continued_file_offset)
-	{
-	  char totsizebuf[UINTMAX_STRSIZE_BOUND];
-	  char s1buf[UINTMAX_STRSIZE_BOUND];
-	  char s2buf[UINTMAX_STRSIZE_BOUND];
+        {
+          char totsizebuf[UINTMAX_STRSIZE_BOUND];
+          char s1buf[UINTMAX_STRSIZE_BOUND];
+          char s2buf[UINTMAX_STRSIZE_BOUND];
 
-	  WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
-		 quote (continued_file_name),
-		 STRINGIFY_BIGINT (save_totsize, totsizebuf),
-		 STRINGIFY_BIGINT (continued_file_size, s1buf),
-		 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
-	  return false;
-	}
+          WARN ((0, 0, _("%s is the wrong size (%s != %s + %s)"),
+                 quote (continued_file_name),
+                 STRINGIFY_BIGINT (save_totsize, totsizebuf),
+                 STRINGIFY_BIGINT (continued_file_size, s1buf),
+                 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
+          return false;
+        }
 
       if (real_s_totsize - real_s_sizeleft != continued_file_offset)
-	{
-	  char totsizebuf[UINTMAX_STRSIZE_BOUND];
-	  char s1buf[UINTMAX_STRSIZE_BOUND];
-	  char s2buf[UINTMAX_STRSIZE_BOUND];
+        {
+          char totsizebuf[UINTMAX_STRSIZE_BOUND];
+          char s1buf[UINTMAX_STRSIZE_BOUND];
+          char s2buf[UINTMAX_STRSIZE_BOUND];
 
-	  WARN ((0, 0, _("This volume is out of sequence (%s - %s != %s)"),
-		 STRINGIFY_BIGINT (real_s_totsize, totsizebuf),
-		 STRINGIFY_BIGINT (real_s_sizeleft, s1buf),
-		 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
-	 
-	  return false;
-	}
+          WARN ((0, 0, _("This volume is out of sequence (%s - %s != %s)"),
+                 STRINGIFY_BIGINT (real_s_totsize, totsizebuf),
+                 STRINGIFY_BIGINT (real_s_sizeleft, s1buf),
+                 STRINGIFY_BIGINT (continued_file_offset, s2buf)));
+         
+          return false;
+        }
     }
 
   increase_volume_number ();
@@ -1288,7 +1288,7 @@ check_label_pattern (union block *label)
     return false;
 
   string = xmalloc (strlen (volume_label_option)
-		    + sizeof VOLUME_LABEL_APPEND + 1);
+                    + sizeof VOLUME_LABEL_APPEND + 1);
   strcpy (string, volume_label_option);
   strcat (string, VOLUME_LABEL_APPEND);
   result = fnmatch (string, label->header.name, 0) == 0;
@@ -1305,11 +1305,11 @@ match_volume_label (void)
 
   if (!label)
     FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
-		  quote (volume_label_option)));
+                  quote (volume_label_option)));
   if (!check_label_pattern (label))
     FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
-		  quote_n (0, label->header.name),
-		  quote_n (1, volume_label_option)));
+                  quote_n (0, label->header.name),
+                  quote_n (1, volume_label_option)));
 }
 
 /* Mark the archive with volume label STR. */
@@ -1326,9 +1326,9 @@ _write_volume_label (const char *str)
 
       strcpy (label->header.name, volume_label_option);
       assign_string (&current_stat_info.file_name,
-		     label->header.name);
+                     label->header.name);
       current_stat_info.had_trailing_slash =
-	strip_trailing_slashes (current_stat_info.file_name);
+        strip_trailing_slashes (current_stat_info.file_name);
 
       label->header.typeflag = GNUTYPE_VOLHDR;
       TIME_TO_CHARS (start_time.tv_sec, label->header.mtime);
@@ -1346,7 +1346,7 @@ add_volume_label (void)
   char buf[UINTMAX_STRSIZE_BOUND];
   char *p = STRINGIFY_BIGINT (volno, buf);
   char *s = xmalloc (strlen (volume_label_option) + sizeof VOL_SUFFIX
-		     + strlen (p) + 2);
+                     + strlen (p) + 2);
   sprintf (s, "%s %s %s", volume_label_option, VOL_SUFFIX, p);
   _write_volume_label (s);
   free (s);
@@ -1369,15 +1369,15 @@ add_chunk_header ()
       st.stat.st_uid = getuid ();
       st.stat.st_gid = getgid ();
       st.orig_file_name = xheader_format_name (&st,
-					       "%d/GNUFileParts.%p/%f.%n",
-					       real_s_part_no);
+                                               "%d/GNUFileParts.%p/%f.%n",
+                                               real_s_part_no);
       st.file_name = st.orig_file_name;
       st.archive_file_size = st.stat.st_size = real_s_sizeleft;
 
       block_ordinal = current_block_ordinal ();
       blk = start_header (&st);
       if (!blk)
-	abort (); /* FIXME */
+        abort (); /* FIXME */
       finish_header (&st, blk, block_ordinal);
       free (st.orig_file_name);
     }
@@ -1403,8 +1403,8 @@ gnu_add_multi_volume_header (void)
 
   if (strlen (real_s_name) > NAME_FIELD_SIZE)
     WARN ((0, 0,
-	   _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
-	   quotearg_colon (real_s_name)));
+           _("%s: file name too long to be stored in a GNU multivolume header, truncated"),
+           quotearg_colon (real_s_name)));
 
   memset (block, 0, BLOCKSIZE);
 
@@ -1417,7 +1417,7 @@ gnu_add_multi_volume_header (void)
 
   OFF_TO_CHARS (real_s_sizeleft, block->header.size);
   OFF_TO_CHARS (real_s_totsize - real_s_sizeleft,
-		block->oldgnu_header.offset);
+                block->oldgnu_header.offset);
 
   tmp = verbose_option;
   verbose_option = 0;
@@ -1449,19 +1449,19 @@ multi_volume_sync ()
   if (multi_volume_option)
     {
       if (save_name)
-	{
-	  assign_string (&real_s_name,
-			 safer_name_suffix (save_name, false,
-					    absolute_names_option));
-	  real_s_totsize = save_totsize;
-	  real_s_sizeleft = save_sizeleft;
-	}
+        {
+          assign_string (&real_s_name,
+                         safer_name_suffix (save_name, false,
+                                            absolute_names_option));
+          real_s_totsize = save_totsize;
+          real_s_sizeleft = save_sizeleft;
+        }
       else
-	{
-	  assign_string (&real_s_name, 0);
-	  real_s_totsize = 0;
-	  real_s_sizeleft = 0;
-	}
+        {
+          assign_string (&real_s_name, 0);
+          real_s_totsize = 0;
+          real_s_sizeleft = 0;
+        }
     }
 }
 
@@ -1472,14 +1472,14 @@ multi_volume_sync ()
 static void
 simple_flush_read (void)
 {
-  size_t status;		/* result from system call */
+  size_t status;                /* result from system call */
 
   checkpoint_run (false);
   
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
-  read_error_count = 0;		/* clear error count */
+  read_error_count = 0;         /* clear error count */
 
   if (write_archive_to_stdout && record_start_block != 0)
     {
@@ -1487,22 +1487,22 @@ simple_flush_read (void)
       status = sys_write_archive_buffer ();
       archive = STDIN_FILENO;
       if (status != record_size)
-	archive_write_error (status);
+        archive_write_error (status);
     }
 
   for (;;)
     {
       status = rmtread (archive, record_start->buffer, record_size);
       if (status == record_size)
-	{
-	  records_read++;
-	  return;
-	}
+        {
+          records_read++;
+          return;
+        }
       if (status == SAFE_READ_ERROR)
-	{
-	  archive_read_error ();
-	  continue;		/* try again */
-	}
+        {
+          archive_read_error ();
+          continue;             /* try again */
+        }
       break;
     }
   short_read (status);
@@ -1531,14 +1531,14 @@ simple_flush_write (size_t level __attribute__((unused)))
 static void
 _gnu_flush_read (void)
 {
-  size_t status;		/* result from system call */
+  size_t status;                /* result from system call */
 
   checkpoint_run (false);
   
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
-  read_error_count = 0;		/* clear error count */
+  read_error_count = 0;         /* clear error count */
 
   if (write_archive_to_stdout && record_start_block != 0)
     {
@@ -1546,7 +1546,7 @@ _gnu_flush_read (void)
       status = sys_write_archive_buffer ();
       archive = STDIN_FILENO;
       if (status != record_size)
-	archive_write_error (status);
+        archive_write_error (status);
     }
 
   multi_volume_sync ();
@@ -1555,29 +1555,29 @@ _gnu_flush_read (void)
     {
       status = rmtread (archive, record_start->buffer, record_size);
       if (status == record_size)
-	{
-	  records_read++;
-	  return;
-	}
+        {
+          records_read++;
+          return;
+        }
 
       /* The condition below used to include
-	      || (status > 0 && !read_full_records)
-	 This is incorrect since even if new_volume() succeeds, the
-	 subsequent call to rmtread will overwrite the chunk of data
-	 already read in the buffer, so the processing will fail */
+              || (status > 0 && !read_full_records)
+         This is incorrect since even if new_volume() succeeds, the
+         subsequent call to rmtread will overwrite the chunk of data
+         already read in the buffer, so the processing will fail */
       if ((status == 0
-	   || (status == SAFE_READ_ERROR && errno == ENOSPC))
-	  && multi_volume_option)
-	{
-	  while (!try_new_volume ())
-	    ;
-	  return;
-	}
+           || (status == SAFE_READ_ERROR && errno == ENOSPC))
+          && multi_volume_option)
+        {
+          while (!try_new_volume ())
+            ;
+          return;
+        }
       else if (status == SAFE_READ_ERROR)
-	{
-	  archive_read_error ();
-	  continue;
-	}
+        {
+          archive_read_error ();
+          continue;
+        }
       break;
     }
   short_read (status);
@@ -1607,7 +1607,7 @@ _gnu_flush_write (size_t buffer_level)
   else
     {
       if (status)
-	records_written++; 
+        records_written++; 
       bytes_written += status;
     }
 
@@ -1640,7 +1640,7 @@ _gnu_flush_write (size_t buffer_level)
 
   copy_ptr = record_start->buffer + status;
   copy_size = buffer_level - status;
-		   
+                   
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();
@@ -1674,9 +1674,9 @@ _gnu_flush_write (size_t buffer_level)
   if (multi_volume_option && wrt < bytes_written)
     {
       /* The value of bytes_written has changed while moving data;
-	 that means that flush_archive was executed at least once in
-	 between, and, as a consequence, copy_size bytes were not written
-	 to disk.  We need to update sizeleft variables to compensate for
+         that means that flush_archive was executed at least once in
+         between, and, as a consequence, copy_size bytes were not written
+         to disk.  We need to update sizeleft variables to compensate for
          that. */
       save_sizeleft += copy_size;
       multi_volume_sync ();
@@ -1715,13 +1715,13 @@ open_archive (enum access_mode wanted_access)
     {
     case ACCESS_READ:
       if (volume_label_option)
-	match_volume_label ();
+        match_volume_label ();
       break;
 
     case ACCESS_WRITE:
       records_written = 0;
       if (volume_label_option)
-	write_volume_label ();
+        write_volume_label ();
       break;
 
     default:
