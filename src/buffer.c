@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -1599,13 +1599,15 @@ _gnu_flush_write (size_t buffer_level)
   char *copy_ptr;
   size_t copy_size;
   size_t bufsize;
-
+  tarlong wrt;
+  
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
   else
     {
-      records_written++;
+      if (status)
+	records_written++; 
       bytes_written += status;
     }
 
@@ -1654,6 +1656,7 @@ _gnu_flush_write (size_t buffer_level)
   
   if (real_s_name)
     add_chunk_header ();
+  wrt = bytes_written;
   header = find_next_block ();
   bufsize = available_space_after (header);
   while (bufsize < copy_size)
@@ -1668,6 +1671,16 @@ _gnu_flush_write (size_t buffer_level)
   memcpy (header->buffer, copy_ptr, copy_size);
   memset (header->buffer + copy_size, 0, bufsize - copy_size);
   set_next_block_after (header + (copy_size - 1) / BLOCKSIZE);
+  if (multi_volume_option && wrt < bytes_written)
+    {
+      /* The value of bytes_written has changed while moving data;
+	 that means that flush_archive was executed at least once in
+	 between, and, as a consequence, copy_size bytes were not written
+	 to disk.  We need to update sizeleft variables to compensate for
+         that. */
+      save_sizeleft += copy_size;
+      multi_volume_sync ();
+    }
   find_next_block ();
 }
 

@@ -155,6 +155,7 @@ m4_include([multiv02.at])
 m4_include([multiv03.at])
 m4_include([multiv04.at])
 m4_include([multiv05.at])
+m4_include([multiv06.at])
 
 m4_include([old.at])
 

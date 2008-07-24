@@ -2324,6 +2324,9 @@ decode_options (int argc, char **argv)
   else if (utc_option)
     verbose_option = 2;
 
+  if (tape_length_option && tape_length_option < record_size)
+    USAGE_ERROR ((0, 0, _("Volume length cannot be less than record size")));
+  
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */
 

@@ -1041,7 +1041,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
   while (size_left > 0)
     {
       size_t bufsize, count;
-
+      
       mv_size_left (size_left);
 
       blk = find_next_block ();

@@ -1,3 +1,16 @@
+2008-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/tar.c (decode_options): Do not allow volume length less
+	than record size.
+
+	* src/buffer.c (_gnu_flush_write): Compensate for the effect
+	of eventual flush_archive occurring in the middle of buffer
+	move.
+	Increment records_written only if _flush_write was able to write
+	something.
+	* tests/multiv06.at: New testcase.
+	* tests/Makefile.am, test/testsuite.at: Add tests/multiv06.at
+
 2008-06-26  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* configure.ac, NEWS: Version 1.20.90
