@@ -30,4 +30,8 @@ tarball_prereq() {
   echo "$2  $3/$1" | md5sum --status --check - >/dev/null 2>&1
 }
 
+decho() {
+  echo $*
+  echo >&2 $*
+}
 

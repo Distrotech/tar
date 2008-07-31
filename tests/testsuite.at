@@ -138,6 +138,8 @@ m4_include([incr04.at])
 m4_include([rename01.at])
 m4_include([rename02.at])
 m4_include([rename03.at])
+m4_include([rename04.at])
+m4_include([rename05.at])
 m4_include([chtype.at])
 
 m4_include([ignfail.at])

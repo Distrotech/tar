@@ -60,6 +60,7 @@ struct dumpdir                 /* Dump directory listing */
 /* Directory attributes.  */
 struct directory
   {
+    struct directory *next;
     struct timespec mtime;      /* Modification time */
     dev_t device_number;	/* device number for directory */
     ino_t inode_number;		/* inode number for directory */
@@ -72,7 +73,7 @@ struct directory
 				   the original directory structure */
     const char *tagfile;        /* Tag file, if the directory falls under
 				   exclusion_tag_under */
-    char name[1];		/* file name of directory */
+    char *name;	     	        /* file name of directory */
   };
 
 struct dumpdir *
@@ -196,6 +197,7 @@ dumpdir_size (const char *p)
 }
 
 
+static struct directory *dirhead, *dirtail;
 static Hash_table *directory_table;
 static Hash_table *directory_meta_table;
 
@@ -247,16 +249,65 @@ static struct directory *
 make_directory (const char *name)
 {
   size_t namelen = strlen (name);
-  size_t size = offsetof (struct directory, name) + namelen + 1;
-  struct directory *directory = xmalloc (size);
+  struct directory *directory = xmalloc (sizeof (*directory));
+  directory->next = NULL;
   directory->dump = directory->idump = NULL;
   directory->orig = NULL;
   directory->flags = false;
-  strcpy (directory->name, name);
-  if (namelen && ISSLASH (directory->name[namelen - 1]))
-    directory->name[namelen - 1] = 0;
+  if (namelen && ISSLASH (name[namelen - 1]))
+    namelen--;
+  directory->name = xmalloc (namelen + 1);
+  memcpy (directory->name, name, namelen);
+  directory->name[namelen] = 0;
   directory->tagfile = NULL;
   return directory;
+}
+
+static void
+free_directory (struct directory *dir)
+{
+  free (dir->name);
+  free (dir);
+}
+
+static struct directory *
+attach_directory (const char *name)
+{
+  struct directory *dir = make_directory (name);
+  if (dirtail)
+    dirtail->next = dir;
+  else
+    dirhead = dir;
+  dirtail = dir;
+}
+		 
+
+static void
+replace_prefix (char **pname, const char *samp, size_t slen,
+		const char *repl, size_t rlen)
+{
+  char *name = *pname;
+  size_t nlen = strlen (name);
+  if (nlen > slen && memcmp (name, samp, slen) == 0 && ISSLASH (name[slen]))
+    {
+      if (rlen > slen)
+	{
+	  name = xrealloc (name, nlen - slen + rlen + 1);
+	  *pname = name;
+	}
+      memmove (name + rlen, name + slen, nlen - slen + 1);
+      memcpy (name, repl, rlen);
+    }
+}
+
+void
+dirlist_replace_prefix (const char *pref, const char *repl)
+{
+  struct directory *dp;
+  size_t pref_len = strlen (pref);
+  size_t repl_len = strlen (repl);
+  for (dp = dirhead; dp; dp = dp->next)
+    replace_prefix (&dp->name, pref, pref_len, repl, repl_len);
 }
 
 /* Create and link a new directory entry for directory NAME, having a
@@ -268,7 +319,7 @@ note_directory (char const *name, struct timespec mtime,
 		dev_t dev, ino_t ino, bool nfs, bool found,
 		const char *contents)
 {
-  struct directory *directory = make_directory (name);
+  struct directory *directory = attach_directory (name);
 
   directory->mtime = mtime;
   directory->device_number = dev;
@@ -311,7 +362,7 @@ find_directory (const char *name)
     {
       struct directory *dir = make_directory (name);
       struct directory *ret = hash_lookup (directory_table, dir);
-      free (dir);
+      free_directory (dir);
       return ret;
     }
 }
@@ -330,7 +381,7 @@ find_directory_meta (dev_t dev, ino_t ino)
       dir->device_number = dev;
       dir->inode_number = ino;
       ret = hash_lookup (directory_meta_table, dir);
-      free (dir);
+      free_directory (dir);
       return ret;
     }
 }
@@ -386,12 +437,16 @@ procdir (char *name_buffer, struct stat *stat_data,
 						     stat_data->st_ino);
 	  if (d)
 	    {
-	      if (verbose_option)
-		WARN ((0, 0, _("%s: Directory has been renamed from %s"),
-		       quotearg_colon (name_buffer),
-		       quote_n (1, d->name)));
-	      directory->orig = d;
-	      DIR_SET_FLAG (directory, DIRF_RENAMED);
+	      if (strcmp (d->name, name_buffer))
+		{
+		  if (verbose_option)
+		    WARN ((0, 0, _("%s: Directory has been renamed from %s"),
+			   quotearg_colon (name_buffer),
+			   quote_n (1, d->name)));
+		  directory->orig = d;
+		  DIR_SET_FLAG (directory, DIRF_RENAMED);
+		  dirlist_replace_prefix (d->name, name_buffer);
+		}
 	      directory->children = CHANGED_CHILDREN;
 	    }
 	  else
@@ -426,12 +481,16 @@ procdir (char *name_buffer, struct stat *stat_data,
 
       if (d)
 	{
-	  if (verbose)
-	    WARN ((0, 0, _("%s: Directory has been renamed from %s"),
-		   quotearg_colon (name_buffer),
-		   quote_n (1, d->name)));
-	  directory->orig = d;
-	  DIR_SET_FLAG (directory, DIRF_RENAMED);
+	  if (strcmp (d->name, name_buffer))
+	    {
+	      if (verbose)
+		WARN ((0, 0, _("%s: Directory has been renamed from %s"),
+		       quotearg_colon (name_buffer),
+		       quote_n (1, d->name)));
+	      directory->orig = d;
+	      DIR_SET_FLAG (directory, DIRF_RENAMED);
+	      dirlist_replace_prefix (d->name, name_buffer);
+	    }
 	  directory->children = CHANGED_CHILDREN;
 	}
       else
@@ -701,12 +760,9 @@ obstack_code_rename (struct obstack *stk, char *from, char *to)
   obstack_grow (stk, s, strlen (s) + 1);
 }
 
-static bool
-rename_handler (void *data, void *proc_data)
+static void
+store_rename (struct directory *dir, struct obstack *stk)
 {
-  struct directory *dir = data;
-  struct obstack *stk = proc_data;
-
   if (DIR_IS_RENAMED (dir))
     {
       struct directory *prev, *p;
@@ -745,7 +801,6 @@ rename_handler (void *data, void *proc_data)
 	  obstack_code_rename (stk, "", prev->name);
 	}
     }
-  return true;
 }
 
 const char *
@@ -753,8 +808,9 @@ append_incremental_renames (const char *dump)
 {
   struct obstack stk;
   size_t size;
-
-  if (directory_table == NULL)
+  struct directory *dp;
+  
+  if (dirhead == NULL)
     return dump;
 
   obstack_init (&stk);
@@ -766,7 +822,9 @@ append_incremental_renames (const char *dump)
   else
     size = 0;
 
-  hash_do_for_each (directory_table, rename_handler, &stk);
+  for (dp = dirhead; dp; dp = dp->next)
+    store_rename (dp, &stk);
+
   if (obstack_object_size (&stk) != size)
     {
       obstack_1grow (&stk, 0);

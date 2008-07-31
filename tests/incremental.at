@@ -44,7 +44,10 @@ sleep 1
 tar cf archive --listed=list structure
 tar cfv archive --listed=list structure
 echo separator
-sleep 1
+# ReiserFS often offsets the timestamps of newly created files
+# 1 second to the past.  Try to compensate for it, until a better
+# solution is found.
+sleep 2
 echo y >structure/file
 tar cfv archive --listed=list structure
 ],

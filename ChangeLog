@@ -1,8 +1,16 @@
+2008-07-31  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (struct directory): New member `next'.  Change
+	type of `name'.
+	(dirhead, dirtail): New statics.
+	(make_directory): Reflect changes to struct directory.
+	(free_directory, attach_directory): New functions.
+	
+
 2008-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Do not allow volume length less
 	than record size.
-
 	* src/buffer.c (_gnu_flush_write): Compensate for the effect
 	of eventual flush_archive occurring in the middle of buffer
 	move.
