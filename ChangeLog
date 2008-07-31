@@ -5,8 +5,21 @@
 	(dirhead, dirtail): New statics.
 	(make_directory): Reflect changes to struct directory.
 	(free_directory, attach_directory): New functions.
+	(dirlist_replace_prefix): New function.
+	(note_directory): Use attach_directory, instead of make_directory,
+	(find_directory, find_directory_meta): Use free_directory.
+	(procdir): Replace directory prefixes in directory list to avoid
+	marking subdirectories as renamed after renaming their parent
+	directory.
+	(append_incremental_renames): Iterate over directory list, not
+	hash table, to preserve logical ordering of renames.
+	* tests/rename04.at, tests/rename05.at: New test cases.
+	* tests/Makefile.am, tests/testsuite.at: Add rename04.at and
+	rename05.at.
+	* tests/atlocal.in (decho): New function.
+	* tests/multiv06.at: Use decho instead of echo2.
+	* tests/incremental.at: Raise wait interval to 2 seconds.
 	
-
 2008-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Do not allow volume length less
