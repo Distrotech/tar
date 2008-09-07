@@ -81,13 +81,14 @@ dumpdir_create0 (const char *contents, const char *cmask)
 {
   struct dumpdir *dump;
   size_t i, total, ctsize, len;
-  const char *p;
+  char *p;
+  const char *q;
   
-  for (i = 0, total = 0, ctsize = 1, p = contents; *p; total++, p += len)
+  for (i = 0, total = 0, ctsize = 1, q = contents; *q; total++, q += len)
     {
-      len = strlen (p) + 1;
+      len = strlen (q) + 1;
       ctsize += len;
-      if (!cmask || strchr (cmask, *p))
+      if (!cmask || strchr (cmask, *q))
 	i++;
     }
   dump = xmalloc (sizeof (*dump) + ctsize);
@@ -279,6 +280,7 @@ attach_directory (const char *name)
   else
     dirhead = dir;
   dirtail = dir;
+  return dir;
 }
 		 
 

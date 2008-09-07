@@ -1,3 +1,9 @@
+2008-09-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c (dumpdir_create0): Eliminate gcc warning.
+	(attach_directory): Bugfix - add missing return statement.
+	* THANKS: Add Enric Hernandez
+
 2008-07-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/incremen.c (struct directory): New member `next'.  Change
