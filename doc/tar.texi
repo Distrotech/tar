@@ -8140,9 +8140,7 @@ the @file{/} directory first, and then avoid absolute notation.
 For example:
 
 @smallexample
-$ @kbd{(cd / && tar -c -f archive.tar home)}
-# @i{or}:
-$ @kbd{tar -c -f archive.tar -C  / home}
+$ @kbd{tar -c -f archive.tar -C / home}
 @end smallexample
 
 @include getdate.texi
