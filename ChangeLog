@@ -1,3 +1,10 @@
+2008-09-23  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (filename_terminator): Remove global.
+	* src/tar.c (filename_terminator): New static.
+	* src/names.c (name_next_elt): Do not depend on
+	filename_terminator, this was a leftover from 1.13.
+
 2008-09-18  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Remove incorrect example.
