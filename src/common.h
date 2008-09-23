@@ -93,9 +93,6 @@ GLOBAL enum subcommand subcommand_option;
 /* Selected format for output archive.  */
 GLOBAL enum archive_format archive_format;
 
-/* Either NL or NUL, as decided by the --null option.  */
-GLOBAL char filename_terminator;
-
 /* Size of each record, once in blocks, once in bytes.  Those two variables
    are always related, the second being BLOCKSIZE times the first.  They do
    not have _option in their name, even if their values is derived from

@@ -1042,6 +1042,9 @@ report_textual_dates (struct tar_args *args)
 
 static volatile int _argp_hang;
 
+/* Either NL or NUL, as decided by the --null option.  */
+static char filename_terminator;
+
 enum read_file_list_state  /* Result of reading file name from the list file */
   {
     file_list_success,     /* OK, name read successfully */

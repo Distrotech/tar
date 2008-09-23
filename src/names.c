@@ -289,9 +289,8 @@ static int matching_flags; /* exclude_fnmatch options */
    static storage and can't be relied upon across two calls.
 
    If CHANGE_DIRS is true, treat any entries of type NELT_CHDIR as
-   the request to change to the given directory.  If filename_terminator
-   is NUL, CHANGE_DIRS is effectively always false.
-
+   the request to change to the given directory.
+   
    Entries of type NELT_FMASK cause updates of the matching_flags
    value. */
 struct name_elt *
@@ -300,9 +299,6 @@ name_next_elt (int change_dirs)
   static struct name_elt entry;
   const char *source;
   char *cursor;
-
-  if (filename_terminator == '\0')
-    change_dirs = 0;
 
   while (name_index != names)
     {
