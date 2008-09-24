@@ -280,6 +280,7 @@ enum
   NO_DELAY_DIRECTORY_RESTORE_OPTION,
   NO_IGNORE_CASE_OPTION,
   NO_IGNORE_COMMAND_ERROR_OPTION,
+  NO_NULL_OPTION,
   NO_OVERWRITE_DIR_OPTION,
   NO_QUOTE_CHARS_OPTION,
   NO_RECURSION_OPTION,
@@ -622,6 +623,8 @@ static struct argp_option options[] = {
    N_("get names to extract or create from FILE"), GRID+1 },
   {"null", NULL_OPTION, 0, 0,
    N_("-T reads null-terminated names, disable -C"), GRID+1 },
+  {"no-null", NO_NULL_OPTION, 0, 0,
+   N_("disable the effect of the previous --null option"), GRID+1 },
   {"unquote", UNQUOTE_OPTION, 0, 0,
    N_("unquote filenames read with -T (default)"), GRID+1 },
   {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
@@ -1053,16 +1056,16 @@ enum read_file_list_state  /* Result of reading file name from the list file */
     file_list_skip         /* Empty (zero-length) entry encountered, skip it */
   };
 
-/* Read from FP a sequence of characters up to FILENAME_TERMINATOR and put them
+/* Read from FP a sequence of characters up to TERM and put them
    into STK.
  */
 static enum read_file_list_state
-read_name_from_file (FILE *fp, struct obstack *stk)
+read_name_from_file (FILE *fp, struct obstack *stk, int term)
 {
   int c;
   size_t counter = 0;
 
-  for (c = getc (fp); c != EOF && c != filename_terminator; c = getc (fp))
+  for (c = getc (fp); c != EOF && c != term; c = getc (fp))
     {
       if (c == 0)
 	{
@@ -1143,7 +1146,8 @@ update_argv (const char *filename, struct argp_state *state)
   size_t new_argc;
   bool is_stdin = false;
   enum read_file_list_state read_state;
-
+  int term = filename_terminator;
+  
   if (!strcmp (filename, "-"))
     {
       is_stdin = true;
@@ -1157,7 +1161,8 @@ update_argv (const char *filename, struct argp_state *state)
 	open_fatal (filename);
     }
 
-  while ((read_state = read_name_from_file (fp, &argv_stk)) != file_list_end)
+  while ((read_state = read_name_from_file (fp, &argv_stk, term))
+	 != file_list_end)
     {
       switch (read_state)
 	{
@@ -1186,7 +1191,7 @@ update_argv (const char *filename, struct argp_state *state)
 	    obstack_1grow (&argv_stk, 0);
 	    count = 1;
 	    /* Read rest of files using new filename terminator */
-	    filename_terminator = 0;
+	    term = 0;
 	    break;
 	  }
 
@@ -1203,7 +1208,7 @@ update_argv (const char *filename, struct argp_state *state)
 
   start = obstack_finish (&argv_stk);
 
-  if (filename_terminator == 0)
+  if (term == 0)
     for (p = start; *p; p += strlen (p) + 1)
       if (p[0] == '-')
 	count++;
@@ -1219,7 +1224,7 @@ update_argv (const char *filename, struct argp_state *state)
 
   for (i = state->next, p = start; *p; p += strlen (p) + 1, i++)
     {
-      if (filename_terminator == 0 && p[0] == '-')
+      if (term == 0 && p[0] == '-')
 	state->argv[i++] = "--add-file";
       state->argv[i] = p;
     }
@@ -1739,6 +1744,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case NULL_OPTION:
       filename_terminator = '\0';
+      break;
+
+    case NO_NULL_OPTION:
+      filename_terminator = '\n';
       break;
 
     case NUMERIC_OWNER_OPTION:

@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2008-06-26
+GNU tar NEWS - User visible changes. 2008-09-24
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -14,6 +14,10 @@ A shortcut for --lzma.
 
 Cancels the effect of previous --auto-compress (-a) option.
 
+* New option --no-null
+
+Cancels the effect of previous --null option.
+
 * Compressed format recognition
 
 If tar is unable to determine archive compression format, it falls
@@ -23,6 +27,11 @@ back to using archive suffix to determine it.
 
 Using --exclude-vcs handles also files used internally by Bazaar,
 Mercurial and Darcs.
+
+* Bugfixes
+
+** The --null option disabled handling of tar options in list files.  This
+is fixed.
 
 
 

@@ -2880,6 +2880,13 @@ Use case-sensitive matching.
 Print warnings about subprocesses that terminated with a nonzero exit
 code. @xref{Writing to an External Program}.
 
+@opsummary{no-null}
+@item --no-null
+
+If the @option{--null} option was given previously, this option
+cancels its effect, so that any following @option{--files-from}
+options will expect their file lists to be newline-terminated.
+
 @opsummary{no-overwrite-dir}
 @item --no-overwrite-dir
 
@@ -3901,15 +3908,15 @@ The name of the archive @command{tar} is processing.
 
 @vrindex TAR_BLOCKING_FACTOR, checkpoint script environment
 @item TAR_BLOCKING_FACTOR
-Current blocking factor (@pxref{Blocking}.
+Current blocking factor (@pxref{Blocking}).
 
 @vrindex TAR_CHECKPOINT, checkpoint script environment
 @item TAR_CHECKPOINT
-The checkpoint number.
+Number of the checkpoint.
 
 @vrindex TAR_SUBCOMMAND, checkpoint script environment
 @item TAR_SUBCOMMAND
-A short option describing the operation @command{tar} is executing
+A short option describing the operation @command{tar} is executing.
 @xref{Operations}, for a complete list of subcommand options.
 
 @vrindex TAR_FORMAT, checkpoint script environment
@@ -6747,10 +6754,14 @@ files whose names contain newlines can be archived using
 @option{--files-from}.
 
 @table @option
-@opindex null
+@xopindex{null, described}
 @item --null
 Only consider @code{NUL} terminated file names, instead of files that
 terminate in a newline.
+
+@xopindex{no-null, described}
+@item --no-null
+Undo the effect of any previous @option{--null} option.
 @end table
 
 The @option{--null} option is just like the one in @acronym{GNU}
@@ -6774,7 +6785,37 @@ $ @kbd{find .  -size +800 -print0 > long-files}
 $ @kbd{tar -c -v --null --files-from=long-files --file=big.tar}
 @end smallexample
 
-@FIXME{say anything else here to conclude the section?}
+The @option{--no-null} option can be used if you need to read both
+zero-terminated and newline-terminated files on the same command line.
+For example, if @file{flist} is a newline-terminated file, then the
+following command can be used to combine it with the above command:
+
+@smallexample
+@group
+$ @kbd{find .  -size +800 -print0 |
+  tar -c -f big.tar --null -T - --no-null -T flist}
+@end group
+@end smallexample
+
+This example uses short options for typographic reasons, to avoid
+very long lines.
+
+@GNUTAR is able to automatically detect null-terminated file lists, so
+it is safe to use them even without the @option{--null} option.  In
+this case @command{tar} will print a warning and continue reading such
+a file as if @option{--null} were actually given:
+
+@smallexample
+@group
+$ @kbd{find .  -size +800 -print0 | tar -c -f big.tar -T -}
+tar: -: file name read contains nul character
+@end group
+@end smallexample
+
+The null terminator, however, remains in effect only for this
+particular file, any following @option{-T} options will assume
+newline termination.  Of course, the null autodetection applies
+to these eventual surplus @option{-T} options as well.
 
 @node exclude
 @section Excluding Some Files

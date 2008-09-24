@@ -1,3 +1,9 @@
+2008-09-24  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS: Update.
+	* doc/tar.texi: Update.
+	* src/tar.c: New option --no-null.
+
 2008-09-23  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (filename_terminator): Remove global.
