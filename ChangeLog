@@ -1,3 +1,8 @@
+2008-10-05  Xavier Hienne <xavier.hienne@free.fr> (tiny change)
+
+	* src/checkpoint.c (checkpoint_compile_action): Add missing
+	`else'. 
+
 2008-09-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Update.

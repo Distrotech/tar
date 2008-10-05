@@ -80,7 +80,7 @@ checkpoint_compile_action (const char *str)
   
   if (strcmp (str, ".") == 0 || strcmp (str, "dot") == 0)
     alloc_action (cop_dot);
-  if (strcmp (str, "bell") == 0)
+  else if (strcmp (str, "bell") == 0)
     alloc_action (cop_bell);
   else if (strcmp (str, "echo") == 0)
     alloc_action (cop_echo);
