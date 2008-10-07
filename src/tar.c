@@ -271,6 +271,7 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
+  LZOP_OPTION,
   MODE_OPTION,
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
@@ -607,6 +608,8 @@ static struct argp_option options[] = {
   {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"lzma", 'J', 0, 0,
    N_("filter the archive through lzma"), GRID+1 },
+  {"lzop", LZOP_OPTION, 0, 0,
+   N_("filter the archive through lzop"), GRID+8 },
   {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
    N_("filter through PROG (must accept -d)"), GRID+1 },
 #undef GRID
@@ -1405,6 +1408,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case LZOP_OPTION:
+      set_use_compress_program_option ("lzop");
+      break;
+      
     case 'm':
       touch_option = true;
       break;
