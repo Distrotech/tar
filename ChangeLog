@@ -1,3 +1,7 @@
+2008-10-07  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/tar.c (options): Add --lzop option.
+
 2008-10-05  Xavier Hienne <xavier.hienne@free.fr> (tiny change)
 
 	* src/checkpoint.c (checkpoint_compile_action): Add missing
