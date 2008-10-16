@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2008-09-24
+GNU tar NEWS - User visible changes. 2008-10-16
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -27,6 +27,16 @@ back to using archive suffix to determine it.
 
 Using --exclude-vcs handles also files used internally by Bazaar,
 Mercurial and Darcs.
+
+* The --transform-symlink option.
+
+The effect of the --transform option on the symbolic links targets is
+controlled by --transform-symlink and --no-transform-symlink options.
+By default, transformations do not apply to symlink targets,
+which corresponds to the behavior of version 1.19.  To apply
+transformations to symlink targets as well, use --transform-symlink
+option.  The --no-transform-symlink option cancels the effect of any
+prior --transform-symlink.
 
 * Bugfixes
 

@@ -388,9 +388,7 @@ name_gather (void)
       if (allocated_size == 0)
 	{
 	  allocated_size = offsetof (struct name, name) + NAME_FIELD_SIZE + 1;
-	  buffer = xmalloc (allocated_size);
-	  /* FIXME: This memset is overkill, and ugly...  */
-	  memset (buffer, 0, allocated_size);
+	  buffer = xzalloc (allocated_size);
 	}
       
       while ((ep = name_next_elt (0)) && ep->type == NELT_CHDIR)

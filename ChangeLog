@@ -1,3 +1,20 @@
+2008-10-16  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/common.h (transform_symlinks_option): New global.
+	* src/create.c (dump_file0): Transform symlink targets only if
+	explicitly required.  Thanks Cyril Strejc for reporting the
+	problem.
+	* src/tar.c (parse_opt): New options --transform-symlinks and
+	--no-transform-symlinks. New alias --xform to the --transform
+	option.
+	* doc/tar.texi: Document --transform-symlinks
+	* NEWS: Update.
+	* THANKS: Update.
+	
+	* src/names.c (name_gather): Use xzalloc.
+	* src/buffer.c (short_read): Move record size detection before
+	the loop.
+	
 2008-10-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (options): Add --lzop option.

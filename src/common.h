@@ -346,6 +346,9 @@ GLOBAL bool unquote_option;
 
 GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
+/* Apply transformations to symlink targets as well. */
+GLOBAL bool transform_symlinks_option;
+
 /* Show file or archive names after transformation.
    In particular, when creating archive in verbose mode, list member names
    as stored in the archive */

@@ -287,6 +287,7 @@ enum
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
+  NO_TRANSFORM_SYMLINKS_OPTION,
   NO_UNQUOTE_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
@@ -321,6 +322,7 @@ enum
   TOTALS_OPTION,
   TO_COMMAND_OPTION,
   TRANSFORM_OPTION,
+  TRANSFORM_SYMLINKS_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
@@ -686,6 +688,11 @@ static struct argp_option options[] = {
    GRID+1 },
   {"transform", TRANSFORM_OPTION, N_("EXPRESSION"), 0,
    N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
+  {"xform", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"transform-symlinks", TRANSFORM_SYMLINKS_OPTION, NULL, 0,
+   N_("apply transformations to symlink targets"), GRID+1 },
+  {"no-transform-symlinks", NO_TRANSFORM_SYMLINKS_OPTION, NULL, 0,
+   N_("cancel effect of the previous --transform-symlinks option"), GRID+1 },
 #undef GRID
 
 #define GRID 120
@@ -1819,6 +1826,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* FIXME: What it is good for? */
       same_permissions_option = true;
       same_order_option = true;
+      WARN ((0, 0, _("The --preserve option is deprecated, "
+		     "use --preserve-permissions --preserve-order instead")));
       break;
 
     case RECORD_SIZE_OPTION:
@@ -1902,6 +1911,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_transform_expr (arg);
       break;
 
+    case TRANSFORM_SYMLINKS_OPTION:
+      transform_symlinks_option = true;
+      break;
+
+    case NO_TRANSFORM_SYMLINKS_OPTION:
+      transform_symlinks_option = false;
+      break;
+      
     case USE_COMPRESS_PROGRAM_OPTION:
       set_use_compress_program_option (arg);
       break;
@@ -2345,6 +2362,10 @@ decode_options (int argc, char **argv)
 
   if (tape_length_option && tape_length_option < record_size)
     USAGE_ERROR ((0, 0, _("Volume length cannot be less than record size")));
+
+  if (same_order_option && listed_incremental_option)
+    USAGE_ERROR ((0, 0, _("--preserve-order is not compatible with "
+			  "--listed-incremental")));
   
   /* Forbid using -c with no input files whatsoever.  Check that `-f -',
      explicit or implied, is used correctly.  */

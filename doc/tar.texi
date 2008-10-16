@@ -2905,6 +2905,13 @@ characters set by the previous @option{--quote-chars} option
 With this option, @command{tar} will not recurse into directories.
 @xref{recurse}.
 
+@opsummary{no-transform-symlinks}
+@item --no-transform-symlinks
+Cancel the effect of any prior @command{--transform-symlinks} option
+(see below) and return to the default behavior of applying name
+transformation expression only to the names of files (archive
+members), not to target of symbolic links.
+
 @opsummary{no-same-owner}
 @item --no-same-owner
 @itemx -o
@@ -3266,8 +3273,9 @@ rather than the data modification time stored in the archive.
 @xref{Data Modification Times}.
 
 @opsummary{transform}
+@opsummary{xform}
 @item --transform=@var{sed-expr}
-
+@itemx --xform=@var{sed-expr}
 Transform file or member names using @command{sed} replacement expression
 @var{sed-expr}.  For example,
 
@@ -3283,6 +3291,11 @@ discussion, @xref{transform}.
 To see transformed member names in verbose listings, use
 @option{--show-transformed-names} option
 (@pxref{show-transformed-names}).
+
+@opsummary{transform-symlinks}
+@item --transform-symlinks
+Apply @command{--transform} option to symbolic link targets
+(@pxref{transform}).
 
 @opsummary{uncompress}
 @item --uncompress
@@ -7553,7 +7566,7 @@ characters that are quoted by default in the selected quoting style.
 
 @command{Tar} archives contain detailed information about files stored
 in them and full file names are part of that information.  When
-storing file to an archive, its file name is recorded in the archive
+storing file to an archive, its file name is recorded in it,
 along with the actual file contents.  When restoring from an archive,
 a file is created on disk with exactly the same name as that stored
 in the archive.  In the majority of cases this is the desired behavior
@@ -7570,7 +7583,7 @@ directory components, or with otherwise modified names.  In other
 cases it is desirable to store files under differing names in the
 archive.
 
-@GNUTAR{} provides two options for these needs.
+@GNUTAR{} provides several options for these needs.
 
 @table @option
 @opindex strip-components
@@ -7644,7 +7657,9 @@ In case you need to apply more complex modifications to the file name,
 
 @table @option
 @opindex transform
+@opindex xform
 @item --transform=@var{expression}
+@itemx --xform=@var{expression}
 Modify file names using supplied @var{expression}.
 @end table
 
@@ -7683,7 +7698,7 @@ sed, GNU sed}).
 @item @var{number}
 Only replace the @var{number}th match of the @var{regexp}.
 
-Note: the @var{posix} standard does not specify what should happen
+Note: the @acronym{POSIX} standard does not specify what should happen
 when you mix the @samp{g} and @var{number} modifiers.  @GNUTAR{}
 follows the GNU @command{sed} implementation in this regard, so
 the interaction is defined to be: ignore matches before the
@@ -7736,6 +7751,47 @@ $ @kbd{tar --transform 's/.*/\L&/' -x -f arch.tar}
 @end smallexample
 
 @end enumerate
+
+The @option{--transform} option applies only to member names.  It does
+not apply to symbolic link targets.  In many cases, this is the
+desired behavior.  Consider for example, archiving the @file{/lib}
+directory: 
+
+@smallexample
+$ @kbd{tar -vv -c -f archive /lib}
+tar: Removing leading `/' from member names
+drwxr-xr-x root/root       0 2008-07-08 16:20 /lib/
+-rwxr-xr-x root/root 1250840 2008-05-25 07:44 /lib/libc-2.3.2.so
+lrwxrwxrwx root/root       0 2008-06-24 17:12 /lib/libc.so.6 -> libc-2.3.2.so
+...
+@end smallexample
+
+Now, you can use our example above to extract it into @file{/usr/local}:
+
+@smallexample
+$ @kbd{tar --transform 's,^,/usr/local/,' \
+  --show-transformed -v -x -f archive}
+drwxr-xr-x root/root       0 2008-07-08 16:20 /usr/local/lib/
+-rwxr-xr-x root/root 1250840 2008-05-25 07:44 /usr/local/lib/libc-2.3.2.so
+lrwxrwxrwx root/root       0 2008-06-24 17:12 /usr/local/lib/libc.so.6 ->
+libc-2.3.2.so
+@end smallexample
+
+As you see, it correctly extracts @file{libc.so.6} as a symbolic link
+to @file{libc-2.3.2.so}.
+
+However, sometimes you may need to transform symbolic link targets as
+well.  To do so, @GNUTAR provides an additional option:
+
+@table @option
+@opindex transform-symlinks
+@item --transform-symlinks
+Apply @command{--transform} option to symbolic link targets.
+
+@opindex no-transform-symlinks
+@itemx --no-transform-symlinks
+Cancel the effect of the previous @option{--transform-symlinks} option.
+@end table
 
 Unlike @option{--strip-components}, @option{--transform} can be used
 in any @GNUTAR{} operation mode.  For example, the following command

@@ -686,6 +686,18 @@ short_read (size_t status)
   more = record_start->buffer + status;
   left = record_size - status;
 
+  if (left && left % BLOCKSIZE == 0
+      && !read_full_records && verbose_option > 1
+      && record_start_block == 0 && status != 0)
+    {
+      unsigned long rsize = status / BLOCKSIZE;
+      WARN ((0, 0,
+             ngettext ("Record size = %lu block",
+                       "Record size = %lu blocks",
+                       rsize),
+             rsize));
+    }
+
   while (left % BLOCKSIZE != 0
          || (left && status && read_full_records))
     {
@@ -707,24 +719,8 @@ short_read (size_t status)
                         rest));
         }
 
-      /* User warned us about this.  Fix up.  */
-
       left -= status;
       more += status;
-    }
-
-  /* FIXME: for size=0, multi-volume support.  On the first record, warn
-     about the problem.  */
-
-  if (!read_full_records && verbose_option > 1
-      && record_start_block == 0 && status != 0)
-    {
-      unsigned long rsize = (record_size - left) / BLOCKSIZE;
-      WARN ((0, 0,
-             ngettext ("Record size = %lu block",
-                       "Record size = %lu blocks",
-                       rsize),
-             rsize));
     }
 
   record_end = record_start + (record_size - left) / BLOCKSIZE;

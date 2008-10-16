@@ -1705,7 +1705,8 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	}
       buffer[size] = '\0';
       assign_string (&st->link_name, buffer);
-      transform_name (&st->link_name);
+      if (transform_symlinks_option)
+	transform_name (&st->link_name);
       if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
 	write_long_link (st);
 

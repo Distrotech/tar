@@ -25,6 +25,8 @@ at-func.c
 backupfile.c
 backupfile.h
 basename.c
+c-ctype.c
+c-ctype.h
 canonicalize-lgpl.c
 canonicalize.h
 charset.alias
@@ -46,6 +48,7 @@ dirname.c
 dirname.h
 dup-safer.c
 dup2.c
+errno.in.h
 error.c
 error.h
 exclude.c
@@ -130,6 +133,7 @@ obstack.c
 obstack.h
 offtostr.c
 open-safer.c
+open.c
 openat-die.c
 openat-priv.h
 openat-proc.c
@@ -189,6 +193,7 @@ stdbool.in.h
 stdint.h
 stdint.in.h
 stdio-impl.h
+stdio-write.c
 stdio.h
 stdio.in.h
 stdlib.h
@@ -258,6 +263,7 @@ wchar.in.h
 wctype.h
 wctype.in.h
 wcwidth.c
+write.c
 xalloc-die.c
 xalloc.h
 xgetcwd.c
