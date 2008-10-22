@@ -687,7 +687,7 @@ short_read (size_t status)
   left = record_size - status;
 
   if (left && left % BLOCKSIZE == 0
-      && !read_full_records && verbose_option > 1
+      && verbose_option
       && record_start_block == 0 && status != 0)
     {
       unsigned long rsize = status / BLOCKSIZE;
@@ -1567,6 +1567,9 @@ _gnu_flush_read (void)
         {
           while (!try_new_volume ())
             ;
+	  if (current_block == record_end)
+	    /* Necessary for blocking_factor == 1 */
+	    flush_archive();
           return;
         }
       else if (status == SAFE_READ_ERROR)

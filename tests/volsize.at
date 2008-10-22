@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -51,6 +51,9 @@ V--------- 0/0            1536 2006-05-08 22:07 abc/not-a-file.gif--Volume Heade
 Extracted directory
 abc
 abc/CCC
+],
+[tar: Record size = 5 blocks
+tar: Record size = 5 blocks
 ])
 
 AT_CLEANUP

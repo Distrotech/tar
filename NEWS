@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2008-10-16
+GNU tar NEWS - User visible changes. 2008-10-22
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -42,6 +42,10 @@ prior --transform-symlink.
 
 ** The --null option disabled handling of tar options in list files.  This
 is fixed.
+** Fixed record size autodetection.  If the detected record size differs from
+the expected value (either default, or set on the command line), tar
+always prints a warning if verbosity level is set to 1 or greater,
+i.e. if either -t or -v option is given.
 
 
 

@@ -1,3 +1,15 @@
+2008-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* THANKS: Add Ed Leaver.
+	* src/buffer.c (short_read): Remove !read_full_records condition,
+	which was always false on a first record and thus disabled record
+	size autodetection.  Thanks Ed Leaver for the patch.
+	(_gnu_flush_read): Handle blocking_factor == 1.
+	* tests/sparsemv.at: Reflect changes to buffer.c.
+	* tests/sparsemvp.at: Likewise.
+	* tests/volsize.at: Likewise.
+	* NEWS: Update.
+	
 2008-10-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (transform_symlinks_option): New global.
