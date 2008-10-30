@@ -472,11 +472,11 @@ read_header (bool raw_extended_headers)
 static char *
 decode_xform (char *file_name, void *data)
 {
-  xform_type type = *(xform_type*)data;
+  int type = *(int*)data;
 
   switch (type)
     {
-    case xform_symlink:
+    case XFORM_SYMLINK:
       /* FIXME: It is not quite clear how and to which extent are the symbolic
 	 links subject to filename transformation.  In the absence of another
 	 solution, symbolic links are exempt from component stripping and
@@ -484,11 +484,11 @@ decode_xform (char *file_name, void *data)
 	 proper. */ 
       return file_name;
       
-    case xform_link:
+    case XFORM_LINK:
       file_name = safer_name_suffix (file_name, true, absolute_names_option);
       break;
       
-    case xform_regfile:
+    case XFORM_REGFILE:
       file_name = safer_name_suffix (file_name, false, absolute_names_option);
       break;
     }
@@ -505,9 +505,9 @@ decode_xform (char *file_name, void *data)
 }
 
 bool
-transform_member_name (char **pinput, xform_type type)
+transform_member_name (char **pinput, int type)
 {
-  return transform_name_fp (pinput, decode_xform, &type);
+  return transform_name_fp (pinput, type, decode_xform, &type);
 }
 
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
@@ -628,7 +628,16 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	stat_info->is_dumpdir = true;
     }
 
-  transform_member_name (&stat_info->file_name, xform_regfile);
+  transform_member_name (&stat_info->file_name, XFORM_REGFILE);
+  switch (header->header.typeflag)
+    {
+    case SYMTYPE:
+      transform_member_name (&stat_info->link_name, XFORM_SYMLINK);
+      break;
+      
+    case LNKTYPE:
+      transform_member_name (&stat_info->link_name, XFORM_LINK);
+    }
 }
 
 /* Convert buffer at WHERE0 of size DIGS from external format to

@@ -2905,13 +2905,6 @@ characters set by the previous @option{--quote-chars} option
 With this option, @command{tar} will not recurse into directories.
 @xref{recurse}.
 
-@opsummary{no-transform-symlinks}
-@item --no-transform-symlinks
-Cancel the effect of any prior @command{--transform-symlinks} option
-(see below) and return to the default behavior of applying name
-transformation expression only to the names of files (archive
-members), not to target of symbolic links.
-
 @opsummary{no-same-owner}
 @item --no-same-owner
 @itemx -o
@@ -3291,11 +3284,6 @@ discussion, @xref{transform}.
 To see transformed member names in verbose listings, use
 @option{--show-transformed-names} option
 (@pxref{show-transformed-names}).
-
-@opsummary{transform-symlinks}
-@item --transform-symlinks
-Apply @command{--transform} option to symbolic link targets
-(@pxref{transform}).
 
 @opsummary{uncompress}
 @item --uncompress
@@ -7605,8 +7593,8 @@ The option @option{--strip=2} instructs @command{tar} to strip the
 two leading components (@file{usr/} and @file{include/}) off the file
 name.
 
-If you add to the above invocation @option{--verbose} (@option{-v})
-option, you will note that the verbose listing still contains the
+If you add the @option{--verbose} (@option{-v}) option to the invocation
+above, you will note that the verbose listing still contains the
 full file name, with the two removed components still in place.  This
 can be inconvenient, so @command{tar} provides a special option for
 altering this behavior:
@@ -7631,7 +7619,7 @@ stdlib.h
 @end group
 @end smallexample
 
-Notice that in both cases the file is @file{stdlib.h} extracted to the
+Notice that in both cases the file @file{stdlib.h} is extracted to the
 current working directory, @option{--show-transformed-names} affects
 only the way its name is displayed.
 
@@ -7677,6 +7665,21 @@ replacement for each file name part that matches @var{regexp}.  Both
 @var{regexp} and @var{replace} are described in detail in
 @ref{The "s" Command, The "s" Command, The `s' Command, sed, GNU sed}.
 
+Any delimiter can be used in lieue of @samp{/}, the only requirement being
+that it be used consistently throughout the expression. For example,
+the following two expressions are equivalent:
+
+@smallexample
+@group
+s/one/two/
+s,one,two,
+@end group
+@end smallexample
+
+Changing delimiters is often useful when the @var{regex} contains
+slashes.  For example, it is more convenient to write @code{s,/,-,} than
+@code{s/\//-/}.
+
 As in @command{sed}, you can give several replace expressions,
 separated by a semicolon.
 
@@ -7707,20 +7710,40 @@ the interaction is defined to be: ignore matches before the
 
 @end table
 
-Any delimiter can be used in lieue of @samp{/}, the only requirement being
-that it be used consistently throughout the expression. For example,
-the following two expressions are equivalent:
+In addition, several @dfn{transformation scope} flags are supported,
+that control to what files transformations apply.  These are:
+
+@table @samp
+@item r
+Apply transformation to regular archive members.
+
+@item R
+Do not apply transformation to regular archive members.
+
+@item s
+Apply transformation to symbolic link targets.
+
+@item S
+Do not apply transformation to symbolic link targets.
+
+@item h
+Apply transformation to hard link targets.
+
+@item H
+Do not apply transformation to hard link targets.
+@end table
+
+Default is @samp{rsh}, which means to apply tranformations to both archive
+members and targets of symbolic and hard links.
+
+Default scope flags can also be changed using @samp{flags=} statement
+in the transform expression.  The flags set this way remain in force
+until next @samp{flags=} statement or end of expression, whichever
+occurs first.  For example:
 
 @smallexample
-@group
-s/one/two/
-s,one,two,
-@end group
+  --transform 'flags=S;s|^|/usr/local/|'
 @end smallexample
-
-Changing delimiters is often useful when the @var{regex} contains
-slashes.  For example, it is more convenient to write @code{s,/,-,} than
-@code{s/\//-/}.
 
 Here are several examples of @option{--transform} usage:
 
@@ -7738,60 +7761,58 @@ $ @kbd{tar --transform='s,usr/,usr/local/,' -x -f arch.tar}
 $ @kbd{tar --transform='s,/*[^/]*/[^/]*/,,' -x -f arch.tar}
 @end smallexample
 
-@item Prepend @file{/prefix/}  to each file name:
-
-@smallexample
-$ @kbd{tar --transform 's,^,/prefix/,' -x -f arch.tar}
-@end smallexample
-
 @item Convert each file name to lower case:
 
 @smallexample
 $ @kbd{tar --transform 's/.*/\L&/' -x -f arch.tar}
 @end smallexample
 
-@end enumerate
-
-The @option{--transform} option applies only to member names.  It does
-not apply to symbolic link targets.  In many cases, this is the
-desired behavior.  Consider for example, archiving the @file{/lib}
-directory: 
+@item Prepend @file{/prefix/}  to each file name:
 
 @smallexample
-$ @kbd{tar -vv -c -f archive /lib}
-tar: Removing leading `/' from member names
+$ @kbd{tar --transform 's,^,/prefix/,' -x -f arch.tar}
+@end smallexample
+
+@item Archive the @file{/lib} directory, prepending @samp{/usr/local}
+to each archive member:
+
+@smallexample
+$ @kbd{tar --transform 's,^,/usr/local/,S' -c -f arch.tar /lib}
+@end smallexample
+@end enumerate
+
+Notice the use of flags in the last example.  The @file{/lib}
+directory often contains many symbolic links to files within it.
+It may look, for example, like this:
+
+@smallexample
+$ @kbd{ls -l}
 drwxr-xr-x root/root       0 2008-07-08 16:20 /lib/
 -rwxr-xr-x root/root 1250840 2008-05-25 07:44 /lib/libc-2.3.2.so
 lrwxrwxrwx root/root       0 2008-06-24 17:12 /lib/libc.so.6 -> libc-2.3.2.so
 ...
 @end smallexample
 
-Now, you can use our example above to extract it into @file{/usr/local}:
+Using the expression @samp{s,^,/usr/local/,} would mean adding
+@samp{/usr/local} to both regular archive members and to link
+targets. In this case, @file{/lib/libc.so.6} would become:
 
 @smallexample
-$ @kbd{tar --transform 's,^,/usr/local/,' \
-  --show-transformed -v -x -f archive}
+  /usr/local/lib/libc.so.6 -> /usr/local/libc-2.3.2.so
+@end smallexample
+
+This is definitely not desired.  To avoid this, the @samp{S} flag
+are used, which excludes symbolic link targets from filename
+transformations.  The result is:
+
+@smallexample
+$ @kbd{tar --transform 's,^,/usr/local/,S', -c -v -f arch.tar \
+       --show-transformed /lib}
 drwxr-xr-x root/root       0 2008-07-08 16:20 /usr/local/lib/
 -rwxr-xr-x root/root 1250840 2008-05-25 07:44 /usr/local/lib/libc-2.3.2.so
 lrwxrwxrwx root/root       0 2008-06-24 17:12 /usr/local/lib/libc.so.6 ->
 libc-2.3.2.so
 @end smallexample
-
-As you see, it correctly extracts @file{libc.so.6} as a symbolic link
-to @file{libc-2.3.2.so}.
-
-However, sometimes you may need to transform symbolic link targets as
-well.  To do so, @GNUTAR provides an additional option:
-
-@table @option
-@opindex transform-symlinks
-@item --transform-symlinks
-Apply @command{--transform} option to symbolic link targets.
-
-@opindex no-transform-symlinks
-@itemx --no-transform-symlinks
-Cancel the effect of the previous @option{--transform-symlinks} option.
-@end table
 
 Unlike @option{--strip-components}, @option{--transform} can be used
 in any @GNUTAR{} operation mode.  For example, the following command

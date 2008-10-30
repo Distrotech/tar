@@ -1,3 +1,28 @@
+2008-10-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* NEWS, configure.ac: Version 1.20.91
+	* doc/tar.texi: Document transformation scope flags.
+	* src/common.h (transform_symlinks_option): Remove in favor of
+	transformation scope flags.
+	(XFORM_REGFILE, XFORM_LINK, XFORM_SYMLINK, XFORM_ALL): New macros.
+	(transform_name, transform_member_name, transform_name_fp): Take
+	an additional argument, specifying scope flags.
+	* src/create.c: Reflect changes to transform_name.
+	* src/extract.c (extract_link, extract_symlink): Remove calls to
+	transform_member_name. It is done in read_header.
+	* src/list.c (decode_xform): Reflect change in data type of 2nd
+	argument. 
+	(transform_member_name): 2nd arg is int.
+	(decode_header): Transform file name and link target names.
+	* src/tar.c: Remove --transform-symlinks.
+	* src/transform.c (struct transform): New member `flags'.
+	(transform_flags): New variable.
+	(parse_transform_expr): Parse transformation scope flags. Allow to
+	set global flags using `flags=' syntax.
+	(_transform_name_to_obstack, transform_name_fp)
+	(transform_name): Take an additional argument, specifying scope
+	flags. 
+
 2008-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* THANKS: Add Ed Leaver.

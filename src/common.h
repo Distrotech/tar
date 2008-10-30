@@ -346,9 +346,6 @@ GLOBAL bool unquote_option;
 
 GLOBAL bool test_label_option; /* Test archive volume label and exit */
 
-/* Apply transformations to symlink targets as well. */
-GLOBAL bool transform_symlinks_option;
-
 /* Show file or archive names after transformation.
    In particular, when creating archive in verbose mode, list member names
    as stored in the archive */
@@ -738,17 +735,16 @@ bool string_ascii_p (const char *str);
 bool utf8_convert (bool to_utf, char const *input, char **output);
 
 /* Module transform.c */
-typedef enum
-  {
-    xform_regfile,
-    xform_link,
-    xform_symlink
-  } xform_type;
+#define XFORM_REGFILE  0x01
+#define XFORM_LINK     0x02
+#define XFORM_SYMLINK  0x04
+#define XFORM_ALL      (XFORM_REGFILE|XFORM_LINK|XFORM_SYMLINK)
 
 void set_transform_expr (const char *expr);
-bool transform_name (char **pinput);
-bool transform_member_name (char **pinput, xform_type type);
-bool transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *);
+bool transform_name (char **pinput, int type);
+bool transform_member_name (char **pinput, int type);
+bool transform_name_fp (char **pinput, int type,
+			char *(*fun)(char *, void *), void *);
 
 /* Module suffix.c */
 void set_comression_program_by_suffix (const char *name, const char *defprog);

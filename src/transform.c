@@ -61,6 +61,7 @@ struct transform
 {
   struct transform *next;
   enum transform_type transform_type;
+  int flags;
   unsigned match_number;
   regex_t regex;
   /* Compiled replacement expression */
@@ -69,6 +70,8 @@ struct transform
 };
 
 
+
+int transform_flags = XFORM_ALL;
 static struct transform *transform_head, *transform_tail;
 
 static struct transform *
@@ -131,6 +134,41 @@ add_backref_segment (struct transform *tf, size_t ref)
   segm->v.ref = ref;
 }
 
+static int
+parse_xform_flags (int *pflags, int c)
+{
+  switch (c)
+    {
+    case 'r':
+      *pflags |= XFORM_REGFILE;
+      break;
+
+    case 'R':
+      *pflags &= ~XFORM_REGFILE;
+      break;
+	
+    case 'h':
+      *pflags |= XFORM_LINK;
+      break;
+
+    case 'H':
+      *pflags &= ~XFORM_LINK;
+      break;
+	
+    case 's':
+      *pflags |= XFORM_SYMLINK;
+      break;
+
+    case 'S':
+      *pflags &= ~XFORM_SYMLINK;
+      break;
+
+    default:
+      return 1;
+    }
+  return 0;
+}
+
 static void
 add_case_ctl_segment (struct transform *tf, enum case_ctl_type ctl)
 {
@@ -150,8 +188,26 @@ parse_transform_expr (const char *expr)
   struct transform *tf = new_transform ();
 
   if (expr[0] != 's')
-    USAGE_ERROR ((0, 0, _("Invalid transform expression")));
-
+    {
+      if (strncmp (expr, "flags=", 6) == 0)
+	{
+	  transform_flags = 0;
+	  for (expr += 6; *expr; expr++)
+	    {
+	      if (*expr == ';')
+		{
+		  expr++;
+		  break;
+		}
+	      if (parse_xform_flags (&transform_flags, *expr))
+		USAGE_ERROR ((0, 0, _("Unknown transform flag: %c"),
+			      *expr));
+	    }
+	  return expr;
+	}	  
+      USAGE_ERROR ((0, 0, _("Invalid transform expression")));
+    }
+  
   delim = expr[1];
 
   /* Scan regular expression */
@@ -172,6 +228,7 @@ parse_transform_expr (const char *expr)
 
   /* Check flags */
   tf->transform_type = transform_first;
+  tf->flags = transform_flags;
   for (p = expr + j + 1; *p && *p != ';'; p++)
     switch (*p)
       {
@@ -186,7 +243,7 @@ parse_transform_expr (const char *expr)
       case 'x':
 	cflags |= REG_EXTENDED;
 	break;
-	
+
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
 	tf->match_number = strtoul (p, (char**) &p, 0);
@@ -194,8 +251,9 @@ parse_transform_expr (const char *expr)
 	break;
 
       default:
-	USAGE_ERROR ((0, 0, _("Unknown flag in transform expression: %c"),
-		      *p));
+	if (parse_xform_flags (&tf->flags, *p))
+	  USAGE_ERROR ((0, 0, _("Unknown flag in transform expression: %c"),
+			*p));
       }
 
   if (*p == ';')
@@ -520,10 +578,11 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
 }
 
 bool
-_transform_name_to_obstack (char *input, char **output)
+_transform_name_to_obstack (int flags, char *input, char **output)
 {
   struct transform *tf;
-
+  bool alloced = false;
+  
   if (!stk_init)
     {
       obstack_init (&stk);
@@ -532,18 +591,23 @@ _transform_name_to_obstack (char *input, char **output)
   
   for (tf = transform_head; tf; tf = tf->next)
     {
-      _single_transform_name_to_obstack (tf, input);
-      input = obstack_finish (&stk);
+      if (tf->flags & flags)
+	{
+	  _single_transform_name_to_obstack (tf, input);
+	  input = obstack_finish (&stk);
+	  alloced = true;
+	}
     }
   *output = input;
-  return transform_head != NULL;
+  return alloced;
 }
   
 bool
-transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *dat)
+transform_name_fp (char **pinput, int flags,
+		   char *(*fun)(char *, void *), void *dat)
 {
     char *str;
-    bool ret = _transform_name_to_obstack (*pinput, &str);
+    bool ret = _transform_name_to_obstack (flags, *pinput, &str);
     if (ret)
       {
 	assign_string (pinput, fun ? fun (str, dat) : str);
@@ -560,8 +624,8 @@ transform_name_fp (char **pinput, char *(*fun)(char *, void *), void *dat)
 }
 
 bool
-transform_name (char **pinput)
+transform_name (char **pinput, int type)
 {
-  return transform_name_fp (pinput, NULL, NULL);
+  return transform_name_fp (pinput, type, NULL, NULL);
 }
 

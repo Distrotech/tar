@@ -917,7 +917,6 @@ extract_link (char *file_name, int typeflag)
   int interdir_made = 0;
   char const *link_name;
 
-  transform_member_name (&current_stat_info.link_name, xform_link);
   link_name = current_stat_info.link_name;
   
   if (! absolute_names_option && contains_dot_dot (link_name))
@@ -973,8 +972,6 @@ extract_symlink (char *file_name, int typeflag)
 #ifdef HAVE_SYMLINK
   int status;
   int interdir_made = 0;
-
-  transform_member_name (&current_stat_info.link_name, xform_symlink);
 
   if (! absolute_names_option
       && (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)

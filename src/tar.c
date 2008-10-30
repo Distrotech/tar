@@ -287,7 +287,6 @@ enum
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
-  NO_TRANSFORM_SYMLINKS_OPTION,
   NO_UNQUOTE_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
@@ -322,7 +321,6 @@ enum
   TOTALS_OPTION,
   TO_COMMAND_OPTION,
   TRANSFORM_OPTION,
-  TRANSFORM_SYMLINKS_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
   USE_COMPRESS_PROGRAM_OPTION,
@@ -689,10 +687,6 @@ static struct argp_option options[] = {
   {"transform", TRANSFORM_OPTION, N_("EXPRESSION"), 0,
    N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
   {"xform", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
-  {"transform-symlinks", TRANSFORM_SYMLINKS_OPTION, NULL, 0,
-   N_("apply transformations to symlink targets"), GRID+1 },
-  {"no-transform-symlinks", NO_TRANSFORM_SYMLINKS_OPTION, NULL, 0,
-   N_("cancel effect of the previous --transform-symlinks option"), GRID+1 },
 #undef GRID
 
 #define GRID 120
@@ -1911,14 +1905,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_transform_expr (arg);
       break;
 
-    case TRANSFORM_SYMLINKS_OPTION:
-      transform_symlinks_option = true;
-      break;
-
-    case NO_TRANSFORM_SYMLINKS_OPTION:
-      transform_symlinks_option = false;
-      break;
-      
     case USE_COMPRESS_PROGRAM_OPTION:
       set_use_compress_program_option (arg);
       break;
