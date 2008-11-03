@@ -1320,7 +1320,7 @@ _write_volume_label (const char *str)
 
       memset (label, 0, BLOCKSIZE);
 
-      strcpy (label->header.name, volume_label_option);
+      strcpy (label->header.name, str);
       assign_string (&current_stat_info.file_name,
                      label->header.name);
       current_stat_info.had_trailing_slash =

@@ -1,3 +1,8 @@
+2008-11-03  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/buffer.c (_write_volume_label): Fix typo, which prevented
+	`-V label -M' from working.
+
 2008-10-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS, configure.ac: Version 1.20.91
