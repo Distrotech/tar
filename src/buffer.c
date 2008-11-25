@@ -848,8 +848,6 @@ close_archive (void)
         flush_archive ();
     }
 
-  sys_drain_input_pipe ();
-
   compute_duration ();
   if (verify_option)
     verify_volume ();
@@ -857,7 +855,7 @@ close_archive (void)
   if (rmtclose (archive) != 0)
     close_error (*archive_name_cursor);
 
-  sys_wait_for_child (child_pid);
+  sys_wait_for_child (child_pid, hit_eof);
 
   tar_stat_destroy (&current_stat_info);
   if (save_name)

@@ -1,6 +1,7 @@
 /* System-dependent calls for tar.
 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007,
+   2008 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -51,12 +52,7 @@ sys_detect_dev_null_output (void)
 }
 
 void
-sys_drain_input_pipe (void)
-{
-}
-
-void
-sys_wait_for_child (pid_t child_pid)
+sys_wait_for_child (pid_t child_pid, bool eof)
 {
 }
 
@@ -160,26 +156,8 @@ sys_detect_dev_null_output (void)
 			 && archive_stat.st_ino == dev_null_stat.st_ino));
 }
 
-/* Manage to fully drain a pipe we might be reading, so to not break it on
-   the producer after the EOF block.  FIXME: one of these days, GNU tar
-   might become clever enough to just stop working, once there is no more
-   work to do, we might have to revise this area in such time.  */
-
 void
-sys_drain_input_pipe (void)
-{
-  size_t r;
-
-  if (access_mode == ACCESS_READ
-      && ! _isrmt (archive)
-      && (S_ISFIFO (archive_stat.st_mode) || S_ISSOCK (archive_stat.st_mode)))
-    while ((r = rmtread (archive, record_start->buffer, record_size)) != 0
-	   && r != SAFE_READ_ERROR)
-      continue;
-}
-
-void
-sys_wait_for_child (pid_t child_pid)
+sys_wait_for_child (pid_t child_pid, bool eof)
 {
   if (child_pid)
     {
@@ -193,8 +171,11 @@ sys_wait_for_child (pid_t child_pid)
 	  }
 
       if (WIFSIGNALED (wait_status))
-	ERROR ((0, 0, _("Child died with signal %d"),
-		WTERMSIG (wait_status)));
+	{
+	  int sig = WTERMSIG (wait_status);
+	  if (!(!eof && sig == SIGPIPE))
+	    ERROR ((0, 0, _("Child died with signal %d"), sig));
+	}
       else if (WEXITSTATUS (wait_status) != 0)
 	ERROR ((0, 0, _("Child returned status %d"),
 		WEXITSTATUS (wait_status)));

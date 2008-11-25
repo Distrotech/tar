@@ -699,8 +699,7 @@ char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 
 void sys_detect_dev_null_output (void);
 void sys_save_archive_dev_ino (void);
-void sys_drain_input_pipe (void);
-void sys_wait_for_child (pid_t);
+void sys_wait_for_child (pid_t, bool);
 void sys_spawn_shell (void);
 bool sys_compare_uid (struct stat *a, struct stat *b);
 bool sys_compare_gid (struct stat *a, struct stat *b);

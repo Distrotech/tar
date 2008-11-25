@@ -1,3 +1,17 @@
+2008-11-25  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Do not try to drain the input pipe before closing the
+	archive. 
+	
+	* src/buffer.c (close_archive): Remove call to
+	sys_drain_input_pipe. Pass hit_eof as the second
+	argument to sys_wait_for_child.
+	* src/common.h (sys_drain_input_pipe): Remove
+	(sys_wait_for_child): Declare second argument.
+	* src/system.c (sys_drain_input_pipe): Remove.
+	(sys_wait_for_child): Take two arguments. The second one helps to
+	decide whether to tolerate child termination on SIGPIPE.
+
 2008-11-03  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/buffer.c (_write_volume_label): Fix typo, which prevented
