@@ -1,3 +1,8 @@
+2008-11-30  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/xheader.c: Remove duplicate inclusion of fnmatch.h. Reported
+	by Jim Meyering.
+
 2008-11-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Do not try to drain the input pipe before closing the
