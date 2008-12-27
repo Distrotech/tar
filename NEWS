@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2008-10-30
+GNU tar NEWS - User visible changes. 2008-12-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.20.91 (CVS)
+version 1.21 - Sergey Poznyakoff, 2008-12-27
 
 * New short option -J
 
@@ -42,7 +42,7 @@ control type of archive members affected by them.  The flags are:
  - h  
    Apply transformation to hard link targets.
 
-Corresponding upper-case letters negate the flag meaning, so that
+Corresponding upper-case letters negate the meaning, so that
 `H' means ``do not apply transformation to hard link targets.''
 
 The scope flags are listed in the third part of an `s' expression,
