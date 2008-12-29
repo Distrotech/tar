@@ -3309,6 +3309,7 @@ name quoting}.
 
 @opsummary{use-compress-program}
 @item --use-compress-program=@var{prog}
+@itemx -I=@var{prog}
 
 Instructs @command{tar} to access the archive through @var{prog}, which is
 presumed to be a compression program of some sort.  @xref{gzip}.
@@ -8570,6 +8571,7 @@ Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
 
 @opindex use-compress-program
 @item --use-compress-program=@var{prog}
+@itemx -I=@var{prog}
 Use external compression program @var{prog}.  Use this option if you
 have a compression program that @GNUTAR{} does not support.  There
 are two requirements to which @var{prog} should comply:
@@ -8608,14 +8610,14 @@ Suppose you name it @file{gpgz} and save it somewhere in your
 archive signed with your private key:
 
 @smallexample
-$ @kbd{tar -cf foo.tar.gpgz --use-compress=gpgz .}
+$ @kbd{tar -cf foo.tar.gpgz -Igpgz .}
 @end smallexample
 
 @noindent
-Likewise, the following command will list its contents:
+Likewise, the command below will list its contents:
 
 @smallexample
-$ @kbd{tar -tf foo.tar.gpgz --use-compress=gpgz .}
+$ @kbd{tar -tf foo.tar.gpgz -Igpgz .}
 @end smallexample
 
 @ignore

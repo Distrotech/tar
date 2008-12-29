@@ -1,3 +1,15 @@
+2008-12-29  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* bootstrap.conf: Include size_max.
+	* gnulib.modules: Remove memset, rmdir. Replace strdup with
+	strdup-posix. Patch by Eric Blake.
+	* src/tar.c: Implement -I as a shorthand for --use-compress-program.
+	* doc/tar.texi: Document -I.
+	* tests/pipe.at, tests/shortrec.at: Account for eventual 'Record
+	size' output.
+	* tests/testsuite.at (AT_TAR_CHECK_HOOK): New define
+	(AT_TAR_WITH_HOOK, TAR_IGNREC_HOOK): New macros.
+
 2008-11-30  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/xheader.c: Remove duplicate inclusion of fnmatch.h. Reported

@@ -323,7 +323,6 @@ enum
   TRANSFORM_OPTION,
   UNQUOTE_OPTION,
   USAGE_OPTION,
-  USE_COMPRESS_PROGRAM_OPTION,
   UTC_OPTION,
   VERSION_OPTION,
   VOLNO_FILE_OPTION,
@@ -352,7 +351,7 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
 
 /* NOTE:
 
-   Available option letters are DEIQY and eqy. Consider the following
+   Available option letters are DEQY and eqy. Consider the following
    assignments:
 
    [For Solaris tar compatibility =/= Is it important at all?]
@@ -360,7 +359,6 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    E  use extended headers (--format=posix)
 
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
-   [I  same as T =/= will harm star compatibility]
 
    y  per-file gzip compression
    Y  per-block gzip compression */
@@ -610,7 +608,7 @@ static struct argp_option options[] = {
    N_("filter the archive through lzma"), GRID+1 },
   {"lzop", LZOP_OPTION, 0, 0,
    N_("filter the archive through lzop"), GRID+8 },
-  {"use-compress-program", USE_COMPRESS_PROGRAM_OPTION, N_("PROG"), 0,
+  {"use-compress-program", 'I', N_("PROG"), 0,
    N_("filter through PROG (must accept -d)"), GRID+1 },
 #undef GRID
   
@@ -1364,12 +1362,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       ignore_zeros_option = true;
       break;
 
-    case 'I':
-      USAGE_ERROR ((0, 0,
-		    _("Warning: the -I option is not supported;"
-		      " perhaps you meant -j or -T?")));
-      break;
-
     case 'j':
       set_use_compress_program_option ("bzip2");
       break;
@@ -1905,7 +1897,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_transform_expr (arg);
       break;
 
-    case USE_COMPRESS_PROGRAM_OPTION:
+    case 'I':
       set_use_compress_program_option (arg);
       break;
 

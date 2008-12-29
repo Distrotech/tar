@@ -27,13 +27,11 @@ human
 inttypes
 lchown
 localcharset
-memset
 mkdtemp
 modechange
 obstack
 quote
 quotearg
-rmdir
 rpmatch
 safe-read
 save-cwd
@@ -44,7 +42,7 @@ stat-time
 stdbool
 stdint
 stpcpy
-strdup
+strdup-posix
 strerror
 strtol
 strtoul
