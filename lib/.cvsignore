@@ -25,6 +25,7 @@ at-func.c
 backupfile.c
 backupfile.h
 basename.c
+btowc.c
 c-ctype.c
 c-ctype.h
 canonicalize-lgpl.c
@@ -120,7 +121,9 @@ malloca.h
 malloca.valgrind
 mbchar.c
 mbchar.h
+mbrtowc.c
 mbscasecmp.c
+mbsinit.c
 mbuiter.h
 memchr.c
 mempcpy.c
@@ -260,8 +263,10 @@ version-etc-fsf.c
 version-etc.c
 version-etc.h
 vsnprintf.c
+w32sock.h
 wchar.h
 wchar.in.h
+wcrtomb.c
 wctype.h
 wctype.in.h
 wcwidth.c

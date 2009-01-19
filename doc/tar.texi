@@ -4139,7 +4139,7 @@ The five operations that we will cover in this chapter are:
 @itemx -r
 Add new entries to an archive that already exists.
 @item --update
-@itemx -r
+@itemx -u
 Add more recent copies of archive members to the end of an archive, if
 they exist.
 @item --concatenate

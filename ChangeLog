@@ -1,3 +1,7 @@
+2009-01-19  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* doc/tar.texi: Fix typo.
+
 2008-12-29  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* bootstrap.conf: Include size_max.
