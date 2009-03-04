@@ -8900,11 +8900,7 @@ This option is meaningless with @option{--list} (@option{-t}).
 @item --preserve
 Same as both @option{--same-permissions} and @option{--same-order}.
 
-The @option{--preserve} option has no equivalent short option name.
-It is equivalent to @option{--same-permissions} plus @option{--same-order}.
-
-@FIXME{I do not see the purpose of such an option.  (Neither I.  FP.)
-Neither do I. --Sergey}
+This option is deprecated, and will be removed in @GNUTAR{} version 1.23.
 
 @end table
 
