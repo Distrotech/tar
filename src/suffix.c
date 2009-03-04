@@ -40,6 +40,7 @@ struct compression_suffix compression_suffixes[] = {
   { S(lzma, lzma) },
   { S(tlz, lzma) },
   { S(lzo, lzop) },
+  { S(xz, xz) },
 #undef S
 };
 

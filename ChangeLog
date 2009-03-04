@@ -1,3 +1,11 @@
+2009-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	Add xz support.
+	
+	* src/buffer.c, src/suffix.c: Add support for xz compression.
+	* src/tar.c: New option --xz, for compression/decompression using xz.
+	Re-assign -J as a short equivalent of --xz.
+
 2009-01-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi: Fix typo.

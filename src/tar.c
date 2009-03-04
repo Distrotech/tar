@@ -271,6 +271,7 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
+  LZMA_OPTION,
   LZOP_OPTION,
   MODE_OPTION,
   MTIME_OPTION,
@@ -593,7 +594,7 @@ static struct argp_option options[] = {
   {"auto-compress", 'a', 0, 0,
    N_("use archive suffix to determine the compression program"), GRID+1 },
   {"no-auto-compress", NO_AUTO_COMPRESS_OPTION, 0, 0,
-   N_("do not use use archive suffix to determine the compression program"),
+   N_("do not use archive suffix to determine the compression program"),
    GRID+1 },
   {"bzip2", 'j', 0, 0,
    N_("filter the archive through bzip2"), GRID+1 },
@@ -604,10 +605,12 @@ static struct argp_option options[] = {
   {"compress", 'Z', 0, 0,
    N_("filter the archive through compress"), GRID+1 },
   {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
-  {"lzma", 'J', 0, 0,
+  {"lzma", LZMA_OPTION, 0, 0,
    N_("filter the archive through lzma"), GRID+1 },
   {"lzop", LZOP_OPTION, 0, 0,
    N_("filter the archive through lzop"), GRID+8 },
+  {"xz", 'J', 0, 0,
+   N_("filter the archive through xz"), GRID+8 },
   {"use-compress-program", 'I', N_("PROG"), 0,
    N_("filter through PROG (must accept -d)"), GRID+1 },
 #undef GRID
@@ -1367,7 +1370,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'J':
-      set_use_compress_program_option ("lzma");
+      set_use_compress_program_option ("xz");
       break;
       
     case 'k':
@@ -1401,6 +1404,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case LZMA_OPTION:
+      set_use_compress_program_option ("lzma");
+      break;
+      
     case LZOP_OPTION:
       set_use_compress_program_option ("lzop");
       break;

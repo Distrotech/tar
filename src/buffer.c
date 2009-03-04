@@ -204,7 +204,8 @@ enum compress_type {
   ct_gzip,
   ct_bzip2,
   ct_lzma,
-  ct_lzop
+  ct_lzop,
+  ct_xz
 };
 
 struct zip_magic
@@ -222,8 +223,9 @@ static struct zip_magic const magic[] = {
   { ct_compress, 2, "\037\235", "compress", "-Z" },
   { ct_gzip,     2, "\037\213", "gzip", "-z"  },
   { ct_bzip2,    3, "BZh",      "bzip2", "-j" },
-  { ct_lzma,     6, "\xFFLZMA", "lzma", "-J" }, /* FIXME: ???? */
+  { ct_lzma,     6, "\xFFLZMA", "lzma", "--lzma" }, /* FIXME: ???? */
   { ct_lzop,     4, "\211LZO",  "lzop", "--lzop" },
+  { ct_xz,       6, "\0xFD7zXZ", "-J" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))

@@ -2786,7 +2786,6 @@ incremental format.  @xref{Incremental Dumps}.
 
 @opsummary{lzma}
 @item --lzma
-@itemx -J
 
 This option tells @command{tar} to read or write archives through
 @command{lzma}.  @xref{gzip}.
@@ -3359,6 +3358,12 @@ Use wildcards when matching member names with patterns.
 @item --wildcards-match-slash
 Wildcards match @samp{/}.
 @xref{controlling pattern-matching}.
+
+@opsummary{xz}
+@item --xz
+@itemx -J
+Use @command{xz} for compressing or decompressing the archives.  @xref{gzip}.
+
 @end table
 
 @node Short Option Summary
@@ -3380,7 +3385,7 @@ them with the equivalent long option.
 
 @item -G @tab @ref{--incremental}.
 
-@item -J @tab @ref{--lzma}.
+@item -J @tab @ref{--xz}.
 
 @item -K @tab @ref{--starting-file}.
 
@@ -8406,7 +8411,8 @@ Creating a compressed archive is simple: you just specify a
 commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
 (@option{--bzip2}) to create a @command{bzip2} compressed archive,
-@option{-J} (@option{--lzma}) to create an @asis{LZMA} compressed
+@option{-J} (@option{--xz}) to create an @asis{XZ} archive, 
+@option{--lzma} to create an @asis{LZMA} compressed
 archive, @option{--lzop} to create an @asis{LSOP} archive, and
 @option{-Z} (@option{--compress}) to use @command{compress} program.
 For example:
@@ -8504,6 +8510,7 @@ suffix.  The following suffixes are recognized:
 @item @samp{.lzma} @tab @command{lzma}
 @item @samp{.tlz} @tab @command{lzma}
 @item @samp{.lzo} @tab @command{lzop}
+@item @samp{.xz} @tab @command{xz}
 @end multitable
 
 @opindex gzip
@@ -8548,13 +8555,17 @@ lose some compressibility.  But this would have make recovering easier.
 So, there are pros and cons.  We'll see!
 
 @opindex bzip2
+@item -J
+@itemx --xz
+Filter the archive through @code{xz}.  Otherwise like
+@option{--gzip}.
+
 @item -j
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
 
 @opindex lzma
 @item --lzma
-@itemx -J
 Filter the archive through @command{lzma}.  Otherwise like @option{--gzip}.
 
 @opindex lzop
