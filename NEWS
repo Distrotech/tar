@@ -26,6 +26,8 @@ Xz is used for decompression if one of the following conditions is met:
 The -I option is assigned as a short equivalent for
 --use-compress-program.
 
+* The --no-recursive option works in incremental mode.
+
 
 version 1.21 - Sergey Poznyakoff, 2008-12-27
 
