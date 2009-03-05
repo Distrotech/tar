@@ -1,3 +1,7 @@
+2009-03-05  Sergey Poznyakoff  <gray@gnu.org.ua>
+
+	* src/incremen.c: --no-recursive works with --incremental.
+
 2009-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Add xz support.
