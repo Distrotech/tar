@@ -407,11 +407,14 @@ update_parent_directory (const char *name)
   free (p);
 }
 
+#define PD_VERBOSE        0x10
+#define PD_FORCE_CHILDREN 0x20
+#define PD_CHILDREN(f) ((f) & 3)
+
 static struct directory *
 procdir (char *name_buffer, struct stat *stat_data,
 	 dev_t device,
-	 enum children children,
-	 bool verbose,
+	 int flag,
 	 char *entry)
 {
   struct directory *directory;
@@ -485,7 +488,7 @@ procdir (char *name_buffer, struct stat *stat_data,
 	{
 	  if (strcmp (d->name, name_buffer))
 	    {
-	      if (verbose)
+	      if (flag & PD_VERBOSE)
 		WARN ((0, 0, _("%s: Directory has been renamed from %s"),
 		       quotearg_colon (name_buffer),
 		       quote_n (1, d->name)));
@@ -498,7 +501,7 @@ procdir (char *name_buffer, struct stat *stat_data,
       else
 	{
 	  DIR_SET_FLAG (directory, DIRF_NEW);
-	  if (verbose)
+	  if (flag & PD_VERBOSE)
 	    WARN ((0, 0, _("%s: Directory is new"),
 		   quotearg_colon (name_buffer)));
 	  directory->children =
@@ -517,43 +520,48 @@ procdir (char *name_buffer, struct stat *stat_data,
       /* ... except if it was explicitely given in the command line */
       && !is_individual_file (name_buffer))
     directory->children = NO_CHILDREN;
-  else if (children == ALL_CHILDREN)
-    directory->children = ALL_CHILDREN;
-
+  else if (flag & PD_FORCE_CHILDREN)
+    {
+      directory->children = PD_CHILDREN(flag);
+      if (directory->children == NO_CHILDREN)
+	*entry = 'N';
+    }
+	  
   DIR_SET_FLAG (directory, DIRF_INIT);
 
-  {
-    const char *tag_file_name;
+  if (directory->children != NO_CHILDREN)
+    {
+      const char *tag_file_name;
 
-    switch (check_exclusion_tags (name_buffer, &tag_file_name))
-      {
-      case exclusion_tag_all:
-	/* This warning can be duplicated by code in dump_file0, but only
-	   in case when the topmost directory being archived contains
-	   an exclusion tag. */
-	exclusion_tag_warning (name_buffer, tag_file_name,
-			       _("directory not dumped"));
-	if (entry)
-	  *entry = 'N';
-	directory->children = NO_CHILDREN;
-	break;
+      switch (check_exclusion_tags (name_buffer, &tag_file_name))
+	{
+	case exclusion_tag_all:
+	  /* This warning can be duplicated by code in dump_file0, but only
+	     in case when the topmost directory being archived contains
+	     an exclusion tag. */
+	  exclusion_tag_warning (name_buffer, tag_file_name,
+				 _("directory not dumped"));
+	  if (entry)
+	    *entry = 'N';
+	  directory->children = NO_CHILDREN;
+	  break;
 
-      case exclusion_tag_contents:
-	exclusion_tag_warning (name_buffer, tag_file_name,
-			       _("contents not dumped"));
-	directory->children = NO_CHILDREN;
-	break;
-
-      case exclusion_tag_under:
-	exclusion_tag_warning (name_buffer, tag_file_name,
-			       _("contents not dumped"));
-	directory->tagfile = tag_file_name;
-	break;
-
-      case exclusion_tag_none:
-	break;
-      }
-  }
+	case exclusion_tag_contents:
+	  exclusion_tag_warning (name_buffer, tag_file_name,
+				 _("contents not dumped"));
+	  directory->children = NO_CHILDREN;
+	  break;
+	  
+	case exclusion_tag_under:
+	  exclusion_tag_warning (name_buffer, tag_file_name,
+				 _("contents not dumped"));
+	  directory->tagfile = tag_file_name;
+	  break;
+	  
+	case exclusion_tag_none:
+	  break;
+	}
+    }
 
   return directory;
 }
@@ -645,7 +653,7 @@ scan_directory (char *dir, dev_t device)
   size_t name_length;		/* used length in name_buffer */
   struct stat stat_data;
   struct directory *directory;
-
+  
   if (! dirp)
     savedir_error (dir);
 
@@ -667,8 +675,7 @@ scan_directory (char *dir, dev_t device)
       return NULL;
     }
 
-  directory = procdir (name_buffer, &stat_data, device, NO_CHILDREN, false,
-		       NULL);
+  directory = procdir (name_buffer, &stat_data, device, 0, NULL);
 
   if (dirp && directory->children != NO_CHILDREN)
     {
@@ -707,10 +714,13 @@ scan_directory (char *dir, dev_t device)
 
 	      if (S_ISDIR (stat_data.st_mode))
 		{
+		  int pd_flag = (verbose_option ? PD_VERBOSE : 0);
+		  if (!recursion_option)
+		    pd_flag |= PD_FORCE_CHILDREN | NO_CHILDREN;
+		  else if (directory->children == ALL_CHILDREN)
+		    pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
 		  *entry = 'D';
-		  procdir (name_buffer, &stat_data, device,
-			   directory->children,
-			   verbose_option, entry);
+		  procdir (name_buffer, &stat_data, device, pd_flag, entry);
 		}
 
 	      else if (one_file_system_option && device != stat_data.st_dev)

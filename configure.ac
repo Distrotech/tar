@@ -1,7 +1,7 @@
 # Configure template for GNU tar.  -*- autoconf -*-
 
 # Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-# 2002, 2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+# 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-AC_INIT([GNU tar], [1.21.90], [bug-tar@gnu.org])
+AC_INIT([GNU tar], [1.22], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h:config.hin])

@@ -1,5 +1,5 @@
 /* This file is part of GNU tar.
-   Copyright (C) 2007 Free Software Foundation, Inc.
+   Copyright (C) 2007, 2009 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff.
 
