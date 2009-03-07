@@ -1,7 +1,7 @@
 # Makefile for GNU tar regression tests.
 
 # Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005, 
-# 2006, 2007 Free Software Foundation, Inc.
+# 2006, 2007, 2009 Free Software Foundation, Inc.
 
 # François Pinard <pinard@iro.umontreal.ca>, 1988.
 # Sergey Poznyakoff <gray@mirddin.farlep.net>, 2004.
@@ -161,6 +161,6 @@ check_PROGRAMS = genfile
 genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
-INCLUDES = -I$(top_srcdir)/lib -I../lib -I$(top_srcdir)/src
+INCLUDES = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/gnu -I$(top_srcdir)/lib
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
-LDADD = ../lib/libtar.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
+LDADD = ../gnu/libgnu.a $(LIBINTL) $(LIB_CLOCK_GETTIME)

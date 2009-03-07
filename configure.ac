@@ -21,7 +21,7 @@
 AC_INIT([GNU tar], [1.22], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_CONFIG_HEADERS([config.h:config.hin])
+AC_CONFIG_HEADERS([config.h])
 AC_PREREQ([2.60])
 AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 dist-shar std-options])
 
@@ -48,7 +48,6 @@ AC_CHECK_HEADERS([sys/buf.h], [], [],
 #endif])
 
 AC_HEADER_SYS_WAIT
-AM_STDBOOL_H
 
 AC_HEADER_DIRENT
 AC_HEADER_MAJOR
@@ -241,6 +240,7 @@ fi
 
 AC_OUTPUT([Makefile\
            doc/Makefile\
+	   gnu/Makefile\
            lib/Makefile\
            po/Makefile.in\
            scripts/Makefile\

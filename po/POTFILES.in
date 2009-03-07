@@ -19,26 +19,27 @@
 # 02110-1301, USA.
 
 # Library files
-lib/argmatch.c
-lib/argp-help.c
-lib/argp-parse.c
-lib/closeout.c
-lib/error.c
-lib/getopt.c
-lib/obstack.c
-lib/human.c
-lib/obstack.c
-lib/openat-die.c
+gnu/argmatch.c
+gnu/argp-help.c
+gnu/argp-parse.c
+gnu/closeout.c
+gnu/error.c
+gnu/getopt.c
+gnu/obstack.c
+gnu/human.c
+gnu/obstack.c
+gnu/openat-die.c
+gnu/quotearg.c
+gnu/rpmatch.c
+gnu/xalloc-die.c
+gnu/xmalloc.c
+gnu/version-etc.c
+gnu/xalloc-die.c
+
 lib/paxerror.c
 lib/paxexit.c
 lib/paxnames.c
-lib/quotearg.c
-lib/rpmatch.c
 lib/rtapelib.c
-lib/xalloc-die.c
-lib/xmalloc.c
-lib/version-etc.c
-lib/xalloc-die.c
 
 rmt/rmt.c
 

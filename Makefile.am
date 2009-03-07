@@ -1,7 +1,7 @@
 # Main Makefile for GNU tar.
 
-# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2007 Free
-# Software Foundation, Inc.
+# Copyright (C) 1994, 1995, 1996, 1997, 1999, 2000, 2001, 2003, 2007,
+# 2009 Free Software Foundation, Inc.
 
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -19,13 +19,22 @@
 ## 02110-1301, USA.
 
 ACLOCAL_AMFLAGS = -I m4
-EXTRA_DIST = ChangeLog.1 PORTS
-SUBDIRS = doc lib rmt src scripts po tests
+EXTRA_DIST = ChangeLog.1 Make.rules
+SUBDIRS = doc gnu lib rmt src scripts po tests
 
 dist-hook: 
+	$(MAKE) changelog_dir=$(distdir) make-ChangeLog
 	-rm -f $(distdir).cpio
 	find $(distdir) | cpio -Hcrc -o | \
           GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
 
 distclean-local:
 	-rm -f $(distdir).cpio.gz
+
+include Make.rules
+
+gen_start_date = 2009-03-06
+prev_change_log = ChangeLog.CVS
+changelog_dir = .
+
+
