@@ -1429,12 +1429,12 @@ example:
 
 @smallexample
 @group
-$ @kbd{tar cfv archive /etc/mail}
+$ @kbd{tar --create --verbose --file archive /etc/mail}
 tar: Removing leading `/' from member names
 /etc/mail/
 /etc/mail/sendmail.cf
 /etc/mail/aliases
-$ @kbd{tar tf archive}
+$ @kbd{tar --test --file archive}
 etc/mail/
 etc/mail/sendmail.cf
 etc/mail/aliases
@@ -1879,15 +1879,14 @@ will act on the entire contents of the archive.
 @cindex return status
 Besides successful exits, @GNUTAR{} may fail for
 many reasons.  Some reasons correspond to bad usage, that is, when the
-@command{tar} command is improperly written.  Errors may be
-encountered later, while encountering an error processing the archive
-or the files.  Some errors are recoverable, in which case the failure
-is delayed until @command{tar} has completed all its work.  Some
-errors are such that it would not meaningful, or at least risky, to
-continue processing: @command{tar} then aborts processing immediately.
-All abnormal exits, whether immediate or delayed, should always be
-clearly diagnosed on @code{stderr}, after a line stating the nature of
-the error.
+@command{tar} command line is improperly written.  Errors may be
+encountered later, while processing the archive or the files.  Some
+errors are recoverable, in which case the failure is delayed until
+@command{tar} has completed all its work.  Some errors are such that
+it would be not meaningful, or at least risky, to continue processing:
+@command{tar} then aborts processing immediately.  All abnormal exits,
+whether immediate or delayed, should always be clearly diagnosed on
+@code{stderr}, after a line stating the nature of the error.
 
 Possible exit codes of @GNUTAR{} are summarized in the following
 table:
@@ -1924,7 +1923,7 @@ remote device (@pxref{Remote Tape Server}).
 allow you to perform a variety of tasks.  You are required to choose
 one operating mode each time you employ the @command{tar} program by
 specifying one, and only one operation as an argument to the
-@command{tar} command (two lists of four operations each may be found
+@command{tar} command (the corresponding options may be found
 at @ref{frequent operations} and @ref{Operations}).  Depending on
 circumstances, you may also wish to customize how the chosen operating
 mode behaves.  For example, you may wish to change the way the output
@@ -3747,7 +3746,7 @@ If @option{--block-number} (@option{-R}) is used, @command{tar} prints, along wi
 every message it would normally produce, the block number within the
 archive where the message was triggered.  Also, supplementary messages
 are triggered when reading blocks full of NULs, or when hitting end of
-file on the archive.  As of now, if the archive if properly terminated
+file on the archive.  As of now, if the archive is properly terminated
 with a NUL block, the reading of the file may stop before end of file
 is met, so the position of end of file will not usually show when
 @option{--block-number} (@option{-R}) is used.  Note that @GNUTAR{}
@@ -5352,9 +5351,9 @@ and @command{mv}, for example) offer similar options.
 Backup options may prove unexpectedly useful when extracting archives
 containing many members having identical name, or when extracting archives
 on systems having file name limitations, making different members appear
-has having similar names through the side-effect of name truncation.
-(This is true only if we have a good scheme for truncated backup names,
-which I'm not sure at all: I suspect work is needed in this area.)
+as having similar names through the side-effect of name truncation.
+@FIXME{This is true only if we have a good scheme for truncated backup names,
+which I'm not sure at all: I suspect work is needed in this area.}
 When any existing file is backed up before being overwritten by extraction,
 then clashing files are automatically be renamed to be unique, and the
 true name is kept for only the last file of a series of clashing files.
@@ -9286,7 +9285,7 @@ is, file names having characters with the eight bit set, because they
 use signed checksums, while @GNUTAR{} uses unsigned
 checksums while creating archives, as per @acronym{POSIX} standards.  On
 reading, @GNUTAR{} computes both checksums and
-accept any.  It is somewhat worrying that a lot of people may go
+accepts any.  It is somewhat worrying that a lot of people may go
 around doing backup of their files using faulty (or at least
 non-standard) software, not learning about it until it's time to
 restore their missing files with an incompatible file extractor, or

@@ -1,4 +1,6 @@
+genfile.texi
 getdate.texi
+header.texi
 manual
 stamp-vti
 tar.aux
@@ -22,5 +24,3 @@ tar.toc
 tar.tp
 tar.vr
 version.texi
-genfile.texi
-header.texi

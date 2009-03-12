@@ -415,6 +415,7 @@ symlink_to_dir()
 	/*) ;;
 	*)
 	  case /$dst/ in
+	  /./*)   ;;
 	  *//* | */../* | */./* | /*/*/*/*/*/)
 	     echo >&2 "$0: invalid symlink calculation: $src -> $dst"
 	     exit 1;;
