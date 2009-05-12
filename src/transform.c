@@ -430,21 +430,21 @@ run_case_conv (enum case_ctl_type case_ctl, char *ptr, size_t size)
   switch (case_ctl)
     {
     case ctl_upcase_next:
-      case_ctl_buffer[0] = toupper (case_ctl_buffer[0]);
+      case_ctl_buffer[0] = toupper ((unsigned char) case_ctl_buffer[0]);
       break;
       
     case ctl_locase_next:
-      case_ctl_buffer[0] = tolower (case_ctl_buffer[0]);
+      case_ctl_buffer[0] = tolower ((unsigned char) case_ctl_buffer[0]);
       break;
       
     case ctl_upcase:
       for (p = case_ctl_buffer; p < case_ctl_buffer + size; p++)
-	*p = toupper (*p);
+	*p = toupper ((unsigned char) *p);
       break;
       
     case ctl_locase:
       for (p = case_ctl_buffer; p < case_ctl_buffer + size; p++)
-	*p = tolower (*p);
+	*p = tolower ((unsigned char) *p);
       break;
 
     case ctl_stop:
@@ -628,4 +628,3 @@ transform_name (char **pinput, int type)
 {
   return transform_name_fp (pinput, type, NULL, NULL);
 }
-
