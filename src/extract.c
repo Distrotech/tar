@@ -486,17 +486,24 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
   return false;
 }
 
+#define RECOVER_NO 0
+#define RECOVER_OK 1
+#define RECOVER_SKIP 2
+
 /* Attempt repairing what went wrong with the extraction.  Delete an
    already existing file or create missing intermediate directories.
-   Return nonzero if we somewhat increased our chances at a successful
-   extraction.  errno is properly restored on zero return.  */
+   Return RECOVER_OK if we somewhat increased our chances at a successful
+   extraction, RECOVER_NO if there are no chances, and RECOVER_SKIP if the
+   caller should skip extraction of that member.  The value of errno is
+   properly restored on returning RECOVER_NO.  */
+
 static int
 maybe_recoverable (char *file_name, int *interdir_made)
 {
   int e = errno;
 
   if (*interdir_made)
-    return 0;
+    return RECOVER_NO;
 
   switch (errno)
     {
@@ -506,13 +513,13 @@ maybe_recoverable (char *file_name, int *interdir_made)
       switch (old_files_option)
 	{
 	case KEEP_OLD_FILES:
-	  return 0;
+	  return RECOVER_SKIP;
 
 	case KEEP_NEWER_FILES:
 	  if (file_newer_p (file_name, &current_stat_info))
 	    {
 	      errno = e;
-	      return 0;
+	      return RECOVER_NO;
 	    }
 	  /* FALL THROUGH */
 
@@ -522,7 +529,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	  {
 	    int r = remove_any_file (file_name, ORDINARY_REMOVE_OPTION);
 	    errno = EEXIST;
-	    return r;
+	    return r > 0 ? RECOVER_OK : RECOVER_NO;
 	  }
 
 	case UNLINK_FIRST_OLD_FILES:
@@ -534,15 +541,15 @@ maybe_recoverable (char *file_name, int *interdir_made)
       if (! make_directories (file_name))
 	{
 	  errno = ENOENT;
-	  return 0;
+	  return RECOVER_NO;
 	}
       *interdir_made = 1;
-      return 1;
+      return RECOVER_OK;
 
     default:
       /* Just say we can't do anything about it...  */
 
-      return 0;
+      return RECOVER_NO;
     }
 }
 
@@ -666,13 +673,21 @@ extract_dir (char *file_name, int typeflag)
 	  errno = EEXIST;
 	}
 
-      if (maybe_recoverable (file_name, &interdir_made))
-	continue;
-
-      if (errno != EEXIST)
+      switch (maybe_recoverable (file_name, &interdir_made))
 	{
-	  mkdir_error (file_name);
-	  return 1;
+	case RECOVER_OK:
+	  continue;
+
+	case RECOVER_SKIP:
+	  break;
+
+	case RECOVER_NO:
+	  if (errno != EEXIST)
+	    {
+	      mkdir_error (file_name);
+	      return 1;
+	    }
+	  break;
 	}
       break;
     }
@@ -760,13 +775,18 @@ extract_file (char *file_name, int typeflag)
     }
   else
     {
+      int recover = RECOVER_NO;
       do
 	fd = open_output_file (file_name, typeflag, mode ^ invert_permissions);
-      while (fd < 0 && maybe_recoverable (file_name, &interdir_made));
+      while (fd < 0
+	     && (recover = maybe_recoverable (file_name, &interdir_made))
+	         == RECOVER_OK);
 
       if (fd < 0)
 	{
 	  skip_member ();
+	  if (recover == RECOVER_SKIP)
+	    return 0;
 	  open_error (file_name);
 	  return 1;
 	}

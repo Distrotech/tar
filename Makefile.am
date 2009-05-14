@@ -23,7 +23,7 @@ EXTRA_DIST = ChangeLog.1 Make.rules
 SUBDIRS = doc gnu lib rmt src scripts po tests
 
 dist-hook: 
-	$(MAKE) changelog_dir=$(distdir) make-ChangeLog
+	$(MAKE) changelog_dir=$(distdir) ChangeLog
 	-rm -f $(distdir).cpio
 	find $(distdir) | cpio -Hcrc -o | \
           GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
