@@ -1,5 +1,14 @@
-GNU tar NEWS - User visible changes. 2009-03-05
+GNU tar NEWS - User visible changes. 2009-05-25
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.22.90 (Git)
+
+* Record size autodetection
+
+When listing or extracting archives, the actual record size is
+reported only if the archive is read from a device (as opposed
+to regular files and pipes).
 
 
 version 1.22 - Sergey Poznyakoff, 2009-03-05

@@ -679,6 +679,19 @@ archive_read_error (void)
   return;
 }
 
+static bool
+archive_is_dev ()
+{
+  struct stat st;
+
+  if (fstat (archive, &st))
+    {
+      stat_diag (*archive_name_cursor);
+      return false;
+    }
+  return S_ISBLK (st.st_mode) || S_ISCHR (st.st_mode);
+}
+
 static void
 short_read (size_t status)
 {
@@ -690,7 +703,8 @@ short_read (size_t status)
 
   if (left && left % BLOCKSIZE == 0
       && verbose_option
-      && record_start_block == 0 && status != 0)
+      && record_start_block == 0 && status != 0
+      && archive_is_dev ())
     {
       unsigned long rsize = status / BLOCKSIZE;
       WARN ((0, 0,
