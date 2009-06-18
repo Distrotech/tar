@@ -283,6 +283,29 @@ xdup2 (int from, int into)
     }
 }
 
+void wait_for_grandchild (pid_t pid) __attribute__ ((__noreturn__));
+
+/* Propagate any failure of the grandchild back to the parent.  */
+void
+wait_for_grandchild (pid_t pid)
+{
+  int wait_status;
+  
+  while (waitpid (pid, &wait_status, 0) == -1)
+    if (errno != EINTR)
+      {
+	waitpid_error (use_compress_program_option);
+	break;
+      }
+
+  if (WIFSIGNALED (wait_status))
+    raise (WTERMSIG (wait_status));
+  else if (WEXITSTATUS (wait_status) != 0)
+    exit_status = WEXITSTATUS (wait_status);
+  
+  exit (exit_status);
+}
+
 /* Set ARCHIVE for writing, then compressing an archive.  */
 pid_t
 sys_child_open_for_compress (void)
@@ -291,7 +314,6 @@ sys_child_open_for_compress (void)
   int child_pipe[2];
   pid_t grandchild_pid;
   pid_t child_pid;
-  int wait_status;
 
   xpipe (parent_pipe);
   child_pid = xfork ();
@@ -424,24 +446,7 @@ sys_child_open_for_compress (void)
 	archive_write_error (status);
     }
 
-  /* Propagate any failure of the grandchild back to the parent.  */
-
-  while (waitpid (grandchild_pid, &wait_status, 0) == -1)
-    if (errno != EINTR)
-      {
-	waitpid_error (use_compress_program_option);
-	break;
-      }
-
-  if (WIFSIGNALED (wait_status))
-    {
-      kill (child_pid, WTERMSIG (wait_status));
-      exit_status = TAREXIT_FAILURE;
-    }
-  else if (WEXITSTATUS (wait_status) != 0)
-    exit_status = WEXITSTATUS (wait_status);
-
-  exit (exit_status);
+  wait_for_grandchild (grandchild_pid);
 }
 
 /* Set ARCHIVE for uncompressing, then reading an archive.  */
@@ -452,7 +457,6 @@ sys_child_open_for_uncompress (void)
   int child_pipe[2];
   pid_t grandchild_pid;
   pid_t child_pid;
-  int wait_status;
 
   xpipe (parent_pipe);
   child_pid = xfork ();
@@ -562,24 +566,7 @@ sys_child_open_for_uncompress (void)
 
   xclose (STDOUT_FILENO);
 
-  /* Propagate any failure of the grandchild back to the parent.  */
-
-  while (waitpid (grandchild_pid, &wait_status, 0) == -1)
-    if (errno != EINTR)
-      {
-	waitpid_error (use_compress_program_option);
-	break;
-      }
-
-  if (WIFSIGNALED (wait_status))
-    {
-      kill (child_pid, WTERMSIG (wait_status));
-      exit_status = TAREXIT_FAILURE;
-    }
-  else if (WEXITSTATUS (wait_status) != 0)
-    exit_status = WEXITSTATUS (wait_status);
-
-  exit (exit_status);
+  wait_for_grandchild (grandchild_pid);
 }
 
 
