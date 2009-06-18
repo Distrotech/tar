@@ -31,6 +31,7 @@ localcharset
 mkdtemp
 modechange
 obstack
+priv-set
 quote
 quotearg
 rpmatch

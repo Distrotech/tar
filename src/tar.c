@@ -50,6 +50,7 @@
 #include <version-etc.h>
 #include <xstrtol.h>
 #include <stdopen.h>
+#include <priv-set.h>
 
 /* Local declarations.  */
 
@@ -2459,6 +2460,9 @@ main (int argc, char **argv)
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
 
+  /* Try to disable the ability to unlink a directory.  */
+  priv_set_remove_linkdir ();
+  
   /* Decode options.  */
 
   decode_options (argc, argv);

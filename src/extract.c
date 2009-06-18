@@ -24,6 +24,7 @@
 #include <utimens.h>
 #include <errno.h>
 #include <xgetcwd.h>
+#include <priv-set.h>
 
 #include "common.h"
 
@@ -144,7 +145,8 @@ set_mode (char const *file_name,
 	  char typeflag)
 {
   mode_t mode;
-
+  bool failed;
+  
   if (0 < same_permissions_option
       && permstatus != INTERDIR_PERMSTATUS)
     {
@@ -186,7 +188,17 @@ set_mode (char const *file_name,
       mode = cur_info->st_mode ^ invert_permissions;
     }
 
-  if (chmod (file_name, mode) != 0)
+  failed = chmod (file_name, mode) != 0;
+  if (failed && errno == EPERM)
+    {
+      /* On Solaris, chmod may fail if we don't have PRIV_ALL.  */
+      if (priv_set_restore_linkdir () == 0)
+	{
+	  failed = chmod (file_name, mode) != 0;
+	  priv_set_remove_linkdir ();
+	}
+    }
+  if (failed)
     chmod_error_details (file_name, mode);
 }
 
@@ -1217,6 +1229,9 @@ extract_archive (void)
 {
   char typeflag;
   tar_extractor_t fun;
+
+  /* Try to disable the ability to unlink a directory.  */
+  priv_set_remove_linkdir ();
 
   set_next_block_after (current_header);
   decode_header (current_header, &current_stat_info, &current_format, 1);
