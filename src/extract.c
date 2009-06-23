@@ -486,9 +486,13 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
 
   if (stat (file_name, &st))
     {
-      stat_warn (file_name);
-      /* Be on the safe side: if the file does exist assume it is newer */
-      return errno != ENOENT;
+      if (errno != ENOENT)
+	{
+	  stat_warn (file_name);
+	  /* Be on the safe side: if the file does exist assume it is newer */
+	  return true;
+	}
+      return false;
     }
   if (!S_ISDIR (st.st_mode)
       && tar_timespec_cmp (tar_stat->mtime, get_stat_mtime (&st)) <= 0)
