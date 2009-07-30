@@ -159,6 +159,8 @@ m4_include([chtype.at])
 m4_include([ignfail.at])
 
 m4_include([link01.at])
+m4_include([link02.at])
+m4_include([link03.at])
 
 m4_include([longv7.at])
 m4_include([long01.at])

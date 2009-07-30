@@ -1377,7 +1377,7 @@ static Hash_table *link_table;
 static bool
 dump_hard_link (struct tar_stat_info *st)
 {
-  if (link_table && st->stat.st_nlink > 1)
+  if (link_table && (st->stat.st_nlink > 1 || remove_files_option))
     {
       struct link lp;
       struct link *duplicate;
@@ -1468,7 +1468,7 @@ check_links (void)
     {
       if (lp->nlink)
 	{
-	  WARN ((0, 0, _("Missing links to %s.\n"), quote (lp->name)));
+	  WARN ((0, 0, _("Missing links to %s."), quote (lp->name)));
 	}
     }
 }
