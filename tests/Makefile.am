@@ -119,6 +119,7 @@ TESTSUITE_AT = \
  volume.at\
  verbose.at\
  version.at\
+ xform-h.at\
  star/gtarfail.at\
  star/gtarfail2.at\
  star/multi-fail.at\

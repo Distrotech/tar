@@ -1427,19 +1427,26 @@ file_count_links (struct tar_stat_info *st)
   if (st->stat.st_nlink > 1)
     {
       struct link *duplicate;
-      struct link *lp = xmalloc (offsetof (struct link, name)
-				 + strlen (st->orig_file_name) + 1);
+      char *linkname = NULL;
+      struct link *lp;
+
+      assign_string (&linkname, st->orig_file_name);
+      transform_name (&linkname, XFORM_LINK);
+      
+      lp = xmalloc (offsetof (struct link, name)
+				 + strlen (linkname) + 1);
       lp->ino = st->stat.st_ino;
       lp->dev = st->stat.st_dev;
       lp->nlink = st->stat.st_nlink;
-      strcpy (lp->name, st->orig_file_name);
-
+      strcpy (lp->name, linkname);
+      free (linkname);
+      
       if (! ((link_table
 	      || (link_table = hash_initialize (0, 0, hash_link,
 						compare_links, 0)))
 	     && (duplicate = hash_insert (link_table, lp))))
 	xalloc_die ();
-
+      
       if (duplicate != lp)
 	abort ();
       lp->nlink--;
