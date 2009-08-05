@@ -52,6 +52,7 @@ TESTSUITE_AT = \
  append.at\
  append01.at\
  append02.at\
+ backup01.at\
  chtype.at\
  comprec.at\
  delete01.at\
@@ -67,6 +68,7 @@ TESTSUITE_AT = \
  extrac05.at\
  extrac06.at\
  extrac07.at\
+ extrac08.at\
  gzip.at\
  grow.at\
  incremental.at\

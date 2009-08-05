@@ -417,6 +417,15 @@ maybe_backup_file (const char *file_name, bool this_is_the_archive)
 {
   struct stat file_stat;
 
+  assign_string (&before_backup_name, file_name);
+
+  /* A run situation may exist between Emacs or other GNU programs trying to
+     make a backup for the same file simultaneously.  If theoretically
+     possible, real problems are unlikely.  Doing any better would require a
+     convention, GNU-wide, for all programs doing backups.  */
+
+  assign_string (&after_backup_name, 0);
+
   /* Check if we really need to backup the file.  */
 
   if (this_is_the_archive && _remdev (file_name))
@@ -438,14 +447,6 @@ maybe_backup_file (const char *file_name, bool this_is_the_archive)
       && (S_ISBLK (file_stat.st_mode) || S_ISCHR (file_stat.st_mode)))
     return true;
 
-  assign_string (&before_backup_name, file_name);
-
-  /* A run situation may exist between Emacs or other GNU programs trying to
-     make a backup for the same file simultaneously.  If theoretically
-     possible, real problems are unlikely.  Doing any better would require a
-     convention, GNU-wide, for all programs doing backups.  */
-
-  assign_string (&after_backup_name, 0);
   after_backup_name = find_backup_file_name (file_name, backup_type);
   if (! after_backup_name)
     xalloc_die ();

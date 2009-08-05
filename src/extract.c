@@ -682,6 +682,7 @@ extract_dir (char *file_name, int typeflag)
 		}
 	      if (S_ISDIR (st.st_mode))
 		{
+		  status = 0;
 		  mode = st.st_mode;
 		  break;
 		}

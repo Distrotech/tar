@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2009-05-25
+GNU tar NEWS - User visible changes. 2009-08-05
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -9,6 +9,12 @@ version 1.22.90 (Git)
 When listing or extracting archives, the actual record size is
 reported only if the archive is read from a device (as opposed
 to regular files and pipes).
+
+* Bugfixes
+** Fix handling of hard link targets by -c --transform.
+** Fix hard links recognition with -c --remove-files.
+** Fix restoring files from backup (debian bug #508199).
+** Correctly restore modes and permissions on existing directories.
 
 
 version 1.22 - Sergey Poznyakoff, 2009-03-05

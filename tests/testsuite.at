@@ -139,6 +139,9 @@ m4_include([extrac04.at])
 m4_include([extrac05.at])
 m4_include([extrac06.at])
 m4_include([extrac07.at])
+m4_include([extrac08.at])
+
+m4_include([backup01.at])
 
 m4_include([gzip.at])
 
