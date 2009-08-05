@@ -63,11 +63,12 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 		       const char *message)
 {
   if (verbose_option)
-    WARN ((0, 0,
-	   _("%s: contains a cache directory tag %s; %s"),
-	   quotearg_colon (dirname),
-	   quotearg_n (1, tagname),
-	   message));
+    WARNOPT (WARN_CACHEDIR,
+	     (0, 0,
+	      _("%s: contains a cache directory tag %s; %s"),
+	      quotearg_colon (dirname),
+	      quotearg_n (1, tagname),
+	      message));
 }
 
 enum exclusion_tag_type 
@@ -1072,12 +1073,13 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 	{
 	  char buf[UINTMAX_STRSIZE_BOUND];
 	  memset (blk->buffer + count, 0, bufsize - count);
-	  WARN ((0, 0,
-		 ngettext ("%s: File shrank by %s byte; padding with zeros",
-			   "%s: File shrank by %s bytes; padding with zeros",
-			   size_left),
-		 quotearg_colon (st->orig_file_name),
-		 STRINGIFY_BIGINT (size_left, buf)));
+	  WARNOPT (WARN_FILE_SHRANK,
+		   (0, 0,
+		    ngettext ("%s: File shrank by %s byte; padding with zeros",
+			      "%s: File shrank by %s bytes; padding with zeros",
+			      size_left),
+		    quotearg_colon (st->orig_file_name),
+		    STRINGIFY_BIGINT (size_left, buf)));
 	  if (! ignore_failed_read_option) 
 	    exit_status = TAREXIT_DIFFERS;
 	  pad_archive (size_left - (bufsize - count));
@@ -1173,9 +1175,10 @@ dump_dir0 (char *directory,
       && parent_device != st->stat.st_dev)
     {
       if (verbose_option)
-	WARN ((0, 0,
-	       _("%s: file is on a different filesystem; not dumped"),
-	       quotearg_colon (st->orig_file_name)));
+	WARNOPT (WARN_XDEV,
+		 (0, 0,
+		  _("%s: file is on a different filesystem; not dumped"),
+		  quotearg_colon (st->orig_file_name)));
     }
   else
     {
@@ -1358,8 +1361,9 @@ compare_links (void const *entry1, void const *entry2)
 static void
 unknown_file_error (char const *p)
 {
-  WARN ((0, 0, _("%s: Unknown file type; file ignored"),
-	 quotearg_colon (p)));
+  WARNOPT (WARN_FILE_IGNORED,
+	   (0, 0, _("%s: Unknown file type; file ignored"),
+	    quotearg_colon (p)));
   if (!ignore_failed_read_option)
     exit_status = TAREXIT_FAILURE;
 }
@@ -1539,16 +1543,18 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       && (!after_date_option || OLDER_TAR_STAT_TIME (*st, c)))
     {
       if (!incremental_option && verbose_option)
-	WARN ((0, 0, _("%s: file is unchanged; not dumped"),
-	       quotearg_colon (p)));
+	WARNOPT (WARN_FILE_UNCHANGED,
+		 (0, 0, _("%s: file is unchanged; not dumped"),
+		  quotearg_colon (p)));
       return;
     }
 
   /* See if we are trying to dump the archive.  */
   if (sys_file_is_archive (st))
     {
-      WARN ((0, 0, _("%s: file is the archive; not dumped"),
-	     quotearg_colon (p)));
+      WARNOPT (WARN_IGNORE_ARCHIVE,
+	       (0, 0, _("%s: file is the archive; not dumped"),
+		quotearg_colon (p)));
       return;
     }
 
@@ -1577,8 +1583,9 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	  if (fd < 0)
 	    {
 	      if (!top_level && errno == ENOENT)
-		WARN ((0, 0, _("%s: File removed before we read it"),
-		       quotearg_colon (p)));
+		WARNOPT (WARN_FILE_REMOVED,
+			 (0, 0, _("%s: File removed before we read it"),
+			  quotearg_colon (p)));
 	      else
 		open_diag (p);
 	      return;
@@ -1663,8 +1670,9 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	       && !(remove_files_option && is_dir))
 	      || original_size < final_stat.st_size)
 	    {
-	      WARN ((0, 0, _("%s: file changed as we read it"),
-		     quotearg_colon (p)));
+	      WARNOPT (WARN_FILE_CHANGED,
+		       (0, 0, _("%s: file changed as we read it"),
+			quotearg_colon (p)));
 	      if (exit_status == TAREXIT_SUCCESS)
 		exit_status = TAREXIT_DIFFERS;
 	    }
@@ -1743,12 +1751,14 @@ dump_file0 (struct tar_stat_info *st, const char *p,
     type = FIFOTYPE;
   else if (S_ISSOCK (st->stat.st_mode))
     {
-      WARN ((0, 0, _("%s: socket ignored"), quotearg_colon (p)));
+      WARNOPT (WARN_FILE_IGNORED,
+	       (0, 0, _("%s: socket ignored"), quotearg_colon (p)));
       return;
     }
   else if (S_ISDOOR (st->stat.st_mode))
     {
-      WARN ((0, 0, _("%s: door ignored"), quotearg_colon (p)));
+      WARNOPT (WARN_FILE_IGNORED,
+	       (0, 0, _("%s: door ignored"), quotearg_colon (p)));
       return;
     }
   else

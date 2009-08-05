@@ -328,6 +328,7 @@ enum
   UTC_OPTION,
   VERSION_OPTION,
   VOLNO_FILE_OPTION,
+  WARNING_OPTION, 
   WILDCARDS_MATCH_SLASH_OPTION,
   WILDCARDS_OPTION
 };
@@ -719,6 +720,8 @@ static struct argp_option options[] = {
 
   {"verbose", 'v', 0, 0,
    N_("verbosely list files processed"), GRID+1 },
+  {"warning", WARNING_OPTION, N_("KEYWORD"), 0,
+   N_("warning control"), GRID+1 },
   {"checkpoint", CHECKPOINT_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
    N_("display progress messages every NUMBERth record (default 10)"),
    GRID+1 },
@@ -1183,8 +1186,9 @@ update_argv (const char *filename, struct argp_state *state)
 	  {
 	    size_t size;
 
-	    WARN ((0, 0, N_("%s: file name read contains nul character"),
-		   quotearg_colon (filename)));
+	    WARNOPT (WARN_FILENAME_WITH_NULS,
+		     (0, 0, N_("%s: file name read contains nul character"),
+		      quotearg_colon (filename)));
 
 	    /* Prepare new stack contents */
 	    size = obstack_object_size (&argv_stk);
@@ -1949,6 +1953,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       unquote_option = false;
       break;
 
+    case WARNING_OPTION:
+      set_warning_option (arg);
+      break;
+      
     case '0':
     case '1':
     case '2':

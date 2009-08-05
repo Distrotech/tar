@@ -10,6 +10,19 @@ When listing or extracting archives, the actual record size is
 reported only if the archive is read from a device (as opposed
 to regular files and pipes).
 
+* New command line option `--warning'
+
+The `--warning' command line option allows to suppress or enable
+particular warning messages during `tar' run.  It takes a single
+argument (a `keyword'), identifying the class of warning messages
+to affect.  If the argument is prefixed with `no-', such warning
+messages are suppressed.  For example,
+
+  tar --warning=no-alone-zero-block -x -f archive
+
+suppresses the output of `A lone zero block' diagnostics, which is
+normally issued if `archive' ends with a single block of zeros.
+
 * Bugfixes
 ** Fix handling of hard link targets by -c --transform.
 ** Fix hard links recognition with -c --remove-files.

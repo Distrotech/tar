@@ -21,12 +21,14 @@
 @include value.texi
 
 @defcodeindex op
+@defcodeindex kw
 
 @c Put everything in one index (arbitrarily chosen to be the concept index).
 @syncodeindex fn cp
 @syncodeindex ky cp
 @syncodeindex pg cp
 @syncodeindex vr cp
+@syncodeindex kw cp
 
 @copying
 
@@ -177,6 +179,7 @@ Invoking @GNUTAR{}
 * defaults::
 * verbose::
 * checkpoints::
+* warnings::
 * interactive::
 
 The Three Option Styles
@@ -1801,6 +1804,7 @@ and @option{--interactive} options (@pxref{interactive}).
 * defaults::
 * verbose::
 * checkpoints::
+* warnings::
 * interactive::
 @end menu
 
@@ -3348,6 +3352,13 @@ Used in conjunction with @option{--multi-volume}.  @command{tar} will
 keep track of which volume of a multi-volume archive it is working in
 @var{file}.  @xref{volno-file}.
 
+@opsummary{warning}
+@item --warning=@var{keyword}
+
+Enable or disable warning messages identified by @var{keyword}.  The
+messages are suppressed if @var{keyword} is prefixed with @samp{no-}.
+@xref{warnings}.
+
 @opsummary{wildcards}
 @item --wildcards
 Use wildcards when matching member names with patterns.
@@ -3950,6 +3961,144 @@ This example also illustrates the fact that
 @option{--checkpoint-action} can be used without
 @option{--checkpoint}.  In this case, the default checkpoint frequency
 (at each 10th record) is assumed.
+
+@node warnings
+@section Controlling Warning Messages
+
+Sometimes, while performing the requested task, @GNUTAR{} notices
+some conditions that are not exactly erros, but which the user
+should be aware of.  When this happens, @command{tar} issues a
+@dfn{warning message} describing the condition.  Warning messages
+are output to the standard error and they do not affect the exit
+code of @command{tar} command.
+
+@xopindex{warning, explained}
+@GNUTAR{} allows the user to suppress some or all of its warning
+messages:
+
+@table @option
+@item --warning=@var{keyword}
+Control display of the warning messages identified by @var{keyword}.
+If @var{keyword} starts with the prefix @samp{no-}, such messages are
+suppressed.  Otherwise, they are enabled.
+
+Multiple @option{--warning} messages accumulate.
+
+The tables below list allowed values for @var{keyword} along with the
+warning messages they control.
+@end table
+
+@subheading Keywords controlling @command{tar} operation
+@table @asis
+@kwindex all
+@item all
+Enable all warning messages.  This is the default.
+@kwindex none
+@item none
+Disable all warning messages.
+@kwindex filename-with-nuls
+@cindex @samp{file name read contains nul character}, warning message
+@item filename-with-nuls
+@samp{%s: file name read contains nul character}
+@kwindex alone-zero-block
+@cindex @samp{A lone zero block at}, warning message
+@item alone-zero-block
+@samp{A lone zero block at %s}
+@end table
+
+@subheading Keywords applicable for @command{tar --create}
+@table @asis
+@kwindex cachedir
+@cindex @samp{contains a cache directory tag}, warning message
+@item cachedir
+@samp{%s: contains a cache directory tag %s; %s}
+@kwindex file-shrank
+@cindex @samp{File shrank by %s bytes}, warning message
+@item file-shrank
+@samp{%s: File shrank by %s bytes; padding with zeros}
+@kwindex xdev
+@cindex @samp{file is on a different filesystem}, warning message
+@item xdev
+@samp{%s: file is on a different filesystem; not dumped}
+@kwindex file-ignored
+@cindex @samp{Unknown file type; file ignored}, warning message
+@cindex @samp{socket ignored}, warning message
+@cindex @samp{door ignored}, warning message
+@item file-ignored
+@samp{%s: Unknown file type; file ignored}
+@samp{%s: socket ignored}
+@*@samp{%s: door ignored}
+@kwindex file-unchanged
+@cindex @samp{file is unchanged; not dumped}, warning message
+@item file-unchanged
+@samp{%s: file is unchanged; not dumped}
+@kwindex ignore-archive
+@cindex @samp{file is the archive; not dumped}, warning message
+@kwindex ignore-archive
+@cindex @samp{file is the archive; not dumped}, warning message
+@item ignore-archive
+@samp{%s: file is the archive; not dumped}
+@kwindex file-removed
+@cindex @samp{File removed before we read it}, warning message
+@item file-removed
+@samp{%s: File removed before we read it}
+@kwindex file-changed
+@cindex @samp{file changed as we read it}, warning message
+@item file-changed
+@samp{%s: file changed as we read it}
+@end table
+
+@subheading Keywords applicable for @command{tar --extract}
+@table @asis
+@kwindex timestamp
+@cindex @samp{implausibly old time stamp %s}, warning message
+@cindex @samp{time stamp %s is %s s in the future}, warning message
+@item timestamp
+@samp{%s: implausibly old time stamp %s}
+@*@samp{%s: time stamp %s is %s s in the future}
+@kwindex contiguous-cast
+@cindex @samp{Extracting contiguous files as regular files}, warning message
+@item contiguous-cast
+@samp{Extracting contiguous files as regular files}
+@kwindex symlink-cast
+@cindex @samp{Attempting extraction of symbolic links as hard links}, warning message
+@item symlink-cast
+@samp{Attempting extraction of symbolic links as hard links}
+@kwindex unknown-cast
+@cindex @samp{Unknown file type `%c', extracted as normal file}, warning message
+@item unknown-cast
+@samp{%s: Unknown file type `%c', extracted as normal file}
+@kwindex ignore-newer
+@cindex @samp{Current %s is newer or same age}, warning message
+@item ignore-newer
+@samp{Current %s is newer or same age}
+@kwindex unknown-keyword
+@cindex @samp{Ignoring unknown extended header keyword `%s'}, warning message
+@item unknown-keyword		
+@samp{Ignoring unknown extended header keyword `%s'}
+@end table
+
+@subheading Keywords controlling incremental extraction:
+@table @asis
+@kwindex rename-directory
+@cindex @samp{%s: Directory has been renamed from %s}, warning message
+@cindex @samp{%s: Directory has been renamed}, warning message
+@item rename-directory
+@samp{%s: Directory has been renamed from %s}
+@*@samp{%s: Directory has been renamed}
+@kwindex new-directory
+@cindex @samp{%s: Directory is new}, warning message
+@item new-directory
+@samp{%s: Directory is new}
+@kwindex xdev
+@cindex @samp{%s: directory is on a different device: not purging}, warning message
+@item xdev
+@samp{%s: directory is on a different device: not purging}
+@kwindex bad-dumpdir
+@cindex @samp{Malformed dumpdir: 'X' never used}, warning message
+@item bad-dumpdir
+@samp{Malformed dumpdir: 'X' never used}
+@end table
 
 @node interactive
 @section Asking for Confirmation During Operations

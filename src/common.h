@@ -752,3 +752,38 @@ void set_comression_program_by_suffix (const char *name, const char *defprog);
 void checkpoint_compile_action (const char *str);
 void checkpoint_finish_compile (void);
 void checkpoint_run (bool do_write);
+
+/* Module warning.c */
+#define WARN_ALONE_ZERO_BLOCK    0x00000001
+#define WARN_BAD_DUMPDIR         0x00000002
+#define WARN_CACHEDIR            0x00000004
+#define WARN_CONTIGUOUS_CAST     0x00000008
+#define WARN_FILE_CHANGED        0x00000010
+#define WARN_FILE_IGNORED        0x00000020
+#define WARN_FILE_REMOVED        0x00000040
+#define WARN_FILE_SHRANK         0x00000080
+#define WARN_FILE_UNCHANGED      0x00000100
+#define WARN_FILENAME_WITH_NULS  0x00000200
+#define WARN_IGNORE_ARCHIVE      0x00000400
+#define WARN_IGNORE_NEWER        0x00000800
+#define WARN_NEW_DIRECTORY       0x00001000
+#define WARN_RENAME_DIRECTORY    0x00002000
+#define WARN_SYMLINK_CAST        0x00004000
+#define WARN_TIMESTAMP           0x00008000
+#define WARN_UNKNOWN_CAST        0x00010000
+#define WARN_UNKNOWN_KEYWORD     0x00020000
+#define WARN_XDEV                0x00040000
+
+#define WARN_ALL                 0xffffffff
+
+void set_warning_option (const char *arg);
+
+extern int warning_option;
+
+#define WARNOPT(opt,args)			\
+  do						\
+    {						\
+      if (warning_option & opt) WARN (args);	\
+    }						\
+  while (0)
+

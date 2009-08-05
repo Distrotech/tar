@@ -445,9 +445,11 @@ procdir (char *name_buffer, struct stat *stat_data,
 	      if (strcmp (d->name, name_buffer))
 		{
 		  if (verbose_option)
-		    WARN ((0, 0, _("%s: Directory has been renamed from %s"),
-			   quotearg_colon (name_buffer),
-			   quote_n (1, d->name)));
+		    WARNOPT (WARN_RENAME_DIRECTORY,
+			     (0, 0,
+			      _("%s: Directory has been renamed from %s"),
+			      quotearg_colon (name_buffer),
+			      quote_n (1, d->name)));
 		  directory->orig = d;
 		  DIR_SET_FLAG (directory, DIRF_RENAMED);
 		  dirlist_replace_prefix (d->name, name_buffer);
@@ -457,8 +459,9 @@ procdir (char *name_buffer, struct stat *stat_data,
 	  else
 	    {
 	      if (verbose_option)
-		WARN ((0, 0, _("%s: Directory has been renamed"),
-		       quotearg_colon (name_buffer)));
+		WARNOPT (WARN_RENAME_DIRECTORY,
+			 (0, 0, _("%s: Directory has been renamed"),
+			  quotearg_colon (name_buffer)));
 	      directory->children = ALL_CHILDREN;
 	      directory->device_number = stat_data->st_dev;
 	      directory->inode_number = stat_data->st_ino;
@@ -489,9 +492,10 @@ procdir (char *name_buffer, struct stat *stat_data,
 	  if (strcmp (d->name, name_buffer))
 	    {
 	      if (flag & PD_VERBOSE)
-		WARN ((0, 0, _("%s: Directory has been renamed from %s"),
-		       quotearg_colon (name_buffer),
-		       quote_n (1, d->name)));
+		WARNOPT (WARN_RENAME_DIRECTORY,
+			 (0, 0, _("%s: Directory has been renamed from %s"),
+			  quotearg_colon (name_buffer),
+			  quote_n (1, d->name)));
 	      directory->orig = d;
 	      DIR_SET_FLAG (directory, DIRF_RENAMED);
 	      dirlist_replace_prefix (d->name, name_buffer);
@@ -502,8 +506,9 @@ procdir (char *name_buffer, struct stat *stat_data,
 	{
 	  DIR_SET_FLAG (directory, DIRF_NEW);
 	  if (flag & PD_VERBOSE)
-	    WARN ((0, 0, _("%s: Directory is new"),
-		   quotearg_colon (name_buffer)));
+	    WARNOPT (WARN_NEW_DIRECTORY,
+		     (0, 0, _("%s: Directory is new"),
+		      quotearg_colon (name_buffer)));
 	  directory->children =
 	    (listed_incremental_option
 	     || (OLDER_STAT_TIME (*stat_data, m)
@@ -1504,7 +1509,8 @@ dumpdir_ok (char *dumpdir)
     }
 
   if (has_tempdir)
-    WARN ((0, 0, _("Malformed dumpdir: 'X' never used")));
+    WARNOPT (WARN_BAD_DUMPDIR,
+	     (0, 0, _("Malformed dumpdir: 'X' never used")));
 
   return true;
 }

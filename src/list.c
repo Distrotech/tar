@@ -141,8 +141,9 @@ read_and (void (*do_something) (void))
 	      status = read_header (false);
 	      if (status == HEADER_ZERO_BLOCK)
 		break;
-	      WARN ((0, 0, _("A lone zero block at %s"),
-		     STRINGIFY_BIGINT (current_block_ordinal (), buf)));
+	      WARNOPT (WARN_ALONE_ZERO_BLOCK,
+		       (0, 0, _("A lone zero block at %s"),
+			STRINGIFY_BIGINT (current_block_ordinal (), buf)));
 	      break;
 	    }
 	  status = prev_status;

@@ -39,7 +39,8 @@ tar_SOURCES = \
  tar.c\
  transform.c\
  update.c\
- utf8.c
+ utf8.c\
+ warning.c
 
 INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu -I$(top_srcdir)/lib -I../lib
 

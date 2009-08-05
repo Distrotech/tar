@@ -207,8 +207,9 @@ static void
 check_time (char const *file_name, struct timespec t)
 {
   if (t.tv_sec <= 0)
-    WARN ((0, 0, _("%s: implausibly old time stamp %s"),
-	   file_name, tartime (t, true)));
+    WARNOPT (WARN_TIMESTAMP,
+	     (0, 0, _("%s: implausibly old time stamp %s"),
+	      file_name, tartime (t, true)));
   else if (timespec_cmp (volume_start_time, t) < 0)
     {
       struct timespec now;
@@ -224,8 +225,9 @@ check_time (char const *file_name, struct timespec t)
 	      diff.tv_nsec += BILLION;
 	      diff.tv_sec--;
 	    }
-	  WARN ((0, 0, _("%s: time stamp %s is %s s in the future"),
-		 file_name, tartime (t, true), code_timespec (diff, buf)));
+	  WARNOPT (WARN_TIMESTAMP,
+		   (0, 0, _("%s: time stamp %s is %s s in the future"),
+		    file_name, tartime (t, true), code_timespec (diff, buf)));
 	}
     }
 }
@@ -753,7 +755,8 @@ open_output_file (char *file_name, int typeflag, mode_t mode)
       if (!conttype_diagnosed)
 	{
 	  conttype_diagnosed = 1;
-	  WARN ((0, 0, _("Extracting contiguous files as regular files")));
+	  WARNOPT (WARN_CONTIGUOUS_CAST,
+		   (0, 0, _("Extracting contiguous files as regular files")));
 	}
     }
   fd = open (file_name, openflag, mode);
@@ -1031,7 +1034,9 @@ extract_symlink (char *file_name, int typeflag)
   if (!warned_once)
     {
       warned_once = 1;
-      WARN ((0, 0, _("Attempting extraction of symbolic links as hard links")));
+      WARNOPT (WARN_SYMBOLIC_CAST,
+	       (0, 0,
+		_("Attempting extraction of symbolic links as hard links")));
     }
   return extract_link (file_name, typeflag);
 #endif
@@ -1189,9 +1194,10 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
       break;
 
     default:
-      WARN ((0, 0,
-	     _("%s: Unknown file type `%c', extracted as normal file"),
-	     quotearg_colon (file_name), typeflag));
+      WARNOPT (WARN_UNKNOWN_CAST,
+	       (0, 0,
+		_("%s: Unknown file type `%c', extracted as normal file"),
+		quotearg_colon (file_name), typeflag));
       *fun = extract_file;
     }
 
@@ -1215,8 +1221,9 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     case KEEP_NEWER_FILES:
       if (file_newer_p (file_name, &current_stat_info))
 	{
-	  WARN ((0, 0, _("Current %s is newer or same age"),
-		 quote (file_name)));
+	  WARNOPT (WARN_IGNORE_NEWER,
+		   (0, 0, _("Current %s is newer or same age"),
+		    quote (file_name)));
 	  return 0;
 	}
       break;
