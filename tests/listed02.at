@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -47,6 +47,7 @@ done
 
 sleep 1
 echo Creating main archive
+echo >&2 "Creating main archive"
 tar -c -v --listed-incremental=tart.incr1 -f archive.1 tart 2> err || exit 1
 
 # The above prints two lines to stderr announcing the new directories c0 and c1.
@@ -66,6 +67,7 @@ find tart -print | sort 2>/dev/null
 
 sleep 1
 echo Creating incremental archive
+echo >&2 "Creating incremental archive"
 cp -p tart.incr1 tart.incr2
 tar -c -v --listed-incremental=tart.incr2 -f archive.2 tart || exit 1 
 
@@ -73,6 +75,7 @@ sleep 1
 
 rm -rf tart/*
 echo Extracting main archive
+echo >&2 "Extracting main archive"
 tar -x -v --listed-incremental=tart.incr1 -f archive.1 || exit 1
 echo Extracting incremental archive
 # This command should produce three messages about deletion
@@ -141,9 +144,13 @@ tart/c2/ca1
 tart/c2/ca2
 tart/c2/ca3
 ],
-[tar: tart/c0: Directory is new
+[Creating main archive
+tar: tart/c0: Directory is new
 tar: tart/c1: Directory is new
+tar: tart: Directory is new
+Creating incremental archive
 tar: tart/c2: Directory has been renamed from `tart/c1'
+Extracting main archive
 ],
 [],[],[gnu, oldgnu])
 

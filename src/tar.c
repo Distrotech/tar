@@ -272,6 +272,7 @@ enum
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
+  LEVEL_OPTION,
   LZMA_OPTION,
   LZOP_OPTION,
   MODE_OPTION,
@@ -406,6 +407,8 @@ static struct argp_option options[] = {
    N_("handle old GNU-format incremental backup"), GRID+1 },
   {"listed-incremental", 'g', N_("FILE"), 0,
    N_("handle new GNU-format incremental backup"), GRID+1 },
+  {"level", LEVEL_OPTION, N_("NUMBER"), 0,
+   N_("dump level for created listed-incremental archive"), GRID+1 },
   {"ignore-failed-read", IGNORE_FAILED_READ_OPTION, 0, 0,
    N_("do not exit with nonzero on unreadable files"), GRID+1 },
   {"occurrence", OCCURRENCE_OPTION, N_("NUMBER"), OPTION_ARG_OPTIONAL,
@@ -1385,7 +1388,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'K':
       starting_file_option = true;
-      addname (arg, 0);
+      addname (arg, 0, NULL);
       break;
 
     case ONE_FILE_SYSTEM_OPTION:
@@ -1409,6 +1412,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case LEVEL_OPTION:
+      {
+	char *p;
+	incremental_level = strtoul (arg, &p, 10);
+	if (*p)
+	  USAGE_ERROR ((0, 0, _("Invalid incremental level value")));
+      }
+      break;
+      
     case LZMA_OPTION:
       set_use_compress_program_option ("lzma");
       break;
@@ -1538,6 +1550,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'v':
       verbose_option++;
+      warning_option |= WARN_VERBOSE_WARNINGS;
       break;
 
     case 'V':
@@ -2117,6 +2130,8 @@ decode_options (int argc, char **argv)
   group_option = -1;
 
   check_device_option = true;
+
+  incremental_level = -1;
   
   /* Convert old-style tar call by exploding option element and rearranging
      options accordingly.  */
@@ -2282,7 +2297,10 @@ decode_options (int argc, char **argv)
       && NEWER_OPTION_INITIALIZED (newer_mtime_option))
     USAGE_ERROR ((0, 0,
 		  _("Cannot combine --listed-incremental with --newer")));
-
+  if (incremental_level != -1 && !listed_incremental_option)
+    WARN ((0, 0,
+	   _("--level is meaningless without --listed-incremental")));
+  
   if (volume_label_option)
     {
       if (archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)

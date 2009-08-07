@@ -5,6 +5,7 @@ alloca
 argmatch
 argp
 backupfile
+canonicalize
 closeout
 configmake
 dirname

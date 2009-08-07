@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -25,6 +25,7 @@
 #include <xgetcwd.h>
 #include <unlinkdir.h>
 #include <utimens.h>
+#include <canonicalize.h>
 
 #if HAVE_STROPTS_H
 # include <stropts.h>
@@ -214,6 +215,27 @@ unquote_string (char *string)
     *destination = '\0';
   return result;
 }
+
+/* Zap trailing slashes.  */
+char *
+zap_slashes (char *name)
+{
+  char *q;
+
+  if (!name || *name == 0)
+    return name;
+  q = name + strlen (name) - 1;
+  while (q > name && ISSLASH (*q))
+    *q-- = '\0';
+  return name;
+}
+
+char *
+normalize_filename (const char *name)
+{
+  return zap_slashes (canonicalize_filename_mode (name, CAN_MISSING));
+}
+
 
 /* Handling numbers.  */
 
@@ -532,17 +554,25 @@ struct wd
 static struct wd *wd;
 
 /* The number of working directories in the vector.  */
-static size_t wds;
+static size_t wd_count;
 
 /* The allocated size of the vector.  */
 static size_t wd_alloc;
+
+int
+chdir_count ()
+{
+  if (wd_count == 0)
+    return wd_count;
+  return wd_count - 1;
+}
 
 /* DIR is the operand of a -C option; add it to vector of chdir targets,
    and return the index of its location.  */
 int
 chdir_arg (char const *dir)
 {
-  if (wds == wd_alloc)
+  if (wd_count == wd_alloc)
     {
       if (wd_alloc == 0)
 	{
@@ -552,11 +582,11 @@ chdir_arg (char const *dir)
       else
 	wd = x2nrealloc (wd, &wd_alloc, sizeof *wd);
 
-      if (! wds)
+      if (! wd_count)
 	{
-	  wd[wds].name = ".";
-	  wd[wds].saved = 0;
-	  wds++;
+	  wd[wd_count].name = ".";
+	  wd[wd_count].saved = 0;
+	  wd_count++;
 	}
     }
 
@@ -568,12 +598,12 @@ chdir_arg (char const *dir)
 	for (dir += 2;  ISSLASH (*dir);  dir++)
 	  continue;
       if (! dir[dir[0] == '.'])
-	return wds - 1;
+	return wd_count - 1;
     }
 
-  wd[wds].name = dir;
-  wd[wds].saved = 0;
-  return wds++;
+  wd[wd_count].name = dir;
+  wd[wd_count].saved = 0;
+  return wd_count++;
 }
 
 /* Change to directory I.  If I is 0, change to the initial working

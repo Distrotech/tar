@@ -1,7 +1,7 @@
 /* Various processing of names.
 
    Copyright (C) 1988, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -176,6 +176,29 @@ gname_to_gid (char const *gname, gid_t *gidp)
     }
   *gidp = cached_gid;
   return 1;
+}
+
+
+struct name *
+make_name (const char *file_name)
+{
+  struct name *p = xzalloc (sizeof (*p));
+  if (!file_name)
+    file_name = "";
+  p->name = xstrdup (file_name);
+  p->length = strlen (p->name);
+  return p;
+}
+
+void
+free_name (struct name *p)
+{
+  if (p)
+    {
+      free (p->name);
+      free (p->caname);
+      free (p);
+    }
 }
 
 
@@ -376,8 +399,7 @@ void
 name_gather (void)
 {
   /* Buffer able to hold a single name.  */
-  static struct name *buffer;
-  static size_t allocated_size;
+  static struct name *buffer = NULL;
 
   struct name_elt *ep;
 
@@ -385,44 +407,25 @@ name_gather (void)
     {
       static int change_dir;
 
-      if (allocated_size == 0)
-	{
-	  allocated_size = offsetof (struct name, name) + NAME_FIELD_SIZE + 1;
-	  buffer = xzalloc (allocated_size);
-	}
-      
       while ((ep = name_next_elt (0)) && ep->type == NELT_CHDIR)
 	change_dir = chdir_arg (xstrdup (ep->v.name));
 
       if (ep)
 	{
-	  size_t needed_size;
-	  
-	  buffer->length = strlen (ep->v.name);
-	  needed_size = offsetof (struct name, name) + buffer->length + 1;
-	  if (allocated_size < needed_size)
-	    {
-	      do
-		{
-		  allocated_size *= 2;
-		  if (! allocated_size)
-		    xalloc_die ();
-		}
-	      while (allocated_size < needed_size);
-
-	      buffer = xrealloc (buffer, allocated_size);
-	    }
+	  free_name (buffer);
+	  buffer = make_name (ep->v.name);
 	  buffer->change_dir = change_dir;
-	  strcpy (buffer->name, ep->v.name);
 	  buffer->next = 0;
 	  buffer->found_count = 0;
 	  buffer->matching_flags = matching_flags;
+	  buffer->dir_contents = NULL;
+	  buffer->parent = NULL;
 	  
 	  namelist = buffer;
 	  nametail = &namelist->next;
 	}
       else if (change_dir)
-	addname (0, change_dir);
+	addname (0, change_dir, NULL);
     }
   else
     {
@@ -436,11 +439,11 @@ name_gather (void)
 	    change_dir = chdir_arg (xstrdup (ep->v.name));
 
 	  if (ep)
-	    addname (ep->v.name, change_dir);
+	    addname (ep->v.name, change_dir, NULL);
 	  else
 	    {
 	      if (change_dir != change_dir0)
-		addname (0, change_dir);
+		addname (0, change_dir, NULL);
 	      break;
 	    }
 	}
@@ -449,23 +452,18 @@ name_gather (void)
 
 /*  Add a name to the namelist.  */
 struct name *
-addname (char const *string, int change_dir)
+addname (char const *string, int change_dir, struct name *parent)
 {
-  size_t length = string ? strlen (string) : 0;
-  struct name *name = xmalloc (offsetof (struct name, name) + length + 1);
+  struct name *name = make_name (string);
 
-  if (string)
-    strcpy (name->name, string);
-  else
-    name->name[0] = 0;
-
+  name->prev = *nametail;
   name->next = NULL;
-  name->length = length;
   name->found_count = 0;
   name->matching_flags = matching_flags;
   name->change_dir = change_dir;
   name->dir_contents = NULL;
-
+  name->parent = parent;
+  
   *nametail = name;
   nametail = &name->next;
   return name;
@@ -486,6 +484,22 @@ namelist_match (char const *file_name, size_t length)
     }
 
   return NULL;
+}
+
+void
+remname (struct name *name)
+{
+  struct name *p;
+
+  if ((p = name->prev) != NULL)
+    p->next = name->next;
+  else
+    namelist = name->next;
+
+  if ((p = name->next) != NULL)
+    p->prev = name->prev;
+  else
+    nametail = &name->prev;
 }
 
 /* Return true if and only if name FILE_NAME (from an archive) matches any
@@ -635,15 +649,18 @@ names_notfound (void)
 
 /* Sorting name lists.  */
 
-/* Sort linked LIST of names, of given LENGTH, using COMPARE to order
-   names.  Return the sorted list.  Apart from the type `struct name'
-   and the definition of SUCCESSOR, this is a generic list-sorting
-   function, but it's too painful to make it both generic and portable
+/* Sort *singly* linked LIST of names, of given LENGTH, using COMPARE
+   to order names.  Return the sorted list.  Note that after calling
+   this function, the `prev' links in list elements are messed up.
+   
+   Apart from the type `struct name' and the definition of SUCCESSOR,
+   this is a generic list-sorting function, but it's too painful to
+   make it both generic and portable
    in C.  */
 
 static struct name *
-merge_sort (struct name *list, int length,
-	    int (*compare) (struct name const*, struct name const*))
+merge_sort_sll (struct name *list, int length,
+		int (*compare) (struct name const*, struct name const*))
 {
   struct name *first_list;
   struct name *second_list;
@@ -681,8 +698,8 @@ merge_sort (struct name *list, int length,
   second_list = SUCCESSOR (cursor);
   SUCCESSOR (cursor) = 0;
 
-  first_list = merge_sort (first_list, first_length, compare);
-  second_list = merge_sort (second_list, second_length, compare);
+  first_list = merge_sort_sll (first_list, first_length, compare);
+  second_list = merge_sort_sll (second_list, second_length, compare);
 
   merge_point = &result;
   while (first_list && second_list)
@@ -710,30 +727,54 @@ merge_sort (struct name *list, int length,
 #undef SUCCESSOR
 }
 
+/* Sort doubly linked LIST of names, of given LENGTH, using COMPARE
+   to order names.  Return the sorted list.  */
+static struct name *
+merge_sort (struct name *list, int length,
+	    int (*compare) (struct name const*, struct name const*))
+{
+  struct name *head, *p, *prev;
+  head = merge_sort_sll (list, length, compare);
+  /* Fixup prev pointers */
+  for (prev = NULL, p = head; p; prev = p, p = p->next)
+    p->prev = prev;
+  return head;
+}
+
 /* A comparison function for sorting names.  Put found names last;
    break ties by string comparison.  */
 
 static int
-compare_names (struct name const *n1, struct name const *n2)
+compare_names_found (struct name const *n1, struct name const *n2)
 {
-  int found_diff = WASFOUND(n2) - WASFOUND(n1);
+  int found_diff = WASFOUND (n2) - WASFOUND (n1);
   return found_diff ? found_diff : strcmp (n1->name, n2->name);
 }
+
+/* Simple comparison by names. */
+static int
+compare_names (struct name const *n1, struct name const *n2)
+{
+  return strcmp (n1->name, n2->name);
+}
+
 
 /* Add all the dirs under NAME, which names a directory, to the namelist.
    If any of the files is a directory, recurse on the subdirectory.
-   DEVICE is the device not to leave, if the -l option is specified.  */
+   DEVICE is the device not to leave, if the -l option is specified.
+   CMDLINE is true, if the NAME appeared on the command line. */
 
 static void
-add_hierarchy_to_namelist (struct name *name, dev_t device)
+add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 {
   char *file_name = name->name;
-  const char *buffer = get_directory_contents (file_name, device);
-
+  const char *buffer = scan_directory (file_name, device, cmdline);
+  
   if (! buffer)
     name->dir_contents = "\0\0\0\0";
   else
     {
+      struct name *child_head = NULL, *child_tail = NULL;
       size_t name_length = name->length;
       size_t allocated_length = (name_length >= NAME_FIELD_SIZE
 				 ? name_length + NAME_FIELD_SIZE
@@ -772,15 +813,64 @@ add_hierarchy_to_namelist (struct name *name, dev_t device)
 		  namebuf = xrealloc (namebuf, allocated_length + 1);
 		}
 	      strcpy (namebuf + name_length, string + 1);
-	      np = addname (namebuf, change_dir);
-	      add_hierarchy_to_namelist (np, device);
+	      np = addname (namebuf, change_dir, name);
+	      if (!child_head)
+		child_head = np;
+	      else
+		child_tail->sibling = np;
+	      child_tail = np;
+	      add_hierarchy_to_namelist (np, device, false);
 	    }
 	}
 
       free (namebuf);
+      name->child = child_head;
     }
 }
 
+/* Auxiliary functions for hashed table of struct name's. */
+
+static size_t
+name_hash (void const *entry, size_t n_buckets)
+{
+  struct name const *name = entry;
+  return hash_string (name->caname, n_buckets);
+}
+
+/* Compare two directories for equality of their names. */
+static bool
+name_compare (void const *entry1, void const *entry2)
+{
+  struct name const *name1 = entry1;
+  struct name const *name2 = entry2;
+  return strcmp (name1->caname, name2->caname) == 0;
+}
+
+
+/* Rebase `name' member of CHILD and all its siblings to
+   the new PARENT. */
+static void
+rebase_child_list (struct name *child, struct name *parent)
+{
+  size_t old_prefix_len = child->parent->length;
+  size_t new_prefix_len = parent->length;
+  char *new_prefix = parent->name;
+  
+  for (; child; child = child->sibling)
+    {
+      size_t size = child->length - old_prefix_len + new_prefix_len;
+      char *newp = xmalloc (size + 1);
+      strcpy (newp, new_prefix);
+      strcat (newp, child->name + old_prefix_len);
+      free (child->name);
+      child->name = newp;
+      child->length = size;
+
+      rebase_directory (child->name, old_prefix_len, child->parent->name,
+			new_prefix);
+    }
+}
+
 /* Collect all the names from argv[] (or whatever), expand them into a
    directory tree, and sort them.  This gets only subdirectories, not
    all files.  */
@@ -789,18 +879,39 @@ void
 collect_and_sort_names (void)
 {
   struct name *name;
-  struct name *next_name;
+  struct name *next_name, *prev_name;
   int num_names;
   struct stat statbuf;
-
+  Hash_table *nametab;
+  
   name_gather ();
 
-  if (listed_incremental_option)
-    read_directory_file ();
-
   if (!namelist)
-    addname (".", 0);
+    addname (".", 0, NULL);
 
+  if (listed_incremental_option)
+    {
+      switch (chdir_count ())
+	{
+	case 0:
+	  break;
+
+	case 1:
+	  if (namelist->change_dir == 0)
+	    USAGE_ERROR ((0, 0,
+			  _("Using -C option inside file list is not "
+			    "allowed with --listed-incremental")));
+	  break;
+
+	default:
+	  USAGE_ERROR ((0, 0,
+			_("Only one -C option is allowed with "
+			  "--listed-incremental")));
+	}
+      chdir_do (namelist->change_dir);
+      read_directory_file ();
+    }
+  
   for (name = namelist; name; name = next_name)
     {
       next_name = name->next;
@@ -811,6 +922,7 @@ collect_and_sort_names (void)
 	/* FIXME: just skip regexps for now */
 	continue;
       chdir_do (name->change_dir);
+
       if (name->name[0] == 0)
 	continue;
 
@@ -822,17 +934,60 @@ collect_and_sort_names (void)
       if (S_ISDIR (statbuf.st_mode))
 	{
 	  name->found_count++;
-	  add_hierarchy_to_namelist (name, statbuf.st_dev);
+	  if (name->found_count == 1)
+	    add_hierarchy_to_namelist (name, statbuf.st_dev, true);
 	}
     }
 
   num_names = 0;
   for (name = namelist; name; name = name->next)
     num_names++;
+
   namelist = merge_sort (namelist, num_names, compare_names);
 
-  for (name = namelist; name; name = name->next)
-    name->found_count = 0;
+  num_names = 0;
+  nametab = hash_initialize (0, 0,
+			     name_hash,
+			     name_compare, NULL);
+  for (name = namelist; name; name = next_name)
+    {
+      next_name = name->next;
+      name->caname = normalize_filename (name->name);
+      if (prev_name)
+	{
+	  struct name *p = hash_lookup (nametab, name);
+	  if (p)
+	    {
+	      /* Keep the one listed in the command line */
+	      if (!name->parent)
+		{
+		  if (p->child)
+		    rebase_child_list (p->child, name);
+		  /* FIXME: remove_directory (p->caname); ? */
+		  remname (p);
+		  free_name (p);
+		  num_names--;
+		}
+	      else
+		{
+		  if (name->child)
+		    rebase_child_list (name->child, p);
+		  /* FIXME: remove_directory (name->caname); ? */
+		  remname (name);
+		  free_name (name);
+		  continue;
+		}
+	    }
+	}
+      name->found_count = 0;
+      hash_insert (nametab, name);
+      prev_name = name;
+      num_names++;
+    }
+  nametail = &prev_name;
+  hash_free (nametab);
+
+  namelist = merge_sort (namelist, num_names, compare_names_found);
 
   if (listed_incremental_option)
     {
@@ -953,12 +1108,12 @@ static void
 register_individual_file (char const *name)
 {
   struct stat st;
-
+  
   if (deref_stat (dereference_option, name, &st) != 0)
     return; /* Will be complained about later */
   if (S_ISDIR (st.st_mode))
     return;
-
+  
   hash_string_insert (&individual_file_table, name);
 }
 

@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -380,7 +380,7 @@ diff_dumpdir (void)
   else
     dev = stat_data.st_dev;
 
-  dumpdir_buffer = get_directory_contents (current_stat_info.file_name, dev);
+  dumpdir_buffer = scan_directory (current_stat_info.file_name, dev, false);
 
   if (dumpdir_buffer)
     {

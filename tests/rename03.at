@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -116,6 +116,7 @@ End directory listing 2
 tar: foo/a: Directory is new
 tar: foo/b: Directory is new
 tar: foo/c: Directory is new
+tar: foo: Directory is new
 Second dump
 tar: foo/a: Directory has been renamed from `foo/c'
 tar: foo/b: Directory has been renamed from `foo/a'

@@ -1,7 +1,7 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2008 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -185,6 +185,8 @@ GLOBAL enum old_files old_files_option;
 
 /* Specified file name for incremental list.  */
 GLOBAL const char *listed_incremental_option;
+/* Incremental dump level */
+GLOBAL int incremental_level;
 /* Check device numbers when doing incremental dumps. */
 GLOBAL bool check_device_option;
 
@@ -322,15 +324,22 @@ GLOBAL char const *index_file_name;
 struct name
   {
     struct name *next;          /* Link to the next element */
+    struct name *prev;          /* Link to the previous element */
     int change_dir;		/* Number of the directory to change to.
 				   Set with the -C option. */
     uintmax_t found_count;	/* number of times a matching file has
 				   been found */
     int matching_flags;		/* this name is a regexp, not literal */
-    char const *dir_contents;	/* for incremental_option */
-
+    
     size_t length;		/* cached strlen(name) */
-    char name[1];
+    char *name;
+
+    /* The following members are used for incremental dumps only */
+    char const *dir_contents;	/* directory contents  */
+    struct name *parent;        /* pointer to the parent hierarchy */
+    struct name *child;         /* pointer to the first child */
+    struct name *sibling;       /* pointer to the next sibling */
+    char *caname;               /* canonical name */ 
   };
 
 /* Obnoxious test to see if dimwit is trying to dump the archive.  */
@@ -440,7 +449,7 @@ void write_eot (void);
 void check_links (void);
 void exclusion_tag_warning (const char *dirname, const char *tagname,
 			    const char *message);
-enum exclusion_tag_type check_exclusion_tags (char *dirname,
+enum exclusion_tag_type check_exclusion_tags (const char *dirname,
 					      const char **tag_file_name);
      
 #define GID_TO_CHARS(val, where) gid_to_chars (val, where, sizeof (where))
@@ -497,7 +506,7 @@ char *dumpdir_next (dumpdir_iter_t itr);
 char *dumpdir_first (dumpdir_t dump, int all, dumpdir_iter_t *pitr);
 
 
-const char *get_directory_contents (char *dir_name, dev_t device);
+const char *scan_directory (char *dir_name, dev_t device, bool cmdline);
 const char *append_incremental_renames (const char *dump);
 void read_directory_file (void);
 void write_directory_file (void);
@@ -565,6 +574,8 @@ void skip_member (void);
 void assign_string (char **dest, const char *src);
 char *quote_copy_string (const char *str);
 int unquote_string (char *str);
+char *zap_slashes (char *name);
+char *normalize_filename (const char *name);
 
 void code_ns_fraction (int ns, char *p);
 char const *code_timespec (struct timespec ts, char *sbuf);
@@ -594,6 +605,7 @@ int deref_stat (bool deref, char const *name, struct stat *buf);
 
 int chdir_arg (char const *dir);
 void chdir_do (int dir);
+int chdir_count (void);
 
 void close_diag (char const *name);
 void open_diag (char const *name);
@@ -629,7 +641,7 @@ void name_add_dir (const char *name);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);
-struct name *addname (char const *string, int change_dir);
+struct name *addname (char const *string, int change_dir, struct name *parent);
 bool name_match (const char *name);
 void names_notfound (void);
 void collect_and_sort_names (void);
@@ -774,7 +786,10 @@ void checkpoint_run (bool do_write);
 #define WARN_UNKNOWN_KEYWORD     0x00020000
 #define WARN_XDEV                0x00040000
 
-#define WARN_ALL                 0xffffffff
+/* The warnings composing WARN_VERBOSE_WARNINGS are enabled by default
+   in verbose mode */
+#define WARN_VERBOSE_WARNINGS    (WARN_RENAME_DIRECTORY|WARN_NEW_DIRECTORY)
+#define WARN_ALL                 (0xffffffff & ~WARN_VERBOSE_WARNINGS)
 
 void set_warning_option (const char *arg);
 

@@ -1,7 +1,7 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -72,13 +72,13 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 }
 
 enum exclusion_tag_type 
-check_exclusion_tags (char *dirname, const char **tag_file_name)
+check_exclusion_tags (const char *dirname, const char **tag_file_name)
 {
   static char *tagname;
   static size_t tagsize;
   struct exclusion_tag *tag;
   size_t dlen = strlen (dirname);
-  int addslash = dirname[dlen-1] != '/';
+  int addslash = !ISSLASH (dirname[dlen-1]);
   char *nptr = NULL;
   
   for (tag = exclusion_tags; tag; tag = tag->next)
@@ -1303,7 +1303,7 @@ create_archive (void)
 	      }
 	    memcpy (buffer, p, plen);
 	    if (! ISSLASH (buffer[plen - 1]))
-	      buffer[plen++] = '/';
+	      buffer[plen++] = DIRECTORY_SEPARATOR;
 	    q = gnu_list_name->dir_contents;
 	    if (q)
 	      while (*q)
@@ -1533,10 +1533,10 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
   /* See if we want only new files, and check if this one is too old to
      put in the archive.
-
+     
      This check is omitted if incremental_option is set *and* the
      requested file is not explicitely listed in the command line. */
-
+  
   if (!(incremental_option && !is_individual_file (p))
       && !S_ISDIR (st->stat.st_mode)
       && OLDER_TAR_STAT_TIME (*st, m)
