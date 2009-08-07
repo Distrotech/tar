@@ -399,18 +399,8 @@ rebase_directory (const char *name, size_t old_prefix_len,
 {
   struct directory *dir = find_directory (name);
   if (dir)
-    {
-      size_t len = strlen (dir->name);
-      if (len > old_prefix_len
-	  && memcmp (dir->name, old_prefix, old_prefix_len) == 0)
-	{
-	  char *newp = xmalloc (len - old_prefix_len + strlen (new_prefix));
-	  strcpy (newp, new_prefix);
-	  strcat (newp, dir->name + old_prefix_len);
-	  free (dir->name);
-	  dir->name = newp;
-	}
-    }
+    replace_prefix (&dir->name, old_prefix, old_prefix_len,
+		    new_prefix, strlen (new_prefix));
 }
 
 /* Return a directory entry for a given combination of device and inode

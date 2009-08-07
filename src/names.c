@@ -912,9 +912,9 @@ collect_and_sort_names (void)
       read_directory_file ();
     }
   
-  for (name = namelist; name; name = next_name)
+  num_names = 0;
+  for (name = namelist; name; name = name->next, num_names++)
     {
-      next_name = name->next;
       if (name->found_count || name->dir_contents)
 	continue;
       if (name->matching_flags & EXCLUDE_WILDCARDS)
@@ -934,14 +934,9 @@ collect_and_sort_names (void)
       if (S_ISDIR (statbuf.st_mode))
 	{
 	  name->found_count++;
-	  if (name->found_count == 1)
-	    add_hierarchy_to_namelist (name, statbuf.st_dev, true);
+	  add_hierarchy_to_namelist (name, statbuf.st_dev, true);
 	}
     }
-
-  num_names = 0;
-  for (name = namelist; name; name = name->next)
-    num_names++;
 
   namelist = merge_sort (namelist, num_names, compare_names);
 
@@ -980,7 +975,8 @@ collect_and_sort_names (void)
 	    }
 	}
       name->found_count = 0;
-      hash_insert (nametab, name);
+      if (!hash_insert (nametab, name))
+	xalloc_die ();
       prev_name = name;
       num_names++;
     }

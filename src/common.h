@@ -505,7 +505,6 @@ char *dumpdir_locate (dumpdir_t dump, const char *name);
 char *dumpdir_next (dumpdir_iter_t itr);
 char *dumpdir_first (dumpdir_t dump, int all, dumpdir_iter_t *pitr);
 
-
 const char *scan_directory (char *dir_name, dev_t device, bool cmdline);
 const char *append_incremental_renames (const char *dump);
 void read_directory_file (void);
@@ -513,6 +512,9 @@ void write_directory_file (void);
 void purge_directory (char const *directory_name);
 void list_dumpdir (char *buffer, size_t size);
 void update_parent_directory (const char *name);
+void rebase_directory (const char *name, size_t old_prefix_len,
+		       const char *old_prefix,
+		       const char *new_prefix);
 
 size_t dumpdir_size (const char *p);
 bool is_dumpdir (struct tar_stat_info *stat_info);
