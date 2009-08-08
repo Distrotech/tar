@@ -1092,7 +1092,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 
 static void
 dump_dir0 (char *directory,
-	   struct tar_stat_info *st, int top_level, dev_t parent_device)
+	   struct tar_stat_info *st, bool top_level, dev_t parent_device)
 {
   dev_t our_device = st->stat.st_dev;
   const char *tag_file_name;
@@ -1210,7 +1210,7 @@ dump_dir0 (char *directory,
 		  }
 		strcpy (name_buf + name_len, entry);
 		if (!excluded_name (name_buf))
-		  dump_file (name_buf, 0, our_device);
+		  dump_file (name_buf, false, our_device);
 	      }
 	    
 	    free (name_buf);
@@ -1224,7 +1224,7 @@ dump_dir0 (char *directory,
 	  name_buf = xmalloc (name_size);
 	  strcpy (name_buf, st->orig_file_name);
 	  strcat (name_buf, tag_file_name);
-	  dump_file (name_buf, 0, our_device);
+	  dump_file (name_buf, false, our_device);
 	  free (name_buf);
 	  break;
       
@@ -1250,7 +1250,8 @@ ensure_slash (char **pstr)
 }
 
 static bool
-dump_dir (int fd, struct tar_stat_info *st, int top_level, dev_t parent_device)
+dump_dir (int fd, struct tar_stat_info *st, bool top_level,
+	  dev_t parent_device)
 {
   char *directory = fdsavedir (fd);
   if (!directory)
@@ -1271,7 +1272,7 @@ dump_dir (int fd, struct tar_stat_info *st, int top_level, dev_t parent_device)
 void
 create_archive (void)
 {
-  const char *p;
+  struct name const *p;
 
   open_archive (ACCESS_WRITE);
   buffer_write_global_xheader ();
@@ -1285,21 +1286,21 @@ create_archive (void)
       collect_and_sort_names ();
 
       while ((p = name_from_list ()) != NULL)
-	if (!excluded_name (p))
-	  dump_file (p, -1, (dev_t) 0);
+	if (!excluded_name (p->name))
+	  dump_file (p->name, p->cmdline, (dev_t) 0);
 
       blank_name_list ();
       while ((p = name_from_list ()) != NULL)
-	if (!excluded_name (p))
+	if (!excluded_name (p->name))
 	  {
-	    size_t plen = strlen (p);
+	    size_t plen = strlen (p->name);
 	    if (buffer_size <= plen)
 	      {
 		while ((buffer_size *= 2) <= plen)
 		  continue;
 		buffer = xrealloc (buffer, buffer_size);
 	      }
-	    memcpy (buffer, p, plen);
+	    memcpy (buffer, p->name, plen);
 	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = DIRECTORY_SEPARATOR;
 	    q = directory_contents (gnu_list_name->directory);
@@ -1316,7 +1317,7 @@ create_archive (void)
 			  buffer = xrealloc (buffer, buffer_size);
  			}
 		      strcpy (buffer + plen, q + 1);
-		      dump_file (buffer, -1, (dev_t) 0);
+		      dump_file (buffer, false, (dev_t) 0);
 		    }
 		  q += qlen + 1;
 		}
@@ -1325,9 +1326,10 @@ create_archive (void)
     }
   else
     {
-      while ((p = name_next (1)) != NULL)
-	if (!excluded_name (p))
-	  dump_file (p, 1, (dev_t) 0);
+      const char *name;
+      while ((name = name_next (1)) != NULL)
+	if (!excluded_name (name))
+	  dump_file (name, true, (dev_t) 0);
     }
 
   write_eot ();
@@ -1475,7 +1477,6 @@ check_links (void)
     }
 }
 
-
 /* Dump a single file, recursing on directories.  P is the file name
    to dump.  TOP_LEVEL tells whether this is a top-level call; zero
    means no, positive means yes, and negative means the top level
@@ -1487,7 +1488,7 @@ check_links (void)
 
 static void
 dump_file0 (struct tar_stat_info *st, const char *p,
-	    int top_level, dev_t parent_device)
+	    bool top_level, dev_t parent_device)
 {
   union block *header;
   char type;
@@ -1508,7 +1509,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
   if (deref_stat (dereference_option, p, &st->stat) != 0)
     {
-      stat_diag (p);
+      file_removed_diag (p, top_level, stat_diag);
       return;
     }
   st->archive_file_size = original_size = st->stat.st_size;
@@ -1580,12 +1581,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 			 : 0)));
 	  if (fd < 0)
 	    {
-	      if (!top_level && errno == ENOENT)
-		WARNOPT (WARN_FILE_REMOVED,
-			 (0, 0, _("%s: File removed before we read it"),
-			  quotearg_colon (p)));
-	      else
-		open_diag (p);
+	      file_removed_diag (p, top_level, open_diag);
 	      return;
 	    }
 	}
@@ -1655,7 +1651,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	       : fstat (fd, &final_stat))
 	      != 0)
 	    {
-	      stat_diag (p);
+	      file_removed_diag (p, top_level, stat_diag);
 	      ok = false;
 	    }
 	}
@@ -1713,7 +1709,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       size = readlink (p, buffer, linklen + 1);
       if (size < 0)
 	{
-	  readlink_diag (p);
+	  file_removed_diag (p, top_level, readlink_diag);
 	  return;
 	}
       buffer[size] = '\0';
@@ -1795,7 +1791,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 }
 
 void
-dump_file (const char *p, int top_level, dev_t parent_device)
+dump_file (const char *p, bool top_level, dev_t parent_device)
 {
   struct tar_stat_info st;
   tar_stat_init (&st);

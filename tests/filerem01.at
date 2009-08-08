@@ -1,0 +1,88 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for GNU tar.
+# Copyright (C) 2009 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+AT_SETUP([file removed as we read it (ca. 22 seconds)])
+AT_KEYWORDS([create incremental filechange filerem filerem01])
+
+AT_TAR_CHECK([
+mkdir dir
+mkdir dir/sub
+genfile --file dir/file1
+genfile --file dir/sub/file2
+
+genfile --run --checkpoint=3 --unlink dir/file1 -- \
+       tar --blocking-factor=1 --checkpoint=1 --checkpoint-action='sleep=1' \
+       --checkpoint-action='echo' -c -f archive.tar \
+       --listed-incremental db -v dir >/dev/null
+],
+[0],
+[ignore],
+[tar: dir: Directory is new
+tar: dir/sub: Directory is new
+tar: dir/file1: File removed before we read it
+],[],[],[gnu, posix])
+
+# Timing information:
+#
+# For -Hgnu the above command line takes about 8 seconds to execute and
+# produces:
+#
+# tar: dir: Directory is new
+# tar: dir/sub: Directory is new
+# dir/
+# tar: Write checkpoint 1
+# tar: Write checkpoint 2
+# dir/sub/
+# tar: Write checkpoint 3
+# tar: Write checkpoint 4
+# dir/file1
+# tar: Write checkpoint 5
+# dir/sub/file2
+# tar: Write checkpoint 6
+# tar: Write checkpoint 7
+# tar: Write checkpoint 8
+#
+# For -Hposix the above command line takes about 14 seconds to execute and
+# produces:
+#
+# ./tar: dir: Directory is new
+# ./tar: dir/sub: Directory is new
+# dir/
+# ./tar: Write checkpoint 1
+# ./tar: Write checkpoint 2
+# ./tar: Write checkpoint 3
+# dir/sub/
+# ./tar: Write checkpoint 4
+# ./tar: Write checkpoint 5
+# ./tar: Write checkpoint 6
+# dir/file1
+# ./tar: Write checkpoint 7
+# ./tar: Write checkpoint 8
+# ./tar: Write checkpoint 9
+# dir/sub/file2
+# ./tar: Write checkpoint 10
+# ./tar: Write checkpoint 11
+# ./tar: Write checkpoint 12
+# ./tar: Write checkpoint 13
+# ./tar: Write checkpoint 14
+
+
+AT_CLEANUP
+

@@ -1388,7 +1388,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'K':
       starting_file_option = true;
-      addname (arg, 0, NULL);
+      addname (arg, 0, true, NULL);
       break;
 
     case ONE_FILE_SYSTEM_OPTION:

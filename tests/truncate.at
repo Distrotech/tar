@@ -32,7 +32,7 @@ AT_KEYWORDS([truncate filechange])
 AT_TAR_CHECK([
 genfile --file foo --length 50000k
 genfile --file baz
-genfile --run 'tar -vcf bar foo baz' --checkpoint 10 --length 49995k --truncate foo
+genfile --run --checkpoint 10 --length 49995k --truncate foo -- tar --checkpoint -vcf bar foo baz
 echo Exit status: $?
 echo separator
 sleep 1

@@ -2472,7 +2472,7 @@ messages as it reads through the archive.  It is intended for when you
 want a visual indication that @command{tar} is still running, but
 don't want to see @option{--verbose} output.  You can also instruct
 @command{tar} to execute a list of actions on each checkpoint, see
-@option{--checklist-action} below.  For a detailed description, see
+@option{--checkpoint-action} below.  For a detailed description, see
 @ref{checkpoints}.
 
 @opsummary{checkpoint-action}

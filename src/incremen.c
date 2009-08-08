@@ -413,7 +413,11 @@ update_parent_directory (const char *name)
     {
       struct stat st;
       if (deref_stat (dereference_option, p, &st) != 0)
-	stat_diag (name);
+	{
+	  if (errno != ENOENT) 
+	    stat_diag (directory->name);
+	  /* else: should have been already reported */
+	}
       else
 	directory->mtime = get_stat_mtime (&st);
     }
@@ -549,6 +553,12 @@ procdir (const char *name_buffer, struct stat *stat_data,
   if (one_file_system_option && device != stat_data->st_dev
       /* ... except if it was explicitely given in the command line */
       && !is_individual_file (name_buffer))
+    /* FIXME: 
+	WARNOPT (WARN_XDEV,
+		 (0, 0,
+		  _("%s: directory is on a different filesystem; not dumped"),
+		  quotearg_colon (directory->name)));
+    */
     directory->children = NO_CHILDREN;
   else if (flag & PD_FORCE_CHILDREN)
     {
@@ -699,7 +709,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   
   if (deref_stat (dereference_option, name_buffer, &stat_data))
     {
-      stat_diag (name_buffer);
+      dir_removed_diag (name_buffer, false, stat_diag);
       /* FIXME: used to be
            children = CHANGED_CHILDREN;
 	 but changed to: */

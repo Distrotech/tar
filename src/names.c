@@ -420,12 +420,13 @@ name_gather (void)
 	  buffer->matching_flags = matching_flags;
 	  buffer->directory = NULL;
 	  buffer->parent = NULL;
+	  buffer->cmdline = true;
 	  
 	  namelist = buffer;
 	  nametail = &namelist->next;
 	}
       else if (change_dir)
-	addname (0, change_dir, NULL);
+	addname (0, change_dir, false, NULL);
     }
   else
     {
@@ -439,11 +440,11 @@ name_gather (void)
 	    change_dir = chdir_arg (xstrdup (ep->v.name));
 
 	  if (ep)
-	    addname (ep->v.name, change_dir, NULL);
+	    addname (ep->v.name, change_dir, true, NULL);
 	  else
 	    {
 	      if (change_dir != change_dir0)
-		addname (0, change_dir, NULL);
+		addname (NULL, change_dir, false, NULL);
 	      break;
 	    }
 	}
@@ -452,7 +453,7 @@ name_gather (void)
 
 /*  Add a name to the namelist.  */
 struct name *
-addname (char const *string, int change_dir, struct name *parent)
+addname (char const *string, int change_dir, bool cmdline, struct name *parent)
 {
   struct name *name = make_name (string);
 
@@ -463,6 +464,7 @@ addname (char const *string, int change_dir, struct name *parent)
   name->change_dir = change_dir;
   name->directory = NULL;
   name->parent = parent;
+  name->cmdline = cmdline;
   
   *nametail = name;
   nametail = &name->next;
@@ -811,7 +813,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 		  namebuf = xrealloc (namebuf, allocated_length + 1);
 		}
 	      strcpy (namebuf + name_length, string + 1);
-	      np = addname (namebuf, change_dir, name);
+	      np = addname (namebuf, change_dir, false, name);
 	      if (!child_head)
 		child_head = np;
 	      else
@@ -886,7 +888,7 @@ collect_and_sort_names (void)
   name_gather ();
 
   if (!namelist)
-    addname (".", 0, NULL);
+    addname (".", 0, false, NULL);
 
   if (listed_incremental_option)
     {
@@ -1030,8 +1032,8 @@ name_scan (const char *file_name)
    find and return all the non-found names in the namelist.  */
 struct name *gnu_list_name;
 
-char *
-name_from_list (void)
+struct name const *
+name_from_list ()
 {
   if (!gnu_list_name)
     gnu_list_name = namelist;
@@ -1042,9 +1044,9 @@ name_from_list (void)
     {
       gnu_list_name->found_count++;
       chdir_do (gnu_list_name->change_dir);
-      return gnu_list_name->name;
+      return gnu_list_name;
     }
-  return 0;
+  return NULL;
 }
 
 void

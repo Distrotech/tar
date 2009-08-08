@@ -331,8 +331,10 @@ struct name
 
     char *name;                 /* File name or globbing pattern */
     size_t length;		/* cached strlen (name) */
-    int matching_flags;		/* wildcard flags if name is a pattern */
-
+    int matching_flags;         /* wildcard flags if name is a pattern */
+    bool cmdline;               /* true if this name was given in the
+				   command line */
+    
     int change_dir;		/* Number of the directory to change to.
 				   Set with the -C option. */
     uintmax_t found_count;	/* number of times a matching file has
@@ -443,7 +445,7 @@ bool cachedir_file_p (const char *name);
 bool file_dumpable_p (struct tar_stat_info *st);
 void create_archive (void);
 void pad_archive (off_t size_left);
-void dump_file (const char *st, int top_level, dev_t parent_device);
+void dump_file (const char *st, bool top_level, dev_t parent_device);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *st, union block *header,
 		    off_t block_ordinal);
@@ -629,6 +631,10 @@ void readlink_diag (char const *name);
 void savedir_diag (char const *name);
 void seek_diag_details (char const *name, off_t offset);
 void stat_diag (char const *name);
+void file_removed_diag (const char *name, bool top_level,
+			void (*diagfn) (char const *name));
+void dir_removed_diag (char const *name, bool top_level,
+		       void (*diagfn) (char const *name));
 void write_error_details (char const *name, size_t status, size_t size);
 void write_fatal (char const *name) __attribute__ ((noreturn));
 void write_fatal_details (char const *name, ssize_t status, size_t size)
@@ -656,12 +662,13 @@ void name_add_dir (const char *name);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);
-struct name *addname (char const *string, int change_dir, struct name *parent);
+struct name *addname (char const *string, int change_dir,
+		      bool cmdline, struct name *parent);
 bool name_match (const char *name);
 void names_notfound (void);
 void collect_and_sort_names (void);
 struct name *name_scan (const char *name);
-char *name_from_list (void);
+struct name const *name_from_list (void);
 void blank_name_list (void);
 char *new_name (const char *dir_name, const char *name);
 size_t stripped_prefix_len (char const *file_name, size_t num);

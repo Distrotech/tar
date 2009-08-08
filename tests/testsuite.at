@@ -154,6 +154,10 @@ m4_include([incr03.at])
 m4_include([incr04.at])
 m4_include([incr05.at])
 m4_include([incr06.at])
+
+m4_include([filerem01.at])
+m4_include([filerem02.at])
+
 m4_include([rename01.at])
 m4_include([rename02.at])
 m4_include([rename03.at])
