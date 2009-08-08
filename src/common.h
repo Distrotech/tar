@@ -320,26 +320,32 @@ GLOBAL const char **archive_name_cursor;
 /* Output index file name.  */
 GLOBAL char const *index_file_name;
 
+/* Opaque structure for keeping directory meta-data */
+struct directory;
+
 /* Structure for keeping track of filenames and lists thereof.  */
 struct name
   {
     struct name *next;          /* Link to the next element */
     struct name *prev;          /* Link to the previous element */
+
+    char *name;                 /* File name or globbing pattern */
+    size_t length;		/* cached strlen (name) */
+    int matching_flags;		/* wildcard flags if name is a pattern */
+
     int change_dir;		/* Number of the directory to change to.
 				   Set with the -C option. */
     uintmax_t found_count;	/* number of times a matching file has
 				   been found */
-    int matching_flags;		/* this name is a regexp, not literal */
     
-    size_t length;		/* cached strlen(name) */
-    char *name;
-
-    /* The following members are used for incremental dumps only */
-    char const *dir_contents;	/* directory contents  */
+    /* The following members are used for incremental dumps only,
+       if this struct name represents a directory;
+       see incremen.c */
+    struct directory *directory;/* directory meta-data and contents */
     struct name *parent;        /* pointer to the parent hierarchy */
     struct name *child;         /* pointer to the first child */
     struct name *sibling;       /* pointer to the next sibling */
-    char *caname;               /* canonical name */ 
+    char *caname;               /* canonical name */
   };
 
 /* Obnoxious test to see if dimwit is trying to dump the archive.  */
@@ -505,16 +511,21 @@ char *dumpdir_locate (dumpdir_t dump, const char *name);
 char *dumpdir_next (dumpdir_iter_t itr);
 char *dumpdir_first (dumpdir_t dump, int all, dumpdir_iter_t *pitr);
 
-const char *scan_directory (char *dir_name, dev_t device, bool cmdline);
-const char *append_incremental_renames (const char *dump);
+struct directory *scan_directory (char *dir, dev_t device, bool cmdline);
+void name_fill_directory (struct name *name, dev_t device, bool cmdline);
+const char *directory_contents (struct directory *dir);
+const char *safe_directory_contents (struct directory *dir);
+
+void rebase_directory (struct directory *dir,
+		       const char *samp, size_t slen,
+		       const char *repl, size_t rlen);
+
+void append_incremental_renames (struct directory *dir);
 void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *directory_name);
 void list_dumpdir (char *buffer, size_t size);
 void update_parent_directory (const char *name);
-void rebase_directory (const char *name, size_t old_prefix_len,
-		       const char *old_prefix,
-		       const char *new_prefix);
 
 size_t dumpdir_size (const char *p);
 bool is_dumpdir (struct tar_stat_info *stat_info);
@@ -558,7 +569,7 @@ off_t off_from_header (const char *buf, size_t size);
 size_t size_from_header (const char *buf, size_t size);
 time_t time_from_header (const char *buf, size_t size);
 uid_t uid_from_header (const char *buf, size_t size);
-uintmax_t uintmax_from_header (const char * buf, size_t size);
+uintmax_t uintmax_from_header (const char *buf, size_t size);
 
 void list_archive (void);
 void print_for_mkdir (char *dirname, int length, mode_t mode);
@@ -578,6 +589,8 @@ char *quote_copy_string (const char *str);
 int unquote_string (char *str);
 char *zap_slashes (char *name);
 char *normalize_filename (const char *name);
+void replace_prefix (char **pname, const char *samp, size_t slen,
+		     const char *repl, size_t rlen);
 
 void code_ns_fraction (int ns, char *p);
 char const *code_timespec (struct timespec ts, char *sbuf);

@@ -1116,11 +1116,12 @@ dump_dir0 (char *directory,
 
       if (!incremental_option)
 	finish_header (st, blk, block_ordinal);
-      else if (gnu_list_name->dir_contents)
+      else if (gnu_list_name->directory)
 	{
 	  if (archive_format == POSIX_FORMAT)
 	    {
-	      xheader_store ("GNU.dumpdir", st, gnu_list_name->dir_contents);
+	      xheader_store ("GNU.dumpdir", st,
+			     safe_directory_contents (gnu_list_name->directory));
 	      finish_header (st, blk, block_ordinal);
 	    }
 	  else
@@ -1132,11 +1133,8 @@ dump_dir0 (char *directory,
 	      const char *buffer, *p_buffer;
 
 	      block_ordinal = current_block_ordinal ();
-	      buffer = gnu_list_name->dir_contents;
-	      if (buffer)
-		totsize = dumpdir_size (buffer);
-	      else
-		totsize = 0;
+	      buffer = safe_directory_contents (gnu_list_name->directory);
+	      totsize = dumpdir_size (buffer);
 	      OFF_TO_CHARS (totsize, blk->header.size);
 	      finish_header (st, blk, block_ordinal);
 	      p_buffer = buffer;
@@ -1304,7 +1302,7 @@ create_archive (void)
 	    memcpy (buffer, p, plen);
 	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = DIRECTORY_SEPARATOR;
-	    q = gnu_list_name->dir_contents;
+	    q = directory_contents (gnu_list_name->directory);
 	    if (q)
 	      while (*q)
 		{

@@ -237,6 +237,25 @@ normalize_filename (const char *name)
 }
 
 
+void
+replace_prefix (char **pname, const char *samp, size_t slen,
+		const char *repl, size_t rlen)
+{
+  char *name = *pname;
+  size_t nlen = strlen (name);
+  if (nlen > slen && memcmp (name, samp, slen) == 0 && ISSLASH (name[slen]))
+    {
+      if (rlen > slen)
+	{
+	  name = xrealloc (name, nlen - slen + rlen + 1);
+	  *pname = name;
+	}
+      memmove (name + rlen, name + slen, nlen - slen + 1);
+      memcpy (name, repl, rlen);
+    }
+}
+
+
 /* Handling numbers.  */
 
 /* Output fraction and trailing digits appropriate for a nanoseconds
@@ -777,3 +796,4 @@ page_aligned_alloc (void **ptr, size_t size)
   *ptr = xmalloc (size1);
   return ptr_align (*ptr, alignment);
 }
+

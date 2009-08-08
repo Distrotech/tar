@@ -290,24 +290,6 @@ attach_directory (const char *name)
 }
 		 
 
-static void
-replace_prefix (char **pname, const char *samp, size_t slen,
-		const char *repl, size_t rlen)
-{
-  char *name = *pname;
-  size_t nlen = strlen (name);
-  if (nlen > slen && memcmp (name, samp, slen) == 0 && ISSLASH (name[slen]))
-    {
-      if (rlen > slen)
-	{
-	  name = xrealloc (name, nlen - slen + rlen + 1);
-	  *pname = name;
-	}
-      memmove (name + rlen, name + slen, nlen - slen + 1);
-      memcpy (name, repl, rlen);
-    }
-}
-
 void
 dirlist_replace_prefix (const char *pref, const char *repl)
 {
@@ -389,18 +371,15 @@ remove_directory (const char *caname)
 }
 #endif
 
-/* Find a directory entry for NAME.  If first OLD_PREFIX_LEN
-   bytes of its name match OLD_PREFIX, replace them with
-   NEW_PREFIX. */
+/* If first OLD_PREFIX_LEN bytes of DIR->NAME name match OLD_PREFIX,
+   replace them with NEW_PREFIX. */
 void
-rebase_directory (const char *name, size_t old_prefix_len,
-		  const char *old_prefix,
-		  const char *new_prefix)
+rebase_directory (struct directory *dir,
+		  const char *old_prefix, size_t old_prefix_len,
+		  const char *new_prefix, size_t new_prefix_len)
 {
-  struct directory *dir = find_directory (name);
-  if (dir)
-    replace_prefix (&dir->name, old_prefix, old_prefix_len,
-		    new_prefix, strlen (new_prefix));
+  replace_prefix (&dir->name, old_prefix, old_prefix_len,
+		  new_prefix, new_prefix_len);
 }
 
 /* Return a directory entry for a given combination of device and inode
@@ -696,8 +675,10 @@ makedumpdir (struct directory *directory, const char *dir)
 /* Recursively scan the given directory DIR.
    DEVICE is the device number where DIR resides (for --one-file-system).
    If CMDLINE is true, the directory name was explicitly listed in the
-   command line. */
-const char *
+   command line.
+   Unless *PDIR is NULL, store there a pointer to the struct directory
+   describing DIR. */
+struct directory *
 scan_directory (char *dir, dev_t device, bool cmdline)
 {
   char *dirp = savedir (dir);	/* for scanning directory */
@@ -730,7 +711,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   directory = procdir (name_buffer, &stat_data, device,
 		       (cmdline ? PD_FORCE_INIT : 0),
 		       &ch);
-      
+  
   name_length = strlen (name_buffer); 
   if (! ISSLASH (name_buffer[name_length - 1]))
     {
@@ -808,13 +789,30 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   if (dirp)
     free (dirp);
 
-  return directory->dump ? directory->dump->contents : NULL;
+  return directory;
 }
 
+/* Return pointer to the contents of the directory DIR */
 const char *
-get_directory_contents (char *dir, dev_t device, bool force)
+directory_contents (struct directory *dir)
 {
-  return scan_directory (dir, device, force);
+  if (!dir)
+    return NULL;
+  return dir->dump ? dir->dump->contents : NULL;
+}
+
+/* A "safe" version of directory_contents, which never returns NULL. */
+const char *
+safe_directory_contents (struct directory *dir)
+{
+  const char *ret = directory_contents (dir);
+  return ret ? ret : "\0\0\0\0";
+}
+
+void
+name_fill_directory (struct name *name, dev_t device, bool cmdline)
+{
+  name->directory = scan_directory (name->name, device, cmdline);
 }
 
 
@@ -877,17 +875,19 @@ store_rename (struct directory *dir, struct obstack *stk)
     }
 }
 
-const char *
-append_incremental_renames (const char *dump)
+void
+append_incremental_renames (struct directory *dir)
 {
   struct obstack stk;
   size_t size;
   struct directory *dp;
+  const char *dump;
   
   if (dirhead == NULL)
-    return dump;
+    return;
 
   obstack_init (&stk);
+  dump = directory_contents (dir);
   if (dump)
     {
       size = dumpdir_size (dump) - 1;
@@ -902,11 +902,10 @@ append_incremental_renames (const char *dump)
   if (obstack_object_size (&stk) != size)
     {
       obstack_1grow (&stk, 0);
-      dump = obstack_finish (&stk);
+      dumpdir_free (dir->dump);
+      dir->dump = dumpdir_create (obstack_finish (&stk));
     }
-  else
-    obstack_free (&stk, NULL);
-  return dump;
+  obstack_free (&stk, NULL);
 }
 
 

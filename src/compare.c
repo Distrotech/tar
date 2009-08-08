@@ -380,7 +380,8 @@ diff_dumpdir (void)
   else
     dev = stat_data.st_dev;
 
-  dumpdir_buffer = scan_directory (current_stat_info.file_name, dev, false);
+  dumpdir_buffer = directory_contents
+                    (scan_directory (current_stat_info.file_name, dev, false));
 
   if (dumpdir_buffer)
     {

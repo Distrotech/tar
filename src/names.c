@@ -418,7 +418,7 @@ name_gather (void)
 	  buffer->next = 0;
 	  buffer->found_count = 0;
 	  buffer->matching_flags = matching_flags;
-	  buffer->dir_contents = NULL;
+	  buffer->directory = NULL;
 	  buffer->parent = NULL;
 	  
 	  namelist = buffer;
@@ -461,7 +461,7 @@ addname (char const *string, int change_dir, struct name *parent)
   name->found_count = 0;
   name->matching_flags = matching_flags;
   name->change_dir = change_dir;
-  name->dir_contents = NULL;
+  name->directory = NULL;
   name->parent = parent;
   
   *nametail = name;
@@ -767,12 +767,11 @@ compare_names (struct name const *n1, struct name const *n2)
 static void
 add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 {
-  char *file_name = name->name;
-  const char *buffer = scan_directory (file_name, device, cmdline);
+  const char *buffer;
   
-  if (! buffer)
-    name->dir_contents = "\0\0\0\0";
-  else
+  name_fill_directory (name, device, cmdline);
+  buffer = directory_contents (name->directory);
+  if (buffer)
     {
       struct name *child_head = NULL, *child_tail = NULL;
       size_t name_length = name->length;
@@ -785,8 +784,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
       size_t string_length;
       int change_dir = name->change_dir;
 
-      name->dir_contents = buffer;
-      strcpy (namebuf, file_name);
+      strcpy (namebuf, name->name);
       if (! ISSLASH (namebuf[name_length - 1]))
 	{
 	  namebuf[name_length++] = '/';
@@ -866,8 +864,9 @@ rebase_child_list (struct name *child, struct name *parent)
       child->name = newp;
       child->length = size;
 
-      rebase_directory (child->name, old_prefix_len, child->parent->name,
-			new_prefix);
+      rebase_directory (child->directory,
+			child->parent->name, old_prefix_len, 
+			new_prefix, new_prefix_len);
     }
 }
 
@@ -915,7 +914,7 @@ collect_and_sort_names (void)
   num_names = 0;
   for (name = namelist; name; name = name->next, num_names++)
     {
-      if (name->found_count || name->dir_contents)
+      if (name->found_count || name->directory)
 	continue;
       if (name->matching_flags & EXCLUDE_WILDCARDS)
 	/* NOTE: EXCLUDE_ANCHORED is not relevant here */
@@ -990,7 +989,7 @@ collect_and_sort_names (void)
       for (name = namelist; name && name->name[0] == 0; name++)
 	;
       if (name)
-	name->dir_contents = append_incremental_renames (name->dir_contents);
+	append_incremental_renames (name->directory);
     }
 }
 

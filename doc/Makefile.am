@@ -59,25 +59,28 @@ check-format:
 	fi
 
 check-options:
-	@ARGP_HELP_FMT='usage-indent=0,short-opt-col=0,long-opt-col=0,\
-doc-opt-col=0,opt-doc-col=0,header-col=0,rmargin=1' \
+	@ARGP_HELP_FMT='usage-indent=0,short-opt-col=0,long-opt-col=0,doc-opt-col=0,opt-doc-col=0,header-col=0,rmargin=1' \
 	$(top_builddir)/src/tar --usage | \
 	sed -n 's/^\[--\([^]\=\[]*\).*/\1/p' | sort | uniq > opts.$$$$;\
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -E - \
             $(info_TEXINFOS) | \
 	sed -n '/^@macro/,/^@end macro/d;s/@opindex *\([^@,]*\).*/\1/p' \
 	     | sort | uniq > docs.$$$$;\
-	(echo 'Not documented options:';\
-	 join -v1 opts.$$$$ docs.$$$$;\
-	 echo 'Non-existing options:';\
-	 join -v2 opts.$$$$ docs.$$$$) > report.$$$$;\
-	 rm opts.$$$$ docs.$$$$;\
-	 if [ -n "`sed '1,2d' report.$$$$`" ]; then \
-	   cat report.$$$$;\
-	   rm report.$$$$;\
-	   exit 1;\
-	 fi;\
-	 rm report.$$$$
+	status=0;\
+	join -v1 opts.$$$$ docs.$$$$ > report.$$$$;\
+	if test -s report.$$$$; then \
+          echo 'Not documented options:'; \
+          cat report.$$$$; \
+          status=1; \
+        fi; \
+	join -v2 opts.$$$$ docs.$$$$ > report.$$$$;\
+	if test -s report.$$$$; then \
+	  echo 'Non-existing options:';\
+          cat report.$$$$; \
+          status=1; \
+        fi; \
+	rm opts.$$$$ docs.$$$$ report.$$$$;\
+	test $$status -ne 0 && exit $$status
 
 check-refs:
 	@for file in $(info_TEXINFOS) $(tar_TEXINFOS); \

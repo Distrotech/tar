@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2009-08-05
+GNU tar NEWS - User visible changes. 2009-08-08
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -22,6 +22,14 @@ messages are suppressed.  For example,
 
 suppresses the output of `A lone zero block' diagnostics, which is
 normally issued if `archive' ends with a single block of zeros.
+
+* New command line option `--level'
+
+The `--level=N' option sets the incremental dump level N.  It
+is valid when used in conjunction with the -c and --listed-incremental
+options.  So far the only meaningful value for N is 0.  The
+`--level=0' option forces creating the level 0 dump, by truncating
+the snapshot file if it exists.
 
 * Bugfixes
 ** Fix handling of hard link targets by -c --transform.
