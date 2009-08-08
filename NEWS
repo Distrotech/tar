@@ -39,7 +39,7 @@ was explicitly listed in the command line, or was gathered
 during file system scan.
 
 If the file was explicitly listed in the command line, tar
-issues error messages and exits with the code 2, meaning
+issues error message and exits with the code 2, meaning
 fatal error.
 
 Otherwise, if the file was gathered during the file system

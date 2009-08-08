@@ -14,9 +14,22 @@
 # GNU General Public License for more details.
 
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
-# 02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description: when a file in a deep directory disappeared during creation
+# of incremental dump, tar v. <1.23 would exit with TAREXIT_FAILURE (2).
+# However, such events are quite common and don't necessarily constitute
+# an error.  Exiting with code 2 in such cases makes it impossible to
+# distinguish serious errors from benign ones.
+#
+# Starting from tar 1.22.90, tar exits with TAREXIT_DIFFERS (1)
+# instead.
+#
+# Reported by: Solar Designer <solar@openwall.com>
+# 
+# References: <20090228235820.GA13362@openwall.com>
+#             http://lists.gnu.org/archive/html/bug-tar/2009-03/msg00000.html
+#
 
 AT_SETUP([file removed as we read it (ca. 22 seconds)])
 AT_KEYWORDS([create incremental filechange filerem filerem01])
@@ -32,7 +45,7 @@ genfile --run --checkpoint=3 --unlink dir/file1 -- \
        --checkpoint-action='echo' -c -f archive.tar \
        --listed-incremental db -v dir >/dev/null
 ],
-[0],
+[1],
 [ignore],
 [tar: dir: Directory is new
 tar: dir/sub: Directory is new
