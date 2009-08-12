@@ -589,18 +589,12 @@ all_names_found (struct tar_stat_info *p)
   return true;
 }
 
-static inline int
-is_pattern (const char *string)
-{
-  return strchr (string, '*') || strchr (string, '[') || strchr (string, '?');
-}
-
 static void
 regex_usage_warning (const char *name)
 {
   static int warned_once = 0;
 
-  if (warn_regex_usage && is_pattern (name))
+  if (warn_regex_usage && fnmatch_pattern_has_wildcards (name, 0))
     {
       warned_once = 1;
       WARN ((0, 0,

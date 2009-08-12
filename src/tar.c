@@ -256,6 +256,7 @@ enum
   DELAY_DIRECTORY_RESTORE_OPTION,
   HARD_DEREFERENCE_OPTION,
   DELETE_OPTION,
+  EXCLUDE_BACKUPS_OPTION,
   EXCLUDE_CACHES_OPTION,
   EXCLUDE_CACHES_UNDER_OPTION,
   EXCLUDE_CACHES_ALL_OPTION,
@@ -659,6 +660,8 @@ static struct argp_option options[] = {
    N_("exclude directories containing FILE"), GRID+1 },
   {"exclude-vcs", EXCLUDE_VCS_OPTION, NULL, 0,
    N_("exclude version control system directories"), GRID+1 },
+  {"exclude-backups", EXCLUDE_BACKUPS_OPTION, NULL, 0,
+   N_("exclude backup and lock files"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
    N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
@@ -844,44 +847,52 @@ struct tar_args        /* Variables used during option parsing */
   | (args)->matching_flags \
   | recursion_option)
 
+static char const * const vcs_file_table[] = {
+  /* CVS: */
+  "CVS",
+  ".cvsignore",
+  /* RCS: */
+  "RCS",
+  /* SCCS: */
+  "SCCS",
+  /* SVN: */
+  ".svn",
+  /* git: */
+  ".git",
+  ".gitignore",
+  /* Arch: */
+  ".arch-ids",
+  "{arch}",
+  "=RELEASE-ID",
+  "=meta-update",
+  "=update",
+  /* Bazaar */
+  ".bzr",
+  ".bzrignore",
+  ".bzrtags",
+  /* Mercurial */
+  ".hg",
+  ".hgignore",
+  ".hgtags",
+  /* darcs */
+  "_darcs",
+  NULL
+};
+
+static char const * const backup_file_table[] = {
+  ".#*",
+  "*~",
+  "#*#",
+  NULL
+};
+
 void
-exclude_vcs_files ()
+add_exclude_array (char const * const * fv)
 {
   int i;
-  static char *vcs_file[] = {
-    /* CVS: */
-    "CVS",
-    ".cvsignore",
-    /* RCS: */
-    "RCS",
-    /* SCCS: */
-    "SCCS",
-    /* SVN: */
-    ".svn",
-    /* git: */
-    ".git",
-    ".gitignore",
-    /* Arch: */
-    ".arch-ids",
-    "{arch}",
-    "=RELEASE-ID",
-    "=meta-update",
-    "=update",
-    /* Bazaar */
-    ".bzr",
-    ".bzrignore",
-    ".bzrtags",
-    /* Mercurial */
-    ".hg",
-    ".hgignore",
-    ".hgtags",
-    /* darcs */
-    "_darcs",
-    NULL
-  };
 
-  for (i = 0; vcs_file[i]; i++)
-    add_exclude (excluded, vcs_file[i], 0);
+  for (i = 0; fv[i]; i++)
+    add_exclude (excluded, fv[i], 0);
 }
 
 
@@ -1652,6 +1663,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (DELETE_SUBCOMMAND);
       break;
 
+    case EXCLUDE_BACKUPS_OPTION:
+      add_exclude_array (backup_file_table);
+      break;
+      
     case EXCLUDE_OPTION:
       add_exclude (excluded, arg, MAKE_EXCL_OPTIONS (args));
       break;
@@ -1684,7 +1699,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case EXCLUDE_VCS_OPTION:
-      exclude_vcs_files ();
+      add_exclude_array (vcs_file_table);
       break;
       
     case FORCE_LOCAL_OPTION:
