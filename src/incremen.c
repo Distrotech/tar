@@ -1324,6 +1324,13 @@ read_directory_file (void)
       return;
     }
 
+  /* Consume the first name from the name list and reset the
+     list afterwards.  This is done to change to the new
+     directory, if the first name is a chdir request (-C dir),
+     which is necessary to recreate absolute file names. */
+  name_from_list ();
+  blank_name_list ();
+  
   if (0 < getline (&buf, &bufsize, listed_incremental_stream))
     {
       char *ebuf;

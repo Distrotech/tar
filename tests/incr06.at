@@ -28,20 +28,18 @@ genfile --file dir/file1
 genfile --file dir/sub/file2
 genfile --file dir/sub/a/file3
 
-dbfile=`pwd`/db
-
 echo Level 0 . sub
-tar -c -f archive-0.1.tar -g $dbfile.1 -C dir -v --warning=no-new-dir . sub
+tar -c -f archive-0.1.tar -g db.1 -C dir -v --warning=no-new-dir . sub
 echo Level 0 sub .
-tar -c -f archive-0.2.tar -g $dbfile.2 -C dir -v --warning=no-new-dir sub .
+tar -c -f archive-0.2.tar -g db.2 -C dir -v --warning=no-new-dir sub .
 
 mkdir dir/c
 genfile --file dir/sub/b/file4
 
 echo Level 1 . sub
-tar -c -f archive-1.1.tar -g $dbfile.1 -C dir -v --warning=no-new-dir . sub
+tar -c -f archive-1.1.tar -g db.1 -C dir -v --warning=no-new-dir . sub
 echo Level 1 sub .
-tar -c -f archive-1.2.tar -g $dbfile.2 -C dir -v --warning=no-new-dir sub .
+tar -c -f archive-1.2.tar -g db.2 -C dir -v --warning=no-new-dir sub .
 ],
 [0],
 [Level 0 . sub

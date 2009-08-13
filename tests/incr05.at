@@ -25,14 +25,12 @@ mkdir dir/sub
 genfile --file dir/file1
 genfile --file dir/sub/file2
 
-dbfile=`pwd`/db
-
 echo Level 0
-tar -c -f archive.tar -g $dbfile -C dir -v --warning=no-new-dir .
+tar -c -f archive.tar -g db -C dir -v --warning=no-new-dir .
 
 genfile --file dir/file3
 echo Level 1
-tar -c -f archive.tar -g $dbfile -C dir -v --warning=no-new-dir .
+tar -c -f archive.tar -g db -C dir -v --warning=no-new-dir .
 ],
 [0],
 [Level 0

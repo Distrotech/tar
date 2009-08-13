@@ -903,7 +903,7 @@ collect_and_sort_names (void)
 			_("Only one -C option is allowed with "
 			  "--listed-incremental")));
 	}
-      chdir_do (namelist->change_dir);
+
       read_directory_file ();
     }
   
