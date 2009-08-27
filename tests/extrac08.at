@@ -34,6 +34,7 @@ AT_SETUP([restoring mode on existing directory])
 AT_KEYWORDS([extract extrac08])
 
 AT_TAR_CHECK([
+umask 000
 mkdir dir
 chmod 755 dir
 echo bla > dir/file

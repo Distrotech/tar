@@ -32,7 +32,7 @@ AT_KEYWORDS([transform xform xform-h])
 
 m4_define([xform],[
 echo "$1"
-tar cf archive --transform="s,^basedir/,,$2" basedir
+tar cf archive --transform="s,^basedir/,,$2" basedir/test basedir/test_link
 tar tvf archive | sed -n 's/.*test_link link to //p'
 ])
 
