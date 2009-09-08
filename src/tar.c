@@ -291,6 +291,7 @@ enum
   NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
+  NO_SEEK_OPTION,
   NO_UNQUOTE_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
@@ -366,7 +367,12 @@ The version control may be set with --backup or VERSION_CONTROL, values are:\n\n
    [q  alias for --occurrence=1 =/= this would better be used for quiet?]
 
    y  per-file gzip compression
-   Y  per-block gzip compression */
+   Y  per-block gzip compression.
+
+   Additionally, the 'n' letter is assigned for option --seek, which
+   is probably not needed and should be marked as deprecated, so that
+   -n may become available in the future.
+*/
 
 static struct argp_option options[] = {
 #define GRID 10
@@ -420,6 +426,8 @@ static struct argp_option options[] = {
       " NUMBER defaults to 1"), GRID+1 },
   {"seek", 'n', NULL, 0,
    N_("archive is seekable"), GRID+1 },
+  {"no-seek", NO_SEEK_OPTION, NULL, 0,
+   N_("archive is not seekable"), GRID+1 },
   {"no-check-device", NO_CHECK_DEVICE_OPTION, NULL, 0,
    N_("do not check device numbers when creating incremental archives"),
    GRID+1 },
@@ -1457,9 +1465,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'n':
-      seekable_archive = true;
+      seek_option = 1;
       break;
 
+    case NO_SEEK_OPTION:
+      seek_option = 0;
+      break;
+      
     case 'N':
       after_date_option = true;
       /* Fall through.  */
@@ -2147,6 +2159,8 @@ decode_options (int argc, char **argv)
   check_device_option = true;
 
   incremental_level = -1;
+
+  seek_option = -1;
   
   /* Convert old-style tar call by exploding option element and rearranging
      options accordingly.  */
@@ -2277,18 +2291,6 @@ decode_options (int argc, char **argv)
 	  && subcommand_option != LIST_SUBCOMMAND)
 	    USAGE_ERROR ((0, 0,
 			  _("--occurrence cannot be used in the requested operation mode")));
-    }
-
-  if (seekable_archive && subcommand_option == DELETE_SUBCOMMAND)
-    {
-      /* The current code in delete.c is based on the assumption that
-	 skip_member() reads all data from the archive. So, we should
-	 make sure it won't use seeks. On the other hand, the same code
-	 depends on the ability to backspace a record in the archive,
-	 so setting seekable_archive to false is technically incorrect.
-         However, it is tested only in skip_member(), so it's not a
-	 problem. */
-      seekable_archive = false;
     }
 
   if (archive_names == 0)

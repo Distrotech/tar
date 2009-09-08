@@ -265,6 +265,37 @@ check_compressed_archive (bool *pshort)
   return ct_none;
 }
 
+/* Guess if the archive is seekable. */
+static void
+guess_seekable_archive ()
+{
+  struct stat st;
+
+  if (subcommand_option == DELETE_SUBCOMMAND)
+    {
+      /* The current code in delete.c is based on the assumption that
+	 skip_member() reads all data from the archive. So, we should
+	 make sure it won't use seeks. On the other hand, the same code
+	 depends on the ability to backspace a record in the archive,
+	 so setting seekable_archive to false is technically incorrect.
+         However, it is tested only in skip_member(), so it's not a
+	 problem. */
+      seekable_archive = false;
+    }
+
+  if (seek_option != -1)
+    {
+      seekable_archive = !!seek_option;
+      return;
+    }
+  
+  if (!multi_volume_option && !use_compress_program_option
+      && fstat (archive, &st) == 0)
+    seekable_archive = S_ISREG (st.st_mode);
+  else
+    seekable_archive = false;
+}
+
 /* Open an archive named archive_name_array[0]. Detect if it is
    a compressed archive of known type and use corresponding decompression
    program if so */
@@ -295,7 +326,7 @@ open_compressed_archive ()
                 ERROR ((0, 0, _("This does not look like a tar archive")));
               set_comression_program_by_suffix (archive_name_array[0], NULL);
               if (!use_compress_program_option)
-                return archive;
+		return archive;
               break;
 
             default:
@@ -306,7 +337,7 @@ open_compressed_archive ()
       
       /* FD is not needed any more */
       rmtclose (archive);
-
+      
       hit_eof = false; /* It might have been set by find_next_block in
                           check_compressed_archive */
 
@@ -565,6 +596,7 @@ _open_archive (enum access_mode wanted_access)
       {
       case ACCESS_READ:
         archive = open_compressed_archive ();
+	guess_seekable_archive ();
         break;
 
       case ACCESS_WRITE:
@@ -1098,6 +1130,7 @@ new_volume (enum access_mode mode)
       case ACCESS_READ:
         archive = rmtopen (*archive_name_cursor, O_RDONLY, MODE_RW,
                            rsh_command_option);
+	guess_seekable_archive ();
         break;
 
       case ACCESS_WRITE:

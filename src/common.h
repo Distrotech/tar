@@ -354,6 +354,7 @@ struct name
 GLOBAL dev_t ar_dev;
 GLOBAL ino_t ar_ino;
 
+GLOBAL int seek_option;
 GLOBAL bool seekable_archive;
 
 GLOBAL dev_t root_device;

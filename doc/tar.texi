@@ -2950,6 +2950,14 @@ When extracting an archive, subtract the user's umask from files from
 the permissions specified in the archive.  This is the default behavior
 for ordinary users.
 
+@opsummary{no-seek}
+@item --no-seek
+
+The archive media does not support seeks to arbitrary
+locations.  Usually @command{tar} determines automatically whether
+the archive can be seeked or not.  Use this option to disable this
+mechanism.
+
 @opsummary{no-unquote}
 @item --no-unquote
 Treat all input file or member names literally, do not interpret
@@ -3180,7 +3188,9 @@ effect only for ordinary users.  @xref{Attributes}.
 Assume that the archive media supports seeks to arbitrary
 locations.  Usually @command{tar} determines automatically whether
 the archive can be seeked or not.  This option is intended for use
-in cases when such recognition fails.
+in cases when such recognition fails.  It takes effect only if the
+archive is open for reading (e.g. with @option{--list} or
+@option{--extract} options).
 
 @opsummary{show-defaults}
 @item --show-defaults

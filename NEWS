@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2009-08-08
+GNU tar NEWS - User visible changes. 2009-09-08
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -9,6 +9,11 @@ version 1.22.90 (Git)
 When listing or extracting archives, the actual record size is
 reported only if the archive is read from a device (as opposed
 to regular files and pipes).
+
+* Seekable archives
+
+When a read-only operation (e.g. --list or --extract) is requested
+on a regular file, tar attemtps to speed up accesses by using lseek.
 
 * New command line option `--warning'
 
