@@ -1081,7 +1081,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 		    quotearg_colon (st->orig_file_name),
 		    STRINGIFY_BIGINT (size_left, buf)));
 	  if (! ignore_failed_read_option) 
-	    exit_status = TAREXIT_DIFFERS;
+	    set_exit_status (TAREXIT_DIFFERS);
 	  pad_archive (size_left - (bufsize - count));
 	  return dump_status_short;
 	}
@@ -1365,7 +1365,7 @@ unknown_file_error (char const *p)
 	   (0, 0, _("%s: Unknown file type; file ignored"),
 	    quotearg_colon (p)));
   if (!ignore_failed_read_option)
-    exit_status = TAREXIT_FAILURE;
+    set_exit_status (TAREXIT_FAILURE);
 }
 
 
@@ -1667,8 +1667,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	      WARNOPT (WARN_FILE_CHANGED,
 		       (0, 0, _("%s: file changed as we read it"),
 			quotearg_colon (p)));
-	      if (exit_status == TAREXIT_SUCCESS)
-		exit_status = TAREXIT_DIFFERS;
+	      set_exit_status (TAREXIT_DIFFERS);
 	    }
 	  else if (atime_preserve_option == replace_atime_preserve
 		   && set_file_atime (fd, p, restore_times) != 0)

@@ -2577,7 +2577,7 @@ main (int argc, char **argv)
   if (stdlis == stdout)
     close_stdout ();
   else if (ferror (stderr) || fclose (stderr) != 0)
-    exit_status = TAREXIT_FAILURE;
+    set_exit_status (TAREXIT_FAILURE);
 
   return exit_status;
 }
@@ -2614,4 +2614,14 @@ tar_timespec_cmp (struct timespec a, struct timespec b)
   if (!(FORMAT_MASK (current_format) & NS_PRECISION_FORMAT_MASK))
     a.tv_nsec = b.tv_nsec = 0;
   return timespec_cmp (a, b);
+}
+
+/* Set tar exit status to VAL, unless it is already indicating
+   a more serious condition. This relies on the fact that the
+   values of TAREXIT_ constants are ranged by severity. */
+void
+set_exit_status (int val)
+{
+  if (val > exit_status)
+    exit_status = val;
 }

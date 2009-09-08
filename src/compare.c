@@ -66,8 +66,7 @@ report_difference (struct tar_stat_info *st, const char *fmt, ...)
       fprintf (stdlis, "\n");
     }
 
-  if (exit_status == TAREXIT_SUCCESS)
-    exit_status = TAREXIT_DIFFERS;
+  set_exit_status (TAREXIT_DIFFERS);
 }
 
 /* Take a buffer returned by read_and_process and do nothing with it.  */

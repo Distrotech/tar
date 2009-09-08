@@ -709,10 +709,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   
   if (deref_stat (dereference_option, name_buffer, &stat_data))
     {
-      dir_removed_diag (name_buffer, false, stat_diag);
-      /* FIXME: used to be
-           children = CHANGED_CHILDREN;
-	 but changed to: */
+      dir_removed_diag (name_buffer, cmdline, stat_diag);
       free (name_buffer);
       free (dirp);
       return NULL;
@@ -760,7 +757,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
 	    {
 	      if (deref_stat (dereference_option, name_buffer, &stat_data))
 		{
-		  stat_diag (name_buffer);
+		  file_removed_diag (name_buffer, false, stat_diag);
 		  *entry = 'N';
 		  continue;
 		}

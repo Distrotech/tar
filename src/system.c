@@ -290,6 +290,7 @@ void
 wait_for_grandchild (pid_t pid)
 {
   int wait_status;
+  int exit_code = 0;
   
   while (waitpid (pid, &wait_status, 0) == -1)
     if (errno != EINTR)
@@ -301,9 +302,9 @@ wait_for_grandchild (pid_t pid)
   if (WIFSIGNALED (wait_status))
     raise (WTERMSIG (wait_status));
   else if (WEXITSTATUS (wait_status) != 0)
-    exit_status = WEXITSTATUS (wait_status);
+    exit_code = WEXITSTATUS (wait_status);
   
-  exit (exit_status);
+  exit (exit_code);
 }
 
 /* Set ARCHIVE for writing, then compressing an archive.  */

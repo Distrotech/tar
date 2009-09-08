@@ -701,6 +701,7 @@ void usage (int) __attribute__ ((noreturn));
 int tar_timespec_cmp (struct timespec a, struct timespec b);
 const char *archive_format_string (enum archive_format fmt);
 const char *subcommand_string (enum subcommand c);
+void set_exit_status (int val);
 
 /* Module update.c.  */
 
