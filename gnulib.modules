@@ -4,6 +4,7 @@
 alloca
 argmatch
 argp
+argp-version-etc
 backupfile
 canonicalize
 closeout
@@ -19,7 +20,7 @@ ftruncate
 full-write
 getdate
 getline
-getopt
+getopt-gnu
 getpagesize
 gettext
 gettime
@@ -33,6 +34,7 @@ mkdtemp
 modechange
 obstack
 priv-set
+progname
 quote
 quotearg
 rpmatch

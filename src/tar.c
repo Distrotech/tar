@@ -25,6 +25,7 @@
 #include <argp.h>
 #include <argp-namefrob.h>
 #include <argp-fmtstream.h>
+#include <argp-version-etc.h>
 
 #include <signal.h>
 #if ! defined SIGCHLD && defined SIGCLD
@@ -267,7 +268,6 @@ enum
   EXCLUDE_VCS_OPTION,
   FORCE_LOCAL_OPTION,
   GROUP_OPTION,
-  HANG_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_COMMAND_ERROR_OPTION,
   IGNORE_FAILED_READ_OPTION,
@@ -327,9 +327,7 @@ enum
   TO_COMMAND_OPTION,
   TRANSFORM_OPTION,
   UNQUOTE_OPTION,
-  USAGE_OPTION,
   UTC_OPTION,
-  VERSION_OPTION,
   VOLNO_FILE_OPTION,
   WARNING_OPTION, 
   WILDCARDS_MATCH_SLASH_OPTION,
@@ -788,14 +786,6 @@ static struct argp_option options[] = {
 
   {"restrict", RESTRICT_OPTION, 0, 0,
    N_("disable use of some potentially harmful options"), -1 },
-
-  {"help",  '?', 0, 0,  N_("give this help list"), -1},
-  {"usage", USAGE_OPTION, 0, 0,  N_("give a short usage message"), -1},
-  {"version", VERSION_OPTION, 0, 0,  N_("print program version"), -1},
-  /* FIXME -V (--label) conflicts with the default short option for
-     --version */
-  {"HANG",	  HANG_OPTION,    "SECS", OPTION_ARG_OPTIONAL | OPTION_HIDDEN,
-   N_("hang for SECS seconds (default 3600)"), 0},
 #undef GRID
 
   {0, 0, 0, 0, 0, 0}
@@ -1074,7 +1064,6 @@ report_textual_dates (struct tar_args *args)
 }
 
 
-static volatile int _argp_hang;
 
 /* Either NL or NUL, as decided by the --null option.  */
 static char filename_terminator;
@@ -2061,28 +2050,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
 #endif /* not DEVICE_PREFIX */
 
-    case '?':
-      tar_help (state);
-      close_stdout ();
-      exit (0);
-
-    case USAGE_OPTION:
-      argp_state_help (state, state->out_stream, ARGP_HELP_USAGE);
-      close_stdout ();
-      exit (0);
-
-    case VERSION_OPTION:
-      version_etc (state->out_stream, "tar", PACKAGE_NAME, VERSION,
-		   "John Gilmore", "Jay Fenlason", (char *) NULL);
-      close_stdout ();
-      exit (0);
-
-    case HANG_OPTION:
-      _argp_hang = atoi (arg ? arg : "3600");
-      while (_argp_hang-- > 0)
-	sleep (1);
-      break;
-
     default:
       return ARGP_ERR_UNKNOWN;
     }
@@ -2123,12 +2090,20 @@ find_argp_option (struct argp_option *o, int letter)
   return NULL;
 }
 
+static const char *tar_authors[] = {
+  "John Gilmore",
+  "Jay Fenlason",
+  NULL
+};
+
 static void
 decode_options (int argc, char **argv)
 {
   int idx;
   struct tar_args args;
 
+  argp_version_setup ("tar", tar_authors);
+  
   /* Set some default option values.  */
   args.textual_date = NULL;
   args.wildcards = default_wildcards;
@@ -2223,8 +2198,7 @@ decode_options (int argc, char **argv)
 
   prepend_default_options (getenv ("TAR_OPTIONS"), &argc, &argv);
 
-  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER|ARGP_NO_HELP,
-		  &idx, &args))
+  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &idx, &args))
     exit (TAREXIT_FAILURE);
 
 
