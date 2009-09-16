@@ -5,6 +5,7 @@ alloca
 argmatch
 argp
 argp-version-etc
+asprintf
 backupfile
 canonicalize
 closeout
