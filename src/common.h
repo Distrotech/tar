@@ -557,7 +557,8 @@ char const *tartime (struct timespec t, bool full_time);
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
 #define MINOR_FROM_HEADER(where) minor_from_header (where, sizeof (where))
-#define MODE_FROM_HEADER(where) mode_from_header (where, sizeof (where))
+#define MODE_FROM_HEADER(where, hbits) \
+  mode_from_header (where, sizeof (where), hbits)
 #define OFF_FROM_HEADER(where) off_from_header (where, sizeof (where))
 #define SIZE_FROM_HEADER(where) size_from_header (where, sizeof (where))
 #define TIME_FROM_HEADER(where) time_from_header (where, sizeof (where))
@@ -567,7 +568,7 @@ char const *tartime (struct timespec t, bool full_time);
 gid_t gid_from_header (const char *buf, size_t size);
 major_t major_from_header (const char *buf, size_t size);
 minor_t minor_from_header (const char *buf, size_t size);
-mode_t mode_from_header (const char *buf, size_t size);
+mode_t mode_from_header (const char *buf, size_t size, unsigned *hbits);
 off_t off_from_header (const char *buf, size_t size);
 size_t size_from_header (const char *buf, size_t size);
 time_t time_from_header (const char *buf, size_t size);

@@ -402,8 +402,7 @@ mode_to_chars (mode_t v, char *p, size_t s)
       && S_IROTH == TOREAD && S_IWOTH == TOWRITE && S_IXOTH == TOEXEC
       && archive_format != POSIX_FORMAT
       && archive_format != USTAR_FORMAT
-      && archive_format != GNU_FORMAT
-      && archive_format != OLDGNU_FORMAT)
+      && archive_format != GNU_FORMAT)
     {
       negative = v < 0;
       u = v;

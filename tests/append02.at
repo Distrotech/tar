@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2006, 2007, 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,13 +26,27 @@
 #      tar rf archive file1
 #      tar rt archive file2
 #
-# produced different archives (GNU format is assumed).  Namely, in the
-# second case the mode field of all members, except the first, was truncated
-# to lower 3 octets (& 0777).
+# produced different archives (GNU format is assumed). It was reported
+# by TAMUKI Shoichi on 2006-07-21 [1].
+#
+# The bug was due to tar being unable to discern between GNU and OLDGNU
+# formats and always assuming the latter. The main difference between
+# the two is that OLDGNU preserves all bits in the mode field, whereas
+# GNU format keeps only the lower 9 ones (mode & 0777).
+#
+# This was fixed on 2006-07-24 (commit f4e4adea80a) by making tar truncate
+# the mode field even in OLDGNU format. Obviously, the fix broke the
+# format backward compatibility, but it went unnoticed until 2009-10-03
+# (after all, the OLDGNU format is not in much use nowadays), when
+# Igor Zhbanov reported it [2].
+#
+# The final fix was applied on 2009-10-04.
 #
 # References:
-#   <200607210526.AA03440@tamuki.linet.gr.jp>
-#   http://lists.gnu.org/archive/html/bug-tar/2006-07/msg00029.html
+# [1] <200607210526.AA03440@tamuki.linet.gr.jp>
+#     http://lists.gnu.org/archive/html/bug-tar/2006-07/msg00029.html
+# [2] <f44001920910020335v4cadfesf54f6593d5124814@mail.gmail.com>
+#     http://lists.gnu.org/archive/html/bug-tar/2009-10/msg00006.html
 
 # The test case below verifies that the equivalent create and append commands
 # produce binary equivalent archives for all formats.

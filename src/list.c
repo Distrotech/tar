@@ -531,7 +531,9 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	       enum archive_format *format_pointer, int do_user_group)
 {
   enum archive_format format;
-
+  unsigned hbits; /* high bits of the file mode. */
+  mode_t mode = MODE_FROM_HEADER (header->header.mode, &hbits);
+  
   if (strcmp (header->header.magic, TMAGIC) == 0)
     {
       if (header->star_header.prefix[130] == 0
@@ -546,12 +548,12 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	format = USTAR_FORMAT;
     }
   else if (strcmp (header->header.magic, OLDGNU_MAGIC) == 0)
-    format = OLDGNU_FORMAT;
+    format = hbits ? OLDGNU_FORMAT : GNU_FORMAT;
   else
     format = V7_FORMAT;
   *format_pointer = format;
 
-  stat_info->stat.st_mode = MODE_FROM_HEADER (header->header.mode);
+  stat_info->stat.st_mode = mode;
   stat_info->mtime.tv_sec = TIME_FROM_HEADER (header->header.mtime);
   stat_info->mtime.tv_nsec = 0;
   assign_string (&stat_info->uname,
@@ -885,25 +887,28 @@ minor_from_header (const char *p, size_t s)
 		      (uintmax_t) TYPE_MAXIMUM (minor_t), false, false);
 }
 
+/* Convert P to the file mode, as understood by tar.
+   Store unrecognized mode bits (from 10th up) in HBITS. */
 mode_t
-mode_from_header (const char *p, size_t s)
+mode_from_header (const char *p, size_t s, unsigned *hbits)
 {
-  /* Do not complain about unrecognized mode bits.  */
   unsigned u = from_header (p, s, "mode_t",
 			    - (uintmax_t) TYPE_MINIMUM (mode_t),
 			    TYPE_MAXIMUM (uintmax_t), false, false);
-  return ((u & TSUID ? S_ISUID : 0)
-	  | (u & TSGID ? S_ISGID : 0)
-	  | (u & TSVTX ? S_ISVTX : 0)
-	  | (u & TUREAD ? S_IRUSR : 0)
-	  | (u & TUWRITE ? S_IWUSR : 0)
-	  | (u & TUEXEC ? S_IXUSR : 0)
-	  | (u & TGREAD ? S_IRGRP : 0)
-	  | (u & TGWRITE ? S_IWGRP : 0)
-	  | (u & TGEXEC ? S_IXGRP : 0)
-	  | (u & TOREAD ? S_IROTH : 0)
-	  | (u & TOWRITE ? S_IWOTH : 0)
-	  | (u & TOEXEC ? S_IXOTH : 0));
+  mode_t mode = ((u & TSUID ? S_ISUID : 0)
+		 | (u & TSGID ? S_ISGID : 0)
+		 | (u & TSVTX ? S_ISVTX : 0)
+		 | (u & TUREAD ? S_IRUSR : 0)
+		 | (u & TUWRITE ? S_IWUSR : 0)
+		 | (u & TUEXEC ? S_IXUSR : 0)
+		 | (u & TGREAD ? S_IRGRP : 0)
+		 | (u & TGWRITE ? S_IWGRP : 0)
+		 | (u & TGEXEC ? S_IXGRP : 0)
+		 | (u & TOREAD ? S_IROTH : 0)
+		 | (u & TOWRITE ? S_IWOTH : 0)
+		 | (u & TOEXEC ? S_IXOTH : 0));
+  *hbits = mode ^ u;
+  return mode;
 }
 
 off_t
