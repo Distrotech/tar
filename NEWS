@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2009-09-08
+GNU tar NEWS - User visible changes. 2009-10-07
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -53,11 +53,43 @@ and sets the exit code to 1, which means "some files differ".
 If the --warning=no-file-removed option is given, no warning
 is issued and the exit code remains 0.
 
+* Modification times of PAX extended headers.
+
+Modification times in the ustar header blocks for the 
+extended headers are set to the mtimes of the corresponding archive
+members.  This can be overridden by the
+
+  --pax-opion='exthdr.mtime=STRING'
+
+command line option.  The STRING is either the number of seconds since
+the Epoch or a `Time reference' (see below).
+
+Modification times in the ustar header blocks for the global
+extended headers are set to the time when tar was invoked.
+
+This can be overridden by the
+
+  --pax-opion='globexthdr.mtime=STRING'
+
+command line option.  The STRING is either the number of seconds since
+the Epoch or a `Time reference' (see below).
+
+* Time references in --pax-option argument.
+
+Any value from the --pax-option argument that is enclosed in a pair
+of curly braces.  In that case, the string between the braces is
+understood either as a textual time representation, as described in
+chapter 7, "Date input formats", of the Tar manual, or as a name of
+the existing file, starting with `/' or `.'.  In the latter
+case, the value is replaced with the modification time of that file.
+
 * Bugfixes
 ** Fix handling of hard link targets by -c --transform.
 ** Fix hard links recognition with -c --remove-files.
 ** Fix restoring files from backup (debian bug #508199).
 ** Correctly restore modes and permissions on existing directories.
+** The --remove-files option removes the files only if they were
+succesfully stored in the archive.
 
 
 version 1.22 - Sergey Poznyakoff, 2009-03-05

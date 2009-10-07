@@ -3055,8 +3055,8 @@ This option does not affect extraction from archives.
 
 @opsummary{pax-option}
 @item --pax-option=@var{keyword-list}
-This option is meaningful only with @acronym{POSIX.1-2001} archives
-(@pxref{posix}).  It modifies the way @command{tar} handles the
+This option enables creation of the archive in @acronym{POSIX.1-2001}
+format (@pxref{posix}) and modifies the way @command{tar} handles the
 extended header keywords.  @var{Keyword-list} is a comma-separated
 list of keyword options.  @xref{PAX keywords}, for a detailed
 discussion.
@@ -5400,7 +5400,7 @@ Name of the file owner group.
 @vrindex TAR_ATIME, to-command environment
 @item TAR_ATIME
 Time of last access. It is a decimal number, representing seconds
-since the epoch.  If the archive provides times with nanosecond
+since the Epoch.  If the archive provides times with nanosecond
 precision, the nanoseconds are appended to the timestamp after a
 decimal point.
 
@@ -9409,6 +9409,13 @@ will use the following default value:
 %d/PaxHeaders.%p/%f
 @end smallexample
 
+@item exthdr.mtime=@var{value}
+
+This keyword defines the value of the @samp{mtime} field that
+is written into the ustar header blocks for the extended headers.
+By default, the @samp{mtime} field is set to the modification time
+of the archive member described by that extended headers.
+
 @item globexthdr.name=@var{string}
 This keyword allows user control over the name that is written into
 the ustar header blocks for global extended header records.  The name
@@ -9438,6 +9445,13 @@ where @samp{$TMPDIR} represents the value of the @var{TMPDIR}
 environment variable.  If @var{TMPDIR} is not set, @command{tar}
 uses @samp{/tmp}.
 
+@item exthdr.mtime=@var{value}
+
+This keyword defines the value of the @samp{mtime} field that
+is written into the ustar header blocks for the global extended headers.
+By default, the @samp{mtime} field is set to the time when
+@command{tar} was invoked.
+
 @item @var{keyword}=@var{value}
 When used with one of archive-creation commands, these keyword/value pairs
 will be included at the beginning of the archive in a global extended
@@ -9466,6 +9480,32 @@ tar --format=posix --create \
 the group name will be forced to a new value for all files
 stored in the archive.
 @end table
+
+In any of the forms described above, the @var{value} may be
+a string enclosed in curly braces.  In that case, the string
+between the braces is understood either as a textual time
+representation, as described in @ref{Date input formats}, or a name of
+the existing file, starting with @samp{/} or @samp{.}.  In the latter
+case, the modification time of that file is used.
+
+For example, to set all modification times to the current date, you
+use the following option:
+
+@smallexample
+--pax-option='mtime:=@{now@}'
+@end smallexample
+
+Note quoting of the option's argument.
+
+@cindex archives, binary equivalent
+@cindex binary equivalent archives, creating
+As another example, here is the option that ensures that any two
+archives created using it, will be binary equivalent if they have the
+same contents:
+
+@smallexample
+--pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0
+@end smallexample
 
 @node Checksumming
 @subsection Checksumming Problems

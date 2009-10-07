@@ -96,8 +96,14 @@ static struct keyword_list *global_header_override_list;
 /* Template for the name field of an 'x' type header */
 static char *exthdr_name;
 
+static char *exthdr_mtime_option;
+static time_t exthdr_mtime;
+
 /* Template for the name field of a 'g' type header */
 static char *globexthdr_name;
+
+static char *globexthdr_mtime_option;
+static time_t globexthdr_mtime;
 
 bool
 xheader_keyword_deleted_p (const char *kw)
@@ -157,6 +163,21 @@ xheader_set_single_keyword (char *kw)
 }
 
 static void
+assign_time_option (char **sval, time_t *tval, const char *input)
+{
+  uintmax_t u;
+  char *p;
+  time_t t = u = strtoumax (input, &p, 10);
+  if (t != u || *p || errno == ERANGE)
+    ERROR ((0, 0, _("Time stamp is out of allowed range")));
+  else
+    {
+      *tval = t;
+      assign_string (sval, input);
+    }
+}
+
+static void
 xheader_set_keyword_equal (char *kw, char *eq)
 {
   bool global = true;
@@ -186,6 +207,10 @@ xheader_set_keyword_equal (char *kw, char *eq)
     assign_string (&exthdr_name, p);
   else if (strcmp (kw, "globexthdr.name") == 0)
     assign_string (&globexthdr_name, p);
+  else if (strcmp (kw, "exthdr.mtime") == 0)
+    assign_time_option (&exthdr_mtime_option, &exthdr_mtime, p);
+  else if (strcmp (kw, "globexthdr.mtime") == 0)
+    assign_time_option (&globexthdr_mtime_option, &globexthdr_mtime, p);
   else
     {
       if (xheader_protected_keyword_p (kw))
@@ -371,6 +396,18 @@ xheader_write (char type, char *name, time_t t, struct xheader *xhdr)
   char *p;
 
   size = xhdr->size;
+  switch (type)
+    {
+    case XGLTYPE:
+      if (globexthdr_mtime_option)
+	t = globexthdr_mtime;
+      break;
+
+    case XHDTYPE:
+      if (exthdr_mtime_option)
+	t = exthdr_mtime;
+      break;
+    }
   header = start_private_header (name, size, t);
   header->header.typeflag = type;
 

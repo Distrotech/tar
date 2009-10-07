@@ -1002,12 +1002,12 @@ set_stat_signal (const char *name)
 struct textual_date
 {
   struct textual_date *next;
-  struct timespec *ts;
+  struct timespec ts;
   const char *option;
-  const char *date;
+  char *date;
 };
 
-static void
+static int
 get_date_or_file (struct tar_args *args, const char *option,
 		  const char *str, struct timespec *ts)
 {
@@ -1030,17 +1030,19 @@ get_date_or_file (struct tar_args *args, const char *option,
 	  WARN ((0, 0, _("Substituting %s for unknown date format %s"),
 		 tartime (*ts, false), quote (str)));
 	  ts->tv_nsec = 0;
+	  return 1;
 	}
       else
 	{
 	  struct textual_date *p = xmalloc (sizeof (*p));
-	  p->ts = ts;
+	  p->ts = *ts;
 	  p->option = option;
-	  p->date = str;
+	  p->date = xstrdup (str);
 	  p->next = args->textual_date;
 	  args->textual_date = p;
 	}
     }
+  return 0;
 }
 
 static void
@@ -1050,10 +1052,14 @@ report_textual_dates (struct tar_args *args)
   for (p = args->textual_date; p; )
     {
       struct textual_date *next = p->next;
-      char const *treated_as = tartime (*p->ts, true);
-      if (strcmp (p->date, treated_as) != 0)
-	WARN ((0, 0, _("Option %s: Treating date `%s' as %s"),
-	       p->option, p->date, treated_as));
+      if (verbose_option)
+	{
+	  char const *treated_as = tartime (p->ts, true);
+	  if (strcmp (p->date, treated_as) != 0)
+	    WARN ((0, 0, _("Option %s: Treating date `%s' as %s"),
+		   p->option, p->date, treated_as));
+	}
+      free (p->date);
       free (p);
       p = next;
     }
@@ -1272,6 +1278,60 @@ tar_help_filter (int key, const char *text, void *input)
   obstack_free (&stk, NULL);
   return s;
 }
+
+static char *
+expand_pax_option (struct tar_args *targs, const char *arg)
+{
+  struct obstack stk;
+  char *res;
+  
+  obstack_init (&stk);
+  while (*arg)
+    {
+      size_t seglen = strcspn (arg, ",");
+      char *p = memchr (arg, '=', seglen);
+      if (p)
+	{
+	  size_t len = p - arg + 1;
+	  obstack_grow (&stk, arg, len);
+	  len = seglen - len;
+	  for (++p; *p && isspace ((unsigned char) *p); p++)
+	    len--;
+	  if (*p == '{' && p[len-1] == '}')
+	    {
+	      struct timespec ts;
+	      char *tmp = xmalloc (len);
+	      memcpy (tmp, p + 1, len-2);
+	      tmp[len-2] = 0;
+	      if (get_date_or_file (targs, "--pax-option", tmp, &ts) == 0)
+		{
+		  char buf[UINTMAX_STRSIZE_BOUND], *s;
+		  s = umaxtostr (ts.tv_sec, buf);
+		  obstack_grow (&stk, s, strlen (s));
+		}
+	      else
+		obstack_grow (&stk, p, len);
+	      free (tmp);
+	    }
+	  else
+	    obstack_grow (&stk, p, len);
+	}
+      else
+	obstack_grow (&stk, arg, seglen);
+
+      arg += seglen;
+      if (*arg)
+	{
+	  obstack_1grow (&stk, *arg);
+	  arg++;
+	}
+    }
+  obstack_1grow (&stk, 0);
+  res = xstrdup (obstack_finish (&stk));
+  obstack_free (&stk, NULL);
+  return res;
+}
+
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
@@ -1840,8 +1900,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
       
     case PAX_OPTION:
-      args->pax_option = true;
-      xheader_set_option (arg);
+      {
+	char *tmp = expand_pax_option (args, arg);
+	args->pax_option = true;
+	xheader_set_option (tmp);
+	free (tmp);
+      }
       break;
       
     case POSIX_OPTION:
@@ -2440,8 +2504,7 @@ decode_options (int argc, char **argv)
 
   checkpoint_finish_compile ();
   
-  if (verbose_option)
-    report_textual_dates (&args);
+  report_textual_dates (&args);
 }
 
 
