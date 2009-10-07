@@ -515,9 +515,8 @@ write_eot (void)
 
 /* Write a "private" header */
 union block *
-start_private_header (const char *name, size_t size)
+start_private_header (const char *name, size_t size, time_t t)
 {
-  time_t t;
   union block *header = find_next_block ();
 
   memset (header->buffer, 0, sizeof (union block));
@@ -525,7 +524,6 @@ start_private_header (const char *name, size_t size)
   tar_name_copy_str (header->header.name, name, NAME_FIELD_SIZE);
   OFF_TO_CHARS (size, header->header.size);
 
-  time (&t);
   TIME_TO_CHARS (t, header->header.mtime);
   MODE_TO_CHARS (S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, header->header.mode);
   UID_TO_CHARS (getuid (), header->header.uid);
@@ -563,13 +561,13 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   union block *header;
   char *tmpname;
 
-  header = start_private_header ("././@LongLink", size);
-  FILL(header->header.mtime, '0');
-  FILL(header->header.mode, '0');
-  FILL(header->header.uid, '0');
-  FILL(header->header.gid, '0');
-  FILL(header->header.devmajor, 0);
-  FILL(header->header.devminor, 0);
+  header = start_private_header ("././@LongLink", size, time (NULL));
+  FILL (header->header.mtime, '0');
+  FILL (header->header.mode, '0');
+  FILL (header->header.uid, '0');
+  FILL (header->header.gid, '0');
+  FILL (header->header.devmajor, 0);
+  FILL (header->header.devminor, 0);
   uid_to_uname (0, &tmpname);
   UNAME_TO_CHARS (tmpname, header->header.uname);
   free (tmpname);
@@ -712,7 +710,8 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
   union block *header, hp;
   char *p;
   int type;
-
+  time_t t;
+  
   if (st->xhdr.buffer || st->xhdr.stk == NULL)
     return old_header;
 
@@ -722,13 +721,15 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
     {
       type = XGLTYPE;
       p = xheader_ghdr_name ();
+      time (&t);
     }
   else
     {
       type = XHDTYPE;
       p = xheader_xhdr_name (st);
+      t = st->stat.st_mtime;
     }
-  xheader_write (type, p, &st->xhdr);
+  xheader_write (type, p, t, &st->xhdr);
   free (p);
   header = find_next_block ();
   memcpy (header, &hp.buffer, sizeof (hp.buffer));

@@ -452,7 +452,7 @@ void finish_header (struct tar_stat_info *st, union block *header,
 void simple_finish_header (union block *header);
 union block * write_extended (bool global, struct tar_stat_info *st,
 			      union block *old_header);
-union block *start_private_header (const char *name, size_t size);
+union block *start_private_header (const char *name, size_t size, time_t t);
 void write_eot (void);
 void check_links (void);
 void exclusion_tag_warning (const char *dirname, const char *tagname,
@@ -717,7 +717,7 @@ void xheader_decode_global (struct xheader *xhdr);
 void xheader_store (char const *keyword, struct tar_stat_info *st,
 		    void const *data);
 void xheader_read (struct xheader *xhdr, union block *header, size_t size);
-void xheader_write (char type, char *name, struct xheader *xhdr);
+void xheader_write (char type, char *name, time_t t, struct xheader *xhdr);
 void xheader_write_global (struct xheader *xhdr);
 void xheader_finish (struct xheader *hdr);
 void xheader_destroy (struct xheader *hdr);

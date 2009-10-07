@@ -364,14 +364,14 @@ xheader_ghdr_name (void)
 }
 
 void
-xheader_write (char type, char *name, struct xheader *xhdr)
+xheader_write (char type, char *name, time_t t, struct xheader *xhdr)
 {
   union block *header;
   size_t size;
   char *p;
 
   size = xhdr->size;
-  header = start_private_header (name, size);
+  header = start_private_header (name, size, t);
   header->header.typeflag = type;
 
   simple_finish_header (header);
@@ -413,7 +413,7 @@ xheader_write_global (struct xheader *xhdr)
   for (kp = keyword_global_override_list; kp; kp = kp->next)
     code_string (kp->value, kp->pattern, xhdr);
   xheader_finish (xhdr);
-  xheader_write (XGLTYPE, name = xheader_ghdr_name (), xhdr);
+  xheader_write (XGLTYPE, name = xheader_ghdr_name (), time (NULL), xhdr);
   free (name);
 }
 
