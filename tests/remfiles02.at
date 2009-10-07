@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004, 2007, 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,24 +18,41 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-# tar should detect that its gzip child failed.
+# Description: When called with --create --remove-files and a compression
+# options tar (v. <= 1.22.90) would remove files even if it had failed
+# to store them in the archive.
+#
+# References: <77cb99c00910020940k6ce15da4wb564d2418ec52cfb@mail.gmail.com>
+#             http://lists.gnu.org/archive/html/bug-tar/2009-10/msg00005.html
 
-AT_SETUP([gzip])
-AT_KEYWORDS([gzip])
+AT_SETUP([remove-files with compression: grand-child])
+AT_KEYWORDS([create remove-files remfiles02 gzip])
 
 unset TAR_OPTIONS
-
 AT_CHECK([
 AT_GZIP_PREREQ
-tar xfvz /dev/null
+AT_SORT_PREREQ
+
+mkdir dir
+cd dir
+mkdir a
+genfile --file b
+mkdir c
+
+tar -c -f a -z --remove-files b c
+
+find . | sort
 ],
-[2],
-[],
-[
-gzip: stdin: unexpected end of file
-tar: Child returned status 1
+[0],
+[.
+./a
+./b
+./c
+],
+[tar (child): a: Cannot open: Is a directory
+tar (child): Error is not recoverable: exiting now
+tar: Child returned status 2
 tar: Error is not recoverable: exiting now
-],
-[],[])
+])
 
 AT_CLEANUP

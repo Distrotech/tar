@@ -60,6 +60,7 @@
 #define obstack_chunk_alloc xmalloc
 #define obstack_chunk_free free
 #include <obstack.h>
+#include <progname.h>
 
 #include <paxlib.h>
 
@@ -69,9 +70,6 @@
 #define LG_256 8
 
 /* Information gleaned from the command line.  */
-
-/* Name of this program.  */
-GLOBAL const char *program_name;
 
 /* Main command option.  */
 
@@ -400,6 +398,7 @@ extern char *volume_label;
 extern char *continued_file_name;
 extern uintmax_t continued_file_size;
 extern uintmax_t continued_file_offset;
+extern off_t records_written;
 
 size_t available_space_after (union block *pointer);
 off_t current_block_ordinal (void);
@@ -826,4 +825,12 @@ extern int warning_option;
       if (warning_option & opt) WARN (args);	\
     }						\
   while (0)
+
+/* Module unlink.c */
+
+void queue_deferred_unlink (const char *name, bool is_dir);
+void finish_deferred_unlinks (void);
+
+/* Module exit.c */
+extern void (*fatal_exit_hook) (void);
 

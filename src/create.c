@@ -1333,7 +1333,7 @@ create_archive (void)
 
   write_eot ();
   close_archive ();
-
+  finish_deferred_unlinks ();
   if (listed_incremental_option)
     write_directory_file ();
 }
@@ -1413,8 +1413,8 @@ dump_hard_link (struct tar_stat_info *st)
 	  blk->header.typeflag = LNKTYPE;
 	  finish_header (st, blk, block_ordinal);
 
-	  if (remove_files_option && unlink (st->orig_file_name) != 0)
-	    unlink_error (st->orig_file_name);
+	  if (remove_files_option)
+	    queue_deferred_unlink (st->orig_file_name, false);
 
 	  return true;
 	}
@@ -1680,18 +1680,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	}
 
       if (ok && remove_files_option)
-	{
-	  if (is_dir)
-	    {
-	      if (rmdir (p) != 0 && errno != ENOTEMPTY)
-		rmdir_error (p);
-	    }
-	  else
-	    {
-	      if (unlink (p) != 0)
-		unlink_error (p);
-	    }
-	}
+	queue_deferred_unlink (p, is_dir);
 
       return;
     }
@@ -1727,10 +1716,8 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       /* nothing more to do to it */
 
       if (remove_files_option)
-	{
-	  if (unlink (p) == -1)
-	    unlink_error (p);
-	}
+	queue_deferred_unlink (p, false);
+
       file_count_links (st);
       return;
     }
@@ -1782,10 +1769,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
   finish_header (st, header, block_ordinal);
   if (remove_files_option)
-    {
-      if (unlink (p) == -1)
-	unlink_error (p);
-    }
+    queue_deferred_unlink (p, false);
 }
 
 void

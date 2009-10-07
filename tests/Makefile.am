@@ -113,6 +113,8 @@ TESTSUITE_AT = \
  rename03.at\
  rename04.at\
  rename05.at\
+ remfiles01.at\
+ remfiles02.at\
  same-order01.at\
  same-order02.at\
  shortfile.at\

@@ -35,7 +35,6 @@ extern union block *current_block;
 extern union block *recent_long_name;
 extern union block *recent_long_link;
 extern off_t records_read;
-extern off_t records_written;
 
 /* The number of records skipped at the start of the archive, when
    passing over members that are not deleted.  */

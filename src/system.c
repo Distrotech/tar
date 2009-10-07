@@ -174,11 +174,11 @@ sys_wait_for_child (pid_t child_pid, bool eof)
 	{
 	  int sig = WTERMSIG (wait_status);
 	  if (!(!eof && sig == SIGPIPE))
-	    ERROR ((0, 0, _("Child died with signal %d"), sig));
+	    FATAL_ERROR ((0, 0, _("Child died with signal %d"), sig));
 	}
       else if (WEXITSTATUS (wait_status) != 0)
-	ERROR ((0, 0, _("Child returned status %d"),
-		WEXITSTATUS (wait_status)));
+	FATAL_ERROR ((0, 0, _("Child returned status %d"),
+		      WEXITSTATUS (wait_status)));
     }
 }
 
@@ -330,7 +330,7 @@ sys_child_open_for_compress (void)
 
   /* The new born child tar is here!  */
 
-  program_name = _("tar (child)");
+  set_program_name (_("tar (child)"));
 
   xdup2 (parent_pipe[PREAD], STDIN_FILENO);
   xclose (parent_pipe[PWRITE]);
@@ -374,7 +374,7 @@ sys_child_open_for_compress (void)
     {
       /* The newborn grandchild tar is here!  Launch the compressor.  */
 
-      program_name = _("tar (grandchild)");
+      set_program_name (_("tar (grandchild)"));
 
       xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
       xclose (child_pipe[PREAD]);
@@ -473,7 +473,7 @@ sys_child_open_for_uncompress (void)
 
   /* The newborn child tar is here!  */
 
-  program_name = _("tar (child)");
+  set_program_name (_("tar (child)"));
 
   xdup2 (parent_pipe[PWRITE], STDOUT_FILENO);
   xclose (parent_pipe[PREAD]);
@@ -508,7 +508,7 @@ sys_child_open_for_uncompress (void)
     {
       /* The newborn grandchild tar is here!  Launch the uncompressor.  */
 
-      program_name = _("tar (grandchild)");
+      set_program_name (_("tar (grandchild)"));
 
       xdup2 (child_pipe[PREAD], STDIN_FILENO);
       xclose (child_pipe[PWRITE]);

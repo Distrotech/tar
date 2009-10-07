@@ -218,6 +218,9 @@ m4_include([shortupd.at])
 m4_include([truncate.at])
 m4_include([grow.at])
 
+m4_include([remfiles01.at])
+m4_include([remfiles02.at])
+
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
 

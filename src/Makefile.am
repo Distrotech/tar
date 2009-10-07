@@ -27,6 +27,7 @@ tar_SOURCES = \
  compare.c\
  create.c\
  delete.c\
+ exit.c\
  extract.c\
  xheader.c\
  incremen.c\
@@ -38,6 +39,7 @@ tar_SOURCES = \
  system.c\
  tar.c\
  transform.c\
+ unlink.c\
  update.c\
  utf8.c\
  warning.c
