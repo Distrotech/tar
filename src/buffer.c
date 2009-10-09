@@ -220,12 +220,12 @@ struct zip_magic
 static struct zip_magic const magic[] = {
   { ct_tar },
   { ct_none, },
-  { ct_compress, 2, "\037\235", "compress", "-Z" },
-  { ct_gzip,     2, "\037\213", "gzip", "-z"  },
-  { ct_bzip2,    3, "BZh",      "bzip2", "-j" },
-  { ct_lzma,     6, "\xFFLZMA", "lzma", "--lzma" }, /* FIXME: ???? */
-  { ct_lzop,     4, "\211LZO",  "lzop", "--lzop" },
-  { ct_xz,       6, "\0xFD7zXZ", "-J" },
+  { ct_compress, 2, "\037\235",  "compress", "-Z" },
+  { ct_gzip,     2, "\037\213",  "gzip",     "-z"  },
+  { ct_bzip2,    3, "BZh",       "bzip2",    "-j" },
+  { ct_lzma,     6, "\xFFLZMA",  "lzma",     "--lzma" },
+  { ct_lzop,     4, "\211LZO",   "lzop",     "--lzop" },
+  { ct_xz,       6, "\0xFD7zXZ", "xz",       "-J" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))

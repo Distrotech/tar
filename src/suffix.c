@@ -26,7 +26,7 @@ struct compression_suffix
   const char *program;
 };
 
-struct compression_suffix compression_suffixes[] = {
+static struct compression_suffix compression_suffixes[] = {
 #define S(s,p) #s, sizeof (#s) - 1, #p
   { S(gz, gzip) },
   { S(tgz, gzip) },
@@ -44,8 +44,8 @@ struct compression_suffix compression_suffixes[] = {
 #undef S
 };
 
-int nsuffixes = sizeof (compression_suffixes) /
-                  sizeof (compression_suffixes[0]);
+static int nsuffixes = sizeof (compression_suffixes) /
+                        sizeof (compression_suffixes[0]);
 
 static const char *
 find_compression_program (const char *name, const char *defprog)
