@@ -61,6 +61,7 @@
 #define obstack_chunk_free free
 #include <obstack.h>
 #include <progname.h>
+#include <xvasprintf.h>
 
 #include <paxlib.h>
 

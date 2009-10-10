@@ -5,7 +5,6 @@ alloca
 argmatch
 argp
 argp-version-etc
-asprintf
 backupfile
 canonicalize
 closeout
@@ -62,3 +61,4 @@ xalloc
 xalloc-die
 xgetcwd
 xstrtoumax
+xvasprintf
