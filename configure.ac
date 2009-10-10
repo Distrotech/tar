@@ -121,6 +121,13 @@ else
     [Define to the full path of your rsh, if any.])
 fi
 
+TAR_COMPR_PROGRAM(compress)
+TAR_COMPR_PROGRAM(gzip)
+TAR_COMPR_PROGRAM(bzip2)
+TAR_COMPR_PROGRAM(lzma)
+TAR_COMPR_PROGRAM(lzop)
+TAR_COMPR_PROGRAM(xz)
+
 AC_MSG_CHECKING(for default archive format)
 
 AC_ARG_VAR([DEFAULT_ARCHIVE_FORMAT],

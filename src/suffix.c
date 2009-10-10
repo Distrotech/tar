@@ -27,21 +27,23 @@ struct compression_suffix
 };
 
 static struct compression_suffix compression_suffixes[] = {
-#define S(s,p) #s, sizeof (#s) - 1, #p
-  { S(gz, gzip) },
-  { S(tgz, gzip) },
-  { S(taz, gzip) },
-  { S(Z, compress) },
-  { S(taZ, compress) },
-  { S(bz2, bzip2) },
-  { S(tbz, bzip2) },
-  { S(tbz2, bzip2) },
-  { S(tz2, bzip2) },
-  { S(lzma, lzma) },
-  { S(tlz, lzma) },
-  { S(lzo, lzop) },
-  { S(xz, xz) },
+#define __CAT2__(a,b) a ## b  
+#define S(s,p) #s, sizeof (#s) - 1, __CAT2__(p,_PROGRAM)
+  { S(gz,   GZIP) },
+  { S(tgz,  GZIP) },
+  { S(taz,  GZIP) },
+  { S(Z,    COMPRESS) },
+  { S(taZ,  COMPRESS) },
+  { S(bz2,  BZIP2) },
+  { S(tbz,  BZIP2) },
+  { S(tbz2, BZIP2) },
+  { S(tz2,  BZIP2) },
+  { S(lzma, LZMA) },
+  { S(tlz,  LZMA) },
+  { S(lzo,  LZOP) },
+  { S(xz,   XZ) },
 #undef S
+#undef __CAT2__
 };
 
 static int nsuffixes = sizeof (compression_suffixes) /
