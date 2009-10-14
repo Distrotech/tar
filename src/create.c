@@ -1096,73 +1096,70 @@ dump_dir0 (char *directory,
 {
   dev_t our_device = st->stat.st_dev;
   const char *tag_file_name;
-  
-  if (!is_avoided_name (st->orig_file_name))
+  union block *blk = NULL;
+  off_t block_ordinal = current_block_ordinal ();
+
+  st->stat.st_size = 0;	/* force 0 size on dir */
+
+  blk = start_header (st);
+  if (!blk)
+    return;
+
+  if (incremental_option && archive_format != POSIX_FORMAT)
+    blk->header.typeflag = GNUTYPE_DUMPDIR;
+  else /* if (standard_option) */
+    blk->header.typeflag = DIRTYPE;
+
+  /* If we're gnudumping, we aren't done yet so don't close it.  */
+
+  if (!incremental_option)
+    finish_header (st, blk, block_ordinal);
+  else if (gnu_list_name->directory)
     {
-      union block *blk = NULL;
-      off_t block_ordinal = current_block_ordinal ();
-      st->stat.st_size = 0;	/* force 0 size on dir */
-
-      blk = start_header (st);
-      if (!blk)
-	return;
-
-      if (incremental_option && archive_format != POSIX_FORMAT)
-	blk->header.typeflag = GNUTYPE_DUMPDIR;
-      else /* if (standard_option) */
-	blk->header.typeflag = DIRTYPE;
-
-      /* If we're gnudumping, we aren't done yet so don't close it.  */
-
-      if (!incremental_option)
-	finish_header (st, blk, block_ordinal);
-      else if (gnu_list_name->directory)
+      if (archive_format == POSIX_FORMAT)
 	{
-	  if (archive_format == POSIX_FORMAT)
-	    {
-	      xheader_store ("GNU.dumpdir", st,
-			     safe_directory_contents (gnu_list_name->directory));
-	      finish_header (st, blk, block_ordinal);
-	    }
-	  else
-	    {
-	      off_t size_left;
-	      off_t totsize;
-	      size_t bufsize;
-	      ssize_t count;
-	      const char *buffer, *p_buffer;
-
-	      block_ordinal = current_block_ordinal ();
-	      buffer = safe_directory_contents (gnu_list_name->directory);
-	      totsize = dumpdir_size (buffer);
-	      OFF_TO_CHARS (totsize, blk->header.size);
-	      finish_header (st, blk, block_ordinal);
-	      p_buffer = buffer;
-	      size_left = totsize;
-
-	      mv_begin (st);
-	      mv_total_size (totsize);
-	      while (size_left > 0)
-		{
-		  mv_size_left (size_left);
-		  blk = find_next_block ();
-		  bufsize = available_space_after (blk);
-		  if (size_left < bufsize)
-		    {
-		      bufsize = size_left;
-		      count = bufsize % BLOCKSIZE;
-		      if (count)
-			memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
-		    }
-		  memcpy (blk->buffer, p_buffer, bufsize);
-		  size_left -= bufsize;
-		  p_buffer += bufsize;
-		  set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
-		}
-	      mv_end ();
-	    }
-	  return;
+	  xheader_store ("GNU.dumpdir", st,
+			 safe_directory_contents (gnu_list_name->directory));
+	  finish_header (st, blk, block_ordinal);
 	}
+      else
+	{
+	  off_t size_left;
+	  off_t totsize;
+	  size_t bufsize;
+	  ssize_t count;
+	  const char *buffer, *p_buffer;
+	  
+	  block_ordinal = current_block_ordinal ();
+	  buffer = safe_directory_contents (gnu_list_name->directory);
+	  totsize = dumpdir_size (buffer);
+	  OFF_TO_CHARS (totsize, blk->header.size);
+	  finish_header (st, blk, block_ordinal);
+	  p_buffer = buffer;
+	  size_left = totsize;
+	  
+	  mv_begin (st);
+	  mv_total_size (totsize);
+	  while (size_left > 0)
+	    {
+	      mv_size_left (size_left);
+	      blk = find_next_block ();
+	      bufsize = available_space_after (blk);
+	      if (size_left < bufsize)
+		{
+		  bufsize = size_left;
+		  count = bufsize % BLOCKSIZE;
+		  if (count)
+		    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
+		}
+	      memcpy (blk->buffer, p_buffer, bufsize);
+	      size_left -= bufsize;
+	      p_buffer += bufsize;
+	      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
+	    }
+	  mv_end ();
+	}
+      return;
     }
 
   if (!recursion_option)
@@ -1556,9 +1553,6 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 		quotearg_colon (p)));
       return;
     }
-
-  if (is_avoided_name (p))
-    return;
 
   is_dir = S_ISDIR (st->stat.st_mode) != 0;
 

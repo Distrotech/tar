@@ -207,6 +207,8 @@ m4_include([spmvp01.at])
 m4_include([spmvp10.at])
 
 m4_include([update.at])
+m4_include([update01.at])
+m4_include([update02.at])
 
 m4_include([volume.at])
 m4_include([volsize.at])

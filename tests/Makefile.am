@@ -130,6 +130,8 @@ TESTSUITE_AT = \
  spmvp10.at\
  truncate.at\
  update.at\
+ update01.at\
+ update02.at\
  volsize.at\
  volume.at\
  verbose.at\

@@ -205,7 +205,7 @@ free_name (struct name *p)
 /* Names from the command call.  */
 
 static struct name *namelist;	/* first name in list, if any */
-static struct name **nametail = &namelist;	/* end of name list */
+static struct name *nametail;	/* end of name list */
 
 /* File name arguments are processed in two stages: first a 
    name_array (see below) is filled, then the names from it
@@ -422,8 +422,7 @@ name_gather (void)
 	  buffer->parent = NULL;
 	  buffer->cmdline = true;
 	  
-	  namelist = buffer;
-	  nametail = &namelist->next;
+	  namelist = nametail = buffer;
 	}
       else if (change_dir)
 	addname (0, change_dir, false, NULL);
@@ -457,7 +456,7 @@ addname (char const *string, int change_dir, bool cmdline, struct name *parent)
 {
   struct name *name = make_name (string);
 
-  name->prev = *nametail;
+  name->prev = nametail;
   name->next = NULL;
   name->found_count = 0;
   name->matching_flags = matching_flags;
@@ -465,9 +464,12 @@ addname (char const *string, int change_dir, bool cmdline, struct name *parent)
   name->directory = NULL;
   name->parent = parent;
   name->cmdline = cmdline;
-  
-  *nametail = name;
-  nametail = &name->next;
+
+  if (nametail)
+    nametail->next = name;
+  else
+    namelist = name;
+  nametail = name;
   return name;
 }
 
@@ -501,7 +503,7 @@ remname (struct name *name)
   if ((p = name->next) != NULL)
     p->prev = name->prev;
   else
-    nametail = &name->prev;
+    nametail = name->prev;
 }
 
 /* Return true if and only if name FILE_NAME (from an archive) matches any
@@ -521,8 +523,8 @@ name_match (const char *file_name)
       if (cursor->name[0] == 0)
 	{
 	  chdir_do (cursor->change_dir);
-	  namelist = 0;
-	  nametail = &namelist;
+	  namelist = NULL;
+	  nametail = NULL;
 	  return true;
 	}
 
@@ -535,8 +537,8 @@ name_match (const char *file_name)
 	  if (starting_file_option)
 	    {
 	      free (namelist);
-	      namelist = 0;
-	      nametail = &namelist;
+	      namelist = NULL;
+	      nametail = NULL;
 	    }
 	  chdir_do (cursor->change_dir);
 
@@ -627,8 +629,8 @@ names_notfound (void)
       }
 
   /* Don't bother freeing the name list; we're about to exit.  */
-  namelist = 0;
-  nametail = &namelist;
+  namelist = NULL;
+  nametail = NULL;
 
   if (same_order_option)
     {
@@ -975,7 +977,7 @@ collect_and_sort_names (void)
       prev_name = name;
       num_names++;
     }
-  nametail = &prev_name;
+  nametail = prev_name;
   hash_free (nametab);
 
   namelist = merge_sort (namelist, num_names, compare_names_found);
@@ -1074,24 +1076,6 @@ excluded_name (char const *name)
 {
   return excluded_file_name (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
 }
-
-/* Names to avoid dumping.  */
-static Hash_table *avoided_name_table;
-
-/* Remember to not archive NAME.  */
-void
-add_avoided_name (char const *name)
-{
-  hash_string_insert (&avoided_name_table, name);
-}
-
-/* Should NAME be avoided when archiving?  */
-bool
-is_avoided_name (char const *name)
-{
-  return hash_string_lookup (avoided_name_table, name);
-}
-
 
 static Hash_table *individual_file_table;
 

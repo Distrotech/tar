@@ -137,13 +137,35 @@ update_archive (void)
 
 		chdir_do (name->change_dir);
 		if (deref_stat (dereference_option,
-				current_stat_info.file_name, &s) == 0
-		    && (tar_timespec_cmp (get_stat_mtime (&s),
-				          current_stat_info.mtime)
-			<= 0))
-		  add_avoided_name (current_stat_info.file_name);
+				current_stat_info.file_name, &s) == 0)
+		  {
+		    if (S_ISDIR (s.st_mode))
+		      {
+			char *p, *dirp;
+			dirp = savedir (name->name);
+			if (!dirp)
+			  savedir_error (name->name);
+			else
+			  {
+			    namebuf_t nbuf = namebuf_create (name->name);
+			    
+			    for (p = dirp; *p; p += strlen (p) + 1)
+			      addname (namebuf_name (nbuf, p),
+				       0, false, NULL);
+			    
+			    namebuf_free (nbuf);
+			    free (dirp);
+			    
+			    remname (name);
+			  }
+		      }
+		    else if (tar_timespec_cmp (get_stat_mtime (&s),
+					       current_stat_info.mtime)
+			     <= 0)
+		      remname (name);
+		  }
 	      }
-
+	    
 	    skip_member ();
 	    break;
 	  }

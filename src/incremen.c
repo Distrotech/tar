@@ -692,9 +692,8 @@ struct directory *
 scan_directory (char *dir, dev_t device, bool cmdline)
 {
   char *dirp = savedir (dir);	/* for scanning directory */
-  char *name_buffer;		/* directory, `/', and directory member */
-  size_t name_buffer_size;	/* allocated size of name_buffer, minus 2 */
-  size_t name_length;		/* used length in name_buffer */
+  namebuf_t nbuf;
+  char *tmp;
   struct stat stat_data;
   struct directory *directory;
   char ch;
@@ -702,35 +701,28 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   if (! dirp)
     savedir_error (dir);
 
-  name_buffer_size = strlen (dir) + NAME_FIELD_SIZE;
-  name_buffer = xmalloc (name_buffer_size + 2);
-  strcpy (name_buffer, dir);
-  zap_slashes (name_buffer);
+  tmp = xstrdup (dir);
+  zap_slashes (tmp);
   
-  if (deref_stat (dereference_option, name_buffer, &stat_data))
+  if (deref_stat (dereference_option, tmp, &stat_data))
     {
-      dir_removed_diag (name_buffer, cmdline, stat_diag);
-      free (name_buffer);
+      dir_removed_diag (tmp, cmdline, stat_diag);
+      free (tmp);
       free (dirp);
       return NULL;
     }
 
-  directory = procdir (name_buffer, &stat_data, device,
+  directory = procdir (tmp, &stat_data, device,
 		       (cmdline ? PD_FORCE_INIT : 0),
 		       &ch);
   
-  name_length = strlen (name_buffer); 
-  if (! ISSLASH (name_buffer[name_length - 1]))
-    {
-      name_buffer[name_length] = DIRECTORY_SEPARATOR;
-      /* name_buffer has been allocated an extra slot */
-      name_buffer[++name_length] = 0;
-    }
+  free (tmp);
+
+  nbuf = namebuf_create (dir);
 
   if (dirp && directory->children != NO_CHILDREN)
     {
       char *entry;	/* directory entry being scanned */
-      size_t entrylen;	/* length of directory entry */
       dumpdir_iter_t itr;
 
       makedumpdir (directory, dirp);
@@ -739,25 +731,17 @@ scan_directory (char *dir, dev_t device, bool cmdline)
 	   entry;
 	   entry = dumpdir_next (itr))
 	{
-	  entrylen = strlen (entry);
-	  if (name_buffer_size <= entrylen - 1 + name_length)
-	    {
-	      do
-		name_buffer_size += NAME_FIELD_SIZE;
-	      while (name_buffer_size <= entrylen - 1 + name_length);
-	      name_buffer = xrealloc (name_buffer, name_buffer_size + 2);
-	    }
-	  strcpy (name_buffer + name_length, entry + 1);
+	  char *full_name = namebuf_name (nbuf, entry + 1);
 
 	  if (*entry == 'I') /* Ignored entry */
 	    *entry = 'N';
-	  else if (excluded_name (name_buffer))
+	  else if (excluded_name (full_name))
 	    *entry = 'N';
 	  else
 	    {
-	      if (deref_stat (dereference_option, name_buffer, &stat_data))
+	      if (deref_stat (dereference_option, full_name, &stat_data))
 		{
-		  file_removed_diag (name_buffer, false, stat_diag);
+		  file_removed_diag (full_name, false, stat_diag);
 		  *entry = 'N';
 		  continue;
 		}
@@ -770,7 +754,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
 		  else if (directory->children == ALL_CHILDREN)
 		    pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
 		  *entry = 'D';
-		  procdir (name_buffer, &stat_data, device, pd_flag, entry);
+		  procdir (full_name, &stat_data, device, pd_flag, entry);
 		}
 
 	      else if (one_file_system_option && device != stat_data.st_dev)
@@ -792,7 +776,8 @@ scan_directory (char *dir, dev_t device, bool cmdline)
       free (itr);
     }
 
-  free (name_buffer);
+  namebuf_free (nbuf);
+
   if (dirp)
     free (dirp);
 

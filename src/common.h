@@ -596,6 +596,11 @@ char *normalize_filename (const char *name);
 void replace_prefix (char **pname, const char *samp, size_t slen,
 		     const char *repl, size_t rlen);
 
+typedef struct namebuf *namebuf_t;
+namebuf_t namebuf_create (const char *dir);
+void namebuf_free (namebuf_t buf);
+char *namebuf_name (namebuf_t buf, const char *name);
+
 void code_ns_fraction (int ns, char *p);
 char const *code_timespec (struct timespec ts, char *sbuf);
 enum { BILLION = 1000000000, LOG10_BILLION = 9 };
@@ -666,6 +671,7 @@ const char *name_next (int change_dirs);
 void name_gather (void);
 struct name *addname (char const *string, int change_dir,
 		      bool cmdline, struct name *parent);
+void remname (struct name *name);
 bool name_match (const char *name);
 void names_notfound (void);
 void collect_and_sort_names (void);

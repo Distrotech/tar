@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2005, 2006, 2007 Free Software Foundation, Inc.
+# Copyright (C) 2009 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,34 +18,38 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-# Check that tar --update does not add non-changed directories to the
-# archive.
-# References: <42AB0D28.6030706@mein-horde.de>
-#             by Martin Lohmeier <martin@mein-horde.de>
-#             on Sat, 11 Jun 2005 18:11:20 +0200
-#             http://lists.gnu.org/archive/html/bug-tar/2005-06/msg00024.html
+# Description: See update01.at
+# Last-Affected-Version: 1.22.90
+# References: <4AD4E703.80500@teclabs.eu>
+#             http://lists.gnu.org/archive/html/bug-tar/2009-10/msg00017.html
 
-AT_SETUP([update unchanged directories])
-AT_KEYWORDS([update update00])
+AT_SETUP([update changed files])
+AT_KEYWORDS([update update02])
 
 AT_TAR_CHECK([
 AT_SORT_PREREQ
-mkdir directory
-genfile --length 10240 --pattern zeros --file directory/file1
-genfile --length 10240 --pattern default --file directory/file2
+mkdir a
+genfile --file a/b
 
-tar cf archive directory || exit 1
-echo separator
-tar uf archive directory || exit 1
-echo separator
-tar tf archive | sort || exit 1
+tar cf arc a
+
+echo "separator"
+
+sleep 2
+touch a/b
+
+tar ufv arc a
+echo "separator"
+tar tf arc | sort || exit 1
 ],
 [0],
 [separator
+a/b
 separator
-directory/
-directory/file1
-directory/file2
+a/
+a/b
+a/b
 ])
 
 AT_CLEANUP
+

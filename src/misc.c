@@ -827,3 +827,44 @@ page_aligned_alloc (void **ptr, size_t size)
   return ptr_align (*ptr, alignment);
 }
 
+
+
+struct namebuf
+{
+  char *buffer;		/* directory, `/', and directory member */
+  size_t buffer_size;	/* allocated size of name_buffer */
+  size_t dir_length;	/* length of directory part in buffer */
+};
+
+namebuf_t
+namebuf_create (const char *dir)
+{
+  namebuf_t buf = xmalloc (sizeof (*buf));
+  buf->buffer_size = strlen (dir) + 2;
+  buf->buffer = xmalloc (buf->buffer_size);
+  strcpy (buf->buffer, dir);
+  buf->dir_length = strlen (buf->buffer);
+  if (!ISSLASH (buf->buffer[buf->dir_length - 1]))
+    buf->buffer[buf->dir_length++] = DIRECTORY_SEPARATOR;
+  return buf;
+}
+
+void
+namebuf_free (namebuf_t buf)
+{
+  free (buf->buffer);
+  free (buf);
+}
+
+char *
+namebuf_name (namebuf_t buf, const char *name)
+{
+  size_t len = strlen (name);
+  while (buf->dir_length + len + 1 >= buf->buffer_size)
+    buf->buffer = x2realloc (buf->buffer, &buf->buffer_size);
+  strcpy (buf->buffer + buf->dir_length, name);
+  return buf->buffer;
+}
+
+
+  
