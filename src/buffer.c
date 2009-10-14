@@ -596,7 +596,8 @@ _open_archive (enum access_mode wanted_access)
       {
       case ACCESS_READ:
         archive = open_compressed_archive ();
-	guess_seekable_archive ();
+	if (archive >= 0)
+	  guess_seekable_archive ();
         break;
 
       case ACCESS_WRITE:
