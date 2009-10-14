@@ -39,11 +39,14 @@ mkdir a
 genfile --file b
 mkdir c
 
-tar -c -f a -z --remove-files b c
-
+tar -c -f a -z --remove-files b c 2>err
+EC=$?
+sed -n '/(child)/p' err >&2
+rm err
 find . | sort
+exit $EC
 ],
-[0],
+[2],
 [.
 ./a
 ./b
@@ -51,8 +54,6 @@ find . | sort
 ],
 [tar (child): a: Cannot open: Is a directory
 tar (child): Error is not recoverable: exiting now
-tar: Child returned status 2
-tar: Error is not recoverable: exiting now
 ])
 
 AT_CLEANUP

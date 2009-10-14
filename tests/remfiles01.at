@@ -40,11 +40,20 @@ chmod 0 a
 genfile --file b
 mkdir c
 
-tar -c -f a -z --remove-files b c
+# Depending on when the SIGPIPE gets delivered, the invocation below
+# may finish with either
+#  tar: a: Cannot write: Broken pipe
+# or
+#  tar: Child returned status 2
 
+tar -c -f a -z --remove-files b c 2>err
+EC=$?
+sed -n '/(child)/p' err >&2
+rm err
 find . | sort
+exit $EC
 ],
-[0],
+[2],
 [.
 ./a
 ./b

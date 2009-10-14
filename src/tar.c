@@ -2556,7 +2556,7 @@ main (int argc, char **argv)
   obstack_init (&argv_stk);
 
   /* Ensure default behavior for some signals */
-  signal (SIGPIPE, SIG_DFL);
+  signal (SIGPIPE, SIG_IGN);
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
 

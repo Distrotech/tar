@@ -331,7 +331,8 @@ sys_child_open_for_compress (void)
   /* The new born child tar is here!  */
 
   set_program_name (_("tar (child)"));
-
+  signal (SIGPIPE, SIG_DFL);
+  
   xdup2 (parent_pipe[PREAD], STDIN_FILENO);
   xclose (parent_pipe[PWRITE]);
 
@@ -474,7 +475,8 @@ sys_child_open_for_uncompress (void)
   /* The newborn child tar is here!  */
 
   set_program_name (_("tar (child)"));
-
+  signal (SIGPIPE, SIG_DFL);
+  
   xdup2 (parent_pipe[PWRITE], STDOUT_FILENO);
   xclose (parent_pipe[PREAD]);
 
