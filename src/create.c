@@ -1,7 +1,7 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -996,11 +996,11 @@ finish_header (struct tar_stat_info *st,
       && header->header.typeflag != XHDTYPE
       && header->header.typeflag != XGLTYPE)
     {
-      /* These globals are parameters to print_header, sigh.  */
+      /* FIXME: These globals are parameters to print_header, sigh.  */
 
       current_header = header;
       current_format = archive_format;
-      print_header (st, block_ordinal);
+      print_header (st, current_header, block_ordinal);
     }
 
   header = write_extended (false, st, header);

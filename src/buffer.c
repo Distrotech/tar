@@ -1,7 +1,8 @@
 /* Buffer management for tar.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software
+   Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -1167,7 +1168,7 @@ read_header0 (struct tar_stat_info *info)
   enum read_header rc;
 
   tar_stat_init (info);
-  rc = read_header_primitive (false, info);
+  rc = read_header (&current_header, info, false);
   if (rc == HEADER_SUCCESS)
     {
       set_next_block_after (current_header);
@@ -1312,20 +1313,17 @@ try_new_volume ()
 }
 
 
-/* Check the LABEL block against the volume label, seen as a globbing
+/* Check LABEL against the volume label, seen as a globbing
    pattern.  Return true if the pattern matches.  In case of failure,
    retry matching a volume sequence number before giving up in
    multi-volume mode.  */
 static bool
-check_label_pattern (union block *label)
+check_label_pattern (const char *label)
 {
   char *string;
   bool result;
 
-  if (! memchr (label->header.name, '\0', sizeof label->header.name))
-    return false;
-
-  if (fnmatch (volume_label_option, label->header.name, 0) == 0)
+  if (fnmatch (volume_label_option, label, 0) == 0)
     return true;
 
   if (!multi_volume_option)
@@ -1335,7 +1333,7 @@ check_label_pattern (union block *label)
                     + sizeof VOLUME_LABEL_APPEND + 1);
   strcpy (string, volume_label_option);
   strcat (string, VOLUME_LABEL_APPEND);
-  result = fnmatch (string, label->header.name, 0) == 0;
+  result = fnmatch (string, label, 0) == 0;
   free (string);
   return result;
 }
@@ -1345,14 +1343,43 @@ check_label_pattern (union block *label)
 static void
 match_volume_label (void)
 {
-  union block *label = find_next_block ();
-
-  if (!label)
+  if (!volume_label)
+    {
+      union block *label = find_next_block ();
+  
+      if (!label)
+	FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
+		      quote (volume_label_option)));
+      if (label->header.typeflag == GNUTYPE_VOLHDR)
+	{
+	  if (memchr (label->header.name, '\0', sizeof label->header.name))
+	    assign_string (&volume_label, label->header.name);
+	  else
+	    {
+	      volume_label = xmalloc (sizeof (label->header.name) + 1);
+	      memcpy (volume_label, label->header.name,
+		      sizeof (label->header.name));
+	      volume_label[sizeof (label->header.name)] = 0;
+	    }
+	}
+      else if (label->header.typeflag == XGLTYPE)
+	{
+	  struct tar_stat_info st;
+	  tar_stat_init (&st);
+	  xheader_read (&st.xhdr, label,
+			OFF_FROM_HEADER (label->header.size));
+	  xheader_decode (&st);
+	  tar_stat_destroy (&st);
+	}
+    }
+  
+  if (!volume_label)
     FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
                   quote (volume_label_option)));
-  if (!check_label_pattern (label))
+  
+  if (!check_label_pattern (volume_label))
     FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
-                  quote_n (0, label->header.name),
+                  quote_n (0, volume_label),
                   quote_n (1, volume_label_option)));
 }
 

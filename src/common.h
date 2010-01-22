@@ -1,7 +1,8 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, 
+   Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -396,6 +397,7 @@ extern enum access_mode access_mode;
 extern FILE *stdlis;
 extern bool write_archive_to_stdout;
 extern char *volume_label;
+extern size_t volume_label_count;
 extern char *continued_file_name;
 extern uintmax_t continued_file_size;
 extern uintmax_t continued_file_offset;
@@ -577,11 +579,12 @@ uintmax_t uintmax_from_header (const char *buf, size_t size);
 
 void list_archive (void);
 void print_for_mkdir (char *dirname, int length, mode_t mode);
-void print_header (struct tar_stat_info *st, off_t block_ordinal);
+void print_header (struct tar_stat_info *st, union block *blk,
+	           off_t block_ordinal);
 void read_and (void (*do_something) (void));
-enum read_header read_header_primitive (bool raw_extended_headers,
-					struct tar_stat_info *info);
-enum read_header read_header (bool raw_extended_headers);
+enum read_header read_header (union block **return_block,
+			      struct tar_stat_info *info,
+			      bool raw_extended_headers);
 enum read_header tar_checksum (union block *header, bool silent);
 void skip_file (off_t size);
 void skip_member (void);

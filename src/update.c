@@ -1,7 +1,7 @@
 /* Update a tar archive.
 
    Copyright (C) 1988, 1992, 1994, 1996, 1997, 1999, 2000, 2001, 2003,
-   2004, 2005, 2007 Free Software Foundation, Inc.
+   2004, 2005, 2007, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -114,7 +114,8 @@ update_archive (void)
 
   while (!found_end)
     {
-      enum read_header status = read_header (false);
+      enum read_header status = read_header (&current_header, 
+                                             &current_stat_info, false);
 
       switch (status)
 	{

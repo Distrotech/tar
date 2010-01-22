@@ -1,7 +1,7 @@
 /* Delete entries from a tar archive.
 
    Copyright (C) 1988, 1992, 1994, 1996, 1997, 2000, 2001, 2003, 2004,
-   2005, 2006 Free Software Foundation, Inc.
+   2005, 2006, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -165,7 +165,9 @@ delete_archive_members (void)
 
   do
     {
-      enum read_header status = read_header (true);
+      enum read_header status = read_header (&current_header,
+                                             &current_stat_info,
+                                             true);
 
       switch (status)
 	{
@@ -260,7 +262,7 @@ delete_archive_members (void)
 
 	  if (current_block == record_end)
 	    flush_archive ();
-	  status = read_header (false);
+	  status = read_header (&current_header, &current_stat_info, false);
 
 	  xheader_decode (&current_stat_info);
 

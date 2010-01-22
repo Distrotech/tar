@@ -1,7 +1,7 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -33,6 +33,7 @@ union block *recent_long_name;	/* recent long name header and contents */
 union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
+union block *recent_global_header; /* Recent global header block */
 
 static uintmax_t from_header (const char *, size_t, const char *,
 			      uintmax_t, uintmax_t, bool, bool);
@@ -77,7 +78,7 @@ read_and (void (*do_something) (void))
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
 
-      status = read_header (false);
+      status = read_header (&current_header, &current_stat_info, false);
       switch (status)
 	{
 	case HEADER_STILL_UNREAD:
@@ -138,7 +139,7 @@ read_and (void (*do_something) (void))
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (false);
+	      status = read_header (&current_header, &current_stat_info, false);
 	      if (status == HEADER_ZERO_BLOCK)
 		break;
 	      WARNOPT (WARN_ALONE_ZERO_BLOCK,
@@ -205,11 +206,12 @@ void
 list_archive (void)
 {
   off_t block_ordinal = current_block_ordinal ();
-  /* Print the header block.  */
 
+  /* Print the header block.  */
+  
   decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
-    print_header (&current_stat_info, block_ordinal);
+    print_header (&current_stat_info, current_header, block_ordinal);
 
   if (incremental_option)
     {
@@ -293,7 +295,8 @@ tar_checksum (union block *header, bool silent)
    the header which this routine reads.  */
 
 enum read_header
-read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
+read_header (union block **return_block, struct tar_stat_info *info,
+	     bool raw_extended_headers)
 {
   union block *header;
   union block *header_copy;
@@ -310,7 +313,7 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
       enum read_header status;
 
       header = find_next_block ();
-      current_header = header;
+      *return_block = header;
       if (!header)
 	return HEADER_END_OF_FILE;
 
@@ -392,6 +395,11 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
 	  else if (header->header.typeflag == XGLTYPE)
 	    {
 	      struct xheader xhdr;
+
+	      if (!recent_global_header)
+		recent_global_header = xmalloc (sizeof *recent_global_header);
+	      memcpy (recent_global_header, header,
+		      sizeof *recent_global_header);
 	      memset (&xhdr, 0, sizeof xhdr);
 	      xheader_read (&xhdr, header,
 			    OFF_FROM_HEADER (header->header.size));
@@ -405,7 +413,7 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
       else
 	{
 	  char const *name;
-	  struct posix_header const *h = &current_header->header;
+	  struct posix_header const *h = &header->header;
 	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
 	  if (recent_long_name)
@@ -462,12 +470,6 @@ read_header_primitive (bool raw_extended_headers, struct tar_stat_info *info)
 	  return HEADER_SUCCESS;
 	}
     }
-}
-
-enum read_header
-read_header (bool raw_extended_headers)
-{
-  return read_header_primitive (raw_extended_headers, &current_stat_info);
 }
 
 static char *
@@ -1019,9 +1021,6 @@ tartime (struct timespec t, bool full_time)
    they shouldn't.  Unix tar is pretty random here anyway.  */
 
 
-/* FIXME: Note that print_header uses the globals HEAD, HSTAT, and
-   HEAD_STANDARD, which must be set up in advance.  Not very clean..  */
-
 /* Width of "user/group size", with initial value chosen
    heuristically.  This grows as needed, though this may cause some
    stairstepping in the output.  Make it too small and the output will
@@ -1034,8 +1033,11 @@ static int ugswidth = 19;
    USGWIDTH, some stairstepping may occur.  */
 static int datewidth = sizeof "YYYY-MM-DD HH:MM" - 1;
 
-void
-print_header (struct tar_stat_info *st, off_t block_ordinal)
+static bool volume_label_printed = false;
+
+static void
+simple_print_header (struct tar_stat_info *st, union block *blk,
+		     off_t block_ordinal)
 {
   char modes[11];
   char const *time_stamp;
@@ -1051,7 +1053,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
   int pad;
   int sizelen;
 
-  if (test_label_option && current_header->header.typeflag != GNUTYPE_VOLHDR)
+  if (test_label_option && blk->header.typeflag != GNUTYPE_VOLHDR)
     return;
 
   if (show_transformed_names_option)
@@ -1080,9 +1082,10 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
       /* File type and modes.  */
 
       modes[0] = '?';
-      switch (current_header->header.typeflag)
+      switch (blk->header.typeflag)
 	{
 	case GNUTYPE_VOLHDR:
+	  volume_label_printed = true;
 	  modes[0] = 'V';
 	  break;
 
@@ -1150,8 +1153,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  /* Try parsing it as an unsigned integer first, and as a
 	     uid_t if that fails.  This method can list positive user
 	     ids that are too large to fit in a uid_t.  */
-	  uintmax_t u = from_header (current_header->header.uid,
-				     sizeof current_header->header.uid, 0,
+	  uintmax_t u = from_header (blk->header.uid,
+				     sizeof blk->header.uid, 0,
 				     (uintmax_t) 0,
 				     (uintmax_t) TYPE_MAXIMUM (uintmax_t),
 				     false, false);
@@ -1160,7 +1163,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  else
 	    {
 	      sprintf (uform, "%ld",
-		       (long) UID_FROM_HEADER (current_header->header.uid));
+		       (long) UID_FROM_HEADER (blk->header.uid));
 	      user = uform;
 	    }
 	}
@@ -1175,8 +1178,8 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  /* Try parsing it as an unsigned integer first, and as a
 	     gid_t if that fails.  This method can list positive group
 	     ids that are too large to fit in a gid_t.  */
-	  uintmax_t g = from_header (current_header->header.gid,
-				     sizeof current_header->header.gid, 0,
+	  uintmax_t g = from_header (blk->header.gid,
+				     sizeof blk->header.gid, 0,
 				     (uintmax_t) 0,
 				     (uintmax_t) TYPE_MAXIMUM (uintmax_t),
 				     false, false);
@@ -1185,14 +1188,14 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	  else
 	    {
 	      sprintf (gform, "%ld",
-		       (long) GID_FROM_HEADER (current_header->header.gid));
+		       (long) GID_FROM_HEADER (blk->header.gid));
 	      group = gform;
 	    }
 	}
 
       /* Format the file size or major/minor device numbers.  */
 
-      switch (current_header->header.typeflag)
+      switch (blk->header.typeflag)
 	{
 	case CHRTYPE:
 	case BLKTYPE:
@@ -1222,7 +1225,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 
       fprintf (stdlis, " %s", quotearg (temp_name));
 
-      switch (current_header->header.typeflag)
+      switch (blk->header.typeflag)
 	{
 	case SYMTYPE:
 	  fprintf (stdlis, " -> %s\n", quotearg (st->link_name));
@@ -1235,7 +1238,7 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	default:
 	  {
 	    char type_string[2];
-	    type_string[0] = current_header->header.typeflag;
+	    type_string[0] = blk->header.typeflag;
 	    type_string[1] = '\0';
 	    fprintf (stdlis, _(" unknown file type %s\n"),
 		     quote (type_string));
@@ -1269,13 +1272,41 @@ print_header (struct tar_stat_info *st, off_t block_ordinal)
 	case GNUTYPE_MULTIVOL:
 	  strcpy (size,
 		  STRINGIFY_BIGINT
-		  (UINTMAX_FROM_HEADER (current_header->oldgnu_header.offset),
+		  (UINTMAX_FROM_HEADER (blk->oldgnu_header.offset),
 		   uintbuf));
 	  fprintf (stdlis, _("--Continued at byte %s--\n"), size);
 	  break;
 	}
     }
   fflush (stdlis);
+}
+
+
+void
+print_header (struct tar_stat_info *st, union block *blk,
+	      off_t block_ordinal)
+{
+  if (current_format == POSIX_FORMAT && !volume_label_printed && volume_label)
+    {
+      struct tar_stat_info vstat;
+      union block vblk;
+      enum archive_format dummy;
+
+      volume_label_printed = true;
+
+      memset (&vblk, 0, sizeof (vblk));
+      vblk.header.typeflag = GNUTYPE_VOLHDR;
+      if (recent_global_header)
+	memcpy (vblk.header.mtime, recent_global_header->header.mtime,
+		sizeof vblk.header.mtime);
+      tar_stat_init (&vstat);
+      assign_string (&vstat.file_name, ".");
+      decode_header (&vblk, &vstat, &dummy, 0);
+      assign_string (&vstat.file_name, volume_label);
+      simple_print_header (&vstat, &vblk, block_ordinal);
+      tar_stat_destroy (&vstat);
+    }
+  simple_print_header (st, blk, block_ordinal);
 }
 
 /* Print a similar line when we make a directory automatically.  */

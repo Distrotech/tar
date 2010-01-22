@@ -1,7 +1,7 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -460,7 +460,7 @@ diff_archive (void)
     {
       if (now_verifying)
 	fprintf (stdlis, _("Verify "));
-      print_header (&current_stat_info, -1);
+      print_header (&current_stat_info, current_header, -1);
     }
 
   switch (current_header->header.typeflag)
@@ -578,7 +578,8 @@ verify_volume (void)
   flush_read ();
   while (1)
     {
-      enum read_header status = read_header (false);
+      enum read_header status = read_header (&current_header, 
+                                             &current_stat_info, false);
 
       if (status == HEADER_FAILURE)
 	{
@@ -588,7 +589,8 @@ verify_volume (void)
 	    {
 	      counter++;
 	      set_next_block_after (current_header);
-	      status = read_header (false);
+	      status = read_header (&current_header, &current_stat_info,
+	                            false);
 	    }
 	  while (status == HEADER_FAILURE);
 
@@ -606,7 +608,7 @@ verify_volume (void)
             {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (false);
+	      status = read_header (&current_header, &current_stat_info, false);
 	      if (status == HEADER_ZERO_BLOCK)
 	        break;
 	      WARNOPT (WARN_ALONE_ZERO_BLOCK,
