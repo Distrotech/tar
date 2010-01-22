@@ -602,8 +602,10 @@ split_long_name (const char *name, size_t length)
 {
   size_t i;
 
-  if (length > PREFIX_FIELD_SIZE)
+  if (length > PREFIX_FIELD_SIZE + 1)
     length = PREFIX_FIELD_SIZE + 1;
+  else if (ISSLASH (name[length - 1]))
+    length--;
   for (i = length - 1; i > 0; i--)
     if (ISSLASH (name[i]))
       break;
@@ -614,9 +616,9 @@ static union block *
 write_ustar_long_name (const char *name)
 {
   size_t length = strlen (name);
-  size_t i;
+  size_t i, nlen;
   union block *header;
-
+  
   if (length > PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1)
     {
       ERROR ((0, 0, _("%s: file name is too long (max %d); not dumped"),
@@ -626,7 +628,7 @@ write_ustar_long_name (const char *name)
     }
 
   i = split_long_name (name, length);
-  if (i == 0 || length - i - 1 > NAME_FIELD_SIZE)
+  if (i == 0 || (nlen = length - i - 1) > NAME_FIELD_SIZE || nlen == 0)
     {
       ERROR ((0, 0,
 	      _("%s: file name is too long (cannot be split); not dumped"),
