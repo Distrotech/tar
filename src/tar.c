@@ -908,9 +908,9 @@ format_default_settings (void)
 	    archive_format_string (DEFAULT_ARCHIVE_FORMAT), 
 	    DEFAULT_ARCHIVE, DEFAULT_BLOCKING,              
 	    quoting_style_args[DEFAULT_QUOTING_STYLE],
-	    DEFAULT_RMT_COMMAND,
+	    DEFAULT_RMT_COMMAND
 #ifdef REMOTE_SHELL
-	    REMOTE_SHELL
+	    , REMOTE_SHELL
 #endif
 	    );
 }
