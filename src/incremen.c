@@ -922,8 +922,8 @@ read_incr_db_01 (int version, const char *initbuf)
   uintmax_t u;
   time_t sec;
   long int nsec;
-  char *buf = 0;
-  size_t bufsize;
+  char *buf = NULL;
+  size_t bufsize = 0;
   char *ebuf;
   long lineno = 1;
 
@@ -1282,8 +1282,8 @@ void
 read_directory_file (void)
 {
   int fd;
-  char *buf = 0;
-  size_t bufsize;
+  char *buf = NULL;
+  size_t bufsize = 0;
   int flags = O_RDWR | O_CREAT;
 
   if (incremental_level == 0)
