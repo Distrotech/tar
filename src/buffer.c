@@ -36,9 +36,6 @@
 /* Number of retries before giving up on read.  */
 #define READ_ERROR_MAX 10
 
-/* Globbing pattern to append to volume label if initial match failed.  */
-#define VOLUME_LABEL_APPEND " Volume [1-9]*"
-
 /* Variables.  */
 
 static tarlong prev_written;    /* bytes written on previous volumes */
@@ -1313,6 +1310,35 @@ try_new_volume ()
 }
 
 
+#define VOLUME_TEXT " Volume "
+#define VOLUME_TEXT_LEN (sizeof VOLUME_TEXT - 1)
+
+char *
+drop_volume_label_suffix (const char *label)
+{
+  const char *p;
+  size_t len = strlen (label);
+
+  if (len < 1)
+    return NULL;
+  
+  for (p = label + len - 1; p > label && isdigit ((unsigned char) *p); p--)
+    ;
+  if (p > label && p - (VOLUME_TEXT_LEN - 1) > label)
+    {
+      p -= VOLUME_TEXT_LEN - 1;
+      if (memcmp (p, VOLUME_TEXT, VOLUME_TEXT_LEN) == 0)
+	{
+	  char *s = xmalloc ((len = p - label) + 1);
+	  memcpy (s, label, len);
+	  s[len] = 0;
+	  return s;
+	}
+    }
+
+  return NULL;
+}
+      
 /* Check LABEL against the volume label, seen as a globbing
    pattern.  Return true if the pattern matches.  In case of failure,
    retry matching a volume sequence number before giving up in
@@ -1329,12 +1355,12 @@ check_label_pattern (const char *label)
   if (!multi_volume_option)
     return false;
 
-  string = xmalloc (strlen (volume_label_option)
-                    + sizeof VOLUME_LABEL_APPEND + 1);
-  strcpy (string, volume_label_option);
-  strcat (string, VOLUME_LABEL_APPEND);
-  result = fnmatch (string, label, 0) == 0;
-  free (string);
+  string = drop_volume_label_suffix (label);
+  if (string)
+    {
+      result = fnmatch (string, volume_label_option, 0) == 0;
+      free (string);
+    }
   return result;
 }
 

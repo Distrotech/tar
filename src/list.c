@@ -672,7 +672,8 @@ from_header (char const *where0, size_t digs, char const *type,
 	{
 	  if (type && !silent)
 	    ERROR ((0, 0,
-		    /* TRANSLATORS: %s is type of the value (gid_t, uid_t, etc.) */
+		    /* TRANSLATORS: %s is type of the value (gid_t, uid_t,
+		       etc.) */
 		    _("Blanks in header where numeric %s value expected"),
 		    type));
 	  return -1;
@@ -1053,9 +1054,6 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
   int pad;
   int sizelen;
 
-  if (test_label_option && blk->header.typeflag != GNUTYPE_VOLHDR)
-    return;
-
   if (show_transformed_names_option)
     temp_name = st->file_name ? st->file_name : st->orig_file_name;
   else
@@ -1283,29 +1281,35 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 
 
 void
+print_volume_label ()
+{
+  struct tar_stat_info vstat;
+  union block vblk;
+  enum archive_format dummy;
+
+  memset (&vblk, 0, sizeof (vblk));
+  vblk.header.typeflag = GNUTYPE_VOLHDR;
+  if (recent_global_header)
+    memcpy (vblk.header.mtime, recent_global_header->header.mtime,
+	    sizeof vblk.header.mtime);
+  tar_stat_init (&vstat);
+  assign_string (&vstat.file_name, ".");
+  decode_header (&vblk, &vstat, &dummy, 0);
+  assign_string (&vstat.file_name, volume_label);
+  simple_print_header (&vstat, &vblk, 0);
+  tar_stat_destroy (&vstat);
+}
+
+void
 print_header (struct tar_stat_info *st, union block *blk,
 	      off_t block_ordinal)
 {
   if (current_format == POSIX_FORMAT && !volume_label_printed && volume_label)
     {
-      struct tar_stat_info vstat;
-      union block vblk;
-      enum archive_format dummy;
-
+      print_volume_label ();
       volume_label_printed = true;
-
-      memset (&vblk, 0, sizeof (vblk));
-      vblk.header.typeflag = GNUTYPE_VOLHDR;
-      if (recent_global_header)
-	memcpy (vblk.header.mtime, recent_global_header->header.mtime,
-		sizeof vblk.header.mtime);
-      tar_stat_init (&vstat);
-      assign_string (&vstat.file_name, ".");
-      decode_header (&vblk, &vstat, &dummy, 0);
-      assign_string (&vstat.file_name, volume_label);
-      simple_print_header (&vstat, &vblk, block_ordinal);
-      tar_stat_destroy (&vstat);
     }
+
   simple_print_header (st, blk, block_ordinal);
 }
 
@@ -1384,4 +1388,34 @@ skip_member (void)
 
       mv_end ();
     }
+}
+
+void
+test_archive_label ()
+{
+  base64_init ();
+  name_gather ();
+
+  open_archive (ACCESS_READ);
+  if (read_header (&current_header, &current_stat_info, false)
+      == HEADER_SUCCESS)
+    {
+      char *s = NULL;
+	
+      decode_header (current_header,
+		     &current_stat_info, &current_format, 0);
+      if (current_header->header.typeflag == GNUTYPE_VOLHDR)
+	assign_string (&volume_label, current_header->header.name);
+
+      if (volume_label
+	  && (name_match (volume_label)
+	      || (multi_volume_option
+		  && (s = drop_volume_label_suffix (volume_label))
+		  && name_match (s))))
+	if (verbose_option)
+	  print_volume_label ();
+      free (s);
+    }
+  close_archive ();
+  names_notfound ();
 }

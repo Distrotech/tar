@@ -85,7 +85,8 @@ enum subcommand
   DIFF_SUBCOMMAND,		/* -d */
   EXTRACT_SUBCOMMAND,		/* -x */
   LIST_SUBCOMMAND,		/* -t */
-  UPDATE_SUBCOMMAND		/* -u */
+  UPDATE_SUBCOMMAND,		/* -u */
+  TEST_LABEL_SUBCOMMAND,        /* --test-label */
 };
 
 GLOBAL enum subcommand subcommand_option;
@@ -362,8 +363,6 @@ GLOBAL dev_t root_device;
 /* Unquote filenames */
 GLOBAL bool unquote_option;
 
-GLOBAL bool test_label_option; /* Test archive volume label and exit */
-
 /* Show file or archive names after transformation.
    In particular, when creating archive in verbose mode, list member names
    as stored in the archive */
@@ -402,6 +401,8 @@ extern char *continued_file_name;
 extern uintmax_t continued_file_size;
 extern uintmax_t continued_file_offset;
 extern off_t records_written;
+
+char *drop_volume_label_suffix (const char *label);
 
 size_t available_space_after (union block *pointer);
 off_t current_block_ordinal (void);
@@ -578,6 +579,7 @@ uid_t uid_from_header (const char *buf, size_t size);
 uintmax_t uintmax_from_header (const char *buf, size_t size);
 
 void list_archive (void);
+void test_archive_label (void);
 void print_for_mkdir (char *dirname, int length, mode_t mode);
 void print_header (struct tar_stat_info *st, union block *blk,
 	           off_t block_ordinal);

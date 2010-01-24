@@ -214,9 +214,10 @@ subcommand_string (enum subcommand c)
     case UPDATE_SUBCOMMAND:
       return "-u";
 
-    default:
-      abort ();
+    case TEST_LABEL_SUBCOMMAND:
+      return "--test-label";
     }
+  abort ();
 }
 
 void
@@ -921,7 +922,7 @@ set_subcommand_option (enum subcommand subcommand)
   if (subcommand_option != UNKNOWN_SUBCOMMAND
       && subcommand_option != subcommand)
     USAGE_ERROR ((0, 0,
-		  _("You may not specify more than one `-Acdtrux' option")));
+		  _("You may not specify more than one `-Acdtrux' or `--test-label' option")));
   
   subcommand_option = subcommand;
 }
@@ -1612,8 +1613,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
       
     case TEST_LABEL_OPTION:
-      set_subcommand_option (LIST_SUBCOMMAND);
-      test_label_option = true;
+      set_subcommand_option (TEST_LABEL_SUBCOMMAND);
       break;
       
     case 'T':
@@ -2437,7 +2437,7 @@ decode_options (int argc, char **argv)
     old_files_option = UNLINK_FIRST_OLD_FILES;
 
 
-  if (test_label_option)
+  if (subcommand_option == TEST_LABEL_SUBCOMMAND)
     {
       /* --test-label is silent if the user has specified the label name to
 	 compare against. */
@@ -2472,6 +2472,7 @@ decode_options (int argc, char **argv)
     case EXTRACT_SUBCOMMAND:
     case LIST_SUBCOMMAND:
     case DIFF_SUBCOMMAND:
+    case TEST_LABEL_SUBCOMMAND:
       for (archive_name_cursor = archive_name_array;
 	   archive_name_cursor < archive_name_array + archive_names;
 	   archive_name_cursor++)
@@ -2578,7 +2579,7 @@ main (int argc, char **argv)
     {
     case UNKNOWN_SUBCOMMAND:
       USAGE_ERROR ((0, 0,
-		    _("You must specify one of the `-Acdtrux' options")));
+		    _("You must specify one of the `-Acdtrux' or `--test-label'  options")));
 
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
@@ -2612,6 +2613,9 @@ main (int argc, char **argv)
       diff_init ();
       read_and (diff_archive);
       break;
+
+    case TEST_LABEL_SUBCOMMAND:
+      test_archive_label ();
     }
 
   if (totals_option)
