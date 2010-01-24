@@ -996,11 +996,9 @@ finish_header (struct tar_stat_info *st,
       && header->header.typeflag != XHDTYPE
       && header->header.typeflag != XGLTYPE)
     {
-      /* FIXME: These globals are parameters to print_header, sigh.  */
-
-      current_header = header;
+      /* FIXME: This global is used in print_header, sigh.  */
       current_format = archive_format;
-      print_header (st, current_header, block_ordinal);
+      print_header (st, header, block_ordinal);
     }
 
   header = write_extended (false, st, header);

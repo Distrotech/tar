@@ -2572,6 +2572,10 @@ during archive creation, it is order sensitive.  @xref{directory}.
 When performing operations, @command{tar} will skip files that match
 @var{pattern}.  @xref{exclude}.
 
+@opsummary{exclude-backups}
+@item --exclude-backups
+Exclude backup and lock files.  @xref{exclude,, exclude-backups}.
+
 @opsummary{exclude-from}
 @item --exclude-from=@var{file}
 @itemx -X @var{file}
@@ -2585,7 +2589,7 @@ patterns in the file @var{file}.  @xref{exclude}.
 Exclude from dump any directory containing a valid cache directory
 tag file, but still dump the directory node and the tag file itself.
 
-@xref{exclude}.
+@xref{exclude,, exclude-caches}.
 
 @opsummary{exclude-caches-under}
 @item --exclude-caches-under
@@ -2605,19 +2609,20 @@ tag file.  @xref{exclude}.
 @item --exclude-tag=@var{file}
 
 Exclude from dump any directory containing file named @var{file}, but
-dump the directory node and @var{file} itself.  @xref{exclude}.
+dump the directory node and @var{file} itself.  @xref{exclude,, exclude-tag}.
 
 @opsummary{exclude-tag-under}
 @item --exclude-tag-under=@var{file}
 
 Exclude from dump the contents of any directory containing file
-named @var{file}, but dump the directory node itself.  @xref{exclude}.
+named @var{file}, but dump the directory node itself.  @xref{exclude,,
+exclude-tag-under}.
 
 @opsummary{exclude-tag-all}
 @item --exclude-tag-all=@var{file}
 
 Exclude from dump any directory containing file named @var{file}.
-@xref{exclude}.
+@xref{exclude,,exclude-tag-all}.
 
 @opsummary{exclude-vcs}
 @item --exclude-vcs
@@ -2625,7 +2630,7 @@ Exclude from dump any directory containing file named @var{file}.
 Exclude from dump directories and files, that are internal for some
 widely used version control systems.
 
-@xref{exclude}.
+@xref{exclude,,exclude-vcs}.
 
 @opsummary{file}
 @item --file=@var{archive}
@@ -7068,6 +7073,7 @@ which is difficult to catch using text editors.
 
 However, empty lines are OK.
 
+@table @option
 @cindex version control system, excluding files
 @cindex VCS, excluding files
 @cindex SCCS, excluding files
@@ -7079,13 +7085,11 @@ However, empty lines are OK.
 @cindex Arch, excluding files
 @cindex Mercurial, excluding files
 @cindex Darcs, excluding files
-@table @option
 @opindex exclude-vcs
 @item --exclude-vcs
 Exclude files and directories used by following version control
 systems: @samp{CVS}, @samp{RCS}, @samp{SCCS}, @samp{SVN}, @samp{Arch},
 @samp{Bazaar}, @samp{Mercurial}, and @samp{Darcs}.
-@end table
 
 As of version @value{VERSION}, the following files are excluded:
 
@@ -7110,6 +7114,19 @@ As of version @value{VERSION}, the following files are excluded:
 @item @file{.hgrags}
 @item @file{_darcs}
 @end itemize
+
+@opindex exclude-backups
+@item --exclude-backups
+Exclude backup and lock files.  This option causes exclusion of files
+that match the following shell globbing patterns:
+
+@table @asis
+@item .#*
+@item *~
+@item #*#
+@end table
+
+@end table
 
 @findex exclude-caches
 When creating an archive, the @option{--exclude-caches} option family

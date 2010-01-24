@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2009-10-07
+GNU tar NEWS - User visible changes. 2010-01-24
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -27,6 +27,9 @@ messages are suppressed.  For example,
 
 suppresses the output of `A lone zero block' diagnostics, which is
 normally issued if `archive' ends with a single block of zeros.
+
+See Tar Manual, section 3.9 "Controlling Warning Messages", for a
+detailed discussion.
 
 * New command line option `--level'
 
@@ -77,10 +80,10 @@ the Epoch or a `Time reference' (see below).
 * Time references in --pax-option argument.
 
 Any value from the --pax-option argument that is enclosed in a pair
-of curly braces.  In that case, the string between the braces is
-understood either as a textual time representation, as described in
+of curly braces represents a time reference.  The string between the 
+braces is understood either as a textual time representation, as described in
 chapter 7, "Date input formats", of the Tar manual, or as a name of
-the existing file, starting with `/' or `.'.  In the latter
+an existing file, starting with `/' or `.'.  In the latter
 case, the value is replaced with the modification time of that file.
 
 * Bugfixes
@@ -90,6 +93,9 @@ case, the value is replaced with the modification time of that file.
 ** Correctly restore modes and permissions on existing directories.
 ** The --remove-files option removes the files only if they were
 succesfully stored in the archive.
+** Fix storing and listing of the volume labels in POSIX format.
+** Improve algorithm for splitting long file names (ustar
+format).
 
 
 version 1.22 - Sergey Poznyakoff, 2009-03-05
