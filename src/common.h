@@ -548,6 +548,17 @@ enum read_header
   HEADER_FAILURE		/* ill-formed header, or bad checksum */
 };
 
+/* Operation mode for read_header: */
+
+enum read_header_mode
+{
+  read_header_auto,             /* process extended headers automatically */
+  read_header_x_raw,            /* return raw extended headers (return
+				   HEADER_SUCCESS_EXTENDED) */
+  read_header_x_global          /* when POSIX global extended header is read,
+				   decode it and return
+				   HEADER_SUCCESS_EXTENDED */
+};
 extern union block *current_header;
 extern enum archive_format current_format;
 extern size_t recent_long_name_blocks;
@@ -586,7 +597,7 @@ void print_header (struct tar_stat_info *st, union block *blk,
 void read_and (void (*do_something) (void));
 enum read_header read_header (union block **return_block,
 			      struct tar_stat_info *info,
-			      bool raw_extended_headers);
+			      enum read_header_mode m);
 enum read_header tar_checksum (union block *header, bool silent);
 void skip_file (off_t size);
 void skip_member (void);

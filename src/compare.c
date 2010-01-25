@@ -579,7 +579,8 @@ verify_volume (void)
   while (1)
     {
       enum read_header status = read_header (&current_header, 
-                                             &current_stat_info, false);
+                                             &current_stat_info, 
+                                             read_header_auto);
 
       if (status == HEADER_FAILURE)
 	{
@@ -590,7 +591,7 @@ verify_volume (void)
 	      counter++;
 	      set_next_block_after (current_header);
 	      status = read_header (&current_header, &current_stat_info,
-	                            false);
+	                            read_header_auto);
 	    }
 	  while (status == HEADER_FAILURE);
 
@@ -608,7 +609,8 @@ verify_volume (void)
             {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (&current_header, &current_stat_info, false);
+	      status = read_header (&current_header, &current_stat_info, 
+	                            read_header_auto);
 	      if (status == HEADER_ZERO_BLOCK)
 	        break;
 	      WARNOPT (WARN_ALONE_ZERO_BLOCK,

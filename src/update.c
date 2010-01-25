@@ -115,7 +115,8 @@ update_archive (void)
   while (!found_end)
     {
       enum read_header status = read_header (&current_header, 
-                                             &current_stat_info, false);
+                                             &current_stat_info, 
+                                             read_header_auto);
 
       switch (status)
 	{

@@ -167,7 +167,7 @@ delete_archive_members (void)
     {
       enum read_header status = read_header (&current_header,
                                              &current_stat_info,
-                                             true);
+                                             read_header_x_raw);
 
       switch (status)
 	{
@@ -262,7 +262,8 @@ delete_archive_members (void)
 
 	  if (current_block == record_end)
 	    flush_archive ();
-	  status = read_header (&current_header, &current_stat_info, false);
+	  status = read_header (&current_header, &current_stat_info, 
+	                        read_header_auto);
 
 	  xheader_decode (&current_stat_info);
 

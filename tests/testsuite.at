@@ -69,7 +69,7 @@ m4_define([AT_TARBALL_PREREQ],[
 test -z "$[]TEST_DATA_DIR" && AT_SKIP_TEST
 tarball_prereq $1 $2 $[]TEST_DATA_DIR $[]TEST_DATA_URL || AT_SKIP_TEST])
 
-dnl AT_TARBALL_PREREQ(tarball, md5sum) - Same for star testfiles
+dnl AT_STAR_PREREQ(tarball, md5sum) - Same for star testfiles
 m4_define([AT_STAR_PREREQ],[
 test -z "$STAR_TESTSCRIPTS" && AT_SKIP_TEST
 tarball_prereq $1 $2 $[]STAR_TESTSCRIPTS $[]STAR_DATA_URL || AT_SKIP_TEST
@@ -191,6 +191,7 @@ m4_include([multiv03.at])
 m4_include([multiv04.at])
 m4_include([multiv05.at])
 m4_include([multiv06.at])
+m4_include([multiv07.at])
 
 m4_include([old.at])
 

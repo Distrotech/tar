@@ -78,7 +78,8 @@ read_and (void (*do_something) (void))
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
 
-      status = read_header (&current_header, &current_stat_info, false);
+      status = read_header (&current_header, &current_stat_info, 
+                            read_header_auto);
       switch (status)
 	{
 	case HEADER_STILL_UNREAD:
@@ -139,7 +140,8 @@ read_and (void (*do_something) (void))
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (&current_header, &current_stat_info, false);
+	      status = read_header (&current_header, &current_stat_info, 
+	                            read_header_auto);
 	      if (status == HEADER_ZERO_BLOCK)
 		break;
 	      WARNOPT (WARN_ALONE_ZERO_BLOCK,
@@ -282,21 +284,29 @@ tar_checksum (union block *header, bool silent)
 }
 
 /* Read a block that's supposed to be a header block.  Return its
-   address in "current_header", and if it is good, the file's size
-   and names (file name, link name) in *info.
+   address in *RETURN_BLOCK, and if it is good, the file's size
+   and names (file name, link name) in *INFO.
 
-   Return 1 for success, 0 if the checksum is bad, EOF on eof, 2 for a
-   block full of zeros (EOF marker).
+   Return one of enum read_header describing the status of the
+   operation.
 
-   If RAW_EXTENDED_HEADERS is nonzero, do not automagically fold the
-   GNU long name and link headers into later headers.
+   The MODE parameter instructs read_header what to do with special
+   header blocks, i.e.: extended POSIX, GNU long name or long link,
+   etc.:
 
-   You must always set_next_block_after(current_header) to skip past
+     read_header_auto        process them automatically,
+     read_header_x_raw       when a special header is read, return
+                             HEADER_SUCCESS_EXTENDED without actually
+			     processing the header,
+     read_header_x_global    when a POSIX global header is read,
+                             decode it and return HEADER_SUCCESS_EXTENDED.
+
+   You must always set_next_block_after(*return_block) to skip past
    the header which this routine reads.  */
 
 enum read_header
 read_header (union block **return_block, struct tar_stat_info *info,
-	     bool raw_extended_headers)
+	     enum read_header_mode mode)
 {
   union block *header;
   union block *header_copy;
@@ -333,7 +343,7 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	  || header->header.typeflag == XGLTYPE
 	  || header->header.typeflag == SOLARIS_XHDTYPE)
 	{
-	  if (raw_extended_headers)
+	  if (mode == read_header_x_raw)
 	    return HEADER_SUCCESS_EXTENDED;
 	  else if (header->header.typeflag == GNUTYPE_LONGNAME
 		   || header->header.typeflag == GNUTYPE_LONGLINK)
@@ -405,6 +415,8 @@ read_header (union block **return_block, struct tar_stat_info *info,
 			    OFF_FROM_HEADER (header->header.size));
 	      xheader_decode_global (&xhdr);
 	      xheader_destroy (&xhdr);
+	      if (mode == read_header_x_global)
+		return HEADER_SUCCESS_EXTENDED;
 	    }
 
 	  /* Loop!  */
@@ -1397,7 +1409,7 @@ test_archive_label ()
   name_gather ();
 
   open_archive (ACCESS_READ);
-  if (read_header (&current_header, &current_stat_info, false)
+  if (read_header (&current_header, &current_stat_info, read_header_auto)
       == HEADER_SUCCESS)
     {
       char *s = NULL;
