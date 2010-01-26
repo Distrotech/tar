@@ -1,7 +1,8 @@
 # Configure template for GNU tar.  -*- autoconf -*-
 
 # Copyright (C) 1991, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-# 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009 Free Software Foundation, Inc.
+# 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free
+# Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,8 +23,11 @@ AC_INIT([GNU tar], [1.22.90], [bug-tar@gnu.org])
 AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
-AC_PREREQ([2.60])
-AM_INIT_AUTOMAKE([1.9 gnits tar-ustar dist-bzip2 dist-shar std-options])
+AC_PREREQ([2.63])
+AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-shar std-options silent-rules])
+
+# Enable silent rules by default:
+AM_SILENT_RULES([yes])
 
 AC_PROG_CC
 AC_EXEEXT
