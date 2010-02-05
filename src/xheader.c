@@ -694,7 +694,6 @@ xheader_read (struct xheader *xhdr, union block *p, size_t size)
 {
   size_t j = 0;
 
-  xheader_init (xhdr);
   size += BLOCKSIZE;
   xhdr->size = size;
   xhdr->buffer = xmalloc (size + 1);
