@@ -598,13 +598,10 @@ regex_usage_warning (const char *name)
     {
       warned_once = 1;
       WARN ((0, 0,
-	     /* TRANSLATORS: The following three msgids form a single sentence.
-	      */
-	     _("Pattern matching characters used in file names. Please,")));
+	     _("Pattern matching characters used in file names")));
       WARN ((0, 0,
-	     _("use --wildcards to enable pattern matching, or --no-wildcards to")));
-      WARN ((0, 0,
-	     _("suppress this warning.")));
+	     _("Use --wildcards to enable pattern matching,"
+	       " or --no-wildcards to suppress this warning")));
     }
 }
 
