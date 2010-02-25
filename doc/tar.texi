@@ -5430,8 +5430,31 @@ UID of the file owner.
 GID of the file owner.
 @end table
 
-In addition to these variables, @env{TAR_VERSION} contains the
+Additionally, the following variables contain information about
+tar mode and the archive being processed:
+
+@table @env
+@vrindex TAR_VERSION, to-command environment
+@item TAR_VERSION
 @GNUTAR{} version number.
+
+@vrindex TAR_ARCHIVE, to-command environment
+@item TAR_ARCHIVE
+The name of the archive @command{tar} is processing.
+
+@vrindex TAR_BLOCKING_FACTOR, to-command environment
+@item TAR_BLOCKING_FACTOR
+Current blocking factor (@pxref{Blocking}.
+
+@vrindex TAR_VOLUME, to-command environment
+@item TAR_VOLUME
+Ordinal number of the volume @command{tar} is processing.
+
+@vrindex TAR_FORMAT, to-command environment
+@item TAR_FORMAT
+Format of the archive being processed. @xref{Formats}, for a complete
+list of archive format names.
+@end table
 
 If @var{command} exits with a non-0 status, @command{tar} will print
 an error message similar to the following:

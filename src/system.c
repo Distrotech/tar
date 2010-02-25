@@ -629,6 +629,12 @@ static void
 stat_to_env (char *name, char type, struct tar_stat_info *st)
 {
   str_to_env ("TAR_VERSION", PACKAGE_VERSION);
+  str_to_env ("TAR_ARCHIVE", *archive_name_cursor);
+  dec_to_env ("TAR_VOLUME", archive_name_cursor - archive_name_array + 1);
+  dec_to_env ("TAR_BLOCKING_FACTOR", blocking_factor);
+  str_to_env ("TAR_FORMAT",
+	      archive_format_string (current_format == DEFAULT_FORMAT ?
+				     archive_format : current_format));
   chr_to_env ("TAR_FILETYPE", type);
   oct_to_env ("TAR_MODE", st->stat.st_mode);
   str_to_env ("TAR_FILENAME", name);

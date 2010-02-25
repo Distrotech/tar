@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2010-01-26
+GNU tar NEWS - User visible changes. 2010-02-25
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.22.90 (Git)
+version 1.22.91 (Git)
 
 * Record size autodetection
 
@@ -85,6 +85,17 @@ braces is understood either as a textual time representation, as described in
 chapter 7, "Date input formats", of the Tar manual, or as a name of
 an existing file, starting with `/' or `.'.  In the latter
 case, the value is replaced with the modification time of that file.
+
+* Environment of --to-command script.
+
+The environment passed to the --to-command script is extended with
+the following variables:
+
+   TAR_VERSION          GNU tar version number
+   TAR_ARCHIVE          The name of the archive
+   TAR_VOLUME           Ordinal number of the volume
+   TAR_FORMAT           Format of the archive
+   TAR_BLOCKING_FACTOR  Current blocking factor
 
 * Bugfixes
 ** Fix handling of hard link targets by -c --transform.
