@@ -8639,10 +8639,11 @@ switch to @samp{posix}.
 @cindex lzop
 @cindex compress
 @GNUTAR{} is able to create and read compressed archives.  It supports
-@command{gzip}, @command{bzip2}, @command{lzip}, @command{lzma} and
-@command{lzop} compression programs.  For backward compatibility, it
-also supports @command{compress} command, although we strongly recommend
-against using it, because it is by far less effective than other
+a wide variety of compression programs, namely: @command{gzip},
+@command{bzip2}, @command{lzip}, @command{lzma}, @command{lzop},
+@command{xz} and traditional @command{compress}. The latter is
+supported mostly for backward compatibility, and we recommend 
+against using it, because it is by far less effective than the other
 compression programs@footnote{It also had patent problems in the past.}.
 
 Creating a compressed archive is simple: you just specify a
