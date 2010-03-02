@@ -38,6 +38,7 @@ static struct compression_suffix compression_suffixes[] = {
   { S(tbz,  BZIP2) },
   { S(tbz2, BZIP2) },
   { S(tz2,  BZIP2) },
+  { S(lz,   LZIP) },
   { S(lzma, LZMA) },
   { S(tlz,  LZMA) },
   { S(lzo,  LZOP) },

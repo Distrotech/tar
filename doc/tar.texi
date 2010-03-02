@@ -2820,6 +2820,12 @@ backup, using @var{snapshot-file} to determine which files to backup.
 With other operations, informs @command{tar} that the archive is in
 incremental format.  @xref{Incremental Dumps}.
 
+@opsummary{lzip}
+@item --lzip
+
+This option tells @command{tar} to read or write archives through
+@command{lzip}.  @xref{gzip}.
+
 @opsummary{lzma}
 @item --lzma
 
@@ -8628,21 +8634,23 @@ switch to @samp{posix}.
 
 @cindex gzip
 @cindex bzip2
+@cindex lzip
 @cindex lzma
 @cindex lzop
 @cindex compress
 @GNUTAR{} is able to create and read compressed archives.  It supports
-@command{gzip}, @command{bzip2}, @command{lzma} and @command{lzop} compression
-programs.  For backward compatibility, it also supports
-@command{compress} command, although we strongly recommend against
-using it, because it is by far less effective than other compression
-programs@footnote{It also had patent problems in the past.}.
+@command{gzip}, @command{bzip2}, @command{lzip}, @command{lzma} and
+@command{lzop} compression programs.  For backward compatibility, it
+also supports @command{compress} command, although we strongly recommend
+against using it, because it is by far less effective than other
+compression programs@footnote{It also had patent problems in the past.}.
 
 Creating a compressed archive is simple: you just specify a
 @dfn{compression option} along with the usual archive creation
 commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
 (@option{--bzip2}) to create a @command{bzip2} compressed archive,
+@option{--lzip} to create an @asis{lzip} compressed archive,
 @option{-J} (@option{--xz}) to create an @asis{XZ} archive, 
 @option{--lzma} to create an @asis{LZMA} compressed
 archive, @option{--lzop} to create an @asis{LSOP} archive, and
@@ -8739,6 +8747,7 @@ suffix.  The following suffixes are recognized:
 @item @samp{.tz2} @tab @command{bzip2}
 @item @samp{.tbz2} @tab @command{bzip2}
 @item @samp{.tbz} @tab @command{bzip2}
+@item @samp{.lz} @tab @command{lzip}
 @item @samp{.lzma} @tab @command{lzma}
 @item @samp{.tlz} @tab @command{lzma}
 @item @samp{.lzo} @tab @command{lzop}
@@ -8795,6 +8804,10 @@ Filter the archive through @code{xz}.  Otherwise like
 @item -j
 @itemx --bzip2
 Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
+
+@opindex lzip
+@item --lzip
+Filter the archive through @command{lzip}.  Otherwise like @option{--gzip}.
 
 @opindex lzma
 @item --lzma

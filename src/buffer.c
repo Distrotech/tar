@@ -201,6 +201,7 @@ enum compress_type {
   ct_compress,
   ct_gzip,
   ct_bzip2,
+  ct_lzip,
   ct_lzma,
   ct_lzop,
   ct_xz
@@ -221,6 +222,7 @@ static struct zip_magic const magic[] = {
   { ct_compress, 2, "\037\235",  COMPRESS_PROGRAM, "-Z" },
   { ct_gzip,     2, "\037\213",  GZIP_PROGRAM,     "-z"  },
   { ct_bzip2,    3, "BZh",       BZIP2_PROGRAM,    "-j" },
+  { ct_lzip,     4, "LZIP",      LZIP_PROGRAM,     "--lzip" },
   { ct_lzma,     6, "\xFFLZMA",  LZMA_PROGRAM,     "--lzma" },
   { ct_lzop,     4, "\211LZO",   LZOP_PROGRAM,     "--lzop" },
   { ct_xz,       6, "\0xFD7zXZ", XZ_PROGRAM,       "-J" },

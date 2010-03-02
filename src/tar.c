@@ -281,6 +281,7 @@ enum
   INDEX_FILE_OPTION,
   KEEP_NEWER_FILES_OPTION,
   LEVEL_OPTION,
+  LZIP_OPTION,
   LZMA_OPTION,
   LZOP_OPTION,
   MODE_OPTION,
@@ -624,6 +625,7 @@ static struct argp_option options[] = {
   {"ungzip", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"compress", 'Z', 0, 0, NULL, GRID+1 },
   {"uncompress", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
+  {"lzip", LZIP_OPTION, 0, 0, NULL, GRID+1 },
   {"lzma", LZMA_OPTION, 0, 0, NULL, GRID+1 },
   {"lzop", LZOP_OPTION, 0, 0, NULL, GRID+1 },
   {"xz", 'J', 0, 0, NULL, GRID+1 },
@@ -1271,6 +1273,10 @@ tar_help_filter (int key, const char *text, void *input)
       s = xasprintf (_("filter the archive through %s"), COMPRESS_PROGRAM);
       break;
 
+    case LZIP_OPTION:
+      s = xasprintf (_("filter the archive through %s"), LZIP_PROGRAM);
+      break;
+      
     case LZMA_OPTION:
       s = xasprintf (_("filter the archive through %s"), LZMA_PROGRAM);
       break;
@@ -1504,6 +1510,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	if (*p)
 	  USAGE_ERROR ((0, 0, _("Invalid incremental level value")));
       }
+      break;
+      
+    case LZIP_OPTION:
+      set_use_compress_program_option (LZIP_PROGRAM);
       break;
       
     case LZMA_OPTION:
