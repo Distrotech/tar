@@ -1,5 +1,5 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,9 +24,13 @@ AT_SORT_PREREQ
 
 rm -rf testdir exclfile
 mkdir -p testdir
-`awk 'BEGIN {for (i=9; i < 100; ++i ) { print > "testdir/file" i; }}'`
+awk 'BEGIN {for (i=9; i < 100; ++i ) { print "testdir/file" i; }}' < /dev/null | \
+ while read name
+ do
+   genfile --file $name
+ done
 
-`awk 'BEGIN {for (i=1000000; i >= 12; --i ) { print "testdir/file" i > "exclfile"; }}'`
+awk 'BEGIN {for (i=1000000; i >= 12; --i ) { print "testdir/file" i }}' < /dev/null > exclfile
 
 tar cf archive --anchored --exclude-from=exclfile \
                testdir
