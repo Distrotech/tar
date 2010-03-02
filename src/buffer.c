@@ -854,16 +854,16 @@ seek_archive (off_t size)
   off_t start = current_block_ordinal ();
   off_t offset;
   off_t nrec, nblk;
-  off_t skipped = (blocking_factor - (current_block - record_start));
+  off_t skipped = (blocking_factor - (current_block - record_start))
+                  * BLOCKSIZE;
 
-  size -= skipped * BLOCKSIZE;
-
-  if (size < record_size)
+  if (size <= skipped)
     return 0;
-  /* FIXME: flush? */
-
+  
   /* Compute number of records to skip */
-  nrec = size / record_size;
+  nrec = (size - skipped) / record_size;
+  if (nrec == 0)
+    return 0;
   offset = rmtlseek (archive, nrec * record_size, SEEK_CUR);
   if (offset < 0)
     return offset;
