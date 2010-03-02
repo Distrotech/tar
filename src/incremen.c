@@ -1410,7 +1410,7 @@ write_directory_file (void)
   if (! fp)
     return;
 
-  if (fseek (fp, 0L, SEEK_SET) != 0)
+  if (fseeko (fp, 0L, SEEK_SET) != 0)
     seek_error (listed_incremental_option);
   if (sys_truncate (fileno (fp)) != 0)
     truncate_error (listed_incremental_option);

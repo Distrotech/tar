@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -279,8 +280,8 @@ read_map (FILE *ifp)
       sparse_map[i].numbytes = string_to_size (nbuf, NULL);
     }
 
-  fseek (ifp, ((ftell (ifp) + BLOCKSIZE - 1) / BLOCKSIZE) * BLOCKSIZE,
-	 SEEK_SET);
+  fseeko (ifp, ((ftell (ifp) + BLOCKSIZE - 1) / BLOCKSIZE) * BLOCKSIZE,
+	  SEEK_SET);
 }  
 
 void
