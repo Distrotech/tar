@@ -298,6 +298,10 @@ code_timespec (struct timespec t, char sbuf[TIMESPEC_STRSIZE_BOUND])
   char *np;
   bool negative = s < 0;
 
+  /* ignore invalid values of ns */
+  if (BILLION <= ns || ns < 0)
+    ns = 0;
+  
   if (negative && ns != 0)
     {
       s++;
