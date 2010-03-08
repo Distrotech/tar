@@ -79,7 +79,7 @@ check_exclusion_tags (const char *dirname, const char **tag_file_name)
   struct exclusion_tag *tag;
   size_t dlen = strlen (dirname);
   int addslash = !ISSLASH (dirname[dlen-1]);
-  char *nptr = NULL;
+  size_t noff = 0;
   
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
@@ -90,14 +90,14 @@ check_exclusion_tags (const char *dirname, const char **tag_file_name)
 	  tagname = xrealloc (tagname, tagsize);
 	}
 
-      if (!nptr)
+      if (noff == 0)
 	{
 	  strcpy (tagname, dirname);
-	  nptr = tagname + dlen;
+	  noff = dlen;
 	  if (addslash)
-	    *nptr++ = '/';
+	    tagname[noff++] = '/';
 	}
-      strcpy (nptr, tag->name);
+      strcpy (tagname + noff, tag->name);
       if (access (tagname, F_OK) == 0
 	  && (!tag->predicate || tag->predicate (tagname)))
 	{
@@ -1591,6 +1591,8 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    {
 	      exclusion_tag_warning (st->orig_file_name, tag_file_name,
 				     _("directory not dumped"));
+	      if (fd >= 0)
+		close (fd);
 	      return;
 	    }
 	  
