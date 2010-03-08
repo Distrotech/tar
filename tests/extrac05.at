@@ -36,10 +36,10 @@ cztery
 ])
 
 AT_TAR_CHECK([
+genfile --sparse --file sparsefile 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST 
 genfile --length 118 --file jeden
 genfile --length 223 --file dwa
 genfile --length 517 --file trzy
-genfile --sparse --file sparsefile 0 ABCD 1M EFGH 2000K IJKL
 genfile --length 110 --file cztery
 
 tar cf archive jeden dwa trzy cztery || exit 1
