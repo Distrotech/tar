@@ -7,7 +7,7 @@
 @cindex snapshot files, editing
 @cindex snapshot files, fixing device numbers
   Sometimes device numbers can change after upgrading your kernel
-version or recofiguring the harvare.  Reportedly this is the case with 
+version or reconfiguring the hardware.  Reportedly this is the case with
 some newer @i{Linux} kernels, when using @acronym{LVM}.  In majority of
 cases this change is unnoticed by the users.  However, it influences
 @command{tar} incremental backups: the device number is stored in tar
@@ -21,9 +21,9 @@ the @command{tar-snapshot-edit} utility for inspecting and updating
 device numbers in snapshot files.  The utility, written by
 Dustin J.@: Mitchell, is available from
 @uref{http://www.gnu.org/@/software/@/tar/@/utils/@/tar-snapshot-edit.html,
-@GNUTAR{} home page}. 
+@GNUTAR{} home page}.
 
-  To obtain the device numbers used in the snapshot file, run 
+  To obtain the device numbers used in the snapshot file, run
 
 @smallexample
 $ @kbd{tar-snapshot-edit @var{snapfile}}
@@ -31,7 +31,7 @@ $ @kbd{tar-snapshot-edit @var{snapfile}}
 
 @noindent
 where @var{snapfile} is the name of the snapshot file (you can supply as many
-files as you wish in a single command line ).
+files as you wish in a single command line).
 
 To update all occurrences of the given device number in the file, use
 @option{-r} option.  It takes a single argument of the form

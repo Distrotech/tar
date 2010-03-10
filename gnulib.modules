@@ -54,7 +54,6 @@ strtoul
 timespec
 unlinkdir
 unlocked-io
-utime
 utimens
 version-etc-fsf
 xalloc
