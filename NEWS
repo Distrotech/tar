@@ -2,7 +2,7 @@ GNU tar NEWS - User visible changes. 2010-03-10
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.22.91 (Git)
+version 1.23 - Sergey Poznyakoff, 2010-03-10
 
 * Record size autodetection
 
@@ -43,38 +43,38 @@ the snapshot file if it exists.
 
 If a file or directory is removed while incremental dump is
 in progress, tar exact actions depend on whether this file
-was explicitly listed in the command line, or was gathered
+was explicitly listed in the command line, or was found
 during file system scan.
 
 If the file was explicitly listed in the command line, tar
 issues error message and exits with the code 2, meaning
 fatal error.
 
-Otherwise, if the file was gathered during the file system
-scan, tar issues a warning, saying "File removed before we read it",
-and sets the exit code to 1, which means "some files differ".
+Otherwise, if the file was found during the file system scan,
+tar issues a warning, saying "File removed before we read it",
+and sets exit code to 1, which means "some files differ".
 If the --warning=no-file-removed option is given, no warning
-is issued and the exit code remains 0.
+is issued and exit code remains 0.
 
 * Modification times of PAX extended headers.
 
-Modification times in the ustar header blocks for the 
-extended headers are set to the mtimes of the corresponding archive
-members.  This can be overridden by the
+Modification times in ustar header blocks of extended headers
+are set to mtimes of the corresponding archive members.  This
+can be overridden by the
 
   --pax-opion='exthdr.mtime=STRING'
 
-command line option.  The STRING is either the number of seconds since
+command line option.  The STRING is either number of seconds since
 the Epoch or a `Time reference' (see below).
 
-Modification times in the ustar header blocks for the global
-extended headers are set to the time when tar was invoked.
+Modification times in ustar header blocks of global extended
+headers are set to the time when tar was invoked.
 
 This can be overridden by the
 
   --pax-opion='globexthdr.mtime=STRING'
 
-command line option.  The STRING is either the number of seconds since
+command line option.  The STRING is either number of seconds since
 the Epoch or a `Time reference' (see below).
 
 * Time references in --pax-option argument.
@@ -84,7 +84,7 @@ of curly braces represents a time reference.  The string between the
 braces is understood either as a textual time representation, as described in
 chapter 7, "Date input formats", of the Tar manual, or as a name of
 an existing file, starting with `/' or `.'.  In the latter
-case, the value is replaced with the modification time of that file.
+case, it is replaced with the modification time of that file.
 
 * Environment of --to-command script.
 
@@ -102,7 +102,7 @@ the following variables:
 ** Fix hard links recognition with -c --remove-files.
 ** Fix restoring files from backup (debian bug #508199).
 ** Correctly restore modes and permissions on existing directories.
-** The --remove-files option removes the files only if they were
+** The --remove-files option removes files only if they were
 succesfully stored in the archive.
 ** Fix storing and listing of the volume labels in POSIX format.
 ** Improve algorithm for splitting long file names (ustar
