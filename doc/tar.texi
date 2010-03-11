@@ -449,7 +449,7 @@ operations (@samp{create}, @samp{list}, and @samp{extract}) as well as
 two frequently used options (@samp{file} and @samp{verbose}).  The other
 chapters do not refer to the tutorial frequently; however, if a section
 discusses something which is a complex variant of a basic concept, there
-may be a cross reference to that basic concept.  (The entire book,
+may be a cross-reference to that basic concept.  (The entire book,
 including the tutorial, assumes that the reader understands some basic
 concepts of using a Unix-type operating system; @pxref{Tutorial}.)
 
@@ -3210,7 +3210,7 @@ successfully.  This option is intended for use in shell scripts.
 Here is an example of what you can see using this option:
 
 @smallexample
-$ tar --show-defaults
+$ @kbd{tar --show-defaults}
 --format=gnu -f- -b20 --quoting-style=escape
 --rmt-command=/usr/libexec/rmt --rsh-command=/usr/bin/rsh
 @end smallexample
@@ -3342,12 +3342,12 @@ To see transformed member names in verbose listings, use
 @opsummary{uncompress}
 @item --uncompress
 
-(See @option{--compress}. @pxref{gzip})
+(See @option{--compress}, @pxref{gzip})
 
 @opsummary{ungzip}
 @item --ungzip
 
-(See @option{--gzip}. @pxref{gzip})
+(See @option{--gzip}, @pxref{gzip})
 
 @opsummary{unlink-first}
 @item --unlink-first
@@ -4551,7 +4551,7 @@ $ @kbd{tar --extract -vv --occurrence --file=collection.tar blues}
 @end smallexample
 
 @xref{Writing}, for more information on @option{--extract} and
-@xref{Option Summary, --occurrence}, for the description of
+see @ref{Option Summary, --occurrence}, for a description of
 @option{--occurrence} option.
 
 @node update
@@ -4599,7 +4599,7 @@ To see the @option{--update} option at work, create a new file,
 @file{classical}, in your practice directory, and some extra text to the
 file @file{blues}, using any text editor.  Then invoke @command{tar} with
 the @samp{update} operation and the @option{--verbose} (@option{-v})
-option specified, using the names of all the files in the practice
+option specified, using the names of all the files in the @file{practice}
 directory as file name arguments:
 
 @smallexample
@@ -4646,8 +4646,8 @@ To use @option{--concatenate}, give the first archive with
 @option{--file} option and name the rest of archives to be
 concatenated on the command line.  The members, and their member
 names, will be copied verbatim from those archives to the first
-one@footnote{This can cause multiple members to have the same name, for
-information on how this affects reading the archive, @ref{multiple}.}.
+one@footnote{This can cause multiple members to have the same name.  For
+information on how this affects reading the archive, see @ref{multiple}.}.
 The new, concatenated archive will be called by the same name as the
 one given with the @option{--file} option.  As usual, if you omit
 @option{--file}, @command{tar} will use the value of the environment
@@ -4811,7 +4811,7 @@ tar: funk not found in archive
 The spirit behind the @option{--compare} (@option{--diff},
 @option{-d}) option is to check whether the archive represents the
 current state of files on disk, more than validating the integrity of
-the archive media.  For this latter goal, @xref{verify}.
+the archive media.  For this latter goal, see @ref{verify}.
 
 @node create options
 @section Options Used by @option{--create}
@@ -4869,7 +4869,7 @@ either a textual date representation in almost arbitrary format
 with @samp{/} or @samp{.}.  In the latter case, the modification time
 of that file will be used.
 
-The following example will set the modification date to 00:00:00 UTC,
+The following example will set the modification date to 00:00:00,
 January 1, 1970:
 
 @smallexample
@@ -5536,9 +5536,9 @@ space, you can use @option{--starting-file=@var{name}} (@option{-K
 archive.  This assumes, of course, that there is now free space, or
 that you are now extracting into a different file system.  (You could
 also choose to suspend @command{tar}, remove unnecessary files from
-the file system, and then restart the same @command{tar} operation.
-In this case, @option{--starting-file} is not necessary.
-@xref{Incremental Dumps}, @xref{interactive}, and @ref{exclude}.)
+the file system, and then resume the same @command{tar} operation.
+In this case, @option{--starting-file} is not necessary.)  See also
+@ref{interactive}, and @ref{exclude}.
 
 @node Same Order
 @unnumberedsubsubsec Same Order
@@ -5692,16 +5692,20 @@ $ @kbd{tar -C sourcedir -cf - . | tar -C targetdir -xf -}
 The command also works using long option forms:
 
 @smallexample
+@group
 $ @kbd{(cd sourcedir; tar --create --file=- . ) \
        | (cd targetdir; tar --extract --file=-)}
+@end group
 @end smallexample
 
 @noindent
 or
 
 @smallexample
-$ @kbd{tar --directory sourcedir --create --file=- . ) \
+@group
+$ @kbd{tar --directory sourcedir --create --file=- . \
        | tar --directory targetdir --extract --file=-}
+@end group       
 @end smallexample
 
 @noindent
@@ -8069,8 +8073,8 @@ $ @kbd{tar --transform 's,^,/usr/local/,S', -c -v -f arch.tar \
        --show-transformed /lib}
 drwxr-xr-x root/root       0 2008-07-08 16:20 /usr/local/lib/
 -rwxr-xr-x root/root 1250840 2008-05-25 07:44 /usr/local/lib/libc-2.3.2.so
-lrwxrwxrwx root/root       0 2008-06-24 17:12 /usr/local/lib/libc.so.6 ->
-libc-2.3.2.so
+lrwxrwxrwx root/root       0 2008-06-24 17:12 /usr/local/lib/libc.so.6 \
+ -> libc-2.3.2.so
 @end smallexample
 
 Unlike @option{--strip-components}, @option{--transform} can be used
@@ -8691,7 +8695,7 @@ $ @kbd{tar cfa archive.tar.lzma .}
 @end smallexample
 
 For a complete list of file name suffixes recognized by @GNUTAR{},
-@ref{auto-compress}.
+see @ref{auto-compress}.
 
 Reading compressed archive is even simpler: you don't need to specify
 any additional options as @GNUTAR{} recognizes its format
@@ -8709,7 +8713,7 @@ The format recognition algorithm is based on @dfn{signatures}, a
 special byte sequences in the beginning of file, that are specific for
 certain compression formats.  If this approach fails, @command{tar}
 falls back to using archive name suffix to determine its format
-(@xref{auto-compress}, for a list of recognized suffixes).
+(@pxref{auto-compress}, for a list of recognized suffixes).
 
 The only case when you have to specify a decompression option while
 reading the archive is when reading from a pipe or from a tape drive
@@ -9370,7 +9374,7 @@ free from many of @samp{v7}'s drawbacks.
 @cindex ustar archive format
 Archive format defined by @acronym{POSIX}.1-1988 specification is called
 @code{ustar}.  Although it is more flexible than the V7 format, it
-still has many restrictions (@xref{Formats,ustar}, for the detailed
+still has many restrictions (@pxref{Formats,ustar}, for the detailed
 description of @code{ustar} format).  Along with V7 format,
 @code{ustar} format is a good choice for archives intended to be read
 with other implementations of @command{tar}.
@@ -9800,7 +9804,7 @@ The condensed file will contain both file map and file data, so no
 additional data will be needed to restore it.  If the original file
 name was @file{@var{dir}/@var{name}}, then the condensed file will be
 named @file{@var{dir}/@/GNUSparseFile.@var{n}/@/@var{name}}, where
-@var{n} is a decimal number@footnote{technically speaking, @var{n} is a
+@var{n} is a decimal number@footnote{Technically speaking, @var{n} is a
 @dfn{process @acronym{ID}} of the @command{tar} process which created the
 archive (@pxref{PAX keywords}).}.
 
@@ -11300,9 +11304,9 @@ archive which will be displayed when the archive is listed with
 @option{--multi-volume} (@pxref{Using Multiple Tapes}), then the
 volume label will have @samp{Volume @var{nnn}} appended to the name
 you give, where @var{nnn} is the number of the volume of the archive.
-If you use the @option{--label=@var{volume-label}}) option when
+If you use the @option{--label=@var{volume-label}} option when
 reading an archive, it checks to make sure the label on the tape
-matches the one you give. @xref{label}.
+matches the one you gave.  @xref{label}.
 
 When @command{tar} writes an archive to tape, it creates a single
 tape file.  If multiple archives are written to the same tape, one
@@ -11907,7 +11911,8 @@ Right margin of the text output. Used for wrapping.
 
 This appendix contains an index of all @GNUTAR{} long command line
 options. The options are listed without the preceding double-dash.
-For a cross-reference of short command line options, @ref{Short Option Summary}.
+For a cross-reference of short command line options, see
+@ref{Short Option Summary}.
 
 @printindex op
 
