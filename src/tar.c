@@ -1254,7 +1254,7 @@ tar_help_filter (int key, const char *text, void *input)
 {
   struct obstack stk;
   char *s;
-
+  
   switch (key)
     {
     default:
@@ -1286,19 +1286,23 @@ tar_help_filter (int key, const char *text, void *input)
       break;
       
     case ARGP_KEY_HELP_EXTRA:
-      obstack_init (&stk);
-      s = _("Valid arguments for the --quoting-style option are:");
-      obstack_grow (&stk, s, strlen (s));
-      obstack_grow (&stk, "\n\n", 2);
-      tar_list_quoting_styles (&stk, "  ");
-      s = _("\n*This* tar defaults to:\n");
-      obstack_grow (&stk, s, strlen (s));
-      s = format_default_settings ();
-      obstack_grow (&stk, s, strlen (s));
-      obstack_1grow (&stk, '\n');
-      obstack_1grow (&stk, 0);
-      s = xstrdup (obstack_finish (&stk));
-      obstack_free (&stk, NULL);
+      {
+	const char *tstr;
+
+	obstack_init (&stk);
+	tstr = _("Valid arguments for the --quoting-style option are:");
+	obstack_grow (&stk, tstr, strlen (tstr));
+	obstack_grow (&stk, "\n\n", 2);
+	tar_list_quoting_styles (&stk, "  ");
+	tstr = _("\n*This* tar defaults to:\n");
+	obstack_grow (&stk, tstr, strlen (tstr));
+	s = format_default_settings ();
+	obstack_grow (&stk, s, strlen (s));
+	obstack_1grow (&stk, '\n');
+	obstack_1grow (&stk, 0);
+	s = xstrdup (obstack_finish (&stk));
+	obstack_free (&stk, NULL);
+      }
     }
   return s;
 }
