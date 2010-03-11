@@ -1841,6 +1841,7 @@ open_archive (enum access_mode wanted_access)
   switch (wanted_access)
     {
     case ACCESS_READ:
+    case ACCESS_UPDATE:
       if (volume_label_option)
         match_volume_label ();
       break;
@@ -1849,9 +1850,6 @@ open_archive (enum access_mode wanted_access)
       records_written = 0;
       if (volume_label_option)
         write_volume_label ();
-      break;
-
-    default:
       break;
     }
   set_volume_start_time ();

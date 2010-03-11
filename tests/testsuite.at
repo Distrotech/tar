@@ -148,6 +148,9 @@ m4_include([extrac08.at])
 
 m4_include([label01.at])
 m4_include([label02.at])
+m4_include([label03.at])
+m4_include([label04.at])
+m4_include([label05.at])
 
 m4_include([backup01.at])
 

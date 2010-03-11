@@ -89,6 +89,9 @@ TESTSUITE_AT = \
  ignfail.at\
  label01.at\
  label02.at\
+ label03.at\
+ label04.at\
+ label05.at\
  link01.at\
  link02.at\
  link03.at\

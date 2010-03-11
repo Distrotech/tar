@@ -1412,22 +1412,23 @@ test_archive_label ()
   if (read_header (&current_header, &current_stat_info, read_header_auto)
       == HEADER_SUCCESS)
     {
-      char *s = NULL;
-	
       decode_header (current_header,
 		     &current_stat_info, &current_format, 0);
       if (current_header->header.typeflag == GNUTYPE_VOLHDR)
 	assign_string (&volume_label, current_header->header.name);
-
-      if (volume_label
-	  && (name_match (volume_label)
-	      || (multi_volume_option
-		  && (s = drop_volume_label_suffix (volume_label))
-		  && name_match (s))))
-	if (verbose_option)
-	  print_volume_label ();
-      free (s);
+      
+      if (volume_label)
+	{
+	  if (verbose_option)
+	    print_volume_label ();
+	  if (!name_match (volume_label) && multi_volume_option)
+	    {
+	      char *s = drop_volume_label_suffix (volume_label);
+	      name_match (s);
+	      free (s);
+	    }
+	}
     }
   close_archive ();
-  names_notfound ();
+  label_notfound ();
 }

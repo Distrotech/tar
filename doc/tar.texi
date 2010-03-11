@@ -11355,15 +11355,16 @@ will usually see lots of spurious messages.
 @cindex Labeling an archive
 @cindex Labels on the archive media
 @cindex Labeling multi-volume archives
-@UNREVISED
 
 @opindex label
   To avoid problems caused by misplaced paper labels on the archive
-media, you can include a @dfn{label} entry---an archive member which
-contains the name of the archive---in the archive itself.  Use the
+media, you can include a @dfn{label} entry --- an archive member which
+contains the name of the archive --- in the archive itself.  Use the
 @option{--label=@var{archive-label}} (@option{-V @var{archive-label}})
-option in conjunction with the @option{--create} operation to include
-a label entry in the archive as it is being created.
+option@footnote{Until version 1.10, that option was called
+@option{--volume}, but is not available under that name anymore.} in
+conjunction with the @option{--create} operation to include a label
+entry in the archive as it is being created.
 
 @table @option
 @item --label=@var{archive-label}
@@ -11402,7 +11403,7 @@ V--------- 0 0        0 1992-03-07 12:01 iamalabel--Volume Header--
   However, @option{--list} option will cause listing entire
 contents of the archive, which may be undesirable (for example, if the
 archive is stored on a tape).  You can request checking only the volume
-by specifying @option{--test-label} option.  This option reads only the
+label by specifying @option{--test-label} option.  This option reads only the
 first block of an archive, so it can be used with slow storage
 devices.  For example:
 
@@ -11413,16 +11414,35 @@ iamalabel
 @end group
 @end smallexample
 
-  If @option{--test-label} is used with a single command line
-argument, @command{tar} compares the volume label with the
-argument.  It exits with code 0 if the two strings match, and with code
-2 otherwise.  In this case no output is displayed.  For example:
+  If @option{--test-label} is used with one or more command line
+arguments, @command{tar} compares the volume label with each
+argument.  It exits with code 0 if a match is found, and with code 1
+otherwise@footnote{Note that @GNUTAR{} versions up to 1.23 indicated
+mismatch with an exit code 2 and printed a spurious diagnostics on
+stderr.}.  No output is displayed, unless you also used the
+@option{--verbose} option.  For example:
 
 @smallexample
 @group
-$ @kbd{tar --test-label --file=iamanarchive 'iamalable'}
+$ @kbd{tar --test-label --file=iamanarchive 'iamalabel'}
 @result{} 0
-$ @kbd{tar --test-label --file=iamanarchive 'iamalable' alabel}
+$ @kbd{tar --test-label --file=iamanarchive 'alabel'}
+@result{} 1
+@end group
+@end smallexample
+
+  When used with the @option{--verbose} option, @command{tar}
+prints the actual volume label (if any), and a verbose diagnostics in
+case of a mismatch:
+
+@smallexample
+@group
+$ @kbd{tar --test-label --verbose --file=iamanarchive 'iamalabel'}
+iamalabel
+@result{} 0
+$ @kbd{tar --test-label --verbose --file=iamanarchive 'alabel'}
+iamalabel
+tar: Archive label mismatch
 @result{} 1
 @end group
 @end smallexample
@@ -11462,9 +11482,6 @@ up.  Since the volume numbering is automatically added in labels at
 creation time, it sounded logical to equally help the user taking care
 of it when the archive is being read.
 
-  The @option{--label} was once called @option{--volume}, but is not
-available under that name anymore.
-
   You can also use @option{--label} to get a common information on
 all tapes of a series.  For having this information different in each
 series created through a single script used on a regular basis, just
@@ -11478,13 +11495,19 @@ $ @kbd{tar --create --file=/dev/tape --multi-volume \
 @end group
 @end smallexample
 
-  Also note that each label has its own date and time, which corresponds
-to when @GNUTAR{} initially attempted to write it,
+  Some more notes about volume labels:
+
+@itemize @bullet
+@item Each label has its own date and time, which corresponds
+to the time when @GNUTAR{} initially attempted to write it,
 often soon after the operator launches @command{tar} or types the
-carriage return telling that the next tape is ready.  Comparing date
-labels does give an idea of tape throughput only if the delays for
-rewinding tapes and the operator switching them were negligible, which
-is usually not the case.
+carriage return telling that the next tape is ready.
+
+@item Comparing date labels to get an idea of tape throughput is
+unreliable.  It gives correct results only if the delays for rewinding
+tapes and the operator switching them were negligible, which is
+usually not the case.
+@end itemize
 
 @node verify
 @section Verifying Data as It is Stored
