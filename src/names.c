@@ -871,7 +871,7 @@ void
 collect_and_sort_names (void)
 {
   struct name *name;
-  struct name *next_name, *prev_name;
+  struct name *next_name, *prev_name = NULL;
   int num_names;
   struct stat statbuf;
   Hash_table *nametab;
