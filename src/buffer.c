@@ -1374,7 +1374,7 @@ static bool
 check_label_pattern (const char *label)
 {
   char *string;
-  bool result;
+  bool result = false;
 
   if (fnmatch (volume_label_option, label, 0) == 0)
     return true;

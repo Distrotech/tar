@@ -30,6 +30,7 @@ AT_KEYWORDS([create remove-files remfiles01 gzip])
 
 unset TAR_OPTIONS
 AT_CHECK([
+AT_UNPRIVILEGED_PREREQ
 AT_GZIP_PREREQ
 AT_SORT_PREREQ
 
