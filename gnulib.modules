@@ -6,7 +6,6 @@ argmatch
 argp
 argp-version-etc
 backupfile
-canonicalize
 closeout
 configmake
 dirname

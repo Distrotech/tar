@@ -1,9 +1,16 @@
-GNU tar NEWS - User visible changes. 2010-03-11
+GNU tar NEWS - User visible changes. 2010-03-17
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
 
-* --test-label behavior
+* Bugfixes.
+
+** --remove-files
+
+Tar --remove-files failed to remove a directory which contained
+symlinks to another files within that directory.
+
+** --test-label behavior
 
 In case of a mismatch, `tar --test-label LABEL' exits with code 1,
 not 2 as it did in previous versions.
@@ -18,7 +25,7 @@ Several volume labels may be specified in a command line, e.g.:
 In this case, tar exits with code 0 if any one of the arguments
 matches the actual volume label.
 
-* --label used with --update
+** --label used with --update
 
 The `--label' option can be used with `--update' to prevent accidental
 update of an archive:
