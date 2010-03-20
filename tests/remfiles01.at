@@ -52,7 +52,9 @@ EC=$?
 sed -n '/(child)/p' err >&2
 rm err
 find . | sort
-exit $EC
+# Gzip exit code is propagated to the shell. Usually it is
+# 141.  We convert all non-zero exits to 2 to make it predictable.
+test $EC && exit 2
 ],
 [2],
 [.

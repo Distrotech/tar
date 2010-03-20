@@ -1,9 +1,17 @@
-GNU tar NEWS - User visible changes. 2010-03-17
+GNU tar NEWS - User visible changes. 2010-03-20
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
 
 * Bugfixes.
+
+** Spurious error diagnostics on broken pipe.
+
+When receiving SIGPIPE, tar would exit with error status and
+"write error" diagnostics. In particular, this occurred if
+invoked as in the example below:
+
+   tar tf archive.tar | head -n 1
 
 ** --remove-files
 

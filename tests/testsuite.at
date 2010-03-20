@@ -231,6 +231,8 @@ m4_include([remfiles01.at])
 m4_include([remfiles02.at])
 m4_include([remfiles03.at])
 
+m4_include([sigpipe.at])
+
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
 
