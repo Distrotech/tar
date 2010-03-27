@@ -986,6 +986,7 @@ collect_and_sort_names (void)
 		{
 		  if (p->child)
 		    rebase_child_list (p->child, name);
+		  hash_delete (nametab, name);
 		  /* FIXME: remove_directory (p->caname); ? */
 		  remname (p);
 		  free_name (p);
