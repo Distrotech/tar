@@ -26,9 +26,9 @@ AT_KEYWORDS([hardlinks link03])
 
 m4_define([create_files],[
 genfile -l 64 -f file1
-link file1 file2
-link file2 file3
-link file3 file4
+ln file1 file2
+ln file2 file3
+ln file3 file4
 ])
 
 AT_TAR_CHECK([

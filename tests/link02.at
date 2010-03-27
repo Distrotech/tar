@@ -34,9 +34,9 @@ AT_KEYWORDS([hardlinks link02])
 
 AT_TAR_CHECK([
 genfile -l 64 -f file1
-link file1 file2
-link file2 file3
-link file3 file4
+ln file1 file2
+ln file2 file3
+ln file3 file4
 tar -c -f archive --remove-files file1 file2 file3 file4
 tar tfv archive | sed -n 's/.*file[[2-4]] link to //p'
 ],

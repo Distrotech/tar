@@ -52,7 +52,7 @@ Extract
 dir/
 dir/foo
 ],
-[],[],[ustar]) # Testing one format is enough
+[],[],[],[ustar]) # Testing one format is enough
 
 AT_CLEANUP
 
