@@ -274,6 +274,7 @@ enum
   EXCLUDE_TAG_ALL_OPTION,
   EXCLUDE_VCS_OPTION,
   FORCE_LOCAL_OPTION,
+  FULL_TIME_OPTION,
   GROUP_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_COMMAND_ERROR_OPTION,
@@ -752,7 +753,9 @@ static struct argp_option options[] = {
       "Allowed signals are: SIGHUP, SIGQUIT, SIGINT, SIGUSR1 and SIGUSR2; "
       "the names without SIG prefix are also accepted"), GRID+1 },
   {"utc", UTC_OPTION, 0, 0,
-   N_("print file modification dates in UTC"), GRID+1 },
+   N_("print file modification times in UTC"), GRID+1 },
+  {"full-time", FULL_TIME_OPTION, 0, 0,
+   N_("print file time to its full resolution"), GRID+1 },
   {"index-file", INDEX_FILE_OPTION, N_("FILE"), 0,
    N_("send verbose output to FILE"), GRID+1 },
   {"block-number", 'R', 0, 0,
@@ -1436,6 +1439,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       
       info_script_option = arg;
       multi_volume_option = true;
+      break;
+
+    case FULL_TIME_OPTION:
+      full_time_option = true;
       break;
       
     case 'g':

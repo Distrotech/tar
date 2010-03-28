@@ -2684,6 +2684,30 @@ Creates a @acronym{POSIX.1-2001 archive}.
 
 @xref{Formats}, for a detailed discussion of these formats.
 
+@opsummary{full-time}
+@item --full-time
+This option instructs @command{tar} to print file times to their full
+resolution.  Usually this means 1-second resolution, but that depends
+on the underlying file system.  The @option{--full-time} option takes
+effect only when detailed output (verbosity level 2 or higher) has
+been requested using the @option{--verbose} option, e.g., when listing
+or extracting archives:
+
+@smallexample
+$ @kbd{tar -t -v --full-time -f archive.tar}
+@end smallexample
+
+@noindent
+or, when creating an archive:
+
+@smallexample
+$ @kbd{tar -c -vv --full-time -f archive.tar .}
+@end smallexample
+
+Notice, thar when creating the archive you need to specify
+@option{--verbose} twice to get a detailed output (@pxref{verbose
+tutorial}).
+
 @opsummary{group}
 @item --group=@var{group}
 

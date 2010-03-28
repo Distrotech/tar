@@ -1146,7 +1146,7 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 
       /* Time stamp.  */
 
-      time_stamp = tartime (st->mtime, false);
+      time_stamp = tartime (st->mtime, full_time_option);
       time_stamp_len = strlen (time_stamp);
       if (datewidth < time_stamp_len)
 	datewidth = time_stamp_len;

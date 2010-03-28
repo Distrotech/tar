@@ -105,6 +105,8 @@ GLOBAL bool absolute_names_option;
 
 /* Display file times in UTC */
 GLOBAL bool utc_option;
+/* Output file timestamps to the full resolution */
+GLOBAL bool full_time_option;
 
 /* This variable tells how to interpret newer_mtime_option, below.  If zero,
    files get archived if their mtime is not less than newer_mtime_option.
