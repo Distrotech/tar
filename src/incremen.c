@@ -258,7 +258,7 @@ make_directory (const char *name, char *caname)
   directory->dump = directory->idump = NULL;
   directory->orig = NULL;
   directory->flags = false;
-  if (namelen && ISSLASH (name[namelen - 1]))
+  if (namelen > 1 && ISSLASH (name[namelen - 1]))
     namelen--;
   directory->name = xmalloc (namelen + 1);
   memcpy (directory->name, name, namelen);
