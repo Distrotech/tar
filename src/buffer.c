@@ -54,7 +54,7 @@ enum access_mode access_mode;   /* how do we handle the archive */
 off_t records_read;             /* number of records read from this archive */
 off_t records_written;          /* likewise, for records written */
 extern off_t records_skipped;   /* number of records skipped at the start
-                                   of the archive, defined in delete.c */   
+                                   of the archive, defined in delete.c */
 
 static off_t record_start_block; /* block ordinal at record_start */
 
@@ -175,8 +175,8 @@ set_start_time ()
   last_stat_time = start_time;
 }
 
-void
-set_volume_start_time ()
+static void
+set_volume_start_time (void)
 {
   gettime (&volume_start_time);
   last_stat_time = volume_start_time;
@@ -211,9 +211,9 @@ struct zip_magic
 {
   enum compress_type type;
   size_t length;
-  char *magic;
-  char *program;
-  char *option;
+  char const *magic;
+  char const *program;
+  char const *option;
 };
 
 static struct zip_magic const magic[] = {
@@ -234,7 +234,7 @@ static struct zip_magic const magic[] = {
 #define compress_program(t) magic[t].program
 
 /* Check if the file ARCHIVE is a compressed archive. */
-enum compress_type
+static enum compress_type
 check_compressed_archive (bool *pshort)
 {
   struct zip_magic const *p;
@@ -243,14 +243,14 @@ check_compressed_archive (bool *pshort)
 
   if (!pshort)
     pshort = &temp;
-  
+
   /* Prepare global data needed for find_next_block: */
   record_end = record_start; /* set up for 1st record = # 0 */
   sfr = read_full_records;
   read_full_records = true; /* Suppress fatal error on reading a partial
                                record */
   *pshort = find_next_block () == 0;
-  
+
   /* Restore global values */
   read_full_records = sfr;
 
@@ -267,7 +267,7 @@ check_compressed_archive (bool *pshort)
 
 /* Guess if the archive is seekable. */
 static void
-guess_seekable_archive ()
+guess_seekable_archive (void)
 {
   struct stat st;
 
@@ -288,7 +288,7 @@ guess_seekable_archive ()
       seekable_archive = !!seek_option;
       return;
     }
-  
+
   if (!multi_volume_option && !use_compress_program_option
       && fstat (archive, &st) == 0)
     seekable_archive = S_ISREG (st.st_mode);
@@ -299,8 +299,8 @@ guess_seekable_archive ()
 /* Open an archive named archive_name_array[0]. Detect if it is
    a compressed archive of known type and use corresponding decompression
    program if so */
-int
-open_compressed_archive ()
+static int
+open_compressed_archive (void)
 {
   archive = rmtopen (archive_name_array[0], O_RDONLY | O_BINARY,
                      MODE_RW, rsh_command_option);
@@ -320,7 +320,7 @@ open_compressed_archive ()
               if (shortfile)
                 ERROR ((0, 0, _("This does not look like a tar archive")));
               return archive;
-      
+
             case ct_none:
               if (shortfile)
                 ERROR ((0, 0, _("This does not look like a tar archive")));
@@ -334,10 +334,10 @@ open_compressed_archive ()
               break;
             }
         }
-      
+
       /* FD is not needed any more */
       rmtclose (archive);
-      
+
       hit_eof = false; /* It might have been set by find_next_block in
                           check_compressed_archive */
 
@@ -486,7 +486,7 @@ xclose (int fd)
 }
 
 static void
-init_buffer ()
+init_buffer (void)
 {
   if (! record_buffer_aligned[record_index])
     record_buffer_aligned[record_index] =
@@ -657,7 +657,7 @@ _open_archive (enum access_mode wanted_access)
 }
 
 /* Perform a write to flush the buffer.  */
-ssize_t
+static ssize_t
 _flush_write (void)
 {
   ssize_t status;
@@ -672,7 +672,7 @@ _flush_write (void)
     status = record_size;
   else
     status = sys_write_archive_buffer ();
-  
+
   return status;
 }
 
@@ -713,7 +713,7 @@ archive_read_error (void)
 }
 
 static bool
-archive_is_dev ()
+archive_is_dev (void)
 {
   struct stat st;
 
@@ -861,7 +861,7 @@ seek_archive (off_t size)
 
   if (size <= skipped)
     return 0;
-  
+
   /* Compute number of records to skip */
   nrec = (size - skipped) / record_size;
   if (nrec == 0)
@@ -956,7 +956,7 @@ closeout_volume_number (void)
 
 
 static void
-increase_volume_number ()
+increase_volume_number (void)
 {
   global_volno++;
   if (global_volno < 0)
@@ -964,13 +964,13 @@ increase_volume_number ()
   volno++;
 }
 
-void
+static void
 change_tape_menu (FILE *read_file)
 {
   char *input_buffer = NULL;
   size_t size = 0;
   bool stop = false;
-  
+
   while (!stop)
     {
       fputc ('\007', stderr);
@@ -1088,7 +1088,7 @@ new_volume (enum access_mode mode)
   assign_string (&continued_file_name, NULL);
   continued_file_size = continued_file_offset = 0;
   current_block = record_start;
-  
+
   if (rmtclose (archive) != 0)
     close_error (*archive_name_cursor);
 
@@ -1177,13 +1177,13 @@ read_header0 (struct tar_stat_info *info)
   return false;
 }
 
-bool
-try_new_volume ()
+static bool
+try_new_volume (void)
 {
   size_t status;
   union block *header;
   enum access_mode acc;
-  
+
   switch (subcommand_option)
     {
     case APPEND_SUBCOMMAND:
@@ -1199,7 +1199,7 @@ try_new_volume ()
 
   if (!new_volume (acc))
     return true;
-  
+
   while ((status = rmtread (archive, record_start->buffer, record_size))
          == SAFE_READ_ERROR)
     archive_read_error ();
@@ -1222,10 +1222,10 @@ try_new_volume ()
 	    ERROR ((0, 0, _("This does not look like a tar archive")));
 	    return false;
 	  }
-	
+
         xheader_decode (&dummy); /* decodes values from the global header */
         tar_stat_destroy (&dummy);
-	
+
 	/* The initial global header must be immediately followed by
 	   an extended PAX header for the first member in this volume.
 	   However, in some cases tar may split volumes in the middle
@@ -1237,7 +1237,7 @@ try_new_volume ()
 	   HEADER_FAILURE, which is ignored.
 
 	   See also tests/multiv07.at */
-	       
+
 	switch (read_header (&header, &dummy, read_header_auto))
 	  {
 	  case HEADER_SUCCESS:
@@ -1327,7 +1327,7 @@ try_new_volume ()
                  STRINGIFY_BIGINT (real_s_totsize, totsizebuf),
                  STRINGIFY_BIGINT (real_s_sizeleft, s1buf),
                  STRINGIFY_BIGINT (continued_file_offset, s2buf)));
-         
+
           return false;
         }
     }
@@ -1348,7 +1348,7 @@ drop_volume_label_suffix (const char *label)
 
   if (len < 1)
     return NULL;
-  
+
   for (p = label + len - 1; p > label && isdigit ((unsigned char) *p); p--)
     ;
   if (p > label && p - (VOLUME_TEXT_LEN - 1) > label)
@@ -1365,7 +1365,7 @@ drop_volume_label_suffix (const char *label)
 
   return NULL;
 }
-      
+
 /* Check LABEL against the volume label, seen as a globbing
    pattern.  Return true if the pattern matches.  In case of failure,
    retry matching a volume sequence number before giving up in
@@ -1399,7 +1399,7 @@ match_volume_label (void)
   if (!volume_label)
     {
       union block *label = find_next_block ();
-  
+
       if (!label)
 	FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
 		      quote (volume_label_option)));
@@ -1425,11 +1425,11 @@ match_volume_label (void)
 	  tar_stat_destroy (&st);
 	}
     }
-  
+
   if (!volume_label)
     FATAL_ERROR ((0, 0, _("Archive not labeled to match %s"),
                   quote (volume_label_option)));
-  
+
   if (!check_label_pattern (volume_label))
     FATAL_ERROR ((0, 0, _("Volume %s does not match %s"),
                   quote_n (0, volume_label),
@@ -1477,7 +1477,7 @@ add_volume_label (void)
 }
 
 static void
-add_chunk_header ()
+add_chunk_header (void)
 {
   if (archive_format == POSIX_FORMAT)
     {
@@ -1568,7 +1568,7 @@ add_multi_volume_header (void)
 
 /* Synchronize multi-volume globals */
 static void
-multi_volume_sync ()
+multi_volume_sync (void)
 {
   if (multi_volume_option)
     {
@@ -1599,7 +1599,7 @@ simple_flush_read (void)
   size_t status;                /* result from system call */
 
   checkpoint_run (false);
-  
+
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
@@ -1658,7 +1658,7 @@ _gnu_flush_read (void)
   size_t status;                /* result from system call */
 
   checkpoint_run (false);
-  
+
   /* Clear the count of errors.  This only applies to a single call to
      flush_read.  */
 
@@ -1727,14 +1727,14 @@ _gnu_flush_write (size_t buffer_level)
   size_t copy_size;
   size_t bufsize;
   tarlong wrt;
-  
+
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
   else
     {
       if (status)
-        records_written++; 
+        records_written++;
       bytes_written += status;
     }
 
@@ -1749,7 +1749,7 @@ _gnu_flush_write (size_t buffer_level)
       ERROR ((0, 0, _("write did not end on a block boundary")));
       archive_write_error (status);
     }
-  
+
   /* In multi-volume mode. */
   /* ENXIO is for the UNIX PC.  */
   if (status < 0 && errno != ENOSPC && errno != EIO && errno != ENXIO)
@@ -1767,7 +1767,7 @@ _gnu_flush_write (size_t buffer_level)
 
   copy_ptr = record_start->buffer + status;
   copy_size = buffer_level - status;
-                   
+
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();
@@ -1780,7 +1780,7 @@ _gnu_flush_write (size_t buffer_level)
 
   write_extended (true, &dummy, find_next_block ());
   tar_stat_destroy (&dummy);
-  
+
   if (real_s_name)
     add_chunk_header ();
   wrt = bytes_written;

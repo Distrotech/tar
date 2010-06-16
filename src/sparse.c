@@ -224,7 +224,7 @@ sparse_scan_file (struct tar_sparse_file *file)
     return false;
 
   st->archive_file_size = 0;
-  
+
   if (!tar_sparse_scan (file, scan_begin, NULL))
     return false;
 
@@ -514,7 +514,7 @@ check_data_region (struct tar_sparse_file *file, size_t i)
     return false;
   size_left = file->stat_info->sparse_map[i].numbytes;
   mv_size_left (file->stat_info->archive_file_size - file->dumped_size);
-      
+
   while (size_left > 0)
     {
       size_t bytes_read;
@@ -564,7 +564,7 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
   file.stat_info = st;
   file.fd = fd;
   file.seekable = true; /* File *must* be seekable for compare to work */
-  
+
   rc = tar_sparse_decode_header (&file);
   mv_begin (st);
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
@@ -579,7 +579,7 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
   if (!rc)
     skip_file (file.stat_info->archive_file_size - file.dumped_size);
   mv_end ();
-  
+
   tar_sparse_done (&file);
   return rc;
 }
@@ -851,13 +851,13 @@ static struct tar_sparse_optab const star_optab = {
    instances of GNU.sparse.offset/GNU.sparse.numbytes variables, whereas
    POSIX requires the latest occurrence of the variable to override all
    previous occurrences.
-   
+
    To avoid this incompatibility two following versions were introduced.
 
    * 0.1
 
    Used by tar 1.15.2 -- 1.15.91 (alpha releases).
-   
+
    The sparse file map is stored in
    x header:
 
@@ -875,18 +875,18 @@ static struct tar_sparse_optab const star_optab = {
    Starting from this version, the exact sparse format version is specified
    explicitely in the header using the following variables:
 
-   GNU.sparse.major     Major version 
+   GNU.sparse.major     Major version
    GNU.sparse.minor     Minor version
 
    X header keeps the following variables:
-   
+
    GNU.sparse.name      Real file name of the sparse file
    GNU.sparse.realsize  Real size of the stored file (corresponds to the old
                         GNU.sparse.size variable)
 
    The name field of the ustar header is constructed using the pattern
    "%d/GNUSparseFile.%p/%f".
-   
+
    The sparse map itself is stored in the file data block, preceding the actual
    file data. It consists of a series of octal numbers of arbitrary length,
    delimited by newlines. The map is padded with nulls to the nearest block
@@ -924,11 +924,11 @@ pax_dump_header_0 (struct tar_sparse_file *file)
   char nbuf[UINTMAX_STRSIZE_BOUND];
   struct sp_array *map = file->stat_info->sparse_map;
   char *save_file_name = NULL;
-  
+
   /* Store the real file size */
   xheader_store ("GNU.sparse.size", file->stat_info, NULL);
   xheader_store ("GNU.sparse.numblocks", file->stat_info, NULL);
-  
+
   if (xheader_keyword_deleted_p ("GNU.sparse.map")
       || tar_sparse_minor == 0)
     {
@@ -991,7 +991,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
 #define COPY_STRING(b,dst,src) do                \
  {                                               \
    char *endp = b->buffer + BLOCKSIZE;           \
-   char *srcp = src;                             \
+   char const *srcp = src;                       \
    while (*srcp)                                 \
      {                                           \
        if (dst == endp)                          \
@@ -1003,7 +1003,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
 	 }                                       \
        *dst++ = *srcp++;                         \
      }                                           \
-   } while (0)                       
+   } while (0)
 
   /* Compute stored file size */
   p = umaxtostr (file->stat_info->sparse_map_avail, nbuf);
@@ -1018,13 +1018,13 @@ pax_dump_header_1 (struct tar_sparse_file *file)
   size = (size + BLOCKSIZE - 1) / BLOCKSIZE;
   file->stat_info->archive_file_size += size * BLOCKSIZE;
   file->dumped_size += size * BLOCKSIZE;
-  
+
   /* Store sparse file identification */
   xheader_store ("GNU.sparse.major", file->stat_info, NULL);
   xheader_store ("GNU.sparse.minor", file->stat_info, NULL);
   xheader_store ("GNU.sparse.name", file->stat_info, NULL);
   xheader_store ("GNU.sparse.realsize", file->stat_info, NULL);
-  
+
   file->stat_info->file_name = xheader_format_name (file->stat_info,
 					    "%d/GNUSparseFile.%p/%f", 0);
 
@@ -1072,12 +1072,12 @@ decode_num (uintmax_t *num, char const *arg, uintmax_t maxval)
 
   if (!ISDIGIT (*arg))
     return false;
-  
+
   u = strtoumax (arg, &arg_lim, 10);
 
   if (! (u <= maxval && errno != ERANGE) || *arg_lim)
     return false;
-  
+
   *num = u;
   return true;
 }
@@ -1117,7 +1117,7 @@ pax_decode_header (struct tar_sparse_file *file)
      }                                                             \
    while (*dst++ != '\n');                                         \
    dst[-1] = 0;                                                    \
- } while (0)                       
+ } while (0)
 
       set_next_block_after (current_header);
       file->dumped_size += BLOCKSIZE;
@@ -1126,7 +1126,7 @@ pax_decode_header (struct tar_sparse_file *file)
       COPY_BUF (blk,nbuf,p);
       if (!decode_num (&u, nbuf, TYPE_MAXIMUM (size_t)))
 	{
-	  ERROR ((0, 0, _("%s: malformed sparse archive member"), 
+	  ERROR ((0, 0, _("%s: malformed sparse archive member"),
 		  file->stat_info->orig_file_name));
 	  return false;
 	}
@@ -1137,11 +1137,11 @@ pax_decode_header (struct tar_sparse_file *file)
       for (i = 0; i < file->stat_info->sparse_map_size; i++)
 	{
 	  struct sp_array sp;
-	  
+
 	  COPY_BUF (blk,nbuf,p);
 	  if (!decode_num (&u, nbuf, TYPE_MAXIMUM (off_t)))
 	    {
-	      ERROR ((0, 0, _("%s: malformed sparse archive member"), 
+	      ERROR ((0, 0, _("%s: malformed sparse archive member"),
 		      file->stat_info->orig_file_name));
 	      return false;
 	    }
@@ -1149,7 +1149,7 @@ pax_decode_header (struct tar_sparse_file *file)
 	  COPY_BUF (blk,nbuf,p);
 	  if (!decode_num (&u, nbuf, TYPE_MAXIMUM (size_t)))
 	    {
-	      ERROR ((0, 0, _("%s: malformed sparse archive member"), 
+	      ERROR ((0, 0, _("%s: malformed sparse archive member"),
 		      file->stat_info->orig_file_name));
 	      return false;
 	    }
@@ -1158,7 +1158,7 @@ pax_decode_header (struct tar_sparse_file *file)
 	}
       set_next_block_after (blk);
     }
-  
+
   return true;
 }
 
@@ -1168,7 +1168,7 @@ static struct tar_sparse_optab const pax_optab = {
   pax_sparse_member_p,
   pax_dump_header,
   NULL,
-  pax_decode_header,  
+  pax_decode_header,
   NULL,  /* No scan_block function */
   sparse_dump_region,
   sparse_extract_region,

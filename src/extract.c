@@ -146,7 +146,7 @@ set_mode (char const *file_name,
 {
   mode_t mode;
   bool failed;
-  
+
   if (0 < same_permissions_option
       && permstatus != INTERDIR_PERMSTATUS)
     {
@@ -893,10 +893,10 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
 	{
 	case RECOVER_OK:
 	  continue;
-	  
+
 	case RECOVER_SKIP:
 	  return 0;
-	  
+
 	case RECOVER_NO:
 	  open_error (file_name);
 	  return -1;
@@ -967,9 +967,9 @@ extract_link (char *file_name, int typeflag)
   int interdir_made = 0;
   char const *link_name;
   int rc;
-  
+
   link_name = current_stat_info.link_name;
-  
+
   if (! absolute_names_option && contains_dot_dot (link_name))
     return create_placeholder_file (file_name, false, &interdir_made);
 
@@ -1035,15 +1035,15 @@ extract_symlink (char *file_name, int typeflag)
       {
       case RECOVER_OK:
 	continue;
-	
+
       case RECOVER_SKIP:
 	return 0;
-	
+
       case RECOVER_NO:
 	symlink_error (current_stat_info.link_name, file_name);
 	return -1;
       }
-  
+
   set_stat (file_name, &current_stat_info, NULL, 0, 0, SYMTYPE);
   return 0;
 
@@ -1065,7 +1065,6 @@ extract_symlink (char *file_name, int typeflag)
 static int
 extract_node (char *file_name, int typeflag)
 {
-  int status;
   int interdir_made = 0;
   mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
   mode_t invert_permissions =
@@ -1077,10 +1076,10 @@ extract_node (char *file_name, int typeflag)
       {
       case RECOVER_OK:
 	continue;
-	
+
       case RECOVER_SKIP:
 	return 0;
-	
+
       case RECOVER_NO:
 	mknod_error (file_name);
 	return -1;
@@ -1088,7 +1087,7 @@ extract_node (char *file_name, int typeflag)
 
   set_stat (file_name, &current_stat_info, NULL, invert_permissions,
 	    ARCHIVED_PERMSTATUS, typeflag);
-  return status;
+  return 0;
 }
 #endif
 
@@ -1107,10 +1106,10 @@ extract_fifo (char *file_name, int typeflag)
       {
       case RECOVER_OK:
 	continue;
-	
+
       case RECOVER_SKIP:
 	return 0;
-	
+
       case RECOVER_NO:
 	mkfifo_error (file_name);
 	return -1;
@@ -1274,7 +1273,7 @@ extract_archive (void)
   tar_extractor_t fun;
 
   fatal_exit_hook = extract_finish;
-  
+
   /* Try to disable the ability to unlink a directory.  */
   priv_set_remove_linkdir ();
 

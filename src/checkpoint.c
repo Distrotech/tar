@@ -77,7 +77,7 @@ void
 checkpoint_compile_action (const char *str)
 {
   struct checkpoint_action *act;
-  
+
   if (strcmp (str, ".") == 0 || strcmp (str, "dot") == 0)
     alloc_action (cop_dot);
   else if (strcmp (str, "bell") == 0)
@@ -119,14 +119,14 @@ checkpoint_finish_compile ()
     {
       if (!checkpoint_action)
 	/* Provide a historical default */
-	checkpoint_compile_action ("echo"); 
+	checkpoint_compile_action ("echo");
     }
   else if (checkpoint_action)
     /* Otherwise, set default checkpoint rate */
     checkpoint_option = DEFAULT_CHECKPOINT;
 }
 
-char *
+static char *
 expand_checkpoint_string (const char *input, bool do_write, unsigned cpn)
 {
   const char *opstr = do_write ? gettext ("write") : gettext ("read");
@@ -147,7 +147,7 @@ expand_checkpoint_string (const char *input, bool do_write, unsigned cpn)
 	case 'u':
 	  outlen += cpslen - 2;
 	  break;
-	  
+
 	case 's':
 	  outlen += opstrlen - 2;
 	}
@@ -164,11 +164,11 @@ expand_checkpoint_string (const char *input, bool do_write, unsigned cpn)
 	    case 'u':
 	      op = stpcpy (op, cps);
 	      break;
-	      
+
 	    case 's':
 	      op = stpcpy (op, opstr);
 	      break;
-	      
+
 	    default:
 	      *op++ = '%';
 	      *op++ = *ip;
@@ -188,7 +188,7 @@ run_checkpoint_actions (bool do_write)
 {
   struct checkpoint_action *p;
   FILE *tty = NULL;
-  
+
   for (p = checkpoint_action; p; p = p->next)
     {
       switch (p->opcode)
@@ -207,7 +207,7 @@ run_checkpoint_actions (bool do_write)
 	      fflush (tty);
 	    }
 	  break;
-	  
+
 	case cop_echo:
 	  {
 	    char *tmp;
@@ -232,7 +232,7 @@ run_checkpoint_actions (bool do_write)
 	    free (tmp);
 	  }
 	  break;
-	  
+
 	case cop_ttyout:
 	  if (!tty)
 	    tty = fopen ("/dev/tty", "w");
@@ -245,11 +245,11 @@ run_checkpoint_actions (bool do_write)
 	      free (tmp);
 	    }
 	  break;
-	  
+
 	case cop_sleep:
 	  sleep (p->v.time);
 	  break;
-	  
+
 	case cop_exec:
 	  sys_exec_checkpoint_script (p->v.command,
 				      archive_name_cursor[0],
@@ -266,5 +266,4 @@ checkpoint_run (bool do_write)
 {
   if (checkpoint_option && !(++checkpoint % checkpoint_option))
     run_checkpoint_actions (do_write);
-}  
-
+}

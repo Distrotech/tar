@@ -27,15 +27,6 @@
 
 /* User and group names.  */
 
-struct group *getgrnam ();
-struct passwd *getpwnam ();
-#if ! HAVE_DECL_GETPWUID
-struct passwd *getpwuid ();
-#endif
-#if ! HAVE_DECL_GETGRGID
-struct group *getgrgid ();
-#endif
-
 /* Make sure you link with the proper libraries if you are running the
    Yellow Peril (thanks for the good laugh, Ian J.!), or, euh... NIS.
    This code should also be modified for non-UNIX systems to do something
@@ -179,7 +170,7 @@ gname_to_gid (char const *gname, gid_t *gidp)
 }
 
 
-struct name *
+static struct name *
 make_name (const char *file_name)
 {
   struct name *p = xzalloc (sizeof (*p));
@@ -190,7 +181,7 @@ make_name (const char *file_name)
   return p;
 }
 
-void
+static void
 free_name (struct name *p)
 {
   if (p)
@@ -207,7 +198,7 @@ free_name (struct name *p)
 static struct name *namelist;	/* first name in list, if any */
 static struct name *nametail;	/* end of name list */
 
-/* File name arguments are processed in two stages: first a 
+/* File name arguments are processed in two stages: first a
    name_array (see below) is filled, then the names from it
    are moved into the namelist.
 
@@ -215,7 +206,7 @@ static struct name *nametail;	/* end of name list */
    which is meant to help process large archives on machines with
    limited memory.  With this option on, namelist contains at most one
    entry, which diminishes the memory consumption.
-   
+
    However, I very much doubt if we still need this -- Sergey */
 
 /* A name_array element contains entries of three types: */
@@ -230,7 +221,7 @@ struct name_elt        /* A name_array element. */
   union
   {
     const char *name;  /* File or directory name */
-    int matching_flags;/* fnmatch options if type == NELT_FMASK */ 
+    int matching_flags;/* fnmatch options if type == NELT_FMASK */
   } v;
 };
 
@@ -241,7 +232,7 @@ static size_t name_index;	 /* how many of the entries have we scanned? */
 
 /* Check the size of name_array, reallocating it as necessary.  */
 static void
-check_name_alloc ()
+check_name_alloc (void)
 {
   if (names == allocated_names)
     {
@@ -282,7 +273,7 @@ name_add_dir (const char *name)
   ep = &name_array[names++];
   ep->type = NELT_CHDIR;
   ep->v.name = name;
-}  
+}
 
 
 /* Names from external name file.  */
@@ -313,10 +304,10 @@ static int matching_flags; /* exclude_fnmatch options */
 
    If CHANGE_DIRS is true, treat any entries of type NELT_CHDIR as
    the request to change to the given directory.
-   
+
    Entries of type NELT_FMASK cause updates of the matching_flags
    value. */
-struct name_elt *
+static struct name_elt *
 name_next_elt (int change_dirs)
 {
   static struct name_elt entry;
@@ -327,14 +318,14 @@ name_next_elt (int change_dirs)
     {
       struct name_elt *ep;
       size_t source_len;
-      
+
       ep = &name_array[name_index++];
       if (ep->type == NELT_FMASK)
 	{
 	  matching_flags = ep->v.matching_flags;
 	  continue;
 	}
-      
+
       source = ep->v.name;
       source_len = strlen (source);
       if (name_buffer_length < source_len)
@@ -421,7 +412,7 @@ name_gather (void)
 	  buffer->directory = NULL;
 	  buffer->parent = NULL;
 	  buffer->cmdline = true;
-	  
+
 	  namelist = nametail = buffer;
 	}
       else if (change_dir)
@@ -519,7 +510,7 @@ name_match (const char *file_name)
 
       if (!cursor)
 	return true;
-      
+
       if (cursor->name[0] == 0)
 	{
 	  chdir_do (cursor->change_dir);
@@ -616,7 +607,7 @@ names_notfound (void)
     if (!WASFOUND (cursor) && cursor->name[0])
       {
 	regex_usage_warning (cursor->name);
-	ERROR ((0, 0, 
+	ERROR ((0, 0,
 		(cursor->found_count == 0) ?
 		     _("%s: Not found in archive") :
 		     _("%s: Required occurrence not found in archive"),
@@ -647,7 +638,7 @@ label_notfound (void)
 
   if (!namelist)
     return;
-  
+
   for (cursor = namelist; cursor; cursor = cursor->next)
     if (WASFOUND (cursor))
       return;
@@ -681,7 +672,7 @@ label_notfound (void)
 /* Sort *singly* linked LIST of names, of given LENGTH, using COMPARE
    to order names.  Return the sorted list.  Note that after calling
    this function, the `prev' links in list elements are messed up.
-   
+
    Apart from the type `struct name' and the definition of SUCCESSOR,
    this is a generic list-sorting function, but it's too painful to
    make it both generic and portable
@@ -797,7 +788,7 @@ static void
 add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 {
   const char *buffer;
-  
+
   name_fill_directory (name, device, cmdline);
   buffer = directory_contents (name->directory);
   if (buffer)
@@ -882,7 +873,7 @@ rebase_child_list (struct name *child, struct name *parent)
   size_t old_prefix_len = child->parent->length;
   size_t new_prefix_len = parent->length;
   char *new_prefix = parent->name;
-  
+
   for (; child; child = child->sibling)
     {
       size_t size = child->length - old_prefix_len + new_prefix_len;
@@ -894,7 +885,7 @@ rebase_child_list (struct name *child, struct name *parent)
       child->length = size;
 
       rebase_directory (child->directory,
-			child->parent->name, old_prefix_len, 
+			child->parent->name, old_prefix_len,
 			new_prefix, new_prefix_len);
     }
 }
@@ -911,7 +902,7 @@ collect_and_sort_names (void)
   int num_names;
   struct stat statbuf;
   Hash_table *nametab;
-  
+
   name_gather ();
 
   if (!namelist)
@@ -939,7 +930,7 @@ collect_and_sort_names (void)
 
       read_directory_file ();
     }
-  
+
   num_names = 0;
   for (name = namelist; name; name = name->next, num_names++)
     {
@@ -1115,12 +1106,12 @@ static void
 register_individual_file (char const *name)
 {
   struct stat st;
-  
+
   if (deref_stat (dereference_option, name, &st) != 0)
     return; /* Will be complained about later */
   if (S_ISDIR (st.st_mode))
     return;
-  
+
   hash_string_insert (&individual_file_table, name);
 }
 

@@ -78,7 +78,7 @@ read_and (void (*do_something) (void))
       prev_status = status;
       tar_stat_destroy (&current_stat_info);
 
-      status = read_header (&current_header, &current_stat_info, 
+      status = read_header (&current_header, &current_stat_info,
                             read_header_auto);
       switch (status)
 	{
@@ -140,7 +140,7 @@ read_and (void (*do_something) (void))
 	    {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (&current_header, &current_stat_info, 
+	      status = read_header (&current_header, &current_stat_info,
 	                            read_header_auto);
 	      if (status == HEADER_ZERO_BLOCK)
 		break;
@@ -210,7 +210,7 @@ list_archive (void)
   off_t block_ordinal = current_block_ordinal ();
 
   /* Print the header block.  */
-  
+
   decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
     print_header (&current_stat_info, current_header, block_ordinal);
@@ -496,18 +496,18 @@ decode_xform (char *file_name, void *data)
 	 links subject to filename transformation.  In the absence of another
 	 solution, symbolic links are exempt from component stripping and
 	 name suffix normalization, but subject to filename transformation
-	 proper. */ 
+	 proper. */
       return file_name;
-      
+
     case XFORM_LINK:
       file_name = safer_name_suffix (file_name, true, absolute_names_option);
       break;
-      
+
     case XFORM_REGFILE:
       file_name = safer_name_suffix (file_name, false, absolute_names_option);
       break;
     }
-  
+
   if (strip_name_components)
     {
       size_t prefix_len = stripped_prefix_len (file_name,
@@ -547,7 +547,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   enum archive_format format;
   unsigned hbits; /* high bits of the file mode. */
   mode_t mode = MODE_FROM_HEADER (header->header.mode, &hbits);
-  
+
   if (strcmp (header->header.magic, TMAGIC) == 0)
     {
       if (header->star_header.prefix[130] == 0
@@ -651,7 +651,7 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
     case SYMTYPE:
       transform_member_name (&stat_info->link_name, XFORM_SYMLINK);
       break;
-      
+
     case LNKTYPE:
       transform_member_name (&stat_info->link_name, XFORM_LINK);
     }
@@ -1292,8 +1292,8 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 }
 
 
-void
-print_volume_label ()
+static void
+print_volume_label (void)
 {
   struct tar_stat_info vstat;
   union block vblk;
@@ -1416,7 +1416,7 @@ test_archive_label ()
 		     &current_stat_info, &current_format, 0);
       if (current_header->header.typeflag == GNUTYPE_VOLHDR)
 	assign_string (&volume_label, current_header->header.name);
-      
+
       if (volume_label)
 	{
 	  if (verbose_option)

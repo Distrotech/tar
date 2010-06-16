@@ -84,7 +84,7 @@ dumpdir_create0 (const char *contents, const char *cmask)
   size_t i, total, ctsize, len;
   char *p;
   const char *q;
-  
+
   for (i = 0, total = 0, ctsize = 1, q = contents; *q; total++, q += len)
     {
       len = strlen (q) + 1;
@@ -146,7 +146,7 @@ dumpdir_locate (struct dumpdir *dump, const char *name)
 struct dumpdir_iter
 {
   struct dumpdir *dump; /* Dumpdir being iterated */
-  int all;              /* Iterate over all entries, not only D/N/Y */ 
+  int all;              /* Iterate over all entries, not only D/N/Y */
   size_t next;          /* Index of the next element */
 };
 
@@ -155,7 +155,7 @@ dumpdir_next (struct dumpdir_iter *itr)
 {
   size_t cur = itr->next;
   char *ret = NULL;
-  
+
   if (itr->all)
     {
       ret = itr->dump->contents + cur;
@@ -288,9 +288,9 @@ attach_directory (const char *name)
   dirtail = dir;
   return dir;
 }
-		 
+
 
-void
+static void
 dirlist_replace_prefix (const char *pref, const char *repl)
 {
   struct directory *dp;
@@ -414,7 +414,7 @@ update_parent_directory (const char *name)
       struct stat st;
       if (deref_stat (dereference_option, p, &st) != 0)
 	{
-	  if (errno != ENOENT) 
+	  if (errno != ENOENT)
 	    stat_diag (directory->name);
 	  /* else: should have been already reported */
 	}
@@ -457,14 +457,14 @@ procdir (const char *name_buffer, struct stat *stat_data,
 	  *entry = 'N';
 	  return directory;
 	}
-      
+
       /* With NFS, the same file can have two different devices
 	 if an NFS directory is mounted in multiple locations,
 	 which is relatively common when automounting.
 	 To avoid spurious incremental redumping of
 	 directories, consider all NFS devices as equal,
 	 relying on the i-node to establish differences.  */
-      
+
       if (! ((!check_device_option
 	      || (DIR_IS_NFS (directory) && nfs)
 	      || directory->device_number == stat_data->st_dev)
@@ -502,14 +502,14 @@ procdir (const char *name_buffer, struct stat *stat_data,
 	}
       else
 	directory->children = CHANGED_CHILDREN;
-      
+
       DIR_SET_FLAG (directory, DIRF_FOUND);
     }
   else
     {
       struct directory *d = find_directory_meta (stat_data->st_dev,
 						 stat_data->st_ino);
-      
+
       directory = note_directory (name_buffer,
 				  get_stat_mtime(stat_data),
 				  stat_data->st_dev,
@@ -553,7 +553,7 @@ procdir (const char *name_buffer, struct stat *stat_data,
   if (one_file_system_option && device != stat_data->st_dev
       /* ... except if it was explicitely given in the command line */
       && !is_individual_file (name_buffer))
-    /* FIXME: 
+    /* FIXME:
 	WARNOPT (WARN_XDEV,
 		 (0, 0,
 		  _("%s: directory is on a different filesystem; not dumped"),
@@ -566,7 +566,7 @@ procdir (const char *name_buffer, struct stat *stat_data,
       if (directory->children == NO_CHILDREN)
 	*entry = 'N';
     }
-	  
+
   DIR_SET_FLAG (directory, DIRF_INIT);
 
   if (directory->children != NO_CHILDREN)
@@ -590,13 +590,13 @@ procdir (const char *name_buffer, struct stat *stat_data,
 				 _("contents not dumped"));
 	  directory->children = NO_CHILDREN;
 	  break;
-	  
+
 	case exclusion_tag_under:
 	  exclusion_tag_warning (name_buffer, tag_file_name,
 				 _("contents not dumped"));
 	  directory->tagfile = tag_file_name;
 	  break;
-	  
+
 	case exclusion_tag_none:
 	  break;
 	}
@@ -616,7 +616,7 @@ procdir (const char *name_buffer, struct stat *stat_data,
    DIRECTORY->dump is replaced with the created template. Each entry is
    prefixed with ' ' if it was present in DUMP and with 'Y' otherwise. */
 
-void
+static void
 makedumpdir (struct directory *directory, const char *dir)
 {
   size_t i,
@@ -697,13 +697,13 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   struct stat stat_data;
   struct directory *directory;
   char ch;
-  
+
   if (! dirp)
     savedir_error (dir);
 
   tmp = xstrdup (dir);
   zap_slashes (tmp);
-  
+
   if (deref_stat (dereference_option, tmp, &stat_data))
     {
       dir_removed_diag (tmp, cmdline, stat_diag);
@@ -715,7 +715,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   directory = procdir (tmp, &stat_data, device,
 		       (cmdline ? PD_FORCE_INIT : 0),
 		       &ch);
-  
+
   free (tmp);
 
   nbuf = namebuf_create (dir);
@@ -809,9 +809,9 @@ name_fill_directory (struct name *name, dev_t device, bool cmdline)
 
 
 static void
-obstack_code_rename (struct obstack *stk, char *from, char *to)
+obstack_code_rename (struct obstack *stk, char const *from, char const *to)
 {
-  char *s;
+  char const *s;
 
   s = from[0] == 0 ? from :
                      safer_name_suffix (from, false, absolute_names_option);
@@ -874,7 +874,7 @@ append_incremental_renames (struct directory *dir)
   size_t size;
   struct directory *dp;
   const char *dump;
-  
+
   if (dirhead == NULL)
     return;
 
@@ -1217,7 +1217,7 @@ read_timespec (FILE *fp, struct timespec *pval)
 
 /* Read incremental snapshot format 2 */
 static void
-read_incr_db_2 ()
+read_incr_db_2 (void)
 {
   uintmax_t u;
   struct obstack stk;
@@ -1312,7 +1312,7 @@ read_directory_file (void)
      which is necessary to recreate absolute file names. */
   name_from_list ();
   blank_name_list ();
-  
+
   if (0 < getline (&buf, &bufsize, listed_incremental_stream))
     {
       char *ebuf;
@@ -1367,7 +1367,7 @@ write_directory_file_entry (void *entry, void *data)
   if (DIR_IS_FOUND (directory))
     {
       char buf[UINTMAX_STRSIZE_BOUND];
-      char *s;
+      char const *s;
 
       s = DIR_IS_NFS (directory) ? "1" : "0";
       fwrite (s, 2, 1, fp);
@@ -1707,7 +1707,7 @@ try_purge_directory (char const *directory_name)
     }
   free (p);
   dumpdir_free (dump);
-  
+
   free (current_dir);
   return true;
 }

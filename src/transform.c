@@ -1,4 +1,4 @@
-/* This file is part of GNU tar. 
+/* This file is part of GNU tar.
    Copyright (C) 2006, 2007, 2008 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -34,8 +34,8 @@ enum replace_segm_type
 
 enum case_ctl_type
   {
-    ctl_stop,       /* Stop case conversion */ 
-    ctl_upcase_next,/* Turn the next character to uppercase */ 
+    ctl_stop,       /* Stop case conversion */
+    ctl_upcase_next,/* Turn the next character to uppercase */
     ctl_locase_next,/* Turn the next character to lowercase */
     ctl_upcase,     /* Turn the replacement to uppercase until ctl_stop */
     ctl_locase      /* Turn the replacement to lowercase until ctl_stop */
@@ -51,9 +51,9 @@ struct replace_segm
     {
       char *ptr;
       size_t size;
-    } literal;                /* type == segm_literal */   
+    } literal;                /* type == segm_literal */
     size_t ref;               /* type == segm_backref */
-    enum case_ctl_type ctl;   /* type == segm_case_ctl */ 
+    enum case_ctl_type ctl;   /* type == segm_case_ctl */
   } v;
 };
 
@@ -75,7 +75,7 @@ int transform_flags = XFORM_ALL;
 static struct transform *transform_head, *transform_tail;
 
 static struct transform *
-new_transform ()
+new_transform (void)
 {
   struct transform *p = xzalloc (sizeof *p);
   if (transform_tail)
@@ -146,7 +146,7 @@ parse_xform_flags (int *pflags, int c)
     case 'R':
       *pflags &= ~XFORM_REGFILE;
       break;
-	
+
     case 'h':
       *pflags |= XFORM_LINK;
       break;
@@ -154,7 +154,7 @@ parse_xform_flags (int *pflags, int c)
     case 'H':
       *pflags &= ~XFORM_LINK;
       break;
-	
+
     case 's':
       *pflags |= XFORM_SYMLINK;
       break;
@@ -204,10 +204,10 @@ parse_transform_expr (const char *expr)
 			      *expr));
 	    }
 	  return expr;
-	}	  
+	}
       USAGE_ERROR ((0, 0, _("Invalid transform expression")));
     }
-  
+
   delim = expr[1];
 
   /* Scan regular expression */
@@ -258,14 +258,14 @@ parse_transform_expr (const char *expr)
 
   if (*p == ';')
     p++;
-  
+
   /* Extract and compile regex */
   str = xmalloc (i - 1);
   memcpy (str, expr + 2, i - 2);
   str[i - 2] = 0;
 
   rc = regcomp (&tf->regex, str, cflags);
-  
+
   if (rc)
     {
       char errbuf[512];
@@ -275,7 +275,7 @@ parse_transform_expr (const char *expr)
 
   if (str[0] == '^' || str[strlen (str) - 1] == '$')
     tf->transform_type = transform_first;
-  
+
   free (str);
 
   /* Extract and compile replacement expr */
@@ -289,7 +289,7 @@ parse_transform_expr (const char *expr)
       if (*cur == '\\')
 	{
 	  size_t n;
-	  
+
 	  add_literal_segment (tf, beg, cur);
 	  switch (*++cur)
 	    {
@@ -310,32 +310,32 @@ parse_transform_expr (const char *expr)
 	      add_char_segment (tf, '\a');
 	      cur++;
 	      break;
-	      
+
 	    case 'b':
 	      add_char_segment (tf, '\b');
 	      cur++;
 	      break;
-	      
+
 	    case 'f':
 	      add_char_segment (tf, '\f');
 	      cur++;
 	      break;
-	      
+
 	    case 'n':
 	      add_char_segment (tf, '\n');
 	      cur++;
 	      break;
-	      
+
 	    case 'r':
 	      add_char_segment (tf, '\r');
 	      cur++;
 	      break;
-	      
+
 	    case 't':
 	      add_char_segment (tf, '\t');
 	      cur++;
 	      break;
-	      
+
 	    case 'v':
 	      add_char_segment (tf, '\v');
 	      cur++;
@@ -345,39 +345,39 @@ parse_transform_expr (const char *expr)
 	      add_char_segment (tf, '&');
 	      cur++;
 	      break;
-	      
+
 	    case 'L':
 	      /* Turn the replacement to lowercase until a `\U' or `\E'
 		 is found, */
 	      add_case_ctl_segment (tf, ctl_locase);
 	      cur++;
 	      break;
- 
+
 	    case 'l':
 	      /* Turn the next character to lowercase, */
 	      add_case_ctl_segment (tf, ctl_locase_next);
 	      cur++;
 	      break;
-	      
+
 	    case 'U':
 	      /* Turn the replacement to uppercase until a `\L' or `\E'
 		 is found, */
 	      add_case_ctl_segment (tf, ctl_upcase);
 	      cur++;
 	      break;
-	      
+
 	    case 'u':
 	      /* Turn the next character to uppercase, */
 	      add_case_ctl_segment (tf, ctl_upcase_next);
 	      cur++;
 	      break;
-	      
+
 	    case 'E':
 	      /* Stop case conversion started by `\L' or `\U'. */
 	      add_case_ctl_segment (tf, ctl_stop);
 	      cur++;
 	      break;
-  
+
 	    default:
 	      /* Try to be nice */
 	      {
@@ -420,7 +420,7 @@ run_case_conv (enum case_ctl_type case_ctl, char *ptr, size_t size)
   static char *case_ctl_buffer;
   static size_t case_ctl_bufsize;
   char *p;
-  
+
   if (case_ctl_bufsize < size)
     {
       case_ctl_bufsize = size;
@@ -432,16 +432,16 @@ run_case_conv (enum case_ctl_type case_ctl, char *ptr, size_t size)
     case ctl_upcase_next:
       case_ctl_buffer[0] = toupper ((unsigned char) case_ctl_buffer[0]);
       break;
-      
+
     case ctl_locase_next:
       case_ctl_buffer[0] = tolower ((unsigned char) case_ctl_buffer[0]);
       break;
-      
+
     case ctl_upcase:
       for (p = case_ctl_buffer; p < case_ctl_buffer + size; p++)
 	*p = toupper ((unsigned char) *p);
       break;
-      
+
     case ctl_locase:
       for (p = case_ctl_buffer; p < case_ctl_buffer + size; p++)
 	*p = tolower ((unsigned char) *p);
@@ -457,7 +457,7 @@ run_case_conv (enum case_ctl_type case_ctl, char *ptr, size_t size)
 static struct obstack stk;
 static bool stk_init;
 
-void
+static void
 _single_transform_name_to_obstack (struct transform *tf, char *input)
 {
   regmatch_t *rmp;
@@ -465,7 +465,7 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
   size_t nmatches = 0;
   enum case_ctl_type case_ctl = ctl_stop,  /* Current case conversion op */
                      save_ctl = ctl_stop;  /* Saved case_ctl for \u and \l */
-  
+
   /* Reset case conversion after a single-char operation */
 #define CASE_CTL_RESET()  if (case_ctl == ctl_upcase_next     \
 			      || case_ctl == ctl_locase_next) \
@@ -473,20 +473,20 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
                               case_ctl = save_ctl;            \
                               save_ctl = ctl_stop;            \
 			    }
-  
+
   rmp = xmalloc ((tf->regex.re_nsub + 1) * sizeof (*rmp));
 
   while (*input)
     {
       size_t disp;
       char *ptr;
-      
+
       rc = regexec (&tf->regex, input, tf->regex.re_nsub + 1, rmp, 0);
-      
+
       if (rc == 0)
 	{
 	  struct replace_segm *segm;
-	  
+
 	  disp = rmp[0].rm_eo;
 
 	  if (rmp[0].rm_so)
@@ -516,7 +516,7 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
 		    }
 		  obstack_grow (&stk, ptr, segm->v.literal.size);
 		  break;
-	      
+
 		case segm_backref:    /* Back-reference segment */
 		  if (rmp[segm->v.ref].rm_so != -1
 		      && rmp[segm->v.ref].rm_eo != -1)
@@ -529,7 +529,7 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
 			  ptr = run_case_conv (case_ctl, ptr, size);
 			  CASE_CTL_RESET();
 			}
-		      
+
 		      obstack_grow (&stk, ptr, size);
 		    }
 		  break;
@@ -549,7 +549,7 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
 			  break;
 			}
 		      /*FALL THROUGH*/
-		      
+
 		    case ctl_upcase:
 		    case ctl_locase:
 		    case ctl_stop:
@@ -577,18 +577,18 @@ _single_transform_name_to_obstack (struct transform *tf, char *input)
   free (rmp);
 }
 
-bool
+static bool
 _transform_name_to_obstack (int flags, char *input, char **output)
 {
   struct transform *tf;
   bool alloced = false;
-  
+
   if (!stk_init)
     {
       obstack_init (&stk);
       stk_init = true;
     }
-  
+
   for (tf = transform_head; tf; tf = tf->next)
     {
       if (tf->flags & flags)
@@ -601,7 +601,7 @@ _transform_name_to_obstack (int flags, char *input, char **output)
   *output = input;
   return alloced;
 }
-  
+
 bool
 transform_name_fp (char **pinput, int flags,
 		   char *(*fun)(char *, void *), void *dat)

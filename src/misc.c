@@ -234,8 +234,8 @@ zap_slashes (char *name)
 }
 
 /* Normalize NAME by resolving any relative references and
-   removing trailing slashes.  Destructive version: modifies its argument. */ 
-int
+   removing trailing slashes.  Destructive version: modifies its argument. */
+static int
 normalize_filename_x (char *name)
 {
   char *p, *q;
@@ -296,7 +296,7 @@ normalize_filename_x (char *name)
   /* Remove trailing slashes */
   while (p - 1 > name && ISSLASH (p[-1]))
     p--;
-  
+
   *p = 0;
   return 0;
 }
@@ -393,7 +393,7 @@ code_timespec (struct timespec t, char sbuf[TIMESPEC_STRSIZE_BOUND])
   /* ignore invalid values of ns */
   if (BILLION <= ns || ns < 0)
     ns = 0;
-  
+
   if (negative && ns != 0)
     {
       s++;
@@ -851,7 +851,7 @@ file_removed_diag (const char *name, bool top_level,
 	       (0, 0, _("%s: File removed before we read it"),
 		quotearg_colon (name)));
       set_exit_status (TAREXIT_DIFFERS);
-    }      
+    }
   else
     diagfn (name);
 }
@@ -961,4 +961,3 @@ namebuf_name (namebuf_t buf, const char *name)
   strcpy (buf->buffer + buf->dir_length, name);
   return buf->buffer;
 }
-
