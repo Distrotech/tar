@@ -225,7 +225,7 @@ static struct zip_magic const magic[] = {
   { ct_lzip,     4, "LZIP",      LZIP_PROGRAM,     "--lzip" },
   { ct_lzma,     6, "\xFFLZMA",  LZMA_PROGRAM,     "--lzma" },
   { ct_lzop,     4, "\211LZO",   LZOP_PROGRAM,     "--lzop" },
-  { ct_xz,       6, "\0xFD7zXZ", XZ_PROGRAM,       "-J" },
+  { ct_xz,       6, "\xFD7zXZ",  XZ_PROGRAM,       "-J" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
