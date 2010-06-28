@@ -90,7 +90,8 @@ read_and (void (*do_something) (void))
 
 	  /* Valid header.  We should decode next field (mode) first.
 	     Ensure incoming names are null terminated.  */
-
+	  decode_header (current_header, &current_stat_info,
+			 &current_format, 1);
 	  if (! name_match (current_stat_info.file_name)
 	      || (NEWER_OPTION_INITIALIZED (newer_mtime_option)
 		  /* FIXME: We get mtime now, and again later; this causes
@@ -116,8 +117,6 @@ read_and (void (*do_something) (void))
 			   quotearg_colon (current_stat_info.file_name)));
 		  /* Fall through.  */
 		default:
-		  decode_header (current_header,
-				 &current_stat_info, &current_format, 0);
 		  skip_member ();
 		  continue;
 		}
@@ -210,8 +209,6 @@ list_archive (void)
   off_t block_ordinal = current_block_ordinal ();
 
   /* Print the header block.  */
-
-  decode_header (current_header, &current_stat_info, &current_format, 0);
   if (verbose_option)
     print_header (&current_stat_info, current_header, block_ordinal);
 

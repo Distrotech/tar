@@ -452,7 +452,6 @@ diff_archive (void)
 {
 
   set_next_block_after (current_header);
-  decode_header (current_header, &current_stat_info, &current_format, 1);
 
   /* Print the block from current_header and current_stat_info.  */
 

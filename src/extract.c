@@ -1278,7 +1278,7 @@ extract_archive (void)
   priv_set_remove_linkdir ();
 
   set_next_block_after (current_header);
-  decode_header (current_header, &current_stat_info, &current_format, 1);
+
   if (!current_stat_info.file_name[0]
       || (interactive_option
 	  && !confirm ("extract", current_stat_info.file_name)))

@@ -130,6 +130,7 @@ m4_include([exclude02.at])
 m4_include([exclude03.at])
 m4_include([exclude04.at])
 m4_include([exclude05.at])
+m4_include([exclude06.at])
 
 m4_include([delete01.at])
 m4_include([delete02.at])
