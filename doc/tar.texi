@@ -330,6 +330,10 @@ Using Less Space through Compression
 * gzip::                        Creating and Reading Compressed Archives
 * sparse::                      Archiving Sparse Files
 
+Creating and Reading Compressed Archives
+
+* lbzip2::  Using lbzip2 with @GNUTAR{}.
+
 Making @command{tar} Archives More Portable
 
 * Portable Names::              Portable Names
@@ -8701,7 +8705,7 @@ For example:
 $ @kbd{tar cfz archive.tar.gz .}
 @end smallexample
 
-You can also let @GNUTAR{} select the compression program basing on
+You can also let @GNUTAR{} select the compression program based on
 the suffix of the archive file name. This is done using
 @option{--auto-compress} (@option{-a}) command line option. For
 example, the following invocation will use @command{bzip2} for
@@ -8766,7 +8770,94 @@ cannot append another @command{tar} archive to a compressed archive using
 @option{--concatenate} (@option{-A}).  Secondly, multi-volume
 archives cannot be compressed.
 
-The following table summarizes compression options used by @GNUTAR{}.
+The following options allow to select a particular compressor program:
+
+@table @option
+@opindex gzip
+@opindex ungzip
+@item -z
+@itemx --gzip
+@itemx --ungzip
+Filter the archive through @command{gzip}.
+
+@opindex xz
+@item -J
+@itemx --xz
+Filter the archive through @code{xz}.
+
+@item -j
+@itemx --bzip2
+Filter the archive through @code{bzip2}.
+
+@opindex lzip
+@item --lzip
+Filter the archive through @command{lzip}.
+
+@opindex lzma
+@item --lzma
+Filter the archive through @command{lzma}.
+
+@opindex lzop
+@item --lzop
+Filter the archive through @command{lzop}.
+
+@opindex compress
+@opindex uncompress
+@item -Z
+@itemx --compress
+@itemx --uncompress
+Filter the archive through @command{compress}.
+@end table
+
+When any of these options is given, @GNUTAR{} searches the compressor
+binary in the current path and invokes it.  The name of the compressor
+program is specified at compilation time using a corresponding
+@option{--with-@var{compname}} option to @command{configure}, e.g.
+@option{--with-bzip2} to select a specific @command{bzip2} binary.
+@xref{lbzip2}, for a detailed discussion.
+
+The output produced by @command{tar --help} shows the actual
+compressor names along with each of these options.
+
+You can use any of these options on physical devices (tape drives,
+etc.) and remote files as well as on normal files; data to or from
+such devices or remote files is reblocked by another copy of the
+@command{tar} program to enforce the specified (or default) record 
+size.  The default compression parameters are used.  Most compression
+programs allow to override these by setting a program-specific
+environment variable.  For example, when using @command{gzip} you can
+use @env{GZIP} as in the example below:
+
+@smallexample
+$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
+@end smallexample
+
+@noindent
+Another way would be to use the @option{-I} option instead (see
+below), e.g.:
+
+@smallexample
+$ @kbd{tar -cf archive.tar.gz -I 'gzip --best' subdir}
+@end smallexample
+
+@noindent
+Finally, the third, traditional, way to achieve the same result is to
+use pipe:
+
+@smallexample
+$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
+@end smallexample
+
+@cindex corrupted archives
+About corrupted compressed archives: compressed files have no
+redundancy, for maximum compression.  The adaptive nature of the
+compression scheme means that the compression tables are implicitly
+spread all over the archive.  If you lose a few blocks, the dynamic
+construction of the compression tables becomes unsynchronized, and there
+is little chance that you could recover later in the archive.
+
+Another compression options provide a better control over creating
+compressed archives.  These are:
 
 @table @option
 @anchor{auto-compress}
@@ -8793,77 +8884,6 @@ suffix.  The following suffixes are recognized:
 @item @samp{.lzo} @tab @command{lzop}
 @item @samp{.xz} @tab @command{xz}
 @end multitable
-
-@opindex gzip
-@opindex ungzip
-@item -z
-@itemx --gzip
-@itemx --ungzip
-Filter the archive through @command{gzip}.
-
-You can use @option{--gzip} and @option{--gunzip} on physical devices
-(tape drives, etc.) and remote files as well as on normal files; data
-to or from such devices or remote files is reblocked by another copy
-of the @command{tar} program to enforce the specified (or default) record
-size.  The default compression parameters are used; if you need to
-override them, set @env{GZIP} environment variable, e.g.:
-
-@smallexample
-$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
-@end smallexample
-
-@noindent
-Another way would be to avoid the @option{--gzip} (@option{--gunzip}, @option{--ungzip}, @option{-z}) option and run
-@command{gzip} explicitly:
-
-@smallexample
-$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
-@end smallexample
-
-@cindex corrupted archives
-About corrupted compressed archives: @command{gzip}'ed files have no
-redundancy, for maximum compression.  The adaptive nature of the
-compression scheme means that the compression tables are implicitly
-spread all over the archive.  If you lose a few blocks, the dynamic
-construction of the compression tables becomes unsynchronized, and there
-is little chance that you could recover later in the archive.
-
-There are pending suggestions for having a per-volume or per-file
-compression in @GNUTAR{}.  This would allow for viewing the
-contents without decompression, and for resynchronizing decompression at
-every volume or file, in case of corrupted archives.  Doing so, we might
-lose some compressibility.  But this would have make recovering easier.
-So, there are pros and cons.  We'll see!
-
-@opindex bzip2
-@item -J
-@itemx --xz
-Filter the archive through @code{xz}.  Otherwise like
-@option{--gzip}.
-
-@item -j
-@itemx --bzip2
-Filter the archive through @code{bzip2}.  Otherwise like @option{--gzip}.
-
-@opindex lzip
-@item --lzip
-Filter the archive through @command{lzip}.  Otherwise like @option{--gzip}.
-
-@opindex lzma
-@item --lzma
-Filter the archive through @command{lzma}.  Otherwise like @option{--gzip}.
-
-@opindex lzop
-@item --lzop
-Filter the archive through @command{lzop}.  Otherwise like
-@option{--gzip}.
-
-@opindex compress
-@opindex uncompress
-@item -Z
-@itemx --compress
-@itemx --uncompress
-Filter the archive through @command{compress}.  Otherwise like @option{--gzip}.
 
 @opindex use-compress-program
 @item --use-compress-program=@var{prog}
@@ -8956,6 +8976,45 @@ The above is based on the following discussion:
   the DLT compression mode, the data will actually get bigger and one will
   end up with less space on the tape.
 @end ignore
+
+@menu
+* lbzip2::  Using lbzip2 with @GNUTAR{}.
+@end menu
+
+@node lbzip2
+@subsubsection Using lbzip2 with @GNUTAR{}.
+@cindex lbzip2
+@cindex Laszlo Ersek
+  @command{Lbzip2} is a multithreaded utility for handling
+@samp{bzip2} compression, written by Laszlo Ersek.  It makes use of
+multiple processors to speed up its operation and in general works
+considerably faster than @command{bzip2}.  For a detailed description
+of @command{lbzip2} see @uref{http://freshmeat.net/@/projects/@/lbzip2} and
+@uref{http://www.linuxinsight.com/@/lbzip2-parallel-bzip2-utility.html,
+lbzip2: parallel bzip2 utility}.
+
+  Recent versions of @command{lbzip2} are mostly command line compatible
+with @command{bzip2}, which makes it possible to automatically invoke
+it via the @option{--bzip2} @GNUTAR{} command line option.  To do so,
+@GNUTAR{} must be configured with the @option{--with-bzip2} command
+line option, like this:
+
+@smallexample
+$ @kbd{./configure --with-bzip2=lbzip2 [@var{other-options}]}
+@end smallexample
+
+  Once configured and compiled this way, @command{tar --help} will show the
+following:
+
+@smallexample
+@group
+$ @kbd{tar --help | grep -- --bzip2}
+  -j, --bzip2                filter the archive through lbzip2
+@end group
+@end smallexample
+  
+@noindent
+which means that running @command{tar --bzip2} will invoke @command{lbzip2}.
 
 @node sparse
 @subsection Archiving Sparse Files

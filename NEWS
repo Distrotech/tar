@@ -2,6 +2,7 @@ GNU tar NEWS - User visible changes. 2010-03-28
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
+version 1.23.90 - (Git)
 
 * The --full-time option.
 
