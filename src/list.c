@@ -1353,7 +1353,7 @@ skip_file (off_t size)
 {
   union block *x;
 
-  /* FIXME: Make sure mv_begin is always called before it */
+  /* FIXME: Make sure mv_begin_read is always called before it */
 
   if (seekable_archive)
     {
@@ -1388,7 +1388,7 @@ skip_member (void)
       char save_typeflag = current_header->header.typeflag;
       set_next_block_after (current_header);
 
-      mv_begin (&current_stat_info);
+      mv_begin_read (&current_stat_info);
 
       if (current_stat_info.is_sparse)
 	sparse_skip_file (&current_stat_info);

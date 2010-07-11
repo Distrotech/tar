@@ -427,9 +427,10 @@ void archive_read_error (void);
 off_t seek_archive (off_t size);
 void set_start_time (void);
 
-void mv_begin (struct tar_stat_info *st);
+void mv_begin_write (const char *file_name, off_t totsize, off_t sizeleft);
+
+void mv_begin_read (struct tar_stat_info *st);
 void mv_end (void);
-void mv_total_size (off_t size);
 void mv_size_left (off_t size);
 
 void buffer_write_global_xheader (void);

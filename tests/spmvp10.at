@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 AT_SETUP([sparse files in PAX MV archives, v.1.0])
-AT_KEYWORDS([sparse multiv sparsemvp sparsemvp10])
+AT_KEYWORDS([sparse multivolume multiv sparsemvp sparsemvp10])
 
 TAR_MVP_TEST(1.0, [0 ABCDEFGH 1M ABCDEFGHI], [0 ABCDEFG 1M ABCDEFGHI])
 

@@ -812,7 +812,7 @@ extract_file (char *file_name, int typeflag)
 	}
     }
 
-  mv_begin (&current_stat_info);
+  mv_begin_read (&current_stat_info);
   if (current_stat_info.is_sparse)
     sparse_extract_file (fd, &current_stat_info, &size);
   else

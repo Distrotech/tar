@@ -31,6 +31,8 @@ AT_XFAIL_IF(test -f $[]XFAILFILE)
 AT_TARBALL_PREREQ([xsplit-1.tar],[0e008c84c517e48fbf23ca6a7033cde6])
 AT_TARBALL_PREREQ([xsplit-2.tar],[03150b9852d285458f43734e9e0b9a45])
 
+exec <&-
+
 cd $TEST_DATA_DIR
 tar -t -M -fxsplit-1.tar -fxsplit-2.tar
 ],

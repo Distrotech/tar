@@ -1012,7 +1012,6 @@ pad_archive (off_t size_left)
   union block *blk;
   while (size_left > 0)
     {
-      mv_size_left (size_left);
       blk = find_next_block ();
       memset (blk->buffer, 0, BLOCKSIZE);
       set_next_block_after (blk);
@@ -1038,13 +1037,11 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 
   finish_header (st, blk, block_ordinal);
 
-  mv_begin (st);
+  mv_begin_write (st->file_name, st->stat.st_size, st->stat.st_size);
   while (size_left > 0)
     {
       size_t bufsize, count;
       
-      mv_size_left (size_left);
-
       blk = find_next_block ();
 
       bufsize = available_space_after (blk);
@@ -1138,11 +1135,9 @@ dump_dir0 (char *directory,
 	  p_buffer = buffer;
 	  size_left = totsize;
 	  
-	  mv_begin (st);
-	  mv_total_size (totsize);
+	  mv_begin_write (st->file_name, totsize, totsize);
 	  while (size_left > 0)
 	    {
-	      mv_size_left (size_left);
 	      blk = find_next_block ();
 	      bufsize = available_space_after (blk);
 	      if (size_left < bufsize)
@@ -1157,7 +1152,6 @@ dump_dir0 (char *directory,
 	      p_buffer += bufsize;
 	      set_next_block_after (blk + (bufsize - 1) / BLOCKSIZE);
 	    }
-	  mv_end ();
 	}
       return;
     }
@@ -1619,7 +1613,6 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    {
 	    case dump_status_ok:
 	    case dump_status_short:
-	      mv_end ();
 	      file_count_links (st);
 	      break;
 

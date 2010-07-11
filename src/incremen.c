@@ -1452,7 +1452,7 @@ get_gnu_dumpdir (struct tar_stat_info *stat_info)
   to = archive_dir;
 
   set_next_block_after (current_header);
-  mv_begin (stat_info);
+  mv_begin_read (stat_info);
 
   for (; size > 0; size -= copied)
     {

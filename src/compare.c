@@ -122,7 +122,7 @@ read_and_process (struct tar_stat_info *st, int (*processor) (size_t, char *))
   size_t data_size;
   off_t size = st->stat.st_size;
 
-  mv_begin (st);
+  mv_begin_read (st);
   while (size)
     {
       data_block = find_next_block ();

@@ -324,7 +324,6 @@ sparse_dump_region (struct tar_sparse_file *file, size_t i)
       memset (blk->buffer + bytes_read, 0, BLOCKSIZE - bytes_read);
       bytes_left -= bytes_read;
       file->dumped_size += bytes_read;
-      mv_size_left (file->stat_info->archive_file_size - file->dumped_size);
       set_next_block_after (blk);
     }
 
@@ -398,10 +397,11 @@ sparse_dump_file (int fd, struct tar_stat_info *st)
 	{
 	  size_t i;
 
-	  mv_begin (file.stat_info);
+	  mv_begin_write (file.stat_info->file_name,
+		          file.stat_info->stat.st_size,
+		          file.stat_info->archive_file_size - file.dumped_size);
 	  for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
 	    rc = tar_sparse_dump_region (&file, i);
-	  mv_end ();
 	}
     }
 
@@ -566,7 +566,7 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
   file.seekable = true; /* File *must* be seekable for compare to work */
 
   rc = tar_sparse_decode_header (&file);
-  mv_begin (st);
+  mv_begin_read (st);
   for (i = 0; rc && i < file.stat_info->sparse_map_avail; i++)
     {
       rc = check_sparse_region (&file,
