@@ -41,13 +41,13 @@ $1)],$2,$3,$4,$5,$6)
 m4_define([AT_TAR_WITH_HOOK],[
   m4_pushdef([AT_TAR_CHECK_HOOK],[$1])
   $2
-  
+
   m4_popdef([AT_TAR_CHECK_HOOK])])
 
 m4_define([TAR_IGNREC_HOOK],[
   AT_CHECK([grep -v '^.*tar: Record size = ' stderr; exit 0])
 ])
-  
+
 m4_define([RE_CHECK],[
 AT_DATA([$1.re],[$2])
 awk '{print NR " " $[]0}' $1 > $[]$.1
@@ -162,6 +162,7 @@ m4_include([incr01.at])
 m4_include([incr02.at])
 m4_include([listed01.at])
 m4_include([listed02.at])
+m4_include([listed03.at])
 m4_include([incr03.at])
 m4_include([incr04.at])
 m4_include([incr05.at])

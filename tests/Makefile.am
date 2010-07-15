@@ -1,6 +1,6 @@
 # Makefile for GNU tar regression tests.
 
-# Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005, 
+# Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005,
 # 2006, 2007, 2009 Free Software Foundation, Inc.
 
 # François Pinard <pinard@iro.umontreal.ca>, 1988.
@@ -98,6 +98,7 @@ TESTSUITE_AT = \
  link03.at\
  listed01.at\
  listed02.at\
+ listed03.at\
  long01.at\
  longv7.at\
  lustar01.at\

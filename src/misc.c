@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -233,99 +233,54 @@ zap_slashes (char *name)
   return name;
 }
 
-/* Normalize NAME by resolving any relative references and
-   removing trailing slashes.  Destructive version: modifies its argument. */
-static int
-normalize_filename_x (char *name)
+/* Normalize FILE_NAME by removing redundant slashes and "."
+   components, including redundant trailing slashes.  Leave ".."
+   alone, as it may be significant in the presence of symlinks and on
+   platforms where "/.." != "/".  Destructive version: modifies its
+   argument. */
+static void
+normalize_filename_x (char *file_name)
 {
-  char *p, *q;
+  char *name = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
+  char *p;
+  char const *q;
+  char c;
 
-  p = name;
-  if (DOUBLE_SLASH_IS_DISTINCT_ROOT && ISSLASH (*p))
-    p++;
+  /* Don't squeeze leading "//" to "/", on hosts where they're distinct.  */
+  name += (DOUBLE_SLASH_IS_DISTINCT_ROOT
+	   && ISSLASH (*name) && ISSLASH (name[1]) && ! ISSLASH (name[2]));
 
-  /* Remove /./, resolve /../ and compress sequences of slashes */
-  for (q = p; *q; )
+  /* Omit redundant leading "." components.  */
+  for (q = p = name; (*p = *q) == '.' && ISSLASH (q[1]); p += !*q)
+    for (q += 2; ISSLASH (*q); q++)
+      continue;
+
+  /* Copy components from Q to P, omitting redundant slashes and
+     internal "."  components.  */
+  while ((*p++ = c = *q++) != '\0')
+    if (ISSLASH (c))
+      while (ISSLASH (q[*q == '.']))
+	q += (*q == '.') + 1;
+
+  /* Omit redundant trailing "." component and slash.  */
+  if (2 < p - name)
     {
-      if (ISSLASH (*q))
-	{
-	  *p++ = *q++;
-	  while (ISSLASH (*q))
-	    q++;
-	  continue;
-	}
-      else if (p == name)
-	{
-	  if (*q == '.')
-	    {
-	      if (ISSLASH (q[1]))
-		{
-		  q += 2;
-		  continue;
-		}
-	      if (q[1] == '.' && ISSLASH (q[2]))
-		return 1;
-	    }
-	}
-      else
-	{
-	  if (*q == '.' && ISSLASH (p[-1]))
-	    {
-	      if (ISSLASH (q[1]))
-		{
-		  q += 2;
-		  while (ISSLASH (*q))
-		    q++;
-		  continue;
-		}
-	      else if (q[1] == '.' && ISSLASH (q[2]))
-		{
-		  do
-		    {
-		      --p;
-		    }
-		  while (p > name && !ISSLASH (p[-1]));
-		  q += 3;
-		  continue;
-		}
-	    }
-	}
-      *p++ = *q++;
+      p -= p[-2] == '.' && ISSLASH (p[-3]);
+      p -= 2 < p - name && ISSLASH (p[-2]);
+      p[-1] = '\0';
     }
-
-  /* Remove trailing slashes */
-  while (p - 1 > name && ISSLASH (p[-1]))
-    p--;
-
-  *p = 0;
-  return 0;
 }
 
-/* Normalize NAME by resolving any relative references, removing trailing
-   slashes, and converting it to absolute file name.  Return the normalized
-   name, or NULL in case of error. */
+/* Normalize NAME by removing redundant slashes and "." components,
+   including redundant trailing slashes.  Return a normalized
+   newly-allocated copy.  */
 
 char *
 normalize_filename (const char *name)
 {
-  char *copy;
-
-  if (name[0] != '/')
-    {
-      copy = xgetcwd ();
-      copy = xrealloc (copy, strlen (copy) + strlen (name) + 2);
-
-      strcat (copy, "/");
-      strcat (copy, name);
-    }
-  else
-    copy = xstrdup (name);
-  if (normalize_filename_x (copy))
-    {
-      free (copy);
-      return NULL;
-    }
-  return xrealloc (copy, strlen (copy) + 1);
+  char *copy = xstrdup (name);
+  normalize_filename_x (copy);
+  return copy;
 }
 
 
@@ -752,6 +707,8 @@ chdir_do (int i)
 		  close (fd1);
 		  prev->saved_cwd.desc = -1;
 		  prev->saved_cwd.name = xgetcwd ();
+		  if (! prev->saved_cwd.name)
+		    err = errno;
 		}
 	      else
 		err = errno;

@@ -23,7 +23,6 @@
 #include <quotearg.h>
 #include <utimens.h>
 #include <errno.h>
-#include <xgetcwd.h>
 #include <priv-set.h>
 
 #include "common.h"
@@ -648,13 +647,11 @@ extract_dir (char *file_name, int typeflag)
   if (one_file_system_option && root_device == 0)
     {
       struct stat st;
-      char *dir = xgetcwd ();
 
-      if (deref_stat (true, dir, &st))
-	stat_diag (dir);
+      if (stat (".", &st) != 0)
+	stat_diag (".");
       else
 	root_device = st.st_dev;
-      free (dir);
     }
 
   if (incremental_option)
