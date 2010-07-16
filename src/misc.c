@@ -278,7 +278,32 @@ normalize_filename_x (char *file_name)
 char *
 normalize_filename (const char *name)
 {
-  char *copy = xstrdup (name);
+  char *copy = NULL;
+
+  if (IS_RELATIVE_FILE_NAME (name))
+    {
+      /* Set COPY to the absolute file name if possible.
+
+         FIXME: There should be no need to get the absolute file name.
+         getcwd is slow, it might fail, and it does not necessarily
+         return a canonical name even when it succeeds.  Perhaps we
+         can use dev+ino pairs instead of names?  */
+      copy = xgetcwd ();
+      if (copy)
+        {
+          size_t copylen = strlen (copy);
+          bool need_separator = ! (DOUBLE_SLASH_IS_DISTINCT_ROOT
+                                   && copylen == 2 && ISSLASH (copy[1]));
+          copy = xrealloc (copy, copylen + need_separator + strlen (name) + 1);
+          copy[copylen] = DIRECTORY_SEPARATOR;
+          strcpy (copy + copylen + need_separator, name);
+        }
+      else
+        WARN ((0, errno, _("Cannot get working directory")));
+    }
+
+  if (! copy)
+    copy = xstrdup (name);
   normalize_filename_x (copy);
   return copy;
 }
