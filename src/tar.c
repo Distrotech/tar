@@ -1364,6 +1364,8 @@ expand_pax_option (struct tar_args *targs, const char *arg)
 }
 
 
+#define TAR_SIZE_SUFFIXES "bBcGgkKMmPTtw"
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -1506,10 +1508,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case 'L':
       {
 	uintmax_t u;
-	if (xstrtoumax (arg, 0, 10, &u, "") != LONGINT_OK)
+	char *p;
+	
+	if (xstrtoumax (arg, &p, 10, &u, TAR_SIZE_SUFFIXES) != LONGINT_OK)
 	  USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
 			_("Invalid tape length")));
-	tape_length_option = 1024 * (tarlong) u;
+	if (p > arg && !strchr (TAR_SIZE_SUFFIXES, p[-1]))
+	  tape_length_option = 1024 * (tarlong) u;
+	else
+	  tape_length_option = (tarlong) u;
 	multi_volume_option = true;
       }
       break;
@@ -1961,7 +1968,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case RECORD_SIZE_OPTION:
       {
 	uintmax_t u;
-	if (! (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK
+	
+	if (! (xstrtoumax (arg, NULL, 10, &u, TAR_SIZE_SUFFIXES) == LONGINT_OK
 	       && u == (size_t) u))
 	  USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
 			_("Invalid record size")));

@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2010-03-28
+GNU tar NEWS - User visible changes. 2010-07-16
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -47,6 +47,11 @@ update of an archive:
   tar -rf archive --label 'My volume' .
 
 This did not work in previous versions, in spite of what the docs said.  
+
+** --record-size and --tape-length (-L) options
+
+Usual size suffixes are allowed for these options.  For example,
+-L10k stands for a 10 kilobyte tape length. 
 
 ** Fix dead loop on extracting existing symlinks with the -k option.
 

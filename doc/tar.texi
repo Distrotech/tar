@@ -3153,10 +3153,13 @@ Specifies that @command{tar} should reblock its input, for reading
 from pipes on systems with buggy implementations.  @xref{Reading}.
 
 @opsummary{record-size}
-@item --record-size=@var{size}
+@item --record-size=@var{size}[@var{suf}]
 
 Instructs @command{tar} to use @var{size} bytes per record when accessing the
-archive.  @xref{Blocking Factor}.
+archive.  The argument can be suffixed with a @dfn{size suffix}, e.g.
+@option{--record-size=10K} for 10 Kilobytes.  @xref{size-suffixes},
+for a list of valid suffixes.   @xref{Blocking Factor}, for a detailed
+description of this option.
 
 @opsummary{recursion}
 @item --recursion
@@ -3306,11 +3309,15 @@ Alters the suffix @command{tar} uses when backing up files from the default
 @samp{~}.  @xref{backup}.
 
 @opsummary{tape-length}
-@item --tape-length=@var{num}
-@itemx -L @var{num}
+@item --tape-length=@var{num}[@var{suf}]
+@itemx -L @var{num}[@var{suf}]
 
 Specifies the length of tapes that @command{tar} is writing as being
-@w{@var{num} x 1024} bytes long.  @xref{Using Multiple Tapes}.
+@w{@var{num} x 1024} bytes long.  If optional @var{suf} is given, it
+specifies a multiplicative factor to be used instead of 1024.  For
+example, @samp{-L2M} means 2 megabytes.  @xref{size-suffixes}, for a
+list of allowed suffixes.  @xref{Using Multiple Tapes}, for a detailed
+discussion of this option.
 
 @opsummary{test-label}
 @item --test-label
@@ -10345,8 +10352,27 @@ that may be larger than will fit on the medium used to hold it.
 
 @xopindex{tape-length, short description}
 @item -L @var{num}
-@itemx --tape-length=@var{num}
-Change tape after writing @var{num} x 1024 bytes.
+@itemx --tape-length=@var{size}[@var{suf}]
+Change tape after writing @var{size} units of data.  Unless @var{suf} is
+given, @var{size} is treated as kilobytes, i.e. @samp{@var{size} x
+1024} bytes.  The following suffixes alter this behavior:
+
+@float Table, size-suffixes
+@caption{Size Suffixes}
+@multitable @columnfractions 0.2 0.3 0.3
+@headitem Suffix @tab Units            @tab Byte Equivalent
+@item b          @tab Blocks           @tab @var{size} x 512
+@item B          @tab Kilobytes        @tab @var{size} x 1024
+@item c          @tab Bytes            @tab @var{size}
+@item G          @tab Gigabytes        @tab @var{size} x 1024^3
+@item K          @tab Kilobytes        @tab @var{size} x 1024
+@item k          @tab Kilobytes        @tab @var{size} x 1024
+@item M          @tab Megabytes        @tab @var{size} x 1024^2
+@item P          @tab Petabytes        @tab @var{size} x 1024^5
+@item T          @tab Terabytes        @tab @var{size} x 1024^4
+@item w          @tab Words            @tab @var{size} x 2
+@end multitable
+@end float
 
 This option might be useful when your tape drivers do not properly
 detect end of physical tapes.  By being slightly conservative on the
@@ -11154,14 +11180,25 @@ tape:
 @anchor{tape-length}
 @table @option
 @opindex tape-length
-@item --tape-length=@var{size}
-@itemx -L @var{size}
-Set maximum length of a volume.  The @var{size} argument should then
-be the usable size of the tape in units of 1024 bytes.  This option
-selects @option{--multi-volume} automatically.  For example:
+@item --tape-length=@var{size}[@var{suf}]
+@itemx -L @var{size}[@var{suf}]
+Set maximum length of a volume.  The @var{suf}, if given, specifies
+units in which @var{size} is expressed, e.g. @samp{2M} mean 2
+megabytes (@pxref{size-suffixes}, for a list of allowed size
+suffixes).  Without @var{suf}, units of 1024 bytes (kilobyte) are
+assumed.
+
+This option selects @option{--multi-volume} automatically.  For example:
 
 @smallexample
 $ @kbd{tar --create --tape-length=41943040 --file=/dev/tape @var{files}}
+@end smallexample
+
+@noindent
+or, which is equivalent:
+
+@smallexample
+$ @kbd{tar --create --tape-length=4G --file=/dev/tape @var{files}}
 @end smallexample
 @end table
 
