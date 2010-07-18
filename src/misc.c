@@ -648,7 +648,7 @@ struct wd
      value if it was not saved successfully.  */
   int err;
 
-  /* The saved version of the directory, if SAVED == 1.  */
+  /* The saved version of the directory, if ERR == 0.  */
   struct saved_cwd saved_cwd;
 };
 
