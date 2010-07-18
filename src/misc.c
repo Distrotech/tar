@@ -640,8 +640,15 @@ set_file_atime (int fd, char const *file, struct timespec const timespec[2])
 /* A description of a working directory.  */
 struct wd
 {
+  /* The directory's name.  */
   char const *name;
-  int saved;
+
+  /* A negative value if no attempt has been made to save the
+     directory, 0 if it was saved successfully, and a positive errno
+     value if it was not saved successfully.  */
+  int err;
+
+  /* The saved version of the directory, if SAVED == 1.  */
   struct saved_cwd saved_cwd;
 };
 
@@ -680,7 +687,7 @@ chdir_arg (char const *dir)
       if (! wd_count)
 	{
 	  wd[wd_count].name = ".";
-	  wd[wd_count].saved = 0;
+	  wd[wd_count].err = -1;
 	  wd_count++;
 	}
     }
@@ -697,7 +704,7 @@ chdir_arg (char const *dir)
     }
 
   wd[wd_count].name = dir;
-  wd[wd_count].saved = 0;
+  wd[wd_count].err = -1;
   return wd_count++;
 }
 
@@ -713,12 +720,11 @@ chdir_do (int i)
       struct wd *prev = &wd[previous];
       struct wd *curr = &wd[i];
 
-      if (! prev->saved)
+      if (prev->err < 0)
 	{
-	  int err = 0;
-	  prev->saved = 1;
+	  prev->err = 0;
 	  if (save_cwd (&prev->saved_cwd) != 0)
-	    err = errno;
+	    prev->err = errno;
 	  else if (0 <= prev->saved_cwd.desc)
 	    {
 	      /* Make sure we still have at least one descriptor available.  */
@@ -733,20 +739,20 @@ chdir_do (int i)
 		  prev->saved_cwd.desc = -1;
 		  prev->saved_cwd.name = xgetcwd ();
 		  if (! prev->saved_cwd.name)
-		    err = errno;
+		    prev->err = errno;
 		}
 	      else
-		err = errno;
+		prev->err = errno;
 	    }
-
-	  if (err)
-	    FATAL_ERROR ((0, err, _("Cannot save working directory")));
 	}
 
-      if (curr->saved)
+      if (0 <= curr->err)
 	{
-	  if (restore_cwd (&curr->saved_cwd))
-	    FATAL_ERROR ((0, 0, _("Cannot change working directory")));
+	  int err = curr->err;
+	  if (err == 0 && restore_cwd (&curr->saved_cwd) != 0)
+	    err = errno;
+	  if (err)
+	    FATAL_ERROR ((0, err, _("Cannot restore working directory")));
 	}
       else
 	{
