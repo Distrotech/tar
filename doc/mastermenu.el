@@ -27,11 +27,11 @@
 ;; This file redefines texinfo-master-menu-list so that it takes into
 ;; account included files.
 
-;; Known bugs: @menu without previous sectioning command will inherit 
+;; Known bugs: @menu without previous sectioning command will inherit
 ;; documentation string from the previous menu. However, since such a
 ;; menu is illegal in a texinfo file, we can live with it.
 
-(require 'texinfo)  
+(require 'texinfo)
 (require 'texnfo-upd)
 
 (defun texinfo-master-menu-list-recursive (title)

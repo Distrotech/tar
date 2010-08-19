@@ -114,8 +114,8 @@ update_archive (void)
 
   while (!found_end)
     {
-      enum read_header status = read_header (&current_header, 
-                                             &current_stat_info, 
+      enum read_header status = read_header (&current_header,
+                                             &current_stat_info,
                                              read_header_auto);
 
       switch (status)
@@ -150,14 +150,14 @@ update_archive (void)
 			else
 			  {
 			    namebuf_t nbuf = namebuf_create (name->name);
-			    
+
 			    for (p = dirp; *p; p += strlen (p) + 1)
 			      addname (namebuf_name (nbuf, p),
 				       0, false, NULL);
-			    
+
 			    namebuf_free (nbuf);
 			    free (dirp);
-			    
+
 			    remname (name);
 			  }
 		      }
@@ -167,7 +167,7 @@ update_archive (void)
 		      remname (name);
 		  }
 	      }
-	    
+
 	    skip_member ();
 	    break;
 	  }

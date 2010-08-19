@@ -452,7 +452,7 @@ xheader_write_global (struct xheader *xhdr)
   if (xhdr->stk)
     {
       char *name;
-      
+
       xheader_finish (xhdr);
       xheader_write (XGLTYPE, name = xheader_ghdr_name (), time (NULL), xhdr);
       free (name);
@@ -708,7 +708,7 @@ xheader_read (struct xheader *xhdr, union block *p, size_t size)
 
       if (!p)
 	FATAL_ERROR ((0, 0, _("Unexpected EOF in archive")));
-      
+
       memcpy (&xhdr->buffer[j], p->buffer, len);
       set_next_block_after (p);
 

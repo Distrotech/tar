@@ -30,13 +30,13 @@
 AT_SETUP([extracting selected members from pax])
 AT_KEYWORDS([extract extract05])
 
-AT_DATA([list], 
+AT_DATA([list],
 [jeden
 cztery
 ])
 
 AT_TAR_CHECK([
-genfile --sparse --file sparsefile 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST 
+genfile --sparse --file sparsefile 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST
 genfile --length 118 --file jeden
 genfile --length 223 --file dwa
 genfile --length 517 --file trzy

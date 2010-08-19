@@ -124,7 +124,7 @@ check-unrevised:
 
 all-check-docs: check-format check-options check-refs check-fixmes check-unrevised
 
-check-docs: 
+check-docs:
 	$(MAKE) -k all-check-docs
 
 #
@@ -144,4 +144,3 @@ manual:
 	 MAKEINFO="$(MAKEINFO) $(MAKEINFOFLAGS)" \
 	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
 	$(GENDOCS) --texi2html tar 'GNU tar manual'
-

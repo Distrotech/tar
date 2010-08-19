@@ -18,7 +18,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
 # 02110-1301, USA.
 
-# In GNU format, when extracting or listing a file member with a name 
+# In GNU format, when extracting or listing a file member with a name
 # whose length is divisible by block size (512) tar used to read an
 # extra block of data. In consequence the following file was not extracted.
 # Reported by Josef Bauer
@@ -46,4 +46,3 @@ endfile
 [],[],[],[gnu,oldgnu])
 
 AT_CLEANUP
-

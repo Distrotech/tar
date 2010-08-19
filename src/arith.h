@@ -22,6 +22,6 @@
    blocked in 1 kB boundaries.  We'll need arbitrary precision
    arithmetic anyway once we get into the 2**64 range, so there's no
    point doing anything fancy before then.  */
-   
+
 #define TARLONG_FORMAT "%.0f"
 typedef double tarlong;

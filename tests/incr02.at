@@ -23,9 +23,9 @@
 # if the archive has normal member ordering, i.e. each directory
 # member is immediately followed by members located under that directory.
 # This is not true for incremental archives, where directory members
-# precede the non-directory ones. Due to this, GNU tar up to version 1.15.2  
+# precede the non-directory ones. Due to this, GNU tar up to version 1.15.2
 # failed to correctly restore directory timestamps from an incremental
-# archive if this directory contained some files in it. 
+# archive if this directory contained some files in it.
 #
 # References: <200511291228.47081.karaman@dssgmbh.de>
 

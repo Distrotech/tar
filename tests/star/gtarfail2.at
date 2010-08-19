@@ -41,5 +41,3 @@ lrwxrwxrwx jes/glone         0 2001-08-29 10:54 build/psmake/astoi.c -> ../../li
 ])
 
 AT_CLEANUP
-
-

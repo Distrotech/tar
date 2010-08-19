@@ -21,8 +21,8 @@
 # Previous versions of tar were not able to skip a member straddling
 # the multivolume archive boundary. Reported by Mads Martin Joergensen
 # <mmj@suse.de>
-# 
-# References: <20040402144254.GC4409@suse.de> 
+#
+# References: <20040402144254.GC4409@suse.de>
 # http://lists.gnu.org/archive/html/bug-tar/2004-04/msg00002.html
 
 AT_SETUP([skipping a straddling member])

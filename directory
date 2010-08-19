@@ -65,7 +65,7 @@ programs (using pipes); tar can even access remote devices or files
 %%contributors: Jay Fenlason,
  Joy Kendall,
  Francois Pinard <pinard@iro.umontreal.ca>
- 
+
 %%source-tarball: ftp://ftp.gnu.org/pub/gnu/tar/tar-1.15.1.tar.gz
 %%source-info: http://savannah.gnu.org/projects/tar
 
@@ -84,4 +84,3 @@ programs (using pipes); tar can even access remote devices or files
 %%bug-list: bug-tar@gnu.org bug-tar@gnu.org http://mail.gnu.org/mailman/listinfo/bug-tar
 
 %%entry-written-by: Sergey Poznyakoff <gray@gnu.org>
-

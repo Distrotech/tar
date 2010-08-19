@@ -86,4 +86,3 @@ tar --utc -tvM -f $STAR_TESTSCRIPTS/gnu-multi-fail-volume1.gtar \
 ])
 
 AT_CLEANUP
-

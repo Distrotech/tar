@@ -36,7 +36,7 @@ tar cf archive file1 file2
 mkdir directory
 tar -xf archive --same-order -C directory || exit 1
 
-ls directory|sort 
+ls directory|sort
 ],
 [0],
 [file1
@@ -44,4 +44,3 @@ file2
 ])
 
 AT_CLEANUP
-

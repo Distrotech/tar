@@ -49,5 +49,3 @@ tar: Error is not recoverable: exiting now
 ],[],[],[gnu,oldgnu,posix])
 
 AT_CLEANUP
-
-

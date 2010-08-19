@@ -39,5 +39,3 @@ RE_CHECK([stderr],[tar: Record size = .*
 ])
 
 AT_CLEANUP
-
-

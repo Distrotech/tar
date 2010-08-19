@@ -57,7 +57,7 @@ test_access() {
 		echo "$1 does not exist or is unreadable"
 		echo 77
 	fi
-}		
+}
 
 check_environ() {
 	if [ "$STAR_TESTSCRIPTS" = "" ]; then
@@ -70,12 +70,12 @@ check_environ() {
 	else
 		echo "STAR_TESTSCRIPTS is not a directory"
 		exit 77
-	fi		
+	fi
 
 	ARCHIVE=$STAR_TESTSCRIPTS/ustar-all-quicktest.tar
 	test_access $ARCHIVE
 	FILELIST=$STAR_TESTSCRIPTS/quicktest.filelist
-	test_access $FILELIST				
+	test_access $FILELIST
 
 	${TARTEST:-tartest} < /dev/null > /dev/null 2>&1
 	if [ $? -eq 127 ]; then
@@ -93,7 +93,7 @@ getargs() {
 		*)    echo "Unknown option: $option" >&2
 		      exit 77;;
 		esac
-	done	      
+	done
 }
 
 if [ -w / ]; then

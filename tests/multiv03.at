@@ -25,7 +25,7 @@
 # References: <20040809214854.GB32706@suse.de>
 # http://lists.gnu.org/archive/html/bug-tar/2004-08/msg00012.html
 # <200604270859.47241.Juergen.Vollmer@informatik-vollmer.de>
-# 
+#
 
 AT_SETUP([MV archive & long filenames])
 AT_KEYWORDS([multivolume multiv multiv03])
@@ -68,4 +68,3 @@ cmp $BFILE bfile
 [],[],[gnu, oldgnu])
 
 AT_CLEANUP
-

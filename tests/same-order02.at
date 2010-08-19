@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 # In previous versions a single -C option did not work with --same-order
-# (see same-order01.sh). However, multiple -C options worked OK. 
+# (see same-order01.sh). However, multiple -C options worked OK.
 # Test if we did not break the correct behavior.
 
 AT_SETUP([multiple -C options])

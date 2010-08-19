@@ -6,20 +6,20 @@ this package.
 You need the following packages to build the Git version of GNU
 tar.  We do not make any efforts to accommodate older versions of
 these packages, so please make sure that you have the latest stable
-version. 
+version.
 
 - Automake <http://www.gnu.org/software/automake/>
 - Autoconf <http://www.gnu.org/software/autoconf/>
 - M4 <http://www.gnu.org/software/m4/>
 - Texinfo <http://www.gnu.org/software/texinfo>
-- Gnulib <http://www.gnu.org/software/gnulib> 
+- Gnulib <http://www.gnu.org/software/gnulib>
 - Git <http://git.or.cz>
 
 * Bootstrapping
 
 Obviously, if you are reading these notes, you did manage to clone
 tar from Git. The next step is to get other files needed to build,
-which are extracted from other source packages: 
+which are extracted from other source packages:
 
 1. Change to the source tree directory
 
@@ -27,7 +27,7 @@ which are extracted from other source packages:
 
 2. Run
 
-   ./bootstrap 
+   ./bootstrap
 
 Once done, proceed as described in the file README (section
 INSTALLATION).
@@ -43,7 +43,7 @@ contents:
 
 Replace `$HOME/gnulib' with the actual directory where the Gnulib
 sources reside.
-   
+
 For more information about `bootstrap', run `bootstrap --help'.
 
 
@@ -67,5 +67,3 @@ mode: outline
 paragraph-separate: "[	^L]*$"
 version-control: never
 End:
-
-

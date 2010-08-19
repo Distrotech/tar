@@ -29,7 +29,7 @@ exec <&-
 genfile --sparse --file sparsefile $2 || AT_SKIP_TEST
 echo "Pass 1: Split between data blocks"
 echo "Create archive"
-tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
+tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile
 echo "Test archive"
 tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
@@ -38,7 +38,7 @@ tar -d -M -f arc.1 -f arc.2 -f arc.3
 echo "Pass 2: Split within a data block"
 genfile --sparse --file sparsefile $3 || AT_SKIP_TEST
 echo "Create archive"
-tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile 
+tar --sparse --sparse-version=$1 -c --record-size=512 -M -L6 -f arc.1 -f arc.2 -f arc.3 sparsefile
 echo "Test archive"
 tar -t -M -f arc.1 -f arc.2 -f arc.3
 echo "Compare archive"
@@ -57,4 +57,3 @@ sparsefile
 Compare archive
 ],
 [],[],[],[pax])])
-

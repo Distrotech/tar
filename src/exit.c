@@ -1,4 +1,4 @@
-/* This file is part of GNU tar. 
+/* This file is part of GNU tar.
    Copyright (C) 2009 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it

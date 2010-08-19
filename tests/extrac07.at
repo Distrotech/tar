@@ -55,5 +55,3 @@ dir/foo
 [],[],[],[ustar]) # Testing one format is enough
 
 AT_CLEANUP
-
-

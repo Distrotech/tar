@@ -36,7 +36,7 @@ tar -cf archive ./file1 directory
 tar -tf archive \
   --exclude='./*1' \
   --exclude='d*/*1' \
-  --exclude='d*/s*/*2' | sort 
+  --exclude='d*/s*/*2' | sort
 ],
 [0],
 [directory/

@@ -36,4 +36,3 @@ tar uf archive foo
 [0])
 
 AT_CLEANUP
-

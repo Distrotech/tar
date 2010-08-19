@@ -76,7 +76,7 @@ static bool read_full_records = false;
 
 /* We're reading, but we just read the last block and it's time to update.
    Declared in update.c
-   
+
    FIXME: Either eliminate it or move it to common.h.
 */
 extern bool time_to_start_writing;
@@ -152,7 +152,7 @@ static struct bufmap *
 bufmap_locate (size_t off)
 {
   struct bufmap *map;
-  
+
   for (map = bufmap_head; map; map = map->next)
     {
       if (!map->next
@@ -576,7 +576,7 @@ _open_archive (enum access_mode wanted_access)
     FATAL_ERROR ((0, 0, _("No archive name given")));
 
   tar_stat_destroy (&current_stat_info);
-  
+
   record_index = 0;
   init_buffer ();
 
@@ -749,7 +749,7 @@ _flush_write (void)
 	    map = map->next;
 	  bufmap_reset (map, map ? (- map->start) : 0);
 	}
-    }  
+    }
   return status;
 }
 
@@ -1771,7 +1771,7 @@ _gnu_flush_write (size_t buffer_level)
   size_t copy_size;
   size_t bufsize;
   struct bufmap *map;
-  
+
   status = _flush_write ();
   if (status != record_size && !multi_volume_option)
     archive_write_error (status);
@@ -1788,7 +1788,7 @@ _gnu_flush_write (size_t buffer_level)
     }
 
   map = bufmap_locate (status);
-  
+
   if (status % BLOCKSIZE)
     {
       ERROR ((0, 0, _("write did not end on a block boundary")));
@@ -1811,13 +1811,13 @@ _gnu_flush_write (size_t buffer_level)
 
   copy_ptr = record_start->buffer + status;
   copy_size = buffer_level - status;
-    
+
   /* Switch to the next buffer */
   record_index = !record_index;
   init_buffer ();
 
   inhibit_map = 1;
-  
+
   if (volume_label_option)
     add_volume_label ();
 

@@ -21,11 +21,11 @@
 # When decoding a header tar was assigning 0 to oldgnu_header.isextended,
 # which destroyed name prefix. When updating archive, modified prefix
 # could have been written to disk thus producing invalid archive member.
-# Reported by Adye, TJ (Tim), <T.J.Adye@rl.ac.uk> 
+# Reported by Adye, TJ (Tim), <T.J.Adye@rl.ac.uk>
 # References:
 #  <7231C15EAC2F164CA6DC326D97493C8B36C25D@exchange35.fed.cclrc.ac.uk>
 #  http://lists.gnu.org/archive/html/bug-tar/2005-02/msg00032.html
- 
+
 AT_SETUP([appending files with long names])
 AT_KEYWORDS([append append01])
 
@@ -45,4 +45,3 @@ PREFIX/file2
 [],[],[],[oldgnu, ustar, posix, gnu])
 
 AT_CLEANUP
-

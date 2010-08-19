@@ -45,9 +45,9 @@ tar -cf archive.2 -g db directory
 mv directory orig
 
 echo Listing of archive.1
-tar -tf archive.1 | sort 
+tar -tf archive.1 | sort
 echo Listing of archive.2
-tar -tf archive.2 | sort 
+tar -tf archive.2 | sort
 
 echo Directory after first restore
 tar -xf archive.1 -g db
@@ -55,7 +55,7 @@ find directory | sort
 
 echo Directory after second restore
 tar -xf archive.2 -g db
-find directory | sort 
+find directory | sort
 ],
 [0],
 [Listing of archive.1
@@ -78,4 +78,3 @@ directory/z
 AT_CLEANUP
 
 # End of incr03.at
-

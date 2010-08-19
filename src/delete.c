@@ -262,7 +262,7 @@ delete_archive_members (void)
 
 	  if (current_block == record_end)
 	    flush_archive ();
-	  status = read_header (&current_header, &current_stat_info, 
+	  status = read_header (&current_header, &current_stat_info,
 	                        read_header_auto);
 
 	  xheader_decode (&current_stat_info);
@@ -296,7 +296,7 @@ delete_archive_members (void)
 		  set_next_block_after (current_header);
 		  blocks_to_skip = (current_stat_info.stat.st_size
 				    + BLOCKSIZE - 1) / BLOCKSIZE;
-		  
+
 		  while (record_end - current_block <= blocks_to_skip)
 		    {
 		      blocks_to_skip -= (record_end - current_block);

@@ -46,12 +46,12 @@ update of an archive:
 
   tar -rf archive --label 'My volume' .
 
-This did not work in previous versions, in spite of what the docs said.  
+This did not work in previous versions, in spite of what the docs said.
 
 ** --record-size and --tape-length (-L) options
 
 Usual size suffixes are allowed for these options.  For example,
--L10k stands for a 10 kilobyte tape length. 
+-L10k stands for a 10 kilobyte tape length.
 
 ** Fix dead loop on extracting existing symlinks with the -k option.
 
@@ -134,7 +134,7 @@ the Epoch or a `Time reference' (see below).
 * Time references in --pax-option argument.
 
 Any value from the --pax-option argument that is enclosed in a pair
-of curly braces represents a time reference.  The string between the 
+of curly braces represents a time reference.  The string between the
 braces is understood either as a textual time representation, as described in
 chapter 7, "Date input formats", of the Tar manual, or as a name of
 an existing file, starting with `/' or `.'.  In the latter
@@ -168,14 +168,14 @@ version 1.22 - Sergey Poznyakoff, 2009-03-05
 
 * Support for xz compression
 
-Tar uses xz for compression if one of the following conditions is met: 
+Tar uses xz for compression if one of the following conditions is met:
 
  1. The option --xz or -J (see below) is used.
  2. The xz binary is set as compressor using --use-compress-program option.
  3. The file name of the archive being created ends in `.xz' and
  auto-compress option (-a) is used.
 
-Xz is used for decompression if one of the following conditions is met: 
+Xz is used for decompression if one of the following conditions is met:
 
  1. The option --xz or -J is used.
  2. The xz binary is set as compressor using --use-compress-program option.
@@ -228,7 +228,7 @@ control type of archive members affected by them.  The flags are:
  - s
    Apply transformation to symbolic link targets.
 
- - h  
+ - h
    Apply transformation to hard link targets.
 
 Corresponding upper-case letters negate the meaning, so that
@@ -307,7 +307,7 @@ during both creation and extraction.  Tar 1.19 used them only
 during extraction.
 
 For a detailed description, see chapter 6.7 "Modifying File and Member
-Names". 
+Names".
 
 * Info (end-of-volume) scripts
 
@@ -334,8 +334,8 @@ control systems, e.g. "CVS/", ".svn/", etc.
 
 The following options now work with incremental archives as well:
 
-  --exclude-caches       
-  --exclude-caches-all   
+  --exclude-caches
+  --exclude-caches-all
   --exclude-tag
   --exclude-tag-all
   --exclude-tag-under
@@ -346,7 +346,7 @@ Previous versions always stored absolute file names in rename
 records, even if -P was not used. This is fixed: rename records
 contain file names processed in accordance with the command line
 settings.
-  
+
 * Fix --version output.
 
 * Recognition of broken archives.

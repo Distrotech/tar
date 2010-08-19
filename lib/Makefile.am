@@ -26,7 +26,7 @@ rmt-command.h : Makefile
 	$(AM_V_at)mv $@-t $@
 BUILT_SOURCES = rmt-command.h
 CLEANFILES = rmt-command.h rmt-command.h-t
-INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu 
+INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu
 
 noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h stdopen.h
 libtar_a_SOURCES = \
@@ -36,4 +36,3 @@ libtar_a_SOURCES = \
   rmt.h \
   stdopen.c stdopen.h \
   system.h system-ioctl.h
-

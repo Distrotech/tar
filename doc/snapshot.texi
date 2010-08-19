@@ -137,4 +137,3 @@ previous versions it is not quoted;
 @end enumerate
 
 @c End of snapshot.texi
-

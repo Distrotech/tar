@@ -4,7 +4,7 @@
    Copyright (C) 2006, 2007 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
-   
+
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
    Free Software Foundation; either version 3, or (at your option) any later
@@ -129,12 +129,12 @@ get_var (FILE *fp, char **name, char **value)
   static char *buffer;
   static size_t bufsize = OFF_T_STRSIZE_BOUND;
   char *p, *q;
-  
+
   buffer = emalloc (bufsize);
   do
     {
       size_t len, s;
-      
+
       if (!fgets (buffer, bufsize, fp))
 	return 0;
       len = strlen (buffer);
@@ -186,12 +186,12 @@ read_xheader (char *name)
 
   if (verbose)
     printf ("Reading extended header file\n");
-  
+
   while (get_var (fp, &kw, &val))
     {
       if (verbose)
 	printf ("Found variable GNU.sparse.%s = %s\n", kw, val);
-      
+
       if (expect && strcmp (kw, expect))
 	die (1, "bad keyword sequence: expected `%s' but found `%s'",
 	     expect, kw);
@@ -267,7 +267,7 @@ read_map (FILE *ifp)
 
   if (verbose)
     printf ("Reading v.1.0 sparse map\n");
-  
+
   get_line (nbuf, sizeof nbuf, ifp);
   sparse_map_size = string_to_size (nbuf, NULL);
   sparse_map = emalloc (sparse_map_size * sizeof *sparse_map);
@@ -282,7 +282,7 @@ read_map (FILE *ifp)
 
   fseeko (ifp, ((ftell (ifp) + BLOCKSIZE - 1) / BLOCKSIZE) * BLOCKSIZE,
 	  SEEK_SET);
-}  
+}
 
 void
 expand_sparse (FILE *sfp, int ofd)
@@ -294,11 +294,11 @@ expand_sparse (FILE *sfp, int ofd)
   for (i = 0; i < sparse_map_size; i++)
     if (maxbytes < sparse_map[i].numbytes)
       maxbytes = sparse_map[i].numbytes;
-  
+
   for (buffer = malloc (maxbytes); !buffer; maxbytes /= 2)
     if (maxbytes == 0)
       die (1, "not enough memory");
-  
+
   for (i = 0; i < sparse_map_size; i++)
     {
       size_t size = sparse_map[i].numbytes;
@@ -342,13 +342,13 @@ guess_outname (char *name)
 {
   char *p;
   char *s;
-  
+
   if (name[0] == '.' && name[1] == '/')
     name += 2;
 
   p = name + strlen (name) - 1;
   s = NULL;
-      
+
   for (; p > name && *p != '/'; p--)
     ;
   if (*p == '/')
@@ -358,7 +358,7 @@ guess_outname (char *name)
       for (p--; p > name && *p != '/'; p--)
 	;
     }
-  
+
   if (*p != '/')
     {
       if (s)
@@ -389,7 +389,7 @@ main (int argc, char **argv)
   FILE *ifp;
   struct stat st;
   int ofd;
-  
+
   progname = argv[0];
   while ((c = getopt (argc, argv, "hnvx:")) != EOF)
     {
@@ -408,7 +408,7 @@ main (int argc, char **argv)
 	case 'v':
 	  verbose++;
 	  break;
-	  
+
 	default:
 	  exit (1);
 	}
@@ -429,17 +429,17 @@ main (int argc, char **argv)
 
   if (stat (inname, &st))
     die (1, "cannot stat %s (%d)", inname, errno);
-  
+
   ifp = fopen (inname, "r");
   if (ifp == NULL)
     die (1, "cannot open file %s (%d)", inname, errno);
-  
+
   if (!xheader_file || version_major == 1)
     read_map (ifp);
 
   if (!outname)
     guess_outname (inname);
-  
+
   ofd = open (outname, O_RDWR|O_CREAT|O_TRUNC, st.st_mode);
   if (ofd == -1)
     die (1, "cannot open file %s (%d)", outname, errno);
@@ -452,7 +452,7 @@ main (int argc, char **argv)
       printf ("Finished dry run\n");
       return 0;
     }
-  
+
   expand_sparse (ifp, ofd);
 
   fclose (ifp);
@@ -460,7 +460,7 @@ main (int argc, char **argv)
 
   if (verbose)
     printf ("Done\n");
-  
+
   if (outsize)
     {
       if (stat (outname, &st))
@@ -468,7 +468,6 @@ main (int argc, char **argv)
       if (st.st_size != outsize)
 	die (1, "expanded file has wrong size");
     }
-  
+
   return 0;
 }
-

@@ -311,7 +311,7 @@ struct tar_stat_info
 
   /* Extended headers */
   struct xheader xhdr;
-  
+
   /* For dumpdirs */
   bool is_dumpdir;          /* Is the member a dumpdir? */
   bool skipped;             /* The member contents is already read

@@ -20,7 +20,7 @@
 
 # Using tar 1.15.x the following equivalent command sets:
 #
-#   1. tar cf archive file1 file2 
+#   1. tar cf archive file1 file2
 # and
 #   2. tar cfT archive /dev/null
 #      tar rf archive file1
@@ -62,7 +62,7 @@ genfile --file file2
 MTIME="--mtime=@0"
 
 # For PAX archives, we need to make sure extended header names are
-# reproducible and that their contents won't change with time 
+# reproducible and that their contents won't change with time
 if test $[]TEST_TAR_FORMAT = posix; then
   TAR_OPTIONS="$TAR_OPTIONS --pax-option=exthdr.name=%d/PaxHeaders/%f,delete=mtime,delete=atime,delete=ctime"
 fi

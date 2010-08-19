@@ -61,5 +61,3 @@ cmp file2 extract-dir-pipe/file2
 [],[],[],[],[gnu, oldgnu, pax])
 
 AT_CLEANUP
-
-

@@ -75,5 +75,3 @@ sub/b/file4
 ],[],[],[],[gnu, oldgnu, posix])
 
 AT_CLEANUP
-
-

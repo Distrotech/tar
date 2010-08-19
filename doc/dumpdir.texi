@@ -16,7 +16,7 @@ dumped directory in special data blocks called @dfn{dumpdirs}.
 @noindent
 where @var{C} is one of the @dfn{control codes} described below,
 @var{filename} is the name of the file @var{C} operates upon, and
-@samp{\0} represents a nul character (ASCII 0).  The white space 
+@samp{\0} represents a nul character (ASCII 0).  The white space
 characters were added for readability, real dumpdirs do not contain
 them.
 
@@ -68,7 +68,7 @@ directory}.  For example, consider the following scenario:
 @enumerate 1
 @item
 Previous run dumped a directory @file{foo} which contained the
-following three directories: 
+following three directories:
 
 @smallexample
 a
@@ -93,7 +93,7 @@ New incremental dump was made.
 renaming @file{a} to @file{b} will destroy the existing directory.
 To correctly process it, @GNUTAR{} needs a temporary directory, so
 it creates the following dumpdir (newlines have been added for
-readability): 
+readability):
 
 @smallexample
 @group
@@ -114,7 +114,7 @@ work as usual, and, finally, the last command, @samp{R\0Tfoo/a\0}
 tells tar to rename the temporary directory to @file{foo/a}.
 
   The exact placement of a dumpdir in the archive depends on the
-archive format (@pxref{Formats}): 
+archive format (@pxref{Formats}):
 
 @itemize
 @item PAX archives

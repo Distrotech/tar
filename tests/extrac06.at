@@ -23,7 +23,7 @@
 # permissions than your umask.  In this case, the permissions of the
 # existing directory will toggle between the version which complies with
 # your umask (which would be correct, without -p) and the version from the
-# tarfile. 
+# tarfile.
 #
 # Reported by: Ian Jackson <iwj@ubuntu.com>
 #
@@ -41,7 +41,7 @@ umask 022
 # Make sure user's umask is honored, even if we are superuser
 TAR_OPTIONS="$TAR_OPTIONS --no-same-permissions"
 
-# Create a directory 
+# Create a directory
 mkdir directory
 chmod 777 directory
 genfile --stat=mode:777 directory

@@ -5,7 +5,7 @@
 2009-03-04  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Add xz support.
-	
+
 	* src/buffer.c, src/suffix.c: Add support for xz compression.
 	* src/tar.c: New option --xz, for compression/decompression using xz.
 	Re-assign -J as a short equivalent of --xz.
@@ -34,8 +34,8 @@
 2008-11-25  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	Do not try to drain the input pipe before closing the
-	archive. 
-	
+	archive.
+
 	* src/buffer.c (close_archive): Remove call to
 	sys_drain_input_pipe. Pass hit_eof as the second
 	argument to sys_wait_for_child.
@@ -63,7 +63,7 @@
 	* src/extract.c (extract_link, extract_symlink): Remove calls to
 	transform_member_name. It is done in read_header.
 	* src/list.c (decode_xform): Reflect change in data type of 2nd
-	argument. 
+	argument.
 	(transform_member_name): 2nd arg is int.
 	(decode_header): Transform file name and link target names.
 	* src/tar.c: Remove --transform-symlinks.
@@ -73,7 +73,7 @@
 	set global flags using `flags=' syntax.
 	(_transform_name_to_obstack, transform_name_fp)
 	(transform_name): Take an additional argument, specifying scope
-	flags. 
+	flags.
 
 2008-10-19  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -86,7 +86,7 @@
 	* tests/sparsemvp.at: Likewise.
 	* tests/volsize.at: Likewise.
 	* NEWS: Update.
-	
+
 2008-10-16  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/common.h (transform_symlinks_option): New global.
@@ -99,11 +99,11 @@
 	* doc/tar.texi: Document --transform-symlinks
 	* NEWS: Update.
 	* THANKS: Update.
-	
+
 	* src/names.c (name_gather): Use xzalloc.
 	* src/buffer.c (short_read): Move record size detection before
 	the loop.
-	
+
 2008-10-07  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (options): Add --lzop option.
@@ -111,7 +111,7 @@
 2008-10-05  Xavier Hienne <xavier.hienne@free.fr> (tiny change)
 
 	* src/checkpoint.c (checkpoint_compile_action): Add missing
-	`else'. 
+	`else'.
 
 2008-09-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -157,7 +157,7 @@
 	* tests/atlocal.in (decho): New function.
 	* tests/multiv06.at: Use decho instead of echo2.
 	* tests/incremental.at: Raise wait interval to 2 seconds.
-	
+
 2008-07-24  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/tar.c (decode_options): Do not allow volume length less
@@ -193,21 +193,21 @@
 	tests/longv7.at, tests/lustar01.at, tests/lustar02.at,
 	tests/shortfile.at: Update to match new diagnostic wording
 	(see 2008-05-06).
-	
+
 	* NEWS: Update.
 
 2008-06-14  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* doc/tar.texi (exclude): Document support for new VCS.
 	* THANKS: Update.
-	* NEWS: Update.	
+	* NEWS: Update.
 	* tests/multiv05.at: Fix typos.
 	* tests/volsize.at: Remove a TZ dependency.
-	
+
 2008-06-14  Dan Drake <dan@dandrake.org> (tiny change)
 
 	* src/tar.c (exclude_vcs_files): Support for Bazaar, Mercurial and
-	Darcs. 
+	Darcs.
 
 2008-05-06  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -231,23 +231,23 @@
 	* tests/incr03.at, tests/incr04.at, tests/rename02.at,
 	tests/rename03.at: Insert calls to sleep between creation of files
 	and adding them to the archive.
-	
+
 2008-03-31  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* src/create.c (dump_file0): Count links only for actually dumped
-	files. 
+	files.
 
 2008-03-27  Sergey Poznyakoff  <gray@gnu.org.ua>
 
 	* NEWS: Document --no-check-device and --check-device.
 	* doc/rendition.texi: Change the way FIXME-*refs are handled in
-	!PROOF. 
+	!PROOF.
 	* doc/intern.texi, doc/tar.texi: Update.
 	* doc/untabify.el: New file.
 	* doc/Makefile.am (EXTRA_DIST): Add untabify.el
 	(untabify, final, check-format, check-refs, check-fixmes)
 	(check-unrevised, all-check-docs, check-docs): New rules.
-	
+
 	* src/common.h (check_device_option): New global.
 	* src/incremen.c (procdir): Use boolean and instead of bitwise
 	one. Patch by Jean-Louis Martineau.
@@ -256,7 +256,7 @@
 	--check-device. Proposed by Jean-Louis Martineau.
 	(parse_opt): Hanlde new options.
 	(decode_options): Initialize check_device_option to true.
-	
+
 	* THANKS: Update
 
 2008-03-06  Sergey Poznyakoff  <gray@gnu.org.ua>
@@ -267,7 +267,7 @@
 	* po/.cvsignore: Update
 	* src/system.c: Remove include setenv.h.
 	* tests/atlocal.in (STAR_DATA_URL): Update.
-	* tests/star/README: Update URL. 
+	* tests/star/README: Update URL.
 
 2008-02-09  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -303,7 +303,7 @@
 	Exit with nonzero status if a close fails on an archive.
 	Problem (and initial trivial fix)
 	* src/buffer.c (close_archive, new_volume): close_error, not
-	close_warn. 
+	close_warn.
 
 2007-12-05  Sergey Poznyakoff  <gray@gnu.org.ua>
 

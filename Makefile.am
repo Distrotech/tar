@@ -22,7 +22,7 @@ ACLOCAL_AMFLAGS = -I m4
 EXTRA_DIST = ChangeLog.1 Make.rules
 SUBDIRS = doc gnu lib rmt src scripts po tests
 
-dist-hook: 
+dist-hook:
 	$(MAKE) changelog_dir=$(distdir) ChangeLog
 	-rm -f $(distdir).cpio
 	find $(distdir) | cpio -Hcrc -o | \
@@ -36,5 +36,3 @@ include Make.rules
 gen_start_date = 2009-03-06
 prev_change_log = ChangeLog.CVS
 changelog_dir = .
-
-

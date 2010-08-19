@@ -55,4 +55,3 @@ file version 2
 $ @kbd{tar-snapshot-edit -b -r 0x0306-0x4500 /var/backup/snap.a}
 file version 2
 @end smallexample
-

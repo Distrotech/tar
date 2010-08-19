@@ -25,7 +25,7 @@ genfile --length 0 --file foo
 genfile --length 12288 --file bar
 genfile --length 12288 --file baz
 tar --label=Test -cM -L10 -f 1.tar -f 2.tar -f 3.tar -f 4.tar foo bar baz
-tar -Mt -f 1.tar -f 2.tar -f 3.tar -f 4.tar 
+tar -Mt -f 1.tar -f 2.tar -f 3.tar -f 4.tar
 ],
 [0],
 [Test Volume 1

@@ -232,4 +232,3 @@ into a separate directory.  Then, using a simple program it would be
 possible to expand the file to its original form even without @GNUTAR{}.
 @xref{Sparse Recovery}, for the detailed information on how to extract
 sparse members without @GNUTAR{}.
-

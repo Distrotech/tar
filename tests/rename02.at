@@ -19,7 +19,7 @@
 # 02110-1301, USA.
 
 # Description: Incremental archives should be able to handle directories
-# moved between directory hierarchies. 
+# moved between directory hierarchies.
 
 AT_SETUP([move between hierarchies])
 AT_KEYWORDS([incremental rename rename02])
@@ -50,7 +50,7 @@ tar xfg arch.1 /dev/null 2>tmperr
 sort tmperr >&2
 
 echo "Begin directory listing 1"
-find foo | sort 
+find foo | sort
 echo "End directory listing 1"
 
 tar xfgv arch.2 /dev/null

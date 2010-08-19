@@ -26,7 +26,7 @@
 # instead.
 #
 # Reported by: Solar Designer <solar@openwall.com>
-# 
+#
 # References: <20090228235820.GA13362@openwall.com>
 #             http://lists.gnu.org/archive/html/bug-tar/2009-03/msg00000.html
 #
@@ -98,4 +98,3 @@ tar: dir/file1: File removed before we read it
 
 
 AT_CLEANUP
-

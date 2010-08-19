@@ -65,9 +65,9 @@ XLIST=exclude_files
 SLEEP_TIME=15
 
 # Script to be run when it's time to insert a new tape in for the next
-# volume.  Administrators may want to tailor this script for their site. 
+# volume.  Administrators may want to tailor this script for their site.
 # If this variable isn't set, tar will use some default behavior which is
-# probably defined in the manual. 
+# probably defined in the manual.
 #DUMP_REMIND_SCRIPT='rsh apple-gunkies /home/gd2/dump/dump-remind'
 
 # Message to display on the terminal while waiting for dump time.  Usually
@@ -75,7 +75,7 @@ SLEEP_TIME=15
 # entertaining than this.  The awk script here saves some redundant
 # repetition, but is not really all that desirable.
 SLEEP_MESSAGE="`awk '
-   BEGIN { 
+   BEGIN {
       for (i = 0; i < 30; i++)
          print \"           \" \
                \"D O    N O T   T O U C H   T H I S   T E R M I N A L !!!!!\"

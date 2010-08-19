@@ -211,7 +211,7 @@ sub write_incr_db ($$) {
 sub write_incr_db_0 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     my $timestamp_sec = $info->[1];
     print $file "$timestamp_sec\n";
 
@@ -226,7 +226,7 @@ sub write_incr_db_0 ($$) {
 sub write_incr_db_1 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     print $file "GNU tar-1.15-1\n";
 
     my $timestamp_sec = $info->[1];
@@ -246,7 +246,7 @@ sub write_incr_db_1 ($$) {
 sub write_incr_db_2 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     print $file "GNU tar-1.16-2\n";
 
     my $timestamp_sec = $info->[1];

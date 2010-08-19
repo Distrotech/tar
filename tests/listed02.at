@@ -19,9 +19,9 @@
 # 02110-1301, USA.
 
 # Check if listed-incremental backups work for files moved from one directory
-# to another. 
+# to another.
 # Based on a script by Martin Simmons <ZYHYLCRMZPRP@spammotel.com>
-# References: 
+# References:
 #  <20040626230315.163AA1D148@cpc5-cmbg1-6-0-cust208.cmbg.cable.ntl.com>
 #  http://lists.gnu.org/archive/html/bug-tar/2004-06/msg00028.html
 
@@ -69,7 +69,7 @@ sleep 1
 echo Creating incremental archive
 echo >&2 "Creating incremental archive"
 cp -p tart.incr1 tart.incr2
-tar -c -v --listed-incremental=tart.incr2 -f archive.2 tart || exit 1 
+tar -c -v --listed-incremental=tart.incr2 -f archive.2 tart || exit 1
 
 sleep 1
 
@@ -81,7 +81,7 @@ echo Extracting incremental archive
 # This command should produce three messages about deletion
 # of the existing files, that may appear in any order. Piping
 # to sort makes sure we don't depend on any particular ordering.
-tar -x -v --listed-incremental=tart.incr2 -f archive.2 | sort 2>/dev/null 
+tar -x -v --listed-incremental=tart.incr2 -f archive.2 | sort 2>/dev/null
 
 echo Final files:
 find tart -print | sort 2>/dev/null

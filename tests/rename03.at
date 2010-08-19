@@ -58,10 +58,10 @@ echo "Second dump" >&2
 tar -g incr -cf arch.2 -v foo 2>tmperr
 sort tmperr >&2
 
-tar xfg arch.1 /dev/null 
+tar xfg arch.1 /dev/null
 
 echo "Begin directory listing 1"
-find foo | sort 
+find foo | sort
 echo "End directory listing 1"
 
 tar xfgv arch.2 /dev/null

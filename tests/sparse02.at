@@ -23,7 +23,7 @@ AT_KEYWORDS([sparse sparse02])
 
 # Tar 1.14 - 1.15.1 was unable to extract sparse files to a pipe.
 # References: <16896.21739.460782.124775@jik.kamens.brookline.ma.us>
-# http://lists.gnu.org/archive/html/bug-tar/2005-02/msg00003.html 
+# http://lists.gnu.org/archive/html/bug-tar/2005-02/msg00003.html
 
 AT_TAR_CHECK([
 genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST

@@ -19,7 +19,7 @@
 #
 # Reported-by: Matthew Peterson <mrpeterson2@gmail.com>
 # References: <AANLkTin0teb1dcl0HCNquHxvN4HQnJmP6aK7CJCqy0sd@mail.gmail.com>
-#             http://lists.gnu.org/archive/html/help-tar/2010-06/msg00000.html 
+#             http://lists.gnu.org/archive/html/help-tar/2010-06/msg00000.html
 
 AT_SETUP([exclude: long files in pax archives])
 AT_KEYWORDS([exclude exclude06])

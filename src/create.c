@@ -71,7 +71,7 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 	      message));
 }
 
-enum exclusion_tag_type 
+enum exclusion_tag_type
 check_exclusion_tags (const char *dirname, const char **tag_file_name)
 {
   static char *tagname;
@@ -80,7 +80,7 @@ check_exclusion_tags (const char *dirname, const char **tag_file_name)
   size_t dlen = strlen (dirname);
   int addslash = !ISSLASH (dirname[dlen-1]);
   size_t noff = 0;
-  
+
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
       size_t size = dlen + addslash + tag->length + 1;
@@ -263,7 +263,7 @@ to_chars_subst (int negative, int gnu_format, uintmax_t value, size_t valsize,
 
 	 1. In OLDGNU_FORMAT all strings in a tar header end in \0
 	 2. Incremental archives use oldgnu_header.
-	 
+
 	 Apart from this they are completely identical. */
       uintmax_t s = (negsub &= archive_format == GNU_FORMAT) ? - sub : sub;
       char subbuf[UINTMAX_STRSIZE_BOUND + 1];
@@ -618,7 +618,7 @@ write_ustar_long_name (const char *name)
   size_t length = strlen (name);
   size_t i, nlen;
   union block *header;
-  
+
   if (length > PREFIX_FIELD_SIZE + NAME_FIELD_SIZE + 1)
     {
       ERROR ((0, 0, _("%s: file name is too long (max %d); not dumped"),
@@ -713,7 +713,7 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
   char *p;
   int type;
   time_t t;
-  
+
   if (st->xhdr.buffer || st->xhdr.stk == NULL)
     return old_header;
 
@@ -1041,7 +1041,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
   while (size_left > 0)
     {
       size_t bufsize, count;
-      
+
       blk = find_next_block ();
 
       bufsize = available_space_after (blk);
@@ -1077,7 +1077,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 			      size_left),
 		    quotearg_colon (st->orig_file_name),
 		    STRINGIFY_BIGINT (size_left, buf)));
-	  if (! ignore_failed_read_option) 
+	  if (! ignore_failed_read_option)
 	    set_exit_status (TAREXIT_DIFFERS);
 	  pad_archive (size_left - (bufsize - count));
 	  return dump_status_short;
@@ -1126,7 +1126,7 @@ dump_dir0 (char *directory,
 	  size_t bufsize;
 	  ssize_t count;
 	  const char *buffer, *p_buffer;
-	  
+
 	  block_ordinal = current_block_ordinal ();
 	  buffer = safe_directory_contents (gnu_list_name->directory);
 	  totsize = dumpdir_size (buffer);
@@ -1134,7 +1134,7 @@ dump_dir0 (char *directory,
 	  finish_header (st, blk, block_ordinal);
 	  p_buffer = buffer;
 	  size_left = totsize;
-	  
+
 	  mv_begin_write (st->file_name, totsize, totsize);
 	  while (size_left > 0)
 	    {
@@ -1173,13 +1173,13 @@ dump_dir0 (char *directory,
     {
       char *name_buf;
       size_t name_size;
-      
+
       switch (check_exclusion_tags (st->orig_file_name, &tag_file_name))
 	{
 	case exclusion_tag_all:
 	  /* Handled in dump_file0 */
 	  break;
-	  
+
 	case exclusion_tag_none:
 	  {
 	    char const *entry;
@@ -1203,7 +1203,7 @@ dump_dir0 (char *directory,
 		if (!excluded_name (name_buf))
 		  dump_file (name_buf, false, our_device);
 	      }
-	    
+
 	    free (name_buf);
 	  }
 	  break;
@@ -1218,7 +1218,7 @@ dump_dir0 (char *directory,
 	  dump_file (name_buf, false, our_device);
 	  free (name_buf);
 	  break;
-      
+
 	case exclusion_tag_under:
 	  exclusion_tag_warning (st->orig_file_name, tag_file_name,
 				 _("contents not dumped"));
@@ -1427,7 +1427,7 @@ file_count_links (struct tar_stat_info *st)
 
       assign_string (&linkname, st->orig_file_name);
       transform_name (&linkname, XFORM_LINK);
-      
+
       lp = xmalloc (offsetof (struct link, name)
 				 + strlen (linkname) + 1);
       lp->ino = st->stat.st_ino;
@@ -1435,13 +1435,13 @@ file_count_links (struct tar_stat_info *st)
       lp->nlink = st->stat.st_nlink;
       strcpy (lp->name, linkname);
       free (linkname);
-      
+
       if (! ((link_table
 	      || (link_table = hash_initialize (0, 0, hash_link,
 						compare_links, 0)))
 	     && (duplicate = hash_insert (link_table, lp))))
 	xalloc_die ();
-      
+
       if (duplicate != lp)
 	abort ();
       lp->nlink--;
@@ -1523,10 +1523,10 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
   /* See if we want only new files, and check if this one is too old to
      put in the archive.
-     
+
      This check is omitted if incremental_option is set *and* the
      requested file is not explicitely listed in the command line. */
-  
+
   if (!(incremental_option && !is_individual_file (p))
       && !S_ISDIR (st->stat.st_mode)
       && OLDER_TAR_STAT_TIME (*st, m)
@@ -1589,7 +1589,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 		close (fd);
 	      return;
 	    }
-	  
+
 	  ok = dump_dir (fd, st, top_level, parent_device);
 
 	  /* dump_dir consumes FD if successful.  */

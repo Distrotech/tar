@@ -2,14 +2,14 @@
 # This file is included in the GNU tar distribution as an example.  It is
 # not used by default unless the proper line is uncommented in backup-specs.
 # System administrators will probably want to customize this and
-# backup-specs for their site. 
+# backup-specs for their site.
 #
 # This script should be run by tar with --info-script (-F) to inform
 # interested parties that a tape for the next volume of the backup needs to
-# be put in the tape drive. 
+# be put in the tape drive.
 #
 
-# Include location of `sendmail' and GNU finger. 
+# Include location of `sendmail' and GNU finger.
 PATH="/usr/lib:/usr/local/gnubin:${PATH}"
 export PATH
 
@@ -27,7 +27,7 @@ MT_OFFLINE
 #
 # Certain users (like `root') aren't real users, and shouldn't be notified.
 # Neither should `zippy', `elvis', etc. (on the GNU machines) since they're
-# just test accounts. 
+# just test accounts.
 recipients="`
     finger .clients 2> /dev/null \
      | sed -ne '
@@ -69,8 +69,8 @@ Cc: ${ADMINISTRATOR}
 Subject: Backup needs new tape for volume ${TAR_VOLUME}
 Reply-To: ${ADMINISTRATOR}
 
-This is an automated report from the backup script running on 
-`hostname`. 
+This is an automated report from the backup script running on
+`hostname`.
 
 Volume ${TAR_VOLUME} of the backup needs to be put in the tape drive.
 Usually whoever prepared the backup leaves labeled tapes on top of the
@@ -92,8 +92,8 @@ Cc: ${ADMINISTRATOR}
 Subject: Volume ${TAR_VOLUME} for backup has been added
 Reply-To: ${ADMINISTRATOR}
 
-This is an automated report from the backup script running on 
-`hostname`. 
+This is an automated report from the backup script running on
+`hostname`.
 
 The backup has been continued, so for now no further attention is required.
 __EOF__

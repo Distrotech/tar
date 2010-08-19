@@ -331,7 +331,7 @@ static int
 dumpdir_cmp (const char *a, const char *b)
 {
   size_t len;
-  
+
   while (*a)
     switch (*a)
       {
@@ -345,7 +345,7 @@ dumpdir_cmp (const char *a, const char *b)
 	a += len;
 	b += len;
 	break;
-	
+
       case 'D':
 	if (strcmp(a, b))
 	  return 1;
@@ -353,7 +353,7 @@ dumpdir_cmp (const char *a, const char *b)
 	a += len;
 	b += len;
 	break;
-	
+
       case 'R':
       case 'T':
       case 'X':
@@ -577,8 +577,8 @@ verify_volume (void)
   flush_read ();
   while (1)
     {
-      enum read_header status = read_header (&current_header, 
-                                             &current_stat_info, 
+      enum read_header status = read_header (&current_header,
+                                             &current_stat_info,
                                              read_header_auto);
 
       if (status == HEADER_FAILURE)
@@ -608,7 +608,7 @@ verify_volume (void)
             {
 	      char buf[UINTMAX_STRSIZE_BOUND];
 
-	      status = read_header (&current_header, &current_stat_info, 
+	      status = read_header (&current_header, &current_stat_info,
 	                            read_header_auto);
 	      if (status == HEADER_ZERO_BLOCK)
 	        break;
@@ -617,7 +617,7 @@ verify_volume (void)
 			STRINGIFY_BIGINT (current_block_ordinal (), buf)));
             }
 	}
-      
+
       diff_archive ();
       tar_stat_destroy (&current_stat_info);
     }

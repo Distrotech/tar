@@ -107,10 +107,10 @@ group permission could be copied from the @emph{other} permission.
 The @code{uid} and @code{gid} fields are the numeric user and group
 @acronym{ID} of the file owners, respectively.  If the operating system does
 not support numeric user or group @acronym{ID}s, these fields should
-be ignored. 
+be ignored.
 
 The @code{size} field is the size of the file in bytes; linked files
-are archived with this field specified as zero. 
+are archived with this field specified as zero.
 
 The @code{mtime} field is the data modification time of the file at
 the time it was archived.  It is the ASCII representation of the octal
@@ -330,4 +330,3 @@ checksum error.
 @node Dumpdir
 @unnumberedsec Dumpdir
 @include dumpdir.texi
-

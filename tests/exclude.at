@@ -36,7 +36,7 @@ mkdir dir/rock
 echo "Signature: 8a477f597d28d172789f06886806bc55" > dir/rock/CACHEDIR.TAG
 echo "test" > dir/rock/file
 
-for option in exclude-caches exclude-caches-under exclude-caches-all 
+for option in exclude-caches exclude-caches-under exclude-caches-all
 do
   echo OPTION $option
   tar -cf archive.tar --$option -v dir 2>err | sort
@@ -45,7 +45,7 @@ do
   tar tf archive.tar | sort
 done
 
-for option in exclude-tag exclude-tag-under exclude-tag-all 
+for option in exclude-tag exclude-tag-under exclude-tag-all
 do
   echo OPTION $option
   tar -cf archive.tar --${option}=tagfile -v dir 2>err | sort

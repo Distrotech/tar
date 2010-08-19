@@ -180,19 +180,19 @@ the `lchown' call will be used if available, but that's all.
 GNU `tar' is able to create archive in the following formats:
 
   *** The format of UNIX version 7
-  *** POSIX.1-1988 format, also known as "ustar format" 
+  *** POSIX.1-1988 format, also known as "ustar format"
   *** POSIX.1-2001 format, also known as "pax format"
   *** Old GNU format (described below)
 
 In addition to those, GNU `tar' is also able to read archives
-produced by `star' archiver.  
+produced by `star' archiver.
 
 A so called `Old GNU' format is based on an early draft of the
 POSIX 1003.1 `ustar' standard which is different from the final
 standard. It defines its extensions (such as incremental backups
 and handling of the long file names) in a way incompatible with
 any existing tar archive format, therefore the use of old GNU
-format is strongly discouraged. 
+format is strongly discouraged.
 
 Please read the file NEWS for more information about POSIX compliance
 and new `tar' features.
@@ -248,4 +248,3 @@ mode: outline
 paragraph-separate: "[	]*$"
 version-control: never
 End:
-

@@ -76,7 +76,7 @@ set_warning_option (const char *arg)
 {
   int negate = 0;
   int option;
-  
+
   if (strcmp (arg, "none") == 0)
     {
       warning_option = 0;
@@ -88,11 +88,10 @@ set_warning_option (const char *arg)
       arg += 3;
     }
 
-  option = XARGMATCH ("--warning", arg, 
+  option = XARGMATCH ("--warning", arg,
 		      warning_args, warning_types);
   if (negate)
     warning_option &= ~option;
   else
     warning_option |= option;
 }
-  

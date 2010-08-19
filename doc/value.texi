@@ -18,5 +18,3 @@
 @end ifclear
 @xopindex{\option\, summary}
 @end macro
-
-

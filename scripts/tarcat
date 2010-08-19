@@ -35,8 +35,7 @@ do
     fi
     if [ "$T" = "M" ]; then
       SKIP=$(($SKIP + 1))
-    fi  
+    fi
   fi
-  dd skip=$SKIP if="$f" 
+  dd skip=$SKIP if="$f"
 done
-

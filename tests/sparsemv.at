@@ -35,7 +35,7 @@ echo "Pass 1: Split between data blocks"
 echo "Create archive"
 tar --sparse -c --record-size=512 -M -L6 -f arc.1 -f arc.2 sparsefile || exit 1
 echo "Test archive"
-tar --record-size=512 -t -M -f arc.1 -f arc.2 
+tar --record-size=512 -t -M -f arc.1 -f arc.2
 echo "Compare archive"
 tar --record-size=512 -d -M -f arc.1 -f arc.2
 
@@ -44,7 +44,7 @@ genfile --sparse --file sparsefile 0 ABCDEFGHIJ 1M ABCDEFGHI || AT_SKIP_TEST
 echo "Create archive"
 tar --sparse -c --record-size=512 -M -L6 -f arc.1 -f arc.2 sparsefile || exit 1
 echo "Test archive"
-tar --record-size=512 -t -M -f arc.1 -f arc.2 
+tar --record-size=512 -t -M -f arc.1 -f arc.2
 echo "Compare archive"
 tar --record-size=512 -d -M -f arc.1 -f arc.2
 ],

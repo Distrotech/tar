@@ -1509,7 +1509,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       {
 	uintmax_t u;
 	char *p;
-	
+
 	if (xstrtoumax (arg, &p, 10, &u, TAR_SIZE_SUFFIXES) != LONGINT_OK)
 	  USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
 			_("Invalid tape length")));
@@ -1968,7 +1968,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case RECORD_SIZE_OPTION:
       {
 	uintmax_t u;
-	
+
 	if (! (xstrtoumax (arg, NULL, 10, &u, TAR_SIZE_SUFFIXES) == LONGINT_OK
 	       && u == (size_t) u))
 	  USAGE_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),

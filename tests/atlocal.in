@@ -16,17 +16,17 @@ fi
 STAR_DATA_URL=ftp://ftp.berlios.de/pub/star/testscripts
 if test -z "$STAR_TESTSCRIPTS"; then
   STAR_TESTSCRIPTS=$TEST_DATA_DIR
-fi  
+fi
 
 # tarball_prereq file sum dir url
 tarball_prereq() {
-  if test -d "$3"; then	
+  if test -d "$3"; then
     if test -r $3/$1; then
       :
     elif test -n "$FULL_TEST"; then
       wget -q --directory-prefix=$3 $4/$1
     fi
-  fi  
+  fi
   echo "$2  $3/$1" | md5sum --status --check - >/dev/null 2>&1
 }
 
@@ -34,4 +34,3 @@ decho() {
   echo $*
   echo >&2 $*
 }
-

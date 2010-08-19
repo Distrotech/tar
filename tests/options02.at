@@ -36,4 +36,3 @@ tar tf archive
 ])
 
 AT_CLEANUP
-

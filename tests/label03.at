@@ -85,5 +85,3 @@ tar: Archive label mismatch
 ],[],[],[gnu,oldgnu,posix])
 
 AT_CLEANUP
-
-
