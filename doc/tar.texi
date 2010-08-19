@@ -41,11 +41,12 @@ Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.1 or
+under the terms of the GNU Free Documentation License, Version 1.3 or
 any later version published by the Free Software Foundation; with no
-Invariant Sections, with the Front-Cover Texts being ``A GNU Manual,''
+Invariant Sections, with the Front-Cover Texts being ``A GNU Manual'',
 and with the Back-Cover Texts as in (a) below.  A copy of the license
-is included in the section entitled "GNU Free Documentation License".
+is included in the section entitled ``GNU Free Documentation
+License''.
 
 (a) The FSF's Back-Cover Text is: ``You have the freedom to
 copy and modify this GNU manual.  Buying copies from the FSF
@@ -115,7 +116,7 @@ Appendices
 * Tar Internals::
 * Genfile::
 * Free Software Needs Free Documentation::
-* Copying This Manual::
+* GNU Free Documentation License::
 * Index of Command Line Options::
 * Index::
 
@@ -2465,7 +2466,7 @@ This option tells @command{tar} to read or write archives through
 @item --check-device
 Check device numbers when creating a list of modified files for
 incremental archiving.  This is the default.  @xref{device numbers},
-for a detailed description. 
+for a detailed description.
 
 @opsummary{checkpoint}
 @item --checkpoint[=@var{number}]
@@ -2928,7 +2929,7 @@ suffix.  @xref{--auto-compress}.  @xref{gzip}.
 @item --no-check-device
 Do not check device numbers when creating a list of modified files
 for incremental archiving.  @xref{device numbers}, for
-a detailed description. 
+a detailed description.
 
 @opsummary{no-delay-directory-restore}
 @item --no-delay-directory-restore
@@ -4162,7 +4163,7 @@ Disable all warning messages.
 @samp{Current %s is newer or same age}
 @kwindex unknown-keyword
 @cindex @samp{Ignoring unknown extended header keyword `%s'}, warning message
-@item unknown-keyword           
+@item unknown-keyword
 @samp{Ignoring unknown extended header keyword `%s'}
 @end table
 
@@ -4418,7 +4419,7 @@ of those members listed, with their data modification times, owners, etc.
 
 Other operations don't deal with these members as perfectly as you might
 prefer; if you were to use @option{--extract} to extract the archive,
-only the most recently added copy of a member with the same name as 
+only the most recently added copy of a member with the same name as
 other members would end up in the working directory.  This is because
 @option{--extract} extracts an archive in the order the members appeared
 in the archive; the most recently archived members will be extracted
@@ -5740,7 +5741,7 @@ or
 @group
 $ @kbd{tar --directory sourcedir --create --file=- . \
        | tar --directory targetdir --extract --file=-}
-@end group       
+@end group
 @end smallexample
 
 @noindent
@@ -5780,7 +5781,7 @@ sophisticated packages dedicated to that purpose.
 Some users are enthusiastic about @code{Amanda} (The Advanced Maryland
 Automatic Network Disk Archiver), a backup system developed by James
 da Silva @file{jds@@cs.umd.edu} and available on many Unix systems.
-This is free software, and it is available from @uref{http://www.amanda.org}. 
+This is free software, and it is available from @uref{http://www.amanda.org}.
 
 @FIXME{
 
@@ -6022,7 +6023,7 @@ Use device numbers when preparing a list of changed files
 for an incremental dump.  This is the default behavior.  The purpose
 of this option is to undo the effect of the @option{--no-check-device}
 if it was given in @env{TAR_OPTIONS} environment variable
-(@pxref{TAR_OPTIONS}). 
+(@pxref{TAR_OPTIONS}).
 @end table
 
 There is also another way to cope with changing device numbers.  It is
@@ -8692,7 +8693,7 @@ switch to @samp{posix}.
 a wide variety of compression programs, namely: @command{gzip},
 @command{bzip2}, @command{lzip}, @command{lzma}, @command{lzop},
 @command{xz} and traditional @command{compress}. The latter is
-supported mostly for backward compatibility, and we recommend 
+supported mostly for backward compatibility, and we recommend
 against using it, because it is by far less effective than the other
 compression programs@footnote{It also had patent problems in the past.}.
 
@@ -8702,7 +8703,7 @@ commands.  The compression option is @option{-z} (@option{--gzip}) to
 create a @command{gzip} compressed archive, @option{-j}
 (@option{--bzip2}) to create a @command{bzip2} compressed archive,
 @option{--lzip} to create an @asis{lzip} compressed archive,
-@option{-J} (@option{--xz}) to create an @asis{XZ} archive, 
+@option{-J} (@option{--xz}) to create an @asis{XZ} archive,
 @option{--lzma} to create an @asis{LZMA} compressed
 archive, @option{--lzop} to create an @asis{LSOP} archive, and
 @option{-Z} (@option{--compress}) to use @command{compress} program.
@@ -8829,7 +8830,7 @@ compressor names along with each of these options.
 You can use any of these options on physical devices (tape drives,
 etc.) and remote files as well as on normal files; data to or from
 such devices or remote files is reblocked by another copy of the
-@command{tar} program to enforce the specified (or default) record 
+@command{tar} program to enforce the specified (or default) record
 size.  The default compression parameters are used.  Most compression
 programs allow to override these by setting a program-specific
 environment variable.  For example, when using @command{gzip} you can
@@ -9019,7 +9020,7 @@ $ @kbd{tar --help | grep -- --bzip2}
   -j, --bzip2                filter the archive through lbzip2
 @end group
 @end smallexample
-  
+
 @noindent
 which means that running @command{tar --bzip2} will invoke @command{lbzip2}.
 
@@ -12040,12 +12041,8 @@ Right margin of the text output. Used for wrapping.
 @appendix Free Software Needs Free Documentation
 @include freemanuals.texi
 
-@node Copying This Manual
-@appendix Copying This Manual
-
-@menu
-* GNU Free Documentation License::  License for copying this manual
-@end menu
+@node GNU Free Documentation License
+@appendix GNU Free Documentation License
 
 @include fdl.texi
 
