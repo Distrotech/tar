@@ -515,7 +515,7 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
    properly restored on returning RECOVER_NO.  */
 
 static int
-maybe_recoverable (char *file_name, int *interdir_made)
+maybe_recoverable (char *file_name, bool *interdir_made)
 {
   int e = errno;
 
@@ -560,7 +560,7 @@ maybe_recoverable (char *file_name, int *interdir_made)
 	  errno = ENOENT;
 	  return RECOVER_NO;
 	}
-      *interdir_made = 1;
+      *interdir_made = true;
       return RECOVER_OK;
 
     default:
@@ -641,7 +641,7 @@ extract_dir (char *file_name, int typeflag)
 {
   int status;
   mode_t mode;
-  int interdir_made = 0;
+  bool interdir_made = false;
 
   /* Save 'root device' to avoid purging mount points. */
   if (one_file_system_option && root_device == 0)
@@ -772,7 +772,7 @@ extract_file (char *file_name, int typeflag)
   int status;
   size_t count;
   size_t written;
-  int interdir_made = 0;
+  bool interdir_made = false;
   mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
   mode_t invert_permissions =
     0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
@@ -879,7 +879,7 @@ extract_file (char *file_name, int typeflag)
    process.  */
 
 static int
-create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
+create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 {
   int fd;
   struct stat st;
@@ -961,7 +961,7 @@ create_placeholder_file (char *file_name, bool is_symlink, int *interdir_made)
 static int
 extract_link (char *file_name, int typeflag)
 {
-  int interdir_made = 0;
+  bool interdir_made = false;
   char const *link_name;
   int rc;
 
@@ -1020,7 +1020,7 @@ static int
 extract_symlink (char *file_name, int typeflag)
 {
 #ifdef HAVE_SYMLINK
-  int interdir_made = 0;
+  bool interdir_made = false;
 
   if (! absolute_names_option
       && (IS_ABSOLUTE_FILE_NAME (current_stat_info.link_name)
@@ -1062,7 +1062,7 @@ extract_symlink (char *file_name, int typeflag)
 static int
 extract_node (char *file_name, int typeflag)
 {
-  int interdir_made = 0;
+  bool interdir_made = false;
   mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
   mode_t invert_permissions =
     0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
@@ -1093,7 +1093,7 @@ static int
 extract_fifo (char *file_name, int typeflag)
 {
   int status;
-  int interdir_made = 0;
+  bool interdir_made = false;
   mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
   mode_t invert_permissions =
     0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
