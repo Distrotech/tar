@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2009 Free Software Foundation, Inc.
+# Copyright (C) 2009, 2010 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 AT_SETUP([transforming hard links on create])
 AT_KEYWORDS([transform xform xform-h])
 
-m4_define([xform],[
+m4_pushdef([xformtest],[
 echo "$1"
 tar cf archive --transform="s,^basedir/,,$2" basedir/test basedir/test_link
 tar tvf archive | sed -n 's/.*test_link link to //p'
@@ -41,9 +41,9 @@ mkdir basedir
 echo "hello" > basedir/test
 ln basedir/test basedir/test_link
 
-xform(Default transform scope)
-xform(Transforming hard links,h)
-xform(Not transforming hard links,H)
+xformtest(Default transform scope)
+xformtest(Transforming hard links,h)
+xformtest(Not transforming hard links,H)
 ],
 [0],
 [Default transform scope
@@ -53,6 +53,8 @@ test
 Not transforming hard links
 basedir/test
 ])
+
+m4_popdef([xformtest])
 
 AT_CLEANUP
 

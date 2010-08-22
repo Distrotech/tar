@@ -123,6 +123,7 @@ m4_include([append01.at])
 m4_include([append02.at])
 
 m4_include([xform-h.at])
+m4_include([xform01.at])
 
 m4_include([exclude.at])
 m4_include([exclude01.at])

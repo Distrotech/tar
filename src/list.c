@@ -656,6 +656,10 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	stat_info->is_dumpdir = true;
     }
 
+  if (header->header.typeflag == GNUTYPE_VOLHDR)
+    /* Name transformations don't apply to volume headers. */
+    return;
+  
   transform_member_name (&stat_info->file_name, XFORM_REGFILE);
   switch (header->header.typeflag)
     {

@@ -150,6 +150,7 @@ TESTSUITE_AT = \
  verbose.at\
  version.at\
  xform-h.at\
+ xform01.at\
  star/gtarfail.at\
  star/gtarfail2.at\
  star/multi-fail.at\
