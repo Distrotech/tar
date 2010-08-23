@@ -74,7 +74,7 @@ find_compression_program (const char *name, const char *defprog)
 }
 
 void
-set_comression_program_by_suffix (const char *name, const char *defprog)
+set_compression_program_by_suffix (const char *name, const char *defprog)
 {
   const char *program = find_compression_program (name, defprog);
   if (program)

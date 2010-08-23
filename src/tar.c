@@ -2494,8 +2494,8 @@ decode_options (int argc, char **argv)
 		      _("Cowardly refusing to create an empty archive")));
       if (args.compress_autodetect && archive_names
 	  && strcmp (archive_name_array[0], "-"))
-	set_comression_program_by_suffix (archive_name_array[0],
-					  use_compress_program_option);
+	set_compression_program_by_suffix (archive_name_array[0],
+					   use_compress_program_option);
       break;
 
     case EXTRACT_SUBCOMMAND:

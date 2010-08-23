@@ -809,7 +809,7 @@ bool transform_name_fp (char **pinput, int type,
 			char *(*fun)(char *, void *), void *);
 
 /* Module suffix.c */
-void set_comression_program_by_suffix (const char *name, const char *defprog);
+void set_compression_program_by_suffix (const char *name, const char *defprog);
 
 /* Module checkpoint.c */
 void checkpoint_compile_action (const char *str);
