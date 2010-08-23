@@ -26,6 +26,7 @@
 
 #include "common.h"
 
+static void xheader_init (struct xheader *xhdr);
 static bool xheader_protected_pattern_p (char const *pattern);
 static bool xheader_protected_keyword_p (char const *keyword);
 static void xheader_set_single_keyword (char *) __attribute__ ((noreturn));
@@ -661,7 +662,7 @@ xheader_decode_global (struct xheader *xhdr)
     }
 }
 
-void
+static void
 xheader_init (struct xheader *xhdr)
 {
   if (!xhdr->stk)

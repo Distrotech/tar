@@ -449,7 +449,6 @@ void add_exclusion_tag (const char *name, enum exclusion_tag_type type,
 			bool (*)(const char*));
 bool cachedir_file_p (const char *name);
 
-bool file_dumpable_p (struct tar_stat_info *st);
 void create_archive (void);
 void pad_archive (off_t size_left);
 void dump_file (const char *st, bool top_level, dev_t parent_device);
@@ -467,28 +466,13 @@ void exclusion_tag_warning (const char *dirname, const char *tagname,
 enum exclusion_tag_type check_exclusion_tags (const char *dirname,
 					      const char **tag_file_name);
 
-#define GID_TO_CHARS(val, where) gid_to_chars (val, where, sizeof (where))
-#define MAJOR_TO_CHARS(val, where) major_to_chars (val, where, sizeof (where))
-#define MINOR_TO_CHARS(val, where) minor_to_chars (val, where, sizeof (where))
-#define MODE_TO_CHARS(val, where) mode_to_chars (val, where, sizeof (where))
 #define OFF_TO_CHARS(val, where) off_to_chars (val, where, sizeof (where))
 #define SIZE_TO_CHARS(val, where) size_to_chars (val, where, sizeof (where))
 #define TIME_TO_CHARS(val, where) time_to_chars (val, where, sizeof (where))
-#define UID_TO_CHARS(val, where) uid_to_chars (val, where, sizeof (where))
-#define UINTMAX_TO_CHARS(val, where) uintmax_to_chars (val, where, sizeof (where))
-#define UNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
-#define GNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 
-bool gid_to_chars (gid_t gid, char *buf, size_t size);
-bool major_to_chars (major_t m, char *buf, size_t size);
-bool minor_to_chars (minor_t m, char *buf, size_t size);
-bool mode_to_chars (mode_t m, char *buf, size_t size);
 bool off_to_chars (off_t off, char *buf, size_t size);
 bool size_to_chars (size_t v, char *buf, size_t size);
 bool time_to_chars (time_t t, char *buf, size_t size);
-bool uid_to_chars (uid_t uid, char *buf, size_t size);
-bool uintmax_to_chars (uintmax_t v, char *buf, size_t size);
-void string_to_chars (char const *s, char *buf, size_t size);
 
 /* Module diffarch.c.  */
 
@@ -510,15 +494,6 @@ bool rename_directory (char *src, char *dst);
 void delete_archive_members (void);
 
 /* Module incremen.c.  */
-typedef struct dumpdir *dumpdir_t;
-typedef struct dumpdir_iter *dumpdir_iter_t;
-
-dumpdir_t dumpdir_create0 (const char *contents, const char *cmask);
-dumpdir_t dumpdir_create (const char *contents);
-void dumpdir_free (dumpdir_t);
-char *dumpdir_locate (dumpdir_t dump, const char *name);
-char *dumpdir_next (dumpdir_iter_t itr);
-char *dumpdir_first (dumpdir_t dump, int all, dumpdir_iter_t *pitr);
 
 struct directory *scan_directory (char *dir, dev_t device, bool cmdline);
 void name_fill_directory (struct name *name, dev_t device, bool cmdline);
@@ -571,25 +546,12 @@ void decode_header (union block *header, struct tar_stat_info *stat_info,
 		    enum archive_format *format_pointer, int do_user_group);
 char const *tartime (struct timespec t, bool full_time);
 
-#define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
-#define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
-#define MINOR_FROM_HEADER(where) minor_from_header (where, sizeof (where))
-#define MODE_FROM_HEADER(where, hbits) \
-  mode_from_header (where, sizeof (where), hbits)
 #define OFF_FROM_HEADER(where) off_from_header (where, sizeof (where))
 #define SIZE_FROM_HEADER(where) size_from_header (where, sizeof (where))
-#define TIME_FROM_HEADER(where) time_from_header (where, sizeof (where))
-#define UID_FROM_HEADER(where) uid_from_header (where, sizeof (where))
 #define UINTMAX_FROM_HEADER(where) uintmax_from_header (where, sizeof (where))
 
-gid_t gid_from_header (const char *buf, size_t size);
-major_t major_from_header (const char *buf, size_t size);
-minor_t minor_from_header (const char *buf, size_t size);
-mode_t mode_from_header (const char *buf, size_t size, unsigned *hbits);
 off_t off_from_header (const char *buf, size_t size);
 size_t size_from_header (const char *buf, size_t size);
-time_t time_from_header (const char *buf, size_t size);
-uid_t uid_from_header (const char *buf, size_t size);
 uintmax_t uintmax_from_header (const char *buf, size_t size);
 
 void list_archive (void);
@@ -608,7 +570,6 @@ void skip_member (void);
 /* Module misc.c.  */
 
 void assign_string (char **dest, const char *src);
-char *quote_copy_string (const char *str);
 int unquote_string (char *str);
 char *zap_slashes (char *name);
 char *normalize_filename (const char *name);
@@ -720,7 +681,6 @@ bool contains_dot_dot (char const *name);
 void usage (int);
 
 int confirm (const char *message_action, const char *name);
-void request_stdin (const char *option);
 
 void tar_stat_init (struct tar_stat_info *st);
 void tar_stat_destroy (struct tar_stat_info *st);
@@ -738,7 +698,6 @@ void update_archive (void);
 
 /* Module xheader.c.  */
 
-void xheader_init (struct xheader *xhdr);
 void xheader_decode (struct tar_stat_info *stat);
 void xheader_decode_global (struct xheader *xhdr);
 void xheader_store (char const *keyword, struct tar_stat_info *st,
@@ -804,7 +763,6 @@ bool utf8_convert (bool to_utf, char const *input, char **output);
 
 void set_transform_expr (const char *expr);
 bool transform_name (char **pinput, int type);
-bool transform_member_name (char **pinput, int type);
 bool transform_name_fp (char **pinput, int type,
 			char *(*fun)(char *, void *), void *);
 

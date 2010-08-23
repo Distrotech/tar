@@ -35,6 +35,20 @@ size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
 union block *recent_global_header; /* Recent global header block */
 
+#define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
+#define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))
+#define MINOR_FROM_HEADER(where) minor_from_header (where, sizeof (where))
+#define MODE_FROM_HEADER(where, hbits) \
+  mode_from_header (where, sizeof (where), hbits)
+#define TIME_FROM_HEADER(where) time_from_header (where, sizeof (where))
+#define UID_FROM_HEADER(where) uid_from_header (where, sizeof (where))
+
+static gid_t gid_from_header (const char *buf, size_t size);
+static major_t major_from_header (const char *buf, size_t size);
+static minor_t minor_from_header (const char *buf, size_t size);
+static mode_t mode_from_header (const char *buf, size_t size, unsigned *hbits);
+static time_t time_from_header (const char *buf, size_t size);
+static uid_t uid_from_header (const char *buf, size_t size);
 static uintmax_t from_header (const char *, size_t, const char *,
 			      uintmax_t, uintmax_t, bool, bool);
 
@@ -516,7 +530,7 @@ decode_xform (char *file_name, void *data)
   return file_name;
 }
 
-bool
+static bool
 transform_member_name (char **pinput, int type)
 {
   return transform_name_fp (pinput, type, decode_xform, &type);
@@ -874,7 +888,7 @@ from_header (char const *where0, size_t digs, char const *type,
   return -1;
 }
 
-gid_t
+static gid_t
 gid_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "gid_t",
@@ -883,7 +897,7 @@ gid_from_header (const char *p, size_t s)
 		      false, false);
 }
 
-major_t
+static major_t
 major_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "major_t",
@@ -891,7 +905,7 @@ major_from_header (const char *p, size_t s)
 		      (uintmax_t) TYPE_MAXIMUM (major_t), false, false);
 }
 
-minor_t
+static minor_t
 minor_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "minor_t",
@@ -901,7 +915,7 @@ minor_from_header (const char *p, size_t s)
 
 /* Convert P to the file mode, as understood by tar.
    Store unrecognized mode bits (from 10th up) in HBITS. */
-mode_t
+static mode_t
 mode_from_header (const char *p, size_t s, unsigned *hbits)
 {
   unsigned u = from_header (p, s, "mode_t",
@@ -939,7 +953,7 @@ size_from_header (const char *p, size_t s)
 		      (uintmax_t) TYPE_MAXIMUM (size_t), false, false);
 }
 
-time_t
+static time_t
 time_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "time_t",
@@ -947,7 +961,7 @@ time_from_header (const char *p, size_t s)
 		      (uintmax_t) TYPE_MAXIMUM (time_t), false, false);
 }
 
-uid_t
+static uid_t
 uid_from_header (const char *p, size_t s)
 {
   return from_header (p, s, "uid_t",

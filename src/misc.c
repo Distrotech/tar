@@ -50,6 +50,9 @@ assign_string (char **string, const char *value)
   *string = value ? xstrdup (value) : 0;
 }
 
+#if 0
+/* This function is currently unused; perhaps it should be removed?  */
+
 /* Allocate a copy of the string quoted as in C, and returns that.  If
    the string does not have to be quoted, it returns a null pointer.
    The allocated copy should normally be freed with free() after the
@@ -62,7 +65,7 @@ assign_string (char **string, const char *value)
    when reading directory files.  This means that we can't use
    quotearg, as quotearg is locale-dependent and is meant for human
    consumption.  */
-char *
+static char *
 quote_copy_string (const char *string)
 {
   const char *source = string;
@@ -103,6 +106,7 @@ quote_copy_string (const char *string)
     }
   return 0;
 }
+#endif
 
 /* Takes a quoted C string (like those produced by quote_copy_string)
    and turns it back into the un-quoted original.  This is done in

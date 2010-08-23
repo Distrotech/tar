@@ -214,6 +214,14 @@ to_base256 (int negative, uintmax_t value, char *where, size_t size)
   while (i);
 }
 
+#define GID_TO_CHARS(val, where) gid_to_chars (val, where, sizeof (where))
+#define MAJOR_TO_CHARS(val, where) major_to_chars (val, where, sizeof (where))
+#define MINOR_TO_CHARS(val, where) minor_to_chars (val, where, sizeof (where))
+#define MODE_TO_CHARS(val, where) mode_to_chars (val, where, sizeof (where))
+#define UID_TO_CHARS(val, where) uid_to_chars (val, where, sizeof (where))
+#define UINTMAX_TO_CHARS(val, where) uintmax_to_chars (val, where, sizeof (where))
+#define UNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
+#define GNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 
 static bool
 to_chars (int negative, uintmax_t value, size_t valsize,
@@ -368,25 +376,25 @@ gid_substitute (int *negative)
   return r;
 }
 
-bool
+static bool
 gid_to_chars (gid_t v, char *p, size_t s)
 {
   return to_chars (v < 0, (uintmax_t) v, sizeof v, gid_substitute, p, s, "gid_t");
 }
 
-bool
+static bool
 major_to_chars (major_t v, char *p, size_t s)
 {
   return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "major_t");
 }
 
-bool
+static bool
 minor_to_chars (minor_t v, char *p, size_t s)
 {
   return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "minor_t");
 }
 
-bool
+static bool
 mode_to_chars (mode_t v, char *p, size_t s)
 {
   /* In the common case where the internal and external mode bits are the same,
@@ -460,19 +468,19 @@ uid_substitute (int *negative)
   return r;
 }
 
-bool
+static bool
 uid_to_chars (uid_t v, char *p, size_t s)
 {
   return to_chars (v < 0, (uintmax_t) v, sizeof v, uid_substitute, p, s, "uid_t");
 }
 
-bool
+static bool
 uintmax_to_chars (uintmax_t v, char *p, size_t s)
 {
   return to_chars (0, v, sizeof v, 0, p, s, "uintmax_t");
 }
 
-void
+static void
 string_to_chars (char const *str, char *p, size_t s)
 {
   tar_copy_str (p, str, s);
@@ -487,7 +495,7 @@ string_to_chars (char const *str, char *p, size_t s)
    a) it is empty *and* world-readable, or
    b) current archive is /dev/null */
 
-bool
+static bool
 file_dumpable_p (struct tar_stat_info *st)
 {
   if (dev_null_output)

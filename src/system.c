@@ -283,10 +283,10 @@ xdup2 (int from, int into)
     }
 }
 
-void wait_for_grandchild (pid_t pid) __attribute__ ((__noreturn__));
+static void wait_for_grandchild (pid_t pid) __attribute__ ((__noreturn__));
 
 /* Propagate any failure of the grandchild back to the parent.  */
-void
+static void
 wait_for_grandchild (pid_t pid)
 {
   int wait_status;

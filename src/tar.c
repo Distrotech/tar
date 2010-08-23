@@ -74,7 +74,7 @@
 static const char *stdin_used_by;
 
 /* Doesn't return if stdin already requested.  */
-void
+static void
 request_stdin (const char *option)
 {
   if (stdin_used_by)

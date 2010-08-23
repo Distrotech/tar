@@ -77,7 +77,7 @@ struct directory
     char *name;	     	        /* file name of directory */
   };
 
-struct dumpdir *
+static struct dumpdir *
 dumpdir_create0 (const char *contents, const char *cmask)
 {
   struct dumpdir *dump;
@@ -108,13 +108,13 @@ dumpdir_create0 (const char *contents, const char *cmask)
   return dump;
 }
 
-struct dumpdir *
+static struct dumpdir *
 dumpdir_create (const char *contents)
 {
   return dumpdir_create0 (contents, "YND");
 }
 
-void
+static void
 dumpdir_free (struct dumpdir *dump)
 {
   free (dump->elv);
@@ -131,7 +131,7 @@ compare_dirnames (const void *first, const void *second)
 
 /* Locate NAME in the dumpdir array DUMP.
    Return pointer to the slot in DUMP->contents, or NULL if not found */
-char *
+static char *
 dumpdir_locate (struct dumpdir *dump, const char *name)
 {
   char **ptr;
@@ -150,7 +150,7 @@ struct dumpdir_iter
   size_t next;          /* Index of the next element */
 };
 
-char *
+static char *
 dumpdir_next (struct dumpdir_iter *itr)
 {
   size_t cur = itr->next;
@@ -172,7 +172,7 @@ dumpdir_next (struct dumpdir_iter *itr)
   return ret;
 }
 
-char *
+static char *
 dumpdir_first (struct dumpdir *dump, int all, struct dumpdir_iter **pitr)
 {
   struct dumpdir_iter *itr = xmalloc (sizeof (*itr));
@@ -723,7 +723,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   if (dirp && directory->children != NO_CHILDREN)
     {
       char *entry;	/* directory entry being scanned */
-      dumpdir_iter_t itr;
+      struct dumpdir_iter *itr;
 
       makedumpdir (directory, dirp);
 
@@ -1386,7 +1386,7 @@ write_directory_file_entry (void *entry, void *data)
       if (directory->dump)
 	{
 	  const char *p;
-	  dumpdir_iter_t itr;
+	  struct dumpdir_iter *itr;
 
 	  for (p = dumpdir_first (directory->dump, 0, &itr);
 	       p;
