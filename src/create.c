@@ -30,7 +30,7 @@ struct link
   {
     dev_t dev;
     ino_t ino;
-    size_t nlink;
+    nlink_t nlink;
     char name[1];
   };
 
