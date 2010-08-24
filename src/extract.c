@@ -144,7 +144,7 @@ set_mode (char const *file_name,
 	  char typeflag)
 {
   mode_t mode;
-  bool failed;
+  int chmod_errno;
 
   if (0 < same_permissions_option
       && permstatus != INTERDIR_PERMSTATUS)
@@ -187,18 +187,24 @@ set_mode (char const *file_name,
       mode = cur_info->st_mode ^ invert_permissions;
     }
 
-  failed = chmod (file_name, mode) != 0;
-  if (failed && errno == EPERM)
+  chmod_errno = chmod (file_name, mode) == 0 ? 0 : errno;
+  if (chmod_errno == EPERM && (mode & S_ISUID) != 0)
     {
-      /* On Solaris, chmod may fail if we don't have PRIV_ALL.  */
+      /* On Solaris, chmod may fail if we don't have PRIV_ALL, because
+	 setuid-root files would otherwise be a backdoor.  See
+	 http://opensolaris.org/jive/thread.jspa?threadID=95826
+	 (2009-09-03).  */
       if (priv_set_restore_linkdir () == 0)
 	{
-	  failed = chmod (file_name, mode) != 0;
+	  chmod_errno = chmod (file_name, mode) == 0 ? 0 : errno;
 	  priv_set_remove_linkdir ();
 	}
     }
-  if (failed)
-    chmod_error_details (file_name, mode);
+  if (chmod_errno)
+    {
+      errno = chmod_errno;
+      chmod_error_details (file_name, mode);
+    }
 }
 
 /* Check time after successfully setting FILE_NAME's time stamp to T.  */
@@ -1270,9 +1276,6 @@ extract_archive (void)
   tar_extractor_t fun;
 
   fatal_exit_hook = extract_finish;
-
-  /* Try to disable the ability to unlink a directory.  */
-  priv_set_remove_linkdir ();
 
   set_next_block_after (current_header);
 

@@ -1,7 +1,7 @@
 /* System-dependent calls for tar.
 
    Copyright (C) 2003, 2004, 2005, 2006, 2007,
-   2008 Free Software Foundation, Inc.
+   2008, 2010 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -20,6 +20,7 @@
 #include <system.h>
 
 #include "common.h"
+#include <priv-set.h>
 #include <rmt.h>
 #include <signal.h>
 
@@ -192,6 +193,7 @@ sys_spawn_shell (void)
   child = xfork ();
   if (child == 0)
     {
+      priv_set_restore_linkdir ();
       execlp (shell, "-sh", "-i", (char *) 0);
       exec_fatal (shell);
     }
@@ -362,6 +364,7 @@ sys_child_open_for_compress (void)
 	    }
 	  xdup2 (archive, STDOUT_FILENO);
 	}
+      priv_set_restore_linkdir ();
       execlp (use_compress_program_option, use_compress_program_option, NULL);
       exec_fatal (use_compress_program_option);
     }
@@ -379,6 +382,7 @@ sys_child_open_for_compress (void)
 
       xdup2 (child_pipe[PWRITE], STDOUT_FILENO);
       xclose (child_pipe[PREAD]);
+      priv_set_restore_linkdir ();
       execlp (use_compress_program_option, use_compress_program_option,
 	      (char *) 0);
       exec_fatal (use_compress_program_option);
@@ -496,6 +500,7 @@ sys_child_open_for_uncompress (void)
       if (archive < 0)
 	open_fatal (archive_name_array[0]);
       xdup2 (archive, STDIN_FILENO);
+      priv_set_restore_linkdir ();
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
       exec_fatal (use_compress_program_option);
@@ -514,6 +519,7 @@ sys_child_open_for_uncompress (void)
 
       xdup2 (child_pipe[PREAD], STDIN_FILENO);
       xclose (child_pipe[PWRITE]);
+      priv_set_restore_linkdir ();
       execlp (use_compress_program_option, use_compress_program_option,
 	      "-d", (char *) 0);
       exec_fatal (use_compress_program_option);
@@ -702,6 +708,7 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
   argv[2] = to_command_option;
   argv[3] = NULL;
 
+  priv_set_restore_linkdir ();
   execv ("/bin/sh", argv);
 
   exec_fatal (file_name);
@@ -816,6 +823,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   argv[2] = (char *) info_script_option;
   argv[3] = NULL;
 
+  priv_set_restore_linkdir ();
   execv (argv[0], argv);
 
   exec_fatal (info_script_option);
@@ -863,6 +871,7 @@ sys_exec_checkpoint_script (const char *script_name,
   argv[2] = (char *) script_name;
   argv[3] = NULL;
 
+  priv_set_restore_linkdir ();
   execv (argv[0], argv);
 
   exec_fatal (script_name);
