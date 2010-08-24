@@ -467,11 +467,9 @@ enum exclusion_tag_type check_exclusion_tags (const char *dirname,
 					      const char **tag_file_name);
 
 #define OFF_TO_CHARS(val, where) off_to_chars (val, where, sizeof (where))
-#define SIZE_TO_CHARS(val, where) size_to_chars (val, where, sizeof (where))
 #define TIME_TO_CHARS(val, where) time_to_chars (val, where, sizeof (where))
 
 bool off_to_chars (off_t off, char *buf, size_t size);
-bool size_to_chars (size_t v, char *buf, size_t size);
 bool time_to_chars (time_t t, char *buf, size_t size);
 
 /* Module diffarch.c.  */
@@ -547,11 +545,9 @@ void decode_header (union block *header, struct tar_stat_info *stat_info,
 char const *tartime (struct timespec t, bool full_time);
 
 #define OFF_FROM_HEADER(where) off_from_header (where, sizeof (where))
-#define SIZE_FROM_HEADER(where) size_from_header (where, sizeof (where))
 #define UINTMAX_FROM_HEADER(where) uintmax_from_header (where, sizeof (where))
 
 off_t off_from_header (const char *buf, size_t size);
-size_t size_from_header (const char *buf, size_t size);
 uintmax_t uintmax_from_header (const char *buf, size_t size);
 
 void list_archive (void);

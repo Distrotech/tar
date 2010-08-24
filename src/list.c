@@ -946,13 +946,6 @@ off_from_header (const char *p, size_t s)
 		      (uintmax_t) TYPE_MAXIMUM (off_t), false, false);
 }
 
-size_t
-size_from_header (const char *p, size_t s)
-{
-  return from_header (p, s, "size_t", (uintmax_t) 0,
-		      (uintmax_t) TYPE_MAXIMUM (size_t), false, false);
-}
-
 static time_t
 time_from_header (const char *p, size_t s)
 {

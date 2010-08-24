@@ -1,6 +1,7 @@
 /* Functions for dealing with sparse files
 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010 Free Software
+   Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -333,7 +334,7 @@ sparse_dump_region (struct tar_sparse_file *file, size_t i)
 static bool
 sparse_extract_region (struct tar_sparse_file *file, size_t i)
 {
-  size_t write_size;
+  off_t write_size;
 
   if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset))
     return false;
@@ -508,7 +509,7 @@ check_sparse_region (struct tar_sparse_file *file, off_t beg, off_t end)
 static bool
 check_data_region (struct tar_sparse_file *file, size_t i)
 {
-  size_t size_left;
+  off_t size_left;
 
   if (!lseek_or_error (file, file->stat_info->sparse_map[i].offset))
     return false;
@@ -625,8 +626,9 @@ oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
   if (s->numbytes[0] == '\0')
     return add_finish;
   sp.offset = OFF_FROM_HEADER (s->offset);
-  sp.numbytes = SIZE_FROM_HEADER (s->numbytes);
+  sp.numbytes = OFF_FROM_HEADER (s->numbytes);
   if (sp.offset < 0
+      || sp.offset + sp.numbytes < 0
       || file->stat_info->stat.st_size < sp.offset + sp.numbytes
       || file->stat_info->archive_file_size < 0)
     return add_fail;
@@ -695,8 +697,8 @@ oldgnu_store_sparse_info (struct tar_sparse_file *file, size_t *pindex,
     {
       OFF_TO_CHARS (file->stat_info->sparse_map[*pindex].offset,
 		    sp->offset);
-      SIZE_TO_CHARS (file->stat_info->sparse_map[*pindex].numbytes,
-		     sp->numbytes);
+      OFF_TO_CHARS (file->stat_info->sparse_map[*pindex].numbytes,
+		    sp->numbytes);
     }
 }
 
@@ -1147,7 +1149,7 @@ pax_decode_header (struct tar_sparse_file *file)
 	    }
 	  sp.offset = u;
 	  COPY_BUF (blk,nbuf,p);
-	  if (!decode_num (&u, nbuf, TYPE_MAXIMUM (size_t)))
+	  if (!decode_num (&u, nbuf, TYPE_MAXIMUM (off_t)))
 	    {
 	      ERROR ((0, 0, _("%s: malformed sparse archive member"),
 		      file->stat_info->orig_file_name));

@@ -441,12 +441,6 @@ off_to_chars (off_t v, char *p, size_t s)
 }
 
 bool
-size_to_chars (size_t v, char *p, size_t s)
-{
-  return to_chars (0, (uintmax_t) v, sizeof v, 0, p, s, "size_t");
-}
-
-bool
 time_to_chars (time_t v, char *p, size_t s)
 {
   return to_chars (v < 0, (uintmax_t) v, sizeof v, 0, p, s, "time_t");

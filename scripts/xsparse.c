@@ -1,7 +1,7 @@
 /* xsparse - expands compressed sparse file images extracted from GNU tar
    archives.
 
-   Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+   Copyright (C) 2006, 2007, 2010 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -20,6 +20,7 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
@@ -39,7 +40,7 @@
 struct sp_array
 {
   off_t offset;
-  size_t numbytes;
+  off_t numbytes;
 };
 
 char *progname;
@@ -226,7 +227,7 @@ read_xheader (char *name)
 	}
       else if (strcmp (kw, "numbytes") == 0)
 	{
-	  sparse_map[i++].numbytes = string_to_size (val, NULL);
+	  sparse_map[i++].numbytes = string_to_off (val, NULL);
 	}
       else if (strcmp (kw, "map") == 0)
 	{
@@ -236,7 +237,7 @@ read_xheader (char *name)
 	      if (*val != ',')
 		die (1, "bad GNU.sparse.map: expected `,' but found `%c'",
 		     *val);
-	      sparse_map[i].numbytes = string_to_size (val+1, &val);
+	      sparse_map[i].numbytes = string_to_off (val+1, &val);
 	      if (*val != ',')
 		{
 		  if (!(*val == 0 && i == sparse_map_size-1))
@@ -277,7 +278,7 @@ read_map (FILE *ifp)
       get_line (nbuf, sizeof nbuf, ifp);
       sparse_map[i].offset = string_to_off (nbuf, NULL);
       get_line (nbuf, sizeof nbuf, ifp);
-      sparse_map[i].numbytes = string_to_size (nbuf, NULL);
+      sparse_map[i].numbytes = string_to_off (nbuf, NULL);
     }
 
   fseeko (ifp, ((ftell (ifp) + BLOCKSIZE - 1) / BLOCKSIZE) * BLOCKSIZE,
@@ -288,12 +289,15 @@ void
 expand_sparse (FILE *sfp, int ofd)
 {
   size_t i;
-  size_t maxbytes = 0;
+  off_t max_numbytes = 0;
+  size_t maxbytes;
   char *buffer;
 
   for (i = 0; i < sparse_map_size; i++)
-    if (maxbytes < sparse_map[i].numbytes)
-      maxbytes = sparse_map[i].numbytes;
+    if (max_numbytes < sparse_map[i].numbytes)
+      max_numbytes = sparse_map[i].numbytes;
+
+  maxbytes = max_numbytes < SIZE_MAX ? max_numbytes : SIZE_MAX;
 
   for (buffer = malloc (maxbytes); !buffer; maxbytes /= 2)
     if (maxbytes == 0)
@@ -301,7 +305,7 @@ expand_sparse (FILE *sfp, int ofd)
 
   for (i = 0; i < sparse_map_size; i++)
     {
-      size_t size = sparse_map[i].numbytes;
+      off_t size = sparse_map[i].numbytes;
 
       if (size == 0)
 	ftruncate (ofd, sparse_map[i].offset);

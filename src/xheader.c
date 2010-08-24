@@ -1308,7 +1308,7 @@ sparse_numbytes_decoder (struct tar_stat_info *st,
 			 size_t size __attribute__((unused)))
 {
   uintmax_t u;
-  if (decode_num (&u, arg, SIZE_MAX, keyword))
+  if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
     {
       if (st->sparse_map_avail < st->sparse_map_size)
 	st->sparse_map[st->sparse_map_avail++].numbytes = u;
@@ -1356,7 +1356,7 @@ sparse_map_decoder (struct tar_stat_info *st,
 	  e.numbytes = u;
 	  if (!(u == e.numbytes && errno != ERANGE))
 	    {
-	      out_of_range_header (keyword, arg, 0, TYPE_MAXIMUM (size_t));
+	      out_of_range_header (keyword, arg, 0, TYPE_MAXIMUM (off_t));
 	      return;
 	    }
 	  if (st->sparse_map_avail < st->sparse_map_size)

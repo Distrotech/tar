@@ -265,7 +265,7 @@ enum archive_format
 struct sp_array
 {
   off_t offset;
-  size_t numbytes;
+  off_t numbytes;
 };
 
 struct xheader
