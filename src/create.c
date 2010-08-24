@@ -1266,12 +1266,20 @@ dump_dir (int fd, struct tar_stat_info *st, bool top_level,
 }
 
 
+/* Number of links a file can have without having to be entered into
+   the link table.  Typically this is 1, but in trickier circumstances
+   it is 0.  */
+static nlink_t trivial_link_count;
+
+
 /* Main functions of this module.  */
 
 void
 create_archive (void)
 {
   struct name const *p;
+
+  trivial_link_count = name_count <= 1 && ! dereference_option;
 
   open_archive (ACCESS_WRITE);
   buffer_write_global_xheader ();
@@ -1380,7 +1388,8 @@ static Hash_table *link_table;
 static bool
 dump_hard_link (struct tar_stat_info *st)
 {
-  if (link_table && (st->stat.st_nlink > 1 || remove_files_option))
+  if (link_table
+      && (trivial_link_count < st->stat.st_nlink || remove_files_option))
     {
       struct link lp;
       struct link *duplicate;
@@ -1427,7 +1436,7 @@ file_count_links (struct tar_stat_info *st)
 {
   if (hard_dereference_option)
     return;
-  if (st->stat.st_nlink > 1)
+  if (trivial_link_count < st->stat.st_nlink)
     {
       struct link *duplicate;
       char *linkname = NULL;

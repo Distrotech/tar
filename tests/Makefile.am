@@ -97,6 +97,7 @@ TESTSUITE_AT = \
  link01.at\
  link02.at\
  link03.at\
+ link04.at\
  listed01.at\
  listed02.at\
  listed03.at\

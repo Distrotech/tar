@@ -636,6 +636,7 @@ int set_file_atime (int fd, char const *file,
 
 /* Module names.c.  */
 
+extern size_t name_count;
 extern struct name *gnu_list_name;
 
 void gid_to_gname (gid_t gid, char **gname);

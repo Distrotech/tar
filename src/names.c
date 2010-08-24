@@ -226,19 +226,20 @@ struct name_elt        /* A name_array element. */
 };
 
 static struct name_elt *name_array;  /* store an array of names */
-static size_t allocated_names;	 /* how big is the array? */
-static size_t names;		 /* how many entries does it have? */
-static size_t name_index;	 /* how many of the entries have we scanned? */
+static size_t allocated_entries; /* how big is the array? */
+static size_t entries;		 /* how many entries does it have? */
+static size_t scanned;		 /* how many of the entries have we scanned? */
+size_t name_count;		 /* how many of the entries are names? */
 
 /* Check the size of name_array, reallocating it as necessary.  */
 static void
 check_name_alloc (void)
 {
-  if (names == allocated_names)
+  if (entries == allocated_entries)
     {
-      if (allocated_names == 0)
-	allocated_names = 10; /* Set initial allocation */
-      name_array = x2nrealloc (name_array, &allocated_names,
+      if (allocated_entries == 0)
+	allocated_entries = 10; /* Set initial allocation */
+      name_array = x2nrealloc (name_array, &allocated_entries,
 			       sizeof (name_array[0]));
     }
 }
@@ -251,17 +252,18 @@ name_add_name (const char *name, int matching_flags)
   struct name_elt *ep;
 
   check_name_alloc ();
-  ep = &name_array[names++];
+  ep = &name_array[entries++];
   if (prev_flags != matching_flags)
     {
       ep->type = NELT_FMASK;
       ep->v.matching_flags = matching_flags;
       prev_flags = matching_flags;
       check_name_alloc ();
-      ep = &name_array[names++];
+      ep = &name_array[entries++];
     }
   ep->type = NELT_NAME;
   ep->v.name = name;
+  name_count++;
 }
 
 /* Add to name_array a chdir request for the directory NAME */
@@ -270,7 +272,7 @@ name_add_dir (const char *name)
 {
   struct name_elt *ep;
   check_name_alloc ();
-  ep = &name_array[names++];
+  ep = &name_array[entries++];
   ep->type = NELT_CHDIR;
   ep->v.name = name;
 }
@@ -314,12 +316,12 @@ name_next_elt (int change_dirs)
   const char *source;
   char *cursor;
 
-  while (name_index != names)
+  while (scanned != entries)
     {
       struct name_elt *ep;
       size_t source_len;
 
-      ep = &name_array[name_index++];
+      ep = &name_array[scanned++];
       if (ep->type == NELT_FMASK)
 	{
 	  matching_flags = ep->v.matching_flags;
