@@ -80,10 +80,12 @@ struct delayed_link
     /* The next delayed link in the list.  */
     struct delayed_link *next;
 
-    /* The device, inode number and last-modified time of the placeholder.  */
+    /* The device, inode number and ctime of the placeholder.  Use
+       ctime, not mtime, to make false matches less likely if some
+       other process removes the placeholder.  */
     dev_t dev;
     ino_t ino;
-    struct timespec mtime;
+    struct timespec ctime;
 
     /* True if the link is symbolic.  */
     bool is_symlink;
@@ -924,7 +926,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
       delayed_link_head = p;
       p->dev = st.st_dev;
       p->ino = st.st_ino;
-      p->mtime = get_stat_mtime (&st);
+      p->ctime = get_stat_ctime (&st);
       p->is_symlink = is_symlink;
       if (is_symlink)
 	{
@@ -990,7 +992,7 @@ extract_link (char *file_name, int typeflag)
 	    for (; ds; ds = ds->next)
 	      if (ds->dev == st1.st_dev
 		  && ds->ino == st1.st_ino
-		  && timespec_cmp (ds->mtime, get_stat_mtime (&st1)) == 0)
+		  && timespec_cmp (ds->ctime, get_stat_ctime (&st1)) == 0)
 		{
 		  struct string_list *p =  xmalloc (offsetof (struct string_list, string)
 						    + strlen (file_name) + 1);
@@ -1347,7 +1349,7 @@ apply_delayed_links (void)
 	  if (lstat (source, &st) == 0
 	      && st.st_dev == ds->dev
 	      && st.st_ino == ds->ino
-	      && timespec_cmp (get_stat_mtime (&st), ds->mtime) == 0)
+	      && timespec_cmp (get_stat_ctime (&st), ds->ctime) == 0)
 	    {
 	      /* Unlink the placeholder, then create a hard link if possible,
 		 a symbolic link otherwise.  */
