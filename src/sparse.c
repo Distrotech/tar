@@ -217,43 +217,45 @@ sparse_scan_file (struct tar_sparse_file *file)
   struct tar_stat_info *st = file->stat_info;
   int fd = file->fd;
   char buffer[BLOCKSIZE];
-  size_t count;
+  size_t count = 0;
   off_t offset = 0;
   struct sp_array sp = {0, 0};
 
-  if (!lseek_or_error (file, 0))
-    return false;
-
   st->archive_file_size = 0;
 
-  if (!tar_sparse_scan (file, scan_begin, NULL))
-    return false;
-
-  while ((count = safe_read (fd, buffer, sizeof buffer)) != 0
-	 && count != SAFE_READ_ERROR)
+  if (ST_NBLOCKS (st->stat) == 0)
+    offset = st->stat.st_size;
+  else
     {
-      /* Analyze the block.  */
-      if (zero_block_p (buffer, count))
+      if (!tar_sparse_scan (file, scan_begin, NULL))
+	return false;
+
+      while ((count = safe_read (fd, buffer, sizeof buffer)) != 0
+	     && count != SAFE_READ_ERROR)
 	{
-	  if (sp.numbytes)
+	  /* Analyze the block.  */
+	  if (zero_block_p (buffer, count))
 	    {
-	      sparse_add_map (st, &sp);
-	      sp.numbytes = 0;
-	      if (!tar_sparse_scan (file, scan_block, NULL))
+	      if (sp.numbytes)
+		{
+		  sparse_add_map (st, &sp);
+		  sp.numbytes = 0;
+		  if (!tar_sparse_scan (file, scan_block, NULL))
+		    return false;
+		}
+	    }
+	  else
+	    {
+	      if (sp.numbytes == 0)
+		sp.offset = offset;
+	      sp.numbytes += count;
+	      st->archive_file_size += count;
+	      if (!tar_sparse_scan (file, scan_block, buffer))
 		return false;
 	    }
-	}
-      else
-	{
-	  if (sp.numbytes == 0)
-	    sp.offset = offset;
-	  sp.numbytes += count;
-	  st->archive_file_size += count;
-	  if (!tar_sparse_scan (file, scan_block, buffer))
-	    return false;
-	}
 
-      offset += count;
+	  offset += count;
+	}
     }
 
   if (sp.numbytes == 0)
