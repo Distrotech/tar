@@ -28,13 +28,15 @@ AT_SETUP([extracting symlinks to a read-only dir])
 AT_KEYWORDS([extract extract07 read-only symlink])
 
 AT_TAR_CHECK([
+AT_UNPRIVILEGED_PREREQ
+
 echo Prepare the directory
 mkdir dir
 genfile -f foo
 cd dir
 ln -s ../foo .
 cd ..
-chmod -w dir
+chmod a-w dir
 
 echo Create the archive
 tar cf archive dir || exit 1

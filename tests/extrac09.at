@@ -23,6 +23,8 @@ AT_SETUP([no need to save dir with unreadable . and ..])
 AT_KEYWORDS([extract extrac09])
 
 AT_TAR_CHECK([
+AT_UNPRIVILEGED_PREREQ
+
 mkdir dir
 mkdir dir/sub
 mkdir dir/sub/extract

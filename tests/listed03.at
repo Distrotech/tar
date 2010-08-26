@@ -23,6 +23,8 @@ AT_SETUP([incremental dump when the parent directory is unreadable])
 AT_KEYWORDS([listed incremental listed03])
 
 AT_TAR_CHECK([
+AT_UNPRIVILEGED_PREREQ
+
 mkdir dir
 mkdir dir/sub
 mkdir dir/sub/a
