@@ -712,16 +712,17 @@ chdir_arg (char const *dir)
   return wd_count++;
 }
 
+/* Index of current directory.  */
+int chdir_current;
+
 /* Change to directory I.  If I is 0, change to the initial working
    directory; otherwise, I must be a value returned by chdir_arg.  */
 void
 chdir_do (int i)
 {
-  static int previous;
-
-  if (previous != i)
+  if (chdir_current != i)
     {
-      struct wd *prev = &wd[previous];
+      struct wd *prev = &wd[chdir_current];
       struct wd *curr = &wd[i];
 
       if (prev->err < 0)
@@ -766,7 +767,7 @@ chdir_do (int i)
 	    chdir_fatal (curr->name);
 	}
 
-      previous = i;
+      chdir_current = i;
     }
 }
 

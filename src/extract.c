@@ -69,6 +69,7 @@ struct delayed_set_stat
     mode_t invert_permissions;
     enum permstatus permstatus;
     bool after_links;
+    int change_dir;
     char file_name[1];
   };
 
@@ -93,6 +94,9 @@ struct delayed_link
     /* The desired owner and group of the link, if it is a symlink.  */
     uid_t uid;
     gid_t gid;
+
+    /* The directory that the sources and target are relative to.  */
+    int change_dir;
 
     /* A list of sources for this link.  The sources are all to be
        hard-linked together.  */
@@ -373,6 +377,7 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
   data->invert_permissions = invert_permissions;
   data->permstatus = permstatus;
   data->after_links = 0;
+  data->change_dir = chdir_current;
   strcpy (data->file_name, file_name);
   delayed_set_stat_head = data;
 }
@@ -605,6 +610,8 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 		  || ISSLASH (file_name[data->file_name_len - 1]))
 	      && memcmp (file_name, data->file_name, data->file_name_len) == 0))
 	break;
+
+      chdir_do (data->change_dir);
 
       if (check_for_renamed_directories)
 	{
@@ -933,6 +940,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 	  p->uid = current_stat_info.stat.st_uid;
 	  p->gid = current_stat_info.stat.st_gid;
 	}
+      p->change_dir = chdir_current;
       p->sources = xmalloc (offsetof (struct string_list, string)
 			    + strlen (file_name) + 1);
       p->sources->next = 0;
@@ -990,7 +998,8 @@ extract_link (char *file_name, int typeflag)
 	  struct delayed_link *ds = delayed_link_head;
 	  if (ds && lstat (link_name, &st1) == 0)
 	    for (; ds; ds = ds->next)
-	      if (ds->dev == st1.st_dev
+	      if (ds->change_dir == chdir_current
+		  && ds->dev == st1.st_dev
 		  && ds->ino == st1.st_ino
 		  && timespec_cmp (ds->ctime, get_stat_ctime (&st1)) == 0)
 		{
@@ -1297,7 +1306,11 @@ extract_archive (void)
      it is an incremental archive.
      (see NOTICE in the comment to delay_set_stat above) */
   if (!delay_directory_restore_option)
-    apply_nonancestor_delayed_set_stat (current_stat_info.file_name, 0);
+    {
+      int dir = chdir_current;
+      apply_nonancestor_delayed_set_stat (current_stat_info.file_name, 0);
+      chdir_do (dir);
+    }
 
   /* Take a safety backup of a previously existing file.  */
 
@@ -1327,7 +1340,7 @@ extract_archive (void)
 
 }
 
-/* Extract the symbolic links whose final extraction were delayed.  */
+/* Extract the links whose final extraction were delayed.  */
 static void
 apply_delayed_links (void)
 {
@@ -1337,6 +1350,8 @@ apply_delayed_links (void)
     {
       struct string_list *sources = ds->sources;
       char const *valid_source = 0;
+
+      chdir_do (ds->change_dir);
 
       for (sources = ds->sources; sources; sources = sources->next)
 	{
