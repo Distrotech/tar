@@ -230,5 +230,6 @@ update_archive (void)
 
   write_eot ();
   close_archive ();
+  finish_deferred_unlinks ();
   names_notfound ();
 }
