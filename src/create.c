@@ -219,7 +219,7 @@ to_base256 (int negative, uintmax_t value, char *where, size_t size)
 #define MINOR_TO_CHARS(val, where) minor_to_chars (val, where, sizeof (where))
 #define MODE_TO_CHARS(val, where) mode_to_chars (val, where, sizeof (where))
 #define UID_TO_CHARS(val, where) uid_to_chars (val, where, sizeof (where))
-#define UINTMAX_TO_CHARS(val, where) uintmax_to_chars (val, where, sizeof (where))
+
 #define UNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 #define GNAME_TO_CHARS(name,buf) string_to_chars (name, buf, sizeof(buf))
 

@@ -43,7 +43,7 @@ enum children
 #define DIR_IS_INITED(d) ((d)->flags & DIRF_INIT)
 #define DIR_IS_NFS(d) ((d)->flags & DIRF_NFS)
 #define DIR_IS_FOUND(d) ((d)->flags & DIRF_FOUND)
-#define DIR_IS_NEW(d) ((d)->flags & DIRF_NEW)
+/* #define DIR_IS_NEW(d) ((d)->flags & DIRF_NEW) FIXME: not used */
 #define DIR_IS_RENAMED(d) ((d)->flags & DIRF_RENAMED)
 
 #define DIR_SET_FLAG(d,f) (d)->flags |= (f)
