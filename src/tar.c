@@ -1142,6 +1142,20 @@ add_file_id (const char *filename)
   file_id_list = p;
 }
 
+/* Default density numbers for [0-9][lmh] device specifications */
+
+#ifndef LOW_DENSITY_NUM
+# define LOW_DENSITY_NUM 0
+#endif
+
+#ifndef MID_DENSITY_NUM
+# define MID_DENSITY_NUM 8
+#endif
+
+#ifndef HIGH_DENSITY_NUM
+# define HIGH_DENSITY_NUM 16
+#endif
+
 static void
 update_argv (const char *filename, struct argp_state *state)
 {
