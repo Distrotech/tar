@@ -796,7 +796,7 @@ void checkpoint_run (bool do_write);
 /* The warnings composing WARN_VERBOSE_WARNINGS are enabled by default
    in verbose mode */
 #define WARN_VERBOSE_WARNINGS    (WARN_RENAME_DIRECTORY|WARN_NEW_DIRECTORY)
-#define WARN_ALL                 (0xffffffff & ~WARN_VERBOSE_WARNINGS)
+#define WARN_ALL                 (~WARN_VERBOSE_WARNINGS)
 
 void set_warning_option (const char *arg);
 
