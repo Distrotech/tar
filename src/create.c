@@ -39,7 +39,7 @@ struct exclusion_tag
   const char *name;
   size_t length;
   enum exclusion_tag_type type;
-  bool (*predicate) (const char *name);
+  bool (*predicate) (int fd);
   struct exclusion_tag *next;
 };
 
@@ -47,7 +47,7 @@ static struct exclusion_tag *exclusion_tags;
 
 void
 add_exclusion_tag (const char *name, enum exclusion_tag_type type,
-		   bool (*predicate) (const char *name))
+		   bool (*predicate) (int fd))
 {
   struct exclusion_tag *tag = xmalloc (sizeof tag[0]);
   tag->next = exclusion_tags;
@@ -72,38 +72,23 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 }
 
 enum exclusion_tag_type
-check_exclusion_tags (const char *dirname, const char **tag_file_name)
+check_exclusion_tags (int fd, char const **tag_file_name)
 {
-  static char *tagname;
-  static size_t tagsize;
   struct exclusion_tag *tag;
-  size_t dlen = strlen (dirname);
-  int addslash = !ISSLASH (dirname[dlen-1]);
-  size_t noff = 0;
 
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
-      size_t size = dlen + addslash + tag->length + 1;
-      if (size > tagsize)
+      int tagfd = openat (fd, tag->name, open_read_flags);
+      if (0 <= tagfd)
 	{
-	  tagsize = size;
-	  tagname = xrealloc (tagname, tagsize);
-	}
-
-      if (noff == 0)
-	{
-	  strcpy (tagname, dirname);
-	  noff = dlen;
-	  if (addslash)
-	    tagname[noff++] = '/';
-	}
-      strcpy (tagname + noff, tag->name);
-      if (access (tagname, F_OK) == 0
-	  && (!tag->predicate || tag->predicate (tagname)))
-	{
-	  if (tag_file_name)
-	    *tag_file_name = tag->name;
-	  return tag->type;
+	  bool satisfied = !tag->predicate || tag->predicate (tagfd);
+	  close (tagfd);
+	  if (satisfied)
+	    {
+	      if (tag_file_name)
+		*tag_file_name = tag->name;
+	      return tag->type;
+	    }
 	}
     }
 
@@ -121,22 +106,13 @@ check_exclusion_tags (const char *dirname, const char **tag_file_name)
 #define CACHEDIR_SIGNATURE_SIZE (sizeof CACHEDIR_SIGNATURE - 1)
 
 bool
-cachedir_file_p (const char *name)
+cachedir_file_p (int fd)
 {
-  bool tag_present = false;
-  int fd = open (name, O_RDONLY);
-  if (fd >= 0)
-    {
-      static char tagbuf[CACHEDIR_SIGNATURE_SIZE];
+  char tagbuf[CACHEDIR_SIGNATURE_SIZE];
 
-      if (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE)
-	  == CACHEDIR_SIGNATURE_SIZE
-	  && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0)
-	tag_present = true;
-
-      close (fd);
-    }
-  return tag_present;
+  return
+    (read (fd, tagbuf, CACHEDIR_SIGNATURE_SIZE) == CACHEDIR_SIGNATURE_SIZE
+     && memcmp (tagbuf, CACHEDIR_SIGNATURE, CACHEDIR_SIGNATURE_SIZE) == 0);
 }
 
 
@@ -482,7 +458,9 @@ string_to_chars (char const *str, char *p, size_t s)
 }
 
 
-/* A file is considered dumpable if it is sparse and both --sparse and --totals
+/* A directory is always considered dumpable.
+   Otherwise, only regular and contiguous files are considered dumpable.
+   Such a file is dumpable if it is sparse and both --sparse and --totals
    are specified.
    Otherwise, it is dumpable unless any of the following conditions occur:
 
@@ -490,12 +468,15 @@ string_to_chars (char const *str, char *p, size_t s)
    b) current archive is /dev/null */
 
 static bool
-file_dumpable_p (struct tar_stat_info *st)
+file_dumpable_p (struct stat const *st)
 {
+  if (S_ISDIR (st->st_mode))
+    return true;
+  if (! (S_ISREG (st->st_mode) || S_ISCTG (st->st_mode)))
+    return false;
   if (dev_null_output)
-    return totals_option && sparse_option && ST_IS_SPARSE (st->stat);
-  return !(st->archive_file_size == 0
-	   && (st->stat.st_mode & MODE_R) == MODE_R);
+    return totals_option && sparse_option && ST_IS_SPARSE (*st);
+  return ! (st->st_size == 0 && (st->st_mode & MODE_R) == MODE_R);
 }
 
 
@@ -1089,11 +1070,13 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 }
 
 
+/* Copy info from the directory identified by ST into the archive.
+   DIRECTORY contains the directory's entries.  */
+
 static void
-dump_dir0 (char *directory,
-	   struct tar_stat_info *st, bool top_level, dev_t parent_device)
+dump_dir0 (struct tar_stat_info *st, char const *directory)
 {
-  dev_t our_device = st->stat.st_dev;
+  bool top_level = ! st->parent;
   const char *tag_file_name;
   union block *blk = NULL;
   off_t block_ordinal = current_block_ordinal ();
@@ -1163,7 +1146,7 @@ dump_dir0 (char *directory,
 
   if (one_file_system_option
       && !top_level
-      && parent_device != st->stat.st_dev)
+      && st->parent->stat.st_dev != st->stat.st_dev)
     {
       if (verbose_option)
 	WARNOPT (WARN_XDEV,
@@ -1176,7 +1159,7 @@ dump_dir0 (char *directory,
       char *name_buf;
       size_t name_size;
 
-      switch (check_exclusion_tags (st->orig_file_name, &tag_file_name))
+      switch (check_exclusion_tags (st->fd, &tag_file_name))
 	{
 	case exclusion_tag_all:
 	  /* Handled in dump_file0 */
@@ -1192,7 +1175,6 @@ dump_dir0 (char *directory,
 	    name_size = name_len = strlen (name_buf);
 
 	    /* Now output all the files in the directory.  */
-	    /* FIXME: Should speed this up by cd-ing into the dir.  */
 	    for (entry = directory; (entry_len = strlen (entry)) != 0;
 		 entry += entry_len + 1)
 	      {
@@ -1203,7 +1185,7 @@ dump_dir0 (char *directory,
 		  }
 		strcpy (name_buf + name_len, entry);
 		if (!excluded_name (name_buf))
-		  dump_file (name_buf, false, our_device);
+		  dump_file (st, entry, name_buf);
 	      }
 
 	    free (name_buf);
@@ -1217,7 +1199,7 @@ dump_dir0 (char *directory,
 	  name_buf = xmalloc (name_size);
 	  strcpy (name_buf, st->orig_file_name);
 	  strcat (name_buf, tag_file_name);
-	  dump_file (name_buf, false, our_device);
+	  dump_file (st, tag_file_name, name_buf);
 	  free (name_buf);
 	  break;
 
@@ -1243,17 +1225,27 @@ ensure_slash (char **pstr)
 }
 
 static bool
-dump_dir (int fd, struct tar_stat_info *st, bool top_level,
-	  dev_t parent_device)
+dump_dir (struct tar_stat_info *st)
 {
-  char *directory = fdsavedir (fd);
-  if (!directory)
+  char *directory = 0;
+  int dupfd = dup (st->fd);
+  if (0 <= dupfd)
+    {
+      directory = fdsavedir (dupfd);
+      if (! directory)
+	{
+	  int e = errno;
+	  close (dupfd);
+	  errno = e;
+	}
+    }
+  if (! directory)
     {
       savedir_diag (st->orig_file_name);
       return false;
     }
 
-  dump_dir0 (directory, st, top_level, parent_device);
+  dump_dir0 (st, directory);
 
   free (directory);
   return true;
@@ -1288,12 +1280,13 @@ create_archive (void)
 
       while ((p = name_from_list ()) != NULL)
 	if (!excluded_name (p->name))
-	  dump_file (p->name, p->cmdline, (dev_t) 0);
+	  dump_file (0, p->name, p->name);
 
       blank_name_list ();
       while ((p = name_from_list ()) != NULL)
 	if (!excluded_name (p->name))
 	  {
+	    struct tar_stat_info st;
 	    size_t plen = strlen (p->name);
 	    if (buffer_size <= plen)
 	      {
@@ -1304,6 +1297,7 @@ create_archive (void)
 	    memcpy (buffer, p->name, plen);
 	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = DIRECTORY_SEPARATOR;
+	    tar_stat_init (&st);
 	    q = directory_contents (gnu_list_name->directory);
 	    if (q)
 	      while (*q)
@@ -1311,6 +1305,24 @@ create_archive (void)
 		  size_t qlen = strlen (q);
 		  if (*q == 'Y')
 		    {
+		      if (! st.orig_file_name)
+			{
+			  st.orig_file_name = xstrdup (p->name);
+			  st.fd = open (st.orig_file_name,
+					((open_read_flags - O_RDONLY
+					  + O_SEARCH)
+					 | O_DIRECTORY));
+			  if (st.fd < 0)
+			    {
+			      open_diag (p->name);
+			      break;
+			    }
+			  if (fstat (st.fd, &st.stat) != 0)
+			    {
+			      stat_diag (p->name);
+			      break;
+			    }
+			}
 		      if (buffer_size < plen + qlen)
 			{
 			  while ((buffer_size *=2 ) < plen + qlen)
@@ -1318,10 +1330,11 @@ create_archive (void)
 			  buffer = xrealloc (buffer, buffer_size);
  			}
 		      strcpy (buffer + plen, q + 1);
-		      dump_file (buffer, false, (dev_t) 0);
+		      dump_file (&st, q + 1, buffer);
 		    }
 		  q += qlen + 1;
 		}
+	    tar_stat_destroy (&st);
 	  }
       free (buffer);
     }
@@ -1330,7 +1343,7 @@ create_archive (void)
       const char *name;
       while ((name = name_next (1)) != NULL)
 	if (!excluded_name (name))
-	  dump_file (name, true, (dev_t) 0);
+	  dump_file (0, name, name);
     }
 
   write_eot ();
@@ -1479,18 +1492,15 @@ check_links (void)
     }
 }
 
-/* Dump a single file, recursing on directories.  P is the file name
-   to dump.  TOP_LEVEL tells whether this is a top-level call; zero
-   means no, positive means yes, and negative means the top level
-   of an incremental dump.  PARENT_DEVICE is the device of P's
-   parent directory; it is examined only if TOP_LEVEL is zero. */
+/* Dump a single file, recursing on directories.  ST is the file's
+   status info, NAME its name relative to the parent directory, and P
+   its full name (which may be relative to the working directory).  */
 
 /* FIXME: One should make sure that for *every* path leading to setting
    exit_status to failure, a clear diagnostic has been issued.  */
 
 static void
-dump_file0 (struct tar_stat_info *st, const char *p,
-	    bool top_level, dev_t parent_device)
+dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 {
   union block *header;
   char type;
@@ -1498,7 +1508,11 @@ dump_file0 (struct tar_stat_info *st, const char *p,
   struct timespec original_ctime;
   struct timespec restore_times[2];
   off_t block_ordinal = -1;
+  int fd = -1;
   bool is_dir;
+  bool top_level = ! st->parent;
+  int parentfd = top_level ? AT_FDCWD : st->parent->fd;
+  void (*diag) (char const *) = 0;
 
   if (interactive_option && !confirm ("add", p))
     return;
@@ -1509,11 +1523,22 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
   transform_name (&st->file_name, XFORM_REGFILE);
 
-  if (deref_stat (dereference_option, p, &st->stat) != 0)
+  if (fstatat (parentfd, name, &st->stat, fstatat_flags) != 0)
+    diag = stat_diag;
+  else if (file_dumpable_p (&st->stat))
     {
-      file_removed_diag (p, top_level, stat_diag);
+      fd = st->fd = openat (parentfd, name, open_read_flags);
+      if (fd < 0)
+	diag = open_diag;
+      else if (fstat (fd, &st->stat) != 0)
+	diag = stat_diag;
+    }
+  if (diag)
+    {
+      file_removed_diag (p, top_level, diag);
       return;
     }
+
   st->archive_file_size = original_size = st->stat.st_size;
   st->atime = restore_times[0] = get_stat_atime (&st->stat);
   st->mtime = restore_times[1] = get_stat_mtime (&st->stat);
@@ -1567,23 +1592,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
   if (is_dir || S_ISREG (st->stat.st_mode) || S_ISCTG (st->stat.st_mode))
     {
       bool ok;
-      int fd = -1;
       struct stat final_stat;
-
-      if (is_dir || file_dumpable_p (st))
-	{
-	  fd = open (p,
-		     (O_RDONLY | O_BINARY
-		      | (is_dir ? O_DIRECTORY | O_NONBLOCK : 0)
-		      | (atime_preserve_option == system_atime_preserve
-			 ? O_NOATIME
-			 : 0)));
-	  if (fd < 0)
-	    {
-	      file_removed_diag (p, top_level, open_diag);
-	      return;
-	    }
-	}
 
       if (is_dir)
 	{
@@ -1591,21 +1600,14 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	  ensure_slash (&st->orig_file_name);
 	  ensure_slash (&st->file_name);
 
-	  if (check_exclusion_tags (st->orig_file_name, &tag_file_name)
-	      == exclusion_tag_all)
+	  if (check_exclusion_tags (fd, &tag_file_name) == exclusion_tag_all)
 	    {
 	      exclusion_tag_warning (st->orig_file_name, tag_file_name,
 				     _("directory not dumped"));
-	      if (fd >= 0)
-		close (fd);
 	      return;
 	    }
 
-	  ok = dump_dir (fd, st, top_level, parent_device);
-
-	  /* dump_dir consumes FD if successful.  */
-	  if (ok)
-	    fd = -1;
+	  ok = dump_dir (st);
 	}
       else
 	{
@@ -1639,15 +1641,8 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 
       if (ok)
 	{
-	  /* If possible, reopen a directory if we are preserving
-	     atimes, so that we can set just the atime on systems with
-	     _FIOSATIME.  */
-	  if (fd < 0 && is_dir
-	      && atime_preserve_option == replace_atime_preserve)
-	    fd = open (p, O_RDONLY | O_BINARY | O_DIRECTORY | O_NONBLOCK);
-
 	  if ((fd < 0
-	       ? deref_stat (dereference_option, p, &final_stat)
+	       ? fstatat (parentfd, name, &final_stat, fstatat_flags)
 	       : fstat (fd, &final_stat))
 	      != 0)
 	    {
@@ -1674,10 +1669,14 @@ dump_file0 (struct tar_stat_info *st, const char *p,
 	    utime_error (p);
 	}
 
-      if (0 <= fd && close (fd) != 0)
+      if (0 < fd)
 	{
-	  close_diag (p);
-	  ok = false;
+	  if (close (fd) != 0)
+	    {
+	      close_diag (p);
+	      ok = false;
+	    }
+	  st->fd = 0;
 	}
 
       if (ok && remove_files_option)
@@ -1694,7 +1693,7 @@ dump_file0 (struct tar_stat_info *st, const char *p,
       if (linklen != st->stat.st_size || linklen + 1 == 0)
 	xalloc_die ();
       buffer = (char *) alloca (linklen + 1);
-      size = readlink (p, buffer, linklen + 1);
+      size = readlinkat (parentfd, name, buffer, linklen + 1);
       if (size < 0)
 	{
 	  file_removed_diag (p, top_level, readlink_diag);
@@ -1773,13 +1772,20 @@ dump_file0 (struct tar_stat_info *st, const char *p,
     queue_deferred_unlink (p, false);
 }
 
+/* Dump a file, recursively.  PARENT describes the file's parent
+   directory, NAME is the file's name relative to PARENT, and FULLNAME
+   its full name, possibly relative to the working directory.  NAME
+   may contain slashes at the top level of invocation.  */
+
 void
-dump_file (const char *p, bool top_level, dev_t parent_device)
+dump_file (struct tar_stat_info *parent, char const *name,
+	   char const *fullname)
 {
   struct tar_stat_info st;
   tar_stat_init (&st);
-  dump_file0 (&st, p, top_level, parent_device);
-  if (listed_incremental_option)
-    update_parent_directory (p);
+  st.parent = parent;
+  dump_file0 (&st, name, fullname);
+  if (parent && listed_incremental_option)
+    update_parent_directory (parent);
   tar_stat_destroy (&st);
 }

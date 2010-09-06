@@ -2465,6 +2465,14 @@ decode_options (int argc, char **argv)
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
 
+  /* Flags for accessing files to be copied into.  POSIX says
+     O_NONBLOCK has unspecified effect on most types of files, but in
+     practice it never harms and sometimes helps.  */
+  open_read_flags =
+    (O_RDONLY | O_BINARY | O_NOCTTY | O_NONBLOCK
+     | (dereference_option ? 0 : O_NOFOLLOW)
+     | (atime_preserve_option == system_atime_preserve ? O_NOATIME : 0));
+  fstatat_flags = dereference_option ? 0 : AT_SYMLINK_NOFOLLOW;
 
   if (subcommand_option == TEST_LABEL_SUBCOMMAND)
     {
@@ -2686,6 +2694,8 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->gname);
   free (st->sparse_map);
   free (st->dumpdir);
+  if (0 < st->fd)
+    close (st->fd);
   xheader_destroy (&st->xhdr);
   memset (st, 0, sizeof (*st));
 }

@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2010-07-16
+GNU tar NEWS - User visible changes. 2010-09-06
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -10,6 +10,14 @@ New command line option `--full-time' instructs tar to output file
 time stamps to the full resolution.
 
 * Bugfixes.
+
+** More reliable directory traversal when creating archives
+
+Tar now checks for inconsistencies caused when a file system is
+modified while tar is creating an archive.  The new checks are
+implemented via the openat, fstatat, and readlinkat calls standardized
+by POSIX.1-2008.  On an older system that lacks these calls, tar
+emulates them at some cost in efficiency and reliability.
 
 ** Spurious error diagnostics on broken pipe.
 

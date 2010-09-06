@@ -357,6 +357,10 @@ struct name
 GLOBAL dev_t ar_dev;
 GLOBAL ino_t ar_ino;
 
+/* Flags for reading and fstatatting arbitrary files.  */
+GLOBAL int open_read_flags;
+GLOBAL int fstatat_flags;
+
 GLOBAL int seek_option;
 GLOBAL bool seekable_archive;
 
@@ -446,12 +450,13 @@ enum dump_status
   };
 
 void add_exclusion_tag (const char *name, enum exclusion_tag_type type,
-			bool (*)(const char*));
-bool cachedir_file_p (const char *name);
+			bool (*predicate) (int));
+bool cachedir_file_p (int fd);
 
 void create_archive (void);
 void pad_archive (off_t size_left);
-void dump_file (const char *st, bool top_level, dev_t parent_device);
+void dump_file (struct tar_stat_info *parent, char const *name,
+		char const *fullname);
 union block *start_header (struct tar_stat_info *st);
 void finish_header (struct tar_stat_info *st, union block *header,
 		    off_t block_ordinal);
@@ -463,7 +468,7 @@ void write_eot (void);
 void check_links (void);
 void exclusion_tag_warning (const char *dirname, const char *tagname,
 			    const char *message);
-enum exclusion_tag_type check_exclusion_tags (const char *dirname,
+enum exclusion_tag_type check_exclusion_tags (int dirfd,
 					      const char **tag_file_name);
 
 #define OFF_TO_CHARS(val, where) off_to_chars (val, where, sizeof (where))
@@ -493,8 +498,7 @@ void delete_archive_members (void);
 
 /* Module incremen.c.  */
 
-struct directory *scan_directory (char *dir, dev_t device, bool cmdline);
-void name_fill_directory (struct name *name, dev_t device, bool cmdline);
+struct directory *scan_directory (struct tar_stat_info *st);
 const char *directory_contents (struct directory *dir);
 const char *safe_directory_contents (struct directory *dir);
 
@@ -507,7 +511,7 @@ void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *directory_name);
 void list_dumpdir (char *buffer, size_t size);
-void update_parent_directory (const char *name);
+void update_parent_directory (struct tar_stat_info *st);
 
 size_t dumpdir_size (const char *p);
 bool is_dumpdir (struct tar_stat_info *stat_info);

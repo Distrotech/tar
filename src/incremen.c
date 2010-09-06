@@ -402,26 +402,17 @@ find_directory_meta (dev_t dev, ino_t ino)
 }
 
 void
-update_parent_directory (const char *name)
+update_parent_directory (struct tar_stat_info *parent)
 {
-  struct directory *directory;
-  char *p;
-
-  p = dir_name (name);
-  directory = find_directory (p);
+  struct directory *directory = find_directory (parent->orig_file_name);
   if (directory)
     {
       struct stat st;
-      if (deref_stat (dereference_option, p, &st) != 0)
-	{
-	  if (errno != ENOENT)
-	    stat_diag (directory->name);
-	  /* else: should have been already reported */
-	}
+      if (fstatat (parent->fd, ".", &st, fstatat_flags) != 0)
+	stat_diag (directory->name);
       else
 	directory->mtime = get_stat_mtime (&st);
     }
-  free (p);
 }
 
 #define PD_FORCE_CHILDREN 0x10
@@ -429,12 +420,14 @@ update_parent_directory (const char *name)
 #define PD_CHILDREN(f) ((f) & 3)
 
 static struct directory *
-procdir (const char *name_buffer, struct stat *stat_data,
-	 dev_t device,
+procdir (const char *name_buffer, struct tar_stat_info *st,
 	 int flag,
 	 char *entry)
 {
   struct directory *directory;
+  struct stat *stat_data = &st->stat;
+  int fd = st->fd;
+  dev_t device = st->parent ? st->parent->stat.st_dev : 0;
   bool nfs = NFS_FILE_STAT (*stat_data);
 
   if ((directory = find_directory (name_buffer)) != NULL)
@@ -573,7 +566,7 @@ procdir (const char *name_buffer, struct stat *stat_data,
     {
       const char *tag_file_name;
 
-      switch (check_exclusion_tags (name_buffer, &tag_file_name))
+      switch (check_exclusion_tags (fd, &tag_file_name))
 	{
 	case exclusion_tag_all:
 	  /* This warning can be duplicated by code in dump_file0, but only
@@ -682,21 +675,31 @@ makedumpdir (struct directory *directory, const char *dir)
   free (array);
 }
 
-/* Recursively scan the given directory DIR.
-   DEVICE is the device number where DIR resides (for --one-file-system).
-   If CMDLINE is true, the directory name was explicitly listed in the
-   command line.
-   Unless *PDIR is NULL, store there a pointer to the struct directory
-   describing DIR. */
+/* Recursively scan the directory identified by ST.  */
 struct directory *
-scan_directory (char *dir, dev_t device, bool cmdline)
+scan_directory (struct tar_stat_info *st)
 {
-  char *dirp = savedir (dir);	/* for scanning directory */
+  char const *dir = st->orig_file_name;
+  int fd = st->fd;
+  char *dirp = 0;
+  dev_t device = st->stat.st_dev;
+  bool cmdline = ! st->parent;
   namebuf_t nbuf;
   char *tmp;
-  struct stat stat_data;
   struct directory *directory;
   char ch;
+
+  int dupfd = dup (fd);
+  if (0 <= dupfd)
+    {
+      dirp = fdsavedir (dupfd);
+      if (! dirp)
+	{
+	  int e = errno;
+	  close (dupfd);
+	  errno = e;
+	}
+    }
 
   if (! dirp)
     savedir_error (dir);
@@ -704,15 +707,7 @@ scan_directory (char *dir, dev_t device, bool cmdline)
   tmp = xstrdup (dir);
   zap_slashes (tmp);
 
-  if (deref_stat (dereference_option, tmp, &stat_data))
-    {
-      dir_removed_diag (tmp, cmdline, stat_diag);
-      free (tmp);
-      free (dirp);
-      return NULL;
-    }
-
-  directory = procdir (tmp, &stat_data, device,
+  directory = procdir (tmp, st,
 		       (cmdline ? PD_FORCE_INIT : 0),
 		       &ch);
 
@@ -739,14 +734,27 @@ scan_directory (char *dir, dev_t device, bool cmdline)
 	    *entry = 'N';
 	  else
 	    {
-	      if (deref_stat (dereference_option, full_name, &stat_data))
+	      void (*diag) (char const *) = 0;
+	      struct tar_stat_info stsub;
+	      tar_stat_init (&stsub);
+
+	      if (fstatat (fd, entry + 1, &stsub.stat, fstatat_flags) != 0)
+		diag = stat_diag;
+	      else if (S_ISDIR (stsub.stat.st_mode))
 		{
-		  file_removed_diag (full_name, false, stat_diag);
-		  *entry = 'N';
-		  continue;
+		  stsub.fd = openat (fd, entry + 1, open_read_flags);
+		  if (stsub.fd < 0)
+		    diag = open_diag;
+		  else if (fstat (stsub.fd, &stsub.stat) != 0)
+		    diag = stat_diag;
 		}
 
-	      if (S_ISDIR (stat_data.st_mode))
+	      if (diag)
+		{
+		  file_removed_diag (full_name, false, diag);
+		  *entry = 'N';
+		}
+	      else if (S_ISDIR (stsub.stat.st_mode))
 		{
 		  int pd_flag = 0;
 		  if (!recursion_option)
@@ -754,23 +762,21 @@ scan_directory (char *dir, dev_t device, bool cmdline)
 		  else if (directory->children == ALL_CHILDREN)
 		    pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
 		  *entry = 'D';
-		  procdir (full_name, &stat_data, device, pd_flag, entry);
+		  procdir (full_name, &stsub, pd_flag, entry);
 		}
-
-	      else if (one_file_system_option && device != stat_data.st_dev)
+	      else if (one_file_system_option && device != stsub.stat.st_dev)
 		*entry = 'N';
-
 	      else if (*entry == 'Y')
 		/* New entry, skip further checks */;
-
 	      /* FIXME: if (S_ISHIDDEN (stat_data.st_mode))?? */
-
-	      else if (OLDER_STAT_TIME (stat_data, m)
+	      else if (OLDER_STAT_TIME (stsub.stat, m)
 		       && (!after_date_option
-			   || OLDER_STAT_TIME (stat_data, c)))
+			   || OLDER_STAT_TIME (stsub.stat, c)))
 		*entry = 'N';
 	      else
 		*entry = 'Y';
+
+	      tar_stat_destroy (&stsub);
 	    }
 	}
       free (itr);
@@ -799,12 +805,6 @@ safe_directory_contents (struct directory *dir)
 {
   const char *ret = directory_contents (dir);
   return ret ? ret : "\0\0\0\0";
-}
-
-void
-name_fill_directory (struct name *name, dev_t device, bool cmdline)
-{
-  name->directory = scan_directory (name->name, device, cmdline);
 }
 
 

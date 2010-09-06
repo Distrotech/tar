@@ -32,10 +32,12 @@ localcharset
 mkdtemp
 modechange
 obstack
+openat
 priv-set
 progname
 quote
 quotearg
+readlinkat
 rpmatch
 safe-read
 save-cwd

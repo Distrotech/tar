@@ -317,6 +317,18 @@ struct tar_stat_info
   bool skipped;             /* The member contents is already read
 			       (for GNUTYPE_DUMPDIR) */
   char *dumpdir;            /* Contents of the dump directory */
+
+  /* Parent directory, if creating an archive.  This is null if the
+     file is at the top level.  */
+  struct tar_stat_info *parent;
+
+  /* File descriptor, if creating an archive, and if a directory or a
+     regular file or a contiguous file.  This is AT_FDCWD if it is the
+     working directory, which is possible only for a dummy parent node
+     just above the top level.  It may be -1 if the file could not be
+     opened.  Zero represents an otherwise-uninitialized value;
+     standard input is never used here.  */
+  int fd;
 };
 
 union block

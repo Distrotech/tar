@@ -781,17 +781,15 @@ compare_names (struct name const *n1, struct name const *n2)
 }
 
 
-/* Add all the dirs under NAME, which names a directory, to the namelist.
-   If any of the files is a directory, recurse on the subdirectory.
-   DEVICE is the device not to leave, if the -l option is specified.
-   CMDLINE is true, if the NAME appeared on the command line. */
+/* Add all the dirs under ST to the namelist NAME, descending the
+   directory hierarchy recursively.  */
 
 static void
-add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
+add_hierarchy_to_namelist (struct tar_stat_info *st, struct name *name)
 {
   const char *buffer;
 
-  name_fill_directory (name, device, cmdline);
+  name->directory = scan_directory (st);
   buffer = directory_contents (name->directory);
   if (buffer)
     {
@@ -819,6 +817,7 @@ add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 	  if (*string == 'D')
 	    {
 	      struct name *np;
+	      struct tar_stat_info subdir;
 
 	      if (allocated_length <= name_length + string_length)
 		{
@@ -839,7 +838,27 @@ add_hierarchy_to_namelist (struct name *name, dev_t device, bool cmdline)
 	      else
 		child_tail->sibling = np;
 	      child_tail = np;
-	      add_hierarchy_to_namelist (np, device, false);
+
+	      tar_stat_init (&subdir);
+	      subdir.parent = st;
+	      subdir.fd = openat (st->fd, string + 1,
+				  open_read_flags | O_DIRECTORY);
+	      if (subdir.fd < 0)
+		open_diag (namebuf);
+	      else if (fstat (subdir.fd, &subdir.stat) != 0)
+		stat_diag (namebuf);
+	      else if (! (O_DIRECTORY || S_ISDIR (subdir.stat.st_mode)))
+		{
+		  errno = ENOTDIR;
+		  open_diag (namebuf);
+		}
+	      else
+		{
+		  subdir.orig_file_name = xstrdup (namebuf);
+		  add_hierarchy_to_namelist (&subdir, np);
+		}
+
+	      tar_stat_destroy (&subdir);
 	    }
 	}
 
@@ -902,7 +921,6 @@ collect_and_sort_names (void)
   struct name *name;
   struct name *next_name, *prev_name = NULL;
   int num_names;
-  struct stat statbuf;
   Hash_table *nametab;
 
   name_gather ();
@@ -936,6 +954,8 @@ collect_and_sort_names (void)
   num_names = 0;
   for (name = namelist; name; name = name->next, num_names++)
     {
+      struct tar_stat_info st;
+
       if (name->found_count || name->directory)
 	continue;
       if (name->matching_flags & EXCLUDE_WILDCARDS)
@@ -947,16 +967,29 @@ collect_and_sort_names (void)
       if (name->name[0] == 0)
 	continue;
 
-      if (deref_stat (dereference_option, name->name, &statbuf) != 0)
+      tar_stat_init (&st);
+
+      if (deref_stat (dereference_option, name->name, &st.stat) != 0)
 	{
 	  stat_diag (name->name);
 	  continue;
 	}
-      if (S_ISDIR (statbuf.st_mode))
+      if (S_ISDIR (st.stat.st_mode))
 	{
-	  name->found_count++;
-	  add_hierarchy_to_namelist (name, statbuf.st_dev, true);
+	  st.fd = open (name->name, open_read_flags | O_DIRECTORY);
+	  if (st.fd < 0)
+	    open_diag (name->name);
+	  else if (fstat (st.fd, &st.stat) != 0)
+	    stat_diag (name->name);
+	  else if (O_DIRECTORY || S_ISDIR (st.stat.st_mode))
+	    {
+	      st.orig_file_name = xstrdup (name->name);
+	      name->found_count++;
+	      add_hierarchy_to_namelist (&st, name);
+	    }
 	}
+
+      tar_stat_destroy (&st);
     }
 
   namelist = merge_sort (namelist, num_names, compare_names);

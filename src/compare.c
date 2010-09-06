@@ -217,12 +217,7 @@ diff_file (void)
 	}
       else
 	{
-	  int atime_flag =
-	    (atime_preserve_option == system_atime_preserve
-	     ? O_NOATIME
-	     : 0);
-
-	  diff_handle = open (file_name, O_RDONLY | O_BINARY | atime_flag);
+	  diff_handle = open (file_name, open_read_flags);
 
 	  if (diff_handle < 0)
 	    {
@@ -379,8 +374,7 @@ diff_dumpdir (void)
   else
     dev = stat_data.st_dev;
 
-  dumpdir_buffer = directory_contents
-                    (scan_directory (current_stat_info.file_name, dev, false));
+  dumpdir_buffer = directory_contents (scan_directory (&current_stat_info));
 
   if (dumpdir_buffer)
     {
@@ -422,7 +416,7 @@ diff_multivol (void)
       return;
     }
 
-  fd = open (current_stat_info.file_name, O_RDONLY | O_BINARY);
+  fd = open (current_stat_info.file_name, open_read_flags);
 
   if (fd < 0)
     {

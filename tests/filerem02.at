@@ -39,10 +39,10 @@ genfile --run --checkpoint=3 --exec 'rm -rf dir2' -- \
 ],
 [2],
 [ignore],
-[tar: dir2: Cannot stat: No such file or directory
-tar: dir2/file1: File removed before we read it
-tar: Exiting with failure status due to previous errors
-],[],[],[gnu, posix])
+[ignore],[],[],[gnu, posix])
+
+# Ignore stdout and stderr because their contents depend on
+# the file system implementation.
 
 # Timing information: see filerem01.at
 
