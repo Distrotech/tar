@@ -426,7 +426,6 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 {
   struct directory *directory;
   struct stat *stat_data = &st->stat;
-  int fd = st->fd;
   dev_t device = st->parent ? st->parent->stat.st_dev : 0;
   bool nfs = NFS_FILE_STAT (*stat_data);
 
@@ -566,7 +565,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
     {
       const char *tag_file_name;
 
-      switch (check_exclusion_tags (fd, &tag_file_name))
+      switch (check_exclusion_tags (st, &tag_file_name))
 	{
 	case exclusion_tag_all:
 	  /* This warning can be duplicated by code in dump_file0, but only
@@ -680,26 +679,13 @@ struct directory *
 scan_directory (struct tar_stat_info *st)
 {
   char const *dir = st->orig_file_name;
-  int fd = st->fd;
-  char *dirp = 0;
+  char *dirp = get_directory_entries (st);
   dev_t device = st->stat.st_dev;
   bool cmdline = ! st->parent;
   namebuf_t nbuf;
   char *tmp;
   struct directory *directory;
   char ch;
-
-  int dupfd = dup (fd);
-  if (0 <= dupfd)
-    {
-      dirp = fdsavedir (dupfd);
-      if (! dirp)
-	{
-	  int e = errno;
-	  close (dupfd);
-	  errno = e;
-	}
-    }
 
   if (! dirp)
     savedir_error (dir);
@@ -734,19 +720,29 @@ scan_directory (struct tar_stat_info *st)
 	    *entry = 'N';
 	  else
 	    {
+	      int fd = st->fd;
 	      void (*diag) (char const *) = 0;
 	      struct tar_stat_info stsub;
 	      tar_stat_init (&stsub);
 
-	      if (fstatat (fd, entry + 1, &stsub.stat, fstatat_flags) != 0)
+	      if (fd < 0)
+		{
+		  errno = - fd;
+		  diag = open_diag;
+		}
+	      else if (fstatat (fd, entry + 1, &stsub.stat, fstatat_flags) != 0)
 		diag = stat_diag;
 	      else if (S_ISDIR (stsub.stat.st_mode))
 		{
-		  stsub.fd = openat (fd, entry + 1, open_read_flags);
-		  if (stsub.fd < 0)
+		  int subfd = subfile_open (st, entry + 1, open_read_flags);
+		  if (subfd < 0)
 		    diag = open_diag;
-		  else if (fstat (stsub.fd, &stsub.stat) != 0)
-		    diag = stat_diag;
+		  else
+		    {
+		      stsub.fd = subfd;
+		      if (fstat (subfd, &stsub.stat) != 0)
+			diag = stat_diag;
+		    }
 		}
 
 	      if (diag)
@@ -762,7 +758,10 @@ scan_directory (struct tar_stat_info *st)
 		  else if (directory->children == ALL_CHILDREN)
 		    pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
 		  *entry = 'D';
+
+		  stsub.parent = st;
 		  procdir (full_name, &stsub, pd_flag, entry);
+		  restore_parent_fd (&stsub);
 		}
 	      else if (one_file_system_option && device != stsub.stat.st_dev)
 		*entry = 'N';

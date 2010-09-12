@@ -818,6 +818,7 @@ add_hierarchy_to_namelist (struct tar_stat_info *st, struct name *name)
 	    {
 	      struct name *np;
 	      struct tar_stat_info subdir;
+	      int subfd;
 
 	      if (allocated_length <= name_length + string_length)
 		{
@@ -841,21 +842,32 @@ add_hierarchy_to_namelist (struct tar_stat_info *st, struct name *name)
 
 	      tar_stat_init (&subdir);
 	      subdir.parent = st;
-	      subdir.fd = openat (st->fd, string + 1,
-				  open_read_flags | O_DIRECTORY);
-	      if (subdir.fd < 0)
-		open_diag (namebuf);
-	      else if (fstat (subdir.fd, &subdir.stat) != 0)
-		stat_diag (namebuf);
-	      else if (! (O_DIRECTORY || S_ISDIR (subdir.stat.st_mode)))
+	      if (st->fd < 0)
 		{
-		  errno = ENOTDIR;
-		  open_diag (namebuf);
+		  subfd = -1;
+		  errno = - st->fd;
 		}
 	      else
+		subfd = subfile_open (st, string + 1,
+				      open_read_flags | O_DIRECTORY);
+	      if (subfd < 0)
+		open_diag (namebuf);
+	      else
 		{
-		  subdir.orig_file_name = xstrdup (namebuf);
-		  add_hierarchy_to_namelist (&subdir, np);
+		  subdir.fd = subfd;
+		  if (fstat (subfd, &subdir.stat) != 0)
+		    stat_diag (namebuf);
+		  else if (! (O_DIRECTORY || S_ISDIR (subdir.stat.st_mode)))
+		    {
+		      errno = ENOTDIR;
+		      open_diag (namebuf);
+		    }
+		  else
+		    {
+		      subdir.orig_file_name = xstrdup (namebuf);
+		      add_hierarchy_to_namelist (&subdir, np);
+		      restore_parent_fd (&subdir);
+		    }
 		}
 
 	      tar_stat_destroy (&subdir);
@@ -976,16 +988,20 @@ collect_and_sort_names (void)
 	}
       if (S_ISDIR (st.stat.st_mode))
 	{
-	  st.fd = open (name->name, open_read_flags | O_DIRECTORY);
-	  if (st.fd < 0)
+	  int dir_fd = open (name->name, open_read_flags | O_DIRECTORY);
+	  if (dir_fd < 0)
 	    open_diag (name->name);
-	  else if (fstat (st.fd, &st.stat) != 0)
-	    stat_diag (name->name);
-	  else if (O_DIRECTORY || S_ISDIR (st.stat.st_mode))
+	  else
 	    {
-	      st.orig_file_name = xstrdup (name->name);
-	      name->found_count++;
-	      add_hierarchy_to_namelist (&st, name);
+	      st.fd = dir_fd;
+	      if (fstat (dir_fd, &st.stat) != 0)
+		stat_diag (name->name);
+	      else if (O_DIRECTORY || S_ISDIR (st.stat.st_mode))
+		{
+		  st.orig_file_name = xstrdup (name->name);
+		  name->found_count++;
+		  add_hierarchy_to_namelist (&st, name);
+		}
 	    }
 	}
 

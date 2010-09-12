@@ -357,8 +357,9 @@ struct name
 GLOBAL dev_t ar_dev;
 GLOBAL ino_t ar_ino;
 
-/* Flags for reading and fstatatting arbitrary files.  */
+/* Flags for reading, searching, and fstatatting files.  */
 GLOBAL int open_read_flags;
+GLOBAL int open_searchdir_flags;
 GLOBAL int fstatat_flags;
 
 GLOBAL int seek_option;
@@ -452,6 +453,7 @@ enum dump_status
 void add_exclusion_tag (const char *name, enum exclusion_tag_type type,
 			bool (*predicate) (int));
 bool cachedir_file_p (int fd);
+char *get_directory_entries (struct tar_stat_info *st);
 
 void create_archive (void);
 void pad_archive (off_t size_left);
@@ -466,9 +468,11 @@ union block * write_extended (bool global, struct tar_stat_info *st,
 union block *start_private_header (const char *name, size_t size, time_t t);
 void write_eot (void);
 void check_links (void);
+int subfile_open (struct tar_stat_info const *dir, char const *file, int flags);
+void restore_parent_fd (struct tar_stat_info const *st);
 void exclusion_tag_warning (const char *dirname, const char *tagname,
 			    const char *message);
-enum exclusion_tag_type check_exclusion_tags (int dirfd,
+enum exclusion_tag_type check_exclusion_tags (struct tar_stat_info const *st,
 					      const char **tag_file_name);
 
 #define OFF_TO_CHARS(val, where) off_to_chars (val, where, sizeof (where))
@@ -685,6 +689,7 @@ void usage (int);
 int confirm (const char *message_action, const char *name);
 
 void tar_stat_init (struct tar_stat_info *st);
+bool tar_stat_close (struct tar_stat_info *st);
 void tar_stat_destroy (struct tar_stat_info *st);
 void usage (int) __attribute__ ((noreturn));
 int tar_timespec_cmp (struct timespec a, struct timespec b);

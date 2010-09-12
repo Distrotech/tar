@@ -2465,13 +2465,17 @@ decode_options (int argc, char **argv)
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
 
-  /* Flags for accessing files to be copied into.  POSIX says
+  /* Flags for accessing files to be read from or copied into.  POSIX says
      O_NONBLOCK has unspecified effect on most types of files, but in
      practice it never harms and sometimes helps.  */
-  open_read_flags =
-    (O_RDONLY | O_BINARY | O_NOCTTY | O_NONBLOCK
-     | (dereference_option ? 0 : O_NOFOLLOW)
-     | (atime_preserve_option == system_atime_preserve ? O_NOATIME : 0));
+  {
+    int base_open_flags =
+      (O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
+       | (dereference_option ? 0 : O_NOFOLLOW)
+       | (atime_preserve_option == system_atime_preserve ? O_NOATIME : 0));
+    open_read_flags = O_RDONLY | base_open_flags;
+    open_searchdir_flags = O_SEARCH | O_DIRECTORY | base_open_flags;
+  }
   fstatat_flags = dereference_option ? 0 : AT_SYMLINK_NOFOLLOW;
 
   if (subcommand_option == TEST_LABEL_SUBCOMMAND)
@@ -2684,9 +2688,31 @@ tar_stat_init (struct tar_stat_info *st)
   memset (st, 0, sizeof (*st));
 }
 
+/* Close the stream or file descriptor associated with ST, and remove
+   all traces of it from ST.  Return true if successful, false (with a
+   diagnostic) otherwise.  */
+bool
+tar_stat_close (struct tar_stat_info *st)
+{
+  int status = (st->dirstream ? closedir (st->dirstream)
+		: 0 < st->fd ? close (st->fd)
+		: 0);
+  st->dirstream = 0;
+  st->fd = 0;
+
+  if (status == 0)
+    return true;
+  else
+    {
+      close_diag (st->orig_file_name);
+      return false;
+    }
+}
+
 void
 tar_stat_destroy (struct tar_stat_info *st)
 {
+  tar_stat_close (st);
   free (st->orig_file_name);
   free (st->file_name);
   free (st->link_name);
@@ -2694,8 +2720,6 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->gname);
   free (st->sparse_map);
   free (st->dumpdir);
-  if (0 < st->fd)
-    close (st->fd);
   xheader_destroy (&st->xhdr);
   memset (st, 0, sizeof (*st));
 }

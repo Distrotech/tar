@@ -322,12 +322,20 @@ struct tar_stat_info
      file is at the top level.  */
   struct tar_stat_info *parent;
 
+  /* Directory stream.  If this is not null, it is in control of FD,
+     and should be closed instead of FD.  */
+  DIR *dirstream;
+
   /* File descriptor, if creating an archive, and if a directory or a
-     regular file or a contiguous file.  This is AT_FDCWD if it is the
-     working directory, which is possible only for a dummy parent node
-     just above the top level.  It may be -1 if the file could not be
-     opened.  Zero represents an otherwise-uninitialized value;
-     standard input is never used here.  */
+     regular file or a contiguous file.
+
+     It is zero if no file descriptor is available, either because it
+     was never needed or because it was open and then closed to
+     conserve on file descriptors.  (Standard input is never used
+     here, so zero cannot be a valid file descriptor.)
+
+     It is negative if it could not be reopened after it was closed.
+     Negate it to find out what errno was when the reopen failed.  */
   int fd;
 };
 

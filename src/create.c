@@ -26,6 +26,10 @@
 #include "common.h"
 #include <hash.h>
 
+/* Error number to use when an impostor is discovered.
+   Pretend the impostor isn't there.  */
+enum { IMPOSTOR_ERRNO = ENOENT };
+
 struct link
   {
     dev_t dev;
@@ -72,13 +76,13 @@ exclusion_tag_warning (const char *dirname, const char *tagname,
 }
 
 enum exclusion_tag_type
-check_exclusion_tags (int fd, char const **tag_file_name)
+check_exclusion_tags (struct tar_stat_info const *st, char const **tag_file_name)
 {
   struct exclusion_tag *tag;
 
   for (tag = exclusion_tags; tag; tag = tag->next)
     {
-      int tagfd = openat (fd, tag->name, open_read_flags);
+      int tagfd = subfile_open (st, tag->name, open_read_flags);
       if (0 <= tagfd)
 	{
 	  bool satisfied = !tag->predicate || tag->predicate (tagfd);
@@ -1038,7 +1042,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 	    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
 	}
 
-      count = (fd < 0) ? bufsize : safe_read (fd, blk->buffer, bufsize);
+      count = (fd <= 0) ? bufsize : safe_read (fd, blk->buffer, bufsize);
       if (count == SAFE_READ_ERROR)
 	{
 	  read_diag_details (st->orig_file_name,
@@ -1159,7 +1163,7 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
       char *name_buf;
       size_t name_size;
 
-      switch (check_exclusion_tags (st->fd, &tag_file_name))
+      switch (check_exclusion_tags (st, &tag_file_name))
 	{
 	case exclusion_tag_all:
 	  /* Handled in dump_file0 */
@@ -1224,21 +1228,93 @@ ensure_slash (char **pstr)
   (*pstr)[len] = '\0';
 }
 
+/* If we just ran out of file descriptors, release a file descriptor
+   in the directory chain somewhere leading from DIR->parent->parent
+   up through the root.  Return true if successful, false (preserving
+   errno == EMFILE) otherwise.
+
+   Do not release DIR's file descriptor, or DIR's parent, as other
+   code assumes that they work.  On some operating systems, another
+   process can claim file descriptor resources as we release them, and
+   some calls or their emulations require multiple file descriptors,
+   so callers should not give up if a single release doesn't work.  */
+
+static bool
+open_failure_recover (struct tar_stat_info const *dir)
+{
+  if (errno == EMFILE && dir && dir->parent)
+    {
+      struct tar_stat_info *p;
+      for (p = dir->parent->parent; p; p = p->parent)
+	if (0 < p->fd && (! p->parent || p->parent->fd <= 0))
+	  {
+	    tar_stat_close (p);
+	    return true;
+	  }
+      errno = EMFILE;
+    }
+
+  return false;
+}
+
+/* Return the directory entries of ST, in a dynamically allocated buffer,
+   each entry followed by '\0' and the last followed by an extra '\0'.
+   Return null on failure, setting errno.  */
+char *
+get_directory_entries (struct tar_stat_info *st)
+{
+  DIR *dirstream;
+  while (! (dirstream = fdopendir (st->fd)) && open_failure_recover (st))
+    continue;
+
+  if (! dirstream)
+    return 0;
+  else
+    {
+      char *entries = streamsavedir (dirstream);
+      int streamsavedir_errno = errno;
+
+      int fd = dirfd (dirstream);
+      if (fd < 0)
+	{
+	  /* The dirent.h implementation doesn't use file descriptors
+	     for directory streams, so open the directory again.  */
+	  char const *name = st->orig_file_name;
+	  if (closedir (dirstream) != 0)
+	    close_diag (name);
+	  dirstream = 0;
+	  fd = subfile_open (st->parent,
+			     st->parent ? last_component (name) : name,
+			     open_searchdir_flags);
+	  if (fd < 0)
+	    fd = - errno;
+	  else
+	    {
+	      struct stat dirst;
+	      if (! (fstat (fd, &dirst) == 0
+		     && st->stat.st_ino == dirst.st_ino
+		     && st->stat.st_dev == dirst.st_dev))
+		{
+		  close (fd);
+		  fd = - IMPOSTOR_ERRNO;
+		}
+	    }
+	}
+
+      st->fd = fd;
+      st->dirstream = dirstream;
+      errno = streamsavedir_errno;
+      return entries;
+    }
+}
+
+/* Dump the directory ST.  Return true if successful, false (emitting
+   diagnostics) otherwise.  Get ST's entries, recurse through its
+   subdirectories, and clean up file descriptors afterwards.  */
 static bool
 dump_dir (struct tar_stat_info *st)
 {
-  char *directory = 0;
-  int dupfd = dup (st->fd);
-  if (0 <= dupfd)
-    {
-      directory = fdsavedir (dupfd);
-      if (! directory)
-	{
-	  int e = errno;
-	  close (dupfd);
-	  errno = e;
-	}
-    }
+  char *directory = get_directory_entries (st);
   if (! directory)
     {
       savedir_diag (st->orig_file_name);
@@ -1247,6 +1323,7 @@ dump_dir (struct tar_stat_info *st)
 
   dump_dir0 (st, directory);
 
+  restore_parent_fd (st);
   free (directory);
   return true;
 }
@@ -1307,21 +1384,19 @@ create_archive (void)
 		    {
 		      if (! st.orig_file_name)
 			{
-			  st.orig_file_name = xstrdup (p->name);
-			  st.fd = open (st.orig_file_name,
-					((open_read_flags - O_RDONLY
-					  + O_SEARCH)
-					 | O_DIRECTORY));
-			  if (st.fd < 0)
+			  int fd = open (p->name, open_searchdir_flags);
+			  if (fd < 0)
 			    {
 			      open_diag (p->name);
 			      break;
 			    }
-			  if (fstat (st.fd, &st.stat) != 0)
+			  st.fd = fd;
+			  if (fstat (fd, &st.stat) != 0)
 			    {
 			      stat_diag (p->name);
 			      break;
 			    }
+			  st.orig_file_name = xstrdup (p->name);
 			}
 		      if (buffer_size < plen + qlen)
 			{
@@ -1492,6 +1567,74 @@ check_links (void)
     }
 }
 
+/* Assuming DIR is the working directory, open FILE, using FLAGS to
+   control the open.  A null DIR means to use ".".  If we are low on
+   file descriptors, try to release one or more from DIR's parents to
+   reuse it.  */
+int
+subfile_open (struct tar_stat_info const *dir, char const *file, int flags)
+{
+  int fd;
+
+  static bool initialized;
+  if (! initialized)
+    {
+      /* Initialize any tables that might be needed when file
+	 descriptors are exhausted, and whose initialization might
+	 require a file descriptor.  This includes the system message
+	 catalog and tar's message catalog.  */
+      initialized = true;
+      strerror (ENOENT);
+      gettext ("");
+    }
+
+  while ((fd = openat (dir ? dir->fd : AT_FDCWD, file, flags)) < 0
+	 && open_failure_recover (dir))
+    continue;
+  return fd;
+}
+
+/* Restore the file descriptor for ST->parent, if it was temporarily
+   closed to conserve file descriptors.  On failure, set the file
+   descriptor to the negative of the corresponding errno value.  Call
+   this every time a subdirectory is ascended from.  */
+void
+restore_parent_fd (struct tar_stat_info const *st)
+{
+  struct tar_stat_info *parent = st->parent;
+  if (parent && ! parent->fd)
+    {
+      int parentfd = openat (st->fd, "..", open_searchdir_flags);
+      struct stat parentstat;
+
+      if (parentfd < 0)
+	parentfd = - errno;
+      else if (! (fstat (parentfd, &parentstat) == 0
+		  && parent->stat.st_ino == parentstat.st_ino
+		  && parent->stat.st_dev == parentstat.st_dev))
+	{
+	  close (parentfd);
+	  parentfd = IMPOSTOR_ERRNO;
+	}
+
+      if (parentfd < 0)
+	{
+	  int origfd = open (parent->orig_file_name, open_searchdir_flags);
+	  if (0 <= origfd)
+	    {
+	      if (fstat (parentfd, &parentstat) == 0
+		  && parent->stat.st_ino == parentstat.st_ino
+		  && parent->stat.st_dev == parentstat.st_dev)
+		parentfd = origfd;
+	      else
+		close (origfd);
+	    }
+	}
+
+      parent->fd = parentfd;
+    }
+}
+
 /* Dump a single file, recursing on directories.  ST is the file's
    status info, NAME its name relative to the parent directory, and P
    its full name (which may be relative to the working directory).  */
@@ -1508,10 +1651,11 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
   struct timespec original_ctime;
   struct timespec restore_times[2];
   off_t block_ordinal = -1;
-  int fd = -1;
+  int fd = 0;
   bool is_dir;
-  bool top_level = ! st->parent;
-  int parentfd = top_level ? AT_FDCWD : st->parent->fd;
+  struct tar_stat_info const *parent = st->parent;
+  bool top_level = ! parent;
+  int parentfd = top_level ? AT_FDCWD : parent->fd;
   void (*diag) (char const *) = 0;
 
   if (interactive_option && !confirm ("add", p))
@@ -1523,15 +1667,24 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 
   transform_name (&st->file_name, XFORM_REGFILE);
 
-  if (fstatat (parentfd, name, &st->stat, fstatat_flags) != 0)
+  if (parentfd < 0 && ! top_level)
+    {
+      errno = - parentfd;
+      diag = open_diag;
+    }
+  else if (fstatat (parentfd, name, &st->stat, fstatat_flags) != 0)
     diag = stat_diag;
   else if (file_dumpable_p (&st->stat))
     {
-      fd = st->fd = openat (parentfd, name, open_read_flags);
+      fd = subfile_open (parent, name, open_read_flags);
       if (fd < 0)
 	diag = open_diag;
-      else if (fstat (fd, &st->stat) != 0)
-	diag = stat_diag;
+      else
+	{
+	  st->fd = fd;
+	  if (fstat (fd, &st->stat) != 0)
+	    diag = stat_diag;
+	}
     }
   if (diag)
     {
@@ -1600,7 +1753,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	  ensure_slash (&st->orig_file_name);
 	  ensure_slash (&st->file_name);
 
-	  if (check_exclusion_tags (fd, &tag_file_name) == exclusion_tag_all)
+	  if (check_exclusion_tags (st, &tag_file_name) == exclusion_tag_all)
 	    {
 	      exclusion_tag_warning (st->orig_file_name, tag_file_name,
 				     _("directory not dumped"));
@@ -1608,12 +1761,15 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	    }
 
 	  ok = dump_dir (st);
+
+	  fd = st->fd;
+	  parentfd = top_level ? AT_FDCWD : parent->fd;
 	}
       else
 	{
 	  enum dump_status status;
 
-	  if (fd != -1 && sparse_option && ST_IS_SPARSE (st->stat))
+	  if (fd && sparse_option && ST_IS_SPARSE (st->stat))
 	    {
 	      status = sparse_dump_file (fd, st);
 	      if (status == dump_status_not_implemented)
@@ -1641,14 +1797,26 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 
       if (ok)
 	{
-	  if ((fd < 0
-	       ? fstatat (parentfd, name, &final_stat, fstatat_flags)
-	       : fstat (fd, &final_stat))
-	      != 0)
+	  if (fd < 0)
 	    {
-	      file_removed_diag (p, top_level, stat_diag);
+	      errno = - fd;
 	      ok = false;
 	    }
+	  else if (fd == 0)
+	    {
+	      if (parentfd < 0 && ! top_level)
+		{
+		  errno = - parentfd;
+		  ok = false;
+		}
+	      else
+		ok = fstatat (parentfd, name, &final_stat, fstatat_flags) == 0;
+	    }
+	  else
+	    ok = fstat (fd, &final_stat) == 0;
+
+	  if (! ok)
+	    file_removed_diag (p, top_level, stat_diag);
 	}
 
       if (ok)
@@ -1669,16 +1837,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	    utime_error (p);
 	}
 
-      if (0 < fd)
-	{
-	  if (close (fd) != 0)
-	    {
-	      close_diag (p);
-	      ok = false;
-	    }
-	  st->fd = 0;
-	}
-
+      ok &= tar_stat_close (st);
       if (ok && remove_files_option)
 	queue_deferred_unlink (p, is_dir);
 
