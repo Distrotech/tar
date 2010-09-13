@@ -18,7 +18,7 @@ modified while tar is creating an archive.  In the new approach, tar
 maintains a cache of file descriptors to directories, so it uses more
 file descriptors than before, but it adjusts to system limits on
 the number of file descriptors.  The new checks are implemented via
-the openat, dirfd, fdopendir, fstatat, and readlinkat calls
+the openat, fdopendir, fstatat, and readlinkat calls
 standardized by POSIX.1-2008.  On an older system where these calls do
 not exist or do not return useful results, tar emulates the calls at
 some cost in efficiency and reliability.

@@ -1263,49 +1263,10 @@ open_failure_recover (struct tar_stat_info const *dir)
 char *
 get_directory_entries (struct tar_stat_info *st)
 {
-  DIR *dirstream;
-  while (! (dirstream = fdopendir (st->fd)) && open_failure_recover (st))
-    continue;
-
-  if (! dirstream)
-    return 0;
-  else
-    {
-      char *entries = streamsavedir (dirstream);
-      int streamsavedir_errno = errno;
-
-      int fd = dirfd (dirstream);
-      if (fd < 0)
-	{
-	  /* The dirent.h implementation doesn't use file descriptors
-	     for directory streams, so open the directory again.  */
-	  char const *name = st->orig_file_name;
-	  if (closedir (dirstream) != 0)
-	    close_diag (name);
-	  dirstream = 0;
-	  fd = subfile_open (st->parent,
-			     st->parent ? last_component (name) : name,
-			     open_searchdir_flags);
-	  if (fd < 0)
-	    fd = - errno;
-	  else
-	    {
-	      struct stat dirst;
-	      if (! (fstat (fd, &dirst) == 0
-		     && st->stat.st_ino == dirst.st_ino
-		     && st->stat.st_dev == dirst.st_dev))
-		{
-		  close (fd);
-		  fd = - IMPOSTOR_ERRNO;
-		}
-	    }
-	}
-
-      st->fd = fd;
-      st->dirstream = dirstream;
-      errno = streamsavedir_errno;
-      return entries;
-    }
+  while (! (st->dirstream = fdopendir (st->fd)))
+    if (! open_failure_recover (st))
+      return 0;
+  return streamsavedir (st->dirstream);
 }
 
 /* Dump the directory ST.  Return true if successful, false (emitting

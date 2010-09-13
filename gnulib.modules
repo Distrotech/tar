@@ -8,7 +8,6 @@ argp-version-etc
 backupfile
 closeout
 configmake
-dirfd
 dirname
 error
 exclude
