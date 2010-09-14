@@ -136,8 +136,40 @@ extr_init (void)
     }
 }
 
+/* Use fchmod if possible, chmod otherwise.  */
+static int
+fdchmod (char const *file, int fd, mode_t mode)
+{
+#if HAVE_FCHMOD
+  if (0 <= fd)
+    return fchmod (fd, mode);
+#endif
+  return chmod (file, mode);
+}
+
+/* Use fchown if possible, chown otherwise.  */
+static int
+fdchown (char const *file, int fd, uid_t uid, gid_t gid)
+{
+#if HAVE_FCHOWN
+  if (0 <= fd)
+    return fchown (fd, uid, gid);
+#endif
+  return chown (file, uid, gid);
+}
+
+/* Use fstat if possible, stat otherwise.  */
+static int
+fdstat (char const *file, int fd, struct stat *st)
+{
+  if (0 <= fd)
+    return fstat (fd, st);
+  return stat (file, st);
+}
+
 /* If restoring permissions, restore the mode for FILE_NAME from
-   information given in *STAT_INFO (where *CUR_INFO gives
+   information given in *STAT_INFO (where FD is a file descriptor
+   for the file if FD is nonnegative, and where *CUR_INFO gives
    the current status if CUR_INFO is nonzero); otherwise invert the
    INVERT_PERMISSIONS bits from the file's current permissions.
    PERMSTATUS specifies the status of the file's permissions.
@@ -145,7 +177,7 @@ extr_init (void)
 static void
 set_mode (char const *file_name,
 	  struct stat const *stat_info,
-	  struct stat const *cur_info,
+	  int fd, struct stat const *cur_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -183,7 +215,7 @@ set_mode (char const *file_name,
       struct stat st;
       if (! cur_info)
 	{
-	  if (stat (file_name, &st) != 0)
+	  if (fdstat (file_name, fd, &st) != 0)
 	    {
 	      stat_error (file_name);
 	      return;
@@ -193,7 +225,7 @@ set_mode (char const *file_name,
       mode = cur_info->st_mode ^ invert_permissions;
     }
 
-  chmod_errno = chmod (file_name, mode) == 0 ? 0 : errno;
+  chmod_errno = fdchmod (file_name, fd, mode) == 0 ? 0 : errno;
   if (chmod_errno == EPERM && (mode & S_ISUID) != 0)
     {
       /* On Solaris, chmod may fail if we don't have PRIV_ALL, because
@@ -202,7 +234,7 @@ set_mode (char const *file_name,
 	 (2009-09-03).  */
       if (priv_set_restore_linkdir () == 0)
 	{
-	  chmod_errno = chmod (file_name, mode) == 0 ? 0 : errno;
+	  chmod_errno = fdchmod (file_name, fd, mode) == 0 ? 0 : errno;
 	  priv_set_remove_linkdir ();
 	}
     }
@@ -245,6 +277,7 @@ check_time (char const *file_name, struct timespec t)
 
 /* Restore stat attributes (owner, group, mode and times) for
    FILE_NAME, using information given in *ST.
+   If FD is nonnegative, it is a file descriptor for the file.
    If CUR_INFO is nonzero, *CUR_INFO is the
    file's current status.
    If not restoring permissions, invert the
@@ -260,7 +293,7 @@ check_time (char const *file_name, struct timespec t)
 static void
 set_stat (char const *file_name,
 	  struct tar_stat_info const *st,
-	  struct stat const *cur_info,
+	  int fd, struct stat const *cur_info,
 	  mode_t invert_permissions, enum permstatus permstatus,
 	  char typeflag)
 {
@@ -284,7 +317,7 @@ set_stat (char const *file_name,
 	    ts[0] = start_time;
 	  ts[1] = st->mtime;
 
-	  if (utimens (file_name, ts) != 0)
+	  if (fdutimens (file_name, fd, ts) != 0)
 	    utime_error (file_name);
 	  else
 	    {
@@ -317,7 +350,8 @@ set_stat (char const *file_name,
 	}
       else
 	{
-	  chown_result = chown (file_name, st->stat.st_uid, st->stat.st_gid);
+	  chown_result = fdchown (file_name, fd,
+				  st->stat.st_uid, st->stat.st_gid);
 	}
 
       if (chown_result == 0)
@@ -335,7 +369,7 @@ set_stat (char const *file_name,
     }
 
   if (typeflag != SYMTYPE)
-    set_mode (file_name, &st->stat, cur_info,
+    set_mode (file_name, &st->stat, fd, cur_info,
 	      invert_permissions, permstatus, typeflag);
 }
 
@@ -638,7 +672,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	  sb.stat.st_gid = data->gid;
 	  sb.atime = data->atime;
 	  sb.mtime = data->mtime;
-	  set_stat (data->file_name, &sb, cur_info,
+	  set_stat (data->file_name, &sb, -1, cur_info,
 		    data->invert_permissions, data->permstatus, DIRTYPE);
 	}
 
@@ -872,17 +906,18 @@ extract_file (char *file_name, int typeflag)
   if (to_stdout_option)
     return 0;
 
+  if (! to_command_option)
+    set_stat (file_name, &current_stat_info, fd, NULL, invert_permissions,
+	      (old_files_option == OVERWRITE_OLD_FILES
+	       ? UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
+	      typeflag);
+
   status = close (fd);
   if (status < 0)
     close_error (file_name);
 
   if (to_command_option)
     sys_wait_command ();
-  else
-    set_stat (file_name, &current_stat_info, NULL, invert_permissions,
-	      (old_files_option == OVERWRITE_OLD_FILES ?
-	       UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
-	      typeflag);
 
   return status;
 }
@@ -1058,7 +1093,7 @@ extract_symlink (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, NULL, 0, 0, SYMTYPE);
+  set_stat (file_name, &current_stat_info, -1, NULL, 0, 0, SYMTYPE);
   return 0;
 
 #else
@@ -1099,7 +1134,7 @@ extract_node (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, NULL, invert_permissions,
+  set_stat (file_name, &current_stat_info, -1, NULL, invert_permissions,
 	    ARCHIVED_PERMSTATUS, typeflag);
   return 0;
 }
@@ -1129,7 +1164,7 @@ extract_fifo (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, NULL, invert_permissions,
+  set_stat (file_name, &current_stat_info, -1, NULL, invert_permissions,
 	    ARCHIVED_PERMSTATUS, typeflag);
   return 0;
 }
@@ -1384,7 +1419,7 @@ apply_delayed_links (void)
 		  struct tar_stat_info st1;
 		  st1.stat.st_uid = ds->uid;
 		  st1.stat.st_gid = ds->gid;
-		  set_stat (source, &st1, NULL, 0, 0, SYMTYPE);
+		  set_stat (source, &st1, -1, NULL, 0, 0, SYMTYPE);
 		  valid_source = source;
 		}
 	    }
