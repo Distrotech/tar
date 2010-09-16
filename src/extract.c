@@ -307,7 +307,7 @@ set_stat (char const *file_name,
 	  if (incremental_option)
 	    ts[0] = st->atime;
 	  else
-	    ts[0].tv_nsec = UTIME_NOW;
+	    ts[0].tv_nsec = UTIME_OMIT;
 	  ts[1] = st->mtime;
 
 	  if (fd_utimensat (fd, AT_FDCWD, file_name, ts, 0) != 0)
