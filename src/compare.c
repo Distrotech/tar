@@ -244,7 +244,9 @@ diff_file (void)
 	      if (atime_preserve_option == replace_atime_preserve)
 		{
 		  struct timespec atime = get_stat_atime (&stat_data);
-		  if (set_file_atime (diff_handle, file_name, atime, 0) != 0)
+		  if (set_file_atime (diff_handle, AT_FDCWD, file_name,
+				      atime, 0)
+		      != 0)
 		    utime_error (file_name);
 		}
 

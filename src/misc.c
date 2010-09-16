@@ -628,15 +628,17 @@ fd_utimensat (int fd, int parentfd, char const *file,
   return utimensat (parentfd, file, ts, atflag);
 }
 
-/* Set FD's (i.e., FILE's) access time to ATIME.
-   ATFLAG controls symbolic-link following, in the style of openat.  */
+/* Set FD's (i.e., assuming the working directory is PARENTFD, FILE's)
+   access time to ATIME.  ATFLAG controls symbolic-link following, in
+   the style of openat.  */
 int
-set_file_atime (int fd, char const *file, struct timespec atime, int atflag)
+set_file_atime (int fd, int parentfd, char const *file, struct timespec atime,
+		int atflag)
 {
   struct timespec ts[2];
   ts[0] = atime;
   ts[1].tv_nsec = UTIME_OMIT;
-  return fd_utimensat (fd, AT_FDCWD, file, ts, atflag);
+  return fd_utimensat (fd, parentfd, file, ts, atflag);
 }
 
 /* A description of a working directory.  */
