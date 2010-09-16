@@ -21,7 +21,6 @@
 
 #include <system.h>
 #include <quotearg.h>
-#include <utimens.h>
 #include <errno.h>
 #include <priv-set.h>
 
@@ -304,24 +303,19 @@ set_stat (char const *file_name,
 
       if (! touch_option && permstatus != INTERDIR_PERMSTATUS)
 	{
-	  /* We set the accessed time to `now', which is really the time we
-	     started extracting files, unless incremental_option is used, in
-	     which case .st_atime is used.  */
-
-	  /* FIXME: incremental_option should set ctime too, but how?  */
-
 	  struct timespec ts[2];
 	  if (incremental_option)
 	    ts[0] = st->atime;
 	  else
-	    ts[0] = start_time;
+	    ts[0].tv_nsec = UTIME_NOW;
 	  ts[1] = st->mtime;
 
-	  if (fdutimens (file_name, fd, ts) != 0)
+	  if (fd_utimensat (fd, AT_FDCWD, file_name, ts, 0) != 0)
 	    utime_error (file_name);
 	  else
 	    {
-	      check_time (file_name, ts[0]);
+	      if (incremental_option)
+		check_time (file_name, ts[0]);
 	      check_time (file_name, ts[1]);
 	    }
 	}

@@ -217,7 +217,14 @@ diff_file (void)
 	}
       else
 	{
-	  diff_handle = open (file_name, open_read_flags);
+	  int atime_flag =
+	    (atime_preserve_option == system_atime_preserve
+	     ? O_NOATIME
+	     : 0);
+
+	  diff_handle = open (file_name,
+			      (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY
+			       | O_NONBLOCK | atime_flag));
 
 	  if (diff_handle < 0)
 	    {
@@ -236,10 +243,8 @@ diff_file (void)
 
 	      if (atime_preserve_option == replace_atime_preserve)
 		{
-		  struct timespec ts[2];
-		  ts[0] = get_stat_atime (&stat_data);
-		  ts[1] = get_stat_mtime (&stat_data);
-		  if (set_file_atime (diff_handle, file_name, ts) != 0)
+		  struct timespec atime = get_stat_atime (&stat_data);
+		  if (set_file_atime (diff_handle, file_name, atime, 0) != 0)
 		    utime_error (file_name);
 		}
 
@@ -391,6 +396,10 @@ diff_multivol (void)
   struct stat stat_data;
   int fd, status;
   off_t offset;
+  int atime_flag =
+    (atime_preserve_option == system_atime_preserve
+     ? O_NOATIME
+     : 0);
 
   if (current_stat_info.had_trailing_slash)
     {
@@ -416,7 +425,10 @@ diff_multivol (void)
       return;
     }
 
-  fd = open (current_stat_info.file_name, open_read_flags);
+
+  fd = open (current_stat_info.file_name,
+	     (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
+	      | atime_flag));
 
   if (fd < 0)
     {

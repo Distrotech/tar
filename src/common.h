@@ -610,6 +610,8 @@ bool maybe_backup_file (const char *file_name, bool this_is_the_archive);
 void undo_last_backup (void);
 
 int deref_stat (bool deref, char const *name, struct stat *buf);
+int fd_utimensat (int fd, int parentfd, char const *file,
+		  struct timespec const ts[2], int atflag);
 
 extern int chdir_current;
 int chdir_arg (char const *dir);
@@ -636,8 +638,8 @@ pid_t xfork (void);
 void xpipe (int fd[2]);
 
 void *page_aligned_alloc (void **ptr, size_t size);
-int set_file_atime (int fd, char const *file,
-		    struct timespec const timespec[2]);
+int set_file_atime (int fd, char const *file, struct timespec atime,
+		    int atflag);
 
 /* Module names.c.  */
 

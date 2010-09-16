@@ -1610,7 +1610,6 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
   char type;
   off_t original_size;
   struct timespec original_ctime;
-  struct timespec restore_times[2];
   off_t block_ordinal = -1;
   int fd = 0;
   bool is_dir;
@@ -1654,8 +1653,8 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
     }
 
   st->archive_file_size = original_size = st->stat.st_size;
-  st->atime = restore_times[0] = get_stat_atime (&st->stat);
-  st->mtime = restore_times[1] = get_stat_mtime (&st->stat);
+  st->atime = get_stat_atime (&st->stat);
+  st->mtime = get_stat_mtime (&st->stat);
   st->ctime = original_ctime = get_stat_ctime (&st->stat);
 
 #ifdef S_ISHIDDEN
@@ -1794,7 +1793,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	      set_exit_status (TAREXIT_DIFFERS);
 	    }
 	  else if (atime_preserve_option == replace_atime_preserve
-		   && set_file_atime (fd, p, restore_times) != 0)
+		   && set_file_atime (fd, p, st->atime, fstatat_flags) != 0)
 	    utime_error (p);
 	}
 

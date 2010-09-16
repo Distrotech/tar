@@ -18,6 +18,7 @@ fnmatch-gnu
 fseeko
 ftruncate
 full-write
+futimens
 getdate
 getline
 getopt-gnu
@@ -56,7 +57,7 @@ strtoul
 timespec
 unlinkdir
 unlocked-io
-utimens
+utimensat
 version-etc-fsf
 xalloc
 xalloc-die

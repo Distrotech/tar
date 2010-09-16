@@ -24,14 +24,6 @@
 #include <save-cwd.h>
 #include <xgetcwd.h>
 #include <unlinkdir.h>
-#include <utimens.h>
-
-#if HAVE_STROPTS_H
-# include <stropts.h>
-#endif
-#if HAVE_SYS_FILIO_H
-# include <sys/filio.h>
-#endif
 
 #ifndef DOUBLE_SLASH_IS_DISTINCT_ROOT
 # define DOUBLE_SLASH_IS_DISTINCT_ROOT 0
@@ -621,24 +613,30 @@ deref_stat (bool deref, char const *name, struct stat *buf)
   return deref ? stat (name, buf) : lstat (name, buf);
 }
 
-/* Set FD's (i.e., FILE's) access time to TIMESPEC[0].  If that's not
-   possible to do by itself, set its access and data modification
-   times to TIMESPEC[0] and TIMESPEC[1], respectively.  */
+/* Use futimens if possible, utimensat otherwise.  */
 int
-set_file_atime (int fd, char const *file, struct timespec const timespec[2])
+fd_utimensat (int fd, int parentfd, char const *file,
+	      struct timespec const ts[2], int atflag)
 {
-#ifdef _FIOSATIME
   if (0 <= fd)
     {
-      struct timeval timeval;
-      timeval.tv_sec = timespec[0].tv_sec;
-      timeval.tv_usec = timespec[0].tv_nsec / 1000;
-      if (ioctl (fd, _FIOSATIME, &timeval) == 0)
-	return 0;
+      int result = futimens (fd, ts);
+      if (! (result < 0 && errno == ENOSYS))
+	return result;
     }
-#endif
 
-  return gl_futimens (fd, file, timespec);
+  return utimensat (parentfd, file, ts, atflag);
+}
+
+/* Set FD's (i.e., FILE's) access time to ATIME.
+   ATFLAG controls symbolic-link following, in the style of openat.  */
+int
+set_file_atime (int fd, char const *file, struct timespec atime, int atflag)
+{
+  struct timespec ts[2];
+  ts[0] = atime;
+  ts[1].tv_nsec = UTIME_OMIT;
+  return fd_utimensat (fd, AT_FDCWD, file, ts, atflag);
 }
 
 /* A description of a working directory.  */
