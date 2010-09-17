@@ -90,7 +90,7 @@ gl_INIT
 # paxutils modules
 tar_PAXUTILS
 
-AC_CHECK_FUNCS(fchmod fchown fsync getdtablesize lstat mkfifo readlink symlink setlocale)
+AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink])
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
 AC_CHECK_DECLS([time],,, [#include <time.h>])
