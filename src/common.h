@@ -591,6 +591,8 @@ enum { BILLION = 1000000000, LOG10_BILLION = 9 };
 enum { TIMESPEC_STRSIZE_BOUND =
          UINTMAX_STRSIZE_BOUND + LOG10_BILLION + sizeof "-." - 1 };
 
+bool must_be_dot_or_slash (char const *);
+
 enum remove_option
 {
   ORDINARY_REMOVE_OPTION,

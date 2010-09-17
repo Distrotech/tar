@@ -361,6 +361,30 @@ set_stat (char const *file_name,
 	    fd, current_mode, current_mode_mask, typeflag, atflag);
 }
 
+/* For each entry H in the leading prefix of entries in HEAD that do
+   not have after_links marked, mark H and fill in its dev and ino
+   members.  Assume HEAD && ! HEAD->after_links.  */
+static void
+mark_after_links (struct delayed_set_stat *head)
+{
+  struct delayed_set_stat *h = head;
+
+  do
+    {
+      struct stat st;
+      h->after_links = 1;
+
+      if (stat (h->file_name, &st) != 0)
+	stat_error (h->file_name);
+      else
+	{
+	  h->dev = st.st_dev;
+	  h->ino = st.st_ino;
+	}
+    }
+  while ((h = h->next) && ! h->after_links);
+}
+
 /* Remember to restore stat attributes (owner, group, mode and times)
    for the directory FILE_NAME, using information given in *ST,
    once we stop extracting files into that directory.
@@ -408,6 +432,8 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
   data->change_dir = chdir_current;
   strcpy (data->file_name, file_name);
   delayed_set_stat_head = data;
+  if (must_be_dot_or_slash (file_name))
+    mark_after_links (data);
 }
 
 /* Update the delayed_set_stat info for an intermediate directory
@@ -1033,21 +1059,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 	  && strncmp (file_name, h->file_name, h->file_name_len) == 0
 	  && ISSLASH (file_name[h->file_name_len])
 	  && (last_component (file_name) == file_name + h->file_name_len + 1))
-	{
-	  do
-	    {
-	      h->after_links = 1;
-
-	      if (stat (h->file_name, &st) != 0)
-		stat_error (h->file_name);
-	      else
-		{
-		  h->dev = st.st_dev;
-		  h->ino = st.st_ino;
-		}
-	    }
-	  while ((h = h->next) && ! h->after_links);
-	}
+	mark_after_links (h);
 
       return 0;
     }

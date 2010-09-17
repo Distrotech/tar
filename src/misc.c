@@ -390,7 +390,7 @@ static char *before_backup_name;
 static char *after_backup_name;
 
 /* Return 1 if FILE_NAME is obviously "." or "/".  */
-static bool
+bool
 must_be_dot_or_slash (char const *file_name)
 {
   file_name += FILE_SYSTEM_PREFIX_LEN (file_name);
