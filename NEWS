@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2010-09-13
+GNU tar NEWS - User visible changes. 2010-09-17
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -17,11 +17,21 @@ Tar now checks for inconsistencies caused when a file system is
 modified while tar is creating an archive.  In the new approach, tar
 maintains a cache of file descriptors to directories, so it uses more
 file descriptors than before, but it adjusts to system limits on
-the number of file descriptors.  The new checks are implemented via
-the openat, fdopendir, fstatat, and readlinkat calls
+the number of file descriptors.  Tar also takes more care when
+a file system is modified while tar is extracting from an archive.
+
+The new checks are implemented via the openat and related calls
 standardized by POSIX.1-2008.  On an older system where these calls do
 not exist or do not return useful results, tar emulates the calls at
 some cost in efficiency and reliability.
+
+** Symbolic link attributes
+
+When extracting symbolic links, tar now restores attributes such as
+last-modified time and link permissions, if the operating system
+supports this.  For example, recent versions of the Linux kernel
+support setting times on symlinks, and some BSD kernels also support
+symlink permissions.
 
 ** Spurious error diagnostics on broken pipe.
 

@@ -30,20 +30,24 @@ static bool we_are_root;	/* true if our effective uid == 0 */
 static mode_t newdir_umask;	/* umask when creating new directories */
 static mode_t current_umask;	/* current umask (which is set to 0 if -p) */
 
-/* Status of the permissions of a file that we are extracting.  */
-enum permstatus
+#define ALL_MODE_BITS ((mode_t) ~ (mode_t) 0)
+
+#if ! HAVE_FCHMOD && ! defined fchmod
+# define fchmod(fd, mode) (errno = ENOSYS, -1)
+#endif
+#if ! HAVE_FCHOWN && ! defined fchown
+# define fchown(fd, uid, gid) (errno = ENOSYS, -1)
+#endif
+
+/* Return true if an error number ERR means the system call is
+   supported in this case.  */
+static bool
+implemented (int err)
 {
-  /* This file may have existed already; its permissions are unknown.  */
-  UNKNOWN_PERMSTATUS,
-
-  /* This file was created using the permissions from the archive,
-     except with S_IRWXG | S_IRWXO masked out if 0 < same_owner_option.  */
-  ARCHIVED_PERMSTATUS,
-
-  /* This is an intermediate directory; the archive did not specify
-     its permissions.  */
-  INTERDIR_PERMSTATUS
-};
+  return ! (err == ENOSYS
+	    || err == ENOTSUP
+	    || (EOPNOTSUPP != ENOTSUP && err == EOPNOTSUPP));
+}
 
 /* List of directories whose statuses we need to extract after we've
    finished extracting their subsidiary files.  If you consider each
@@ -56,19 +60,44 @@ enum permstatus
 
 struct delayed_set_stat
   {
+    /* Next directory in list.  */
     struct delayed_set_stat *next;
+
+    /* Metadata for this directory.  */
     dev_t dev;
     ino_t ino;
-    mode_t mode;
+    mode_t mode; /* The desired mode is MODE & ~ current_umask.  */
     uid_t uid;
     gid_t gid;
     struct timespec atime;
     struct timespec mtime;
-    size_t file_name_len;
-    mode_t invert_permissions;
-    enum permstatus permstatus;
+
+    /* An estimate of the directory's current mode, along with a mask
+       specifying which bits of this estimate are known to be correct.
+       If CURRENT_MODE_MASK is zero, CURRENT_MODE's value doesn't
+       matter.  */
+    mode_t current_mode;
+    mode_t current_mode_mask;
+
+    /* This directory is an intermediate directory that was created
+       as an ancestor of some other directory; it was not mentioned
+       in the archive, so do not set its uid, gid, atime, or mtime,
+       and don't alter its mode outside of MODE_RWX.  */
+    bool interdir;
+
+    /* Whether symbolic links should be followed when accessing the
+       directory.  */
+    int atflag;
+
+    /* Do not set the status of this directory until after delayed
+       links are created.  */
     bool after_links;
+
+    /* Directory that the name is relative to.  */
     int change_dir;
+
+    /* Length and contents of name.  */
+    size_t file_name_len;
     char file_name[1];
   };
 
@@ -90,9 +119,12 @@ struct delayed_link
     /* True if the link is symbolic.  */
     bool is_symlink;
 
-    /* The desired owner and group of the link, if it is a symlink.  */
+    /* The desired metadata, valid only the link is symbolic.  */
+    mode_t mode;
     uid_t uid;
     gid_t gid;
+    struct timespec atime;
+    struct timespec mtime;
 
     /* The directory that the sources and target are relative to.  */
     int change_dir;
@@ -135,112 +167,103 @@ extr_init (void)
     }
 }
 
-/* Use fchmod if possible, chmod otherwise.  */
+/* Use fchmod if possible, fchmodat otherwise.  */
 static int
-fdchmod (char const *file, int fd, mode_t mode)
-{
-#if HAVE_FCHMOD
-  if (0 <= fd)
-    return fchmod (fd, mode);
-#endif
-  return chmod (file, mode);
-}
-
-/* Use fchown if possible, chown otherwise.  */
-static int
-fdchown (char const *file, int fd, uid_t uid, gid_t gid)
-{
-#if HAVE_FCHOWN
-  if (0 <= fd)
-    return fchown (fd, uid, gid);
-#endif
-  return chown (file, uid, gid);
-}
-
-/* Use fstat if possible, stat otherwise.  */
-static int
-fdstat (char const *file, int fd, struct stat *st)
+fd_chmod (int fd, char const *file, mode_t mode, int atflag)
 {
   if (0 <= fd)
-    return fstat (fd, st);
-  return stat (file, st);
+    {
+      int result = fchmod (fd, mode);
+      if (result == 0 || implemented (errno))
+	return result;
+    }
+  return fchmodat (AT_FDCWD, file, mode, atflag);
 }
 
-/* If restoring permissions, restore the mode for FILE_NAME from
-   information given in *STAT_INFO (where FD is a file descriptor
-   for the file if FD is nonnegative, and where *CUR_INFO gives
-   the current status if CUR_INFO is nonzero); otherwise invert the
-   INVERT_PERMISSIONS bits from the file's current permissions.
-   PERMSTATUS specifies the status of the file's permissions.
-   TYPEFLAG specifies the type of the file.  */
+/* Use fchown if possible, fchownat otherwise.  */
+static int
+fd_chown (int fd, char const *file, uid_t uid, gid_t gid, int atflag)
+{
+  if (0 <= fd)
+    {
+      int result = fchown (fd, uid, gid);
+      if (result == 0 || implemented (errno))
+	return result;
+    }
+  return fchownat (AT_FDCWD, file, uid, gid, atflag);
+}
+
+/* Use fstat if possible, fstatat otherwise.  */
+static int
+fd_stat (int fd, char const *file, struct stat *st, int atflag)
+{
+  return (0 <= fd
+	  ? fstat (fd, st)
+	  : fstatat (AT_FDCWD, file, st, atflag));
+}
+
+/* Set the mode for FILE_NAME to MODE.
+   MODE_MASK specifies the bits of MODE that we care about;
+   thus if MODE_MASK is zero, do nothing.
+   If FD is nonnegative, it is a file descriptor for the file.
+   CURRENT_MODE and CURRENT_MODE_MASK specify information known about
+   the file's current mode, using the style of struct delayed_set_stat.
+   TYPEFLAG specifies the type of the file.
+   ATFLAG specifies the flag to use when statting the file.  */
 static void
 set_mode (char const *file_name,
-	  struct stat const *stat_info,
-	  int fd, struct stat const *cur_info,
-	  mode_t invert_permissions, enum permstatus permstatus,
-	  char typeflag)
+	  mode_t mode, mode_t mode_mask, int fd,
+	  mode_t current_mode, mode_t current_mode_mask,
+	  char typeflag, int atflag)
 {
-  mode_t mode;
-  int chmod_errno;
-
-  if (0 < same_permissions_option
-      && permstatus != INTERDIR_PERMSTATUS)
+  if (((current_mode ^ mode) | ~ current_mode_mask) & mode_mask)
     {
-      mode = stat_info->st_mode;
-
-      /* If we created the file and it has a mode that we set already
-	 with O_CREAT, then its mode is often set correctly already.
-	 But if we are changing ownership, the mode's group and and
-	 other permission bits were omitted originally, so it's less
-	 likely that the mode is OK now.  Also, on many hosts, some
-	 directories inherit the setgid bits from their parents, so we
-	 we must set directories' modes explicitly.  */
-      if ((permstatus == ARCHIVED_PERMSTATUS
-	   && ! (mode & ~ (0 < same_owner_option ? S_IRWXU : MODE_RWX)))
-	  && typeflag != DIRTYPE
-	  && typeflag != GNUTYPE_DUMPDIR)
-	return;
-    }
-  else if (! invert_permissions)
-    return;
-  else
-    {
-      /* We must inspect a directory's current permissions, since the
-	 directory may have inherited its setgid bit from its parent.
-
-	 INVERT_PERMISSIONS happens to be nonzero only for directories
-	 that we created, so there's no point optimizing this code for
-	 other cases.  */
-      struct stat st;
-      if (! cur_info)
+      if (MODE_ALL & ~ mode_mask & ~ current_mode_mask)
 	{
-	  if (fdstat (file_name, fd, &st) != 0)
+	  struct stat st;
+	  if (fd_stat (fd, file_name, &st, atflag) != 0)
 	    {
 	      stat_error (file_name);
 	      return;
 	    }
-	  cur_info = &st;
+	  current_mode = st.st_mode;
 	}
-      mode = cur_info->st_mode ^ invert_permissions;
-    }
 
-  chmod_errno = fdchmod (file_name, fd, mode) == 0 ? 0 : errno;
-  if (chmod_errno == EPERM && (mode & S_ISUID) != 0)
-    {
-      /* On Solaris, chmod may fail if we don't have PRIV_ALL, because
-	 setuid-root files would otherwise be a backdoor.  See
-	 http://opensolaris.org/jive/thread.jspa?threadID=95826
-	 (2009-09-03).  */
-      if (priv_set_restore_linkdir () == 0)
+      current_mode &= MODE_ALL;
+      mode = (current_mode & ~ mode_mask) | (mode & mode_mask);
+
+      if (current_mode != mode)
 	{
-	  chmod_errno = fdchmod (file_name, fd, mode) == 0 ? 0 : errno;
-	  priv_set_remove_linkdir ();
+	  int chmod_errno =
+	    fd_chmod (fd, file_name, mode, atflag) == 0 ? 0 : errno;
+
+	  /* On Solaris, chmod may fail if we don't have PRIV_ALL, because
+	     setuid-root files would otherwise be a backdoor.  See
+	     http://opensolaris.org/jive/thread.jspa?threadID=95826
+	     (2009-09-03).  */
+	  if (chmod_errno == EPERM && (mode & S_ISUID)
+	      && priv_set_restore_linkdir () == 0)
+	    {
+	      chmod_errno =
+		fd_chmod (fd, file_name, mode, atflag) == 0 ? 0 : errno;
+	      priv_set_remove_linkdir ();
+	    }
+
+	  /* Linux fchmodat does not support AT_SYMLINK_NOFOLLOW, and
+	     returns ENOTSUP even when operating on non-symlinks, try
+	     again with the flag disabled if it does not appear to be
+	     supported and if the file is not a symlink.  This
+	     introduces a race, alas.  */
+	  if (atflag && typeflag != SYMTYPE && ! implemented (chmod_errno))
+	    chmod_errno = fd_chmod (fd, file_name, mode, 0) == 0 ? 0 : errno;
+
+	  if (chmod_errno
+	      && (typeflag != SYMTYPE || implemented (chmod_errno)))
+	    {
+	      errno = chmod_errno;
+	      chmod_error_details (file_name, mode);
+	    }
 	}
-    }
-  if (chmod_errno)
-    {
-      errno = chmod_errno;
-      chmod_error_details (file_name, mode);
     }
 }
 
@@ -277,102 +300,73 @@ check_time (char const *file_name, struct timespec t)
 /* Restore stat attributes (owner, group, mode and times) for
    FILE_NAME, using information given in *ST.
    If FD is nonnegative, it is a file descriptor for the file.
-   If CUR_INFO is nonzero, *CUR_INFO is the
-   file's current status.
-   If not restoring permissions, invert the
-   INVERT_PERMISSIONS bits from the file's current permissions.
-   PERMSTATUS specifies the status of the file's permissions.
-   TYPEFLAG specifies the type of the file.  */
-
-/* FIXME: About proper restoration of symbolic link attributes, we still do
-   not have it right.  Pretesters' reports tell us we need further study and
-   probably more configuration.  For now, just use lchown if it exists, and
-   punt for the rest.  Sigh!  */
+   CURRENT_MODE and CURRENT_MODE_MASK specify information known about
+   the file's current mode, using the style of struct delayed_set_stat.
+   TYPEFLAG specifies the type of the file.
+   If INTERDIR, this is an intermediate directory.
+   ATFLAG specifies the flag to use when statting the file.  */
 
 static void
 set_stat (char const *file_name,
 	  struct tar_stat_info const *st,
-	  int fd, struct stat const *cur_info,
-	  mode_t invert_permissions, enum permstatus permstatus,
-	  char typeflag)
+	  int fd, mode_t current_mode, mode_t current_mode_mask,
+	  char typeflag, bool interdir, int atflag)
 {
-  if (typeflag != SYMTYPE)
+  /* Do the utime before the chmod because some versions of utime are
+     broken and trash the modes of the file.  */
+
+  if (! touch_option && ! interdir)
     {
-      /* We do the utime before the chmod because some versions of utime are
-	 broken and trash the modes of the file.  */
+      struct timespec ts[2];
+      if (incremental_option)
+	ts[0] = st->atime;
+      else
+	ts[0].tv_nsec = UTIME_OMIT;
+      ts[1] = st->mtime;
 
-      if (! touch_option && permstatus != INTERDIR_PERMSTATUS)
+      if (fd_utimensat (fd, AT_FDCWD, file_name, ts, atflag) == 0)
 	{
-	  struct timespec ts[2];
 	  if (incremental_option)
-	    ts[0] = st->atime;
-	  else
-	    ts[0].tv_nsec = UTIME_OMIT;
-	  ts[1] = st->mtime;
-
-	  if (fd_utimensat (fd, AT_FDCWD, file_name, ts, 0) != 0)
-	    utime_error (file_name);
-	  else
-	    {
-	      if (incremental_option)
-		check_time (file_name, ts[0]);
-	      check_time (file_name, ts[1]);
-	    }
+	    check_time (file_name, ts[0]);
+	  check_time (file_name, ts[1]);
 	}
+      else if (typeflag != SYMTYPE || implemented (errno))
+	utime_error (file_name);
+    }
 
+  if (0 < same_owner_option && ! interdir)
+    {
       /* Some systems allow non-root users to give files away.  Once this
 	 done, it is not possible anymore to change file permissions.
 	 However, setting file permissions now would be incorrect, since
 	 they would apply to the wrong user, and there would be a race
 	 condition.  So, don't use systems that allow non-root users to
 	 give files away.  */
+      uid_t uid = st->stat.st_uid;
+      gid_t gid = st->stat.st_gid;
+
+      if (fd_chown (fd, file_name, uid, gid, atflag) == 0)
+	{
+	  /* Changing the owner can clear st_mode bits in some cases.  */
+	  if ((current_mode | ~ current_mode_mask) & S_IXUGO)
+	    current_mode_mask &= ~ (current_mode & (S_ISUID | S_ISGID));
+	}
+      else if (typeflag != SYMTYPE || implemented (errno))
+	chown_error_details (file_name, uid, gid);
     }
 
-  if (0 < same_owner_option && permstatus != INTERDIR_PERMSTATUS)
-    {
-      /* When lchown exists, it should be used to change the attributes of
-	 the symbolic link itself.  In this case, a mere chown would change
-	 the attributes of the file the symbolic link is pointing to, and
-	 should be avoided.  */
-      int chown_result = 1;
-
-      if (typeflag == SYMTYPE)
-	{
-#if HAVE_LCHOWN
-	  chown_result = lchown (file_name, st->stat.st_uid, st->stat.st_gid);
-#endif
-	}
-      else
-	{
-	  chown_result = fdchown (file_name, fd,
-				  st->stat.st_uid, st->stat.st_gid);
-	}
-
-      if (chown_result == 0)
-	{
-	  /* Changing the owner can flip st_mode bits in some cases, so
-	     ignore cur_info if it might be obsolete now.  */
-	  if (cur_info
-	      && cur_info->st_mode & S_IXUGO
-	      && cur_info->st_mode & (S_ISUID | S_ISGID))
-	    cur_info = NULL;
-	}
-      else if (chown_result < 0)
-	chown_error_details (file_name,
-			     st->stat.st_uid, st->stat.st_gid);
-    }
-
-  if (typeflag != SYMTYPE)
-    set_mode (file_name, &st->stat, fd, cur_info,
-	      invert_permissions, permstatus, typeflag);
+  set_mode (file_name,
+	    st->stat.st_mode & ~ current_umask,
+	    0 < same_permissions_option && ! interdir ? MODE_ALL : MODE_RWX,
+	    fd, current_mode, current_mode_mask, typeflag, atflag);
 }
 
 /* Remember to restore stat attributes (owner, group, mode and times)
    for the directory FILE_NAME, using information given in *ST,
    once we stop extracting files into that directory.
-   If not restoring permissions, remember to invert the
-   INVERT_PERMISSIONS bits from the file's current permissions.
-   PERMSTATUS specifies the status of the file's permissions.
+
+   If ST is null, merely create a placeholder node for an intermediate
+   directory that was created by make_directories.
 
    NOTICE: this works only if the archive has usual member order, i.e.
    directory, then the files in that directory. Incremental archive have
@@ -387,23 +381,29 @@ set_stat (char const *file_name,
 */
 static void
 delay_set_stat (char const *file_name, struct tar_stat_info const *st,
-		mode_t invert_permissions, enum permstatus permstatus)
+		mode_t current_mode, mode_t current_mode_mask,
+		mode_t mode, int atflag)
 {
   size_t file_name_len = strlen (file_name);
   struct delayed_set_stat *data =
     xmalloc (offsetof (struct delayed_set_stat, file_name)
 	     + file_name_len + 1);
   data->next = delayed_set_stat_head;
-  data->dev = st->stat.st_dev;
-  data->ino = st->stat.st_ino;
-  data->mode = st->stat.st_mode;
-  data->uid = st->stat.st_uid;
-  data->gid = st->stat.st_gid;
-  data->atime = st->atime;
-  data->mtime = st->mtime;
+  data->mode = mode;
+  if (st)
+    {
+      data->dev = st->stat.st_dev;
+      data->ino = st->stat.st_ino;
+      data->uid = st->stat.st_uid;
+      data->gid = st->stat.st_gid;
+      data->atime = st->atime;
+      data->mtime = st->mtime;
+    }
   data->file_name_len = file_name_len;
-  data->invert_permissions = invert_permissions;
-  data->permstatus = permstatus;
+  data->current_mode = current_mode;
+  data->current_mode_mask = current_mode_mask;
+  data->interdir = ! st;
+  data->atflag = atflag;
   data->after_links = 0;
   data->change_dir = chdir_current;
   strcpy (data->file_name, file_name);
@@ -422,7 +422,7 @@ repair_delayed_set_stat (char const *dir,
   for (data = delayed_set_stat_head;  data;  data = data->next)
     {
       struct stat st;
-      if (stat (data->file_name, &st) != 0)
+      if (fstatat (AT_FDCWD, data->file_name, &st, data->atflag) != 0)
 	{
 	  stat_error (data->file_name);
 	  return;
@@ -438,10 +438,9 @@ repair_delayed_set_stat (char const *dir,
 	  data->gid = current_stat_info.stat.st_gid;
 	  data->atime = current_stat_info.atime;
 	  data->mtime = current_stat_info.mtime;
-	  data->invert_permissions =
-	    ((current_stat_info.stat.st_mode ^ st.st_mode)
-	     & MODE_RWX & ~ current_umask);
-	  data->permstatus = ARCHIVED_PERMSTATUS;
+	  data->current_mode = st.st_mode;
+	  data->current_mode_mask = ALL_MODE_BITS;
+	  data->interdir = false;
 	  return;
 	}
     }
@@ -460,12 +459,13 @@ make_directories (char *file_name)
   char *cursor0 = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
   char *cursor;	        	/* points into the file name */
   int did_something = 0;	/* did we do anything yet? */
-  int mode;
-  int invert_permissions;
   int status;
 
   for (cursor = cursor0; *cursor; cursor++)
     {
+      mode_t mode;
+      mode_t desired_mode;
+
       if (! ISSLASH (*cursor))
 	continue;
 
@@ -483,20 +483,20 @@ make_directories (char *file_name)
 	continue;
 
       *cursor = '\0';		/* truncate the name there */
-      mode = MODE_RWX & ~ newdir_umask;
-      invert_permissions = we_are_root ? 0 : MODE_WXUSR & ~ mode;
-      status = mkdir (file_name, mode ^ invert_permissions);
+      desired_mode = MODE_RWX & ~ newdir_umask;
+      mode = desired_mode | (we_are_root ? 0 : MODE_WXUSR);
+      status = mkdir (file_name, mode);
 
       if (status == 0)
 	{
 	  /* Create a struct delayed_set_stat even if
-	     invert_permissions is zero, because
+	     mode == desired_mode, because
 	     repair_delayed_set_stat may need to update the struct.  */
 	  delay_set_stat (file_name,
-			  &current_stat_info,
-			  invert_permissions, INTERDIR_PERMSTATUS);
+			  0, mode & ~ current_umask, MODE_RWX,
+			  desired_mode, AT_SYMLINK_NOFOLLOW);
 
-	  print_for_mkdir (file_name, cursor - file_name, mode);
+	  print_for_mkdir (file_name, cursor - file_name, desired_mode);
 	  did_something = 1;
 
 	  *cursor = '/';
@@ -627,7 +627,8 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
       struct delayed_set_stat *data = delayed_set_stat_head;
       bool skip_this_one = 0;
       struct stat st;
-      struct stat const *cur_info = 0;
+      mode_t current_mode = data->current_mode;
+      mode_t current_mode_mask = data->current_mode_mask;
 
       check_for_renamed_directories |= data->after_links;
 
@@ -643,18 +644,22 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 
       if (check_for_renamed_directories)
 	{
-	  cur_info = &st;
-	  if (stat (data->file_name, &st) != 0)
+	  if (fstatat (AT_FDCWD, data->file_name, &st, data->atflag) != 0)
 	    {
 	      stat_error (data->file_name);
 	      skip_this_one = 1;
 	    }
-	  else if (! (st.st_dev == data->dev && st.st_ino == data->ino))
+	  else
 	    {
-	      ERROR ((0, 0,
-		      _("%s: Directory renamed before its status could be extracted"),
-		      quotearg_colon (data->file_name)));
-	      skip_this_one = 1;
+	      current_mode = st.st_mode;
+	      current_mode_mask = ALL_MODE_BITS;
+	      if (! (st.st_dev == data->dev && st.st_ino == data->ino))
+		{
+		  ERROR ((0, 0,
+			  _("%s: Directory renamed before its status could be extracted"),
+			  quotearg_colon (data->file_name)));
+		  skip_this_one = 1;
+		}
 	    }
 	}
 
@@ -666,8 +671,9 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	  sb.stat.st_gid = data->gid;
 	  sb.atime = data->atime;
 	  sb.mtime = data->mtime;
-	  set_stat (data->file_name, &sb, -1, cur_info,
-		    data->invert_permissions, data->permstatus, DIRTYPE);
+	  set_stat (data->file_name, &sb,
+		    -1, current_mode, current_mode_mask,
+		    DIRTYPE, data->interdir, data->atflag);
 	}
 
       delayed_set_stat_head = data->next;
@@ -684,6 +690,9 @@ extract_dir (char *file_name, int typeflag)
 {
   int status;
   mode_t mode;
+  mode_t current_mode = 0;
+  mode_t current_mode_mask = 0;
+  int atflag = 0;
   bool interdir_made = false;
 
   /* Save 'root device' to avoid purging mount points. */
@@ -703,12 +712,30 @@ extract_dir (char *file_name, int typeflag)
   else if (typeflag == GNUTYPE_DUMPDIR)
     skip_member ();
 
-  mode = current_stat_info.stat.st_mode | (we_are_root ? 0 : MODE_WXUSR);
-  if (0 < same_owner_option || current_stat_info.stat.st_mode & ~ MODE_RWX)
-    mode &= S_IRWXU;
+  /* If ownership or permissions will be restored later, create the
+     directory with restrictive permissions at first, so that in the
+     meantime processes owned by other users do not inadvertently
+     create files under this directory that inherit the wrong owner,
+     group, or permissions from the directory.  If not root, though,
+     make the directory writeable and searchable at first, so that
+     files can be created under it.  */
+  mode = ((current_stat_info.stat.st_mode
+	   & (0 < same_owner_option || 0 < same_permissions_option
+	      ? S_IRWXU
+	      : MODE_RWX))
+	  | (we_are_root ? 0 : MODE_WXUSR));
 
-  while ((status = mkdir (file_name, mode)))
+  for (;;)
     {
+      status = mkdir (file_name, mode);
+      if (status == 0)
+	{
+	  current_mode = mode & ~ current_umask;
+	  current_mode_mask = MODE_RWX;
+	  atflag = AT_SYMLINK_NOFOLLOW;
+	  break;
+	}
+
       if (errno == EEXIST
 	  && (interdir_made
 	      || old_files_option == DEFAULT_OLD_FILES
@@ -717,15 +744,16 @@ extract_dir (char *file_name, int typeflag)
 	  struct stat st;
 	  if (stat (file_name, &st) == 0)
 	    {
-	      if (interdir_made)
+	      current_mode = st.st_mode;
+	      current_mode_mask = ALL_MODE_BITS;
+
+	      if (S_ISDIR (current_mode))
 		{
-		  repair_delayed_set_stat (file_name, &st);
-		  return 0;
-		}
-	      if (S_ISDIR (st.st_mode))
-		{
-		  status = 0;
-		  mode = st.st_mode;
+		  if (interdir_made)
+		    {
+		      repair_delayed_set_stat (file_name, &st);
+		      return 0;
+		    }
 		  break;
 		}
 	    }
@@ -754,29 +782,22 @@ extract_dir (char *file_name, int typeflag)
   if (status == 0
       || old_files_option == DEFAULT_OLD_FILES
       || old_files_option == OVERWRITE_OLD_FILES)
-    {
-      if (status == 0)
-	delay_set_stat (file_name, &current_stat_info,
-			((mode ^ current_stat_info.stat.st_mode)
-			 & MODE_RWX & ~ current_umask),
-			ARCHIVED_PERMSTATUS);
-      else /* For an already existing directory, invert_perms must be 0 */
-	delay_set_stat (file_name, &current_stat_info,
-			0,
-			UNKNOWN_PERMSTATUS);
-    }
+    delay_set_stat (file_name, &current_stat_info,
+		    current_mode, current_mode_mask,
+		    current_stat_info.stat.st_mode, atflag);
   return status;
 }
 
 
+
 static int
-open_output_file (char *file_name, int typeflag, mode_t mode)
+open_output_file (char const *file_name, int typeflag, mode_t mode,
+		  mode_t *current_mode, mode_t *current_mode_mask)
 {
   int fd;
+  bool overwriting_old_files = old_files_option == OVERWRITE_OLD_FILES;
   int openflag = (O_WRONLY | O_BINARY | O_CREAT
-		  | (old_files_option == OVERWRITE_OLD_FILES
-		     ? O_TRUNC
-		     : O_EXCL));
+		  | (overwriting_old_files ? O_TRUNC : O_EXCL));
 
 #if O_CTG
   /* Contiguous files (on the Masscomp) have to specify the size in
@@ -803,6 +824,34 @@ open_output_file (char *file_name, int typeflag, mode_t mode)
 
 #endif /* not O_CTG */
 
+  if (0 <= fd)
+    {
+      if (overwriting_old_files)
+	{
+	  struct stat st;
+	  if (fstat (fd, &st) != 0)
+	    {
+	      int e = errno;
+	      close (fd);
+	      errno = e;
+	      return -1;
+	    }
+	  if (! S_ISREG (st.st_mode))
+	    {
+	      close (fd);
+	      errno = EEXIST;
+	      return -1;
+	    }
+	  *current_mode = st.st_mode;
+	  *current_mode_mask = ALL_MODE_BITS;
+	}
+      else
+	{
+	  *current_mode = mode & ~ current_umask;
+	  *current_mode_mask = MODE_RWX;
+	}
+    }
+
   return fd;
 }
 
@@ -816,11 +865,10 @@ extract_file (char *file_name, int typeflag)
   size_t count;
   size_t written;
   bool interdir_made = false;
-  mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
-  mode_t invert_permissions =
-    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
-
-  /* FIXME: deal with protection issues.  */
+  mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
+		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
+  mode_t current_mode = 0;
+  mode_t current_mode_mask = 0;
 
   if (to_stdout_option)
     fd = STDOUT_FILENO;
@@ -837,7 +885,8 @@ extract_file (char *file_name, int typeflag)
     {
       int recover = RECOVER_NO;
       do
-	fd = open_output_file (file_name, typeflag, mode ^ invert_permissions);
+	fd = open_output_file (file_name, typeflag, mode,
+			       &current_mode, &current_mode_mask);
       while (fd < 0
 	     && (recover = maybe_recoverable (file_name, &interdir_made))
 	         == RECOVER_OK);
@@ -901,10 +950,10 @@ extract_file (char *file_name, int typeflag)
     return 0;
 
   if (! to_command_option)
-    set_stat (file_name, &current_stat_info, fd, NULL, invert_permissions,
+    set_stat (file_name, &current_stat_info, fd,
+	      current_mode, current_mode_mask, typeflag, false,
 	      (old_files_option == OVERWRITE_OLD_FILES
-	       ? UNKNOWN_PERMSTATUS : ARCHIVED_PERMSTATUS),
-	      typeflag);
+	       ? 0 : AT_SYMLINK_NOFOLLOW));
 
   status = close (fd);
   if (status < 0)
@@ -966,8 +1015,11 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
       p->is_symlink = is_symlink;
       if (is_symlink)
 	{
+	  p->mode = current_stat_info.stat.st_mode;
 	  p->uid = current_stat_info.stat.st_uid;
 	  p->gid = current_stat_info.stat.st_gid;
+	  p->atime = current_stat_info.atime;
+	  p->mtime = current_stat_info.mtime;
 	}
       p->change_dir = chdir_current;
       p->sources = xmalloc (offsetof (struct string_list, string)
@@ -1087,7 +1139,8 @@ extract_symlink (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, -1, NULL, 0, 0, SYMTYPE);
+  set_stat (file_name, &current_stat_info, -1, 0, 0,
+	    SYMTYPE, false, AT_SYMLINK_NOFOLLOW);
   return 0;
 
 #else
@@ -1109,12 +1162,10 @@ static int
 extract_node (char *file_name, int typeflag)
 {
   bool interdir_made = false;
-  mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
-  mode_t invert_permissions =
-    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
+  mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
+		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
 
-  while (mknod (file_name, mode ^ invert_permissions,
-		current_stat_info.stat.st_rdev))
+  while (mknod (file_name, mode, current_stat_info.stat.st_rdev) != 0)
     switch (maybe_recoverable (file_name, &interdir_made))
       {
       case RECOVER_OK:
@@ -1128,8 +1179,9 @@ extract_node (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, -1, NULL, invert_permissions,
-	    ARCHIVED_PERMSTATUS, typeflag);
+  set_stat (file_name, &current_stat_info, -1,
+	    mode & ~ current_umask, MODE_RWX,
+	    typeflag, false, AT_SYMLINK_NOFOLLOW);
   return 0;
 }
 #endif
@@ -1138,13 +1190,11 @@ extract_node (char *file_name, int typeflag)
 static int
 extract_fifo (char *file_name, int typeflag)
 {
-  int status;
   bool interdir_made = false;
-  mode_t mode = current_stat_info.stat.st_mode & ~ current_umask;
-  mode_t invert_permissions =
-    0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO) : 0;
+  mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
+		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
 
-  while ((status = mkfifo (file_name, mode)) != 0)
+  while (mkfifo (file_name, mode) != 0)
     switch (maybe_recoverable (file_name, &interdir_made))
       {
       case RECOVER_OK:
@@ -1158,8 +1208,9 @@ extract_fifo (char *file_name, int typeflag)
 	return -1;
       }
 
-  set_stat (file_name, &current_stat_info, -1, NULL, invert_permissions,
-	    ARCHIVED_PERMSTATUS, typeflag);
+  set_stat (file_name, &current_stat_info, -1,
+	    mode & ~ current_umask, MODE_RWX,
+	    typeflag, false, AT_SYMLINK_NOFOLLOW);
   return 0;
 }
 #endif
@@ -1411,9 +1462,13 @@ apply_delayed_links (void)
 	      else
 		{
 		  struct tar_stat_info st1;
+		  st1.stat.st_mode = ds->mode;
 		  st1.stat.st_uid = ds->uid;
 		  st1.stat.st_gid = ds->gid;
-		  set_stat (source, &st1, -1, NULL, 0, 0, SYMTYPE);
+		  st1.atime = ds->atime;
+		  st1.mtime = ds->mtime;
+		  set_stat (source, &st1, -1, 0, 0, SYMTYPE,
+			    false, AT_SYMLINK_NOFOLLOW);
 		  valid_source = source;
 		}
 	    }
