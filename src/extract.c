@@ -324,7 +324,7 @@ set_stat (char const *file_name,
 	ts[0].tv_nsec = UTIME_OMIT;
       ts[1] = st->mtime;
 
-      if (fd_utimensat (fd, AT_FDCWD, file_name, ts, atflag) == 0)
+      if (fdutimensat (fd, AT_FDCWD, file_name, ts, atflag) == 0)
 	{
 	  if (incremental_option)
 	    check_time (file_name, ts[0]);

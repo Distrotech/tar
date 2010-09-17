@@ -612,8 +612,6 @@ bool maybe_backup_file (const char *file_name, bool this_is_the_archive);
 void undo_last_backup (void);
 
 int deref_stat (bool deref, char const *name, struct stat *buf);
-int fd_utimensat (int fd, int parentfd, char const *file,
-		  struct timespec const ts[2], int atflag);
 
 extern int chdir_current;
 int chdir_arg (char const *dir);

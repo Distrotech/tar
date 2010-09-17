@@ -613,21 +613,6 @@ deref_stat (bool deref, char const *name, struct stat *buf)
   return deref ? stat (name, buf) : lstat (name, buf);
 }
 
-/* Use futimens if possible, utimensat otherwise.  */
-int
-fd_utimensat (int fd, int parentfd, char const *file,
-	      struct timespec const ts[2], int atflag)
-{
-  if (0 <= fd)
-    {
-      int result = futimens (fd, ts);
-      if (! (result < 0 && errno == ENOSYS))
-	return result;
-    }
-
-  return utimensat (parentfd, file, ts, atflag);
-}
-
 /* Set FD's (i.e., assuming the working directory is PARENTFD, FILE's)
    access time to ATIME.  ATFLAG controls symbolic-link following, in
    the style of openat.  */
@@ -638,7 +623,7 @@ set_file_atime (int fd, int parentfd, char const *file, struct timespec atime,
   struct timespec ts[2];
   ts[0] = atime;
   ts[1].tv_nsec = UTIME_OMIT;
-  return fd_utimensat (fd, parentfd, file, ts, atflag);
+  return fdutimensat (fd, parentfd, file, ts, atflag);
 }
 
 /* A description of a working directory.  */
