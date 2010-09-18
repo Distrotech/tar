@@ -23,6 +23,7 @@
 #include <quotearg.h>
 #include <errno.h>
 #include <priv-set.h>
+#include <utimens.h>
 
 #include "common.h"
 

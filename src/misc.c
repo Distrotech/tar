@@ -24,6 +24,7 @@
 #include <save-cwd.h>
 #include <xgetcwd.h>
 #include <unlinkdir.h>
+#include <utimens.h>
 
 #ifndef DOUBLE_SLASH_IS_DISTINCT_ROOT
 # define DOUBLE_SLASH_IS_DISTINCT_ROOT 0
