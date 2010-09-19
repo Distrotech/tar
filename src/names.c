@@ -988,7 +988,8 @@ collect_and_sort_names (void)
 	}
       if (S_ISDIR (st.stat.st_mode))
 	{
-	  int dir_fd = open (name->name, open_read_flags | O_DIRECTORY);
+	  int dir_fd = openat (chdir_fd, name->name,
+			       open_read_flags | O_DIRECTORY);
 	  if (dir_fd < 0)
 	    open_diag (name->name);
 	  else

@@ -614,6 +614,7 @@ void undo_last_backup (void);
 int deref_stat (bool deref, char const *name, struct stat *buf);
 
 extern int chdir_current;
+extern int chdir_fd;
 int chdir_arg (char const *dir);
 void chdir_do (int dir);
 int chdir_count (void);

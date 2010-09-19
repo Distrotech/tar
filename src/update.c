@@ -47,7 +47,7 @@ char *output_start;
 static void
 append_file (char *file_name)
 {
-  int handle = open (file_name, O_RDONLY | O_BINARY);
+  int handle = openat (chdir_fd, file_name, O_RDONLY | O_BINARY);
   struct stat stat_data;
 
   if (handle < 0)
@@ -144,8 +144,13 @@ update_archive (void)
 		    if (S_ISDIR (s.st_mode))
 		      {
 			char *p, *dirp;
-			dirp = savedir (name->name);
-			if (!dirp)
+			DIR *stream;
+			int fd = openat (chdir_fd, name->name,
+					 open_read_flags | O_DIRECTORY);
+			if (fd < 0)
+			  open_error (name->name);
+			else if (! ((stream = fdopendir (fd))
+				    && (dirp = streamsavedir (stream))))
 			  savedir_error (name->name);
 			else
 			  {
@@ -160,6 +165,11 @@ update_archive (void)
 
 			    remname (name);
 			  }
+
+			if (stream
+			    ? closedir (stream) != 0
+			    : 0 <= fd && close (fd) != 0)
+			  savedir_error (name->name);
 		      }
 		    else if (tar_timespec_cmp (get_stat_mtime (&s),
 					       current_stat_info.mtime)

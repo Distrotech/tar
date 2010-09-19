@@ -12,6 +12,7 @@ dirname
 error
 exclude
 exitfail
+faccessat
 fdopendir
 fdutimensat
 fileblocks
@@ -31,8 +32,10 @@ hash
 human
 inttypes
 lchown
+linkat
 localcharset
 mkdtemp
+mkfifoat
 modechange
 obstack
 openat
@@ -41,9 +44,9 @@ progname
 quote
 quotearg
 readlinkat
+renameat
 rpmatch
 safe-read
-save-cwd
 savedir
 setenv
 snprintf
@@ -55,6 +58,7 @@ strdup-posix
 strerror
 strtol
 strtoul
+symlinkat
 timespec
 unlinkdir
 unlocked-io

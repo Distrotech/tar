@@ -21,7 +21,6 @@
 #include <rmt.h>
 #include "common.h"
 #include <quotearg.h>
-#include <save-cwd.h>
 #include <xgetcwd.h>
 #include <unlinkdir.h>
 #include <utimens.h>
@@ -432,7 +431,7 @@ safer_rmdir (const char *file_name)
       return -1;
     }
 
-  return rmdir (file_name);
+  return unlinkat (chdir_fd, file_name, AT_REMOVEDIR);
 }
 
 /* Remove FILE_NAME, returning 1 on success.  If FILE_NAME is a directory,
@@ -452,7 +451,7 @@ remove_any_file (const char *file_name, enum remove_option option)
 
   if (try_unlink_first)
     {
-      if (unlink (file_name) == 0)
+      if (unlinkat (chdir_fd, file_name, 0) == 0)
 	return 1;
 
       /* POSIX 1003.1-2001 requires EPERM when attempting to unlink a
@@ -468,7 +467,7 @@ remove_any_file (const char *file_name, enum remove_option option)
   switch (errno)
     {
     case ENOTDIR:
-      return !try_unlink_first && unlink (file_name) == 0;
+      return !try_unlink_first && unlinkat (chdir_fd, file_name, 0) == 0;
 
     case 0:
     case EEXIST:
@@ -545,7 +544,7 @@ maybe_backup_file (const char *file_name, bool this_is_the_archive)
   if (this_is_the_archive && _remdev (file_name))
     return true;
 
-  if (stat (file_name, &file_stat))
+  if (fstatat (chdir_fd, file_name, &file_stat, 0))
     {
       if (errno == ENOENT)
 	return true;
@@ -565,7 +564,8 @@ maybe_backup_file (const char *file_name, bool this_is_the_archive)
   if (! after_backup_name)
     xalloc_die ();
 
-  if (rename (before_backup_name, after_backup_name) == 0)
+  if (renameat (chdir_fd, before_backup_name, chdir_fd, after_backup_name)
+      == 0)
     {
       if (verbose_option)
 	fprintf (stdlis, _("Renaming %s to %s\n"),
@@ -592,7 +592,8 @@ undo_last_backup (void)
 {
   if (after_backup_name)
     {
-      if (rename (after_backup_name, before_backup_name) != 0)
+      if (renameat (chdir_fd, after_backup_name, chdir_fd, before_backup_name)
+	  != 0)
 	{
 	  int e = errno;
 	  ERROR ((0, e, _("%s: Cannot rename to %s"),
@@ -611,7 +612,7 @@ undo_last_backup (void)
 int
 deref_stat (bool deref, char const *name, struct stat *buf)
 {
-  return deref ? stat (name, buf) : lstat (name, buf);
+  return fstatat (chdir_fd, name, buf, deref ? 0 : AT_SYMLINK_NOFOLLOW);
 }
 
 /* Set FD's (i.e., assuming the working directory is PARENTFD, FILE's)
@@ -633,13 +634,10 @@ struct wd
   /* The directory's name.  */
   char const *name;
 
-  /* A negative value if no attempt has been made to save the
-     directory, 0 if it was saved successfully, and a positive errno
-     value if it was not saved successfully.  */
-  int err;
-
-  /* The saved version of the directory, if ERR == 0.  */
-  struct saved_cwd saved_cwd;
+  /* If nonzero, the file descriptor of the directory, or AT_FDCWD if
+     the working directory.  If zero, the directory needs to be opened
+     to be used.  */
+  int fd;
 };
 
 /* A vector of chdir targets.  wd[0] is the initial working directory.  */
@@ -650,6 +648,19 @@ static size_t wd_count;
 
 /* The allocated size of the vector.  */
 static size_t wd_alloc;
+
+/* The maximum number of chdir targets with open directories.
+   Don't make it too large, as many operating systems have a small
+   limit on the number of open file descriptors.  Also, the current
+   implementation does not scale well.  */
+enum { CHDIR_CACHE_SIZE = 16 };
+
+/* Indexes into WD of chdir targets with open file descriptors, sorted
+   most-recently used first.  Zero indexes are unused.  */
+static int wdcache[CHDIR_CACHE_SIZE];
+
+/* Number of nonzero entries in WDCACHE.  */
+static size_t wdcache_count;
 
 int
 chdir_count ()
@@ -677,7 +688,7 @@ chdir_arg (char const *dir)
       if (! wd_count)
 	{
 	  wd[wd_count].name = ".";
-	  wd[wd_count].err = -1;
+	  wd[wd_count].fd = AT_FDCWD;
 	  wd_count++;
 	}
     }
@@ -694,66 +705,76 @@ chdir_arg (char const *dir)
     }
 
   wd[wd_count].name = dir;
-  wd[wd_count].err = -1;
+  wd[wd_count].fd = 0;
   return wd_count++;
 }
 
 /* Index of current directory.  */
 int chdir_current;
 
-/* Change to directory I.  If I is 0, change to the initial working
-   directory; otherwise, I must be a value returned by chdir_arg.  */
+/* Value suitable for use as the first argument to openat, and in
+   similar locations for fstatat, etc.  This is an open file
+   descriptor, or AT_FDCWD if the working directory is current.  It is
+   valid until the next invocation of chdir_do.  */
+int chdir_fd = AT_FDCWD;
+
+/* Change to directory I, in a virtual way.  This does not actually
+   invoke chdir; it merely sets chdir_fd to an int suitable as the
+   first argument for openat, etc.  If I is 0, change to the initial
+   working directory; otherwise, I must be a value returned by
+   chdir_arg.  */
 void
 chdir_do (int i)
 {
   if (chdir_current != i)
     {
-      struct wd *prev = &wd[chdir_current];
+      static size_t counter;
       struct wd *curr = &wd[i];
+      int fd = curr->fd;
 
-      if (prev->err < 0)
+      if (! fd)
 	{
-	  prev->err = 0;
-	  if (save_cwd (&prev->saved_cwd) != 0)
-	    prev->err = errno;
-	  else if (0 <= prev->saved_cwd.desc)
+	  if (! IS_ABSOLUTE_FILE_NAME (curr->name))
+	    chdir_do (i - 1);
+	  fd = openat (chdir_fd, curr->name, open_searchdir_flags);
+	  if (fd < 0)
+	    open_fatal (curr->name);
+
+	  curr->fd = fd;
+
+	  /* Add I to the cache, tossing out the lowest-ranking entry if the
+	     cache is full.  */
+	  if (wdcache_count < CHDIR_CACHE_SIZE)
+	    wdcache[wdcache_count++] = i;
+	  else
 	    {
-	      /* Make sure we still have at least one descriptor available.  */
-	      int fd1 = prev->saved_cwd.desc;
-	      int fd2 = dup (fd1);
-	      if (0 <= fd2)
-		close (fd2);
-	      else if (errno == EMFILE)
-		{
-		  /* Force restore_cwd to use chdir_long.  */
-		  close (fd1);
-		  prev->saved_cwd.desc = -1;
-		  prev->saved_cwd.name = xgetcwd ();
-		  if (! prev->saved_cwd.name)
-		    prev->err = errno;
-		}
-	      else
-		prev->err = errno;
+	      struct wd *stale = &wd[wdcache[CHDIR_CACHE_SIZE - 1]];
+	      if (close (stale->fd) != 0)
+		close_diag (stale->name);
+	      stale->fd = 0;
+	      wdcache[CHDIR_CACHE_SIZE - 1] = i;
 	    }
 	}
 
-      if (0 <= curr->err)
+      if (0 < fd)
 	{
-	  int err = curr->err;
-	  if (err == 0 && restore_cwd (&curr->saved_cwd) != 0)
-	    err = errno;
-	  if (err)
-	    FATAL_ERROR ((0, err, _("Cannot restore working directory")));
-	}
-      else
-	{
-	  if (i && ! ISSLASH (curr->name[0]))
-	    chdir_do (i - 1);
-	  if (chdir (curr->name) != 0)
-	    chdir_fatal (curr->name);
+	  /* Move the i value to the front of the cache.  This is
+	     O(CHDIR_CACHE_SIZE), but the cache is small.  */
+	  size_t ci;
+	  int prev = wdcache[0];
+	  for (ci = 1; prev != i; ci++)
+	    {
+	      int curr = wdcache[ci];
+	      wdcache[ci] = prev;
+	      if (curr == i)
+		break;
+	      prev = curr;
+	    }
+	  wdcache[0] = i;
 	}
 
       chdir_current = i;
+      chdir_fd = fd;
     }
 }
 

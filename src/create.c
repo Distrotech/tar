@@ -1345,7 +1345,8 @@ create_archive (void)
 		    {
 		      if (! st.orig_file_name)
 			{
-			  int fd = open (p->name, open_searchdir_flags);
+			  int fd = openat (chdir_fd, p->name,
+					   open_searchdir_flags);
 			  if (fd < 0)
 			    {
 			      open_diag (p->name);
@@ -1549,7 +1550,7 @@ subfile_open (struct tar_stat_info const *dir, char const *file, int flags)
       gettext ("");
     }
 
-  while ((fd = openat (dir ? dir->fd : AT_FDCWD, file, flags)) < 0
+  while ((fd = openat (dir ? dir->fd : chdir_fd, file, flags)) < 0
 	 && open_failure_recover (dir))
     continue;
   return fd;
@@ -1580,7 +1581,8 @@ restore_parent_fd (struct tar_stat_info const *st)
 
       if (parentfd < 0)
 	{
-	  int origfd = open (parent->orig_file_name, open_searchdir_flags);
+	  int origfd = openat (chdir_fd, parent->orig_file_name,
+			       open_searchdir_flags);
 	  if (0 <= origfd)
 	    {
 	      if (fstat (parentfd, &parentstat) == 0
@@ -1615,7 +1617,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
   bool is_dir;
   struct tar_stat_info const *parent = st->parent;
   bool top_level = ! parent;
-  int parentfd = top_level ? AT_FDCWD : parent->fd;
+  int parentfd = top_level ? chdir_fd : parent->fd;
   void (*diag) (char const *) = 0;
 
   if (interactive_option && !confirm ("add", p))
@@ -1723,7 +1725,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	  ok = dump_dir (st);
 
 	  fd = st->fd;
-	  parentfd = top_level ? AT_FDCWD : parent->fd;
+	  parentfd = top_level ? chdir_fd : parent->fd;
 	}
       else
 	{

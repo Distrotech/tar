@@ -198,4 +198,4 @@ genfile_SOURCES = genfile.c argcv.c argcv.h
 localedir = $(datadir)/locale
 INCLUDES = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/gnu -I$(top_srcdir)/lib
 AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
-LDADD = ../gnu/libgnu.a $(LIBINTL) $(LIB_CLOCK_GETTIME)
+LDADD = ../gnu/libgnu.a $(LIBINTL) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS)

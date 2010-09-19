@@ -222,9 +222,9 @@ diff_file (void)
 	     ? O_NOATIME
 	     : 0);
 
-	  diff_handle = open (file_name,
-			      (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY
-			       | O_NONBLOCK | atime_flag));
+	  diff_handle = openat (chdir_fd, file_name,
+				(O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY
+				 | O_NONBLOCK | atime_flag));
 
 	  if (diff_handle < 0)
 	    {
@@ -244,7 +244,7 @@ diff_file (void)
 	      if (atime_preserve_option == replace_atime_preserve)
 		{
 		  struct timespec atime = get_stat_atime (&stat_data);
-		  if (set_file_atime (diff_handle, AT_FDCWD, file_name,
+		  if (set_file_atime (diff_handle, chdir_fd, file_name,
 				      atime, 0)
 		      != 0)
 		    utime_error (file_name);
@@ -279,7 +279,8 @@ diff_symlink (void)
   size_t len = strlen (current_stat_info.link_name);
   char *linkbuf = alloca (len + 1);
 
-  int status = readlink (current_stat_info.file_name, linkbuf, len + 1);
+  int status = readlinkat (chdir_fd, current_stat_info.file_name,
+			   linkbuf, len + 1);
 
   if (status < 0)
     {
@@ -428,9 +429,9 @@ diff_multivol (void)
     }
 
 
-  fd = open (current_stat_info.file_name,
-	     (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
-	      | atime_flag));
+  fd = openat (chdir_fd, current_stat_info.file_name,
+	       (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
+		| atime_flag));
 
   if (fd < 0)
     {
