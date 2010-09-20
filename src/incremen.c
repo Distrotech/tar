@@ -890,7 +890,8 @@ append_incremental_renames (struct directory *dir)
   for (dp = dirhead; dp; dp = dp->next)
     store_rename (dp, &stk);
 
-  if (obstack_object_size (&stk) != size)
+  /* FIXME: Is this the right thing to do when DIR is null?  */
+  if (dir && obstack_object_size (&stk) != size)
     {
       obstack_1grow (&stk, 0);
       dumpdir_free (dir->dump);
