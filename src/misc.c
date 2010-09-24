@@ -736,7 +736,8 @@ chdir_do (int i)
 	{
 	  if (! IS_ABSOLUTE_FILE_NAME (curr->name))
 	    chdir_do (i - 1);
-	  fd = openat (chdir_fd, curr->name, open_searchdir_flags);
+	  fd = openat (chdir_fd, curr->name,
+		       open_searchdir_flags & ~ O_NOFOLLOW);
 	  if (fd < 0)
 	    open_fatal (curr->name);
 
