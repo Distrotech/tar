@@ -375,7 +375,7 @@ mark_after_links (struct delayed_set_stat *head)
       struct stat st;
       h->after_links = 1;
 
-      if (fstatat (chdir_fd, h->file_name, &st, 0) != 0)
+      if (deref_stat (h->file_name, &st) != 0)
 	stat_error (h->file_name);
       else
 	{
@@ -548,27 +548,32 @@ make_directories (char *file_name)
   return did_something;		/* tell them to retry if we made one */
 }
 
+/* Return true if FILE_NAME (with status *STP, if STP) is not a
+   directory, and has a time stamp newer than (or equal to) that of
+   TAR_STAT.  */
 static bool
-file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
+file_newer_p (const char *file_name, struct stat const *stp,
+	      struct tar_stat_info *tar_stat)
 {
   struct stat st;
 
-  if (fstatat (chdir_fd, file_name, &st, 0))
+  if (!stp)
     {
-      if (errno != ENOENT)
+      if (deref_stat (file_name, &st) != 0)
 	{
-	  stat_warn (file_name);
-	  /* Be on the safe side: if the file does exist assume it is newer */
-	  return true;
+	  if (errno != ENOENT)
+	    {
+	      stat_warn (file_name);
+	      /* Be safer: if the file exists, assume it is newer.  */
+	      return true;
+	    }
+	  return false;
 	}
-      return false;
+      stp = &st;
     }
-  if (!S_ISDIR (st.st_mode)
-      && tar_timespec_cmp (tar_stat->mtime, get_stat_mtime (&st)) <= 0)
-    {
-      return true;
-    }
-  return false;
+
+  return (! S_ISDIR (stp->st_mode)
+	  && tar_timespec_cmp (tar_stat->mtime, get_stat_mtime (stp)) <= 0);
 }
 
 #define RECOVER_NO 0
@@ -580,18 +585,39 @@ file_newer_p (const char *file_name, struct tar_stat_info *tar_stat)
    Return RECOVER_OK if we somewhat increased our chances at a successful
    extraction, RECOVER_NO if there are no chances, and RECOVER_SKIP if the
    caller should skip extraction of that member.  The value of errno is
-   properly restored on returning RECOVER_NO.  */
+   properly restored on returning RECOVER_NO.
+
+   If REGULAR, the caller was trying to extract onto a regular file.
+
+   Set *INTERDIR_MADE if an intermediate directory is made as part of
+   the recovery process.  */
 
 static int
-maybe_recoverable (char *file_name, bool *interdir_made)
+maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
 {
   int e = errno;
+  struct stat st;
+  struct stat const *stp = 0;
 
   if (*interdir_made)
     return RECOVER_NO;
 
-  switch (errno)
+  switch (e)
     {
+    case ELOOP:
+      if (! regular
+	  || old_files_option != OVERWRITE_OLD_FILES || dereference_option)
+	break;
+      if (strchr (file_name, '/'))
+	{
+	  if (deref_stat (file_name, &st) != 0)
+	    break;
+	  stp = &st;
+	}
+
+      /* The caller tried to open a symbolic link with O_NOFOLLOW.
+	 Fall through, treating it as an already-existing file.  */
+
     case EEXIST:
       /* Remove an old file, if the options allow this.  */
 
@@ -601,21 +627,16 @@ maybe_recoverable (char *file_name, bool *interdir_made)
 	  return RECOVER_SKIP;
 
 	case KEEP_NEWER_FILES:
-	  if (file_newer_p (file_name, &current_stat_info))
-	    {
-	      errno = e;
-	      return RECOVER_NO;
-	    }
+	  if (file_newer_p (file_name, stp, &current_stat_info))
+	    break;
 	  /* FALL THROUGH */
 
 	case DEFAULT_OLD_FILES:
 	case NO_OVERWRITE_DIR_OLD_FILES:
 	case OVERWRITE_OLD_FILES:
-	  {
-	    int r = remove_any_file (file_name, ORDINARY_REMOVE_OPTION);
-	    errno = EEXIST;
-	    return r > 0 ? RECOVER_OK : RECOVER_NO;
-	  }
+	  if (0 < remove_any_file (file_name, ORDINARY_REMOVE_OPTION))
+	    return RECOVER_OK;
+	  break;
 
 	case UNLINK_FIRST_OLD_FILES:
 	  break;
@@ -623,19 +644,20 @@ maybe_recoverable (char *file_name, bool *interdir_made)
 
     case ENOENT:
       /* Attempt creating missing intermediate directories.  */
-      if (! make_directories (file_name))
+      if (make_directories (file_name))
 	{
-	  errno = ENOENT;
-	  return RECOVER_NO;
+	  *interdir_made = true;
+	  return RECOVER_OK;
 	}
-      *interdir_made = true;
-      return RECOVER_OK;
+      break;
 
     default:
       /* Just say we can't do anything about it...  */
-
-      return RECOVER_NO;
+      break;
     }
+
+  errno = e;
+  return RECOVER_NO;
 }
 
 /* Fix the statuses of all directories whose statuses need fixing, and
@@ -769,7 +791,7 @@ extract_dir (char *file_name, int typeflag)
 	      || old_files_option == OVERWRITE_OLD_FILES))
 	{
 	  struct stat st;
-	  if (fstatat (chdir_fd, file_name, &st, 0) == 0)
+	  if (deref_stat (file_name, &st) == 0)
 	    {
 	      current_mode = st.st_mode;
 	      current_mode_mask = ALL_MODE_BITS;
@@ -787,7 +809,7 @@ extract_dir (char *file_name, int typeflag)
 	  errno = EEXIST;
 	}
 
-      switch (maybe_recoverable (file_name, &interdir_made))
+      switch (maybe_recoverable (file_name, false, &interdir_made))
 	{
 	case RECOVER_OK:
 	  continue;
@@ -823,8 +845,11 @@ open_output_file (char const *file_name, int typeflag, mode_t mode,
 {
   int fd;
   bool overwriting_old_files = old_files_option == OVERWRITE_OLD_FILES;
-  int openflag = (O_WRONLY | O_BINARY | O_CREAT
-		  | (overwriting_old_files ? O_TRUNC : O_EXCL));
+  int openflag = (O_WRONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
+		  | O_CREAT
+		  | (overwriting_old_files
+		     ? O_TRUNC | (dereference_option ? 0 : O_NOFOLLOW)
+		     : O_EXCL));
 
   if (typeflag == CONTTYPE)
     {
@@ -898,21 +923,19 @@ extract_file (char *file_name, int typeflag)
     }
   else
     {
-      int recover = RECOVER_NO;
-      do
-	fd = open_output_file (file_name, typeflag, mode,
-			       &current_mode, &current_mode_mask);
-      while (fd < 0
-	     && (recover = maybe_recoverable (file_name, &interdir_made))
-	         == RECOVER_OK);
-
-      if (fd < 0)
+      while ((fd = open_output_file (file_name, typeflag, mode,
+				     &current_mode, &current_mode_mask))
+	     < 0)
 	{
-	  skip_member ();
-	  if (recover == RECOVER_SKIP)
-	    return 0;
-	  open_error (file_name);
-	  return 1;
+	  int recover = maybe_recoverable (file_name, true, &interdir_made);
+	  if (recover != RECOVER_OK)
+	    {
+	      skip_member ();
+	      if (recover == RECOVER_SKIP)
+		return 0;
+	      open_error (file_name);
+	      return 1;
+	    }
 	}
     }
 
@@ -994,7 +1017,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 
   while ((fd = openat (chdir_fd, file_name, O_WRONLY | O_CREAT | O_EXCL, 0)) < 0)
     {
-      switch (maybe_recoverable (file_name, interdir_made))
+      switch (maybe_recoverable (file_name, false, interdir_made))
 	{
 	case RECOVER_OK:
 	  continue;
@@ -1106,7 +1129,8 @@ extract_link (char *file_name, int typeflag)
 
       errno = e;
     }
-  while ((rc = maybe_recoverable (file_name, &interdir_made)) == RECOVER_OK);
+  while ((rc = maybe_recoverable (file_name, false, &interdir_made))
+	 == RECOVER_OK);
 
   if (rc == RECOVER_SKIP)
     return 0;
@@ -1130,7 +1154,7 @@ extract_symlink (char *file_name, int typeflag)
     return create_placeholder_file (file_name, true, &interdir_made);
 
   while (symlinkat (current_stat_info.link_name, chdir_fd, file_name) != 0)
-    switch (maybe_recoverable (file_name, &interdir_made))
+    switch (maybe_recoverable (file_name, false, &interdir_made))
       {
       case RECOVER_OK:
 	continue;
@@ -1171,7 +1195,7 @@ extract_node (char *file_name, int typeflag)
 
   while (mknodat (chdir_fd, file_name, mode, current_stat_info.stat.st_rdev)
 	 != 0)
-    switch (maybe_recoverable (file_name, &interdir_made))
+    switch (maybe_recoverable (file_name, false, &interdir_made))
       {
       case RECOVER_OK:
 	continue;
@@ -1200,7 +1224,7 @@ extract_fifo (char *file_name, int typeflag)
 		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
 
   while (mkfifoat (chdir_fd, file_name, mode) != 0)
-    switch (maybe_recoverable (file_name, &interdir_made))
+    switch (maybe_recoverable (file_name, false, &interdir_made))
       {
       case RECOVER_OK:
 	continue;
@@ -1348,7 +1372,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
       break;
 
     case KEEP_NEWER_FILES:
-      if (file_newer_p (file_name, &current_stat_info))
+      if (file_newer_p (file_name, 0, &current_stat_info))
 	{
 	  WARNOPT (WARN_IGNORE_NEWER,
 		   (0, 0, _("Current %s is newer or same age"),

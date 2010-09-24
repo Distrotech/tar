@@ -611,7 +611,7 @@ int remove_any_file (const char *file_name, enum remove_option option);
 bool maybe_backup_file (const char *file_name, bool this_is_the_archive);
 void undo_last_backup (void);
 
-int deref_stat (bool deref, char const *name, struct stat *buf);
+int deref_stat (char const *name, struct stat *buf);
 
 extern int chdir_current;
 extern int chdir_fd;
@@ -640,7 +640,7 @@ void xpipe (int fd[2]);
 
 void *page_aligned_alloc (void **ptr, size_t size);
 int set_file_atime (int fd, int parentfd, char const *file,
-		    struct timespec atime, int atflag);
+		    struct timespec atime);
 
 /* Module names.c.  */
 

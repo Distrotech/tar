@@ -2559,9 +2559,9 @@ directories until the end of extraction. @xref{Directory Modification Times and 
 @item --dereference
 @itemx -h
 
-When creating a @command{tar} archive, @command{tar} will archive the
-file that a symbolic link points to, rather than archiving the
-symlink.  @xref{dereference}.
+When reading or writing a file to be archived, @command{tar} accesses
+the file that a symbolic link points to, rather than the symlink
+itself.  @xref{dereference}.
 
 @opsummary{directory}
 @item --directory=@var{dir}
@@ -9319,30 +9319,25 @@ than System V's.
 Normally, when @command{tar} archives a symbolic link, it writes a
 block to the archive naming the target of the link.  In that way, the
 @command{tar} archive is a faithful record of the file system contents.
-@option{--dereference} (@option{-h}) is used with @option{--create} (@option{-c}), and causes
-@command{tar} to archive the files symbolic links point to, instead of
-the links themselves.  When this option is used, when @command{tar}
-encounters a symbolic link, it will archive the linked-to file,
-instead of simply recording the presence of a symbolic link.
+When @option{--dereference} (@option{-h}) is used with
+@option{--create} (@option{-c}), @command{tar} archives the files
+symbolic links point to, instead of
+the links themselves.
 
-The name under which the file is stored in the file system is not
-recorded in the archive.  To record both the symbolic link name and
-the file name in the system, archive the file under both names.  If
-all links were recorded automatically by @command{tar}, an extracted file
-might be linked to a file name that no longer exists in the file
-system.
-
-If a linked-to file is encountered again by @command{tar} while creating
-the same archive, an entire second copy of it will be stored.  (This
-@emph{might} be considered a bug.)
-
-So, for portable archives, do not archive symbolic links as such,
-and use @option{--dereference} (@option{-h}): many systems do not support
+When creating portable archives, use @option{--dereference}
+(@option{-h}): some systems do not support
 symbolic links, and moreover, your distribution might be unusable if
 it contains unresolved symbolic links.
 
-The @option{--dereference} option is not secure if an untrusted user
-can modify files during creation or extraction.  @xref{Security}.
+When reading from an archive, the @option{--dereference} (@option{-h})
+option causes @command{tar} to follow an already-existing symbolic
+link when @command{tar} writes or reads a file named in the archive.
+Ordinarily, @command{tar} does not follow such a link, though it may
+remove the link before writing a new file.  @xref{Dealing with Old
+Files}.
+
+The @option{--dereference} option is unsafe if an untrusted user can
+modify directories while @command{tar} is running.  @xref{Security}.
 
 @node hard links
 @subsection Hard Links

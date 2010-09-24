@@ -544,7 +544,7 @@ maybe_backup_file (const char *file_name, bool this_is_the_archive)
   if (this_is_the_archive && _remdev (file_name))
     return true;
 
-  if (fstatat (chdir_fd, file_name, &file_stat, 0))
+  if (deref_stat (file_name, &file_stat) != 0)
     {
       if (errno == ENOENT)
 	return true;
@@ -608,24 +608,24 @@ undo_last_backup (void)
     }
 }
 
-/* Depending on DEREF, apply either stat or lstat to (NAME, BUF).  */
+/* Apply either stat or lstat to (NAME, BUF), depending on the
+   presence of the --dereference option.  NAME is relative to the
+   most-recent argument to chdir_do.  */
 int
-deref_stat (bool deref, char const *name, struct stat *buf)
+deref_stat (char const *name, struct stat *buf)
 {
-  return fstatat (chdir_fd, name, buf, deref ? 0 : AT_SYMLINK_NOFOLLOW);
+  return fstatat (chdir_fd, name, buf, fstatat_flags);
 }
 
 /* Set FD's (i.e., assuming the working directory is PARENTFD, FILE's)
-   access time to ATIME.  ATFLAG controls symbolic-link following, in
-   the style of openat.  */
+   access time to ATIME.  */
 int
-set_file_atime (int fd, int parentfd, char const *file, struct timespec atime,
-		int atflag)
+set_file_atime (int fd, int parentfd, char const *file, struct timespec atime)
 {
   struct timespec ts[2];
   ts[0] = atime;
   ts[1].tv_nsec = UTIME_OMIT;
-  return fdutimensat (fd, parentfd, file, ts, atflag);
+  return fdutimensat (fd, parentfd, file, ts, fstatat_flags);
 }
 
 /* A description of a working directory.  */

@@ -138,8 +138,7 @@ update_archive (void)
 		struct stat s;
 
 		chdir_do (name->change_dir);
-		if (deref_stat (dereference_option,
-				current_stat_info.file_name, &s) == 0)
+		if (deref_stat (current_stat_info.file_name, &s) == 0)
 		  {
 		    if (S_ISDIR (s.st_mode))
 		      {

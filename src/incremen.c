@@ -408,7 +408,7 @@ update_parent_directory (struct tar_stat_info *parent)
   if (directory)
     {
       struct stat st;
-      if (fstatat (parent->fd, ".", &st, fstatat_flags) != 0)
+      if (fstat (parent->fd, &st) != 0)
 	stat_diag (directory->name);
       else
 	directory->mtime = get_stat_mtime (&st);
@@ -1668,7 +1668,7 @@ try_purge_directory (char const *directory_name)
 	free (p);
       p = new_name (directory_name, cur);
 
-      if (deref_stat (false, p, &st))
+      if (deref_stat (p, &st) != 0)
 	{
 	  if (errno != ENOENT) /* FIXME: Maybe keep a list of renamed
 				  dirs and check it here? */

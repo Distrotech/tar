@@ -151,7 +151,7 @@ read_and_process (struct tar_stat_info *st, int (*processor) (size_t, char *))
 static int
 get_stat_data (char const *file_name, struct stat *stat_data)
 {
-  int status = deref_stat (dereference_option, file_name, stat_data);
+  int status = deref_stat (file_name, stat_data);
 
   if (status != 0)
     {
@@ -217,14 +217,7 @@ diff_file (void)
 	}
       else
 	{
-	  int atime_flag =
-	    (atime_preserve_option == system_atime_preserve
-	     ? O_NOATIME
-	     : 0);
-
-	  diff_handle = openat (chdir_fd, file_name,
-				(O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY
-				 | O_NONBLOCK | atime_flag));
+	  diff_handle = openat (chdir_fd, file_name, open_read_flags);
 
 	  if (diff_handle < 0)
 	    {
@@ -244,8 +237,7 @@ diff_file (void)
 	      if (atime_preserve_option == replace_atime_preserve)
 		{
 		  struct timespec atime = get_stat_atime (&stat_data);
-		  if (set_file_atime (diff_handle, chdir_fd, file_name,
-				      atime, 0)
+		  if (set_file_atime (diff_handle, chdir_fd, file_name, atime)
 		      != 0)
 		    utime_error (file_name);
 		}
@@ -372,7 +364,7 @@ diff_dumpdir (void)
   dev_t dev = 0;
   struct stat stat_data;
 
-  if (deref_stat (true, current_stat_info.file_name, &stat_data))
+  if (deref_stat (current_stat_info.file_name, &stat_data) != 0)
     {
       if (errno == ENOENT)
 	stat_warn (current_stat_info.file_name);
@@ -399,10 +391,6 @@ diff_multivol (void)
   struct stat stat_data;
   int fd, status;
   off_t offset;
-  int atime_flag =
-    (atime_preserve_option == system_atime_preserve
-     ? O_NOATIME
-     : 0);
 
   if (current_stat_info.had_trailing_slash)
     {
@@ -429,9 +417,7 @@ diff_multivol (void)
     }
 
 
-  fd = openat (chdir_fd, current_stat_info.file_name,
-	       (O_RDONLY | O_BINARY | O_CLOEXEC | O_NOCTTY | O_NONBLOCK
-		| atime_flag));
+  fd = openat (chdir_fd, current_stat_info.file_name, open_read_flags);
 
   if (fd < 0)
     {

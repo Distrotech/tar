@@ -981,7 +981,7 @@ collect_and_sort_names (void)
 
       tar_stat_init (&st);
 
-      if (deref_stat (dereference_option, name->name, &st.stat) != 0)
+      if (deref_stat (name->name, &st.stat) != 0)
 	{
 	  stat_diag (name->name);
 	  continue;
@@ -1159,7 +1159,7 @@ register_individual_file (char const *name)
 {
   struct stat st;
 
-  if (deref_stat (dereference_option, name, &st) != 0)
+  if (deref_stat (name, &st) != 0)
     return; /* Will be complained about later */
   if (S_ISDIR (st.st_mode))
     return;

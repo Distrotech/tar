@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2010-09-17
+GNU tar NEWS - User visible changes. 2010-09-23
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -32,6 +32,22 @@ last-modified time and link permissions, if the operating system
 supports this.  For example, recent versions of the Linux kernel
 support setting times on symlinks, and some BSD kernels also support
 symlink permissions.
+
+** --dereference consistency
+
+The --dereference (-h) option now applies to files that are copied
+into or out of archives, independently of other options.  For example,
+if F is a symbolic link and archive.tar contains a regular-file member
+also named F, "tar --overwrite -x -f archive.tar F" now overwrites F
+itself, rather than the file that F points to.  (To overwrite the file
+that F points to, add the --dereference (-h) option.)  Formerly,
+--dereference was intended to apply only when using the -c option, but
+the implementation was not consistent.
+
+Also, the --dereference option no longer affects accesses to other
+files, such as archives and time stamp files.  Symbolic links to these
+files are always followed.  Previously, the links were usually but not
+always followed.
 
 ** Spurious error diagnostics on broken pipe.
 

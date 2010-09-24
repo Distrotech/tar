@@ -1014,7 +1014,7 @@ get_date_or_file (struct tar_args *args, const char *option,
       || *str == '.')
     {
       struct stat st;
-      if (deref_stat (dereference_option, str, &st) != 0)
+      if (stat (str, &st) != 0)
 	{
 	  stat_error (str);
 	  USAGE_ERROR ((0, 0, _("Date sample file not found")));
