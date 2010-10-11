@@ -43,7 +43,7 @@
 #include <closeout.h>
 #include <configmake.h>
 #include <exitfail.h>
-#include <getdate.h>
+#include <parse-datetime.h>
 #include <rmt.h>
 #include <rmt-command.h>
 #include <prepargs.h>
@@ -1023,7 +1023,7 @@ get_date_or_file (struct tar_args *args, const char *option,
     }
   else
     {
-      if (! get_date (ts, str, NULL))
+      if (! parse_datetime (ts, str, NULL))
 	{
 	  WARN ((0, 0, _("Substituting %s for unknown date format %s"),
 		 tartime (*ts, false), quote (str)));

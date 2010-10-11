@@ -318,7 +318,7 @@ Date input formats
 * Pure numbers in date strings::   19931219, 1440.
 * Seconds since the Epoch::        @@1078100502.
 * Specifying time zone rules::     TZ="America/New_York", TZ="UTC0".
-* Authors of get_date::            Bellovin, Eggert, Salz, Berets, et al.
+* Authors of parse_datetime::      Bellovin, Eggert, Salz, Berets, et al.
 
 Controlling the Archive Format
 
@@ -8560,7 +8560,7 @@ $ @kbd{tar -c -f archive.tar -C / home}
 @xref{Integrity}, for some of the security-related implications
 of using this option.
 
-@include getdate.texi
+@include parse-datetime.texi
 
 @node Formats
 @chapter Controlling the Archive Format

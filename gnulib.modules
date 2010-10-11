@@ -18,10 +18,8 @@ fdutimensat
 fileblocks
 fnmatch-gnu
 fseeko
-ftruncate
 full-write
 futimens
-getdate
 getline
 getopt-gnu
 getpagesize
@@ -30,6 +28,7 @@ gettime
 gitlog-to-changelog
 hash
 human
+inttostr
 inttypes
 lchown
 linkat
@@ -39,6 +38,7 @@ mkfifoat
 modechange
 obstack
 openat
+parse-datetime
 priv-set
 progname
 quote
