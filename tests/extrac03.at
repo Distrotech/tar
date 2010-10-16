@@ -27,7 +27,7 @@ AT_TAR_CHECK([
 mkdir directory
 tar -cPvf archive directory/../directory
 echo separator
-tar -xPvf archive],
+tar -xPvf archive --warning=no-timestamp],
 [0],
 [directory/../directory/
 separator

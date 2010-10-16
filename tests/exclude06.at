@@ -33,7 +33,7 @@ genfile --length 20 -f test_base_dir[/1.c]
 
 tar cf archive.tar test_base_dir
 mkdir out
-tar -C out -xf archive.tar --exclude='*.txt'
+tar -C out -xf archive.tar --exclude='*.txt' --warning=no-timestamp
 find out -type f
 ],
 [0],

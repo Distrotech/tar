@@ -37,9 +37,9 @@ tar -cf archive.1 -g db directory
 
 mv directory orig
 
-tar xvfg archive.0 /dev/null
+tar xvfg archive.0 /dev/null --warning=no-timestamp
 echo separator
-tar xvfg archive.1 /dev/null
+tar xvfg archive.1 /dev/null --warning=no-timestamp
 ],
 [0],
 [directory/

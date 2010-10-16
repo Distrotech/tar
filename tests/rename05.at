@@ -46,11 +46,11 @@ tar -cf archive.2 -g db.2 dir
 mv dir orig
 
 decho First restore
-tar -xf archive.1 -g db.1
+tar -xf archive.1 -g db.1 --warning=no-timestamp
 find directory | sort
 
 decho Second restore
-tar -xf archive.2 -g db.2
+tar -xf archive.2 -g db.2 --warning=no-timestamp
 find dir | sort
 ],
 [0],

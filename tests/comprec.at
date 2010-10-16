@@ -29,7 +29,7 @@ echo "separator"
 tar cfz archive file1
 echo "separator"
 mv file1 orig
-tar xfv archive
+tar xfv archive --warning=no-timestamp
 cmp orig file1
 ],
 [0],

@@ -46,14 +46,14 @@ tar -g incr -cf arch.2 -v foo
 
 mv foo old
 
-tar xfg arch.1 /dev/null 2>tmperr
+tar xfg arch.1 /dev/null --warning=no-timestamp 2>tmperr
 sort tmperr >&2
 
 echo "Begin directory listing 1"
 find foo | sort
 echo "End directory listing 1"
 
-tar xfgv arch.2 /dev/null
+tar xfgv arch.2 /dev/null --warning=no-timestamp
 echo Begin directory listing 2
 find foo | sort
 echo End directory listing 2

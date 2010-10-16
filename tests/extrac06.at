@@ -54,10 +54,10 @@ chmod 755 directory
 genfile --stat=mode:777 directory
 
 # ... and attempt to restore it twice
-tar xf arc directory
+tar xf arc directory --warning=no-timestamp
 genfile --stat=mode:777 directory
 
-tar xf arc directory
+tar xf arc directory --warning=no-timestamp
 genfile --stat=mode:777 directory
 
 # After both restores, the directory mode should be 755

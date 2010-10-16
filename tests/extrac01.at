@@ -27,7 +27,7 @@ AT_TAR_CHECK([
 mkdir directory
 touch directory/file
 tar cf archive directory || exit 1
-tar xf archive || exit 1
+tar xf archive --warning=no-timestamp || exit 1
 ])
 
 AT_CLEANUP

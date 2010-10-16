@@ -47,7 +47,7 @@ tar cf archive jeden dwa trzy cztery || exit 1
 mkdir dir
 cd dir
 
-tar xvfT ../archive ../../list || exit 1
+tar xvfT ../archive ../../list --warning=no-timestamp || exit 1
 
 cd ..
 ],

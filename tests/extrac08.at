@@ -40,7 +40,7 @@ chmod 755 dir
 echo bla > dir/file
 tar cf test.tar dir
 chmod 700 dir
-tar xfv test.tar
+tar xfv test.tar --warning=no-timestamp
 genfile --stat=mode.777 dir
 ],
 [0],

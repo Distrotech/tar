@@ -28,7 +28,7 @@ mkdir dest
 ln -s dest symlink
 echo foo >foo
 tar -cf archive.tar foo &&
-tar -xf archive.tar -C symlink &&
+tar -xf archive.tar -C symlink --warning=no-timestamp &&
 cmp foo dest/foo
 ],
 [0],[],[],[],[],[gnu])

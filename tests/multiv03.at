@@ -59,7 +59,7 @@ tar -M -L 10 -c -f arch.1 -f arch.2 $BFILE || exit 1
 
 echo separator-2
 mv $BFILE bfile
-tar -M -x -f arch.1 -f arch.2 || exit 1
+tar -M -x -f arch.1 -f arch.2 --warning=no-timestamp || exit 1
 cmp $BFILE bfile
 ],
 [0],

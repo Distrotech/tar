@@ -51,9 +51,9 @@ tar --create --file=archive.2 --listed-incremental=db.2 directory
 rm -r directory
 
 echo Restore archive.1
-tar -xf archive.1 --listed-incremental=/dev/null
+tar -xf archive.1 --listed-incremental=/dev/null --warning=no-timestamp
 echo Restore archive.2
-tar -xf archive.2 --listed-incremental=/dev/null
+tar -xf archive.2 --listed-incremental=/dev/null --warning=no-timestamp
 find directory | sort
 ],
 [0],

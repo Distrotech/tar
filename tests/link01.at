@@ -44,7 +44,7 @@ ln directory/test1/test.txt directory/test2/test.txt || AT_SKIP_TEST
 tar cf archive directory/test1/test.txt directory/test1/test.txt
 
 rm -r directory
-tar xf archive
+tar xf archive --warning=no-timestamp
 
 ls directory/test1
 ],

@@ -34,7 +34,7 @@ genfile -l 1024 -f file2
 tar cf archive file1 file2
 
 mkdir directory
-tar -xf archive --same-order -C directory || exit 1
+tar -xf archive --same-order -C directory --warning=no-timestamp || exit 1
 
 ls directory|sort
 ],

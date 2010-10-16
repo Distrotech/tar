@@ -37,7 +37,7 @@ AT_TAR_CHECK([
 mkdir dir1 dir2
 echo bla > dir1/file1
 tar cf test.tar dir1 dir2
-tar xfv test.tar --backup
+tar xfv test.tar --backup --warning=no-timestamp
 ],
 [0],
 [dir1/

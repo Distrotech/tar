@@ -38,7 +38,7 @@ exec <&-
 
 tar -c -f A.tar -f B.tar -f C.tar -M -L 30 en to tre fire || exit 1
 echo separator
-tar -v -x -f A.tar -f B.tar -f C.tar -M en || exit 1
+tar -v -x -f A.tar -f B.tar -f C.tar -M en --warning=no-timestamp || exit 1
 ],
 [0],
 [separator

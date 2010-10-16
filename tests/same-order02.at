@@ -34,7 +34,9 @@ mkdir en
 mkdir to
 
 HERE=`pwd`
-tar -xf archive --same-order -C $HERE/en file1 -C $HERE/to file2 || exit 1
+tar -xf archive --same-order --warning=no-timestamp \
+  -C $HERE/en file1 \
+  -C $HERE/to file2 || exit 1
 
 ls en
 echo separator

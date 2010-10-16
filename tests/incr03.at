@@ -50,11 +50,11 @@ echo Listing of archive.2
 tar -tf archive.2 | sort
 
 echo Directory after first restore
-tar -xf archive.1 -g db
+tar -xf archive.1 -g db --warning=no-timestamp
 find directory | sort
 
 echo Directory after second restore
-tar -xf archive.2 -g db
+tar -xf archive.2 -g db --warning=no-timestamp
 find directory | sort
 ],
 [0],
