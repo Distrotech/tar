@@ -12,7 +12,6 @@ dirname
 error
 exclude
 exitfail
-faccessat
 fdopendir
 fdutimensat
 fileblocks

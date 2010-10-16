@@ -478,20 +478,20 @@ repair_delayed_set_stat (char const *dir,
 
 /* After a file/link/directory creation has failed, see if
    it's because some required directory was not present, and if so,
-   create all required directories.  Return non-zero if a directory
-   was created.  */
+   create all required directories.  Return zero if all the required
+   directories were created, nonzero (issuing a diagnostic) otherwise.
+   Set *INTERDIR_MADE if at least one directory was created.  */
 static int
-make_directories (char *file_name)
+make_directories (char *file_name, bool *interdir_made)
 {
   char *cursor0 = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
   char *cursor;	        	/* points into the file name */
-  int did_something = 0;	/* did we do anything yet? */
-  int status;
 
   for (cursor = cursor0; *cursor; cursor++)
     {
       mode_t mode;
       mode_t desired_mode;
+      int status;
 
       if (! ISSLASH (*cursor))
 	continue;
@@ -524,28 +524,32 @@ make_directories (char *file_name)
 			  desired_mode, AT_SYMLINK_NOFOLLOW);
 
 	  print_for_mkdir (file_name, cursor - file_name, desired_mode);
-	  did_something = 1;
-
-	  *cursor = '/';
-	  continue;
+	  *interdir_made = true;
+	}
+      else if (errno == EEXIST)
+	status = 0;
+      else
+	{
+	  /* Check whether the desired file exists.  Even when the
+	     file exists, mkdir can fail with some errno value E other
+	     than EEXIST, so long as E describes an error condition
+	     that also applies.  */
+	  int e = errno;
+	  struct stat st;
+	  status = fstatat (chdir_fd, file_name, &st, 0);
+	  if (status)
+	    {
+	      errno = e;
+	      mkdir_error (file_name);
+	    }
 	}
 
       *cursor = '/';
-
-      if (errno == EEXIST)
-	continue;	        /* Directory already exists.  */
-      else if ((errno == ENOSYS /* Automounted dirs on Solaris return
-				   this. Reported by Warren Hyde
-				   <Warren.Hyde@motorola.com> */
-	       || ERRNO_IS_EACCES)  /* Turbo C mkdir gives a funny errno.  */
-	       && faccessat (chdir_fd, file_name, W_OK, AT_EACCESS) == 0)
-	continue;
-
-      /* Some other error in the mkdir.  We return to the caller.  */
-      break;
+      if (status)
+	return status;
     }
 
-  return did_something;		/* tell them to retry if we made one */
+  return 0;
 }
 
 /* Return true if FILE_NAME (with status *STP, if STP) is not a
@@ -644,11 +648,8 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
 
     case ENOENT:
       /* Attempt creating missing intermediate directories.  */
-      if (make_directories (file_name))
-	{
-	  *interdir_made = true;
-	  return RECOVER_OK;
-	}
+      if (make_directories (file_name, interdir_made) == 0 && *interdir_made)
+	return RECOVER_OK;
       break;
 
     default:
@@ -1544,11 +1545,12 @@ rename_directory (char *src, char *dst)
   if (renameat (chdir_fd, src, chdir_fd, dst) != 0)
     {
       int e = errno;
+      bool interdir_made;
 
       switch (e)
 	{
 	case ENOENT:
-	  if (make_directories (dst))
+	  if (make_directories (dst, &interdir_made) == 0)
 	    {
 	      if (renameat (chdir_fd, src, chdir_fd, dst) == 0)
 		return true;
