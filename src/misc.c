@@ -728,7 +728,6 @@ chdir_do (int i)
 {
   if (chdir_current != i)
     {
-      static size_t counter;
       struct wd *curr = &wd[i];
       int fd = curr->fd;
 

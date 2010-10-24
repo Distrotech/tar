@@ -1,6 +1,6 @@
 #! /bin/sh
 # Print a version string.
-scriptversion=2010-10-08.16; # UTC
+scriptversion=2010-10-24.18; # UTC
 
 # Bootstrap this package from checked-out sources.
 
@@ -49,6 +49,11 @@ Usage: $0 [OPTION]...
 Bootstrap this package from the checked-out sources.
 
 Options:
+ --paxutils-srcdir=DIRNAME  Specify the local directory where paxutils
+                          sources reside. Use this if you already
+                          have paxutils sources on your machine, and
+                          do not want to waste your bandwidth dowloading
+                          them again.
  --gnulib-srcdir=DIRNAME  Specify the local directory where gnulib
                           sources reside.  Use this if you already
                           have gnulib sources on your machine, and
@@ -233,6 +238,8 @@ do
     exit;;
   --gnulib-srcdir=*)
     GNULIB_SRCDIR=`expr "X$option" : 'X--gnulib-srcdir=\(.*\)'`;;
+  --paxutils-srcdir=*)
+    PAXUTILS_SRCDIR=`expr "$option" : '--paxutils-srcdir=\(.*\)'`;;
   --skip-po)
     SKIP_PO=t;;
   --force)
@@ -420,12 +427,37 @@ if test -d .git && (git --version) >/dev/null 2>/dev/null ; then
   fi
 fi
 
+cleanup() {
+   status=$?
+   rm -fr $1
+   exit $status
+}
 
 cleanup_gnulib() {
-  status=$?
-  rm -fr "$gnulib_path"
-  exit $status
+  cleanup "$gnulib_path"
 }
+
+# Get paxutils files.
+case ${PAXUTILS_SRCDIR--} in
+-) if [ ! -d paxutils ]; then
+     echo "$0: getting paxutils files..."
+
+     trap "cleanup paxutils" 1 2 13 15
+
+     git clone --depth 1 git://git.sv.gnu.org/paxutils || cleanup paxutils
+
+     trap - 1 2 13 15
+   fi
+   PAXUTILS_SRCDIR=paxutils
+   ;;
+esac
+
+if [ -r $PAXUTILS_SRCDIR/gnulib.modules ]; then
+  gnulib_modules=`
+    (echo "$gnulib_modules"; grep '^[^#]' $PAXUTILS_SRCDIR/gnulib.modules) |
+    sort -u
+  `
+fi
 
 git_modules_config () {
   test -f .gitmodules && git config --file .gitmodules "$@"
@@ -809,6 +841,51 @@ find "$m4_base" "$source_base" \
   -type l -xtype l -delete > /dev/null 2>&1
 
 # Reconfigure, getting other files.
+
+# copy_files srcdir dstdir
+copy_files() {
+  for file in `cat $1/DISTFILES`
+  do
+    case $file in
+    "#*")  continue;;
+    esac
+    dst=`echo $file | sed 's^.*/^^'`
+    if [ $# -eq 3 ]; then
+      case $dst in
+      ${3}*) ;;
+      *) dst=${3}$dst;;
+      esac
+    fi
+    symlink_to_dir "$1" "$file" "$2/$dst" || exit
+# FIXME    ignorefile $2 $dst
+  done
+}
+
+# Import from paxutils
+copy_files ${PAXUTILS_SRCDIR} .
+copy_files ${PAXUTILS_SRCDIR}/am m4
+echo "$0: Creating m4/paxutils.m4"
+(echo "# This file is generated automatically. Please, do not edit."
+ echo "#"
+ echo "AC_DEFUN([${package}_PAXUTILS],["
+ cat ${PAXUTILS_SRCDIR}/am/DISTFILES | sed '/^#/d;s/\(.*\)\.m4/pu_\1/' | tr a-z A-Z
+ echo "])") > ./m4/paxutils.m4
+#FIXME ignorefile m4 paxutils.m4
+
+if [ -d rmt ]; then
+   :
+else
+   mkdir rmt
+fi
+
+for dir in doc rmt lib tests
+do
+	copy_files ${PAXUTILS_SRCDIR}/$dir $dir
+done
+
+copy_files ${PAXUTILS_SRCDIR}/paxlib lib pax
+
+
 
 # Skip autoheader if it's not needed.
 grep -E '^[	 ]*AC_CONFIG_HEADERS?\>' configure.ac >/dev/null ||
