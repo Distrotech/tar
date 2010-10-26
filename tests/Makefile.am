@@ -82,6 +82,7 @@ TESTSUITE_AT = \
  extrac13.at\
  extrac14.at\
  extrac15.at\
+ extrac16.at\
  filerem01.at\
  filerem02.at\
  gzip.at\

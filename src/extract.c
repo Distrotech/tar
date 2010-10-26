@@ -777,7 +777,7 @@ extract_dir (char *file_name, int typeflag)
 
   for (;;)
     {
-      status = mkdir (file_name, mode);
+      status = mkdirat (chdir_fd, file_name, mode);
       if (status == 0)
 	{
 	  current_mode = mode & ~ current_umask;
