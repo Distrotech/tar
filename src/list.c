@@ -75,6 +75,66 @@ base64_init (void)
     base64_map[(int) base_64_digits[i]] = i;
 }
 
+static char *
+decode_xform (char *file_name, void *data)
+{
+  int type = *(int*)data;
+
+  switch (type)
+    {
+    case XFORM_SYMLINK:
+      /* FIXME: It is not quite clear how and to which extent are the symbolic
+	 links subject to filename transformation.  In the absence of another
+	 solution, symbolic links are exempt from component stripping and
+	 name suffix normalization, but subject to filename transformation
+	 proper. */
+      return file_name;
+
+    case XFORM_LINK:
+      file_name = safer_name_suffix (file_name, true, absolute_names_option);
+      break;
+
+    case XFORM_REGFILE:
+      file_name = safer_name_suffix (file_name, false, absolute_names_option);
+      break;
+    }
+
+  if (strip_name_components)
+    {
+      size_t prefix_len = stripped_prefix_len (file_name,
+					       strip_name_components);
+      if (prefix_len == (size_t) -1)
+	prefix_len = strlen (file_name);
+      file_name += prefix_len;
+    }
+  return file_name;
+}
+
+static bool
+transform_member_name (char **pinput, int type)
+{
+  return transform_name_fp (pinput, type, decode_xform, &type);
+}
+
+static void
+transform_stat_info (int typeflag, struct tar_stat_info *stat_info)
+{
+  if (typeflag == GNUTYPE_VOLHDR)
+    /* Name transformations don't apply to volume headers. */
+    return;
+  
+  transform_member_name (&stat_info->file_name, XFORM_REGFILE);
+  switch (typeflag)
+    {
+    case SYMTYPE:
+      transform_member_name (&stat_info->link_name, XFORM_SYMLINK);
+      break;
+
+    case LNKTYPE:
+      transform_member_name (&stat_info->link_name, XFORM_LINK);
+    }
+}
+
 /* Main loop for reading an archive.  */
 void
 read_and (void (*do_something) (void))
@@ -135,7 +195,8 @@ read_and (void (*do_something) (void))
 		  continue;
 		}
 	    }
-
+	  transform_stat_info (current_header->header.typeflag,
+			       &current_stat_info);
 	  (*do_something) ();
 	  continue;
 
@@ -495,47 +556,6 @@ read_header (union block **return_block, struct tar_stat_info *info,
     }
 }
 
-static char *
-decode_xform (char *file_name, void *data)
-{
-  int type = *(int*)data;
-
-  switch (type)
-    {
-    case XFORM_SYMLINK:
-      /* FIXME: It is not quite clear how and to which extent are the symbolic
-	 links subject to filename transformation.  In the absence of another
-	 solution, symbolic links are exempt from component stripping and
-	 name suffix normalization, but subject to filename transformation
-	 proper. */
-      return file_name;
-
-    case XFORM_LINK:
-      file_name = safer_name_suffix (file_name, true, absolute_names_option);
-      break;
-
-    case XFORM_REGFILE:
-      file_name = safer_name_suffix (file_name, false, absolute_names_option);
-      break;
-    }
-
-  if (strip_name_components)
-    {
-      size_t prefix_len = stripped_prefix_len (file_name,
-					       strip_name_components);
-      if (prefix_len == (size_t) -1)
-	prefix_len = strlen (file_name);
-      file_name += prefix_len;
-    }
-  return file_name;
-}
-
-static bool
-transform_member_name (char **pinput, int type)
-{
-  return transform_name_fp (pinput, type, decode_xform, &type);
-}
-
 #define ISOCTAL(c) ((c)>='0'&&(c)<='7')
 
 /* Decode things from a file HEADER block into STAT_INFO, also setting
@@ -655,22 +675,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
           || stat_info->dumpdir)
 	stat_info->is_dumpdir = true;
     }
-
-  if (header->header.typeflag == GNUTYPE_VOLHDR)
-    /* Name transformations don't apply to volume headers. */
-    return;
-  
-  transform_member_name (&stat_info->file_name, XFORM_REGFILE);
-  switch (header->header.typeflag)
-    {
-    case SYMTYPE:
-      transform_member_name (&stat_info->link_name, XFORM_SYMLINK);
-      break;
-
-    case LNKTYPE:
-      transform_member_name (&stat_info->link_name, XFORM_LINK);
-    }
 }
+
 
 /* Convert buffer at WHERE0 of size DIGS from external format to
    uintmax_t.  DIGS must be positive.  If TYPE is nonnull, the data
