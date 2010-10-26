@@ -464,8 +464,7 @@ git_modules_config () {
 }
 
 gnulib_path=`git_modules_config submodule.gnulib.path`
-: ${gnulib_path=gnulib}
-
+: ${gnulib_path:=gnulib}
 # Get gnulib files.
 
 case ${GNULIB_SRCDIR--} in
@@ -623,6 +622,7 @@ symlink_to_dir()
         /*) ;;
         *)
           case /$dst/ in
+          /./*)   ;;
           *//* | */../* | */./* | /*/*/*/*/*/)
              echo >&2 "$0: invalid symlink calculation: $src -> $dst"
              exit 1;;
