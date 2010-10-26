@@ -24,6 +24,7 @@ AT_SETUP([scarce file descriptors])
 AT_KEYWORDS([extract extrac11])
 
 AT_TAR_CHECK([
+exec </dev/null
 dirs='a
       a/b
       a/b/c
