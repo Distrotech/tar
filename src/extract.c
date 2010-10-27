@@ -864,6 +864,20 @@ open_output_file (char const *file_name, int typeflag, mode_t mode,
 	}
     }
 
+  /* If O_NOFOLLOW is needed but does not work, check for a symlink
+     separately.  There's a race condition, but that cannot be avoided
+     on hosts lacking O_NOFOLLOW.  */
+  if (! O_NOFOLLOW && overwriting_old_files && ! dereference_option)
+    {
+      struct stat st;
+      if (fstatat (chdir_fd, file_name, &st, AT_SYMLINK_NOFOLLOW) == 0
+	  && S_ISLNK (st.st_mode))
+	{
+	  errno = ELOOP;
+	  return -1;
+	}
+    }
+
   fd = openat (chdir_fd, file_name, openflag, mode);
   if (0 <= fd)
     {
