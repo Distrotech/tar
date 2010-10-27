@@ -116,7 +116,7 @@ transform_member_name (char **pinput, int type)
   return transform_name_fp (pinput, type, decode_xform, &type);
 }
 
-static void
+void
 transform_stat_info (int typeflag, struct tar_stat_info *stat_info)
 {
   if (typeflag == GNUTYPE_VOLHDR)

@@ -130,6 +130,8 @@ update_archive (void)
 
 	    decode_header (current_header, &current_stat_info,
 			   &current_format, 0);
+	    transform_stat_info (current_header->header.typeflag,
+				 &current_stat_info);
 	    archive_format = current_format;
 
 	    if (subcommand_option == UPDATE_SUBCOMMAND
