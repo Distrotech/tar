@@ -122,7 +122,7 @@ transform_stat_info (int typeflag, struct tar_stat_info *stat_info)
   if (typeflag == GNUTYPE_VOLHDR)
     /* Name transformations don't apply to volume headers. */
     return;
-  
+
   transform_member_name (&stat_info->file_name, XFORM_REGFILE);
   switch (typeflag)
     {
@@ -592,7 +592,9 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
       else
 	format = USTAR_FORMAT;
     }
-  else if (strcmp (header->header.magic, OLDGNU_MAGIC) == 0)
+  else if (strcmp (header->buffer + offsetof (struct posix_header, magic),
+		   OLDGNU_MAGIC)
+	   == 0)
     format = hbits ? OLDGNU_FORMAT : GNU_FORMAT;
   else
     format = V7_FORMAT;

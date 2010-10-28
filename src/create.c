@@ -562,7 +562,8 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   GNAME_TO_CHARS (tmpname, header->header.gname);
   free (tmpname);
 
-  strcpy (header->header.magic, OLDGNU_MAGIC);
+  strcpy (header->buffer + offsetof (struct posix_header, magic),
+	  OLDGNU_MAGIC);
   header->header.typeflag = type;
   finish_header (st, header, -1);
 
@@ -899,7 +900,8 @@ start_header (struct tar_stat_info *st)
     case OLDGNU_FORMAT:
     case GNU_FORMAT:   /*FIXME?*/
       /* Overwrite header->header.magic and header.version in one blow.  */
-      strcpy (header->header.magic, OLDGNU_MAGIC);
+      strcpy (header->buffer + offsetof (struct posix_header, magic),
+	      OLDGNU_MAGIC);
       break;
 
     case POSIX_FORMAT:
