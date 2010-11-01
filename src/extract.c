@@ -1205,7 +1205,7 @@ static int
 extract_node (char *file_name, int typeflag)
 {
   bool interdir_made = false;
-  mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
+  mode_t mode = (current_stat_info.stat.st_mode & (MODE_RWX | S_IFBLK | S_IFCHR)
 		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
 
   while (mknodat (chdir_fd, file_name, mode, current_stat_info.stat.st_rdev)
