@@ -36,14 +36,11 @@ genfile --file dir/subdir2/file2
 
 tar cf dir.tar dir
 
-tar -x -v -f dir.tar -C out --strip-components=2 dir/subdir1/
+tar -x -v -f dir.tar -C out --strip-components=2 --warning=no-timestamp \
+  dir/subdir1/
 ],
 [0],
 [dir/subdir1/file1
 ])
 
 AT_CLEANUP
-
-
-
-

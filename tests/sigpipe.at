@@ -32,7 +32,8 @@ genfile --length 2049 --file third
 
 tar cf archive first second third
 
-tar tf archive | :
+# Discard diagnostics that some shells generate about broken pipes.
+(tar tf archive 2>&3 | :) 3>&2 2>/dev/null
 ],
 [0])
 

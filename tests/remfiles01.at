@@ -47,14 +47,16 @@ mkdir c
 # or
 #  tar: Child returned status 2
 
-tar -c -f a -z --remove-files b c 2>err
+# Discard diagnostics that some shells generate about broken pipes,
+# and discard all of tar's diagnostics except for the ones saying "(child)".
+# Gzip's exit code is propagated to the shell.  Usually it is 141.
+# Convert all non-zero exits to 2 to make it predictable.
+(tar -c -f a -z --remove-files b c 2>err || (exit 2) ) 2>/dev/null
 EC=$?
 sed -n '/(child)/p' err >&2
 rm err
 find . | sort
-# Gzip exit code is propagated to the shell. Usually it is
-# 141.  We convert all non-zero exits to 2 to make it predictable.
-test $EC && exit 2
+exit $EC
 ],
 [2],
 [.
