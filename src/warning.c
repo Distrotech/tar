@@ -41,6 +41,7 @@ static char const *const warning_args[] = {
   "unknown-cast",
   "unknown-keyword",
   "xdev",
+  "decompress-program",
   NULL
 };
 
@@ -64,7 +65,8 @@ static int warning_types[] = {
   WARN_TIMESTAMP,
   WARN_UNKNOWN_CAST,
   WARN_UNKNOWN_KEYWORD,
-  WARN_XDEV
+  WARN_XDEV,
+  WARN_DECOMPRESS_PROGRAM
 };
 
 ARGMATCH_VERIFY (warning_args, warning_types);

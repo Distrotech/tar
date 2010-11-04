@@ -261,8 +261,8 @@ compute_duration ()
 /* Compression detection */
 
 enum compress_type {
-  ct_tar,              /* Plain tar file */
   ct_none,             /* Unknown compression type */
+  ct_tar,              /* Plain tar file */
   ct_compress,
   ct_gzip,
   ct_bzip2,
@@ -272,31 +272,102 @@ enum compress_type {
   ct_xz
 };
 
+static enum compress_type archive_compression_type = ct_none;
+
 struct zip_magic
 {
   enum compress_type type;
   size_t length;
   char const *magic;
+};
+
+struct zip_program
+{
+  enum compress_type type;
   char const *program;
   char const *option;
 };
 
 static struct zip_magic const magic[] = {
-  { ct_tar },
   { ct_none, },
-  { ct_compress, 2, "\037\235",  COMPRESS_PROGRAM, "-Z" },
-  { ct_gzip,     2, "\037\213",  GZIP_PROGRAM,     "-z"  },
-  { ct_bzip2,    3, "BZh",       BZIP2_PROGRAM,    "-j" },
-  { ct_lzip,     4, "LZIP",      LZIP_PROGRAM,     "--lzip" },
-  { ct_lzma,     6, "\xFFLZMA",  LZMA_PROGRAM,     "--lzma" },
-  { ct_lzop,     4, "\211LZO",   LZOP_PROGRAM,     "--lzop" },
-  { ct_xz,       6, "\xFD" "7zXZ",  XZ_PROGRAM,       "-J" },
+  { ct_tar },
+  { ct_compress, 2, "\037\235" },
+  { ct_gzip,     2, "\037\213" },
+  { ct_bzip2,    3, "BZh" },
+  { ct_lzip,     4, "LZIP" },
+  { ct_lzma,     6, "\xFFLZMA" },
+  { ct_lzop,     4, "\211LZO" },
+  { ct_xz,       6, "\xFD" "7zXZ" },
 };
 
 #define NMAGIC (sizeof(magic)/sizeof(magic[0]))
 
-#define compress_option(t) magic[t].option
-#define compress_program(t) magic[t].program
+static struct zip_program zip_program[] = {
+  { ct_compress, COMPRESS_PROGRAM, "-Z" },
+  { ct_compress, GZIP_PROGRAM,     "-z" },
+  { ct_gzip,     GZIP_PROGRAM,     "-z" },
+  { ct_bzip2,    BZIP2_PROGRAM,    "-j" },
+  { ct_bzip2,    "lbzip2",         "-j" },
+  { ct_lzip,     LZIP_PROGRAM,     "--lzip" },
+  { ct_lzma,     LZMA_PROGRAM,     "--lzma" },
+  { ct_lzma,     XZ_PROGRAM,       "-J" },
+  { ct_lzop,     LZOP_PROGRAM,     "--lzop" },
+  { ct_xz,       XZ_PROGRAM,       "-J" },
+  { ct_none }
+};
+
+static struct zip_program const *
+find_zip_program (enum compress_type type, int *pstate)
+{
+  int i;
+
+  for (i = *pstate; zip_program[i].type != ct_none; i++)
+    {
+      if (zip_program[i].type == type)
+	{
+	  *pstate = i + 1;
+	  return zip_program + i;
+	}
+    }
+  *pstate = i;
+  return NULL;
+}
+
+const char *
+first_decompress_program (int *pstate)
+{
+  struct zip_program const *zp;
+  
+  if (use_compress_program_option)
+    return use_compress_program_option;
+
+  if (archive_compression_type == ct_none)
+    return NULL;
+
+  *pstate = 0; 
+  zp = find_zip_program (archive_compression_type, pstate);
+  return zp ? zp->program : NULL;
+}
+    
+const char *
+next_decompress_program (int *pstate)
+{
+  struct zip_program const *zp;
+  
+  if (use_compress_program_option)
+    return NULL;
+  zp = find_zip_program (archive_compression_type, pstate);
+  return zp ? zp->program : NULL;
+}
+
+static const char *
+compress_option (enum compress_type type)
+{
+  struct zip_program const *zp;
+  int i = 0;
+  zp = find_zip_program (type, &i);
+  return zp ? zp->option : NULL;
+}
 
 /* Check if the file ARCHIVE is a compressed archive. */
 static enum compress_type
@@ -395,7 +466,7 @@ open_compressed_archive (void)
               break;
 
             default:
-              use_compress_program_option = compress_program (type);
+              archive_compression_type = type;
               break;
             }
         }
