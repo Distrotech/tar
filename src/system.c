@@ -455,6 +455,29 @@ sys_child_open_for_compress (void)
   wait_for_grandchild (grandchild_pid);
 }
 
+static void
+run_decompress_program (void)
+{
+  int i;
+  const char *p, *prog = NULL;
+
+  for (p = first_decompress_program (&i); p; p = next_decompress_program (&i))
+    {
+      if (prog)
+	{
+	  WARNOPT (WARN_DECOMPRESS_PROGRAM,
+		   (0, errno, _("cannot run %s"), prog));
+	  WARNOPT (WARN_DECOMPRESS_PROGRAM,
+		   (0, 0, _("trying %s"), p));
+	}
+      prog = p;
+      execlp (p, p, "-d", NULL);
+    }
+  if (!prog)
+    FATAL_ERROR ((0, 0, _("unable to run decompression program")));
+  exec_fatal (prog);
+}
+
 /* Set ARCHIVE for uncompressing, then reading an archive.  */
 pid_t
 sys_child_open_for_uncompress (void)
@@ -501,9 +524,7 @@ sys_child_open_for_uncompress (void)
 	open_fatal (archive_name_array[0]);
       xdup2 (archive, STDIN_FILENO);
       priv_set_restore_linkdir ();
-      execlp (use_compress_program_option, use_compress_program_option,
-	      "-d", (char *) 0);
-      exec_fatal (use_compress_program_option);
+      run_decompress_program ();
     }
 
   /* We do need a grandchild tar.  */
@@ -520,9 +541,7 @@ sys_child_open_for_uncompress (void)
       xdup2 (child_pipe[PREAD], STDIN_FILENO);
       xclose (child_pipe[PWRITE]);
       priv_set_restore_linkdir ();
-      execlp (use_compress_program_option, use_compress_program_option,
-	      "-d", (char *) 0);
-      exec_fatal (use_compress_program_option);
+      run_decompress_program ();
     }
 
   /* The child tar is still here!  */

@@ -4166,6 +4166,23 @@ Disable all warning messages.
 @cindex @samp{Ignoring unknown extended header keyword `%s'}, warning message
 @item unknown-keyword
 @samp{Ignoring unknown extended header keyword `%s'}
+@kwindex decompress-program
+@item decompress-program
+Controls verbose messages describing execution failures when trying
+alternative decompressor programs (@pxref{alternative decompression
+programs}).  This warning is disabled by default (unless
+@option{--verbose} is used).  A common example of what you can get
+when using this warning is:
+
+@smallexample
+$ @kbd{tar --warning=decompress-program -x -f archive.Z}
+tar (child): cannot run compress: No such file or directory
+tar (child): trying gzip
+@end smallexample
+
+This means that @command{tar} first tried to decompress
+@file{archive.Z} using @command{compress}, and, when that
+failed, switched to @command{gzip}.
 @end table
 
 @subheading Keywords controlling incremental extraction:
@@ -8754,6 +8771,24 @@ special byte sequences in the beginning of file, that are specific for
 certain compression formats.  If this approach fails, @command{tar}
 falls back to using archive name suffix to determine its format
 (@pxref{auto-compress}, for a list of recognized suffixes).
+
+@anchor{alternative decompression programs}
+@cindex alternative decompression programs
+Some compression programs are able to handle different compression
+formats.  @GNUTAR{} uses this, if the principal decompressor for the
+given format is not available.  For example, if @command{compress} is
+not installed, @command{tar} will try to use @command{gzip}.  As of
+version @value{VERSION} the following alternatives are
+tried@footnote{To verbosely trace the decompressor selection, use the
+@option{--warning=decompress-program} option
+(@pxref{warnings,decompress-program}).}:
+
+@multitable @columnfractions 0.3 0.3 0.3 
+@headitem Format @tab Main decompressor @tab Alternatives
+@item compress @tab compress @tab gzip
+@item lzma     @tab lzma     @tab xz
+@item bzip2    @tab bzip2    @tab lbzip2
+@end multitable
 
 The only case when you have to specify a decompression option while
 reading the archive is when reading from a pipe or from a tape drive
