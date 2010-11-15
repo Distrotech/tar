@@ -779,6 +779,7 @@ void set_transform_expr (const char *expr);
 bool transform_name (char **pinput, int type);
 bool transform_name_fp (char **pinput, int type,
 			char *(*fun)(char *, void *), void *);
+bool transform_program_p (void);
 
 /* Module suffix.c */
 void set_compression_program_by_suffix (const char *name, const char *defprog);

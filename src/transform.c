@@ -628,3 +628,9 @@ transform_name (char **pinput, int type)
 {
   return transform_name_fp (pinput, type, NULL, NULL);
 }
+
+bool
+transform_program_p (void)
+{
+  return transform_head != NULL;
+}

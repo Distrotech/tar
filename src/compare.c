@@ -512,14 +512,23 @@ diff_archive (void)
 void
 verify_volume (void)
 {
+  int may_fail = 0;
   if (removed_prefixes_p ())
     {
       WARN((0, 0,
 	    _("Archive contains file names with leading prefixes removed.")));
-      WARN((0, 0,
-	    _("Verification may fail to locate original files.")));
+      may_fail = 1;
     }
-
+  if (transform_program_p ())
+    {
+      WARN((0, 0,
+	    _("Archive contains transformed file names.")));
+      may_fail = 1;
+    }
+  if (may_fail)
+    WARN((0, 0,
+	  _("Verification may fail to locate original files.")));
+  
   if (!diff_buffer)
     diff_init ();
 
