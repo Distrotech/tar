@@ -1,5 +1,11 @@
-GNU tar NEWS - User visible changes. 2010-11-07
+GNU tar NEWS - User visible changes. 2010-11-14
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.25.90 - (Git)
+
+* Bugfixes
+** Fix the --verify option, which broke in version 1.24.
 
 
 version 1.25 - Sergey Poznyakoff, 2010-11-07
@@ -27,7 +33,7 @@ are met, tar retries extraction using an alternative decompressor:
  2. The compression program was not explicitly requested in the command
  line by the use of such options as -z, -j, etc.
 
-For example, if `compress' is not available, tar will try `gzip'. 
+For example, if `compress' is not available, tar will try `gzip'.
 
 
 version 1.24 - Sergey Poznyakoff, 2010-10-24

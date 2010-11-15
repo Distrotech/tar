@@ -232,6 +232,8 @@ m4_include([update.at])
 m4_include([update01.at])
 m4_include([update02.at])
 
+m4_include([verify.at])
+
 m4_include([volume.at])
 m4_include([volsize.at])
 

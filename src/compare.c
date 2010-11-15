@@ -611,8 +611,10 @@ verify_volume (void)
 		       (0, 0, _("A lone zero block at %s"),
 			STRINGIFY_BIGINT (current_block_ordinal (), buf)));
             }
+	  continue;
 	}
 
+      decode_header (current_header, &current_stat_info, &current_format, 1);
       diff_archive ();
       tar_stat_destroy (&current_stat_info);
     }

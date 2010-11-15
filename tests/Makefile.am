@@ -157,6 +157,7 @@ TESTSUITE_AT = \
  volsize.at\
  volume.at\
  verbose.at\
+ verify.at\
  version.at\
  xform-h.at\
  xform01.at\
