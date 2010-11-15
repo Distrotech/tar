@@ -4168,7 +4168,7 @@ Disable all warning messages.
 @samp{Ignoring unknown extended header keyword `%s'}
 @kwindex decompress-program
 @item decompress-program
-Controls verbose messages describing execution failures when trying
+Controls verbose description of failures occurring when trying to run
 alternative decompressor programs (@pxref{alternative decompression
 programs}).  This warning is disabled by default (unless
 @option{--verbose} is used).  A common example of what you can get
