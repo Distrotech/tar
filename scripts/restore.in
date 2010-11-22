@@ -60,8 +60,9 @@ do
   --l=*|--le=*|--lev=*|--leve=*|--level=*)
          DUMP_LEVEL=$optarg
 	 ;;
+  -l?*)  DUMP_LEVEL=`expr $option : '-l\(.*\)'`;;
   -l|--l|--le|--lev|--leve|--level)
-         prev=$option
+	 prev=--level
 	 ;;
   --verb=*|--verbo=*|--verbos=*|--verbose=*)
          VERBOSE=$optarg
@@ -69,7 +70,7 @@ do
   -v|--verb|--verbo|--verbos|--verbose)
          VERBOSE=100
 	 ;;
-  -v*)   VERBOSE=`expr $option : "-v\(.*\)"`;;
+  -v*)   VERBOSE=`expr $option : '-v\(.*\)'`;;
   -V|--v|--ve|--ver|--vers|--versi|--versio|--version)
     	 echo "restore (@PACKAGE_NAME@) @VERSION@"
 	 license

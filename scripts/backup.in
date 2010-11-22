@@ -72,8 +72,9 @@ do
   --l=*|--le=*|--lev=*|--leve=*|--level=*)
          DUMP_LEVEL=$optarg
 	 ;;
+  -l?*)  DUMP_LEVEL=`expr $option : '-l\(.*\)'`;;
   -l|--l|--le|--lev|--leve|--level)
-         prev=$option
+	 prev=--level
 	 ;;
   --verb=*|--verbo=*|--verbos=*|--verbose=*)
          VERBOSE=$optarg
@@ -81,14 +82,13 @@ do
   -v|--verb|--verbo|--verbos|--verbose)
          VERBOSE=100
 	 ;;
-  -v*)   VERBOSE=`expr $option : "-v\(.*\)"`;;
+  -v*)   VERBOSE=`expr $option : '-v\(.*\)'`;;
   --t=*|--ti=*|--tim=*|--time=*)
          TIME=$optarg
 	 ;;
-  -t)    prev=--t;;
-  -t*)   TIME=`expr $option : "-t\(.*\)"`;;
-  --t|--ti|--tim|--time)
-         prev=$option
+  -t?*)  TIME=`expr $option : '-t\(.*\)'`;;
+  -t|--t|--ti|--tim|--time)
+	 prev=--time
     	 ;;
   -V|--v|--ve|--ver|--vers|--versi|--versio|--version)
     	 echo "backup (@PACKAGE_NAME@) @VERSION@"
