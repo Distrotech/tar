@@ -609,6 +609,9 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
   switch (e)
     {
     case ELOOP:
+      /* With open ("symlink", O_NOFOLLOW|...), POSIX says errno == ELOOP,
+	 but FreeBSD through at least 8.1 uses errno == EMLINK.  */
+    case EMLINK:
       if (! regular
 	  || old_files_option != OVERWRITE_OLD_FILES || dereference_option)
 	break;
