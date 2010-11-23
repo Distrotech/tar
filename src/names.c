@@ -47,8 +47,6 @@ static char *cached_no_such_gname;
 static uid_t cached_no_such_uid;
 static gid_t cached_no_such_gid;
 
-static void register_individual_file (char const *name);
-
 /* Given UID, find the corresponding UNAME.  */
 void
 uid_to_uname (uid_t uid, char **uname)
@@ -360,8 +358,6 @@ name_next_elt (int change_dirs)
 	{
 	  if (unquote_option)
 	    unquote_string (name_buffer);
-	  if (incremental_option)
-	    register_individual_file (name_buffer);
 	  entry.type = ep->type;
 	  entry.v.name = name_buffer;
 	  return &entry;
@@ -1151,28 +1147,6 @@ excluded_name (char const *name)
 {
   return excluded_file_name (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
 }
-
-static Hash_table *individual_file_table;
-
-static void
-register_individual_file (char const *name)
-{
-  struct stat st;
-
-  if (deref_stat (name, &st) != 0)
-    return; /* Will be complained about later */
-  if (S_ISDIR (st.st_mode))
-    return;
-
-  hash_string_insert (&individual_file_table, name);
-}
-
-bool
-is_individual_file (char const *name)
-{
-  return hash_string_lookup (individual_file_table, name);
-}
-
 
 
 /* Return the size of the prefix of FILE_NAME that is removed after

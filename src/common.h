@@ -680,7 +680,6 @@ bool excluded_name (char const *name);
 
 void add_avoided_name (char const *name);
 bool is_avoided_name (char const *name);
-bool is_individual_file (char const *name);
 
 bool contains_dot_dot (char const *name);
 

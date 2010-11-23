@@ -426,7 +426,6 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 {
   struct directory *directory;
   struct stat *stat_data = &st->stat;
-  dev_t device = st->parent ? st->parent->stat.st_dev : 0;
   bool nfs = NFS_FILE_STAT (*stat_data);
 
   if ((directory = find_directory (name_buffer)) != NULL)
@@ -540,11 +539,8 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 	}
     }
 
-  /* If the directory is on another device and --one-file-system was given,
-     omit it... */
-  if (one_file_system_option && device != stat_data->st_dev
-      /* ... except if it was explicitely given in the command line */
-      && !is_individual_file (name_buffer))
+  if (one_file_system_option && st->parent
+      && stat_data->st_dev != st->parent->stat.st_dev)
     /* FIXME:
 	WARNOPT (WARN_XDEV,
 		 (0, 0,
