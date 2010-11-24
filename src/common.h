@@ -632,8 +632,6 @@ void seek_diag_details (char const *name, off_t offset);
 void stat_diag (char const *name);
 void file_removed_diag (const char *name, bool top_level,
 			void (*diagfn) (char const *name));
-void dir_removed_diag (char const *name, bool top_level,
-		       void (*diagfn) (char const *name));
 void write_error_details (char const *name, size_t status, size_t size);
 void write_fatal (char const *name) __attribute__ ((noreturn));
 void write_fatal_details (char const *name, ssize_t status, size_t size)

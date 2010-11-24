@@ -857,21 +857,6 @@ file_removed_diag (const char *name, bool top_level,
 }
 
 void
-dir_removed_diag (const char *name, bool top_level,
-		   void (*diagfn) (char const *name))
-{
-  if (!top_level && errno == ENOENT)
-    {
-      WARNOPT (WARN_FILE_REMOVED,
-	       (0, 0, _("%s: Directory removed before we read it"),
-		quotearg_colon (name)));
-      set_exit_status (TAREXIT_DIFFERS);
-    }
-  else
-    diagfn (name);
-}
-
-void
 write_fatal_details (char const *name, ssize_t status, size_t size)
 {
   write_error_details (name, status, size);
