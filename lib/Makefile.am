@@ -30,7 +30,7 @@ INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu
 
 noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h stdopen.h
 libtar_a_SOURCES = \
-  paxerror.c paxexit.c paxlib.h paxnames.c \
+  paxerror.c paxexit-status.c paxlib.h paxnames.c \
   prepargs.c prepargs.h \
   rtapelib.c \
   rmt.h \
