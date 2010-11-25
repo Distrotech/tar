@@ -609,9 +609,18 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
   switch (e)
     {
     case ELOOP:
+
       /* With open ("symlink", O_NOFOLLOW|...), POSIX says errno == ELOOP,
-	 but FreeBSD through at least 8.1 uses errno == EMLINK.  */
+	 but some operating systems do not conform to the standard.  */
+#ifdef EFTYPE
+      /* NetBSD uses errno == EFTYPE; see <http://gnats.netbsd.org/43154>.  */
+    case EFTYPE:
+#endif
+      /* FreeBSD 8.1 uses errno == EMLINK.  */
     case EMLINK:
+      /* Tru64 5.1B uses errno == ENOTSUP.  */
+    case ENOTSUP:
+
       if (! regular
 	  || old_files_option != OVERWRITE_OLD_FILES || dereference_option)
 	break;
