@@ -1,0 +1,47 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+#
+# Test suite for GNU tar.
+# Copyright (C) 2010 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+
+AT_SETUP([storing long sparse file names])
+AT_KEYWORDS([sparse sparse04])
+
+# Description: Tar versions from 1.15.92 to 1.25 would incorrectly
+# store sparse file names longer than 100 characters in pax mode.
+# Namely, the `path' keyword of the produced PAX header would contain the
+# crafted name of the header itself, instead of that of the file.
+# Reported by: Kamil Dudka <kdudka@redhat.com>
+# References: <201011250026.44908.kdudka@redhat.com>,
+#             http://lists.gnu.org/archive/html/bug-tar/2010-11/msg00099.html
+
+m4_define([NAME_111],
+	  [123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960])
+
+AT_TAR_CHECK([
+genfile --sparse --file NAME_111 --block-size 512 8M A || AT_SKIP_TEST
+tar -c --sparse --posix NAME_111 | tar t
+],
+[0],
+[NAME_111
+],
+[],
+[],
+[],
+[pax])
+
+AT_CLEANUP

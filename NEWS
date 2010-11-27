@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2010-11-14
+GNU tar NEWS - User visible changes. 2010-11-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -6,6 +6,7 @@ version 1.25.90 - (Git)
 
 * Bugfixes
 ** Fix the --verify option, which broke in version 1.24.
+** Fix storing long sparse file names in PAX archives.
 
 
 version 1.25 - Sergey Poznyakoff, 2010-11-07

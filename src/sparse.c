@@ -991,7 +991,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
   off_t size = 0;
   struct sp_array *map = file->stat_info->sparse_map;
   char *save_file_name = file->stat_info->file_name;
-
+  
 #define COPY_STRING(b,dst,src) do                \
  {                                               \
    char *endp = b->buffer + BLOCKSIZE;           \
@@ -1029,8 +1029,11 @@ pax_dump_header_1 (struct tar_sparse_file *file)
   xheader_store ("GNU.sparse.name", file->stat_info, NULL);
   xheader_store ("GNU.sparse.realsize", file->stat_info, NULL);
 
-  file->stat_info->file_name = xheader_format_name (file->stat_info,
-					    "%d/GNUSparseFile.%p/%f", 0);
+  file->stat_info->file_name =
+    xheader_format_name (file->stat_info, "%d/GNUSparseFile.%p/%f", 0);
+  /* Make sure the created header name is shorter than NAME_FIELD_SIZE: */
+  if (strlen (file->stat_info->file_name) > NAME_FIELD_SIZE)
+    file->stat_info->file_name[NAME_FIELD_SIZE] = 0;
 
   blk = start_header (file->stat_info);
   /* Store the effective (shrunken) file size */
