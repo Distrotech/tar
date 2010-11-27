@@ -26,6 +26,8 @@ AT_KEYWORDS([sigpipe])
 #             <20100319184141.GC30047@wo.int.altlinux.org>
 
 AT_CHECK([
+AT_SIGPIPE_PREREQ
+
 genfile --length 2048 --file first
 genfile --length 2048 --file second
 genfile --length 2049 --file third
