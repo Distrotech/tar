@@ -30,13 +30,12 @@ AT_SETUP([truncate])
 AT_KEYWORDS([truncate filechange])
 
 AT_TAR_CHECK([
-genfile --file foo --length 50000k
+genfile --file foo --length 200k
 genfile --file baz
-genfile --run --checkpoint 10 --length 49995k --truncate foo -- tar --checkpoint -vcf bar foo baz
+genfile --run --checkpoint 10 --length 195k --truncate foo -- tar --checkpoint --checkpoint-action=echo --checkpoint-action=sleep=1 -vcf bar foo baz
 echo Exit status: $?
 echo separator
-sleep 1
-genfile --file foo --seek 49995k --length 5k --pattern=zeros
+genfile --file foo --seek 195k --length 5k --pattern=zeros
 tar dvf bar],
 [1],
 [foo
