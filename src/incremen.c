@@ -779,8 +779,7 @@ scan_directory (struct tar_stat_info *st)
 
   namebuf_free (nbuf);
 
-  if (dirp)
-    free (dirp);
+  free (dirp);
 
   return directory;
 }
@@ -1348,8 +1347,7 @@ read_directory_file (void)
 
   if (ferror (listed_incremental_stream))
     read_error (listed_incremental_option);
-  if (buf)
-    free (buf);
+  free (buf);
 }
 
 /* Output incremental data for the directory ENTRY to the file DATA.
@@ -1660,8 +1658,7 @@ try_purge_directory (char const *directory_name)
     {
       const char *entry;
       struct stat st;
-      if (p)
-	free (p);
+      free (p);
       p = new_name (directory_name, cur);
 
       if (deref_stat (p, &st) != 0)

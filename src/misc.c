@@ -37,8 +37,7 @@
 void
 assign_string (char **string, const char *value)
 {
-  if (*string)
-    free (*string);
+  free (*string);
   *string = value ? xstrdup (value) : 0;
 }
 

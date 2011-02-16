@@ -433,15 +433,13 @@ read_header (union block **return_block, struct tar_stat_info *info,
 
 	      if (header->header.typeflag == GNUTYPE_LONGNAME)
 		{
-		  if (next_long_name)
-		    free (next_long_name);
+		  free (next_long_name);
 		  next_long_name = header_copy;
 		  next_long_name_blocks = size / BLOCKSIZE;
 		}
 	      else
 		{
-		  if (next_long_link)
-		    free (next_long_link);
+		  free (next_long_link);
 		  next_long_link = header_copy;
 		  next_long_link_blocks = size / BLOCKSIZE;
 		}
@@ -500,8 +498,7 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	  struct posix_header const *h = &header->header;
 	  char namebuf[sizeof h->prefix + 1 + NAME_FIELD_SIZE + 1];
 
-	  if (recent_long_name)
-	    free (recent_long_name);
+	  free (recent_long_name);
 
 	  if (next_long_name)
 	    {
@@ -532,8 +529,7 @@ read_header (union block **return_block, struct tar_stat_info *info,
 	  assign_string (&info->file_name, name);
 	  info->had_trailing_slash = strip_trailing_slashes (info->file_name);
 
-	  if (recent_long_link)
-	    free (recent_long_link);
+	  free (recent_long_link);
 
 	  if (next_long_link)
 	    {
