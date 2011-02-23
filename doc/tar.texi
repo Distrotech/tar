@@ -1022,13 +1022,12 @@ suffixes explained above:
 
 @smallexample
 @group
-V--------- 0/0          1536 2006-06-09 13:07 MyVolume--Volume Header--
--rw-r--r-- gray/staff 456783 2006-06-09 12:06 aspic--Continued at
-byte 32456--
--rw-r--r-- gray/staff  62373 2006-06-09 12:06 apple
-lrwxrwxrwx gray/staff      0 2006-06-09 13:01 angst -> apple
--rw-r--r-- gray/staff  35793 2006-06-09 12:06 blues
-hrw-r--r-- gray/staff      0 2006-06-09 12:06 music link to blues
+V--------- 0/0            1536 2006-06-09 13:07 MyVolume--Volume Header--
+-rw-r--r-- gray/staff   456783 2006-06-09 12:06 aspic--Continued at byte 32456--
+-rw-r--r-- gray/staff    62373 2006-06-09 12:06 apple
+lrwxrwxrwx gray/staff        0 2006-06-09 13:01 angst -> apple
+-rw-r--r-- gray/staff    35793 2006-06-09 12:06 blues
+hrw-r--r-- gray/staff        0 2006-06-09 12:06 music link to blues
 @end group
 @end smallexample
 
@@ -1421,7 +1420,7 @@ above would look like:
 
 @smallexample
 $ @kbd{tar --list --verbose --file=collection.tar folk}
--rw-r--r-- myself user 62 1990-05-23 10:55 folk
+-rw-r--r-- myself/user      62 1990-05-23 10:55 folk
 @end smallexample
 
 @cindex listing member and file names
@@ -1513,11 +1512,11 @@ $ @kbd{tar --list --verbose --file=music.tar practice}
 @command{tar} responds:
 
 @smallexample
-drwxrwxrwx myself user 0 1990-05-31 21:49 practice/
--rw-r--r-- myself user 42 1990-05-21 13:29 practice/blues
--rw-r--r-- myself user 62 1990-05-23 10:55 practice/folk
--rw-r--r-- myself user 40 1990-05-21 13:30 practice/jazz
--rw-r--r-- myself user 10240 1990-05-31 21:49 practice/collection.tar
+drwxrwxrwx myself/user       0 1990-05-31 21:49 practice/
+-rw-r--r-- myself/user      42 1990-05-21 13:29 practice/blues
+-rw-r--r-- myself/user      62 1990-05-23 10:55 practice/folk
+-rw-r--r-- myself/user      40 1990-05-21 13:30 practice/jazz
+-rw-r--r-- myself/user   10240 1990-05-31 21:49 practice/collection.tar
 @end smallexample
 
 When you use a directory name as a file name argument, @command{tar} acts on
@@ -1567,9 +1566,9 @@ $ @kbd{tar -xvf collection.tar}
 produces this:
 
 @smallexample
--rw-r--r-- me user     28 1996-10-18 16:31 jazz
--rw-r--r-- me user     21 1996-09-23 16:44 blues
--rw-r--r-- me user     20 1996-09-23 16:44 folk
+-rw-r--r-- me/user          28 1996-10-18 16:31 jazz
+-rw-r--r-- me/user          21 1996-09-23 16:44 blues
+-rw-r--r-- me/user          20 1996-09-23 16:44 folk
 @end smallexample
 
 @node extracting files
@@ -1683,8 +1682,8 @@ in the example below:
 
 @smallexample
 $ @kbd{tar -xvvf music.tar practice/folk practice/jazz}
--rw-r--r-- me user     28 1996-10-18 16:31 practice/jazz
--rw-r--r-- me user     20 1996-09-23 16:44 practice/folk
+-rw-r--r-- me/user          28 1996-10-18 16:31 practice/jazz
+-rw-r--r-- me/user          20 1996-09-23 16:44 practice/folk
 @end smallexample
 
 @noindent
@@ -4534,10 +4533,10 @@ If you now use the @option{--list} (@option{-t}) operation, you will see that
 
 @smallexample
 $ @kbd{tar --list --file=collection.tar}
--rw-r--r-- me user     28 1996-10-18 16:31 jazz
--rw-r--r-- me user     21 1996-09-23 16:44 blues
--rw-r--r-- me user     20 1996-09-23 16:44 folk
--rw-r--r-- me user     20 1996-09-23 16:44 rock
+-rw-r--r-- me/user          28 1996-10-18 16:31 jazz
+-rw-r--r-- me/user          21 1996-09-23 16:44 blues
+-rw-r--r-- me/user          20 1996-09-23 16:44 folk
+-rw-r--r-- me/user          20 1996-09-23 16:44 rock
 @end smallexample
 
 @node multiple
@@ -4581,11 +4580,11 @@ list the contents of the archive:
 
 @smallexample
 $ @kbd{tar --list --verbose --file=collection.tar}
--rw-r--r-- me user     28 1996-10-18 16:31 jazz
--rw-r--r-- me user     21 1996-09-23 16:44 blues
--rw-r--r-- me user     20 1996-09-23 16:44 folk
--rw-r--r-- me user     20 1996-09-23 16:44 rock
--rw-r--r-- me user     58 1996-10-24 18:30 blues
+-rw-r--r-- me/user          28 1996-10-18 16:31 jazz
+-rw-r--r-- me/user          21 1996-09-23 16:44 blues
+-rw-r--r-- me/user          20 1996-09-23 16:44 folk
+-rw-r--r-- me/user          20 1996-09-23 16:44 rock
+-rw-r--r-- me/user          58 1996-10-24 18:30 blues
 @end smallexample
 
 @noindent
@@ -4601,7 +4600,7 @@ the following example:
 
 @smallexample
 $ @kbd{tar --extract -vv --occurrence --file=collection.tar blues}
--rw-r--r-- me user     21 1996-09-23 16:44 blues
+-rw-r--r-- me/user          21 1996-09-23 16:44 blues
 @end smallexample
 
 @xref{Writing}, for more information on @option{--extract} and
@@ -4728,11 +4727,11 @@ contain what they are supposed to:
 
 @smallexample
 $ @kbd{tar -tvf bluesrock.tar}
--rw-r--r-- melissa user    105 1997-01-21 19:42 blues
--rw-r--r-- melissa user     33 1997-01-20 15:34 rock
+-rw-r--r-- melissa/user    105 1997-01-21 19:42 blues
+-rw-r--r-- melissa/user     33 1997-01-20 15:34 rock
 $ @kbd{tar -tvf jazzfolk.tar}
--rw-r--r-- melissa user     20 1996-09-23 16:44 folk
--rw-r--r-- melissa user     65 1997-01-30 14:15 jazz
+-rw-r--r-- melissa/user     20 1996-09-23 16:44 folk
+-rw-r--r-- melissa/user     65 1997-01-30 14:15 jazz
 @end smallexample
 
 We can concatenate these two archives with @command{tar}:
@@ -8783,7 +8782,7 @@ tried@footnote{To verbosely trace the decompressor selection, use the
 @option{--warning=decompress-program} option
 (@pxref{warnings,decompress-program}).}:
 
-@multitable @columnfractions 0.3 0.3 0.3 
+@multitable @columnfractions 0.3 0.3 0.3
 @headitem Format @tab Main decompressor @tab Alternatives
 @item compress @tab compress @tab gzip
 @item lzma     @tab lzma     @tab xz
@@ -9387,9 +9386,9 @@ once.  For example, consider the following two files:
 
 @smallexample
 @group
-$ ls
--rw-r--r--   2 gray staff       4 2007-10-30 15:11 one
--rw-r--r--   2 gray staff       4 2007-10-30 15:11 jeden
+$ ls -l
+-rw-r--r-- 2 gray staff 4 2007-10-30 15:11 one
+-rw-r--r-- 2 gray staff 4 2007-10-30 15:11 jeden
 @end group
 @end smallexample
 
@@ -11551,8 +11550,8 @@ explicitly marked as in the example below:
 @smallexample
 @group
 $ @kbd{tar --verbose --list --file=iamanarchive}
-V--------- 0 0        0 1992-03-07 12:01 iamalabel--Volume Header--
--rw-r--r-- ringo user 40 1990-05-21 13:30 iamafilename
+V--------- 0/0               0 1992-03-07 12:01 iamalabel--Volume Header--
+-rw-r--r-- ringo/user       40 1990-05-21 13:30 iamafilename
 @end group
 @end smallexample
 
