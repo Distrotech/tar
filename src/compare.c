@@ -234,7 +234,8 @@ diff_file (void)
 	      else
 		read_and_process (&current_stat_info, process_rawdata);
 
-	      if (atime_preserve_option == replace_atime_preserve)
+	      if (atime_preserve_option == replace_atime_preserve
+		  && stat_data.st_size != 0)
 		{
 		  struct timespec atime = get_stat_atime (&stat_data);
 		  if (set_file_atime (diff_handle, chdir_fd, file_name, atime)
@@ -528,7 +529,7 @@ verify_volume (void)
   if (may_fail)
     WARN((0, 0,
 	  _("Verification may fail to locate original files.")));
-  
+
   if (!diff_buffer)
     diff_init ();
 

@@ -1797,6 +1797,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 	      set_exit_status (TAREXIT_DIFFERS);
 	    }
 	  else if (atime_preserve_option == replace_atime_preserve
+		   && fd && (is_dir || original_size != 0)
 		   && set_file_atime (fd, parentfd, name, st->atime) != 0)
 	    utime_error (p);
 	}
