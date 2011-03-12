@@ -34,7 +34,7 @@ m4_define([NAME_111],
 
 AT_TAR_CHECK([
 genfile --sparse --file NAME_111 --block-size 512 8M A || AT_SKIP_TEST
-tar -c --sparse --posix NAME_111 | tar t
+tar -f - -c --sparse --posix NAME_111 | tar tf -
 ],
 [0],
 [NAME_111
