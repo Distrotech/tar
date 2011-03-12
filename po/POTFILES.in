@@ -37,7 +37,6 @@ gnu/version-etc.c
 gnu/xalloc-die.c
 
 lib/paxerror.c
-lib/paxexit.c
 lib/paxnames.c
 lib/rtapelib.c
 

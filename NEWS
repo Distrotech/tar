@@ -1,12 +1,26 @@
-GNU tar NEWS - User visible changes. 2010-11-27
+GNU tar NEWS - User visible changes. 2011-03-12
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.25.90 - (Git)
+version 1.26 - Sergey Poznyakoff, 2011-03-12
 
 * Bugfixes
+
 ** Fix the --verify option, which broke in version 1.24.
+
 ** Fix storing long sparse file names in PAX archives.
+
+** Fix correctness of --atime-preserve=replace
+
+tar --atime-preserve=replace no longer tries to restore atime of
+zero-sized files.
+
+** Work around POSIX incompatibilities on FreeBSD, NetBSD and Tru64
+
+** Fix bug with --one-file-system --listed-incremental
+
+When invoked with these two options, tar 1.25 would add only the
+top-level directory to the archive, but not its contents.
 
 
 version 1.25 - Sergey Poznyakoff, 2010-11-07
