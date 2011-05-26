@@ -2117,12 +2117,20 @@ end up overwriting files.
 @subsection Old Option Style
 @cindex options, old style
 @cindex old option style
+@cindex option syntax, traditional
 
-Like short options, @dfn{old options} are single letters.  However, old options
+As far as we know, all @command{tar} programs, @acronym{GNU} and
+non-@acronym{GNU}, support @dfn{old options}: that is, if the first
+argument does not start with @samp{-}, it is assumed to specify option
+letters.  @GNUTAR{} supports old options not only for historical
+reasons, but also because many people are used to them.  If the first
+argument does not start with a dash, you are announcing the old option
+style instead of the short option style; old options are decoded
+differently.
+
+Like short options, old options are single letters.  However, old options
 must be written together as a single clumped set, without spaces separating
-them or dashes preceding them@footnote{Beware that if you precede options
-with a dash, you are announcing the short option style instead of the
-old option style; short options are decoded differently.}.  This set
+them or dashes preceding them.  This set
 of letters must be the first to appear on the command line, after the
 @command{tar} program name and some white space; old options cannot appear
 anywhere else.  The letter of an old option is exactly the same letter as
@@ -2146,7 +2154,7 @@ $ @kbd{tar cvbf 20 /dev/rmt0}
 Here, @samp{20} is the argument of @option{-b} and @samp{/dev/rmt0} is
 the argument of @option{-f}.
 
-On the other hand, this old style syntax makes it difficult to match
+The old style syntax can make it difficult to match
 option letters with their corresponding arguments, and is often
 confusing.  In the command @w{@samp{tar cvbf 20 /dev/rmt0}}, for example,
 @samp{20} is the argument for @option{-b}, @samp{/dev/rmt0} is the
@@ -2172,8 +2180,6 @@ the value for option @samp{f} and recognizes the option @samp{z}.  The
 second example, however, uses @file{z} as the value for option
 @samp{f} --- probably not what was intended.
 
-Old options are kept for compatibility with old versions of @command{tar}.
-
 This second example could be corrected in many ways, among which the
 following are equivalent:
 
@@ -2182,16 +2188,6 @@ following are equivalent:
 @kbd{tar -cf archive.tar.gz -z file}
 @kbd{tar cf archive.tar.gz -z file}
 @end smallexample
-
-@cindex option syntax, traditional
-As far as we know, all @command{tar} programs, @acronym{GNU} and
-non-@acronym{GNU}, support old options.  @GNUTAR{}
-supports them not only for historical reasons, but also because many
-people are used to them.  For compatibility with Unix @command{tar},
-the first argument is always treated as containing command and option
-letters even if it doesn't start with @samp{-}.  Thus, @samp{tar c} is
-equivalent to @w{@samp{tar -c}:} both of them specify the
-@option{--create} (@option{-c}) command to create an archive.
 
 @node Mixing
 @subsection Mixing Option Styles
@@ -3732,7 +3728,7 @@ $ @kbd{tar xvvf archive.tar}
 
 Verbose output appears on the standard output except when an archive is
 being written to the standard output, as with @samp{tar --create
---file=- --verbose} (@samp{tar cfv -}, or even @samp{tar cv}---if the
+--file=- --verbose} (@samp{tar cvf -}, or even @samp{tar cv}---if the
 installer let standard output be the default archive).  In that case
 @command{tar} writes verbose output to the standard error stream.
 
@@ -4312,7 +4308,7 @@ the following commands:
 
 @smallexample
 @kbd{tar --create --file=empty-archive.tar --files-from=/dev/null}
-@kbd{tar cfT empty-archive.tar /dev/null}
+@kbd{tar -cf empty-archive.tar -T /dev/null}
 @end smallexample
 
 @xopindex{extract, complementary notes}
@@ -8730,7 +8726,7 @@ archive, @option{--lzop} to create an @asis{LSOP} archive, and
 For example:
 
 @smallexample
-$ @kbd{tar cfz archive.tar.gz .}
+$ @kbd{tar czf archive.tar.gz .}
 @end smallexample
 
 You can also let @GNUTAR{} select the compression program based on
@@ -8740,14 +8736,14 @@ example, the following invocation will use @command{bzip2} for
 compression:
 
 @smallexample
-$ @kbd{tar cfa archive.tar.bz2 .}
+$ @kbd{tar caf archive.tar.bz2 .}
 @end smallexample
 
 @noindent
 whereas the following one will use @command{lzma}:
 
 @smallexample
-$ @kbd{tar cfa archive.tar.lzma .}
+$ @kbd{tar caf archive.tar.lzma .}
 @end smallexample
 
 For a complete list of file name suffixes recognized by @GNUTAR{},
@@ -8804,7 +8800,7 @@ If you see such diagnostics, just add the suggested option to the
 invocation of @GNUTAR{}:
 
 @smallexample
-$ @kbd{cat archive.tar.gz | tar tfz -}
+$ @kbd{cat archive.tar.gz | tar tzf -}
 @end smallexample
 
 Notice also, that there are several restrictions on operations on
@@ -8875,7 +8871,7 @@ environment variable.  For example, when using @command{gzip} you can
 use @env{GZIP} as in the example below:
 
 @smallexample
-$ @kbd{GZIP=--best tar cfz archive.tar.gz subdir}
+$ @kbd{GZIP=--best tar czf archive.tar.gz subdir}
 @end smallexample
 
 @noindent
@@ -9397,7 +9393,7 @@ directory with a verbose level 2, you will get an output similar to
 the following:
 
 @smallexample
-$ tar cfvv ../archive.tar .
+$ tar cvvf ../archive.tar .
 drwxr-xr-x gray/staff        0 2007-10-30 15:13 ./
 -rw-r--r-- gray/staff        4 2007-10-30 15:11 ./jeden
 hrw-r--r-- gray/staff        0 2007-10-30 15:11 ./one link to ./jeden
@@ -11367,7 +11363,7 @@ second tape, and then back to the first tape, etc., just do either of:
 
 @smallexample
 $ @kbd{tar --create --multi-volume --file=/dev/tape0 --file=/dev/tape1 @var{files}}
-$ @kbd{tar cMff /dev/tape0 /dev/tape1 @var{files}}
+$ @kbd{tar -cM -f /dev/tape0 -f /dev/tape1 @var{files}}
 @end smallexample
 
 The second method is to use the @samp{n} response to the tape-change
@@ -11646,7 +11642,7 @@ manage to get some date string as part of the label.  For example:
 
 @smallexample
 @group
-$ @kbd{tar cfMV /dev/tape "Daily backup for `date +%Y-%m-%d`"}
+$ @kbd{tar -cM -f /dev/tape -V "Daily backup for `date +%Y-%m-%d`"}
 $ @kbd{tar --create --file=/dev/tape --multi-volume \
      --label="Daily backup for `date +%Y-%m-%d`"}
 @end group
