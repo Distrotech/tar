@@ -110,12 +110,15 @@ struct delayed_link
     /* The next delayed link in the list.  */
     struct delayed_link *next;
 
-    /* The device, inode number and ctime of the placeholder.  Use
-       ctime, not mtime, to make false matches less likely if some
-       other process removes the placeholder.  */
+    /* The device, inode number and birthtime of the placeholder.
+       birthtime.tv_nsec is negative if the birthtime is not available.
+       Don't use mtime as this would allow for false matches if some
+       other process removes the placeholder.  Don't use ctime as
+       this would cause race conditions and other screwups, e.g.,
+       when restoring hard-linked symlinks.  */
     dev_t dev;
     ino_t ino;
-    struct timespec ctime;
+    struct timespec birthtime;
 
     /* True if the link is symbolic.  */
     bool is_symlink;
@@ -266,6 +269,15 @@ set_mode (char const *file_name,
 	    }
 	}
     }
+}
+
+/* Return true if A and B are the same birthtimes.
+   Unavailable birthtimes, which have negative tv_nsec members,
+   all compare equal to each other.  */
+static bool
+same_birthtime (struct timespec a, struct timespec b)
+{
+  return (a.tv_nsec == b.tv_nsec && (a.tv_nsec < 0 || a.tv_sec == b.tv_sec));
 }
 
 /* Check time after successfully setting FILE_NAME's time stamp to T.  */
@@ -1076,7 +1088,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
       delayed_link_head = p;
       p->dev = st.st_dev;
       p->ino = st.st_ino;
-      p->ctime = get_stat_ctime (&st);
+      p->birthtime = get_stat_birthtime (&st);
       p->is_symlink = is_symlink;
       if (is_symlink)
 	{
@@ -1134,7 +1146,7 @@ extract_link (char *file_name, int typeflag)
 	      if (ds->change_dir == chdir_current
 		  && ds->dev == st1.st_dev
 		  && ds->ino == st1.st_ino
-		  && timespec_cmp (ds->ctime, get_stat_ctime (&st1)) == 0)
+		  && same_birthtime (ds->birthtime, get_stat_birthtime (&st1)))
 		{
 		  struct string_list *p =  xmalloc (offsetof (struct string_list, string)
 						    + strlen (file_name) + 1);
@@ -1500,7 +1512,7 @@ apply_delayed_links (void)
 	  if (fstatat (chdir_fd, source, &st, AT_SYMLINK_NOFOLLOW) == 0
 	      && st.st_dev == ds->dev
 	      && st.st_ino == ds->ino
-	      && timespec_cmp (get_stat_ctime (&st), ds->ctime) == 0)
+	      && same_birthtime (get_stat_birthtime (&st), ds->birthtime))
 	    {
 	      /* Unlink the placeholder, then create a hard link if possible,
 		 a symbolic link otherwise.  */
