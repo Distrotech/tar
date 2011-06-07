@@ -271,15 +271,6 @@ set_mode (char const *file_name,
     }
 }
 
-/* Return true if A and B are the same birthtimes.
-   Unavailable birthtimes, which have negative tv_nsec members,
-   all compare equal to each other.  */
-static bool
-same_birthtime (struct timespec a, struct timespec b)
-{
-  return (a.tv_nsec == b.tv_nsec && (a.tv_nsec < 0 || a.tv_sec == b.tv_sec));
-}
-
 /* Check time after successfully setting FILE_NAME's time stamp to T.  */
 static void
 check_time (char const *file_name, struct timespec t)
@@ -1146,7 +1137,8 @@ extract_link (char *file_name, int typeflag)
 	      if (ds->change_dir == chdir_current
 		  && ds->dev == st1.st_dev
 		  && ds->ino == st1.st_ino
-		  && same_birthtime (ds->birthtime, get_stat_birthtime (&st1)))
+		  && (timespec_cmp (ds->birthtime, get_stat_birthtime (&st1))
+		      == 0))
 		{
 		  struct string_list *p =  xmalloc (offsetof (struct string_list, string)
 						    + strlen (file_name) + 1);
@@ -1512,7 +1504,7 @@ apply_delayed_links (void)
 	  if (fstatat (chdir_fd, source, &st, AT_SYMLINK_NOFOLLOW) == 0
 	      && st.st_dev == ds->dev
 	      && st.st_ino == ds->ino
-	      && same_birthtime (get_stat_birthtime (&st), ds->birthtime))
+	      && timespec_cmp (get_stat_birthtime (&st), ds->birthtime) == 0)
 	    {
 	      /* Unlink the placeholder, then create a hard link if possible,
 		 a symbolic link otherwise.  */
