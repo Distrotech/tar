@@ -892,12 +892,12 @@ static char const * const backup_file_table[] = {
 };
 
 static void
-add_exclude_array (char const * const * fv)
+add_exclude_array (char const * const * fv, int options)
 {
   int i;
 
   for (i = 0; fv[i]; i++)
-    add_exclude (excluded, fv[i], 0);
+    add_exclude (excluded, fv[i], options);
 }
 
 
@@ -1769,7 +1769,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case EXCLUDE_BACKUPS_OPTION:
-      add_exclude_array (backup_file_table);
+      add_exclude_array (backup_file_table, EXCLUDE_WILDCARDS);
       break;
 
     case EXCLUDE_OPTION:
@@ -1804,7 +1804,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case EXCLUDE_VCS_OPTION:
-      add_exclude_array (vcs_file_table);
+      add_exclude_array (vcs_file_table, 0);
       break;
 
     case FORCE_LOCAL_OPTION:
