@@ -2713,9 +2713,9 @@ tutorial}).
 @item --group=@var{group}
 
 Files added to the @command{tar} archive will have a group @acronym{ID} of @var{group},
-rather than the group from the source file.  @var{group} is first decoded
-as a group symbolic name, but if this interpretation fails, it has to be
-a decimal numeric group @acronym{ID}.  @xref{override}.
+rather than the group from the source file.  @var{group} can specify a
+symbolic name, or a numeric @acronym{ID}, or both as
+@var{name}:@var{id}.  @xref{override}.
 
 Also see the comments for the @option{--owner=@var{user}} option.
 
@@ -3082,8 +3082,8 @@ from an archive.  @xref{Overwrite Old Files}.
 
 Specifies that @command{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
-file.  @var{user} is first decoded as a user symbolic name, but if
-this interpretation fails, it has to be a decimal numeric user @acronym{ID}.
+file.  @var{user} can specify a symbolic name, or a numeric
+@acronym{ID}, or both as @var{name}:@var{id}.
 @xref{override}.
 
 This option does not affect extraction from archives.
@@ -4947,8 +4947,22 @@ tar: Option --mtime: Treating date `yesterday' as 2006-06-20
 
 Specifies that @command{tar} should use @var{user} as the owner of members
 when creating archives, instead of the user associated with the source
-file.  The argument @var{user} can be either an existing user symbolic
-name, or a decimal numeric user @acronym{ID}.
+file.
+
+If @var{user} contains a colon, it is taken to be of the form
+@var{name}:@var{id} where a nonempty @var{name} specifies the user
+name and a nonempty @var{id} specifies the decimal numeric user
+@acronym{ID}.  If @var{user} does not contain a colon, it is taken to
+be a user number if it is one or more decimal digits; otherwise it is
+taken to be a user name.
+
+If a name is given but no number, the number is inferred from the
+current host's user database if possible, and the file's user number
+is used otherwise.  If a number is given but no name, the name is
+inferred from the number if possible, and an empty name is used
+otherwise.  If both name and number are given, the user database is
+not consulted, and the name and number need not be valid on the
+current host.
 
 There is no value indicating a missing number, and @samp{0} usually means
 @code{root}.  Some people like to force @samp{0} as the value to offer in
@@ -4971,8 +4985,9 @@ $ @kbd{tar -c -f archive.tar --owner=root .}
 @opindex group
 
 Files added to the @command{tar} archive will have a group @acronym{ID} of @var{group},
-rather than the group from the source file.  The argument @var{group}
-can be either an existing group symbolic name, or a decimal numeric group @acronym{ID}.
+rather than the group from the source file.  As with @option{--owner},
+the argument @var{group} can be an existing group symbolic name, or a
+decimal numeric group @acronym{ID}, or @var{name}:@var{id}.
 @end table
 
 @node Ignore Failed Read

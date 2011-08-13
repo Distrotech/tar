@@ -128,6 +128,7 @@ TESTSUITE_AT = \
  old.at\
  options.at\
  options02.at\
+ owner.at\
  pipe.at\
  recurse.at\
  rename01.at\

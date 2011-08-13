@@ -158,7 +158,8 @@ enum exclusion_tag_type
   };
 
 /* Specified value to be put into tar file in place of stat () results, or
-   just -1 if such an override should not take place.  */
+   just null and -1 if such an override should not take place.  */
+GLOBAL char const *group_name_option;
 GLOBAL gid_t group_option;
 
 GLOBAL bool ignore_failed_read_option;
@@ -230,7 +231,8 @@ GLOBAL bool numeric_owner_option;
 GLOBAL bool one_file_system_option;
 
 /* Specified value to be put into tar file in place of stat () results, or
-   just -1 if such an override should not take place.  */
+   just null and -1 if such an override should not take place.  */
+GLOBAL char const *owner_name_option;
 GLOBAL uid_t owner_option;
 
 GLOBAL bool recursive_unlink_option;

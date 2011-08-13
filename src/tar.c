@@ -1364,6 +1364,58 @@ expand_pax_option (struct tar_args *targs, const char *arg)
 }
 
 
+static uintmax_t
+parse_owner_group (char *arg, uintmax_t field_max, char const **name_option)
+{
+  strtol_error err;
+  uintmax_t u = UINTMAX_MAX;
+  char *end;
+  char const *name = 0;
+  char const *invalid_num = 0;
+  char *colon = strchr (arg, ':');
+
+  if (colon)
+    {
+      char const *num = colon + 1;
+      *colon = '\0';
+      if (*arg)
+	name = arg;
+      if (num && (! (xstrtoumax (num, &end, 10, &u, "") == LONGINT_OK
+		     && u <= field_max)))
+	invalid_num = num;
+    }
+  else
+    {
+      uintmax_t u1;
+      switch ('0' <= *arg && *arg <= '9'
+	      ? xstrtoumax (arg, &end, 10, &u1, "")
+	      : LONGINT_INVALID)
+	{
+	default:
+	  name = arg;
+	  break;
+
+	case LONGINT_OK:
+	  if (u1 <= field_max)
+	    {
+	      u = u1;
+	      break;
+	    }
+	  /* Fall through.  */
+	case LONGINT_OVERFLOW:
+	  invalid_num = arg;
+	  break;
+	}
+    }
+
+  if (invalid_num)
+    FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (invalid_num),
+		  _("Invalid owner or group ID")));
+  if (name)
+    *name_option = name;
+  return u;
+}
+
 #define TAR_SIZE_SUFFIXES "bBcGgkKMmPTtw"
 
 static error_t
@@ -1836,17 +1888,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case GROUP_OPTION:
-      if (! (strlen (arg) < GNAME_FIELD_SIZE
-	     && gname_to_gid (arg, &group_option)))
-	{
-	  uintmax_t g;
-	  if (xstrtoumax (arg, 0, 10, &g, "") == LONGINT_OK
-	      && g == (gid_t) g)
-	    group_option = g;
-	  else
-	    FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
-			  _("Invalid group")));
-	}
+      {
+	uintmax_t u = parse_owner_group (arg, TYPE_MAXIMUM (gid_t),
+					 &group_name_option);
+	if (u == UINTMAX_MAX)
+	  {
+	    group_option = -1;
+	    if (group_name_option)
+	      gname_to_gid (group_name_option, &group_option);
+	  }
+	else
+	  group_option = u;
+      }
       break;
 
     case MODE_OPTION:
@@ -1922,17 +1975,18 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case OWNER_OPTION:
-      if (! (strlen (arg) < UNAME_FIELD_SIZE
-	     && uname_to_uid (arg, &owner_option)))
-	{
-	  uintmax_t u;
-	  if (xstrtoumax (arg, 0, 10, &u, "") == LONGINT_OK
-	      && u == (uid_t) u)
-	    owner_option = u;
-	  else
-	    FATAL_ERROR ((0, 0, "%s: %s", quotearg_colon (arg),
-			  _("Invalid owner")));
-	}
+      {
+	uintmax_t u = parse_owner_group (arg, TYPE_MAXIMUM (uid_t),
+					 &owner_name_option);
+	if (u == UINTMAX_MAX)
+	  {
+	    owner_option = -1;
+	    if (owner_name_option)
+	      uname_to_uid (owner_name_option, &owner_option);
+	  }
+	else
+	  owner_option = u;
+      }
       break;
 
     case QUOTE_CHARS_OPTION:
@@ -2241,8 +2295,8 @@ decode_options (int argc, char **argv)
   tar_sparse_major = 1;
   tar_sparse_minor = 0;
 
-  owner_option = -1;
-  group_option = -1;
+  owner_option = -1; owner_name_option = NULL;
+  group_option = -1; group_name_option = NULL;
 
   check_device_option = true;
 

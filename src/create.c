@@ -920,8 +920,15 @@ start_header (struct tar_stat_info *st)
     }
   else
     {
-      uid_to_uname (st->stat.st_uid, &st->uname);
-      gid_to_gname (st->stat.st_gid, &st->gname);
+      if (owner_name_option)
+	st->uname = xstrdup (owner_name_option);
+      else
+	uid_to_uname (st->stat.st_uid, &st->uname);
+
+      if (group_name_option)
+	st->gname = xstrdup (group_name_option);
+      else
+	gid_to_gname (st->stat.st_gid, &st->gname);
 
       if (archive_format == POSIX_FORMAT
 	  && (strlen (st->uname) > UNAME_FIELD_SIZE
