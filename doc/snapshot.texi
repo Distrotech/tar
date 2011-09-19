@@ -11,11 +11,11 @@ used to determine which files were modified since the last backup.
 
   @GNUTAR{} version @value{VERSION} supports three snapshot file
 formats.  The first format, called @dfn{format 0}, is the one used by
-@GNUTAR{} versions up to 1.15.1. The second format, called @dfn{format
-1} is an extended version of this format, that contains more metadata
-and allows for further extensions. It was used by version
-1.15.1. Starting from version 1.16 and up to @value{VERSION}, the
-@dfn{format 2} is used.
+@GNUTAR{} versions up to and including 1.15.1. The second format, called 
+@dfn{format 1} is an extended version of this format, that contains more
+metadata and allows for further extensions. It was used by alpha release
+version 1.15.90. For alpha version 1.15.91 and stable releases
+version 1.16 up through @value{VERSION}, the @dfn{format 2} is used.
 
   @GNUTAR{} is able to read all three formats, but will create
 snapshots only in format 2.
@@ -33,7 +33,7 @@ metadata descriptions, one per line. Each description has the
 following format:
 
 @smallexample
-@var{nfs}@var{dev} @var{inode} @var{name}
+[@var{nfs}]@var{dev} @var{inode} @var{name}
 @end smallexample
 
 @noindent
@@ -42,7 +42,10 @@ where:
 @table @var
 @item nfs
 A single plus character (@samp{+}), if this directory is located on
-an @acronym{NFS}-mounted partition, or a single space otherwise;
+an @acronym{NFS}-mounted partition, otherwise empty.  
+
+(That is, for non-NFS directories, the first character on the
+description line contains the start of the @var{dev} field.)
 
 @item dev
 Device number of the directory;
