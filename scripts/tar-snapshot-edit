@@ -1,10 +1,10 @@
 #! /usr/bin/perl -w
 # Display and edit the 'dev' field in tar's snapshots
-# Copyright (C) 2007,2011 Free Software Foundation, Inc.
+# Copyright (C) 2007, 2011 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2, or (at your option)
+# the Free Software Foundation; either version 3, or (at your option)
 # any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -39,7 +39,7 @@
 #
 # Modified Aug 25, 2011 by Nathan Stratton Treadway <nathanst AT ontko.com>:
 #   * update Perl syntax to work correctly with more recent versions of
-#     Perl.  (The original code worked with in the v5.8 timeframe but 
+#     Perl.  (The original code worked with in the v5.8 timeframe but
 #     not with Perl v5.10.1 and later.)
 #   * added a "-c" option to check the snapshot file for invalid field values.
 #   * handle NFS indicator character ("+") in version 0 and 1 files
@@ -93,11 +93,11 @@ sub read_incr_db_0 ($$) {
     while (<$file>) {
 	/^(\+?)([0-9]*) ([0-9]*) (.*)\n$/ || die("Bad snapshot line $_");
 
-        if ( $1 eq "+" ) {
-          $nfs="1";
-        } else {
-          $nfs="0";
-        }
+	if ( $1 eq "+" ) {
+	  $nfs="1";
+	} else {
+	  $nfs="0";
+	}
 	push @dirs, { nfs=>$nfs,
 		      dev=>$2,
 		      ino=>$3,
@@ -124,12 +124,12 @@ sub read_incr_db_1 ($$) {
     while (<$file>) {
 	/^(\+?)([0-9]*) ([0-9]*) ([0-9]*) ([0-9]*) (.*)\n$/ || die("Bad snapshot line $_");
 
-        if ( $1 eq "+" ) {
-          $nfs="1";
-        } else {
-          $nfs="0";
-        }
- 
+	if ( $1 eq "+" ) {
+	  $nfs="1";
+	} else {
+	  $nfs="0";
+	}
+
 	push @dirs, { nfs=>$nfs,
 		      timestamp_sec=>$2,
 		      timestamp_nsec=>$3,
@@ -224,15 +224,15 @@ sub validate_integer_field ($$$$) {
 
     my $msg = "";
 
-    if ( not $field =~ /^-?\d+$/ ) { 
+    if ( not $field =~ /^-?\d+$/ ) {
 	$msg = "      $field_name value contains invalid characters: \"$field\"\n";
-    } else {  
+    } else {
 	if ( $field < $min ) {
 	    $msg = "      $field_name value too low: \"$field\" < $min \n";
-        } elsif ( $field > $max ) {
+	} elsif ( $field > $max ) {
 	    $msg = "      $field_name value too high: \"$field\" > $max \n";
-        } 
-    } 
+	}
+    }
     return $msg;
 }
 
@@ -247,13 +247,13 @@ sub validate_integer_field ($$$$) {
 # more precisely, v1.15.91].)
 #
 # The checks here are intended to match those found in the incremen.c
-# source file (as of tar v1.16.1).  
+# source file (as of tar v1.16.1).
 #
 # In that code, the checks are done against pre-processor expressions,
 # as defined in the C header files at compile time.   In the routine
 # below, a Perl variable is created for each expression used as part of
 # one of these checks, assigned the value of the related pre-processor
-# expression as found on a Linux 2.6.8/i386 system.  
+# expression as found on a Linux 2.6.8/i386 system.
 #
 # It seems likely that these settings will catch most invalid
 # field values found in actual snapshot files on all systems.  However,
@@ -264,15 +264,15 @@ sub validate_integer_field ($$$$) {
 #
 # (Note: the checks here are taken from the code that processes
 # version 2 snapshot files, but to keep things simple we apply those
-# same checks to files having earlier versions -- but only for 
+# same checks to files having earlier versions -- but only for
 # the fields that actually exist in those input files.)
 
 sub check_field_values ($) {
     my $info = shift;
 
-    # set up a variable with the value of each pre-processor 
-    # expression used for field-value checks in incremen.c 
-    # (these values here are from a Linux 2.6.8/i386 system) 
+    # set up a variable with the value of each pre-processor
+    # expression used for field-value checks in incremen.c
+    # (these values here are from a Linux 2.6.8/i386 system)
     my $BILLION = 1000000000;        # BILLION
     my $MIN_TIME_T = -2147483648;    # TYPE_MINIMUM(time_t)
     my $MAX_TIME_T = 2147483647;     # TYPE_MAXIUMUM(time_t)
@@ -289,13 +289,13 @@ sub check_field_values ($) {
 
     $msg = "";
     $msg .= validate_integer_field($info->[1],
-	                   'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
+			   'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
     if ($snapver >= 1) {
       $msg .= validate_integer_field($info->[2],
-	                   'timestamp_nsec', 0, $BILLION-1);
-    } 
+			   'timestamp_nsec', 0, $BILLION-1);
+    }
     if ( $msg ne "" ) {
-        $error_found = 1;
+	$error_found = 1;
 	print "\n    shapshot file header:\n";
 	print $msg;
     }
@@ -306,25 +306,25 @@ sub check_field_values ($) {
 	$msg = "";
 
 	$msg .= validate_integer_field($dir->{'nfs'}, 'nfs', 0, 1);
-        if ($snapver >= 1) {
-  	  $msg .= validate_integer_field($dir->{'timestamp_sec'},
-	                   	'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
+	if ($snapver >= 1) {
+	  $msg .= validate_integer_field($dir->{'timestamp_sec'},
+				'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
 	  $msg .= validate_integer_field($dir->{'timestamp_nsec'},
-	                   	'timestamp_nsec', 0, $BILLION-1);
+				'timestamp_nsec', 0, $BILLION-1);
 	}
 	$msg .= validate_integer_field($dir->{'dev'}, 'dev', 0, $MAX_DEV_T);
 	$msg .= validate_integer_field($dir->{'ino'}, 'ino', 0, $MAX_INO_T);
 
 	if ( $msg ne "" ) {
-          $error_found = 1;
+	  $error_found = 1;
 	  print "\n    directory: $dir->{'name'}\n";
 	  print $msg;
 	}
     }
 
     print "\n  Snapshot field value check complete" ,
-           $error_found ?  "" : ", no errors found" , 
-           ".\n";
+	   $error_found ?  "" : ", no errors found" ,
+	   ".\n";
 }
 
 ## editing
@@ -336,12 +336,12 @@ sub replace_device_number ($@) {
     my $count = 0;
 
     foreach my $dir (@{$info->[3]}) {
-        foreach $x (@repl) {
+	foreach $x (@repl) {
 	    if ($dir->{'dev'} eq $$x[0]) {
-	        $dir->{'dev'} = $$x[1];
-                $count++;
-                last;
-            }
+		$dir->{'dev'} = $$x[1];
+		$count++;
+		last;
+	    }
 	}
     }
     print "  Updated $count records.\n"
@@ -372,14 +372,14 @@ sub write_incr_db ($$) {
 sub write_incr_db_0 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     my $timestamp_sec = $info->[1];
     print $file "$timestamp_sec\n";
 
     foreach my $dir (@{$info->[3]}) {
-        if ($dir->{'nfs'}) {
-          print $file '+'
-        }
+	if ($dir->{'nfs'}) {
+	  print $file '+'
+	}
 	print $file "$dir->{'dev'} ";
 	print $file "$dir->{'ino'} ";
 	print $file "$dir->{'name'}\n";
@@ -390,7 +390,7 @@ sub write_incr_db_0 ($$) {
 sub write_incr_db_1 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     print $file $info->[4];
 
     my $timestamp_sec = $info->[1];
@@ -398,9 +398,9 @@ sub write_incr_db_1 ($$) {
     print $file "$timestamp_sec $timestamp_nsec\n";
 
     foreach my $dir (@{$info->[3]}) {
-        if ($dir->{'nfs'}) {
-          print $file '+'
-        }
+	if ($dir->{'nfs'}) {
+	  print $file '+'
+	}
 	print $file "$dir->{'timestamp_sec'} ";
 	print $file "$dir->{'timestamp_nsec'} ";
 	print $file "$dir->{'dev'} ";
@@ -413,7 +413,7 @@ sub write_incr_db_1 ($$) {
 sub write_incr_db_2 ($$) {
     my $info = shift;
     my $file = shift;
-    
+
     print $file $info->[4];
 
     my $timestamp_sec = $info->[1];
@@ -441,7 +441,7 @@ sub main {
     our ($opt_b, $opt_r, $opt_h, $opt_c);
     getopts('br:hc');
     HELP_MESSAGE() if ($opt_h || $#ARGV == -1 || ($opt_b && !$opt_r) ||
-                       ($opt_r && $opt_c) );
+		       ($opt_r && $opt_c) );
 
     my @repl;
     if ($opt_r) {
@@ -476,7 +476,7 @@ Usage:
   tar-snapshot-edit -r 'DEV1-DEV2[,DEV3-DEV4...]' [-b] SNAPFILE [SNAPFILE [...]]
   tar-snapshot-edit -c SNAPFILE [SNAPFILE [...]]
 
-     With no options specified: print a summary of the 'device' values 
+     With no options specified: print a summary of the 'device' values
      found in each SNAPFILE.
 
      With -r: replace occurrences of DEV1 with DEV2 in each SNAPFILE.
@@ -487,8 +487,8 @@ Usage:
 
      With -c: Check the field values in each SNAPFILE and print warning
      messages if any invalid values are found.  (An invalid value is one
-     that would cause \"tar\" to generate an 
-         Unexpected field value in snapshot file 
+     that would cause \"tar\" to generate an
+	 Unexpected field value in snapshot file
      error message as it processed the snapshot file.)
 
 EOF
