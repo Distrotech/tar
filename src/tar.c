@@ -956,10 +956,13 @@ static void
 stat_on_signal (int signo)
 {
 #ifdef HAVE_SIGACTION
+# ifndef SA_RESTART
+#  define SA_RESTART 0
+# endif
   struct sigaction act;
   act.sa_handler = sigstat;
   sigemptyset (&act.sa_mask);
-  act.sa_flags = 0;
+  act.sa_flags = SA_RESTART;
   sigaction (signo, &act, NULL);
 #else
   signal (signo, sigstat);
