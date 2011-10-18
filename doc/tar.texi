@@ -2358,8 +2358,9 @@ exist in the archive. @xref{update}.
 @itemx -P
 
 Normally when creating an archive, @command{tar} strips an initial
-@samp{/} from member names.  This option disables that behavior.
-@xref{absolute}.
+@samp{/} from member names, and when extracting from an archive @command{tar}
+treats names specially if they have initial @samp{/} or internal
+@samp{..}.  This option disables that behavior.  @xref{absolute}.
 
 @opsummary{after-date}
 @item --after-date
@@ -8531,6 +8532,10 @@ is not, generally speaking, the same as the one you'd get running
 scripts for comparing both outputs.  @xref{listing member and file names},
 for the information on how to handle this case.}.
 
+Symbolic links containing @file{..} or leading @samp{/} can also cause
+problems when extracting, so @command{tar} normally extracts them last;
+it may create empty files as placeholders during extraction.
+
 If you use the @option{--absolute-names} (@option{-P}) option,
 @command{tar} will do none of these transformations.
 
@@ -8554,7 +8559,7 @@ to transfer files between systems.}
 @table @option
 @item --absolute-names
 Preserves full file names (including superior directory names) when
-archiving files.  Preserves leading slash when extracting files.
+archiving and extracting files.
 
 @end table
 
