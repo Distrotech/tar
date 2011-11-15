@@ -524,6 +524,7 @@ void update_parent_directory (struct tar_stat_info *st);
 
 size_t dumpdir_size (const char *p);
 bool is_dumpdir (struct tar_stat_info *stat_info);
+void clear_directory_table (void);
 
 /* Module list.c.  */
 

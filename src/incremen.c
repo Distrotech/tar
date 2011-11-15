@@ -300,6 +300,24 @@ dirlist_replace_prefix (const char *pref, const char *repl)
     replace_prefix (&dp->name, pref, pref_len, repl, repl_len);
 }
 
+void
+clear_directory_table (void)
+{
+  struct directory *dp;
+
+  if (directory_table)
+    hash_clear (directory_table);
+  if (directory_meta_table)
+    hash_clear (directory_meta_table);
+  for (dp = dirhead; dp; )
+    {
+      struct directory *next = dp->next;
+      free_directory (dp);
+      dp = next;
+    }
+  dirhead = dirtail = NULL;
+}
+
 /* Create and link a new directory entry for directory NAME, having a
    device number DEV and an inode number INO, with NFS indicating
    whether it is an NFS device and FOUND indicating whether we have
@@ -327,7 +345,8 @@ note_directory (char const *name, struct timespec mtime,
   if (! ((directory_table
 	  || (directory_table = hash_initialize (0, 0,
 						 hash_directory_canonical_name,
-						 compare_directory_canonical_names, 0)))
+						 compare_directory_canonical_names,
+						 0)))
 	 && hash_insert (directory_table, directory)))
     xalloc_die ();
 
