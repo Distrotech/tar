@@ -643,6 +643,8 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
       switch (old_files_option)
 	{
 	case KEEP_OLD_FILES:
+	  WARNOPT (WARN_EXISTING_FILE,
+		   (0, 0, _("%s: skipping existing file"), file_name));
 	  return RECOVER_SKIP;
 
 	case KEEP_NEWER_FILES:

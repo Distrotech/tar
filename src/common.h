@@ -810,11 +810,12 @@ void checkpoint_run (bool do_write);
 #define WARN_UNKNOWN_KEYWORD     0x00020000
 #define WARN_XDEV                0x00040000
 #define WARN_DECOMPRESS_PROGRAM  0x00080000
+#define WARN_EXISTING_FILE       0x00100000
 
 /* The warnings composing WARN_VERBOSE_WARNINGS are enabled by default
    in verbose mode */
 #define WARN_VERBOSE_WARNINGS    (WARN_RENAME_DIRECTORY|WARN_NEW_DIRECTORY|\
-				  WARN_DECOMPRESS_PROGRAM)
+				  WARN_DECOMPRESS_PROGRAM|WARN_EXISTING_FILE)
 #define WARN_ALL                 (~WARN_VERBOSE_WARNINGS)
 
 void set_warning_option (const char *arg);
