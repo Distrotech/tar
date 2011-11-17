@@ -1357,8 +1357,8 @@ print_for_mkdir (char *dirname, int length, mode_t mode)
 		   STRINGIFY_BIGINT (current_block_ordinal (), buf));
 	}
 
-      fprintf (stdlis, "%s %*s %.*s\n", modes, ugswidth + 1 + datewidth,
-	       _("Creating directory:"), length, quotearg (dirname));
+      fprintf (stdlis, "%s %*s %s\n", modes, ugswidth + 1 + datewidth,
+	       _("Creating directory:"), quotearg (dirname));
     }
 }
 
