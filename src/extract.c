@@ -642,11 +642,14 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
 
       switch (old_files_option)
 	{
-	case KEEP_OLD_FILES:
+	case SKIP_OLD_FILES:
 	  WARNOPT (WARN_EXISTING_FILE,
 		   (0, 0, _("%s: skipping existing file"), file_name));
 	  return RECOVER_SKIP;
 
+	case KEEP_OLD_FILES:
+	  return RECOVER_NO;
+	  
 	case KEEP_NEWER_FILES:
 	  if (file_newer_p (file_name, stp, &current_stat_info))
 	    break;

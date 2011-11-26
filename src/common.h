@@ -183,6 +183,7 @@ enum old_files
   OVERWRITE_OLD_FILES,        /* --overwrite */
   UNLINK_FIRST_OLD_FILES,     /* --unlink-first */
   KEEP_OLD_FILES,             /* --keep-old-files */
+  SKIP_OLD_FILES,             /* --skip-old-files */
   KEEP_NEWER_FILES	      /* --keep-newer-files */
 };
 GLOBAL enum old_files old_files_option;

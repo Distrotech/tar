@@ -328,6 +328,7 @@ enum
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
   SHOW_TRANSFORMED_NAMES_OPTION,
+  SKIP_OLD_FILES_OPTION,
   SPARSE_VERSION_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
@@ -452,7 +453,11 @@ static struct argp_option options[] = {
   {"remove-files", REMOVE_FILES_OPTION, 0, 0,
    N_("remove files after adding them to the archive"), GRID+1 },
   {"keep-old-files", 'k', 0, 0,
-   N_("don't replace existing files when extracting"), GRID+1 },
+   N_("don't replace existing files when extracting, "
+      "treat them as errors"), GRID+1 },
+  {"skip-old-files", SKIP_OLD_FILES_OPTION, 0, 0,
+   N_("don't replace existing files when extracting, silently skip over them"),
+   GRID+1 },
   {"keep-newer-files", KEEP_NEWER_FILES_OPTION, 0, 0,
    N_("don't replace existing files that are newer than their archive copies"), GRID+1 },
   {"overwrite", OVERWRITE_OPTION, 0, 0,
@@ -1544,7 +1549,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* Don't replace existing files.  */
       old_files_option = KEEP_OLD_FILES;
       break;
-
+      
     case 'K':
       starting_file_option = true;
       addname (arg, 0, true, NULL);
@@ -1672,6 +1677,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'S':
       sparse_option = true;
+      break;
+
+    case SKIP_OLD_FILES_OPTION:
+      old_files_option = SKIP_OLD_FILES;
       break;
 
     case SPARSE_VERSION_OPTION:

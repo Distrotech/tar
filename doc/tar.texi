@@ -1877,6 +1877,7 @@ The other operations of @command{tar} (@option{--list},
 @option{--extract}, @option{--compare}, and @option{--update})
 will act on the entire contents of the archive.
 
+@anchor{exit status}
 @cindex exit status
 @cindex return status
 Besides successful exits, @GNUTAR{} may fail for
@@ -2808,7 +2809,10 @@ when extracting files from an archive.
 @item --keep-old-files
 @itemx -k
 
-Do not overwrite existing files when extracting files from an archive.
+Do not overwrite existing files when extracting files from an
+archive.  Return error if such files exist.  See also
+@ref{--skip-old-files}.
+
 @xref{Keep Old Files}.
 
 @opsummary{label}
@@ -3260,6 +3264,20 @@ Display file or member names after applying any transformations
 the archive creation operations it instructs @command{tar} to list the
 member names stored in the archive, as opposed to the actual file
 names.  @xref{listing member and file names}.
+
+@opsummary{skip-old-files}
+@item --skip-old-files
+
+Do not overwrite existing files when extracting files from an
+archive.  @xref{Keep Old Files}.
+
+This option differs from @option{--keep-old-files} in that it does not
+treat such files as an error, instead it just silently avoids
+overwriting them.
+
+The @option{--warning=existing-file} option can be used together with
+this option to produce warning messages about existing old files
+(@pxref{warnings}).
 
 @opsummary{sparse}
 @item --sparse
@@ -4436,11 +4454,11 @@ in the archive; the most recently archived members will be extracted
 last.  Additionally, an extracted member will @emph{replace} a file of
 the same name which existed in the directory already, and @command{tar}
 will not prompt you about this@footnote{Unless you give it
-@option{--keep-old-files} option, or the disk copy is newer than
-the one in the archive and you invoke @command{tar} with
-@option{--keep-newer-files} option.}.  Thus, only the most recently archived
-member will end up being extracted, as it will replace the one
-extracted before it, and so on.
+@option{--keep-old-files} (or @option{--skip-old-files}) option, or
+the disk copy is newer than the one in the archive and you invoke
+@command{tar} with @option{--keep-newer-files} option.}.  Thus, only
+the most recently archived member will end up being extracted, as it
+will replace the one extracted before it, and so on.
 
 @cindex extracting @var{n}th copy of the file
 @xopindex{occurrence, described}
@@ -5131,10 +5149,25 @@ such a directory, use the @option{--no-overwrite-dir} option.
 @cindex Overwriting old files, prevention
 @xopindex{keep-old-files, introduced}
 To be even more cautious and prevent existing files from being replaced, use
-the @option{--keep-old-files} (@option{-k}) option.  It causes @command{tar} to refuse
-to replace or update a file that already exists, i.e., a file with the
-same name as an archive member prevents extraction of that archive
-member.  Instead, it reports an error.
+the @option{--keep-old-files} (@option{-k}) option.  It causes
+@command{tar} to refuse to replace or update a file that already
+exists, i.e., a file with the same name as an archive member prevents
+extraction of that archive member.  Instead, it reports an error.  For
+example:
+
+@example
+$ @kbd{ls}
+blues
+$ @kbd{tar -x -k -f archive.tar}
+tar: blues: Cannot open: File exists
+tar: Exiting with failure status due to previous errors
+@end example
+
+@xopindex{skip-old-files, introduced}
+If you wish to preserve old files untouched, but don't want
+@command{tar} to treat them as errors, use the
+@option{--skip-old-files} option.  This option causes @command{tar} to
+silently skip extracting over existing files.
 
 @xopindex{overwrite, introduced}
 To be more aggressive about altering existing files, use the
@@ -5200,16 +5233,24 @@ archive, but remove other files before extracting.
 @node Keep Old Files
 @unnumberedsubsubsec Keep Old Files
 
+@GNUTAR{} provides two options to control its actions in a situation
+when it is about to extract a file which already exists on disk.
+
 @table @option
 @opindex keep-old-files
 @item --keep-old-files
 @itemx -k
-Do not replace existing files from archive.  The
-@option{--keep-old-files} (@option{-k}) option prevents @command{tar}
-from replacing existing files with files with the same name from the
-archive. The @option{--keep-old-files} option is meaningless with
-@option{--list} (@option{-t}).  Prevents @command{tar} from replacing
-files in the file system during extraction.
+Do not replace existing files from archive.  When such a file is
+encountered, @command{tar} issues an error message.  Upon end of
+extraction, @command{tar} exits with code 2 (@pxref{exit status}).
+
+@item --skip-old-files
+Do not replace existing files from archive, but do not treat that
+as error.  Such files are silently skipped and do not affect
+@command{tar} exit status.
+
+Additional verbosity can be obtained using @option{--warning=existing-file}
+together with that option (@pxref{warnings}).
 @end table
 
 @node Keep Newer Files
@@ -11937,11 +11978,16 @@ lets the archive overwrite any file in your system that you can write,
 the @option{--absolute-names} (@option{-P}) option should be used only
 for trusted archives.
 
-Conversely, with the @option{--keep-old-files} (@option{-k}) option,
-@command{tar} refuses to replace existing files when extracting; and
-with the @option{--no-overwrite-dir} option, @command{tar} refuses to
-replace the permissions or ownership of already-existing directories.
-These options may help when extracting from untrusted archives.
+Conversely, with the @option{--keep-old-files} (@option{-k}) and
+@option{--skip-old-files} options, @command{tar} refuses to replace
+existing files when extracting.  The difference between the two
+options is that the former treats existing files as errors whereas the
+latter just silently ignores them.  
+
+Finally, with the @option{--no-overwrite-dir} option, @command{tar}
+refuses to replace the permissions or ownership of already-existing
+directories.  These options may help when extracting from untrusted
+archives.
 
 @node Live untrusted data
 @subsection Dealing with Live Untrusted Data

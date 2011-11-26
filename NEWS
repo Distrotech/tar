@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2011-08-13
+GNU tar NEWS - User visible changes. 2011-11-26
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version ?.? - ?, 201?-??-??
+version 1.26.90 (Git)
 
 * New features
 
@@ -13,6 +13,21 @@ NAME:NUM, so that you can specify both symbolic name and numeric ID
 for owner and group.  In these options, NAME no longer needs to be
 present in the current host's user and group databases.
 
+* The --keep-old-files and --skip-old-files options.
+
+This release restores the traditional functionality of the
+--keep-old-files.  This option causes tar to avoid replacing
+existing files while extracting and to treat such files as errors.
+Tar will emit a prominent error message upon encountering such files
+and will exit with code 2 when finished extracting the archive.
+
+A new option --skip-old-files is introduced, which acts exactly as
+--keep-old-files, except that it does not treat existing files as
+errors.  Instead it just silently skips them.  An additional level of
+verbosity can be obtained by using the option --warning=existing-file
+together with this option.
+
+
 version 1.26 - Sergey Poznyakoff, 2011-03-12
 
 * Bugfixes
