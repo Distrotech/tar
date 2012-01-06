@@ -616,6 +616,57 @@ deref_stat (char const *name, struct stat *buf)
   return fstatat (chdir_fd, name, buf, fstatat_flags);
 }
 
+/* Read from FD into the buffer BUF with COUNT bytes.  Attempt to fill
+   BUF.  Wait until input is available; this matters because files are
+   opened O_NONBLOCK for security reasons, and on some file systems
+   this can cause read to fail with errno == EAGAIN.  Return the
+   actual number of bytes read, zero for EOF, or
+   SAFE_READ_ERROR upon error.  */
+size_t
+blocking_read (int fd, void *buf, size_t count)
+{
+  size_t bytes = safe_read (fd, buf, count);
+
+#if defined F_SETFL && O_NONBLOCK
+  if (bytes == SAFE_READ_ERROR && errno == EAGAIN)
+    {
+      int flags = fcntl (fd, F_GETFL);
+      if (0 <= flags && flags & O_NONBLOCK
+	  && fcntl (fd, F_SETFL, flags & ~O_NONBLOCK) != -1)
+	bytes = safe_read (fd, buf, count);
+    }
+#endif
+
+  return bytes;
+}
+
+/* Write to FD from the buffer BUF with COUNT bytes.  Do a full write.
+   Wait until an output buffer is available; this matters because
+   files are opened O_NONBLOCK for security reasons, and on some file
+   systems this can cause write to fail with errno == EAGAIN.  Return
+   the actual number of bytes written, setting errno if that is less
+   than COUNT.  */
+size_t
+blocking_write (int fd, void const *buf, size_t count)
+{
+  size_t bytes = full_write (fd, buf, count);
+
+#if defined F_SETFL && O_NONBLOCK
+  if (bytes < count && errno == EAGAIN)
+    {
+      int flags = fcntl (fd, F_GETFL);
+      if (0 <= flags && flags & O_NONBLOCK
+	  && fcntl (fd, F_SETFL, flags & ~O_NONBLOCK) != -1)
+	{
+	  char const *buffer = buf;
+	  bytes += full_write (fd, buffer + bytes, count - bytes);
+	}
+    }
+#endif
+
+  return bytes;
+}
+
 /* Set FD's (i.e., assuming the working directory is PARENTFD, FILE's)
    access time to ATIME.  */
 int

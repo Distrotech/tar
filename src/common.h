@@ -621,6 +621,9 @@ void undo_last_backup (void);
 
 int deref_stat (char const *name, struct stat *buf);
 
+size_t blocking_read (int fd, void *buf, size_t count);
+size_t blocking_write (int fd, void const *buf, size_t count);
+
 extern int chdir_current;
 extern int chdir_fd;
 int chdir_arg (char const *dir);

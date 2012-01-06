@@ -80,7 +80,7 @@ process_noop (size_t size __attribute__ ((unused)),
 static int
 process_rawdata (size_t bytes, char *buffer)
 {
-  size_t status = safe_read (diff_handle, diff_buffer, bytes);
+  size_t status = blocking_read (diff_handle, diff_buffer, bytes);
 
   if (status != bytes)
     {
@@ -390,7 +390,7 @@ diff_dumpdir (struct tar_stat_info *dir)
 	  file_removed_diag (dir->orig_file_name, false, diag);
 	  return;
 	}
-    }      
+    }
   dumpdir_buffer = directory_contents (scan_directory (dir));
 
   if (dumpdir_buffer)
@@ -462,7 +462,7 @@ diff_multivol (void)
 void
 diff_archive (void)
 {
-  
+
   set_next_block_after (current_header);
 
   /* Print the block from current_header and current_stat_info.  */
@@ -547,7 +547,7 @@ verify_volume (void)
 	  _("Verification may fail to locate original files.")));
 
   clear_directory_table ();
-  
+
   if (!diff_buffer)
     diff_init ();
 

@@ -230,7 +230,7 @@ sparse_scan_file (struct tar_sparse_file *file)
       if (!tar_sparse_scan (file, scan_begin, NULL))
 	return false;
 
-      while ((count = safe_read (fd, buffer, sizeof buffer)) != 0
+      while ((count = blocking_read (fd, buffer, sizeof buffer)) != 0
 	     && count != SAFE_READ_ERROR)
 	{
 	  /* Analyze the block.  */
@@ -360,7 +360,7 @@ sparse_extract_region (struct tar_sparse_file *file, size_t i)
 	  return false;
 	}
       set_next_block_after (blk);
-      count = full_write (file->fd, blk->buffer, wrbytes);
+      count = blocking_write (file->fd, blk->buffer, wrbytes);
       write_size -= count;
       file->dumped_size += count;
       mv_size_left (file->stat_info->archive_file_size - file->dumped_size);
@@ -991,7 +991,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
   off_t size = 0;
   struct sp_array *map = file->stat_info->sparse_map;
   char *save_file_name = file->stat_info->file_name;
-  
+
 #define COPY_STRING(b,dst,src) do                \
  {                                               \
    char *endp = b->buffer + BLOCKSIZE;           \

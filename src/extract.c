@@ -649,7 +649,7 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
 
 	case KEEP_OLD_FILES:
 	  return RECOVER_NO;
-	  
+
 	case KEEP_NEWER_FILES:
 	  if (file_newer_p (file_name, stp, &current_stat_info))
 	    break;
@@ -998,7 +998,7 @@ extract_file (char *file_name, int typeflag)
 	if (written > size)
 	  written = size;
 	errno = 0;
-	count = full_write (fd, data_block->buffer, written);
+	count = blocking_write (fd, data_block->buffer, written);
 	size -= written;
 
 	set_next_block_after ((union block *)

@@ -1051,7 +1051,7 @@ dump_regular_file (int fd, struct tar_stat_info *st)
 	    memset (blk->buffer + size_left, 0, BLOCKSIZE - count);
 	}
 
-      count = (fd <= 0) ? bufsize : safe_read (fd, blk->buffer, bufsize);
+      count = (fd <= 0) ? bufsize : blocking_read (fd, blk->buffer, bufsize);
       if (count == SAFE_READ_ERROR)
 	{
 	  read_diag_details (st->orig_file_name,
