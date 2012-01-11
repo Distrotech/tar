@@ -1549,7 +1549,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* Don't replace existing files.  */
       old_files_option = KEEP_OLD_FILES;
       break;
-      
+
     case 'K':
       starting_file_option = true;
       addname (arg, 0, true, NULL);
@@ -2606,7 +2606,7 @@ decode_options (int argc, char **argv)
     {
       stdlis = fopen (index_file_name, "w");
       if (! stdlis)
-	open_error (index_file_name);
+	open_fatal (index_file_name);
     }
   else
     stdlis = to_stdout_option ? stderr : stdout;
