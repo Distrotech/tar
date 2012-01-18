@@ -80,9 +80,9 @@ struct posix_header
 /* tar Header Block, GNU extensions.  */
 
 /* In GNU tar, SYMTYPE is for to symbolic links, and CONTTYPE is for
-   contiguous files, so maybe disobeying the `reserved' comment in POSIX
+   contiguous files, so maybe disobeying the "reserved" comment in POSIX
    header description.  I suspect these were meant to be used this way, and
-   should not have really been `reserved' in the published standards.  */
+   should not have really been "reserved" in the published standards.  */
 
 /* *BEWARE* *BEWARE* *BEWARE* that the following information is still
    boiling, and may change.  Even if the OLDGNU format description should be

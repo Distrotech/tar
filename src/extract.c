@@ -1386,7 +1386,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
     default:
       WARNOPT (WARN_UNKNOWN_CAST,
 	       (0, 0,
-		_("%s: Unknown file type `%c', extracted as normal file"),
+		_("%s: Unknown file type '%c', extracted as normal file"),
 		quotearg_colon (file_name), typeflag));
       *fun = extract_file;
     }

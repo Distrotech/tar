@@ -86,10 +86,10 @@ struct keyword_list
 /* List of keyword patterns set by delete= option */
 static struct keyword_list *keyword_pattern_list;
 
-/* List of keyword/value pairs set by `keyword=value' option */
+/* List of keyword/value pairs set by 'keyword=value' option */
 static struct keyword_list *keyword_global_override_list;
 
-/* List of keyword/value pairs set by `keyword:=value' option */
+/* List of keyword/value pairs set by 'keyword:=value' option */
 static struct keyword_list *keyword_override_list;
 
 /* List of keyword/value pairs decoded from the last 'g' type header */
@@ -618,7 +618,7 @@ decx (void *data, char const *keyword, char const *value, size_t size)
     t->decoder (st, keyword, value, size);
   else
     WARNOPT (WARN_UNKNOWN_KEYWORD,
-	     (0, 0, _("Ignoring unknown extended header keyword `%s'"),
+	     (0, 0, _("Ignoring unknown extended header keyword '%s'"),
 	      keyword));
 }
 

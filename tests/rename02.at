@@ -96,7 +96,7 @@ End directory listing 2
 [tar: foo: Directory is new
 tar: foo/bar: Directory is new
 tar: foo/bar/baz: Directory is new
-tar: foo/baz: Directory has been renamed from `foo/bar/baz'
+tar: foo/baz: Directory has been renamed from 'foo/bar/baz'
 ],
 [],[],[gnu, oldgnu, posix])
 

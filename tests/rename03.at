@@ -118,9 +118,9 @@ tar: foo/b: Directory is new
 tar: foo/c: Directory is new
 tar: foo: Directory is new
 Second dump
-tar: foo/a: Directory has been renamed from `foo/c'
-tar: foo/b: Directory has been renamed from `foo/a'
-tar: foo/c: Directory has been renamed from `foo/b'
+tar: foo/a: Directory has been renamed from 'foo/c'
+tar: foo/b: Directory has been renamed from 'foo/a'
+tar: foo/c: Directory has been renamed from 'foo/b'
 ],
 [],[],[gnu, oldgnu, posix])
 

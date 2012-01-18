@@ -34,7 +34,7 @@ tar_TEXINFOS = \
 EXTRA_DIST = gendocs_template mastermenu.el texify.sed untabify.el
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
-# Just call `make RENDITION=PROOF [target]' if you want PROOF rendition.
+# Just call 'make RENDITION=PROOF [target]' if you want PROOF rendition.
 RENDITION = DISTRIB
 
 MAKEINFOFLAGS=-D$(RENDITION)

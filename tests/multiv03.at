@@ -36,7 +36,7 @@ BFILE=`awk 'BEGIN { for (i = 0; i < 101; i++) printf "b"; exit; }'`
 
 cat > ../experr <<EOF
 tar: $BFILE: file name too long to be stored in a GNU multivolume header, truncated
-tar: \`$BFILE' is possibly continued on this volume: header contains truncated name
+tar: '$BFILE' is possibly continued on this volume: header contains truncated name
 EOF
 
 cat > ../expout <<EOF

@@ -103,7 +103,7 @@ bool write_archive_to_stdout;
 
 /* Multi-volume tracking support */
 
-/* When creating a multi-volume archive, each `bufmap' represents
+/* When creating a multi-volume archive, each 'bufmap' represents
    a member stored (perhaps partly) in the current record buffer.
    After flushing the record to the output media, all bufmaps that
    represent fully written members are removed from the list, then
@@ -337,23 +337,23 @@ const char *
 first_decompress_program (int *pstate)
 {
   struct zip_program const *zp;
-  
+
   if (use_compress_program_option)
     return use_compress_program_option;
 
   if (archive_compression_type == ct_none)
     return NULL;
 
-  *pstate = 0; 
+  *pstate = 0;
   zp = find_zip_program (archive_compression_type, pstate);
   return zp ? zp->program : NULL;
 }
-    
+
 const char *
 next_decompress_program (int *pstate)
 {
   struct zip_program const *zp;
-  
+
   if (use_compress_program_option)
     return NULL;
   zp = find_zip_program (archive_compression_type, pstate);

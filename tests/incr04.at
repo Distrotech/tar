@@ -58,7 +58,7 @@ a/c/
 ],
 [tar: a: Directory is new
 tar: a/b: Directory is new
-tar: a/c: Directory has been renamed from `a/b'
+tar: a/c: Directory has been renamed from 'a/b'
 ],[],[],[gnu, oldgnu, posix])
 
 AT_CLEANUP

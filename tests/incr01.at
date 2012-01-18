@@ -46,7 +46,7 @@ tar xvfg archive.1 /dev/null --warning=no-timestamp
 directory/bar
 separator
 directory/
-tar: Deleting `directory/bar'
+tar: Deleting 'directory/bar'
 ],
 [],[],[],[gnu, oldgnu, posix])
 

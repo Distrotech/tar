@@ -9,7 +9,7 @@
 # be put in the tape drive.
 #
 
-# Include location of `sendmail' and GNU finger.
+# Include location of 'sendmail' and GNU finger.
 PATH="/usr/lib:/usr/local/gnubin:${PATH}"
 export PATH
 
@@ -25,8 +25,8 @@ MT_OFFLINE
 # which users are logged into consoles (and thus in the office and capable
 # of changing tapes).
 #
-# Certain users (like `root') aren't real users, and shouldn't be notified.
-# Neither should `zippy', `elvis', etc. (on the GNU machines) since they're
+# Certain users (like 'root') aren't real users, and shouldn't be notified.
+# Neither should 'zippy', 'elvis', etc. (on the GNU machines) since they're
 # just test accounts.
 recipients="`
     finger .clients 2> /dev/null \

@@ -48,7 +48,7 @@ MT_REWIND=mt_rewind
 MT_OFFLINE=mt_offline
 MT_STATUS=mt_status
 
-# Insure `mail' is in PATH.
+# Insure 'mail' is in PATH.
 PATH="/usr/ucb:${PATH}"
 export PATH
 # Put startdate in the subject line of mailed report, since if it happens
@@ -211,8 +211,8 @@ init_backup() {
 	TAR_PART1="${TAR_PART1} --info-script='${DUMP_REMIND_SCRIPT}'"
     fi
     # Set logfile name
-    # Logfile name should be in the form  ``log-1993-03-18-level-0''
-    # They go in the directory `@sysconfdir@/log'.
+    # Logfile name should be in the form 'log-1993-03-18-level-0'
+    # They go in the directory '@sysconfdir@/log'.
     # i.e. year-month-date.  This format is useful for sorting by name, since
     # logfiles are intentionally kept online for future reference.
     LOGFILE="${LOGPATH}/log-`now`-level-${DUMP_LEVEL}"
@@ -305,7 +305,7 @@ backup_host() {
     if [ "z${localhost}" != "z$rhost" ] ; then
 	$RSH "$rhost" ${TAR_PART1} -f "${localhost}:${TAPE_FILE}" $@
     else
-	# Using `sh -c exec' causes nested quoting and shell substitution
+	# Using 'sh -c exec' causes nested quoting and shell substitution
         # to be handled here in the same way rsh handles it.
         CMD="exec ${TAR_PART1} -f \"${TAPE_FILE}\" $@"
         message 10 "CMD: $CMD"

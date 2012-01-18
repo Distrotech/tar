@@ -50,9 +50,9 @@ genfile --stat=mtime dir/subdir1 > ts
 # dir/subdir2/
 # dir/subdir1/foofile
 #
-# When restoring from this directory structure, `dir/subdir2/' used to
+# When restoring from this directory structure, 'dir/subdir2/' used to
 # trigger apply_nonancestor_delayed_set_stat() which restored stats for
-# `subdir1' prior to restoring `dir/subdir1/foofile'. Then, restoring the
+# 'subdir1' prior to restoring 'dir/subdir1/foofile'. Then, restoring the
 # latter clobbered the directory timestamp.
 
 tar -cf archive -g db dir

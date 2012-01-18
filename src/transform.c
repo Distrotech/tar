@@ -347,7 +347,7 @@ parse_transform_expr (const char *expr)
 	      break;
 
 	    case 'L':
-	      /* Turn the replacement to lowercase until a `\U' or `\E'
+	      /* Turn the replacement to lowercase until a '\U' or '\E'
 		 is found, */
 	      add_case_ctl_segment (tf, ctl_locase);
 	      cur++;
@@ -360,7 +360,7 @@ parse_transform_expr (const char *expr)
 	      break;
 
 	    case 'U':
-	      /* Turn the replacement to uppercase until a `\L' or `\E'
+	      /* Turn the replacement to uppercase until a '\L' or '\E'
 		 is found, */
 	      add_case_ctl_segment (tf, ctl_upcase);
 	      cur++;
@@ -373,7 +373,7 @@ parse_transform_expr (const char *expr)
 	      break;
 
 	    case 'E':
-	      /* Stop case conversion started by `\L' or `\U'. */
+	      /* Stop case conversion started by '\L' or '\U'. */
 	      add_case_ctl_segment (tf, ctl_stop);
 	      cur++;
 	      break;

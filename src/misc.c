@@ -105,7 +105,7 @@ quote_copy_string (const char *string)
    completes the unquoting anyway.
 
    This is used for reading the saved directory file in incremental
-   dumps.  It is used for decoding old `N' records (demangling names).
+   dumps.  It is used for decoding old 'N' records (demangling names).
    But also, it is used for decoding file arguments, would they come
    from the shell or a -T file, and for decoding the --exclude
    argument.  */
@@ -962,7 +962,7 @@ page_aligned_alloc (void **ptr, size_t size)
 
 struct namebuf
 {
-  char *buffer;		/* directory, `/', and directory member */
+  char *buffer;		/* directory, '/', and directory member */
   size_t buffer_size;	/* allocated size of name_buffer */
   size_t dir_length;	/* length of directory part in buffer */
 };

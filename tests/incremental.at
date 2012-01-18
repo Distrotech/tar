@@ -35,7 +35,7 @@ ls -l structure/file >/dev/null
 # If the time of an initial backup and the creation time of a file contained
 # in that backup are the same, the file will be backed up again when an
 # incremental backup is done, because the incremental backup backs up
-# files created `on or after' the initial backup time.  Without the sleep
+# files created "on or after" the initial backup time.  Without the sleep
 # command, behaviour of tar becomes variable, depending whether the system
 # clock ticked over to the next second between creating the file and
 # backing it up.

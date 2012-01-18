@@ -17,7 +17,7 @@
 # Description: Tar 1.23 would in some cases silently fail to create
 # a continuation header in multivolume archives.
 #
-# In this testcase, the file `a' is 18.5 blocks long and the file `b'
+# In this testcase, the file 'a' is 18.5 blocks long and the file 'b'
 # is 19.5 blocks long.
 
 AT_SETUP([multivolume header creation])

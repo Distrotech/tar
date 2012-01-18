@@ -669,9 +669,9 @@ label_notfound (void)
 
 /* Sort *singly* linked LIST of names, of given LENGTH, using COMPARE
    to order names.  Return the sorted list.  Note that after calling
-   this function, the `prev' links in list elements are messed up.
+   this function, the 'prev' links in list elements are messed up.
 
-   Apart from the type `struct name' and the definition of SUCCESSOR,
+   Apart from the type 'struct name' and the definition of SUCCESSOR,
    this is a generic list-sorting function, but it's too painful to
    make it both generic and portable
    in C.  */
@@ -894,7 +894,7 @@ name_compare (void const *entry1, void const *entry2)
 }
 
 
-/* Rebase `name' member of CHILD and all its siblings to
+/* Rebase 'name' member of CHILD and all its siblings to
    the new PARENT. */
 static void
 rebase_child_list (struct name *child, struct name *parent)

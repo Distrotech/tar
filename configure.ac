@@ -157,7 +157,7 @@ if test -z "$DEFAULT_ARCHIVE"; then
   DEFAULT_ARCHIVE=-
 else
   if test -z "`ls $DEFAULT_ARCHIVE 2>/dev/null`"; then
-    AC_MSG_WARN(DEFAULT_ARCHIVE \`$DEFAULT_ARCHIVE' not found on this system)
+    AC_MSG_WARN(DEFAULT_ARCHIVE '$DEFAULT_ARCHIVE' not found on this system)
   fi
   # FIXME: Look for DEFTAPE in <sys/mtio.h>.
   # FIXME: Let DEVICE_PREFIX be configured from the environment.

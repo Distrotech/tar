@@ -785,9 +785,9 @@ start_header (struct tar_stat_info *st)
 	. . . . . . . . .   9 = Omron UNIOS-B 4.3BSD 1.60Beta
 
 	     . = works
-	     # = ``impossible file type''
+	     # = "impossible file type"
 
-     The following mask for old archive removes the `#'s in column 4
+     The following mask for old archive removes the '#'s in column 4
      above, thus making GNU tar both a universal donor and a universal
      acceptor for Paul's test.  */
 

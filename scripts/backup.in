@@ -149,7 +149,7 @@ message 20 "BACKUP_DIRS=$BACKUP_DIRS"
 message 20 "BACKUP_FILES=$BACKUP_FILES"
 
 # The buch of commands below is run in a subshell for which all output is
-# piped through `tee' to the logfile.  Doing this, instead of having
+# piped through 'tee' to the logfile.  Doing this, instead of having
 # multiple pipelines all over the place, is cleaner and allows access to
 # the exit value from various commands more easily.
 (
@@ -187,7 +187,7 @@ message 20 "BACKUP_FILES=$BACKUP_FILES"
                 "--label='`print_level` backup of ${fs} on ${remotehost} at ${NOW}'" \
 		-C ${fs} .
 
-     # `rsh' doesn't exit with the exit status of the remote command.  What
+     # 'rsh' doesn't exit with the exit status of the remote command.  What
      # stupid lossage.  TODO: think of a reliable workaround.
      if [ $? -ne 0 ] ; then
 	 echo "Backup of ${1} failed." 1>&2

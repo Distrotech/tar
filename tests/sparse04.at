@@ -23,7 +23,7 @@ AT_KEYWORDS([sparse sparse04])
 
 # Description: Tar versions from 1.15.92 to 1.25 would incorrectly
 # store sparse file names longer than 100 characters in pax mode.
-# Namely, the `path' keyword of the produced PAX header would contain the
+# Namely, the 'path' keyword of the produced PAX header would contain the
 # crafted name of the header itself, instead of that of the file.
 # Reported by: Kamil Dudka <kdudka@redhat.com>
 # References: <201011250026.44908.kdudka@redhat.com>,

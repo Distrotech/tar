@@ -4,31 +4,31 @@ See the end of file for copying conditions.
 * Introduction
 
 Please glance through *all* sections of this
-`README' file before starting configuration.  Also make sure you read files
-`ABOUT-NLS' and `INSTALL' if you are not familiar with them already.
+'README' file before starting configuration.  Also make sure you read files
+'ABOUT-NLS' and 'INSTALL' if you are not familiar with them already.
 
-If you got the `tar' distribution in `shar' format, time stamps ought to be
-properly restored; do not ignore such complaints at `unshar' time.
+If you got the 'tar' distribution in 'shar' format, time stamps ought to be
+properly restored; do not ignore such complaints at 'unshar' time.
 
-GNU `tar' saves many files together into a single tape or disk
+GNU 'tar' saves many files together into a single tape or disk
 archive, and can restore individual files from the archive.  It includes
 multivolume support, the ability to archive sparse files, automatic archive
 compression/decompression, remote archives and special features that allow
-`tar' to be used for incremental and full backups.  This distribution
-also includes `rmt', the remote tape server.  The `mt' tape drive control
-program is in the GNU `cpio' distribution.
+'tar' to be used for incremental and full backups.  This distribution
+also includes 'rmt', the remote tape server.  The 'mt' tape drive control
+program is in the GNU 'cpio' distribution.
 
-GNU `tar' is derived from John Gilmore's public domain `tar'.
+GNU 'tar' is derived from John Gilmore's public domain 'tar'.
 
-See file `ABOUT-NLS' for how to customize this program to your language.
-See file `COPYING' for copying conditions.
-See file `INSTALL' for compilation and installation instructions.
-See file `PORTS' for various ports of GNU tar to non-Unix systems.
-See file `NEWS' for a list of major changes in the current release.
-See file `THANKS' for a list of contributors.
+See file 'ABOUT-NLS' for how to customize this program to your language.
+See file 'COPYING' for copying conditions.
+See file 'INSTALL' for compilation and installation instructions.
+See file 'PORTS' for various ports of GNU tar to non-Unix systems.
+See file 'NEWS' for a list of major changes in the current release.
+See file 'THANKS' for a list of contributors.
 
-Besides those configure options documented in files `INSTALL' and
-`ABOUT-NLS', an extra option may be accepted after `./configure':
+Besides those configure options documented in files 'INSTALL' and
+'ABOUT-NLS', an extra option may be accepted after './configure':
 
 * Install
 
@@ -40,11 +40,11 @@ values are GNU, V7, OLDGNU, USTAR and POSIX.
 
 ** Selecting the default archive device
 
-The default archive device is now `stdin' on read and `stdout' on write.
-The installer can still override this by presetting `DEFAULT_ARCHIVE'
-in the environment before configuring (the behavior of `-[0-7]' or
-`-[0-7]lmh' options in `tar' are then derived automatically).  Similarly,
-`DEFAULT_BLOCKING' can be preset to something else than 20.
+The default archive device is now 'stdin' on read and 'stdout' on write.
+The installer can still override this by presetting 'DEFAULT_ARCHIVE'
+in the environment before configuring (the behavior of '-[0-7]' or
+'-[0-7]lmh' options in 'tar' are then derived automatically).  Similarly,
+'DEFAULT_BLOCKING' can be preset to something else than 20.
 
 ** Selecting full pathname of the "rmt" binary.
 
@@ -76,13 +76,13 @@ directory.
 Use option --enable-backup-scripts to compile and install these
 scripts.
 
-** `--disable-largefile' omits support for large files, even if the
+** '--disable-largefile' omits support for large files, even if the
 operating system supports large files.  Typically, large files are
 those larger than 2 GB on a 32-bit host.
 
 * Installation hints
 
-Here are a few hints which might help installing `tar' on some systems.
+Here are a few hints which might help installing 'tar' on some systems.
 
 ** gzip and bzip2.
 
@@ -103,7 +103,7 @@ then you have encountered a gzip incompatibility that should be fixed
 in gzip test version 1.3, which as of this writing is available at
 <ftp://alpha.gnu.org/gnu/gzip/>.  You can work around the
 incompatibility by using a shell command like
- `gzip -d <file.tar.gz | tar -xzf -'.
+ 'gzip -d <file.tar.gz | tar -xzf -'.
 
 ** Solaris issues.
 
@@ -118,13 +118,13 @@ understand these headers.
 
 ** Static linking.
 
-Some platform will, by default, prepare a smaller `tar' executable
-which depends on shared libraries.  Since GNU `tar' may be used for
+Some platform will, by default, prepare a smaller 'tar' executable
+which depends on shared libraries.  Since GNU 'tar' may be used for
 system-level backups and disaster recovery, installers might prefer to
-force static linking, making a bigger `tar' executable maybe, but able to
+force static linking, making a bigger 'tar' executable maybe, but able to
 work standalone, in situations where shared libraries are not available.
 The way to achieve static linking varies between systems.  Set LDFLAGS
-to a value from the table below, before configuration (see `INSTALL').
+to a value from the table below, before configuration (see 'INSTALL').
 
 	Platform	Compiler	LDFLAGS
 
@@ -137,18 +137,18 @@ to a value from the table below, before configuration (see `INSTALL').
 	Solaris		(vendor)	-Bstatic
 	SunOS		(vendor)	-Bstatic
 
-** Failed tests `ignfail.sh' or `incremen.sh'.
+** Failed tests 'ignfail.sh' or 'incremen.sh'.
 
 In an NFS environment, lack of synchronization between machine clocks
 might create difficulties to any tool comparing dates and file time stamps,
-like `tar' in incremental dumps.  This has been a recurrent problem with
+like 'tar' in incremental dumps.  This has been a recurrent problem with
 GNU Make for the last few years.  We would like a general solution.
 
 ** BSD compatibility matters.
 
-Set LIBS to `-lbsd' before configuration (see `INSTALL') if the linker
-complains about `bsd_ioctl' (Slackware).  Also set CPPFLAGS to
-`-I/usr/include/bsd' if <sgtty.h> is not found (Slackware).
+Set LIBS to '-lbsd' before configuration (see 'INSTALL') if the linker
+complains about 'bsd_ioctl' (Slackware).  Also set CPPFLAGS to
+'-I/usr/include/bsd' if <sgtty.h> is not found (Slackware).
 
 ** OPENStep 4.2 swap files
 
@@ -159,43 +159,43 @@ the simplest workaround is to avoid tarring this file.
 
 * Special topics
 
-Here are a few special matters about GNU `tar', not related to build
+Here are a few special matters about GNU 'tar', not related to build
 matters.  See previous section for such.
 
 ** File attributes.
 
-About *security*, it is probable that future releases of `tar' will have
+About *security*, it is probable that future releases of 'tar' will have
 some behavior changed.  There are many pending suggestions to choose from.
-Today, extracting an archive not being `root', `tar' will restore suid/sgid
-bits on files but owned by the extracting user.  `root' automatically gets
-a lot of special privileges, `-p' might later become required to get them.
+Today, extracting an archive not being 'root', 'tar' will restore suid/sgid
+bits on files but owned by the extracting user.  'root' automatically gets
+a lot of special privileges, '-p' might later become required to get them.
 
-GNU `tar' does not properly restore symlink attributes.  Various systems
+GNU 'tar' does not properly restore symlink attributes.  Various systems
 implement flavors of symbolic links showing different behavior and
 properties.  We did not successfully sorted all these out yet.  Currently,
-the `lchown' call will be used if available, but that's all.
+the 'lchown' call will be used if available, but that's all.
 
 ** POSIX compliance.
 
-GNU `tar' is able to create archive in the following formats:
+GNU 'tar' is able to create archive in the following formats:
 
   *** The format of UNIX version 7
   *** POSIX.1-1988 format, also known as "ustar format"
   *** POSIX.1-2001 format, also known as "pax format"
   *** Old GNU format (described below)
 
-In addition to those, GNU `tar' is also able to read archives
-produced by `star' archiver.
+In addition to those, GNU 'tar' is also able to read archives
+produced by 'star' archiver.
 
-A so called `Old GNU' format is based on an early draft of the
-POSIX 1003.1 `ustar' standard which is different from the final
+A so called 'Old GNU' format is based on an early draft of the
+POSIX 1003.1 'ustar' standard which is different from the final
 standard. It defines its extensions (such as incremental backups
 and handling of the long file names) in a way incompatible with
 any existing tar archive format, therefore the use of old GNU
 format is strongly discouraged.
 
 Please read the file NEWS for more information about POSIX compliance
-and new `tar' features.
+and new 'tar' features.
 
 * What's next?
 
@@ -216,14 +216,14 @@ to the report address; rather take special arrangement with the maintainer.
 
 Your feedback will help us to make a better and more portable package.
 Consider documentation errors as bugs, and report them as such.  If you
-develop anything pertaining to `tar' or have suggestions, let us know
+develop anything pertaining to 'tar' or have suggestions, let us know
 and share your findings by writing to <bug-tar@gnu.org>.
 
 
 * Copying
 
 	Copyright (C) 1990, 1991, 1992, 1994, 1997, 1998, 1999, 2000,
-	2001, 2003, 2004, 2007 Free Software Foundation, Inc.
+	2001, 2003, 2004, 2007, 2012 Free Software Foundation, Inc.
 
 	This file is part of GNU tar.
 

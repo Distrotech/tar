@@ -13,9 +13,9 @@
 @c Maintenance notes:
 @c  1. Pay attention to @FIXME{}s and @UNREVISED{}s
 @c  2. Before creating final variant:
-@c    2.1. Run `make check-options' to make sure all options are properly
+@c    2.1. Run 'make check-options' to make sure all options are properly
 @c         documented;
-@c    2.2. Run `make master-menu' (see comment before the master menu).
+@c    2.2. Run 'make master-menu' (see comment before the master menu).
 
 @include rendition.texi
 @include value.texi
@@ -1434,7 +1434,7 @@ example:
 @smallexample
 @group
 $ @kbd{tar --create --verbose --file archive /etc/mail}
-tar: Removing leading `/' from member names
+tar: Removing leading '/' from member names
 /etc/mail/
 /etc/mail/sendmail.cf
 /etc/mail/aliases
@@ -4165,17 +4165,17 @@ Disable all warning messages.
 @item symlink-cast
 @samp{Attempting extraction of symbolic links as hard links}
 @kwindex unknown-cast
-@cindex @samp{Unknown file type `%c', extracted as normal file}, warning message
+@cindex @samp{Unknown file type '%c', extracted as normal file}, warning message
 @item unknown-cast
-@samp{%s: Unknown file type `%c', extracted as normal file}
+@samp{%s: Unknown file type '%c', extracted as normal file}
 @kwindex ignore-newer
 @cindex @samp{Current %s is newer or same age}, warning message
 @item ignore-newer
 @samp{Current %s is newer or same age}
 @kwindex unknown-keyword
-@cindex @samp{Ignoring unknown extended header keyword `%s'}, warning message
+@cindex @samp{Ignoring unknown extended header keyword '%s'}, warning message
 @item unknown-keyword
-@samp{Ignoring unknown extended header keyword `%s'}
+@samp{Ignoring unknown extended header keyword '%s'}
 @kwindex decompress-program
 @item decompress-program
 Controls verbose description of failures occurring when trying to run
@@ -4952,7 +4952,7 @@ For example:
 
 @smallexample
 $ @kbd{tar -c -f archive.tar -v --mtime=yesterday .}
-tar: Option --mtime: Treating date `yesterday' as 2006-06-20
+tar: Option --mtime: Treating date 'yesterday' as 2006-06-20
 13:06:29.152478
 @dots{}
 @end smallexample
@@ -6945,7 +6945,7 @@ When @command{tar} is invoked with @option{--create} (@option{-c}),
 @group
 $ @kbd{tar cf a.tar}
 tar: Cowardly refusing to create an empty archive
-Try `tar --help' or `tar --usage' for more information.
+Try 'tar --help' or 'tar --usage' for more information.
 @end group
 @end smallexample
 
@@ -7836,7 +7836,7 @@ $ @kbd{tar tf arch.tar --quoting-style=escape}
 Control characters, single quote and backslash are printed using
 backslash notation.  All names are quoted using left and right
 quotation marks, appropriate to the current locale.  If it does not
-define quotation marks, use @samp{`} as left and @samp{'} as right
+define quotation marks, use @samp{'} as left and as right
 quotation marks.  Any occurrences of the right quotation mark in a
 name are escaped with @samp{\}, for example:
 
@@ -7845,13 +7845,13 @@ For example:
 @smallexample
 @group
 $ @kbd{tar tf arch.tar --quoting-style=locale}
-`./'
-`./a space'
-`./a\'single\'quote'
-`./a"double"quote'
-`./a\\backslash'
-`./a\ttab'
-`./a\nnewline'
+'./'
+'./a space'
+'./a\'single\'quote'
+'./a"double"quote'
+'./a\\backslash'
+'./a\ttab'
+'./a\nnewline'
 @end group
 @end smallexample
 
@@ -8298,7 +8298,7 @@ ensure he is using the right date.  For example:
 @smallexample
 @group
 $ @kbd{tar -c -f archive.tar --after-date='10 days ago' .}
-tar: Option --after-date: Treating date `10 days ago' as 2006-06-11
+tar: Option --after-date: Treating date '10 days ago' as 2006-06-11
 13:19:37.232434
 @end group
 @end smallexample
@@ -9478,7 +9478,7 @@ produces the following diagnostics:
 
 @smallexample
 $ tar -c -f ../archive.tar -l jeden
-tar: Missing links to `jeden'.
+tar: Missing links to 'jeden'.
 @end smallexample
 
 Although creating special records for hard links helps keep a faithful
@@ -9490,7 +9490,7 @@ archive created in previous examples produces, in the absense of file
 
 @smallexample
 $ tar xf archive.tar ./one
-tar: ./one: Cannot hard link to `./jeden': No such file or directory
+tar: ./one: Cannot hard link to './jeden': No such file or directory
 tar: Error exit delayed from previous errors
 @end smallexample
 
@@ -10030,8 +10030,8 @@ run mode is enabled by @option{-n} command line argument:
 @group
 $ @kbd{xsparse -n /home/gray/GNUSparseFile.6058/sparsefile}
 Reading v.1.0 sparse map
-Expanding file `/home/gray/GNUSparseFile.6058/sparsefile' to
-`/home/gray/sparsefile'
+Expanding file '/home/gray/GNUSparseFile.6058/sparsefile' to
+'/home/gray/sparsefile'
 Finished dry run
 @end group
 @end smallexample
@@ -10052,8 +10052,8 @@ similar to that from the dry run mode, use @option{-v} option:
 @group
 $ @kbd{xsparse -v /home/gray/GNUSparseFile.6058/sparsefile}
 Reading v.1.0 sparse map
-Expanding file `/home/gray/GNUSparseFile.6058/sparsefile' to
-`/home/gray/sparsefile'
+Expanding file '/home/gray/GNUSparseFile.6058/sparsefile' to
+'/home/gray/sparsefile'
 Done
 @end group
 @end smallexample
@@ -10074,8 +10074,8 @@ Found variable GNU.sparse.minor = 0
 Found variable GNU.sparse.name = sparsefile
 Found variable GNU.sparse.realsize = 217481216
 Reading v.1.0 sparse map
-Expanding file `/home/gray/GNUSparseFile.6058/sparsefile' to
-`/home/gray/sparsefile'
+Expanding file '/home/gray/GNUSparseFile.6058/sparsefile' to
+'/home/gray/sparsefile'
 Done
 @end group
 @end smallexample
@@ -10177,7 +10177,7 @@ Found variable GNU.sparse.size = 217481216
 Found variable GNU.sparse.numblocks = 208
 Found variable GNU.sparse.name = sparsefile
 Found variable GNU.sparse.map = 0,2048,1050624,2048,@dots{}
-Expanding file `GNUSparseFile.28124/sparsefile' to `sparsefile'
+Expanding file 'GNUSparseFile.28124/sparsefile' to 'sparsefile'
 Done
 @end group
 @end smallexample
@@ -11299,7 +11299,7 @@ is@footnote{If you run @GNUTAR{} under a different locale, the
 translation to the locale's language will be used.}:
 
 @smallexample
-Prepare volume #@var{n} for `@var{archive}' and hit return:
+Prepare volume #@var{n} for '@var{archive}' and hit return:
 @end smallexample
 
 @noindent
@@ -11668,7 +11668,7 @@ you will get:
 @smallexample
 @group
 $ @kbd{tar -rf archive --label 'My volume' .}
-tar: Archive not labeled to match `My volume'
+tar: Archive not labeled to match 'My volume'
 @end group
 @end smallexample
 
@@ -11982,7 +11982,7 @@ Conversely, with the @option{--keep-old-files} (@option{-k}) and
 @option{--skip-old-files} options, @command{tar} refuses to replace
 existing files when extracting.  The difference between the two
 options is that the former treats existing files as errors whereas the
-latter just silently ignores them.  
+latter just silently ignores them.
 
 Finally, with the @option{--no-overwrite-dir} option, @command{tar}
 refuses to replace the permissions or ownership of already-existing

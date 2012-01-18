@@ -40,7 +40,7 @@ tar -rf archive file
 ],
 [# Create volume
 # Update: wrong label
-tar: Archive not labeled to match `My volume'
+tar: Archive not labeled to match 'My volume'
 tar: Error is not recoverable: exiting now
 # Update: right label
 ],[],[],[gnu,oldgnu,posix])

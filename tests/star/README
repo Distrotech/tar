@@ -3,7 +3,7 @@ star "test archives". The archives themselves can be obtained
 from ftp://ftp.berlios.de/pub/star/testscripts.
 
 These tests are disabled by default. There are two ways to run
-them.  The simplest is by `make check-full' command.  It requires wget
+them.  The simplest is by 'make check-full' command.  It requires wget
 and GNU md5sum to be installed. If you don't have these utilities,
 download the test archives manually and set the environment variable
 STAR_TESTSCRIPTS to point to the directory where they reside, for
@@ -13,9 +13,9 @@ example:
 or
 	make TESTS_ENVIRONMENT='STAR_TESTSCRIPTS=testdir' check
 
-The file `quicktest.sh' is a separate test. It is never executed
-within `make check' command, you will need to run it manually.
-Please, carefully read section `quicktest.sh' below before running
+The file 'quicktest.sh' is a separate test. It is never executed
+within 'make check' command, you will need to run it manually.
+Please, carefully read section 'quicktest.sh' below before running
 it.
 
 Following is a short description of the tests:
@@ -52,12 +52,12 @@ containing very large files (in this case -- 10 GB).
 
 This is a test for compliance to POSIX.1-1990 tar specification. It
 requires two files: ustar-all-quicktest.tar and quicktest.filelist,
-(they usually reside in star/testscripts directory), and `tartest' program
+(they usually reside in star/testscripts directory), and 'tartest' program
 (also part of star distribution). The test must be run only with root
 privileges, so it is a good idea to verify the contents of
 ustar-all-quicktest.tar before running it.
 
-If `tartest' is not in your PATH, use TARTEST variable to specify its
+If 'tartest' is not in your PATH, use TARTEST variable to specify its
 full file name. You may pass both STAR_TESTSCRIPTS and TARTEST
 variables as command line arguments to quicktest.sh, as shown in
 the example below:

@@ -48,7 +48,7 @@ testing archive.2
 file1
 file1
 ],
-[tar: Missing links to `file1'.
+[tar: Missing links to 'file1'.
 ])
 
 AT_CLEANUP

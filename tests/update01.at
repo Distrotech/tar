@@ -20,7 +20,7 @@
 
 # Description: If dir is a directory and arc is a tar archive which
 # contains that directory, and dir contains some modifications added
-# after adding it to the archive, then `tar -u dir' would add dir/ to
+# after adding it to the archive, then 'tar -u dir' would add dir/ to
 # the archive.
 # Last-Affected-Version: 1.22.90
 # References: <4AD4E703.80500@teclabs.eu>

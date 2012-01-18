@@ -215,16 +215,16 @@ run_checkpoint_actions (bool do_write)
 	    if (!str)
 	      {
 		if (do_write)
-		  /* TRANSLATORS: This is a ``checkpoint of write operation'',
- 		     *not* ``Writing a checkpoint''.
-		     E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
-		     *not* ``Escribiendo un punto de comprobaci@'on'' */
+		  /* TRANSLATORS: This is a "checkpoint of write operation",
+		     *not* "Writing a checkpoint".
+		     E.g. in Spanish "Punto de comprobaci@'on de escritura",
+		     *not* "Escribiendo un punto de comprobaci@'on" */
 		  str = gettext ("Write checkpoint %u");
 		else
-		  /* TRANSLATORS: This is a ``checkpoint of read operation'',
-	             *not* ``Reading a checkpoint''.
-		     E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
-		     *not* ``Leyendo un punto de comprobaci@'on'' */
+		  /* TRANSLATORS: This is a "checkpoint of read operation",
+	             *not* "Reading a checkpoint".
+		     E.g. in Spanish "Punto de comprobaci@'on de lectura",
+		     *not* "Leyendo un punto de comprobaci@'on" */
 		  str = gettext ("Read checkpoint %u");
 	      }
 	    tmp = expand_checkpoint_string (str, do_write, checkpoint);

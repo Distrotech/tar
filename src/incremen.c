@@ -848,7 +848,7 @@ store_rename (struct directory *dir, struct obstack *stk)
 	 are ignored when hit by this function next time.
 	 If the chain forms a cycle, prev points to the entry DIR is renamed
 	 from. In this case it still retains DIRF_RENAMED flag, which will be
-	 cleared in the `else' branch below */
+	 cleared in the 'else' branch below */
       for (prev = dir; prev && prev->orig != dir; prev = prev->orig)
 	DIR_CLEAR_FLAG (prev, DIRF_RENAMED);
 

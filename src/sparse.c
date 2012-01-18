@@ -591,18 +591,18 @@ sparse_diff_file (int fd, struct tar_stat_info *st)
 /* Old GNU Format. The sparse file information is stored in the
    oldgnu_header in the following manner:
 
-   The header is marked with type 'S'. Its `size' field contains
+   The header is marked with type 'S'. Its 'size' field contains
    the cumulative size of all non-empty blocks of the file. The
-   actual file size is stored in `realsize' member of oldgnu_header.
+   actual file size is stored in 'realsize' member of oldgnu_header.
 
-   The map of the file is stored in a list of `struct sparse'.
+   The map of the file is stored in a list of 'struct sparse'.
    Each struct contains offset to the block of data and its
    size (both as octal numbers). The first file header contains
    at most 4 such structs (SPARSES_IN_OLDGNU_HEADER). If the map
-   contains more structs, then the field `isextended' of the main
-   header is set to 1 (binary) and the `struct sparse_header'
+   contains more structs, then the field 'isextended' of the main
+   header is set to 1 (binary) and the 'struct sparse_header'
    header follows, containing at most 21 following structs
-   (SPARSES_IN_SPARSE_HEADER). If more structs follow, `isextended'
+   (SPARSES_IN_SPARSE_HEADER). If more structs follow, 'isextended'
    field of the extended header is set and next  next extension header
    follows, etc... */
 

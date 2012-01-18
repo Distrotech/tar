@@ -164,7 +164,7 @@ get_var (FILE *fp, char **name, char **value)
   p += 11;
   q = strchr (p, '=');
   if (!q)
-    die (1, "malformed header: expected `=' not found");
+    die (1, "malformed header: expected '=' not found");
   *q++ = 0;
   q[strlen (q) - 1] = 0;
   *name = p;
@@ -194,7 +194,7 @@ read_xheader (char *name)
 	printf ("Found variable GNU.sparse.%s = %s\n", kw, val);
 
       if (expect && strcmp (kw, expect))
-	die (1, "bad keyword sequence: expected `%s' but found `%s'",
+	die (1, "bad keyword sequence: expected '%s' but found '%s'",
 	     expect, kw);
       expect = NULL;
       if (strcmp (kw, "name") == 0)
@@ -235,13 +235,13 @@ read_xheader (char *name)
 	    {
 	      sparse_map[i].offset = string_to_off (val, &val);
 	      if (*val != ',')
-		die (1, "bad GNU.sparse.map: expected `,' but found `%c'",
+		die (1, "bad GNU.sparse.map: expected ',' but found '%c'",
 		     *val);
 	      sparse_map[i].numbytes = string_to_off (val+1, &val);
 	      if (*val != ',')
 		{
 		  if (!(*val == 0 && i == sparse_map_size-1))
-		    die (1, "bad GNU.sparse.map: expected `,' but found `%c'",
+		    die (1, "bad GNU.sparse.map: expected ',' but found '%c'",
 			 *val);
 		}
 	      else
@@ -252,7 +252,7 @@ read_xheader (char *name)
 	}
     }
   if (expect)
-    die (1, "bad keyword sequence: expected `%s' not found", expect);
+    die (1, "bad keyword sequence: expected '%s' not found", expect);
   if (version_major == 0 && sparse_map_size == 0)
     die (1, "size of the sparse map unknown");
   if (i != sparse_map_size)
@@ -449,7 +449,7 @@ main (int argc, char **argv)
     die (1, "cannot open file %s (%d)", outname, errno);
 
   if (verbose)
-    printf ("Expanding file `%s' to `%s'\n", inname, outname);
+    printf ("Expanding file '%s' to '%s'\n", inname, outname);
 
   if (dry_run)
     {

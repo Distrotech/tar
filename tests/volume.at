@@ -43,13 +43,13 @@ test $? = 2
 [0],
 [],
 [-----
-tar: Volume `label' does not match `lab'
+tar: Volume 'label' does not match 'lab'
 tar: Error is not recoverable: exiting now
 -----
-tar: Volume `label' does not match `bel'
+tar: Volume 'label' does not match 'bel'
 tar: Error is not recoverable: exiting now
 -----
-tar: Volume `label' does not match `babel'
+tar: Volume 'label' does not match 'babel'
 tar: Error is not recoverable: exiting now
 ],
 [],[],[gnu, oldgnu])

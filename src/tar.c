@@ -78,7 +78,7 @@ static void
 request_stdin (const char *option)
 {
   if (stdin_used_by)
-    USAGE_ERROR ((0, 0, _("Options `-%s' and `-%s' both want standard input"),
+    USAGE_ERROR ((0, 0, _("Options '-%s' and '-%s' both want standard input"),
 		  stdin_used_by, option));
 
   stdin_used_by = option;
@@ -247,7 +247,7 @@ tar_set_quoting_style (char *arg)
 	return;
       }
   FATAL_ERROR ((0, 0,
-		_("Unknown quoting style `%s'. Try `%s --quoting-style=help' to get a list."), arg, program_invocation_short_name));
+		_("Unknown quoting style '%s'. Try '%s --quoting-style=help' to get a list."), arg, program_invocation_short_name));
 }
 
 
@@ -347,7 +347,7 @@ enum
 const char *argp_program_version = "tar (" PACKAGE_NAME ") " VERSION;
 const char *argp_program_bug_address = "<" PACKAGE_BUGREPORT ">";
 static char const doc[] = N_("\
-GNU `tar' saves many files together into a single tape or disk archive, \
+GNU 'tar' saves many files together into a single tape or disk archive, \
 and can restore individual files from the archive.\n\
 \n\
 Examples:\n\
@@ -355,7 +355,7 @@ Examples:\n\
   tar -tvf archive.tar         # List all files in archive.tar verbosely.\n\
   tar -xf archive.tar          # Extract all files from archive.tar.\n")
 "\v"
-N_("The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
+N_("The backup suffix is '~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n\
 The version control may be set with --backup or VERSION_CONTROL, values are:\n\n\
   none, off       never make backups\n\
   t, numbered     make numbered backups\n\
@@ -543,7 +543,7 @@ static struct argp_option options[] = {
   {"rsh-command", RSH_COMMAND_OPTION, N_("COMMAND"), 0,
    N_("use remote COMMAND instead of rsh"), GRID+1 },
 #ifdef DEVICE_PREFIX
-  {"-[0-7][lmh]", 0, NULL, OPTION_DOC, /* It is OK, since `name' will never be
+  {"-[0-7][lmh]", 0, NULL, OPTION_DOC, /* It is OK, since 'name' will never be
 					  translated */
    N_("specify drive and density"), GRID+1 },
 #endif
@@ -685,7 +685,7 @@ static struct argp_option options[] = {
   {"recursion", RECURSION_OPTION, 0, 0,
    N_("recurse into directories (default)"), GRID+1 },
   {"absolute-names", 'P', 0, 0,
-   N_("don't strip leading `/'s from file names"), GRID+1 },
+   N_("don't strip leading '/'s from file names"), GRID+1 },
   {"dereference", 'h', 0, 0,
    N_("follow symlinks; archive and dump the files they point to"), GRID+1 },
   {"hard-dereference", HARD_DEREFERENCE_OPTION, 0, 0,
@@ -723,7 +723,7 @@ static struct argp_option options[] = {
   {"anchored", ANCHORED_OPTION, 0, 0,
    N_("patterns match file name start"), GRID+1 },
   {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("patterns match after any `/' (default for exclusion)"), GRID+1 },
+   N_("patterns match after any '/' (default for exclusion)"), GRID+1 },
   {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
    N_("case sensitive matching (default)"), GRID+1 },
   {"wildcards", WILDCARDS_OPTION, 0, 0,
@@ -731,9 +731,9 @@ static struct argp_option options[] = {
   {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
    N_("verbatim string matching"), GRID+1 },
   {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("wildcards do not match `/'"), GRID+1 },
+   N_("wildcards do not match '/'"), GRID+1 },
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("wildcards match `/' (default for exclusion)"), GRID+1 },
+   N_("wildcards match '/' (default for exclusion)"), GRID+1 },
 #undef GRID
 
 #define GRID 130
@@ -932,7 +932,7 @@ set_subcommand_option (enum subcommand subcommand)
   if (subcommand_option != UNKNOWN_SUBCOMMAND
       && subcommand_option != subcommand)
     USAGE_ERROR ((0, 0,
-		  _("You may not specify more than one `-Acdtrux' or `--test-label' option")));
+		  _("You may not specify more than one '-Acdtrux' or '--test-label' option")));
 
   subcommand_option = subcommand;
 }
@@ -1062,7 +1062,7 @@ report_textual_dates (struct tar_args *args)
 	{
 	  char const *treated_as = tartime (p->ts, true);
 	  if (strcmp (p->date, treated_as) != 0)
-	    WARN ((0, 0, _("Option %s: Treating date `%s' as %s"),
+	    WARN ((0, 0, _("Option %s: Treating date '%s' as %s"),
 		   p->option, p->date, treated_as));
 	}
       free (p->date);
@@ -2208,7 +2208,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	    break;
 
 	  default:
-	    argp_error (state, _("Unknown density: `%c'"), arg[0]);
+	    argp_error (state, _("Unknown density: '%c'"), arg[0]);
 	  }
 	sprintf (cursor, "%d", device);
 
@@ -2225,7 +2225,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 #else /* not DEVICE_PREFIX */
 
       argp_error (state,
-		  _("Options `-[0-7][lmh]' not supported by *this* tar"));
+		  _("Options '-[0-7][lmh]' not supported by *this* tar"));
 
 #endif /* not DEVICE_PREFIX */
 
@@ -2356,7 +2356,7 @@ decode_options (int argc, char **argv)
 	      if (in < argv + argc)
 		*out++ = *in++;
 	      else
-		USAGE_ERROR ((0, 0, _("Old option `%c' requires an argument."),
+		USAGE_ERROR ((0, 0, _("Old option '%c' requires an argument."),
 			      *letter));
 	    }
 	}
@@ -2457,11 +2457,11 @@ decode_options (int argc, char **argv)
 	archive_name_array[0] = DEFAULT_ARCHIVE;
     }
 
-  /* Allow multiple archives only with `-M'.  */
+  /* Allow multiple archives only with '-M'.  */
 
   if (archive_names > 1 && !multi_volume_option)
     USAGE_ERROR ((0, 0,
-		  _("Multiple archive files require `-M' option")));
+		  _("Multiple archive files require '-M' option")));
 
   if (listed_incremental_option
       && NEWER_OPTION_INITIALIZED (newer_mtime_option))
@@ -2561,7 +2561,7 @@ decode_options (int argc, char **argv)
     USAGE_ERROR ((0, 0, _("--preserve-order is not compatible with "
 			  "--listed-incremental")));
 
-  /* Forbid using -c with no input files whatsoever.  Check that `-f -',
+  /* Forbid using -c with no input files whatsoever.  Check that '-f -',
      explicit or implied, is used correctly.  */
 
   switch (subcommand_option)
@@ -2595,7 +2595,7 @@ decode_options (int argc, char **argv)
 	   archive_name_cursor++)
 	if (!strcmp (*archive_name_cursor, "-"))
 	  USAGE_ERROR ((0, 0,
-			_("Options `-Aru' are incompatible with `-f -'")));
+			_("Options '-Aru' are incompatible with '-f -'")));
 
     default:
       break;
@@ -2684,7 +2684,7 @@ main (int argc, char **argv)
     {
     case UNKNOWN_SUBCOMMAND:
       USAGE_ERROR ((0, 0,
-		    _("You must specify one of the `-Acdtrux' or `--test-label'  options")));
+		    _("You must specify one of the '-Acdtrux' or '--test-label'  options")));
 
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:

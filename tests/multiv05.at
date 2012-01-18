@@ -58,7 +58,7 @@ m4_foreach([file],
   [Diffing file
 ])dnl
 ,
-[tar: `trzy' is not continued on this volume
+[tar: 'trzy' is not continued on this volume
 ],[],[], [gnu])
 
 AT_CLEANUP

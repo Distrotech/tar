@@ -43,7 +43,7 @@ tar xfv test.tar --backup --warning=no-timestamp
 [0],
 [dir1/
 dir1/file1
-Renaming `dir1/file1' to `dir1/file1~'
+Renaming 'dir1/file1' to 'dir1/file1~'
 dir2/
 ])
 
