@@ -12,6 +12,7 @@ dirname
 error
 exclude
 exitfail
+fcntl-h
 fdopendir
 fdutimensat
 fileblocks

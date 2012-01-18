@@ -887,7 +887,8 @@ open_output_file (char const *file_name, int typeflag, mode_t mode,
   /* If O_NOFOLLOW is needed but does not work, check for a symlink
      separately.  There's a race condition, but that cannot be avoided
      on hosts lacking O_NOFOLLOW.  */
-  if (! O_NOFOLLOW && overwriting_old_files && ! dereference_option)
+  if (! HAVE_WORKING_O_NOFOLLOW
+      && overwriting_old_files && ! dereference_option)
     {
       struct stat st;
       if (fstatat (chdir_fd, file_name, &st, AT_SYMLINK_NOFOLLOW) == 0
