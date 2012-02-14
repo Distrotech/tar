@@ -11435,7 +11435,10 @@ archive being created (as given by @option{--file} option) and
 
 @smallexample
 @group
-#! /bin/sh
+#! /bin/bash
+# For this script it's advisable to use a shell, such as Bash,
+# that supports a TAR_FD value greater than 9.
+
 echo Preparing volume $TAR_VOLUME of $TAR_ARCHIVE.
 
 name=`expr $TAR_ARCHIVE : '\(.*\)-.*'`
