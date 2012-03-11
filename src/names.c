@@ -1100,7 +1100,7 @@ name_scan (const char *file_name)
 struct name *gnu_list_name;
 
 struct name const *
-name_from_list ()
+name_from_list (void)
 {
   if (!gnu_list_name)
     gnu_list_name = namelist;

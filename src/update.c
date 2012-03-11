@@ -145,7 +145,7 @@ update_archive (void)
 		    if (S_ISDIR (s.st_mode))
 		      {
 			char *p, *dirp;
-			DIR *stream;
+			DIR *stream = NULL;
 			int fd = openat (chdir_fd, name->name,
 					 open_read_flags | O_DIRECTORY);
 			if (fd < 0)

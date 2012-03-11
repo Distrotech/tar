@@ -362,7 +362,6 @@ static void
 diff_dumpdir (struct tar_stat_info *dir)
 {
   const char *dumpdir_buffer;
-  dev_t dev = 0;
   struct stat stat_data;
 
   if (deref_stat (dir->file_name, &stat_data) != 0)
@@ -372,8 +371,6 @@ diff_dumpdir (struct tar_stat_info *dir)
       else
 	stat_error (dir->file_name);
     }
-  else
-    dev = stat_data.st_dev;
 
   if (dir->fd == 0)
     {

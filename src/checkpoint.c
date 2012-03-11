@@ -113,7 +113,7 @@ checkpoint_compile_action (const char *str)
 }
 
 void
-checkpoint_finish_compile ()
+checkpoint_finish_compile (void)
 {
   if (checkpoint_option)
     {

@@ -123,7 +123,7 @@ flush_deferred_unlinks (bool force)
 }
 
 void
-finish_deferred_unlinks ()
+finish_deferred_unlinks (void)
 {
   flush_deferred_unlinks (true);
   while (dunlink_avail)

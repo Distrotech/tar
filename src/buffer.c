@@ -193,7 +193,7 @@ bufmap_reset (struct bufmap *map, ssize_t fixup)
 static struct tar_stat_info dummy;
 
 void
-buffer_write_global_xheader ()
+buffer_write_global_xheader (void)
 {
   xheader_write_global (&dummy.xhdr);
 }
@@ -205,7 +205,7 @@ mv_begin_read (struct tar_stat_info *st)
 }
 
 void
-mv_end ()
+mv_end (void)
 {
   if (multi_volume_option)
     bufmap_free (NULL);
@@ -233,7 +233,7 @@ clear_read_error_count (void)
 double duration;
 
 void
-set_start_time ()
+set_start_time (void)
 {
   gettime (&start_time);
   volume_start_time = start_time;
@@ -248,7 +248,7 @@ set_volume_start_time (void)
 }
 
 void
-compute_duration ()
+compute_duration (void)
 {
   struct timespec now;
   gettime (&now);
@@ -509,7 +509,7 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
 }
 
 void
-print_total_stats ()
+print_total_stats (void)
 {
   switch (subcommand_option)
     {
@@ -1928,13 +1928,13 @@ gnu_flush_write (size_t buffer_level)
 }
 
 void
-flush_read ()
+flush_read (void)
 {
   flush_read_ptr ();
 }
 
 void
-flush_write ()
+flush_write (void)
 {
   flush_write_ptr (record_size);
 }

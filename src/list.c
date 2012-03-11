@@ -1415,7 +1415,7 @@ skip_member (void)
 }
 
 void
-test_archive_label ()
+test_archive_label (void)
 {
   base64_init ();
   name_gather ();

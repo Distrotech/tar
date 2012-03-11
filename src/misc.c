@@ -713,7 +713,7 @@ static int wdcache[CHDIR_CACHE_SIZE];
 static size_t wdcache_count;
 
 int
-chdir_count ()
+chdir_count (void)
 {
   if (wd_count == 0)
     return wd_count;
@@ -814,11 +814,11 @@ chdir_do (int i)
 	  int prev = wdcache[0];
 	  for (ci = 1; prev != i; ci++)
 	    {
-	      int curr = wdcache[ci];
+	      int cur = wdcache[ci];
 	      wdcache[ci] = prev;
-	      if (curr == i)
+	      if (cur == i)
 		break;
-	      prev = curr;
+	      prev = cur;
 	    }
 	  wdcache[0] = i;
 	}
