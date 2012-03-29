@@ -1979,6 +1979,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	}
       break;
 
+    case OLD_ARCHIVE_OPTION:
+      set_archive_format ("v7");
+      break;
+      
     case OVERWRITE_DIR_OPTION:
       old_files_option = DEFAULT_OLD_FILES;
       break;
