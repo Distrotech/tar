@@ -2756,7 +2756,7 @@ Ignore exit codes of subprocesses. @xref{Writing to an External Program}.
 @item --ignore-failed-read
 
 Do not exit unsuccessfully merely because an unreadable file was encountered.
-@xref{Reading}.
+@xref{Ignore Failed Read}.
 
 @opsummary{ignore-zeros}
 @item --ignore-zeros
