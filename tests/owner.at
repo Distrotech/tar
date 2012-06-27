@@ -31,6 +31,7 @@ genfile --file a
 tar --owner="Joe the Plumber:1234" \
     --group="Plumber's Union:5678" \
     --mtime='@0' \
+    --mode='u=rw,go=r' \
     -cf arc a
 
 tar -tvf arc
