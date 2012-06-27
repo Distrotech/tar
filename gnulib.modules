@@ -45,6 +45,7 @@ quote
 quotearg
 readlinkat
 renameat
+root-uid
 rpmatch
 safe-read
 savedir

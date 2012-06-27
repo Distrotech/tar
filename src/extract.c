@@ -23,6 +23,7 @@
 #include <quotearg.h>
 #include <errno.h>
 #include <priv-set.h>
+#include <root-uid.h>
 #include <utimens.h>
 
 #include "common.h"
@@ -153,7 +154,7 @@ struct string_list
 void
 extr_init (void)
 {
-  we_are_root = geteuid () == 0;
+  we_are_root = geteuid () == ROOT_UID;
   same_permissions_option += we_are_root;
   same_owner_option += we_are_root;
 
