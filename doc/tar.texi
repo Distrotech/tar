@@ -8923,39 +8923,30 @@ etc.) and remote files as well as on normal files; data to or from
 such devices or remote files is reblocked by another copy of the
 @command{tar} program to enforce the specified (or default) record
 size.  The default compression parameters are used.  Most compression
-programs allow to override these by setting a program-specific
-environment variable.  For example, when using @command{gzip} you can
-use @env{GZIP} as in the example below:
+programs let you override these by setting a program-specific
+environment variable.  For example, with @command{gzip} you can set
+@env{GZIP}:
 
 @smallexample
-$ @kbd{GZIP=--best tar czf archive.tar.gz subdir}
+$ @kbd{GZIP='-9 -n' tar czf archive.tar.gz subdir}
 @end smallexample
 
 @noindent
-Another way would be to use the @option{-I} option instead (see
-below), e.g.:
+The traditional way to do this is to use a pipe:
 
 @smallexample
-$ @kbd{tar -cf archive.tar.gz -I 'gzip --best' subdir}
-@end smallexample
-
-@noindent
-Finally, the third, traditional, way to achieve the same result is to
-use pipe:
-
-@smallexample
-$ @kbd{tar cf - subdir | gzip --best -c - > archive.tar.gz}
+$ @kbd{tar cf - subdir | gzip -9 -n > archive.tar.gz}
 @end smallexample
 
 @cindex corrupted archives
-About corrupted compressed archives: compressed files have no
-redundancy, for maximum compression.  The adaptive nature of the
+Compressed archives are easily corrupted, because compressed files
+have little redundancy.  The adaptive nature of the
 compression scheme means that the compression tables are implicitly
 spread all over the archive.  If you lose a few blocks, the dynamic
 construction of the compression tables becomes unsynchronized, and there
 is little chance that you could recover later in the archive.
 
-Another compression options provide a better control over creating
+Other compression options provide better control over creating
 compressed archives.  These are:
 
 @table @option
@@ -8990,13 +8981,12 @@ suffix.  The following suffixes are recognized:
 Use external compression program @var{prog}.  Use this option if you
 are not happy with the compression program associated with the suffix
 at compile time or if you have a compression program that @GNUTAR{}
-does not support.  There are two requirements to which @var{prog}
-should comply:
+does not support.  The program should follow two conventions:
 
-First, when called without options, it should read data from standard
+First, when invoked without options, it should read data from standard
 input, compress it and output it on standard output.
 
-Secondly, if called with @option{-d} argument, it should do exactly
+Secondly, if invoked with the @option{-d} option, it should do exactly
 the opposite, i.e., read the compressed data from the standard input
 and produce uncompressed data on the standard output.
 @end table
