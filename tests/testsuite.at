@@ -103,6 +103,16 @@ rm -f $[]$
 test $result -eq 0 && AT_SKIP_TEST
 ])
 
+dnl AT_PRIVILEGED_PREREQ - Skip test if not running at root privileges
+m4_define([AT_PRIVILEGED_PREREQ],[
+echo "test" > $[]$
+chmod 0 $[]$
+cat $[]$ > /dev/null 2>&1
+result=$?
+rm -f $[]$
+test $result -eq 0 || AT_SKIP_TEST
+])
+
 m4_define([AT_TAR_MKHIER],[
 install-sh -d $1 >/dev/null dnl
 m4_if([$2],,,&& genfile --file [$1]/[$2]) || AT_SKIP_TEST])
@@ -186,6 +196,7 @@ m4_include([listed01.at])
 m4_include([listed02.at])
 m4_include([listed03.at])
 m4_include([listed04.at])
+m4_include([listed05.at])
 m4_include([incr03.at])
 m4_include([incr04.at])
 m4_include([incr05.at])

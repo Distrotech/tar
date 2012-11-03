@@ -446,7 +446,8 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
   struct directory *directory;
   struct stat *stat_data = &st->stat;
   bool nfs = NFS_FILE_STAT (*stat_data);
-
+  bool perhaps_renamed = false;
+  
   if ((directory = find_directory (name_buffer)) != NULL)
     {
       if (DIR_IS_INITED (directory))
@@ -500,9 +501,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 	    }
 	  else
 	    {
-	      WARNOPT (WARN_RENAME_DIRECTORY,
-		       (0, 0, _("%s: Directory has been renamed"),
-			quotearg_colon (name_buffer)));
+	      perhaps_renamed = true;
 	      directory->children = ALL_CHILDREN;
 	      directory->device_number = stat_data->st_dev;
 	      directory->inode_number = stat_data->st_ino;
@@ -560,19 +559,32 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 
   if (one_file_system_option && st->parent
       && stat_data->st_dev != st->parent->stat.st_dev)
-    /* FIXME:
-	WARNOPT (WARN_XDEV,
-		 (0, 0,
-		  _("%s: directory is on a different filesystem; not dumped"),
-		  quotearg_colon (directory->name)));
-    */
-    directory->children = NO_CHILDREN;
+    {
+      WARNOPT (WARN_XDEV,
+	       (0, 0,
+		_("%s: directory is on a different filesystem; not dumped"),
+		quotearg_colon (directory->name)));
+      directory->children = NO_CHILDREN;
+      /* If there is any dumpdir info in that directory, remove it */
+      if (directory->dump)
+	{
+	  dumpdir_free (directory->dump);
+	  directory->dump = NULL;
+	}
+      perhaps_renamed = false;
+    }
+  
   else if (flag & PD_FORCE_CHILDREN)
     {
       directory->children = PD_CHILDREN(flag);
       if (directory->children == NO_CHILDREN)
 	*entry = 'N';
     }
+
+  if (perhaps_renamed)
+    WARNOPT (WARN_RENAME_DIRECTORY,
+	     (0, 0, _("%s: Directory has been renamed"),
+	      quotearg_colon (name_buffer)));
 
   DIR_SET_FLAG (directory, DIRF_INIT);
 
