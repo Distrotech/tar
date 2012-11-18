@@ -1,7 +1,8 @@
 /* A tar (tape archiver) program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1995, 1996, 1997, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007, 2012
+   Free Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
 
@@ -304,6 +305,7 @@ enum
   NO_UNQUOTE_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
+  NO_XATTR_OPTION,
   NULL_OPTION,
   NUMERIC_OWNER_OPTION,
   OCCURRENCE_OPTION,
@@ -341,7 +343,10 @@ enum
   VOLNO_FILE_OPTION,
   WARNING_OPTION,
   WILDCARDS_MATCH_SLASH_OPTION,
-  WILDCARDS_OPTION
+  WILDCARDS_OPTION,
+  XATTR_OPTION,
+  XATTR_EXCLUDE,
+  XATTR_INCLUDE
 };
 
 const char *argp_program_version = "tar (" PACKAGE_NAME ") " VERSION;
@@ -528,6 +533,20 @@ static struct argp_option options[] = {
       " directories until the end of extraction"), GRID+1 },
   {"no-delay-directory-restore", NO_DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
    N_("cancel the effect of --delay-directory-restore option"), GRID+1 },
+#undef GRID
+
+#define GRID 55
+  {NULL, 0, NULL, 0,
+   N_("Handling of extended file attributes:"), GRID },
+
+  {"xattrs", XATTR_OPTION, 0, 0,
+   N_("Enable extended attributes support"), GRID+1 },
+  {"no-xattrs", NO_XATTR_OPTION, 0, 0,
+   N_("Disable extended attributes support"), GRID+1 },
+  {"xattrs-include", XATTR_INCLUDE, N_("MASK"), 0,
+   N_("specify the include pattern for xattr keys"), GRID+1 },
+  {"xattrs-exclude", XATTR_EXCLUDE, N_("MASK"), 0,
+   N_("specify the exclude pattern for xattr keys"), GRID+1 },
 #undef GRID
 
 #define GRID 60
@@ -2150,6 +2169,20 @@ parse_opt (int key, char *arg, struct argp_state *state)
       same_permissions_option = -1;
       break;
 
+    case XATTR_OPTION:
+      set_archive_format ("posix");
+      xattrs_option = 1;
+      break;
+
+    case NO_XATTR_OPTION:
+      xattrs_option = -1;
+      break;
+
+    case XATTR_INCLUDE:
+    case XATTR_EXCLUDE:
+      xattrs_mask_add (arg, (key == XATTR_INCLUDE));
+      break;
+
     case RECURSION_OPTION:
       recursion_option = FNM_LEADING_DIR;
       break;
@@ -2527,10 +2560,15 @@ decode_options (int argc, char **argv)
      --gray */
   if (args.pax_option
       && archive_format != POSIX_FORMAT
-      && (subcommand_option != EXTRACT_SUBCOMMAND
-	  || subcommand_option != DIFF_SUBCOMMAND
-	  || subcommand_option != LIST_SUBCOMMAND))
+      && !READ_LIKE_SUBCOMMAND)
     USAGE_ERROR ((0, 0, _("--pax-option can be used only on POSIX archives")));
+
+  /* star creates non-POSIX typed archives with xattr support, so allow the
+     extra headers when reading */
+  if ((xattrs_option > 0)
+      && archive_format != POSIX_FORMAT
+      && !READ_LIKE_SUBCOMMAND)
+    USAGE_ERROR ((0, 0, _("--xattrs can be used only on POSIX archives")));
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
@@ -2740,6 +2778,7 @@ main (int argc, char **argv)
   /* Dispose of allocated memory, and return.  */
 
   free (archive_name_array);
+  xattrs_clear_setup ();
   name_term ();
 
   if (exit_status == TAREXIT_FAILURE)
@@ -2784,6 +2823,7 @@ void
 tar_stat_destroy (struct tar_stat_info *st)
 {
   tar_stat_close (st);
+  xheader_xattr_free (st->xattr_map, st->xattr_map_size);
   free (st->orig_file_name);
   free (st->file_name);
   free (st->link_name);

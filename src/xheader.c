@@ -1,7 +1,7 @@
 /* POSIX extended headers for tar.
 
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software
-   Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -460,6 +460,74 @@ xheader_write_global (struct xheader *xhdr)
     }
 }
 
+void xheader_xattr_init (struct tar_stat_info *st)
+{
+  st->xattr_map = NULL;
+  st->xattr_map_size = 0;
+}
+
+void xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
+{
+  size_t scan = 0;
+
+  while (scan < xattr_map_size)
+    {
+      free (xattr_map[scan].xkey);
+      free (xattr_map[scan].xval_ptr);
+
+      ++scan;
+    }
+  free (xattr_map);
+}
+
+static void xheader_xattr__add (struct xattr_array **xattr_map,
+                                size_t *xattr_map_size,
+                                const char *key, const char *val, size_t len)
+{
+  size_t pos = (*xattr_map_size)++;
+
+  *xattr_map = xrealloc (*xattr_map,
+                         *xattr_map_size * sizeof(struct xattr_array));
+  (*xattr_map)[pos].xkey = xstrdup (key);
+  (*xattr_map)[pos].xval_ptr = xmemdup (val, len + 1);
+  (*xattr_map)[pos].xval_len = len;
+}
+
+void xheader_xattr_add(struct tar_stat_info *st,
+                       const char *key, const char *val, size_t len)
+{
+  size_t klen = strlen (key);
+  char *xkey = xmalloc (strlen("SCHILY.xattr.") + klen + 1);
+  char *tmp = xkey;
+
+  tmp = stpcpy (tmp, "SCHILY.xattr.");
+  stpcpy (tmp, key);
+
+  xheader_xattr__add (&st->xattr_map, &st->xattr_map_size, xkey, val, len);
+
+  free (xkey);
+}
+
+void xheader_xattr_copy(const struct tar_stat_info *st,
+                        struct xattr_array **xattr_map, size_t *xattr_map_size)
+{
+  size_t scan = 0;
+
+  *xattr_map = NULL;
+  *xattr_map_size = 0;
+
+  while (scan < st->xattr_map_size)
+    {
+      char  *key = st->xattr_map[scan].xkey;
+      char  *val = st->xattr_map[scan].xval_ptr;
+      size_t len = st->xattr_map[scan].xval_len;
+
+      xheader_xattr__add(xattr_map, xattr_map_size, key, val, len);
+
+      ++scan;
+    }
+}
+
 
 /* General Interface */
 
@@ -473,6 +541,7 @@ struct xhdr_tab
 		 struct xheader *, void const *data);
   void (*decoder) (struct tar_stat_info *, char const *, char const *, size_t);
   int flags;
+  bool prefix; /* select handler comparing prefix only */
 };
 
 /* This declaration must be extern, because ISO C99 section 6.9.2
@@ -489,8 +558,17 @@ locate_handler (char const *keyword)
   struct xhdr_tab const *p;
 
   for (p = xhdr_tab; p->keyword; p++)
-    if (strcmp (p->keyword, keyword) == 0)
-      return p;
+    if (p->prefix)
+      {
+        if (strncmp (p->keyword, keyword, strlen(p->keyword)) == 0)
+          return p;
+      }
+    else
+      {
+        if (strcmp (p->keyword, keyword) == 0)
+          return p;
+      }
+
   return NULL;
 }
 
@@ -500,7 +578,8 @@ xheader_protected_pattern_p (const char *pattern)
   struct xhdr_tab const *p;
 
   for (p = xhdr_tab; p->keyword; p++)
-    if ((p->flags & XHDR_PROTECTED) && fnmatch (pattern, p->keyword, 0) == 0)
+    if (!p->prefix && (p->flags & XHDR_PROTECTED)
+        && fnmatch (pattern, p->keyword, 0) == 0)
       return true;
   return false;
 }
@@ -511,7 +590,8 @@ xheader_protected_keyword_p (const char *keyword)
   struct xhdr_tab const *p;
 
   for (p = xhdr_tab; p->keyword; p++)
-    if ((p->flags & XHDR_PROTECTED) && strcmp (p->keyword, keyword) == 0)
+    if (!p->prefix && (p->flags & XHDR_PROTECTED)
+        && strcmp (p->keyword, keyword) == 0)
       return true;
   return false;
 }
@@ -1468,6 +1548,26 @@ volume_filename_decoder (struct tar_stat_info *st,
 {
   decode_string (&continued_file_name, arg);
 }
+static void
+xattr_coder (struct tar_stat_info const *st, char const *keyword,
+             struct xheader *xhdr, void const *data)
+{
+  struct xattr_array *xattr_map = st->xattr_map;
+  const size_t *off = data;
+  xheader_print_n (xhdr, keyword,
+                   xattr_map[*off].xval_ptr, xattr_map[*off].xval_len);
+}
+
+static void
+xattr_decoder (struct tar_stat_info *st,
+               char const *keyword, char const *arg, size_t size)
+{
+  char *xstr = NULL;
+
+  xstr = xmemdup(arg, size + 1);
+  xheader_xattr_add(st, keyword + strlen("SCHILY.xattr."), xstr, size);
+  free(xstr);
+}
 
 static void
 sparse_major_coder (struct tar_stat_info const *st, char const *keyword,
@@ -1506,53 +1606,53 @@ sparse_minor_decoder (struct tar_stat_info *st,
 }
 
 struct xhdr_tab const xhdr_tab[] = {
-  { "atime",	atime_coder,	atime_decoder,	  0 },
-  { "comment",	dummy_coder,	dummy_decoder,	  0 },
-  { "charset",	dummy_coder,	dummy_decoder,	  0 },
-  { "ctime",	ctime_coder,	ctime_decoder,	  0 },
-  { "gid",	gid_coder,	gid_decoder,	  0 },
-  { "gname",	gname_coder,	gname_decoder,	  0 },
-  { "linkpath", linkpath_coder, linkpath_decoder, 0 },
-  { "mtime",	mtime_coder,	mtime_decoder,	  0 },
-  { "path",	path_coder,	path_decoder,	  0 },
-  { "size",	size_coder,	size_decoder,	  0 },
-  { "uid",	uid_coder,	uid_decoder,	  0 },
-  { "uname",	uname_coder,	uname_decoder,	  0 },
+  { "atime",    atime_coder,    atime_decoder,    0, false },
+  { "comment",  dummy_coder,    dummy_decoder,    0, false },
+  { "charset",  dummy_coder,    dummy_decoder,    0, false },
+  { "ctime",    ctime_coder,    ctime_decoder,    0, false },
+  { "gid",      gid_coder,      gid_decoder,      0, false },
+  { "gname",    gname_coder,    gname_decoder,    0, false },
+  { "linkpath", linkpath_coder, linkpath_decoder, 0, false },
+  { "mtime",    mtime_coder,    mtime_decoder,    0, false },
+  { "path",     path_coder,     path_decoder,     0, false },
+  { "size",     size_coder,     size_decoder,     0, false },
+  { "uid",      uid_coder,      uid_decoder,      0, false },
+  { "uname",    uname_coder,    uname_decoder,    0, false },
 
   /* Sparse file handling */
   { "GNU.sparse.name",       path_coder, path_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   { "GNU.sparse.major",      sparse_major_coder, sparse_major_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   { "GNU.sparse.minor",      sparse_minor_coder, sparse_minor_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   { "GNU.sparse.realsize",   sparse_size_coder, sparse_size_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   { "GNU.sparse.numblocks",  sparse_numblocks_coder, sparse_numblocks_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
 
   /* tar 1.14 - 1.15.90 keywords. */
   { "GNU.sparse.size",       sparse_size_coder, sparse_size_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   /* tar 1.14 - 1.15.1 keywords. Multiple instances of these appeared in 'x'
      headers, and each of them was meaningful. It confilcted with POSIX specs,
      which requires that "when extended header records conflict, the last one
      given in the header shall take precedence." */
   { "GNU.sparse.offset",     sparse_offset_coder, sparse_offset_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   { "GNU.sparse.numbytes",   sparse_numbytes_coder, sparse_numbytes_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
   /* tar 1.15.90 keyword, introduced to remove the above-mentioned conflict. */
   { "GNU.sparse.map",        NULL /* Unused, see pax_dump_header() */,
-    sparse_map_decoder, 0 },
+    sparse_map_decoder, 0, false },
 
   { "GNU.dumpdir",           dumpdir_coder, dumpdir_decoder,
-    XHDR_PROTECTED },
+    XHDR_PROTECTED, false },
 
   /* Keeps the tape/volume label. May be present only in the global headers.
      Equivalent to GNUTYPE_VOLHDR.  */
   { "GNU.volume.label", volume_label_coder, volume_label_decoder,
-    XHDR_PROTECTED | XHDR_GLOBAL },
+    XHDR_PROTECTED | XHDR_GLOBAL, false },
 
   /* These may be present in a first global header of the archive.
      They provide the same functionality as GNUTYPE_MULTIVOL header.
@@ -1561,11 +1661,16 @@ struct xhdr_tab const xhdr_tab[] = {
      GNU.volume.offset keeps the offset of the start of this volume,
      otherwise kept in oldgnu_header.offset.  */
   { "GNU.volume.filename", volume_label_coder, volume_filename_decoder,
-    XHDR_PROTECTED | XHDR_GLOBAL },
+    XHDR_PROTECTED | XHDR_GLOBAL, false },
   { "GNU.volume.size", volume_size_coder, volume_size_decoder,
-    XHDR_PROTECTED | XHDR_GLOBAL },
+    XHDR_PROTECTED | XHDR_GLOBAL, false },
   { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder,
-    XHDR_PROTECTED | XHDR_GLOBAL },
+    XHDR_PROTECTED | XHDR_GLOBAL, false },
 
-  { NULL, NULL, NULL, 0 }
+  /* We are storing all extended attributes using this rule even if some of them
+     were stored by some previous rule (duplicates) -- we just have to make sure
+     they are restored *only once* during extraction later on. */
+  { "SCHILY.xattr", xattr_coder, xattr_decoder, 0, true },
+
+  { NULL, NULL, NULL, 0, false }
 };

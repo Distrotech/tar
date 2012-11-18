@@ -1,7 +1,8 @@
 /* Extract files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007, 2010, 2012
+   Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-11-19.
 
@@ -98,6 +99,9 @@ struct delayed_set_stat
     /* Directory that the name is relative to.  */
     int change_dir;
 
+    /* extended attributes*/
+    size_t xattr_map_size;
+    struct xattr_array *xattr_map;
     /* Length and contents of name.  */
     size_t file_name_len;
     char file_name[1];
@@ -137,6 +141,9 @@ struct delayed_link
     /* A list of sources for this link.  The sources are all to be
        hard-linked together.  */
     struct string_list *sources;
+
+    size_t xattr_map_size;
+    struct xattr_array *xattr_map;
 
     /* The desired target of the desired link.  */
     char target[1];
@@ -364,6 +371,10 @@ set_stat (char const *file_name,
 	    st->stat.st_mode & ~ current_umask,
 	    0 < same_permissions_option && ! interdir ? MODE_ALL : MODE_RWX,
 	    fd, current_mode, current_mode_mask, typeflag, atflag);
+
+  /* these three calls must be done *after* fd_chown() call because fd_chown
+     causes that linux capabilities becomes cleared. */
+  xattrs_xattrs_set (st, file_name, typeflag, 1);
 }
 
 /* For each entry H in the leading prefix of entries in HEAD that do
@@ -435,6 +446,13 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
   data->atflag = atflag;
   data->after_links = 0;
   data->change_dir = chdir_current;
+  if (st)
+    xheader_xattr_copy (st, &data->xattr_map, &data->xattr_map_size);
+  else
+    {
+      data->xattr_map = NULL;
+      data->xattr_map_size = 0;
+    }
   strcpy (data->file_name, file_name);
   delayed_set_stat_head = data;
   if (must_be_dot_or_slash (file_name))
@@ -682,6 +700,40 @@ maybe_recoverable (char *file_name, bool regular, bool *interdir_made)
   return RECOVER_NO;
 }
 
+/* Restore stat extended attributes (xattr) for FILE_NAME, using information
+   given in *ST.  Restore before extraction because they may affect file layout
+   (e.g. on Lustre distributed parallel filesystem - setting info about how many
+   servers is this file striped over, stripe size, mirror copies, etc.
+   in advance dramatically improves the following  performance of reading and
+   writing a file).  If not restoring permissions, invert the INVERT_PERMISSIONS
+   bits from the file's current permissions.  TYPEFLAG specifies the type of the
+   file.  FILE_CREATED indicates set_xattr has created the file */
+static int
+set_xattr (char const *file_name, struct tar_stat_info const *st,
+           mode_t invert_permissions, char typeflag, int *file_created)
+{
+  int status = 0;
+
+#ifdef HAVE_XATTRS
+  bool interdir_made = false;
+
+  if ((xattrs_option > 0) && st->xattr_map_size)
+    {
+      mode_t mode = current_stat_info.stat.st_mode & MODE_RWX & ~ current_umask;
+
+      do
+        status = mknodat (chdir_fd, file_name, mode ^ invert_permissions, 0);
+      while (status && maybe_recoverable ((char *)file_name, false,
+                                          &interdir_made));
+
+      xattrs_xattrs_set (st, file_name, typeflag, 0);
+      *file_created = 1;
+    }
+#endif
+
+  return(status);
+}
+
 /* Fix the statuses of all directories whose statuses need fixing, and
    which are not ancestors of FILE_NAME.  If AFTER_LINKS is
    nonzero, do this for all such directories; otherwise, stop at the
@@ -742,12 +794,15 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	  sb.stat.st_gid = data->gid;
 	  sb.atime = data->atime;
 	  sb.mtime = data->mtime;
+	  sb.xattr_map = data->xattr_map;
+	  sb.xattr_map_size = data->xattr_map_size;
 	  set_stat (data->file_name, &sb,
 		    -1, current_mode, current_mode_mask,
 		    DIRTYPE, data->interdir, data->atflag);
 	}
 
       delayed_set_stat_head = data->next;
+      xheader_xattr_free (data->xattr_map, data->xattr_map_size);
       free (data);
     }
 }
@@ -863,7 +918,8 @@ extract_dir (char *file_name, int typeflag)
 
 static int
 open_output_file (char const *file_name, int typeflag, mode_t mode,
-		  mode_t *current_mode, mode_t *current_mode_mask)
+                  int file_created, mode_t *current_mode,
+                  mode_t *current_mode_mask)
 {
   int fd;
   bool overwriting_old_files = old_files_option == OVERWRITE_OLD_FILES;
@@ -872,6 +928,10 @@ open_output_file (char const *file_name, int typeflag, mode_t mode,
 		  | (overwriting_old_files
 		     ? O_TRUNC | (dereference_option ? 0 : O_NOFOLLOW)
 		     : O_EXCL));
+
+  /* File might be created in set_xattr. So clear O_EXCL to avoid open() fail */
+  if (file_created)
+    openflag = openflag & ~O_EXCL;
 
   if (typeflag == CONTTYPE)
     {
@@ -944,6 +1004,8 @@ extract_file (char *file_name, int typeflag)
   bool interdir_made = false;
   mode_t mode = (current_stat_info.stat.st_mode & MODE_RWX
 		 & ~ (0 < same_owner_option ? S_IRWXG | S_IRWXO : 0));
+  mode_t invert_permissions = 0 < same_owner_option ? mode & (S_IRWXG | S_IRWXO)
+                                                    : 0;
   mode_t current_mode = 0;
   mode_t current_mode_mask = 0;
 
@@ -960,8 +1022,18 @@ extract_file (char *file_name, int typeflag)
     }
   else
     {
+      int file_created = 0;
+      if (set_xattr (file_name, &current_stat_info, invert_permissions,
+                     typeflag, &file_created))
+        {
+          skip_member ();
+          open_error (file_name);
+          return 1;
+        }
+
       while ((fd = open_output_file (file_name, typeflag, mode,
-				     &current_mode, &current_mode_mask))
+                                     file_created, &current_mode,
+                                     &current_mode_mask))
 	     < 0)
 	{
 	  int recover = maybe_recoverable (file_name, true, &interdir_made);
@@ -1101,6 +1173,7 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 			    + strlen (file_name) + 1);
       p->sources->next = 0;
       strcpy (p->sources->string, file_name);
+      xheader_xattr_copy (&current_stat_info, &p->xattr_map, &p->xattr_map_size);
       strcpy (p->target, current_stat_info.link_name);
 
       h = delayed_set_stat_head;
@@ -1536,6 +1609,8 @@ apply_delayed_links (void)
 		  st1.stat.st_gid = ds->gid;
 		  st1.atime = ds->atime;
 		  st1.mtime = ds->mtime;
+                  st1.xattr_map = ds->xattr_map;
+                  st1.xattr_map_size = ds->xattr_map_size;
 		  set_stat (source, &st1, -1, 0, 0, SYMTYPE,
 			    false, AT_SYMLINK_NOFOLLOW);
 		  valid_source = source;
@@ -1549,6 +1624,8 @@ apply_delayed_links (void)
 	  free (sources);
 	  sources = next;
 	}
+
+   xheader_xattr_free (ds->xattr_map, ds->xattr_map_size);
 
       {
 	struct delayed_link *next = ds->next;

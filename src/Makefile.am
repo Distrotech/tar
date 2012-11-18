@@ -20,7 +20,7 @@
 
 bin_PROGRAMS = tar
 
-noinst_HEADERS = arith.h common.h tar.h
+noinst_HEADERS = arith.h common.h tar.h xattrs.h
 tar_SOURCES = \
  buffer.c\
  checkpoint.c\
@@ -42,10 +42,11 @@ tar_SOURCES = \
  unlink.c\
  update.c\
  utf8.c\
- warning.c
+ warning.c\
+ xattrs.c
 
 INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu -I$(top_srcdir)/lib -I../lib
 
 LDADD = ../lib/libtar.a ../gnu/libgnu.a $(LIBINTL) $(LIBICONV)
 
-tar_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS)
+tar_LDADD = $(LIBS) $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS)

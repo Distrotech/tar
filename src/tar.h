@@ -1,7 +1,8 @@
 /* GNU tar Archive Format description.
 
    Copyright (C) 1988, 1989, 1991, 1992, 1993, 1994, 1995, 1996, 1997,
-   2000, 2001, 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
+   2000, 2001, 2003, 2004, 2005, 2006, 2007, 2012
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -276,6 +277,14 @@ struct xheader
   uintmax_t string_length;
 };
 
+/* Information about xattrs for a file.  */
+struct xattr_array
+  {
+    char *xkey;
+    char *xval_ptr;
+    size_t xval_len;
+  };
+
 struct tar_stat_info
 {
   char *orig_file_name;     /* name of file read from the archive header */
@@ -308,6 +317,9 @@ struct tar_stat_info
 			       not sparse */
   size_t sparse_map_size;   /* Size of the sparse map */
   struct sp_array *sparse_map;
+
+  size_t xattr_map_size;   /* Size of the xattr map */
+  struct xattr_array *xattr_map;
 
   /* Extended headers */
   struct xheader xhdr;

@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010 Free Software
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012 Free Software
 # Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -116,6 +116,36 @@ test $result -eq 0 || AT_SKIP_TEST
 m4_define([AT_TAR_MKHIER],[
 install-sh -d $1 >/dev/null dnl
 m4_if([$2],,,&& genfile --file [$1]/[$2]) || AT_SKIP_TEST])
+
+dnl Skip test when utlity does not return expected return value
+m4_define([AT_CHECK_UTIL],[
+  $1 &> /dev/null
+  if test "$?" != $2; then
+    AT_SKIP_TEST
+  fi
+])
+
+m4_define([AT_XATTRS_UTILS_PREREQ],[
+  file=$( mktemp -p . )
+  AT_CHECK_UTIL(setfattr -n user.test -v test $file,0)
+  AT_CHECK_UTIL(getfattr $file,0)
+])
+m4_define([AT_CAPABILITIES_UTILS_PREREQ],[
+  file=$( mktemp -p . )
+  AT_CHECK_UTIL(setcap "= cap_chown=ei" $file,0)
+  AT_CHECK_UTIL(getcap $file,0)
+  rm -rf $file
+])
+m4_define([AT_XATTRS_PREREQ],[
+  AT_XATTRS_UTILS_PREREQ
+  file=$( mktemp -p . )
+  setfattr -n user.test -v ahoj $file
+  # check whether tar fails to store xattrs
+  err=$( tar --xattrs -cf /dev/null $file 2>&1 >/dev/null | wc -l )
+  if test "$err" != "0"; then
+    AT_SKIP_TEST
+  fi
+])
 
 m4_include([sparsemvp.at])
 
@@ -284,3 +314,10 @@ m4_include([star/ustar-big-2g.at])
 m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
+
+m4_include([xattr01.at])
+m4_include([xattr02.at])
+m4_include([xattr03.at])
+m4_include([xattr04.at])
+
+m4_include([capabs_raw01.at])

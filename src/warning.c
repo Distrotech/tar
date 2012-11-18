@@ -1,6 +1,6 @@
 /* This file is part of GNU tar.
 
-   Copyright (C) 2009 Free Software Foundation, Inc.
+   Copyright (C) 2009, 2012 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -43,6 +43,7 @@ static char const *const warning_args[] = {
   "xdev",
   "decompress-program",
   "existing-file",
+  "xattr-write",
   NULL
 };
 
@@ -68,7 +69,8 @@ static int warning_types[] = {
   WARN_UNKNOWN_KEYWORD,
   WARN_XDEV,
   WARN_DECOMPRESS_PROGRAM,
-  WARN_EXISTING_FILE
+  WARN_EXISTING_FILE,
+  WARN_XATTR_WRITE
 };
 
 ARGMATCH_VERIFY (warning_args, warning_types);

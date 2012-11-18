@@ -1,7 +1,8 @@
 /* Create a tar archive.
 
    Copyright (C) 1985, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012
+   Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-25.
 
@@ -943,6 +944,21 @@ start_header (struct tar_stat_info *st)
       GNAME_TO_CHARS (st->gname, header->header.gname);
     }
 
+  if (archive_format == POSIX_FORMAT)
+    {
+      if (xattrs_option > 0)
+        {
+          size_t scan_xattr = 0;
+          struct xattr_array *xattr_map = st->xattr_map;
+
+          while (scan_xattr < st->xattr_map_size)
+            {
+              xheader_store (xattr_map[scan_xattr].xkey, st, &scan_xattr);
+              ++scan_xattr;
+            }
+        }
+    }
+
   return header;
 }
 
@@ -1718,6 +1734,8 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
       bool ok;
       struct stat final_stat;
 
+      xattrs_xattrs_get (parentfd, name, st, fd);
+
       if (is_dir)
 	{
 	  const char *tag_file_name;
@@ -1836,6 +1854,8 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
       if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
 	write_long_link (st);
 
+      xattrs_xattrs_get (parentfd, name, st, 0);
+
       block_ordinal = current_block_ordinal ();
       st->stat.st_size = 0;	/* force 0 size on symlink */
       header = start_header (st);
@@ -1854,11 +1874,20 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
     }
 #endif
   else if (S_ISCHR (st->stat.st_mode))
-    type = CHRTYPE;
+    {
+      type = CHRTYPE;
+      xattrs_xattrs_get (parentfd, name, st, 0);
+    }
   else if (S_ISBLK (st->stat.st_mode))
-    type = BLKTYPE;
+    {
+      type = BLKTYPE;
+      xattrs_xattrs_get (parentfd, name, st, 0);
+    }
   else if (S_ISFIFO (st->stat.st_mode))
-    type = FIFOTYPE;
+    {
+      type = FIFOTYPE;
+      xattrs_xattrs_get (parentfd, name, st, 0);
+    }
   else if (S_ISSOCK (st->stat.st_mode))
     {
       WARNOPT (WARN_FILE_IGNORED,

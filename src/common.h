@@ -1,8 +1,8 @@
 /* Common declarations for the tar program.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation,
-   Inc.
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
+   Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -90,6 +90,11 @@ enum subcommand
 };
 
 GLOBAL enum subcommand subcommand_option;
+
+#define READ_LIKE_SUBCOMMAND                    \
+  (subcommand_option == EXTRACT_SUBCOMMAND      \
+   || subcommand_option == DIFF_SUBCOMMAND      \
+   || subcommand_option == LIST_SUBCOMMAND)
 
 /* Selected format for output archive.  */
 GLOBAL enum archive_format archive_format;
@@ -255,6 +260,15 @@ GLOBAL int same_owner_option;
 
 /* If positive, preserve permissions when extracting.  */
 GLOBAL int same_permissions_option;
+
+/* If positive, save the SELinux context.  */
+GLOBAL int selinux_context_option;
+
+/* If positive, save the ACLs.  */
+GLOBAL int acls_option;
+
+/* If positive, save the user and root xattrs.  */
+GLOBAL int xattrs_option;
 
 /* When set, strip the given number of file name components from the file name
    before extracting */
@@ -714,6 +728,9 @@ extern char *output_start;
 
 void update_archive (void);
 
+/* Module attrs.c.  */
+#include "xattrs.h"
+
 /* Module xheader.c.  */
 
 void xheader_decode (struct tar_stat_info *stat);
@@ -734,6 +751,12 @@ bool xheader_string_end (struct xheader *xhdr, char const *keyword);
 bool xheader_keyword_deleted_p (const char *kw);
 char *xheader_format_name (struct tar_stat_info *st, const char *fmt,
 			   size_t n);
+void xheader_xattr_init (struct tar_stat_info *st);
+void xheader_xattr_free (struct xattr_array *vals, size_t sz);
+void xheader_xattr_copy (const struct tar_stat_info *st,
+                         struct xattr_array **vals, size_t *sz);
+void xheader_xattr_add (struct tar_stat_info *st,
+                        const char *key, const char *val, size_t len);
 
 /* Module system.c */
 
@@ -815,6 +838,7 @@ void checkpoint_run (bool do_write);
 #define WARN_XDEV                0x00040000
 #define WARN_DECOMPRESS_PROGRAM  0x00080000
 #define WARN_EXISTING_FILE       0x00100000
+#define WARN_XATTR_WRITE         0x00200000
 
 /* The warnings composing WARN_VERBOSE_WARNINGS are enabled by default
    in verbose mode */

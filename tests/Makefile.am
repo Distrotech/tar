@@ -1,7 +1,7 @@
 # Makefile for GNU tar regression tests.
 
 # Copyright (C) 1996, 1997, 1999, 2000, 2001, 2003, 2004, 2005,
-# 2006, 2007, 2009 Free Software Foundation, Inc.
+# 2006, 2007, 2009, 2012 Free Software Foundation, Inc.
 
 # François Pinard <pinard@iro.umontreal.ca>, 1988.
 # Sergey Poznyakoff <gray@mirddin.farlep.net>, 2004.
@@ -173,7 +173,12 @@ TESTSUITE_AT = \
  star/multi-fail.at\
  star/ustar-big-2g.at\
  star/ustar-big-8g.at\
- star/pax-big-10g.at
+ star/pax-big-10g.at\
+ xattr01.at\
+ xattr02.at\
+ xattr03.at\
+ xattr04.at\
+ capabs_raw01.at
 
 TESTSUITE = $(srcdir)/testsuite
 

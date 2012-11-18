@@ -1,7 +1,8 @@
 /* List a tar archive, with support routines for reading a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1998, 1999, 2000,
-   2001, 2003, 2004, 2005, 2006, 2007, 2010 Free Software Foundation, Inc.
+   2001, 2003, 2004, 2005, 2006, 2007, 2010, 2012
+   Free Software Foundation, Inc.
 
    Written by John Gilmore, on 1985-08-26.
 
@@ -604,6 +605,8 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
   assign_string (&stat_info->gname,
 		 header->header.gname[0] ? header->header.gname : NULL);
 
+  xheader_xattr_init (stat_info);
+
   if (format == OLDGNU_FORMAT && incremental_option)
     {
       stat_info->atime.tv_sec = TIME_FROM_HEADER (header->oldgnu_header.atime);
@@ -1064,7 +1067,7 @@ static void
 simple_print_header (struct tar_stat_info *st, union block *blk,
 		     off_t block_ordinal)
 {
-  char modes[11];
+  char modes[12];
   char const *time_stamp;
   int time_stamp_len;
   char *temp_name;
@@ -1155,6 +1158,9 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 	}
 
       pax_decode_mode (st->stat.st_mode, modes + 1);
+
+      /* extended attributes:  GNU `ls -l'-like preview */
+      xattrs_print_char (st, modes + 10);
 
       /* Time stamp.  */
 
@@ -1301,6 +1307,7 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 	}
     }
   fflush (stdlis);
+  xattrs_print (st);
 }
 
 
