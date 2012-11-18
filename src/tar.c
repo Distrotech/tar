@@ -256,7 +256,8 @@ tar_set_quoting_style (char *arg)
 
 enum
 {
-  ANCHORED_OPTION = CHAR_MAX + 1,
+  ACLS_OPTION = CHAR_MAX + 1,
+  ANCHORED_OPTION,
   ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
   CHECK_DEVICE_OPTION,
@@ -289,6 +290,7 @@ enum
   MODE_OPTION,
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
+  NO_ACLS_OPTION,
   NO_ANCHORED_OPTION,
   NO_AUTO_COMPRESS_OPTION,
   NO_CHECK_DEVICE_OPTION,
@@ -547,6 +549,10 @@ static struct argp_option options[] = {
    N_("specify the include pattern for xattr keys"), GRID+1 },
   {"xattrs-exclude", XATTR_EXCLUDE, N_("MASK"), 0,
    N_("specify the exclude pattern for xattr keys"), GRID+1 },
+  {"acls", ACLS_OPTION, 0, 0,
+   N_("Enable the POSIX ACLs support"), GRID+1 },
+  {"no-acls", NO_ACLS_OPTION, 0, 0,
+   N_("Disable the POSIX ACLs support"), GRID+1 },
 #undef GRID
 
 #define GRID 60
@@ -2169,6 +2175,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
       same_permissions_option = -1;
       break;
 
+    case ACLS_OPTION:
+      set_archive_format ("posix");
+      acls_option = 1;
+      break;
+
+    case NO_ACLS_OPTION:
+      acls_option = -1;
+      break;
+
     case XATTR_OPTION:
       set_archive_format ("posix");
       xattrs_option = 1;
@@ -2564,7 +2579,12 @@ decode_options (int argc, char **argv)
     USAGE_ERROR ((0, 0, _("--pax-option can be used only on POSIX archives")));
 
   /* star creates non-POSIX typed archives with xattr support, so allow the
-     extra headers when reading */
+     extra headers whenn reading */
+  if ((acls_option > 0)
+      && archive_format != POSIX_FORMAT
+      && !READ_LIKE_SUBCOMMAND)
+    USAGE_ERROR ((0, 0, _("--acls can be used only on POSIX archives")));
+
   if ((xattrs_option > 0)
       && archive_format != POSIX_FORMAT
       && !READ_LIKE_SUBCOMMAND)
@@ -2829,6 +2849,8 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->link_name);
   free (st->uname);
   free (st->gname);
+  free (st->acls_a_ptr);
+  free (st->acls_d_ptr);
   free (st->sparse_map);
   free (st->dumpdir);
   xheader_destroy (&st->xhdr);

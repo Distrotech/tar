@@ -1,6 +1,7 @@
 # List of gnulib modules needed for GNU tar.
 # A module name per line. Empty lines and comments are ignored.
 
+acl
 alloca
 argmatch
 argp

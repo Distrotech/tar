@@ -296,6 +296,13 @@ struct tar_stat_info
 
   char          *uname;     /* user name of owner */
   char          *gname;     /* group name of owner */
+
+  char *acls_a_ptr;         /* Access ACLs for the current archive entry. */
+  size_t acls_a_len;        /* Access ACLs for the current archive entry. */
+
+  char *acls_d_ptr;         /* Default ACLs for the current archive entry. */
+  size_t acls_d_len;        /* Default ACLs for the current archive entry. */
+
   struct stat   stat;       /* regular filesystem stat */
 
   /* STAT doesn't always have access, data modification, and status

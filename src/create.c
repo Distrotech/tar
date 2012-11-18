@@ -946,6 +946,13 @@ start_header (struct tar_stat_info *st)
 
   if (archive_format == POSIX_FORMAT)
     {
+      if (acls_option > 0)
+        {
+          if (st->acls_a_ptr)
+            xheader_store ("SCHILY.acl.access", st, NULL);
+          if (st->acls_d_ptr)
+            xheader_store ("SCHILY.acl.default", st, NULL);
+        }
       if (xattrs_option > 0)
         {
           size_t scan_xattr = 0;
@@ -1734,6 +1741,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
       bool ok;
       struct stat final_stat;
 
+      xattrs_acls_get (parentfd, name, st, 0, !is_dir);
       xattrs_xattrs_get (parentfd, name, st, fd);
 
       if (is_dir)
@@ -1876,16 +1884,19 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
   else if (S_ISCHR (st->stat.st_mode))
     {
       type = CHRTYPE;
+      xattrs_acls_get (parentfd, name, st, 0, true);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISBLK (st->stat.st_mode))
     {
       type = BLKTYPE;
+      xattrs_acls_get (parentfd, name, st, 0, true);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISFIFO (st->stat.st_mode))
     {
       type = FIFOTYPE;
+      xattrs_acls_get (parentfd, name, st, 0, true);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISSOCK (st->stat.st_mode))

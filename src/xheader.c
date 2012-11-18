@@ -464,6 +464,11 @@ void xheader_xattr_init (struct tar_stat_info *st)
 {
   st->xattr_map = NULL;
   st->xattr_map_size = 0;
+
+  st->acls_a_ptr = NULL;
+  st->acls_a_len = 0;
+  st->acls_d_ptr = NULL;
+  st->acls_d_len = 0;
 }
 
 void xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
@@ -1548,6 +1553,37 @@ volume_filename_decoder (struct tar_stat_info *st,
 {
   decode_string (&continued_file_name, arg);
 }
+
+static void
+xattr_acls_a_coder (struct tar_stat_info const *st , char const *keyword,
+                    struct xheader *xhdr, void const *data)
+{
+  xheader_print_n (xhdr, keyword, st->acls_a_ptr, st->acls_a_len);
+}
+
+static void
+xattr_acls_a_decoder (struct tar_stat_info *st,
+                      char const *keyword, char const *arg, size_t size)
+{
+  st->acls_a_ptr = xmemdup (arg, size + 1);
+  st->acls_a_len = size;
+}
+
+static void
+xattr_acls_d_coder (struct tar_stat_info const *st , char const *keyword,
+                    struct xheader *xhdr, void const *data)
+{
+  xheader_print_n (xhdr, keyword, st->acls_d_ptr, st->acls_d_len);
+}
+
+static void
+xattr_acls_d_decoder (struct tar_stat_info *st,
+                      char const *keyword, char const *arg, size_t size)
+{
+  st->acls_d_ptr = xmemdup (arg, size + 1);
+  st->acls_d_len = size;
+}
+
 static void
 xattr_coder (struct tar_stat_info const *st, char const *keyword,
              struct xheader *xhdr, void const *data)
@@ -1666,6 +1702,13 @@ struct xhdr_tab const xhdr_tab[] = {
     XHDR_PROTECTED | XHDR_GLOBAL, false },
   { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder,
     XHDR_PROTECTED | XHDR_GLOBAL, false },
+
+  /* ACLs, use the star format... */
+  { "SCHILY.acl.access",
+    xattr_acls_a_coder, xattr_acls_a_decoder, 0, false },
+
+  { "SCHILY.acl.default",
+    xattr_acls_d_coder, xattr_acls_d_decoder, 0, false },
 
   /* We are storing all extended attributes using this rule even if some of them
      were stored by some previous rule (duplicates) -- we just have to make sure

@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2012 Free Software
+# Copyright (C) 2004, 2005, 2006, 2007, 2008, 2010, 2011, 2012 Free Software
 # Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
@@ -130,6 +130,12 @@ m4_define([AT_XATTRS_UTILS_PREREQ],[
   AT_CHECK_UTIL(setfattr -n user.test -v test $file,0)
   AT_CHECK_UTIL(getfattr $file,0)
 ])
+m4_define([AT_ACLS_UTILS_PREREQ],[
+  file=$( mktemp -p . )
+  AT_CHECK_UTIL(setfacl -m u:$UID:rwx $file,0)
+  AT_CHECK_UTIL(getfacl $file,0)
+  rm -rf $file
+])
 m4_define([AT_CAPABILITIES_UTILS_PREREQ],[
   file=$( mktemp -p . )
   AT_CHECK_UTIL(setcap "= cap_chown=ei" $file,0)
@@ -142,6 +148,15 @@ m4_define([AT_XATTRS_PREREQ],[
   setfattr -n user.test -v ahoj $file
   # check whether tar fails to store xattrs
   err=$( tar --xattrs -cf /dev/null $file 2>&1 >/dev/null | wc -l )
+  if test "$err" != "0"; then
+    AT_SKIP_TEST
+  fi
+])
+m4_define([AT_ACLS_PREREQ],[
+  AT_XATTRS_UTILS_PREREQ
+  file=$( mktemp -p . )
+  setfacl -m u:$UID:rwx $file
+  err=$( tar --acls -cf /dev/null $file 2>&1 >/dev/null | wc -l )
   if test "$err" != "0"; then
     AT_SKIP_TEST
   fi
@@ -305,6 +320,16 @@ m4_include([remfiles03.at])
 
 m4_include([sigpipe.at])
 
+m4_include([xattr01.at])
+m4_include([xattr02.at])
+m4_include([xattr03.at])
+m4_include([xattr04.at])
+
+m4_include([acls01.at])
+m4_include([acls02.at])
+
+m4_include([capabs_raw01.at])
+
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
 
@@ -315,9 +340,3 @@ m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
 
-m4_include([xattr01.at])
-m4_include([xattr02.at])
-m4_include([xattr03.at])
-m4_include([xattr04.at])
-
-m4_include([capabs_raw01.at])

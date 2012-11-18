@@ -100,6 +100,10 @@ struct delayed_set_stat
     int change_dir;
 
     /* extended attributes*/
+    char *acls_a_ptr;
+    size_t acls_a_len;
+    char *acls_d_ptr;
+    size_t acls_d_len;
     size_t xattr_map_size;
     struct xattr_array *xattr_map;
     /* Length and contents of name.  */
@@ -141,6 +145,12 @@ struct delayed_link
     /* A list of sources for this link.  The sources are all to be
        hard-linked together.  */
     struct string_list *sources;
+
+    /* ACLs */
+    char *acls_a_ptr;
+    size_t acls_a_len;
+    char *acls_d_ptr;
+    size_t acls_d_len;
 
     size_t xattr_map_size;
     struct xattr_array *xattr_map;
@@ -375,6 +385,7 @@ set_stat (char const *file_name,
   /* these three calls must be done *after* fd_chown() call because fd_chown
      causes that linux capabilities becomes cleared. */
   xattrs_xattrs_set (st, file_name, typeflag, 1);
+  xattrs_acls_set (st, file_name, typeflag);
 }
 
 /* For each entry H in the leading prefix of entries in HEAD that do
@@ -446,6 +457,26 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
   data->atflag = atflag;
   data->after_links = 0;
   data->change_dir = chdir_current;
+  if (st && st->acls_a_ptr)
+    {
+      data->acls_a_ptr = xmemdup (st->acls_a_ptr, st->acls_a_len + 1);
+      data->acls_a_len = st->acls_a_len;
+    }
+  else
+    {
+      data->acls_a_ptr = NULL;
+      data->acls_a_len = 0;
+    }
+  if (st && st->acls_d_ptr)
+    {
+      data->acls_d_ptr = xmemdup (st->acls_d_ptr, st->acls_d_len + 1);
+      data->acls_d_len = st->acls_d_len;
+    }
+  else
+    {
+      data->acls_d_ptr = NULL;
+      data->acls_d_len = 0;
+    }
   if (st)
     xheader_xattr_copy (st, &data->xattr_map, &data->xattr_map_size);
   else
@@ -794,6 +825,10 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	  sb.stat.st_gid = data->gid;
 	  sb.atime = data->atime;
 	  sb.mtime = data->mtime;
+	  sb.acls_a_ptr = data->acls_a_ptr;
+	  sb.acls_a_len = data->acls_a_len;
+	  sb.acls_d_ptr = data->acls_d_ptr;
+	  sb.acls_d_len = data->acls_d_len;
 	  sb.xattr_map = data->xattr_map;
 	  sb.xattr_map_size = data->xattr_map_size;
 	  set_stat (data->file_name, &sb,
@@ -803,6 +838,8 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 
       delayed_set_stat_head = data->next;
       xheader_xattr_free (data->xattr_map, data->xattr_map_size);
+      free (data->acls_a_ptr);
+      free (data->acls_d_ptr);
       free (data);
     }
 }
@@ -1173,6 +1210,10 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 			    + strlen (file_name) + 1);
       p->sources->next = 0;
       strcpy (p->sources->string, file_name);
+      p->acls_a_ptr = NULL;
+      p->acls_a_len = 0;
+      p->acls_d_ptr = NULL;
+      p->acls_d_len = 0;
       xheader_xattr_copy (&current_stat_info, &p->xattr_map, &p->xattr_map_size);
       strcpy (p->target, current_stat_info.link_name);
 
@@ -1609,6 +1650,10 @@ apply_delayed_links (void)
 		  st1.stat.st_gid = ds->gid;
 		  st1.atime = ds->atime;
 		  st1.mtime = ds->mtime;
+                  st1.acls_a_ptr = ds->acls_a_ptr;
+                  st1.acls_a_len = ds->acls_a_len;
+                  st1.acls_d_ptr = ds->acls_d_ptr;
+                  st1.acls_d_len = ds->acls_d_len;
                   st1.xattr_map = ds->xattr_map;
                   st1.xattr_map_size = ds->xattr_map_size;
 		  set_stat (source, &st1, -1, 0, 0, SYMTYPE,
