@@ -1,6 +1,3 @@
-#ifndef GUARD_XATTTRS_H
-#define GUARD_XATTTRS_H
-
 /* Support for extended attributes.
 
    Copyright (C) 2006, 2007, 2008, 2009, 2010, 2011, 2012 Free Software
@@ -10,7 +7,7 @@
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
-   Free Software Foundation; either version 2, or (at your option) any later
+   Free Software Foundation; either version 3, or (at your option) any later
    version.
 
    This program is distributed in the hope that it will be useful, but
@@ -23,6 +20,8 @@
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 */
 
+#ifndef GUARD_XATTTRS_H
+#define GUARD_XATTTRS_H
 
 /* Add include/exclude fnmatch pattern for xattr key domain.  Set INCL parameter
    to true/false if you want to add include/exclude pattern */
