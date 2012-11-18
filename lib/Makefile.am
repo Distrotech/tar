@@ -28,11 +28,24 @@ BUILT_SOURCES = rmt-command.h
 CLEANFILES = rmt-command.h rmt-command.h-t
 INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu
 
-noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h stdopen.h
+noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h stdopen.h xattr-at.h
 libtar_a_SOURCES = \
   paxerror.c paxexit-status.c paxlib.h paxnames.c \
   prepargs.c prepargs.h \
   rtapelib.c \
   rmt.h \
   stdopen.c stdopen.h \
-  system.h system-ioctl.h
+  system.h system-ioctl.h \
+  xattr-at.c
+
+if !TAR_COND_XATTR_H
+BUILT_SOURCES += attr/xattr.h
+attr/xattr.h: attr-xattr.in.h $(top_builddir)/config.status
+	$(AM_V_at)$(MKDIR_P) attr
+	$(AM_V_GEN)rm -f $@-t $@ && \
+	 cp $(srcdir)/attr-xattr.in.h attr/xattr.h
+
+MOSTLYCLEANFILES = attr/xattr.h attr/xattr.h
+endif
+
+EXTRA_DIST = attr-xattr.in.h

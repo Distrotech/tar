@@ -90,6 +90,8 @@ gl_INIT
 # paxutils modules
 tar_PAXUTILS
 
+TAR_HEADERS_ATTR_XATTR_H
+
 AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink])
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
