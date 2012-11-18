@@ -304,6 +304,7 @@ enum
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
   NO_SEEK_OPTION,
+  NO_SELINUX_CONTEXT_OPTION,
   NO_UNQUOTE_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
@@ -329,6 +330,7 @@ enum
   RMT_COMMAND_OPTION,
   RSH_COMMAND_OPTION,
   SAME_OWNER_OPTION,
+  SELINUX_CONTEXT_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
   SHOW_TRANSFORMED_NAMES_OPTION,
@@ -549,6 +551,10 @@ static struct argp_option options[] = {
    N_("specify the include pattern for xattr keys"), GRID+1 },
   {"xattrs-exclude", XATTR_EXCLUDE, N_("MASK"), 0,
    N_("specify the exclude pattern for xattr keys"), GRID+1 },
+  {"selinux", SELINUX_CONTEXT_OPTION, 0, 0,
+   N_("Enable the SELinux context support"), GRID+1 },
+  {"no-selinux", NO_SELINUX_CONTEXT_OPTION, 0, 0,
+   N_("Disable the SELinux context support"), GRID+1 },
   {"acls", ACLS_OPTION, 0, 0,
    N_("Enable the POSIX ACLs support"), GRID+1 },
   {"no-acls", NO_ACLS_OPTION, 0, 0,
@@ -2184,6 +2190,15 @@ parse_opt (int key, char *arg, struct argp_state *state)
       acls_option = -1;
       break;
 
+    case SELINUX_CONTEXT_OPTION:
+      set_archive_format ("posix");
+      selinux_context_option = 1;
+      break;
+
+    case NO_SELINUX_CONTEXT_OPTION:
+      selinux_context_option = -1;
+      break;
+
     case XATTR_OPTION:
       set_archive_format ("posix");
       xattrs_option = 1;
@@ -2585,6 +2600,11 @@ decode_options (int argc, char **argv)
       && !READ_LIKE_SUBCOMMAND)
     USAGE_ERROR ((0, 0, _("--acls can be used only on POSIX archives")));
 
+  if ((selinux_context_option > 0)
+      && archive_format != POSIX_FORMAT
+      && !READ_LIKE_SUBCOMMAND)
+    USAGE_ERROR ((0, 0, _("--selinux can be used only on POSIX archives")));
+
   if ((xattrs_option > 0)
       && archive_format != POSIX_FORMAT
       && !READ_LIKE_SUBCOMMAND)
@@ -2849,6 +2869,7 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->link_name);
   free (st->uname);
   free (st->gname);
+  free (st->cntx_name);
   free (st->acls_a_ptr);
   free (st->acls_d_ptr);
   free (st->sparse_map);

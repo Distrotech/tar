@@ -49,4 +49,4 @@ INCLUDES = -I$(top_srcdir)/gnu -I../ -I../gnu -I$(top_srcdir)/lib -I../lib
 
 LDADD = ../lib/libtar.a ../gnu/libgnu.a $(LIBINTL) $(LIBICONV)
 
-tar_LDADD = $(LIBS) $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS)
+tar_LDADD = $(LIBS) $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS) $(LIB_SELINUX)

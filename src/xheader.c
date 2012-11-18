@@ -469,6 +469,7 @@ void xheader_xattr_init (struct tar_stat_info *st)
   st->acls_a_len = 0;
   st->acls_d_ptr = NULL;
   st->acls_d_len = 0;
+  st->cntx_name = NULL;
 }
 
 void xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
@@ -1555,6 +1556,20 @@ volume_filename_decoder (struct tar_stat_info *st,
 }
 
 static void
+xattr_selinux_coder (struct tar_stat_info const *st, char const *keyword,
+                     struct xheader *xhdr, void const *data)
+{
+  code_string (st->cntx_name, keyword, xhdr);
+}
+
+static void
+xattr_selinux_decoder (struct tar_stat_info *st,
+                       char const *keyword, char const *arg, size_t size)
+{
+  decode_string (&st->cntx_name, arg);
+}
+
+static void
 xattr_acls_a_coder (struct tar_stat_info const *st , char const *keyword,
                     struct xheader *xhdr, void const *data)
 {
@@ -1702,6 +1717,11 @@ struct xhdr_tab const xhdr_tab[] = {
     XHDR_PROTECTED | XHDR_GLOBAL, false },
   { "GNU.volume.offset", volume_offset_coder, volume_offset_decoder,
     XHDR_PROTECTED | XHDR_GLOBAL, false },
+
+  /* We get the SELinux value from filecon, so add a namespace for SELinux
+     instead of storing it in SCHILY.xattr.* (which would be RAW). */
+  { "RHT.security.selinux",
+    xattr_selinux_coder, xattr_selinux_decoder, 0, false },
 
   /* ACLs, use the star format... */
   { "SCHILY.acl.access",

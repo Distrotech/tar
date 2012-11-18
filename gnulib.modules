@@ -50,6 +50,7 @@ root-uid
 rpmatch
 safe-read
 savedir
+selinux-at
 setenv
 snprintf
 stat-time

@@ -180,6 +180,8 @@ TESTSUITE_AT = \
  xattr04.at\
  acls01.at\
  acls02.at\
+ selnx01.at\
+ selacl01.at\
  capabs_raw01.at
 
 TESTSUITE = $(srcdir)/testsuite

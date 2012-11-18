@@ -28,6 +28,7 @@
 #include "common.h"
 
 #include "xattr-at.h"
+#include "selinux-at.h"
 
 struct xattrs_mask_map
 {
@@ -490,6 +491,64 @@ static void xattrs__fd_set (struct tar_stat_info const *st,
     }
 }
 
+/* lgetfileconat is called against FILE_NAME iff the FD parameter is set to
+   zero, otherwise the fgetfileconat is used against correct file descriptor */
+void xattrs_selinux_get (int parentfd, char const *file_name,
+                         struct tar_stat_info *st,  int fd)
+{
+  if (selinux_context_option > 0)
+    {
+#if HAVE_SELINUX_SELINUX_H != 1
+      static int done = 0;
+      if (!done)
+        WARN ((0, 0, _("SELinux support is not available")));
+      done = 1;
+#else
+      int result = (fd ? fgetfilecon (fd, &st->cntx_name)
+                       : lgetfileconat (parentfd, file_name, &st->cntx_name));
+
+      if (result == -1 && errno != ENODATA && errno != ENOTSUP)
+        call_arg_warn (fd ? "fgetfilecon" : "lgetfileconat", file_name);
+#endif
+    }
+}
+
+void xattrs_selinux_set (struct tar_stat_info const *st,
+                         char const *file_name, char typeflag)
+{
+  if (selinux_context_option > 0)
+    {
+#if HAVE_SELINUX_SELINUX_H != 1
+      static int done = 0;
+      if (!done)
+        WARN ((0, 0, _("SELinux support is not available")));
+      done = 1;
+#else
+      const char *sysname = "setfilecon";
+      int ret;
+
+      if (!st->cntx_name)
+        return;
+
+      if (typeflag != SYMTYPE)
+        {
+          ret = setfileconat (chdir_fd, file_name, st->cntx_name);
+          sysname = "setfileconat";
+        }
+      else
+        {
+          ret = lsetfileconat (chdir_fd, file_name, st->cntx_name);
+          sysname = "lsetfileconat";
+        }
+
+      if (ret == -1)
+        WARNOPT (WARN_XATTR_WRITE, (0, errno,
+            _("%s: Cannot set SELinux context for file '%s'"), sysname,
+            file_name));
+#endif
+    }
+}
+
 static bool xattrs_matches_mask (const char *kw, struct xattrs_mask_map *mm)
 {
   int i;
@@ -589,7 +648,7 @@ void xattrs_print_char (struct tar_stat_info const *st, char *output)
       return;
     }
 
-  if (xattrs_option > 0 || acls_option > 0)
+  if (xattrs_option > 0 ||  selinux_context_option > 0 || acls_option > 0)
     {
       /* placeholders */
       *output = ' ';
@@ -606,6 +665,9 @@ void xattrs_print_char (struct tar_stat_info const *st, char *output)
         break;
       }
 
+  if (selinux_context_option > 0 && st->cntx_name)
+    *output = '.';
+
   if (acls_option && (st->acls_a_len || st->acls_d_len))
     *output = '+';
 }
@@ -614,6 +676,10 @@ void xattrs_print (struct tar_stat_info const *st)
 {
   if (verbose_option < 3)
     return;
+
+  /* selinux */
+  if (selinux_context_option && st->cntx_name)
+    fprintf (stdlis, "  s: %s\n", st->cntx_name);
 
   /* acls */
   if (acls_option && (st->acls_a_len || st->acls_d_len))

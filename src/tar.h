@@ -297,6 +297,8 @@ struct tar_stat_info
   char          *uname;     /* user name of owner */
   char          *gname;     /* group name of owner */
 
+  char *cntx_name;          /* SELinux context for the current archive entry. */
+
   char *acls_a_ptr;         /* Access ACLs for the current archive entry. */
   size_t acls_a_len;        /* Access ACLs for the current archive entry. */
 

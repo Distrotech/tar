@@ -100,6 +100,7 @@ struct delayed_set_stat
     int change_dir;
 
     /* extended attributes*/
+    char *cntx_name;
     char *acls_a_ptr;
     size_t acls_a_len;
     char *acls_d_ptr;
@@ -145,6 +146,9 @@ struct delayed_link
     /* A list of sources for this link.  The sources are all to be
        hard-linked together.  */
     struct string_list *sources;
+
+    /* SELinux context */
+    char *cntx_name;
 
     /* ACLs */
     char *acls_a_ptr;
@@ -386,6 +390,7 @@ set_stat (char const *file_name,
      causes that linux capabilities becomes cleared. */
   xattrs_xattrs_set (st, file_name, typeflag, 1);
   xattrs_acls_set (st, file_name, typeflag);
+  xattrs_selinux_set (st, file_name, typeflag);
 }
 
 /* For each entry H in the leading prefix of entries in HEAD that do
@@ -457,6 +462,9 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
   data->atflag = atflag;
   data->after_links = 0;
   data->change_dir = chdir_current;
+  data->cntx_name = NULL;
+  if (st)
+    assign_string (&data->cntx_name, st->cntx_name);
   if (st && st->acls_a_ptr)
     {
       data->acls_a_ptr = xmemdup (st->acls_a_ptr, st->acls_a_len + 1);
@@ -825,6 +833,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	  sb.stat.st_gid = data->gid;
 	  sb.atime = data->atime;
 	  sb.mtime = data->mtime;
+	  sb.cntx_name = data->cntx_name;
 	  sb.acls_a_ptr = data->acls_a_ptr;
 	  sb.acls_a_len = data->acls_a_len;
 	  sb.acls_d_ptr = data->acls_d_ptr;
@@ -838,6 +847,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 
       delayed_set_stat_head = data->next;
       xheader_xattr_free (data->xattr_map, data->xattr_map_size);
+      free (data->cntx_name);
       free (data->acls_a_ptr);
       free (data->acls_d_ptr);
       free (data);
@@ -1210,6 +1220,8 @@ create_placeholder_file (char *file_name, bool is_symlink, bool *interdir_made)
 			    + strlen (file_name) + 1);
       p->sources->next = 0;
       strcpy (p->sources->string, file_name);
+      p->cntx_name = NULL;
+      assign_string (&p->cntx_name, current_stat_info.cntx_name);
       p->acls_a_ptr = NULL;
       p->acls_a_len = 0;
       p->acls_d_ptr = NULL;
@@ -1650,6 +1662,7 @@ apply_delayed_links (void)
 		  st1.stat.st_gid = ds->gid;
 		  st1.atime = ds->atime;
 		  st1.mtime = ds->mtime;
+                  st1.cntx_name = ds->cntx_name;
                   st1.acls_a_ptr = ds->acls_a_ptr;
                   st1.acls_a_len = ds->acls_a_len;
                   st1.acls_d_ptr = ds->acls_d_ptr;
@@ -1671,6 +1684,7 @@ apply_delayed_links (void)
 	}
 
    xheader_xattr_free (ds->xattr_map, ds->xattr_map_size);
+   free (ds->cntx_name);
 
       {
 	struct delayed_link *next = ds->next;

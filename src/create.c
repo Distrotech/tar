@@ -953,6 +953,8 @@ start_header (struct tar_stat_info *st)
           if (st->acls_d_ptr)
             xheader_store ("SCHILY.acl.default", st, NULL);
         }
+      if ((selinux_context_option > 0) && st->cntx_name)
+        xheader_store ("RHT.security.selinux", st, NULL);
       if (xattrs_option > 0)
         {
           size_t scan_xattr = 0;
@@ -1742,6 +1744,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
       struct stat final_stat;
 
       xattrs_acls_get (parentfd, name, st, 0, !is_dir);
+      xattrs_selinux_get (parentfd, name, st, fd);
       xattrs_xattrs_get (parentfd, name, st, fd);
 
       if (is_dir)
@@ -1862,6 +1865,7 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
       if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
 	write_long_link (st);
 
+      xattrs_selinux_get (parentfd, name, st, 0);
       xattrs_xattrs_get (parentfd, name, st, 0);
 
       block_ordinal = current_block_ordinal ();
@@ -1885,18 +1889,21 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
     {
       type = CHRTYPE;
       xattrs_acls_get (parentfd, name, st, 0, true);
+      xattrs_selinux_get (parentfd, name, st, 0);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISBLK (st->stat.st_mode))
     {
       type = BLKTYPE;
       xattrs_acls_get (parentfd, name, st, 0, true);
+      xattrs_selinux_get (parentfd, name, st, 0);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISFIFO (st->stat.st_mode))
     {
       type = FIFOTYPE;
       xattrs_acls_get (parentfd, name, st, 0, true);
+      xattrs_selinux_get (parentfd, name, st, 0);
       xattrs_xattrs_get (parentfd, name, st, 0);
     }
   else if (S_ISSOCK (st->stat.st_mode))
