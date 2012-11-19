@@ -33,6 +33,7 @@ ln -s file dir/link
 
 getfattr -h -d -msecurity.selinux dir dir/file dir/link > start
 
+restorecon -R dir
 chcon -h --user=system_u     dir
 chcon -h --user=unconfined_u dir/file
 chcon -h --user=system_u     dir/link

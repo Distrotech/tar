@@ -70,6 +70,29 @@ if test $diff_cv_st_fstype_string = yes; then
     [Define if struct stat has a char st_fstype[] member.])
 fi
 
+# even if we use gnulib's acl.h with integrated m4 file later on (used because
+# of very useful file_has_acl() function) we need following checks that restrict
+# tar to use POSIX.1e ACLs only.
+AC_ARG_WITH([posix-acls],
+    AS_HELP_STRING([--without-posix-acls],
+                   [do not use POSIX.1e access control lists]),
+    [with_posix_acls=no])
+if test "x$with_posix_acls" != "xno"; then
+  AC_CHECK_HEADERS(sys/acl.h,, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_get_file],  [acl pacl],, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_get_fd],    [acl pacl],, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_set_file],  [acl pacl],, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_set_fd],    [acl pacl],, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_to_text],   [acl pacl],, [with_posix_acl=no])
+  AC_SEARCH_LIBS([acl_from_text], [acl pacl],, [with_posix_acl=no])
+  if test "x$with_posix_acls" != xno; then
+    AC_DEFINE(HAVE_POSIX_ACLS,,[Define when we have working POSIX acls])
+  fi
+else
+  # disable acls in gnulib's checks
+  export enable_acl=no
+fi
+
 AC_TYPE_SIGNAL
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
@@ -93,25 +116,6 @@ tar_PAXUTILS
 TAR_HEADERS_ATTR_XATTR_H
 
 AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink])
-
-# we use gnulib's acl.h - because of very useful file_has_acl() function.  M4
-# file from gnulib/acl does a quite good job of course.  The problem is that
-# this function works on wide list of platforms and we need to restrict tar to
-# use POSIX.1e ACLs only.
-AC_ARG_WITH([posix-acls],
-    AS_HELP_STRING([--without-posix-acls],
-                   [do not use POSIX.1e access control lists]),
-    [with_posix_acls=no])
-AC_CHECK_HEADERS(sys/acl.h,, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_get_file],  [acl pacl],, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_get_fd],    [acl pacl],, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_set_file],  [acl pacl],, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_set_fd],    [acl pacl],, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_to_text],   [acl pacl],, [with_posix_acl=no])
-AC_SEARCH_LIBS([acl_from_text], [acl pacl],, [with_posix_acl=no])
-if test "x$with_posix_acls" != xno; then
-  AC_DEFINE(HAVE_POSIX_ACLS,,[Define when we have working POSIX acls])
-fi
 
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])
