@@ -338,6 +338,7 @@ m4_include([xattr01.at])
 m4_include([xattr02.at])
 m4_include([xattr03.at])
 m4_include([xattr04.at])
+m4_include([xattr05.at])
 
 m4_include([acls01.at])
 m4_include([acls02.at])

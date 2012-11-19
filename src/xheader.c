@@ -499,6 +499,44 @@ static void xheader_xattr__add (struct xattr_array **xattr_map,
   (*xattr_map)[pos].xval_len = len;
 }
 
+/* This is reversal function for xattr_encode_keyword.  See comment for
+   xattr_encode_keyword() for more info. */
+static void
+xattr_decode_keyword (char *keyword)
+{
+  char *kpr, *kpl; /* keyword pointer left/right */
+  kpr = kpl = keyword;
+
+  for (;;)
+    {
+      if (*kpr == '%')
+        {
+          if (kpr[1] == '3' && kpr[2] == 'D')
+            {
+              *kpl = '=';
+              kpr += 3;
+              kpl ++;
+              continue;
+            }
+          else if (kpr[1] == '2' && kpr[2] == '5')
+            {
+              *kpl = '%';
+              kpr += 3;
+              kpl ++;
+              continue;
+            }
+        }
+
+      *kpl = *kpr;
+
+      if (*kpr == 0)
+        break;
+
+      kpr++;
+      kpl++;
+    }
+}
+
 void xheader_xattr_add(struct tar_stat_info *st,
                        const char *key, const char *val, size_t len)
 {
@@ -807,15 +845,71 @@ xheader_read (struct xheader *xhdr, union block *p, size_t size)
   while (size > 0);
 }
 
+/* xattr_encode_keyword() substitutes '=' ~~> '%3D' and '%' ~~> '%25'
+   in extended attribute keywords.  This is needed because the '=' character
+   has special purpose in extended attribute header - it splits keyword and
+   value part of header.  If there was the '=' occurrence allowed inside
+   keyword, there would be no unambiguous way how to decode this extended
+   attribute.
+
+   (http://lists.gnu.org/archive/html/bug-tar/2012-10/msg00017.html)
+ */
+static char *
+xattr_encode_keyword(const char *keyword)
+{
+  static char *encode_buffer = NULL;
+  static size_t encode_buffer_size = 0;
+  size_t bp; /* keyword/buffer pointers */
+
+  if (!encode_buffer)
+    {
+      encode_buffer_size = 256;
+      encode_buffer = xmalloc (encode_buffer_size);
+    }
+  else
+    *encode_buffer = 0;
+
+  for (bp = 0; *keyword != 0; ++bp, ++keyword)
+    {
+      char c = *keyword;
+
+      if (bp + 2 /* enough for URL encoding also.. */ >= encode_buffer_size)
+        {
+          encode_buffer = x2realloc (encode_buffer, &encode_buffer_size);
+        }
+
+      if (c == '%')
+        {
+          strcpy (encode_buffer + bp, "%25");
+          bp += 2;
+        }
+      else if (c == '=')
+        {
+          strcpy (encode_buffer + bp, "%3D");
+          bp += 2;
+        }
+      else
+        encode_buffer[bp] = c;
+    }
+
+  encode_buffer[bp] = 0;
+
+  return encode_buffer;
+}
+
 static void
 xheader_print_n (struct xheader *xhdr, char const *keyword,
 		 char const *value, size_t vsize)
 {
-  size_t len = strlen (keyword) + vsize + 3; /* ' ' + '=' + '\n' */
   size_t p;
   size_t n = 0;
   char nbuf[UINTMAX_STRSIZE_BOUND];
   char const *np;
+  size_t len, klen;
+
+  keyword = xattr_encode_keyword (keyword);
+  klen = strlen (keyword);
+  len = klen + vsize + 3; /* ' ' + '=' + '\n' */
 
   do
     {
@@ -827,7 +921,7 @@ xheader_print_n (struct xheader *xhdr, char const *keyword,
 
   x_obstack_grow (xhdr, np, n);
   x_obstack_1grow (xhdr, ' ');
-  x_obstack_grow (xhdr, keyword, strlen (keyword));
+  x_obstack_grow (xhdr, keyword, klen);
   x_obstack_1grow (xhdr, '=');
   x_obstack_grow (xhdr, value, vsize);
   x_obstack_1grow (xhdr, '\n');
@@ -1613,11 +1707,20 @@ static void
 xattr_decoder (struct tar_stat_info *st,
                char const *keyword, char const *arg, size_t size)
 {
-  char *xstr = NULL;
+  char *xstr, *xkey;
 
-  xstr = xmemdup(arg, size + 1);
-  xheader_xattr_add(st, keyword + strlen("SCHILY.xattr."), xstr, size);
-  free(xstr);
+  /* copy keyword */
+  size_t klen_raw = strlen (keyword);
+  xkey = alloca (klen_raw + 1);
+  memcpy (xkey, keyword, klen_raw + 1) /* including null-terminating */;
+
+  /* copy value */
+  xstr = alloca (size + 1);
+  memcpy (xstr, arg, size + 1); /* separator included, for GNU tar '\n' */;
+
+  xattr_decode_keyword (xkey);
+
+  xheader_xattr_add (st, xkey + strlen("SCHILY.xattr."), xstr, size);
 }
 
 static void
