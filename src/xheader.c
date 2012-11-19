@@ -460,7 +460,8 @@ xheader_write_global (struct xheader *xhdr)
     }
 }
 
-void xheader_xattr_init (struct tar_stat_info *st)
+void
+xheader_xattr_init (struct tar_stat_info *st)
 {
   st->xattr_map = NULL;
   st->xattr_map_size = 0;
@@ -472,7 +473,8 @@ void xheader_xattr_init (struct tar_stat_info *st)
   st->cntx_name = NULL;
 }
 
-void xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
+void
+xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
 {
   size_t scan = 0;
 
@@ -486,9 +488,10 @@ void xheader_xattr_free (struct xattr_array *xattr_map, size_t xattr_map_size)
   free (xattr_map);
 }
 
-static void xheader_xattr__add (struct xattr_array **xattr_map,
-                                size_t *xattr_map_size,
-                                const char *key, const char *val, size_t len)
+static void
+xheader_xattr__add (struct xattr_array **xattr_map,
+		    size_t *xattr_map_size,
+		    const char *key, const char *val, size_t len)
 {
   size_t pos = (*xattr_map_size)++;
 
@@ -537,8 +540,9 @@ xattr_decode_keyword (char *keyword)
     }
 }
 
-void xheader_xattr_add(struct tar_stat_info *st,
-                       const char *key, const char *val, size_t len)
+void
+xheader_xattr_add (struct tar_stat_info *st,
+		   const char *key, const char *val, size_t len)
 {
   size_t klen = strlen (key);
   char *xkey = xmalloc (strlen("SCHILY.xattr.") + klen + 1);
@@ -552,8 +556,9 @@ void xheader_xattr_add(struct tar_stat_info *st,
   free (xkey);
 }
 
-void xheader_xattr_copy(const struct tar_stat_info *st,
-                        struct xattr_array **xattr_map, size_t *xattr_map_size)
+void
+xheader_xattr_copy (const struct tar_stat_info *st,
+		    struct xattr_array **xattr_map, size_t *xattr_map_size)
 {
   size_t scan = 0;
 
@@ -1181,8 +1186,6 @@ decode_time (struct timespec *ts, char const *arg, char const *keyword)
     }
   return true;
 }
-
-
 
 static void
 code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
