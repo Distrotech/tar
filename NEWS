@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2012-01-18
+GNU tar NEWS - User visible changes. 2012-11-19
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -33,6 +33,17 @@ A new option --skip-old-files is introduced, which acts exactly as
 errors.  Instead it just silently skips them.  An additional level of
 verbosity can be obtained by using the option --warning=existing-file
 together with this option.
+
+* Support for POSIX ACLs, extended attributes and SELinux context.
+
+Starting with this version tar is able to store, extract and list
+extended file attributes, POSIX.1e ACLs and SELinux context.  This is
+controlled by the command line options --xattrs, --acls and --selinux,
+correspondingly.  Each of these options has a `--no-' counterpart
+(e.g. --no-xattrs), which disables the corresponding feature.
+Additionally, the options --xattrs-include and --xattrs-exclude allow
+you to selectively control for which files to store (or extract) the
+extended attributes.
 
 
 version 1.26 - Sergey Poznyakoff, 2011-03-12
