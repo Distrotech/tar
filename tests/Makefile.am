@@ -220,6 +220,11 @@ check_PROGRAMS = genfile
 genfile_SOURCES = genfile.c argcv.c argcv.h
 
 localedir = $(datadir)/locale
-AM_CPPFLAGS = -I$(top_srcdir)/gnu -I../gnu -I$(top_srcdir)/gnu -I$(top_srcdir)/lib
-AM_CPPFLAGS = -DLOCALEDIR=\"$(localedir)\"
+AM_CPPFLAGS = \
+ -I$(top_srcdir)/gnu\
+ -I../gnu\
+ -I$(top_srcdir)/gnu\
+ -I$(top_srcdir)/lib\
+ -DLOCALEDIR=\"$(localedir)\"
+
 LDADD = ../gnu/libgnu.a $(LIBINTL) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS)
