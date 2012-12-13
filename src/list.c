@@ -865,7 +865,7 @@ from_header (char const *where0, size_t digs, char const *type,
 
 	  while (where0 != lim && ! lim[-1])
 	    lim--;
-	  quotearg_buffer (buf, sizeof buf, where0, lim - where, o);
+	  quotearg_buffer (buf, sizeof buf, where0, lim - where0, o);
 	  if (!silent)
 	    ERROR ((0, 0,
 		    /* TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.) */
