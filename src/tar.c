@@ -1287,7 +1287,7 @@ update_argv (const char *filename, struct argp_state *state)
   for (i = state->next, p = start; *p; p += strlen (p) + 1, i++)
     {
       if (term == 0 && p[0] == '-')
-	state->argv[i++] = "--add-file";
+	state->argv[i++] = (char *) "--add-file";
       state->argv[i] = p;
     }
 }
@@ -2013,7 +2013,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case OLD_ARCHIVE_OPTION:
       set_archive_format ("v7");
       break;
-      
+
     case OVERWRITE_DIR_OPTION:
       old_files_option = DEFAULT_OLD_FILES;
       break;

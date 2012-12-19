@@ -722,8 +722,8 @@ sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
 
   stat_to_env (file_name, typechar, st);
 
-  argv[0] = "/bin/sh";
-  argv[1] = "-c";
+  argv[0] = (char *) "/bin/sh";
+  argv[1] = (char *) "-c";
   argv[2] = to_command_option;
   argv[3] = NULL;
 
@@ -837,8 +837,8 @@ sys_exec_info_script (const char **archive_name, int volume_number)
 
   xclose (p[PREAD]);
 
-  argv[0] = "/bin/sh";
-  argv[1] = "-c";
+  argv[0] = (char *) "/bin/sh";
+  argv[1] = (char *) "-c";
   argv[2] = (char *) info_script_option;
   argv[3] = NULL;
 
@@ -885,8 +885,8 @@ sys_exec_checkpoint_script (const char *script_name,
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
 				 archive_format : current_format), 1);
-  argv[0] = "/bin/sh";
-  argv[1] = "-c";
+  argv[0] = (char *) "/bin/sh";
+  argv[1] = (char *) "-c";
   argv[2] = (char *) script_name;
   argv[3] = NULL;
 

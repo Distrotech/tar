@@ -289,8 +289,8 @@ struct zip_program
 };
 
 static struct zip_magic const magic[] = {
-  { ct_none, },
-  { ct_tar },
+  { ct_none,     0, 0 },
+  { ct_tar,      0, 0 },
   { ct_compress, 2, "\037\235" },
   { ct_gzip,     2, "\037\213" },
   { ct_bzip2,    3, "BZh" },

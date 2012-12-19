@@ -137,7 +137,7 @@ static char *
 skip_to_ext_fields (char *ptr)
 {
   /* skip tag name (user/group/default/mask) */
-  ptr += strcspn (ptr, ":,\n"); 
+  ptr += strcspn (ptr, ":,\n");
 
   if (*ptr != ':')
     return ptr;
@@ -192,7 +192,7 @@ static void
 xattrs__acls_set (struct tar_stat_info const *st,
                   char const *file_name, int type,
                   char *ptr, size_t len, bool def)
-{  
+{
   acl_t acl;
 
   if (ptr)
@@ -229,7 +229,7 @@ static void
 xattrs__acls_get_a (int parentfd, const char *file_name,
                     struct tar_stat_info *st,
                     char **ret_ptr, size_t * ret_len)
-{             
+{
   char *val = NULL;
   ssize_t len;
   acl_t acl;
@@ -261,7 +261,7 @@ static void
 xattrs__acls_get_d (int parentfd, char const *file_name,
                     struct tar_stat_info *st,
                     char **ret_ptr, size_t * ret_len)
-{         
+{
   char *val = NULL;
   ssize_t len;
   acl_t acl;
@@ -407,7 +407,7 @@ clear_mask_map (struct xattrs_mask_map *mask_map)
 }
 
 void
-xattrs_clear_setup ()
+xattrs_clear_setup (void)
 {
   clear_mask_map (&xattrs_setup.incl);
   clear_mask_map (&xattrs_setup.excl);
@@ -614,7 +614,7 @@ static bool
 xattrs_masked_out (const char *kw, bool archiving)
 {
   return xattrs_kw_included (kw, archiving) ?
-    xattrs_kw_excluded (kw, archiving) : true; 
+    xattrs_kw_excluded (kw, archiving) : true;
 }
 
 void
@@ -720,7 +720,7 @@ xattrs_print (struct tar_stat_info const *st)
   if (xattrs_option && st->xattr_map_size)
     {
       int i;
-      
+
       for (i = 0; i < st->xattr_map_size; ++i)
         {
           char *keyword = st->xattr_map[i].xkey + strlen ("SCHILY.xattr.");

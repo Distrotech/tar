@@ -17,6 +17,9 @@
 #ifndef TAR_ATTR_XATTR_H
 #define TAR_ATTR_XATTR_H
 #include <errno.h>
+#ifndef ENOATTR
+# define ENOATTR ENODATA        /* No such attribute */
+#endif
 
 /* setting */
 static inline int setxattr (const char *path, const char *name, const void
@@ -55,4 +58,3 @@ static inline ssize_t flistxattr (int filedes, char *list, size_t size)
 { errno = ENOTSUP; return -1; }
 
 #endif
-

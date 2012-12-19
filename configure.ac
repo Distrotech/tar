@@ -113,6 +113,86 @@ gl_INIT
 # paxutils modules
 tar_PAXUTILS
 
+AC_ARG_ENABLE([gcc-warnings],
+  [AS_HELP_STRING([--enable-gcc-warnings],
+     [turn on many GCC warnings (for developers; best with GNU make)])],
+  [case $enableval in
+     yes|no) ;;
+     *)      AC_MSG_ERROR([bad value $enableval for gcc-warnings option]) ;;
+   esac
+   gl_gcc_warnings=$enableval],
+  [if test -d "$srcdir"/.git; then
+     gl_gcc_warnings=yes
+   else
+     gl_gcc_warnings=no
+   fi]
+)
+
+if test "$gl_gcc_warnings" = yes; then
+  gl_WARN_ADD([-Werror], [WERROR_CFLAGS])
+  AC_SUBST([WERROR_CFLAGS])
+
+  nw=
+  # This, $nw, is the list of warnings we disable.
+  nw="$nw -Wformat-nonliteral"      # warnings in Fedora 17 stdio.h
+  nw="$nw -Wvla"                    # warnings in gettext.h
+  nw="$nw -Wswitch-default"         # Too many warnings for now
+  nw="$nw -Wunsafe-loop-optimizations" # It's OK to omit unsafe optimizations.
+  nw="$nw -Winline"                 # It's OK to not inline.
+  nw="$nw -Wstrict-overflow"	    # It's OK to optimize strictly.
+  nw="$nw -Wsuggest-attribute=pure" # Too many warnings for now.
+
+  gl_MANYWARN_ALL_GCC([ws])
+  gl_MANYWARN_COMPLEMENT([ws], [$ws], [$nw])
+  for w in $ws; do
+    gl_WARN_ADD([$w])
+  done
+  gl_WARN_ADD([-Wno-sign-compare])     # Too many warnings for now
+  gl_WARN_ADD([-Wno-type-limits])      # It's OK to optimize based on types.
+  gl_WARN_ADD([-Wno-unused-parameter]) # Too many warnings for now
+  gl_WARN_ADD([-Wno-format-nonliteral])
+
+  gl_WARN_ADD([-fdiagnostics-show-option])
+  gl_WARN_ADD([-funit-at-a-time])
+
+  AC_SUBST([WARN_CFLAGS])
+
+  AC_DEFINE([lint], [1], [Define to 1 if the compiler is checking for lint.])
+  AH_VERBATIM([FORTIFY_SOURCE],
+  [/* Enable compile-time and run-time bounds-checking, and some warnings,
+      without upsetting glibc 2.15+. */
+   #if !defined _FORTIFY_SOURCE && defined __OPTIMIZE__ && __OPTIMIZE__
+   # define _FORTIFY_SOURCE 2
+   #endif
+  ])
+  AC_DEFINE([GNULIB_PORTCHECK], [1], [enable some gnulib portability checks])
+
+  # Use a slightly smaller set of warning options for lib/.
+  # Remove the following and save the result in GNULIB_WARN_CFLAGS.
+  nw=
+  nw="$nw -Wmissing-prototypes"
+  nw="$nw -Wunused-macros"
+  #
+  # These are for argp.
+  nw="$nw -Wmissing-field-initializers"
+  nw="$nw -Wshadow"
+  #
+  gl_MANYWARN_COMPLEMENT([GNULIB_WARN_CFLAGS], [$WARN_CFLAGS], [$nw])
+
+  # This is also for argp.
+  gl_WARN_ADD([-Wno-missing-field-initializers], [GNULIB_WARN_CFLAGS])
+
+  AC_SUBST([GNULIB_WARN_CFLAGS])
+
+  # For gnulib-tests, the set is slightly smaller still.
+  nw=
+  # It's not worth being this picky about test programs.
+  nw="$nw -Wsuggest-attribute=const"
+  gl_MANYWARN_COMPLEMENT([GNULIB_TEST_WARN_CFLAGS],
+                         [$GNULIB_WARN_CFLAGS], [$nw])
+  AC_SUBST([GNULIB_TEST_WARN_CFLAGS])
+fi
+
 TAR_HEADERS_ATTR_XATTR_H
 
 AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink])

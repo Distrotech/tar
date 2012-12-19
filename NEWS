@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2012-11-19
+GNU tar NEWS - User visible changes. 2012-12-18
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -11,9 +11,7 @@ adjusted to quote 'like this' (with apostrophes) instead of `like this'
 (with an accent grave character and an apostrophe).  This tracks
 recent changes to the GNU coding standards.
 
-* New features
-
-** --owner and --group names and numbers
+* --owner and --group names and numbers
 
 The --owner and --group options now accept operands of the form
 NAME:NUM, so that you can specify both symbolic name and numeric ID
@@ -44,6 +42,8 @@ correspondingly.  Each of these options has a `--no-' counterpart
 Additionally, the options --xattrs-include and --xattrs-exclude allow
 you to selectively control for which files to store (or extract) the
 extended attributes.
+
+* New configure option --enable-gcc-warnings, intended for debugging.
 
 
 version 1.26 - Sergey Poznyakoff, 2011-03-12

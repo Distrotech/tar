@@ -262,7 +262,7 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, size_t n)
   char *dir = NULL;
   char *base = NULL;
   char pidbuf[UINTMAX_STRSIZE_BOUND];
-  char const *pptr;
+  char const *pptr = NULL;
   char nbuf[UINTMAX_STRSIZE_BOUND];
   char const *nptr = NULL;
 
@@ -335,13 +335,10 @@ xheader_format_name (struct tar_stat_info *st, const char *fmt, size_t n)
 	      break;
 
 	    case 'n':
-	      if (nptr)
-		{
-		  q = stpcpy (q, nptr);
-		  p += 2;
-		  break;
-		}
-	      /* else fall through */
+	      q = stpcpy (q, nptr);
+	      p += 2;
+	      break;
+
 
 	    default:
 	      *q++ = *p++;

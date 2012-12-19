@@ -28,7 +28,7 @@
 extern void xattrs_mask_add (const char *mask, bool incl);
 
 /* clear helping structures when tar finishes */
-extern void xattrs_clear_setup ();
+extern void xattrs_clear_setup (void);
 
 extern void xattrs_acls_get (int parentfd, char const *file_name,
                              struct tar_stat_info *st, int fd, int xisfile);
