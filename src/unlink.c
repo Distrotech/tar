@@ -39,7 +39,7 @@ static struct deferred_unlink *dunlink_avail;
 
 /* Delay (number of records written) between adding entry to the
    list and its actual removal. */
-size_t deferred_unlink_delay = 0;
+static size_t deferred_unlink_delay = 0;
 
 static struct deferred_unlink *
 dunlink_alloc (void)

@@ -71,7 +71,7 @@ struct transform
 
 
 
-int transform_flags = XFORM_ALL;
+static int transform_flags = XFORM_ALL;
 static struct transform *transform_head, *transform_tail;
 
 static struct transform *

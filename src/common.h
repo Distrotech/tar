@@ -143,9 +143,6 @@ GLOBAL const char *use_compress_program_option;
 GLOBAL bool dereference_option;
 GLOBAL bool hard_dereference_option;
 
-/* Print a message if not all links are dumped */
-GLOBAL int check_links_option;
-
 /* Patterns that match file names to be excluded.  */
 GLOBAL struct exclude *excluded;
 
@@ -247,9 +244,6 @@ GLOBAL bool read_full_records_option;
 
 GLOBAL bool remove_files_option;
 
-/* Specified rmt command.  */
-GLOBAL const char *rmt_command_option;
-
 /* Specified remote shell command.  */
 GLOBAL const char *rsh_command_option;
 
@@ -330,11 +324,10 @@ GLOBAL struct timespec last_stat_time;    /* when the statistics was last
 
 GLOBAL struct tar_stat_info current_stat_info;
 
-/* List of tape drive names, number of such tape drives, allocated number,
+/* List of tape drive names, number of such tape drives,
    and current cursor in list.  */
 GLOBAL const char **archive_name_array;
 GLOBAL size_t archive_names;
-GLOBAL size_t allocated_archive_names;
 GLOBAL const char **archive_name_cursor;
 
 /* Output index file name.  */

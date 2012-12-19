@@ -34,7 +34,7 @@ union block *recent_long_name;	/* recent long name header and contents */
 union block *recent_long_link;	/* likewise, for long link */
 size_t recent_long_name_blocks;	/* number of blocks in recent_long_name */
 size_t recent_long_link_blocks;	/* likewise, for long link */
-union block *recent_global_header; /* Recent global header block */
+static union block *recent_global_header; /* Recent global header block */
 
 #define GID_FROM_HEADER(where) gid_from_header (where, sizeof (where))
 #define MAJOR_FROM_HEADER(where) major_from_header (where, sizeof (where))

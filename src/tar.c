@@ -68,6 +68,12 @@
 # define DEFAULT_BLOCKING 20
 #endif
 
+/* Print a message if not all links are dumped */
+static int check_links_option;
+
+/* Number of allocated tape drive names.  */
+static size_t allocated_archive_names;
+
 
 /* Miscellaneous.  */
 

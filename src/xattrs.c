@@ -58,9 +58,9 @@ static struct
 #ifdef HAVE_POSIX_ACLS
 
 /* acl-at wrappers, TODO: move to gnulib in future? */
-acl_t acl_get_file_at (int dirfd, const char *file, acl_type_t type);
-int acl_set_file_at (int dirfd, const char *file, acl_type_t type, acl_t acl);
-int file_has_acl_at (int dirfd, char const *, struct stat const *);
+static acl_t acl_get_file_at (int, const char *, acl_type_t);
+static int acl_set_file_at (int, const char *, acl_type_t, acl_t);
+static int file_has_acl_at (int, char const *, struct stat const *);
 
 /* acl_get_file_at */
 #define AT_FUNC_NAME acl_get_file_at

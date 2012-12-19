@@ -41,7 +41,7 @@
 static tarlong prev_written;    /* bytes written on previous volumes */
 static tarlong bytes_written;   /* bytes written on this volume */
 static void *record_buffer[2];  /* allocated memory */
-union block *record_buffer_aligned[2];
+static union block *record_buffer_aligned[2];
 static int record_index;
 
 /* FIXME: The following variables should ideally be static to this
@@ -83,8 +83,8 @@ extern bool time_to_start_writing;
 
 bool write_archive_to_stdout;
 
-void (*flush_write_ptr) (size_t);
-void (*flush_read_ptr) (void);
+static void (*flush_write_ptr) (size_t);
+static void (*flush_read_ptr) (void);
 
 
 char *volume_label;
@@ -230,7 +230,7 @@ clear_read_error_count (void)
 
 /* Time-related functions */
 
-double duration;
+static double duration;
 
 void
 set_start_time (void)
