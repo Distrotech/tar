@@ -13,12 +13,15 @@ dirname
 error
 exclude
 exitfail
+fchmodat
+fchownat
 fcntl-h
 fdopendir
 fdutimensat
 fileblocks
 fnmatch-gnu
 fseeko
+fstatat
 full-write
 futimens
 getline
@@ -35,6 +38,7 @@ lchown
 linkat
 localcharset
 manywarnings
+mkdirat
 mkdtemp
 mkfifoat
 modechange
@@ -64,6 +68,7 @@ strtol
 strtoul
 symlinkat
 timespec
+unlinkat
 unlinkdir
 unlocked-io
 utimensat
