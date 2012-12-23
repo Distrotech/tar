@@ -1117,8 +1117,8 @@ read_negative_num (FILE *fp, intmax_t min_val, intmax_t *pval)
 }
 
 /* Read from file FP a nul-terminated string and convert it to
-   uintmax_t.  Return the resulting value in PVAL.  Assume C has
-   already been read.
+   uintmax_t.  Return an intmax_t representation of the resulting
+   value in PVAL.  Assume C has already been read.
 
    Throw a fatal error if the string cannot be converted or if the
    converted value exceeds MAX_VAL.
@@ -1126,9 +1126,10 @@ read_negative_num (FILE *fp, intmax_t min_val, intmax_t *pval)
    Return the last character read or EOF on end of file. */
 
 static int
-read_unsigned_num (int c, FILE *fp, uintmax_t max_val, uintmax_t *pval)
+read_unsigned_num (int c, FILE *fp, uintmax_t max_val, intmax_t *pval)
 {
   size_t i;
+  uintmax_t u;
   char buf[UINTMAX_STRSIZE_BOUND], *ep;
 
   for (i = 0; ISDIGIT (c); i++)
@@ -1151,24 +1152,32 @@ read_unsigned_num (int c, FILE *fp, uintmax_t max_val, uintmax_t *pval)
 
   buf[i] = 0;
   errno = 0;
-  *pval = strtoumax (buf, &ep, 10);
-  if (c || errno || max_val < *pval)
+  u = strtoumax (buf, &ep, 10);
+  if (c || errno || max_val < u)
     FATAL_ERROR ((0, errno, _("Unexpected field value in snapshot file")));
+  *pval = represent_uintmax (u);
   return c;
 }
 
 /* Read from file FP a nul-terminated string and convert it to
-   uintmax_t.  Return the resulting value in PVAL.
+   an integer in the range MIN_VAL..MAXVAL.  Return the resulting
+   value, converted to intmax_t, in PVAL.  MINVAL must be nonpositive.
 
    Throw a fatal error if the string cannot be converted or if the
-   converted value exceeds MAX_VAL.
+   converted value is out of range.
 
    Return the last character read or EOF on end of file. */
 
 static int
-read_num (FILE *fp, uintmax_t max_val, uintmax_t *pval)
+read_num (FILE *fp, intmax_t min_val, uintmax_t max_val, intmax_t *pval)
 {
-  return read_unsigned_num (getc (fp), fp, max_val, pval);
+  int c = getc (fp);
+  if (c == '-')
+    {
+      read_negative_num (fp, min_val, pval);
+      return 0;
+    }
+  return read_unsigned_num (c, fp, max_val, pval);
 }
 
 /* Read from FP two NUL-terminated strings representing a struct
@@ -1179,34 +1188,21 @@ read_num (FILE *fp, uintmax_t max_val, uintmax_t *pval)
 static void
 read_timespec (FILE *fp, struct timespec *pval)
 {
-  int c = getc (fp);
   intmax_t i;
-  uintmax_t u;
+  int c = read_num (fp, TYPE_MINIMUM (time_t), TYPE_MAXIMUM (time_t), &i);
+  pval->tv_sec = i;
 
-  if (c == '-')
-    {
-      read_negative_num (fp, TYPE_MINIMUM (time_t), &i);
-      c = 0;
-      pval->tv_sec = i;
-    }
-  else
-    {
-      c = read_unsigned_num (c, fp, TYPE_MAXIMUM (time_t), &u);
-      pval->tv_sec = u;
-    }
-
-  if (c || read_num (fp, BILLION - 1, &u))
+  if (c || read_num (fp, 0, BILLION - 1, &i))
     FATAL_ERROR ((0, 0, "%s: %s",
 		  quotearg_colon (listed_incremental_option),
 		  _("Unexpected EOF in snapshot file")));
-  pval->tv_nsec = u;
+  pval->tv_nsec = i;
 }
 
 /* Read incremental snapshot format 2 */
 static void
 read_incr_db_2 (void)
 {
-  uintmax_t u;
   struct obstack stk;
 
   obstack_init (&stk);
@@ -1215,6 +1211,7 @@ read_incr_db_2 (void)
 
   for (;;)
     {
+      intmax_t i;
       struct timespec mtime;
       dev_t dev;
       ino_t ino;
@@ -1223,20 +1220,22 @@ read_incr_db_2 (void)
       char *content;
       size_t s;
 
-      if (read_num (listed_incremental_stream, 1, &u))
+      if (read_num (listed_incremental_stream, 0, 1, &i))
 	return; /* Normal return */
 
-      nfs = u;
+      nfs = i;
 
       read_timespec (listed_incremental_stream, &mtime);
 
-      if (read_num (listed_incremental_stream, TYPE_MAXIMUM (dev_t), &u))
+      if (read_num (listed_incremental_stream,
+		    TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t), &i))
 	break;
-      dev = u;
+      dev = i;
 
-      if (read_num (listed_incremental_stream, TYPE_MAXIMUM (ino_t), &u))
+      if (read_num (listed_incremental_stream,
+		    TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t), &i))
 	break;
-      ino = u;
+      ino = i;
 
       if (read_obstack (listed_incremental_stream, &stk, &s))
 	break;
