@@ -167,14 +167,13 @@ xheader_set_single_keyword (char *kw)
 static void
 assign_time_option (char **sval, time_t *tval, const char *input)
 {
-  uintmax_t u;
   char *p;
-  time_t t = u = strtoumax (input, &p, 10);
-  if (t != u || *p || errno == ERANGE)
+  struct timespec t = decode_timespec (input, &p, false);
+  if (! valid_timespec (t) || *p)
     ERROR ((0, 0, _("Time stamp is out of allowed range")));
   else
     {
-      *tval = t;
+      *tval = t.tv_sec;
       assign_string (sval, input);
     }
 }
@@ -452,7 +451,8 @@ xheader_write_global (struct xheader *xhdr)
       char *name;
 
       xheader_finish (xhdr);
-      xheader_write (XGLTYPE, name = xheader_ghdr_name (), time (NULL), xhdr);
+      name = xheader_ghdr_name ();
+      xheader_write (XGLTYPE, name, start_time.tv_sec, xhdr);
       free (name);
     }
 }
@@ -652,7 +652,6 @@ decode_record (struct xheader *xhdr,
 {
   char *start = *ptr;
   char *p = start;
-  uintmax_t u;
   size_t len;
   char *len_lim;
   char const *keyword;
@@ -669,13 +668,7 @@ decode_record (struct xheader *xhdr,
       return false;
     }
 
-  errno = 0;
-  len = u = strtoumax (p, &len_lim, 10);
-  if (len != u || errno == ERANGE)
-    {
-      ERROR ((0, 0, _("Extended header length is out of allowed range")));
-      return false;
-    }
+  len = strtoumax (p, &len_lim, 10);
 
   if (len_max < len)
     {
@@ -817,9 +810,15 @@ xheader_store (char const *keyword, struct tar_stat_info *st,
 }
 
 void
-xheader_read (struct xheader *xhdr, union block *p, size_t size)
+xheader_read (struct xheader *xhdr, union block *p, off_t size)
 {
   size_t j = 0;
+
+  if (size < 0)
+    size = 0; /* Already diagnosed.  */
+
+  if (SIZE_MAX - BLOCKSIZE <= size)
+    xalloc_die ();
 
   size += BLOCKSIZE;
   xhdr->size = size;
@@ -1031,14 +1030,12 @@ xheader_string_end (struct xheader *xhdr, char const *keyword)
 
 static void
 out_of_range_header (char const *keyword, char const *value,
-		     uintmax_t minus_minval, uintmax_t maxval)
+		     intmax_t minval, uintmax_t maxval)
 {
-  char minval_buf[UINTMAX_STRSIZE_BOUND + 1];
+  char minval_buf[INT_BUFSIZE_BOUND (intmax_t)];
   char maxval_buf[UINTMAX_STRSIZE_BOUND];
-  char *minval_string = umaxtostr (minus_minval, minval_buf + 1);
+  char *minval_string = imaxtostr (minval, minval_buf);
   char *maxval_string = umaxtostr (maxval, maxval_buf);
-  if (minus_minval)
-    *--minval_string = '-';
 
   /* TRANSLATORS: The first %s is the pax extended header keyword
      (atime, gid, etc.).  */
@@ -1081,138 +1078,74 @@ code_time (struct timespec t, char const *keyword, struct xheader *xhdr)
   xheader_print (xhdr, keyword, code_timespec (t, buf));
 }
 
-enum decode_time_status
-  {
-    decode_time_success,
-    decode_time_range,
-    decode_time_bad_header
-  };
-
-static enum decode_time_status
-_decode_time (struct timespec *ts, char const *arg, char const *keyword)
-{
-  time_t s;
-  unsigned long int ns = 0;
-  char *p;
-  char *arg_lim;
-  bool negative = *arg == '-';
-
-  errno = 0;
-
-  if (ISDIGIT (arg[negative]))
-    {
-      if (negative)
-	{
-	  intmax_t i = strtoimax (arg, &arg_lim, 10);
-	  if (TYPE_SIGNED (time_t) ? i < TYPE_MINIMUM (time_t) : i < 0)
-	    return decode_time_range;
-	  s = i;
-	}
-      else
-	{
-	  uintmax_t i = strtoumax (arg, &arg_lim, 10);
-	  if (TYPE_MAXIMUM (time_t) < i)
-	    return decode_time_range;
-	  s = i;
-	}
-
-      p = arg_lim;
-
-      if (errno == ERANGE)
-	return decode_time_range;
-
-      if (*p == '.')
-	{
-	  int digits = 0;
-	  bool trailing_nonzero = false;
-
-	  while (ISDIGIT (*++p))
-	    if (digits < LOG10_BILLION)
-	      {
-		ns = 10 * ns + (*p - '0');
-		digits++;
-	      }
-	    else
-	      trailing_nonzero |= *p != '0';
-
-	  while (digits++ < LOG10_BILLION)
-	    ns *= 10;
-
-	  if (negative)
-	    {
-	      /* Convert "-1.10000000000001" to s == -2, ns == 89999999.
-		 I.e., truncate time stamps towards minus infinity while
-		 converting them to internal form.  */
-	      ns += trailing_nonzero;
-	      if (ns != 0)
-		{
-		  if (s == TYPE_MINIMUM (time_t))
-		    return decode_time_range;
-		  s--;
-		  ns = BILLION - ns;
-		}
-	    }
-	}
-
-      if (! *p)
-	{
-	  ts->tv_sec = s;
-	  ts->tv_nsec = ns;
-	  return decode_time_success;
-	}
-    }
-
-  return decode_time_bad_header;
-}
-
 static bool
 decode_time (struct timespec *ts, char const *arg, char const *keyword)
 {
-  switch (_decode_time (ts, arg, keyword))
+  char *arg_lim;
+  struct timespec t = decode_timespec (arg, &arg_lim, true);
+
+  if (! valid_timespec (t))
     {
-    case decode_time_success:
-      return true;
-    case decode_time_bad_header:
-      ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
-	      keyword, arg));
-      return false;
-    case decode_time_range:
-      out_of_range_header (keyword, arg, - (uintmax_t) TYPE_MINIMUM (time_t),
-			   TYPE_MAXIMUM (time_t));
+      if (arg < arg_lim && !*arg_lim)
+	out_of_range_header (keyword, arg, TYPE_MINIMUM (time_t),
+			     TYPE_MAXIMUM (time_t));
+      else
+	ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
+		keyword, arg));
       return false;
     }
+
+  *ts = t;
   return true;
+}
+
+static void
+code_signed_num (uintmax_t value, char const *keyword,
+		 intmax_t minval, uintmax_t maxval, struct xheader *xhdr)
+{
+  char sbuf[SYSINT_BUFSIZE];
+  xheader_print (xhdr, keyword, sysinttostr (value, minval, maxval, sbuf));
 }
 
 static void
 code_num (uintmax_t value, char const *keyword, struct xheader *xhdr)
 {
-  char sbuf[UINTMAX_STRSIZE_BOUND];
-  xheader_print (xhdr, keyword, umaxtostr (value, sbuf));
+  code_signed_num (value, keyword, 0, UINTMAX_MAX, xhdr);
+}
+
+static bool
+decode_signed_num (intmax_t *num, char const *arg,
+		   intmax_t minval, uintmax_t maxval,
+		   char const *keyword)
+{
+  char *arg_lim;
+  intmax_t u = strtosysint (arg, &arg_lim, minval, maxval);
+
+  if (errno == EINVAL || *arg_lim)
+    {
+      ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
+	      keyword, arg));
+      return false;
+    }
+
+  if (errno == ERANGE)
+    {
+      out_of_range_header (keyword, arg, minval, maxval);
+      return false;
+    }
+
+  *num = u;
+  return true;
 }
 
 static bool
 decode_num (uintmax_t *num, char const *arg, uintmax_t maxval,
 	    char const *keyword)
 {
-  uintmax_t u;
-  char *arg_lim;
-
-  if (! (ISDIGIT (*arg)
-	 && (errno = 0, u = strtoumax (arg, &arg_lim, 10), !*arg_lim)))
-    {
-      ERROR ((0, 0, _("Malformed extended header: invalid %s=%s"),
-	      keyword, arg));
-      return false;
-    }
-
-  if (! (u <= maxval && errno != ERANGE))
-    {
-      out_of_range_header (keyword, arg, 0, maxval);
-      return false;
-    }
-
-  *num = u;
+  intmax_t i;
+  if (! decode_signed_num (&i, arg, 0, maxval, keyword))
+    return false;
+  *num = i;
   return true;
 }
 
@@ -1254,7 +1187,8 @@ static void
 gid_coder (struct tar_stat_info const *st, char const *keyword,
 	   struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
-  code_num (st->stat.st_gid, keyword, xhdr);
+  code_signed_num (st->stat.st_gid, keyword,
+		   TYPE_MINIMUM (gid_t), TYPE_MAXIMUM (gid_t), xhdr);
 }
 
 static void
@@ -1263,8 +1197,9 @@ gid_decoder (struct tar_stat_info *st,
 	     char const *arg,
 	     size_t size __attribute__((unused)))
 {
-  uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (gid_t), keyword))
+  intmax_t u;
+  if (decode_signed_num (&u, arg, TYPE_MINIMUM (gid_t),
+			 TYPE_MAXIMUM (gid_t), keyword))
     st->stat.st_gid = u;
 }
 
@@ -1377,7 +1312,8 @@ static void
 uid_coder (struct tar_stat_info const *st, char const *keyword,
 	   struct xheader *xhdr, void const *data __attribute__ ((unused)))
 {
-  code_num (st->stat.st_uid, keyword, xhdr);
+  code_signed_num (st->stat.st_uid, keyword,
+		   TYPE_MINIMUM (uid_t), TYPE_MAXIMUM (uid_t), xhdr);
 }
 
 static void
@@ -1386,8 +1322,9 @@ uid_decoder (struct tar_stat_info *st,
 	     char const *arg,
 	     size_t size __attribute__((unused)))
 {
-  uintmax_t u;
-  if (decode_num (&u, arg, TYPE_MAXIMUM (uid_t), keyword))
+  intmax_t u;
+  if (decode_signed_num (&u, arg, TYPE_MINIMUM (uid_t),
+			 TYPE_MAXIMUM (uid_t), keyword))
     st->stat.st_uid = u;
 }
 
@@ -1509,7 +1446,7 @@ sparse_map_decoder (struct tar_stat_info *st,
   st->sparse_map_avail = 0;
   while (1)
     {
-      uintmax_t u;
+      intmax_t u;
       char *delim;
       struct sp_array e;
 
@@ -1521,11 +1458,16 @@ sparse_map_decoder (struct tar_stat_info *st,
 	}
 
       errno = 0;
-      u = strtoumax (arg, &delim, 10);
+      u = strtoimax (arg, &delim, 10);
+      if (TYPE_MAXIMUM (off_t) < u)
+	{
+	  u = TYPE_MAXIMUM (off_t);
+	  errno = ERANGE;
+	}
       if (offset)
 	{
 	  e.offset = u;
-	  if (!(u == e.offset && errno != ERANGE))
+	  if (errno == ERANGE)
 	    {
 	      out_of_range_header (keyword, arg, 0, TYPE_MAXIMUM (off_t));
 	      return;
@@ -1534,7 +1476,7 @@ sparse_map_decoder (struct tar_stat_info *st,
       else
 	{
 	  e.numbytes = u;
-	  if (!(u == e.numbytes && errno != ERANGE))
+	  if (errno == ERANGE)
 	    {
 	      out_of_range_header (keyword, arg, 0, TYPE_MAXIMUM (off_t));
 	      return;

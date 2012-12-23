@@ -447,7 +447,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
   struct stat *stat_data = &st->stat;
   bool nfs = NFS_FILE_STAT (*stat_data);
   bool perhaps_renamed = false;
-  
+
   if ((directory = find_directory (name_buffer)) != NULL)
     {
       if (DIR_IS_INITED (directory))
@@ -520,7 +520,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 						 stat_data->st_ino);
 
       directory = note_directory (name_buffer,
-				  get_stat_mtime(stat_data),
+				  get_stat_mtime (stat_data),
 				  stat_data->st_dev,
 				  stat_data->st_ino,
 				  nfs,
@@ -573,7 +573,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 	}
       perhaps_renamed = false;
     }
-  
+
   else if (flag & PD_FORCE_CHILDREN)
     {
       directory->children = PD_CHILDREN(flag);
@@ -946,8 +946,6 @@ read_incr_db_01 (int version, const char *initbuf)
 {
   int n;
   uintmax_t u;
-  time_t sec;
-  long int nsec;
   char *buf = NULL;
   size_t bufsize = 0;
   char *ebuf;
@@ -969,21 +967,15 @@ read_incr_db_01 (int version, const char *initbuf)
       bufsize = strlen (buf) + 1;
     }
 
-  sec = TYPE_MINIMUM (time_t);
-  nsec = -1;
-  errno = 0;
-  u = strtoumax (buf, &ebuf, 10);
-  if (!errno && TYPE_MAXIMUM (time_t) < u)
-    errno = ERANGE;
-  if (errno || buf == ebuf)
+  newer_mtime_option = decode_timespec (buf, &ebuf, false);
+
+  if (! valid_timespec (newer_mtime_option))
     ERROR ((0, errno, "%s:%ld: %s",
 	    quotearg_colon (listed_incremental_option),
 	    lineno,
 	    _("Invalid time stamp")));
   else
     {
-      sec = u;
-
       if (version == 1 && *ebuf)
 	{
 	  char const *buf_ns = ebuf + 1;
@@ -997,20 +989,13 @@ read_incr_db_01 (int version, const char *initbuf)
 		      quotearg_colon (listed_incremental_option),
 		      lineno,
 		      _("Invalid time stamp")));
-	      sec = TYPE_MINIMUM (time_t);
+	      newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
+	      newer_mtime_option.tv_nsec = -1;
 	    }
 	  else
-	    nsec = u;
-	}
-      else
-	{
-	  /* pre-1 incremental format does not contain nanoseconds */
-	  nsec = 0;
+	    newer_mtime_option.tv_nsec = u;
 	}
     }
-  newer_mtime_option.tv_sec = sec;
-  newer_mtime_option.tv_nsec = nsec;
-
 
   while (0 < (n = getline (&buf, &bufsize, listed_incremental_stream)))
     {
@@ -1027,20 +1012,12 @@ read_incr_db_01 (int version, const char *initbuf)
 
       if (version == 1)
 	{
-	  errno = 0;
-	  u = strtoumax (strp, &ebuf, 10);
-	  if (!errno && TYPE_MAXIMUM (time_t) < u)
-	    errno = ERANGE;
-	  if (errno || strp == ebuf || *ebuf != ' ')
-	    {
-	      ERROR ((0, errno, "%s:%ld: %s",
-		      quotearg_colon (listed_incremental_option), lineno,
-		      _("Invalid modification time (seconds)")));
-	      sec = (time_t) -1;
-	    }
-	  else
-	    sec = u;
+	  mtime = decode_timespec (strp, &ebuf, false);
 	  strp = ebuf;
+	  if (!valid_timespec (mtime) || *strp != ' ')
+	    ERROR ((0, errno, "%s:%ld: %s",
+		    quotearg_colon (listed_incremental_option), lineno,
+		    _("Invalid modification time")));
 
 	  errno = 0;
 	  u = strtoumax (strp, &ebuf, 10);
@@ -1051,46 +1028,30 @@ read_incr_db_01 (int version, const char *initbuf)
 	      ERROR ((0, errno, "%s:%ld: %s",
 		      quotearg_colon (listed_incremental_option), lineno,
 		      _("Invalid modification time (nanoseconds)")));
-	      nsec = -1;
+	      mtime.tv_nsec = -1;
 	    }
 	  else
-	    nsec = u;
-	  mtime.tv_sec = sec;
-	  mtime.tv_nsec = nsec;
+	    mtime.tv_nsec = u;
 	  strp = ebuf;
 	}
       else
-	memset (&mtime, 0, sizeof mtime);
+	mtime.tv_sec = mtime.tv_nsec = 0;
 
-      errno = 0;
-      u = strtoumax (strp, &ebuf, 10);
-      if (!errno && TYPE_MAXIMUM (dev_t) < u)
-	errno = ERANGE;
-      if (errno || strp == ebuf || *ebuf != ' ')
-	{
-	  ERROR ((0, errno, "%s:%ld: %s",
-		  quotearg_colon (listed_incremental_option), lineno,
-		  _("Invalid device number")));
-	  dev = (dev_t) -1;
-	}
-      else
-	dev = u;
+      dev = strtosysint (strp, &ebuf,
+			 TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t));
       strp = ebuf;
+      if (errno || *strp != ' ')
+	ERROR ((0, errno, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Invalid device number")));
 
-      errno = 0;
-      u = strtoumax (strp, &ebuf, 10);
-      if (!errno && TYPE_MAXIMUM (ino_t) < u)
-	errno = ERANGE;
-      if (errno || strp == ebuf || *ebuf != ' ')
-	{
-	  ERROR ((0, errno, "%s:%ld: %s",
-		  quotearg_colon (listed_incremental_option), lineno,
-		  _("Invalid inode number")));
-	  ino = (ino_t) -1;
-	}
-      else
-	ino = u;
+      ino = strtosysint (strp, &ebuf,
+			 TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t));
       strp = ebuf;
+      if (errno || *strp != ' ')
+	ERROR ((0, errno, "%s:%ld: %s",
+		quotearg_colon (listed_incremental_option), lineno,
+		_("Invalid inode number")));
 
       strp++;
       unquote_string (strp);
@@ -1391,20 +1352,21 @@ write_directory_file_entry (void *entry, void *data)
 
   if (DIR_IS_FOUND (directory))
     {
-      char buf[UINTMAX_STRSIZE_BOUND];
+      char buf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (intmax_t))];
       char const *s;
 
       s = DIR_IS_NFS (directory) ? "1" : "0";
       fwrite (s, 2, 1, fp);
-      s = (TYPE_SIGNED (time_t)
-	   ? imaxtostr (directory->mtime.tv_sec, buf)
-	   : umaxtostr (directory->mtime.tv_sec, buf));
+      s = sysinttostr (directory->mtime.tv_sec, TYPE_MINIMUM (time_t),
+		       TYPE_MAXIMUM (time_t), buf);
       fwrite (s, strlen (s) + 1, 1, fp);
-      s = umaxtostr (directory->mtime.tv_nsec, buf);
+      s = imaxtostr (directory->mtime.tv_nsec, buf);
       fwrite (s, strlen (s) + 1, 1, fp);
-      s = umaxtostr (directory->device_number, buf);
+      s = sysinttostr (directory->device_number,
+		       TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t), buf);
       fwrite (s, strlen (s) + 1, 1, fp);
-      s = umaxtostr (directory->inode_number, buf);
+      s = sysinttostr (directory->inode_number,
+		       TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t), buf);
       fwrite (s, strlen (s) + 1, 1, fp);
 
       fwrite (directory->name, strlen (directory->name) + 1, 1, fp);

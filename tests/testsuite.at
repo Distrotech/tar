@@ -284,6 +284,8 @@ m4_include([lustar01.at])
 m4_include([lustar02.at])
 m4_include([lustar03.at])
 
+m4_include([time01.at])
+
 m4_include([multiv01.at])
 m4_include([multiv02.at])
 m4_include([multiv03.at])
@@ -357,4 +359,3 @@ m4_include([star/ustar-big-2g.at])
 m4_include([star/ustar-big-8g.at])
 
 m4_include([star/pax-big-10g.at])
-

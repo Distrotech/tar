@@ -512,12 +512,11 @@ start_private_header (const char *name, size_t size, time_t t)
   tar_name_copy_str (header->header.name, name, NAME_FIELD_SIZE);
   OFF_TO_CHARS (size, header->header.size);
 
-  TIME_TO_CHARS (t, header->header.mtime);
+  TIME_TO_CHARS (t < 0 ? 0 : min (t, MAX_OCTAL_VAL (header->header.mtime)),
+		 header->header.mtime);
   MODE_TO_CHARS (S_IFREG|S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH, header->header.mode);
-  UID_TO_CHARS (getuid (), header->header.uid);
-  GID_TO_CHARS (getgid (), header->header.gid);
-  MAJOR_TO_CHARS (0, header->header.devmajor);
-  MINOR_TO_CHARS (0, header->header.devminor);
+  UID_TO_CHARS (0, header->header.uid);
+  GID_TO_CHARS (0, header->header.gid);
   strncpy (header->header.magic, TMAGIC, TMAGLEN);
   strncpy (header->header.version, TVERSION, TVERSLEN);
   return header;
@@ -535,11 +534,6 @@ write_short_name (struct tar_stat_info *st)
   return header;
 }
 
-#define FILL(field,byte) do {            \
-  memset(field, byte, sizeof(field)-1);  \
-  (field)[sizeof(field)-1] = 0;          \
-} while (0)
-
 /* Write a GNUTYPE_LONGLINK or GNUTYPE_LONGNAME block.  */
 static void
 write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
@@ -549,13 +543,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   union block *header;
   char *tmpname;
 
-  header = start_private_header ("././@LongLink", size, time (NULL));
-  FILL (header->header.mtime, '0');
-  FILL (header->header.mode, '0');
-  FILL (header->header.uid, '0');
-  FILL (header->header.gid, '0');
-  FILL (header->header.devmajor, 0);
-  FILL (header->header.devminor, 0);
+  header = start_private_header ("././@LongLink", size, start_time.tv_sec);
   uid_to_uname (0, &tmpname);
   UNAME_TO_CHARS (tmpname, header->header.uname);
   free (tmpname);
@@ -712,7 +700,7 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
     {
       type = XGLTYPE;
       p = xheader_ghdr_name ();
-      time (&t);
+      t = start_time.tv_sec;
     }
   else
     {

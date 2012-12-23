@@ -12,6 +12,7 @@ configmake
 dirname
 error
 exclude
+extern-inline
 exitfail
 fchmodat
 fchownat

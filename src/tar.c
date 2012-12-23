@@ -1383,8 +1383,8 @@ expand_pax_option (struct tar_args *targs, const char *arg)
 	      tmp[len-2] = 0;
 	      if (get_date_or_file (targs, "--pax-option", tmp, &ts) == 0)
 		{
-		  char buf[UINTMAX_STRSIZE_BOUND], *s;
-		  s = umaxtostr (ts.tv_sec, buf);
+		  char buf[TIMESPEC_STRSIZE_BOUND];
+		  char const *s = code_timespec (ts, buf);
 		  obstack_grow (&stk, s, strlen (s));
 		}
 	      else

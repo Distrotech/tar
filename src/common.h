@@ -70,6 +70,11 @@
 #define LG_8 3
 #define LG_64 6
 #define LG_256 8
+
+_GL_INLINE_HEADER_BEGIN
+#ifndef COMMON_INLINE
+# define COMMON_INLINE _GL_INLINE
+#endif
 
 /* Information gleaned from the command line.  */
 
@@ -588,6 +593,8 @@ void skip_member (void);
 
 /* Module misc.c.  */
 
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) < (b) ? (b) : (a))
 void assign_string (char **dest, const char *src);
 int unquote_string (char *str);
 char *zap_slashes (char *name);
@@ -600,11 +607,42 @@ namebuf_t namebuf_create (const char *dir);
 void namebuf_free (namebuf_t buf);
 char *namebuf_name (namebuf_t buf, const char *name);
 
+/* Represent N using a signed integer I such that (uintmax_t) I == N.
+   With a good optimizing compiler, this is equivalent to (intmax_t) i
+   and requires zero machine instructions.  */
+#if ! (UINTMAX_MAX / 2 <= INTMAX_MAX)
+# error "represent_uintmax returns intmax_t to represent uintmax_t"
+#endif
+COMMON_INLINE intmax_t
+represent_uintmax (uintmax_t n)
+{
+  if (n <= INTMAX_MAX)
+    return n;
+  else
+    {
+      /* Avoid signed integer overflow on picky platforms.  */
+      intmax_t nd = n - INTMAX_MIN;
+      return nd + INTMAX_MIN;
+    }
+}
+
+enum { SYSINT_BUFSIZE =
+	 max (UINTMAX_STRSIZE_BOUND, INT_BUFSIZE_BOUND (intmax_t)) };
+char *sysinttostr (uintmax_t, intmax_t, uintmax_t, char buf[SYSINT_BUFSIZE]);
+intmax_t strtosysint (char const *, char **, intmax_t, uintmax_t);
 void code_ns_fraction (int ns, char *p);
 char const *code_timespec (struct timespec ts, char *sbuf);
 enum { BILLION = 1000000000, LOG10_BILLION = 9 };
 enum { TIMESPEC_STRSIZE_BOUND =
          UINTMAX_STRSIZE_BOUND + LOG10_BILLION + sizeof "-." - 1 };
+struct timespec decode_timespec (char const *, char **, bool);
+
+/* Return true if T does not represent an out-of-range or invalid value.  */
+COMMON_INLINE bool
+valid_timespec (struct timespec t)
+{
+  return 0 <= t.tv_nsec;
+}
 
 bool must_be_dot_or_slash (char const *);
 
@@ -730,7 +768,7 @@ void xheader_decode (struct tar_stat_info *stat);
 void xheader_decode_global (struct xheader *xhdr);
 void xheader_store (char const *keyword, struct tar_stat_info *st,
 		    void const *data);
-void xheader_read (struct xheader *xhdr, union block *header, size_t size);
+void xheader_read (struct xheader *xhdr, union block *header, off_t size);
 void xheader_write (char type, char *name, time_t t, struct xheader *xhdr);
 void xheader_write_global (struct xheader *xhdr);
 void xheader_finish (struct xheader *hdr);
@@ -858,3 +896,5 @@ void finish_deferred_unlinks (void);
 
 /* Module exit.c */
 extern void (*fatal_exit_hook) (void);
+
+_GL_INLINE_HEADER_END

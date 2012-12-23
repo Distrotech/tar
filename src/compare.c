@@ -1,7 +1,8 @@
 /* Diff files from a tar archive.
 
    Copyright (C) 1988, 1992, 1993, 1994, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012 Free Software
+   Foundation, Inc.
 
    Written by John Gilmore, on 1987-04-30.
 
@@ -414,7 +415,9 @@ diff_multivol (void)
     }
 
   offset = OFF_FROM_HEADER (current_header->oldgnu_header.offset);
-  if (stat_data.st_size != current_stat_info.stat.st_size + offset)
+  if (offset < 0
+      || INT_ADD_OVERFLOW (current_stat_info.stat.st_size, offset)
+      || stat_data.st_size != current_stat_info.stat.st_size + offset)
     {
       report_difference (&current_stat_info, _("Size differs"));
       skip_member ();

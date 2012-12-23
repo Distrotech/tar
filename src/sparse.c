@@ -629,8 +629,8 @@ oldgnu_add_sparse (struct tar_sparse_file *file, struct sparse *s)
     return add_finish;
   sp.offset = OFF_FROM_HEADER (s->offset);
   sp.numbytes = OFF_FROM_HEADER (s->numbytes);
-  if (sp.offset < 0
-      || sp.offset + sp.numbytes < 0
+  if (sp.offset < 0 || sp.numbytes < 0
+      || INT_ADD_OVERFLOW (sp.offset, sp.numbytes)
       || file->stat_info->stat.st_size < sp.offset + sp.numbytes
       || file->stat_info->archive_file_size < 0)
     return add_fail;
@@ -644,10 +644,10 @@ oldgnu_fixup_header (struct tar_sparse_file *file)
 {
   /* NOTE! st_size was initialized from the header
      which actually contains archived size. The following fixes it */
+  off_t realsize = OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
   file->stat_info->archive_file_size = file->stat_info->stat.st_size;
-  file->stat_info->stat.st_size =
-    OFF_FROM_HEADER (current_header->oldgnu_header.realsize);
-  return true;
+  file->stat_info->stat.st_size = max (0, realsize);
+  return 0 <= realsize;
 }
 
 /* Convert old GNU format sparse data to internal representation */
@@ -768,10 +768,10 @@ star_fixup_header (struct tar_sparse_file *file)
 {
   /* NOTE! st_size was initialized from the header
      which actually contains archived size. The following fixes it */
+  off_t realsize = OFF_FROM_HEADER (current_header->star_in_header.realsize);
   file->stat_info->archive_file_size = file->stat_info->stat.st_size;
-  file->stat_info->stat.st_size =
-            OFF_FROM_HEADER (current_header->star_in_header.realsize);
-  return true;
+  file->stat_info->stat.st_size = max (0, realsize);
+  return 0 <= realsize;
 }
 
 /* Convert STAR format sparse data to internal representation */
@@ -1080,6 +1080,7 @@ decode_num (uintmax_t *num, char const *arg, uintmax_t maxval)
   if (!ISDIGIT (*arg))
     return false;
 
+  errno = 0;
   u = strtoumax (arg, &arg_lim, 10);
 
   if (! (u <= maxval && errno != ERANGE) || *arg_lim)

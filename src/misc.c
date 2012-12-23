@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
    Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
+   2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -17,6 +17,7 @@
    with this program; if not, write to the Free Software Foundation, Inc.,
    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
 
+#define COMMON_INLINE _GL_EXTERN_INLINE
 #include <system.h>
 #include <rmt.h>
 #include "common.h"
@@ -325,6 +326,76 @@ replace_prefix (char **pname, const char *samp, size_t slen,
 
 /* Handling numbers.  */
 
+/* Convert VALUE, which is converted from a system integer type whose
+   minimum value is MINVAL and maximum MINVAL, to an decimal
+   integer string.  Use the storage in BUF and return a pointer to the
+   converted string.  If VALUE is converted from a negative integer in
+   the range MINVAL .. -1, represent it with a string representation
+   of the negative integer, using leading '-'.  */
+#if ! (INTMAX_MAX <= UINTMAX_MAX / 2)
+# error "strtosysint accepts uintmax_t to represent intmax_t"
+#endif
+char *
+sysinttostr (uintmax_t value, intmax_t minval, uintmax_t maxval,
+	     char buf[SYSINT_BUFSIZE])
+{
+  if (value <= maxval)
+    return umaxtostr (value, buf);
+  else
+    {
+      intmax_t i = value - minval;
+      return imaxtostr (i + minval, buf);
+    }
+}
+
+/* Convert a prefix of the string ARG to a system integer type whose
+   minimum value is MINVAL and maximum MAXVAL.  If MINVAL is negative,
+   negative integers MINVAL .. -1 are assumed to be represented using
+   leading '-' in the usual way.  If the represented value exceeds
+   INTMAX_MAX, return a negative integer V such that (uintmax_t) V
+   yields the represented value.  If ARGLIM is nonnull, store into
+   *ARGLIM a pointer to the first character after the prefix.
+
+   This is the inverse of sysinttostr.
+
+   On a normal return, set errno = 0.
+   On conversion error, return 0 and set errno = EINVAL.
+   On overflow, return an extreme value and set errno = ERANGE.  */
+#if ! (INTMAX_MAX <= UINTMAX_MAX)
+# error "strtosysint accepts uintmax_t to represent nonnegative intmax_t"
+#endif
+intmax_t
+strtosysint (char const *arg, char **arglim, intmax_t minval, uintmax_t maxval)
+{
+  errno = 0;
+  if (maxval <= INTMAX_MAX)
+    {
+      if (ISDIGIT (arg[*arg == '-']))
+	{
+	  intmax_t i = strtoimax (arg, arglim, 10);
+	  intmax_t imaxval = maxval;
+	  if (minval <= i && i <= imaxval)
+	    return i;
+	  errno = ERANGE;
+	  return i < minval ? minval : maxval;
+	}
+    }
+  else
+    {
+      if (ISDIGIT (*arg))
+	{
+	  uintmax_t i = strtoumax (arg, arglim, 10);
+	  if (i <= maxval)
+	    return represent_uintmax (i);
+	  errno = ERANGE;
+	  return maxval;
+	}
+    }
+
+  errno = EINVAL;
+  return 0;
+}
+
 /* Output fraction and trailing digits appropriate for a nanoseconds
    count equal to NS, but don't output unnecessary '.' or trailing
    zeros.  */
@@ -380,6 +451,84 @@ code_timespec (struct timespec t, char sbuf[TIMESPEC_STRSIZE_BOUND])
     *--np = '-';
   code_ns_fraction (ns, sbuf + UINTMAX_STRSIZE_BOUND);
   return np;
+}
+
+struct timespec
+decode_timespec (char const *arg, char **arg_lim, bool parse_fraction)
+{
+  time_t s = TYPE_MINIMUM (time_t);
+  int ns = -1;
+  char const *p = arg;
+  bool negative = *arg == '-';
+  struct timespec r;
+
+  if (! ISDIGIT (arg[negative]))
+    errno = EINVAL;
+  else
+    {
+      errno = 0;
+
+      if (negative)
+	{
+	  intmax_t i = strtoimax (arg, arg_lim, 10);
+	  if (TYPE_SIGNED (time_t) ? TYPE_MINIMUM (time_t) <= i : 0 <= i)
+	    s = i;
+	  else
+	    errno = ERANGE;
+	}
+      else
+	{
+	  uintmax_t i = strtoumax (arg, arg_lim, 10);
+	  if (i <= TYPE_MAXIMUM (time_t))
+	    s = i;
+	  else
+	    errno = ERANGE;
+	}
+
+      p = *arg_lim;
+      ns = 0;
+
+      if (parse_fraction && *p == '.')
+	{
+	  int digits = 0;
+	  bool trailing_nonzero = false;
+
+	  while (ISDIGIT (*++p))
+	    if (digits < LOG10_BILLION)
+	      digits++, ns = 10 * ns + (*p - '0');
+	    else
+	      trailing_nonzero |= *p != '0';
+
+	  while (digits < LOG10_BILLION)
+	    digits++, ns *= 10;
+
+	  if (negative)
+	    {
+	      /* Convert "-1.10000000000001" to s == -2, ns == 89999999.
+		 I.e., truncate time stamps towards minus infinity while
+		 converting them to internal form.  */
+	      ns += trailing_nonzero;
+	      if (ns != 0)
+		{
+		  if (s == TYPE_MINIMUM (time_t))
+		    ns = -1;
+		  else
+		    {
+		      s--;
+		      ns = BILLION - ns;
+		    }
+		}
+	    }
+	}
+
+      if (errno == ERANGE)
+	ns = -1;
+    }
+
+  *arg_lim = (char *) p;
+  r.tv_sec = s;
+  r.tv_nsec = ns;
+  return r;
 }
 
 /* File handling.  */
