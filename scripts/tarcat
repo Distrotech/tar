@@ -3,6 +3,23 @@
 # concatenates a GNU tar multi-volume archive into a single tar archive.
 # Author: Bruno Haible <bruno@clisp.org>, Sergey Poznyakoff <gray@gnu.org.ua>
 
+# Copyright 2004-2005, 2010, 2013 Free Software Foundation, Inc.
+
+# This file is part of GNU tar.
+
+# GNU tar is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+# GNU tar is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 # dump_type FILE [N]
 # Print type character from block N (default 0) of tar archive FILE
 dump_type() {

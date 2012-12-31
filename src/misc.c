@@ -1,7 +1,7 @@
 /* Miscellaneous functions, not really specific to GNU tar.
 
-   Copyright (C) 1988, 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-   2003, 2004, 2005, 2006, 2007, 2009, 2010, 2012 Free Software Foundation, Inc.
+   Copyright 1988, 1992, 1994-1997, 1999-2001, 2003-2007, 2009-2010,
+   2012-2013 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -14,8 +14,7 @@
    Public License for more details.
 
    You should have received a copy of the GNU General Public License along
-   with this program; if not, write to the Free Software Foundation, Inc.,
-   51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  */
+   with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #define COMMON_INLINE _GL_EXTERN_INLINE
 #include <system.h>

@@ -1,18 +1,21 @@
-dnl Special Autoconf macros for GNU Tar         -*- autoconf -*-
-dnl Copyright (C) 2009 Free Software Foundation, Inc.
+dnl Special Autoconf macros for GNU tar         -*- autoconf -*-
+
+dnl Copyright 2009, 2013 Free Software Foundation, Inc.
+dnl
+dnl This file is part of GNU tar.
 dnl
 dnl GNU tar is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by
-dnl the Free Software Foundation; either version 3, or (at your option)
-dnl any later version.
+dnl the Free Software Foundation; either version 3 of the License, or
+dnl (at your option) any later version.
 dnl
 dnl GNU tar is distributed in the hope that it will be useful,
 dnl but WITHOUT ANY WARRANTY; without even the implied warranty of
 dnl MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 dnl GNU General Public License for more details.
 dnl
-dnl You should have received a copy of the GNU General Public License along
-dnl with GNU tar.  If not, see <http://www.gnu.org/licenses/>.
+dnl You should have received a copy of the GNU General Public License
+dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_DEFUN([TAR_COMPR_PROGRAM],[
  m4_pushdef([tar_compr_define],translit($1,[a-z+-],[A-ZX_])[_PROGRAM])
@@ -49,4 +52,3 @@ AC_DEFUN([TAR_HEADERS_ATTR_XATTR_H],
     )
   fi
 ])
-		    

@@ -36,17 +36,20 @@ This manual is for @acronym{GNU} @command{tar} (version
 @value{VERSION}, @value{UPDATED}), which creates and extracts files
 from archives.
 
-Copyright @copyright{} 1992, 1994, 1995, 1996, 1997, 1999, 2000, 2001,
-2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011 Free Software
-Foundation, Inc.
+Copyright @copyright{} 1992, 1994--1997, 1999--2001, 2003--2013 Free
+Software Foundation, Inc.
 
 @quotation
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
-A copy of the license is included in the section entitled ``GNU Free
-Documentation License''.
+any later version published by the Free Software Foundation; with the
+Invariant Sections being ``GNU General Public License'', with the
+Front-Cover Texts being ``A GNU Manual'', and with the Back-Cover Texts
+as in (a) below.  A copy of the license is included in the section
+entitled ``GNU Free Documentation License''.
+
+(a) The FSF's Back-Cover Text is: ``You have the freedom to
+copy and modify this GNU manual.''
 @end quotation
 @end copying
 
@@ -3587,8 +3590,7 @@ successfully.  For example, @w{@samp{tar --version}} might print:
 
 @smallexample
 tar (GNU tar) @value{VERSION}
-Copyright (C) 2011 Free Software Foundation, Inc.
-Copyright (C) 2011 Free Software Foundation, Inc.
+Copyright (C) 2013 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
@@ -10481,9 +10483,8 @@ want to use.  @command{tar} calls @command{rmt} by running an
 @command{rsh} or @command{remsh} to the remote machine, optionally
 using a different login name if one is supplied.
 
-A copy of the source for the remote tape server is provided.  It is
-Copyright @copyright{} 1983 by the Regents of the University of
-California, but can be freely distributed.  It is compiled and
+A copy of the source for the remote tape server is provided.  Its
+source code can be freely distributed.  It is compiled and
 installed by default.
 
 @cindex absolute file names
