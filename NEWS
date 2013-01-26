@@ -1,8 +1,15 @@
-GNU tar NEWS - User visible changes. 2013-01-01
+GNU tar NEWS - User visible changes. 2013-01-26
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
 version 1.26.90 (Git)
+
+* Bug fixes
+
+** Sparse files with large data
+
+When creating a PAX-format archive, tar no longer arbitrarily restricts
+the size of the representation of a sparse file to be less than 8 GiB.
 
 * Quoting
 

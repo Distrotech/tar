@@ -917,6 +917,18 @@ pax_sparse_member_p (struct tar_sparse_file *file)
           || file->stat_info->sparse_major > 0;
 }
 
+/* Start a header that uses the effective (shrunken) file size.  */
+static union block *
+pax_start_header (struct tar_stat_info *st)
+{
+  off_t realsize = st->stat.st_size;
+  union block *blk;
+  st->stat.st_size = st->archive_file_size;
+  blk = start_header (st);
+  st->stat.st_size = realsize;
+  return blk;
+}
+
 static bool
 pax_dump_header_0 (struct tar_sparse_file *file)
 {
@@ -966,9 +978,7 @@ pax_dump_header_0 (struct tar_sparse_file *file)
 	  return false;
 	}
     }
-  blk = start_header (file->stat_info);
-  /* Store the effective (shrunken) file size */
-  OFF_TO_CHARS (file->stat_info->archive_file_size, blk->header.size);
+  blk = pax_start_header (file->stat_info);
   finish_header (file->stat_info, blk, block_ordinal);
   if (save_file_name)
     {
@@ -1033,9 +1043,7 @@ pax_dump_header_1 (struct tar_sparse_file *file)
   if (strlen (file->stat_info->file_name) > NAME_FIELD_SIZE)
     file->stat_info->file_name[NAME_FIELD_SIZE] = 0;
 
-  blk = start_header (file->stat_info);
-  /* Store the effective (shrunken) file size */
-  OFF_TO_CHARS (file->stat_info->archive_file_size, blk->header.size);
+  blk = pax_start_header (file->stat_info);
   finish_header (file->stat_info, blk, block_ordinal);
   free (file->stat_info->file_name);
   file->stat_info->file_name = save_file_name;
