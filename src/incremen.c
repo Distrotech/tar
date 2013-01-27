@@ -1079,106 +1079,84 @@ read_obstack (FILE *fp, struct obstack *stk, size_t *pcount)
   return c;
 }
 
-/* Read from file FP a nul-terminated string and convert it to
-   intmax_t.  Return the resulting value in PVAL.  Assume '-' has
-   already been read.
-
-   Throw a fatal error if the string cannot be converted or if the
-   converted value is less than MIN_VAL.  */
-
-static void
-read_negative_num (FILE *fp, intmax_t min_val, intmax_t *pval)
-{
-  int c;
-  size_t i;
-  char buf[INT_BUFSIZE_BOUND (intmax_t)];
-  char *ep;
-  buf[0] = '-';
-
-  for (i = 1; ISDIGIT (c = getc (fp)); i++)
-    {
-      if (i == sizeof buf - 1)
-	FATAL_ERROR ((0, 0, _("Field too long while reading snapshot file")));
-      buf[i] = c;
-    }
-
-  if (c < 0)
-    {
-      if (ferror (fp))
-	FATAL_ERROR ((0, errno, _("Read error in snapshot file")));
-      else
-	FATAL_ERROR ((0, 0, _("Unexpected EOF in snapshot file")));
-    }
-
-  buf[i] = 0;
-  errno = 0;
-  *pval = strtoimax (buf, &ep, 10);
-  if (c || errno || *pval < min_val)
-    FATAL_ERROR ((0, errno, _("Unexpected field value in snapshot file")));
-}
-
-/* Read from file FP a nul-terminated string and convert it to
-   uintmax_t.  Return an intmax_t representation of the resulting
-   value in PVAL.  Assume C has already been read.
-
-   Throw a fatal error if the string cannot be converted or if the
-   converted value exceeds MAX_VAL.
-
-   Return the last character read or EOF on end of file. */
-
-static int
-read_unsigned_num (int c, FILE *fp, uintmax_t max_val, intmax_t *pval)
-{
-  size_t i;
-  uintmax_t u;
-  char buf[UINTMAX_STRSIZE_BOUND], *ep;
-
-  for (i = 0; ISDIGIT (c); i++)
-    {
-      if (i == sizeof buf - 1)
-	FATAL_ERROR ((0, 0, _("Field too long while reading snapshot file")));
-      buf[i] = c;
-      c = getc (fp);
-    }
-
-  if (c < 0)
-    {
-      if (ferror (fp))
-	FATAL_ERROR ((0, errno, _("Read error in snapshot file")));
-      else if (i == 0)
-	return c;
-      else
-	FATAL_ERROR ((0, 0, _("Unexpected EOF in snapshot file")));
-    }
-
-  buf[i] = 0;
-  errno = 0;
-  u = strtoumax (buf, &ep, 10);
-  if (c || errno || max_val < u)
-    FATAL_ERROR ((0, errno, _("Unexpected field value in snapshot file")));
-  *pval = represent_uintmax (u);
-  return c;
-}
-
-/* Read from file FP a nul-terminated string and convert it to
-   an integer in the range MIN_VAL..MAXVAL.  Return the resulting
-   value, converted to intmax_t, in PVAL.  MINVAL must be nonpositive.
+/* Read from file FP a null-terminated string and convert it to an
+   integer.  FIELDNAME is the intended use of the integer, useful for
+   diagnostics.  MIN_VAL and MAX_VAL are its minimum and maximum
+   permissible values; MIN_VAL must be nonpositive and MAX_VAL positive.
+   Store into *PVAL the resulting value, converted to intmax_t.
 
    Throw a fatal error if the string cannot be converted or if the
    converted value is out of range.
 
-   Return the last character read or EOF on end of file. */
+   Return true if successful, false if end of file.  */
 
-static int
-read_num (FILE *fp, intmax_t min_val, uintmax_t max_val, intmax_t *pval)
+static bool
+read_num (FILE *fp, char const *fieldname,
+	  intmax_t min_val, uintmax_t max_val, intmax_t *pval)
 {
+  int i;
+  char buf[INT_BUFSIZE_BOUND (intmax_t)];
+  char offbuf[INT_BUFSIZE_BOUND (off_t)];
+  char minbuf[INT_BUFSIZE_BOUND (intmax_t)];
+  char maxbuf[INT_BUFSIZE_BOUND (intmax_t)];
+  int conversion_errno;
   int c = getc (fp);
-  if (c == '-')
+  bool negative = c == '-';
+
+  for (i = 0; (i == 0 && negative) || ISDIGIT (c); i++)
     {
-      read_negative_num (fp, min_val, pval);
-      return 0;
+      buf[i] = c;
+      if (i == sizeof buf - 1)
+	FATAL_ERROR ((0, 0,
+		      _("%s: byte %s: %s %.*s... too long"),
+		      quotearg_colon (listed_incremental_option),
+		      offtostr (ftello (fp), offbuf),
+		      fieldname, i + 1, buf));
+      c = getc (fp);
     }
-  return read_unsigned_num (c, fp, max_val, pval);
+
+  buf[i] = 0;
+
+  if (c < 0)
+    {
+      if (ferror (fp))
+	read_fatal (listed_incremental_option);
+      if (i != 0)
+	FATAL_ERROR ((0, 0, "%s: %s",
+		      quotearg_colon (listed_incremental_option),
+		      _("Unexpected EOF in snapshot file")));
+      return false;
+    }
+
+  if (c)
+    FATAL_ERROR ((0, 0,
+		  _("%s: byte %s: %s %s followed by invalid byte 0x%02x"),
+		  quotearg_colon (listed_incremental_option),
+		  offtostr (ftello (fp), offbuf),
+		  fieldname, buf, c));
+
+  *pval = strtosysint (buf, NULL, min_val, max_val);
+  conversion_errno = errno;
+
+  switch (conversion_errno)
+    {
+    case ERANGE:
+      FATAL_ERROR ((0, conversion_errno,
+		    _("%s: byte %s: (valid range %s..%s)\n\t%s %s"),
+		    quotearg_colon (listed_incremental_option),
+		    offtostr (ftello (fp), offbuf),
+		    imaxtostr (min_val, minbuf),
+		    umaxtostr (max_val, maxbuf), fieldname, buf));
+    default:
+      FATAL_ERROR ((0, conversion_errno,
+		    _("%s: byte %s: %s %s"),
+		    quotearg_colon (listed_incremental_option),
+		    offtostr (ftello (fp), offbuf), fieldname, buf));
+    case 0:
+      break;
+    }
+
+  return true;
 }
 
 /* Read from FP two NUL-terminated strings representing a struct
@@ -1189,15 +1167,20 @@ read_num (FILE *fp, intmax_t min_val, uintmax_t max_val, intmax_t *pval)
 static void
 read_timespec (FILE *fp, struct timespec *pval)
 {
-  intmax_t i;
-  int c = read_num (fp, TYPE_MINIMUM (time_t), TYPE_MAXIMUM (time_t), &i);
-  pval->tv_sec = i;
+  intmax_t s, ns;
 
-  if (c || read_num (fp, 0, BILLION - 1, &i))
-    FATAL_ERROR ((0, 0, "%s: %s",
-		  quotearg_colon (listed_incremental_option),
-		  _("Unexpected EOF in snapshot file")));
-  pval->tv_nsec = i;
+  if (read_num (fp, "sec", TYPE_MINIMUM (time_t), TYPE_MAXIMUM (time_t), &s)
+      && read_num (fp, "nsec", 0, BILLION - 1, &ns))
+    {
+      pval->tv_sec = s;
+      pval->tv_nsec = ns;
+    }
+  else
+    {
+      FATAL_ERROR ((0, 0, "%s: %s",
+		    quotearg_colon (listed_incremental_option),
+		    _("Unexpected EOF in snapshot file")));
+    }
 }
 
 /* Read incremental snapshot format 2 */
@@ -1205,6 +1188,7 @@ static void
 read_incr_db_2 (void)
 {
   struct obstack stk;
+  char offbuf[INT_BUFSIZE_BOUND (off_t)];
 
   obstack_init (&stk);
 
@@ -1221,20 +1205,20 @@ read_incr_db_2 (void)
       char *content;
       size_t s;
 
-      if (read_num (listed_incremental_stream, 0, 1, &i))
+      if (! read_num (listed_incremental_stream, "nfs", 0, 1, &i))
 	return; /* Normal return */
 
       nfs = i;
 
       read_timespec (listed_incremental_stream, &mtime);
 
-      if (read_num (listed_incremental_stream,
-		    TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t), &i))
+      if (! read_num (listed_incremental_stream, "dev",
+		      TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t), &i))
 	break;
       dev = i;
 
-      if (read_num (listed_incremental_stream,
-		    TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t), &i))
+      if (! read_num (listed_incremental_stream, "ino",
+		      TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t), &i))
 	break;
       ino = i;
 
@@ -1246,8 +1230,9 @@ read_incr_db_2 (void)
       while (read_obstack (listed_incremental_stream, &stk, &s) == 0 && s > 1)
 	;
       if (getc (listed_incremental_stream) != 0)
-	FATAL_ERROR ((0, 0, "%s: %s",
+	FATAL_ERROR ((0, 0, _("%s: byte %s: %s"),
 		      quotearg_colon (listed_incremental_option),
+		      offtostr (ftello (listed_incremental_stream), offbuf),
 		      _("Missing record terminator")));
 
       content = obstack_finish (&stk);
