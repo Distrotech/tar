@@ -332,7 +332,7 @@ replace_prefix (char **pname, const char *samp, size_t slen,
    the range MINVAL .. -1, represent it with a string representation
    of the negative integer, using leading '-'.  */
 #if ! (INTMAX_MAX <= UINTMAX_MAX / 2)
-# error "strtosysint accepts uintmax_t to represent intmax_t"
+# error "sysinttostr: uintmax_t cannot represent all intmax_t values"
 #endif
 char *
 sysinttostr (uintmax_t value, intmax_t minval, uintmax_t maxval,
@@ -361,7 +361,7 @@ sysinttostr (uintmax_t value, intmax_t minval, uintmax_t maxval,
    On conversion error, return 0 and set errno = EINVAL.
    On overflow, return an extreme value and set errno = ERANGE.  */
 #if ! (INTMAX_MAX <= UINTMAX_MAX)
-# error "strtosysint accepts uintmax_t to represent nonnegative intmax_t"
+# error "strtosysint: nonnegative intmax_t does not fit in uintmax_t"
 #endif
 intmax_t
 strtosysint (char const *arg, char **arglim, intmax_t minval, uintmax_t maxval)
