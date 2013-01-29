@@ -689,7 +689,6 @@ decode_header (union block *header, struct tar_stat_info *stat_info,
 	}
     }
 
-  stat_info->archive_file_size = stat_info->stat.st_size;
   xheader_decode (stat_info);
 
   if (sparse_member_p (stat_info))

@@ -755,6 +755,16 @@ xheader_decode (struct tar_stat_info *st)
 	continue;
     }
   run_override_list (keyword_override_list, st);
+
+  /* The archived (effective) file size is always set directly in tar header
+     field, possibly overridden by "size" extended header - in both cases,
+     result is now decoded in st->stat.st_size */
+  st->archive_file_size = st->stat.st_size;
+
+  /* The real file size (given by stat()) may be redefined for sparse
+     files in "GNU.sparse.realsize" extended header */
+  if (st->real_size_set)
+    st->stat.st_size = st->real_size;
 }
 
 static void
@@ -1360,7 +1370,10 @@ sparse_size_decoder (struct tar_stat_info *st,
 {
   uintmax_t u;
   if (decode_num (&u, arg, TYPE_MAXIMUM (off_t), keyword))
-    st->stat.st_size = u;
+    {
+      st->real_size_set = 1;
+      st->real_size = u;
+    }
 }
 
 static void
