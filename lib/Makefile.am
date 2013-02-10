@@ -30,7 +30,15 @@ CLEANFILES = rmt-command.h rmt-command.h-t
 AM_CPPFLAGS = -I$(top_srcdir)/gnu -I../ -I../gnu
 AM_CFLAGS = $(GNULIB_WARN_CFLAGS) $(WERROR_CFLAGS)
 
-noinst_HEADERS = system.h system-ioctl.h rmt.h paxlib.h stdopen.h xattr-at.h
+noinst_HEADERS = \
+ paxlib.h\
+ rmt.h\
+ stdopen.h\
+ system.h\
+ system-ioctl.h\
+ wordsplit.h\
+ xattr-at.h
+
 libtar_a_SOURCES = \
   paxerror.c paxexit-status.c paxlib.h paxnames.c \
   prepargs.c prepargs.h \
@@ -38,6 +46,7 @@ libtar_a_SOURCES = \
   rmt.h \
   stdopen.c stdopen.h \
   system.h system-ioctl.h \
+  wordsplit.c\
   xattr-at.c
 
 if !TAR_COND_XATTR_H

@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2013-01-26
+GNU tar NEWS - User visible changes. 2013-02-10
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -49,6 +49,24 @@ correspondingly.  Each of these options has a `--no-' counterpart
 Additionally, the options --xattrs-include and --xattrs-exclude allow
 you to selectively control for which files to store (or extract) the
 extended attributes.
+
+* Passing command line arguments to external commands.
+
+Any option taking a command name as its argument now accepts a full
+command line as well.  Thus, it is now possible to pass additional
+arguments to invoked programs.  The affected options are:
+
+  --checkpoint-action=exec
+  -I, --use-compress-program
+  -F, --info-script
+  --to-command
+
+Furthermore, if any additional information is supplied to such a
+command via environment variables, these variables can now be used in
+the command line itself.  Care should be taken to escape them, to
+prevent from being expanded too early, for example:
+
+  tar -x -f a.tar --info-script='changevol $TAR_ARCHIVE $TAR_VOLUME'
 
 * New configure option --enable-gcc-warnings, intended for debugging.
 

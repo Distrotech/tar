@@ -1800,13 +1800,14 @@ and @option{--interactive} options (@pxref{interactive}).
 * Synopsis::
 * using tar options::
 * Styles::
-* All Options::
-* help::
-* defaults::
-* verbose::
-* checkpoints::
-* warnings::
-* interactive::
+* All Options::           All @command{tar} Options.
+* help::                  Where to Get Help.
+* defaults::              What are the Default Values.
+* verbose::               Checking @command{tar} progress.
+* checkpoints::           Checkpoints.
+* warnings::              Controlling Warning Messages.
+* interactive::           Asking for Confirmation During Operations.
+* external::              Running External Commands.
 @end menu
 
 @node Synopsis
@@ -2784,14 +2785,14 @@ Send verbose output to @var{file} instead of to standard output.
 
 @opsummary{info-script}
 @opsummary{new-volume-script}
-@item --info-script=@var{script-file}
-@itemx --new-volume-script=@var{script-file}
-@itemx -F @var{script-file}
+@item --info-script=@var{command}
+@itemx --new-volume-script=@var{command}
+@itemx -F @var{command}
 
-When @command{tar} is performing multi-tape backups, @var{script-file} is run
-at the end of each tape.  If @var{script-file} exits with nonzero status,
-@command{tar} fails immediately.  @xref{info-script}, for a detailed
-discussion of @var{script-file}.
+When @command{tar} is performing multi-tape backups, @var{command} is run
+at the end of each tape.  If it exits with nonzero status,
+@command{tar} fails immediately.  @xref{info-script}, for a detailed 
+discussion of this feature.
 
 @opsummary{interactive}
 @item --interactive
@@ -4004,17 +4005,22 @@ checkpoint:
 $ @kbd{tar -c --checkpoint=1000 --checkpoint-action=sleep=30}
 @end smallexample
 
+@anchor{checkpoint exec}
 @cindex @code{exec}, checkpoint action
-Finally, the @code{exec} action executes a given external program.
+Finally, the @code{exec} action executes a given external command.
 For example:
 
 @smallexample
 $ @kbd{tar -c --checkpoint=1000 --checkpoint-action=exec=/sbin/cpoint}
 @end smallexample
 
-This program is executed using @command{/bin/sh -c}, with no
-additional arguments.  Its exit code is ignored.  It gets a copy of
-@command{tar}'s environment plus the following variables:
+The supplied command can be any valid command invocation, with or
+without additional command line arguments.  If it does contain
+arguments, don't forget to quote it to prevent it from being split by
+the shell.  @xref{external, Running External Commands}, for more detail.
+
+The command gets a copy of @command{tar}'s environment plus the
+following variables:
 
 @table @env
 @vrindex TAR_VERSION, checkpoint script environment
@@ -4043,6 +4049,18 @@ A short option describing the operation @command{tar} is executing.
 Format of the archive being processed. @xref{Formats}, for a complete
 list of archive format names.
 @end table
+
+These environment variables can also be passed as arguments to the
+command, provided that they are properly escaped, for example:
+
+@smallexample
+@kbd{tar -c -f arc.tar \
+     --checkpoint-action='exec=/sbin/cpoint $TAR_FILENAME'}
+@end smallexample
+
+@noindent
+Notice single quotes to prevent variable names from being expanded by
+the shell when invoking @command{tar}.
 
 Any number of actions can be defined, by supplying several
 @option{--checkpoint-action} options in the command line.  For
@@ -4257,6 +4275,42 @@ verbose output and error output.  A possible approach would be using a
 named pipe to receive the archive, and having the consumer process to
 read from that named pipe.  This has the advantage of letting standard
 output free to receive verbose output, all separate from errors.
+
+@node external
+@section Running External Commands
+
+Certain @GNUTAR{} operations imply running external commands that you
+supply on the command line.  One of such operations is checkpointing,
+described above (@pxref{checkpoint exec}).  Another example of this
+feature is the @option{-I} option, which allows you to supply the
+program to use for compressing or decompressing the archive
+(@pxref{use-compress-program}).
+
+Whenever such operation is requested, @command{tar} first splits the
+supplied command into words much like the shell does.  It then treats
+the first word as the name of the program or the shell script to execute
+and the rest of words as its command line arguments.  The program,
+unless given as an absolute file name, is searched in the shell's
+@env{PATH}.
+
+Any additional information is normally supplied to external commands
+in environment variables, specific to each particular operation.  For
+example, the @option{--checkpoint-action=exec} option, defines the
+@env{TAR_ARCHIVE} variable to the name of the archive being worked
+upon.  You can, should the need be, use these variables in the 
+command line of the external command.  For example:
+
+@smallexample
+$ @kbd{tar -x -f archive.tar \
+    --checkpoint=exec='printf "%04d in %32s\r" $TAR_CHECKPOINT $TAR_ARCHIVE'}
+@end smallexample
+
+@noindent
+This command prints for each checkpoint its number and the name of the
+archive, using the same output line on the screen.
+
+Notice the use of single quotes to prevent variable names from being
+expanded by the shell when invoking @command{tar}.
 
 @node operations
 @chapter @GNUTAR{} Operations
@@ -5470,11 +5524,13 @@ file to the standard input of an external program:
 @opindex to-command
 @item --to-command=@var{command}
 Extract files and pipe their contents to the standard input of
-@var{command}. When this option is used, instead of creating the
+@var{command}.  When this option is used, instead of creating the
 files specified, @command{tar} invokes @var{command} and pipes the
-contents of the files to its standard output. The @var{command} may
-contain command line arguments. The program is executed via
-@code{sh -c}. Notice, that @var{command} is executed once for each regular file
+contents of the files to its standard output.  The @var{command} may
+contain command line arguments (see @ref{external, Running External Commands},
+for more detail).
+
+Notice, that @var{command} is executed once for each regular file
 extracted. Non-regular files (directories, etc.) are ignored when this
 option is used.
 @end table
@@ -5571,6 +5627,20 @@ Ordinal number of the volume @command{tar} is processing.
 Format of the archive being processed. @xref{Formats}, for a complete
 list of archive format names.
 @end table
+
+These variables are defined prior to executing the command, so you can
+pass them as arguments, if you prefer.  For example, if the command
+@var{proc} takes the member name and size as its arguments, then you
+could do: 
+
+@smallexample
+$ @kbd{tar -x -f archive.tar \
+       --to-command='proc $TAR_FILENAME $TAR_SIZE'}
+@end smallexample
+
+@noindent
+Notice single quotes to prevent variable names from being expanded by
+the shell when invoking @command{tar}.
 
 If @var{command} exits with a non-0 status, @command{tar} will print
 an error message similar to the following:
@@ -8932,9 +9002,15 @@ environment variable.  For example, with @command{gzip} you can set
 @smallexample
 $ @kbd{GZIP='-9 -n' tar czf archive.tar.gz subdir}
 @end smallexample
+Another way would be to use the @option{-I} option instead (see
+below), e.g.:
+
+@smallexample
+$ @kbd{tar -cf archive.tar.gz -I 'gzip -9 -n' subdir}
+@end smallexample
 
 @noindent
-The traditional way to do this is to use a pipe:
+Finally, the third, traditional, way to do this is to use a pipe:
 
 @smallexample
 $ @kbd{tar cf - subdir | gzip -9 -n > archive.tar.gz}
@@ -8977,20 +9053,29 @@ suffix.  The following suffixes are recognized:
 @item @samp{.xz} @tab @command{xz}
 @end multitable
 
+@anchor{use-compress-program}
 @opindex use-compress-program
-@item --use-compress-program=@var{prog}
-@itemx -I=@var{prog}
-Use external compression program @var{prog}.  Use this option if you
+@item --use-compress-program=@var{command}
+@itemx -I=@var{command}
+Use external compression program @var{command}.  Use this option if you
 are not happy with the compression program associated with the suffix
 at compile time or if you have a compression program that @GNUTAR{}
-does not support.  The program should follow two conventions:
+does not support.  The @var{command} argument is a valid command
+invocation, as you would type it at the command line prompt, with any
+additional options as needed.  Enclose it in quotes if it contains
+white space (see @ref{external, Running External Commands}, for more detail).
 
-First, when invoked without options, it should read data from standard
-input, compress it and output it on standard output.
+The @var{command} should follow two conventions:
 
-Secondly, if invoked with the @option{-d} option, it should do exactly
-the opposite, i.e., read the compressed data from the standard input
-and produce uncompressed data on the standard output.
+First, when invoked without additional options, it should read data
+from standard input, compress it and output it on standard output.
+
+Secondly, if invoked with the additional @option{-d} option, it should
+do exactly the opposite, i.e., read the compressed data from the
+standard input and produce uncompressed data on the standard output.
+
+The latter requirement means that you must not use the @option{-d}
+option as a part of the @var{command} itself.
 @end table
 
 @cindex gpg, using with tar
@@ -10462,10 +10547,10 @@ maximum tape length, you might avoid the problem entirely.
 
 @xopindex{info-script, short description}
 @xopindex{new-volume-script, short description}
-@item -F @var{file}
-@itemx --info-script=@var{file}
-@itemx --new-volume-script=@var{file}
-Execute @file{file} at end of each tape.  This implies
+@item -F @var{command}
+@itemx --info-script=@var{command}
+@itemx --new-volume-script=@var{command}
+Execute @var{command} at end of each tape.  This implies
 @option{--multi-volume} (@option{-M}).  @xref{info-script}, for a detailed
 description of this option.
 @end table
@@ -11345,19 +11430,20 @@ volume, and instruct @command{tar} to use it instead of its normal
 prompting procedure:
 
 @table @option
-@item --info-script=@var{script-name}
-@itemx --new-volume-script=@var{script-name}
-@itemx -F @var{script-name}
-Specify the full name of the volume script to use.  The script can be
-used to eject cassettes, or to broadcast messages such as
+@item --info-script=@var{command}
+@itemx --new-volume-script=@var{command}
+@itemx -F @var{command}
+Specify the command to invoke when switching volumes.  The @var{command}
+can be used to eject cassettes, or to broadcast messages such as
 @samp{Someone please come change my tape} when performing unattended
 backups.
 @end table
 
-The @var{script-name} is executed without any command line
-arguments.  It inherits @command{tar}'s shell environment.
-Additional data is passed to it via the following
-environment variables:
+The @var{command} can contain additional options, if such are needed.
+@xref{external, Running External Commands}, for a detailed discussion
+of the way @GNUTAR{} runs external commands.  It inherits
+@command{tar}'s shell environment.  Additional data is passed to it
+via the following environment variables:
 
 @table @env
 @vrindex TAR_VERSION, info script environment variable
@@ -11391,6 +11477,10 @@ list of archive format names.
 File descriptor which can be used to communicate the new volume
 name to @command{tar}.
 @end table
+
+These variables can be used in the @var{command} itself, provided that
+they are properly quoted to prevent them from being expanded by the
+shell that invokes @command{tar}.
 
 The volume script can instruct @command{tar} to use new archive name,
 by writing in to file descriptor @env{$TAR_FD} (see below for an example).
