@@ -23,7 +23,7 @@
 #include <signal.h>
 #include <wordsplit.h>
 
-static void
+static _Noreturn void
 xexec (const char *cmd)
 {
   struct wordsplit ws;
@@ -329,7 +329,7 @@ sys_child_open_for_compress (void)
   int child_pipe[2];
   pid_t grandchild_pid;
   pid_t child_pid;
-  
+
   xpipe (parent_pipe);
   child_pid = xfork ();
 
@@ -474,7 +474,7 @@ run_decompress_program (void)
 
   ws.ws_env = (const char **) environ;
   ws.ws_offs = 1;
-  
+
   for (p = first_decompress_program (&i); p; p = next_decompress_program (&i))
     {
       if (prog)
@@ -490,8 +490,8 @@ run_decompress_program (void)
       wsflags |= WRDSF_REUSE;
       memmove(ws.ws_wordv, ws.ws_wordv + ws.ws_offs,
 	      sizeof(ws.ws_wordv[0])*ws.ws_wordc);
-      ws.ws_wordv[ws.ws_wordc] = "-d";
-      prog = p;		      
+      ws.ws_wordv[ws.ws_wordc] = (char *) "-d";
+      prog = p;
       execvp (ws.ws_wordv[0], ws.ws_wordv);
       ws.ws_wordv[ws.ws_wordc] = NULL;
     }
@@ -726,8 +726,7 @@ int
 sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
 {
   int p[2];
-  char *argv[4];
-  
+
   xpipe (p);
   pipe_handler = signal (SIGPIPE, SIG_IGN);
   global_pid = xfork ();
@@ -787,7 +786,6 @@ int
 sys_exec_info_script (const char **archive_name, int volume_number)
 {
   pid_t pid;
-  char *argv[4];
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   int p[2];
   static RETSIGTYPE (*saved_handler) (int sig);
@@ -849,7 +847,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
 				 archive_format : current_format), 1);
   setenv ("TAR_FD", STRINGIFY_BIGINT (p[PWRITE], uintbuf), 1);
-  
+
   xclose (p[PREAD]);
 
   priv_set_restore_linkdir ();
@@ -862,9 +860,8 @@ sys_exec_checkpoint_script (const char *script_name,
 			    int checkpoint_number)
 {
   pid_t pid;
-  char *argv[4];
   char uintbuf[UINTMAX_STRSIZE_BOUND];
-  
+
   pid = xfork ();
 
   if (pid != 0)
@@ -893,11 +890,6 @@ sys_exec_checkpoint_script (const char *script_name,
   setenv ("TAR_FORMAT",
 	  archive_format_string (current_format == DEFAULT_FORMAT ?
 				 archive_format : current_format), 1);
-  argv[0] = (char *) "/bin/sh";
-  argv[1] = (char *) "-c";
-  argv[2] = (char *) script_name;
-  argv[3] = NULL;
-
   priv_set_restore_linkdir ();
   xexec (script_name);
 }

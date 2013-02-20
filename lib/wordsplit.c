@@ -61,7 +61,7 @@ _wsplt_alloc_die (struct wordsplit *wsp)
   abort ();
 }
 
-static void
+static void __attribute__ ((__format__ (__printf__, 1, 2)))
 _wsplt_error (const char *fmt, ...)
 {
   va_list ap;
@@ -795,7 +795,10 @@ expvar (struct wordsplit *wsp, const char *str, size_t len,
       else
 	value = "";
     }
+
   /* FIXME: handle defstr */
+  (void) defstr;
+
   if (value)
     {
       if (flg & _WSNF_QUOTE)
@@ -1461,7 +1464,7 @@ wordsplit_process_list (struct wordsplit *wsp, size_t start)
 }
 
 int
-wordsplit_len (const char *command, size_t length, struct wordsplit *wsp, 
+wordsplit_len (const char *command, size_t length, struct wordsplit *wsp,
                int flags)
 {
   int rc;
