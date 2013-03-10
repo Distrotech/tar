@@ -609,6 +609,7 @@ procdir (const char *name_buffer, struct tar_stat_info *st,
 	  exclusion_tag_warning (name_buffer, tag_file_name,
 				 _("contents not dumped"));
 	  directory->children = NO_CHILDREN;
+	  directory->tagfile = tag_file_name;
 	  break;
 
 	case exclusion_tag_under:
@@ -680,15 +681,13 @@ makedumpdir (struct directory *directory, const char *dir)
       if (loc)
 	{
 	  if (directory->tagfile)
-	    *new_dump_ptr = strcmp (directory->tagfile, array[i]) == 0 ?
-		                ' ' : 'I';
+	    *new_dump_ptr = 'I';
 	  else
 	    *new_dump_ptr = ' ';
 	  new_dump_ptr++;
 	}
       else if (directory->tagfile)
-	*new_dump_ptr++ = strcmp (directory->tagfile, array[i]) == 0 ?
-		               ' ' : 'I';
+	*new_dump_ptr++ = 'I';
       else
 	*new_dump_ptr++ = 'Y'; /* New entry */
 
@@ -699,7 +698,24 @@ makedumpdir (struct directory *directory, const char *dir)
   *new_dump_ptr = 0;
   directory->idump = directory->dump;
   directory->dump = dumpdir_create0 (new_dump, NULL);
+  free (new_dump);
   free (array);
+}
+
+/* Create a dumpdir containing only one entry: that for the
+   tagfile. */
+static void
+maketagdumpdir (struct directory *directory)
+{
+  size_t len = strlen (directory->tagfile) + 1;
+  char *new_dump = xmalloc (len + 2);
+  new_dump[0] = 'Y';
+  memcpy (new_dump + 1, directory->tagfile, len);
+  new_dump[len + 1] = 0;
+
+  directory->idump = directory->dump;
+  directory->dump = dumpdir_create0 (new_dump, NULL);
+  free (new_dump);
 }
 
 /* Recursively scan the directory identified by ST.  */
@@ -729,86 +745,94 @@ scan_directory (struct tar_stat_info *st)
 
   nbuf = namebuf_create (dir);
 
-  if (dirp && directory->children != NO_CHILDREN)
+  if (dirp)
     {
-      char *entry;	/* directory entry being scanned */
-      struct dumpdir_iter *itr;
-
-      makedumpdir (directory, dirp);
-
-      for (entry = dumpdir_first (directory->dump, 1, &itr);
-	   entry;
-	   entry = dumpdir_next (itr))
+      if (directory->children != NO_CHILDREN)
 	{
-	  char *full_name = namebuf_name (nbuf, entry + 1);
+	  char *entry;	/* directory entry being scanned */
+	  struct dumpdir_iter *itr;
 
-	  if (*entry == 'I') /* Ignored entry */
-	    *entry = 'N';
-	  else if (excluded_name (full_name))
-	    *entry = 'N';
-	  else
+	  makedumpdir (directory, dirp);
+
+	  for (entry = dumpdir_first (directory->dump, 1, &itr);
+	       entry;
+	       entry = dumpdir_next (itr))
 	    {
-	      int fd = st->fd;
-	      void (*diag) (char const *) = 0;
-	      struct tar_stat_info stsub;
-	      tar_stat_init (&stsub);
-
-	      if (fd < 0)
-		{
-		  errno = - fd;
-		  diag = open_diag;
-		}
-	      else if (fstatat (fd, entry + 1, &stsub.stat, fstatat_flags) != 0)
-		diag = stat_diag;
-	      else if (S_ISDIR (stsub.stat.st_mode))
-		{
-		  int subfd = subfile_open (st, entry + 1, open_read_flags);
-		  if (subfd < 0)
-		    diag = open_diag;
-		  else
-		    {
-		      stsub.fd = subfd;
-		      if (fstat (subfd, &stsub.stat) != 0)
-			diag = stat_diag;
-		    }
-		}
-
-	      if (diag)
-		{
-		  file_removed_diag (full_name, false, diag);
-		  *entry = 'N';
-		}
-	      else if (S_ISDIR (stsub.stat.st_mode))
-		{
-		  int pd_flag = 0;
-		  if (!recursion_option)
-		    pd_flag |= PD_FORCE_CHILDREN | NO_CHILDREN;
-		  else if (directory->children == ALL_CHILDREN)
-		    pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
-		  *entry = 'D';
-
-		  stsub.parent = st;
-		  procdir (full_name, &stsub, pd_flag, entry);
-		  restore_parent_fd (&stsub);
-		}
-	      else if (one_file_system_option && device != stsub.stat.st_dev)
+	      char *full_name = namebuf_name (nbuf, entry + 1);
+	      
+	      if (*entry == 'I') /* Ignored entry */
 		*entry = 'N';
-	      else if (*entry == 'Y')
-		/* New entry, skip further checks */;
-	      /* FIXME: if (S_ISHIDDEN (stat_data.st_mode))?? */
-	      else if (OLDER_STAT_TIME (stsub.stat, m)
-		       && (!after_date_option
-			   || OLDER_STAT_TIME (stsub.stat, c)))
+	      else if (excluded_name (full_name))
 		*entry = 'N';
 	      else
-		*entry = 'Y';
+		{
+		  int fd = st->fd;
+		  void (*diag) (char const *) = 0;
+		  struct tar_stat_info stsub;
+		  tar_stat_init (&stsub);
 
-	      tar_stat_destroy (&stsub);
+		  if (fd < 0)
+		    {
+		      errno = - fd;
+		      diag = open_diag;
+		    }
+		  else if (fstatat (fd, entry + 1, &stsub.stat,
+				    fstatat_flags) != 0)
+		    diag = stat_diag;
+		  else if (S_ISDIR (stsub.stat.st_mode))
+		    {
+		      int subfd = subfile_open (st, entry + 1,
+						open_read_flags);
+		      if (subfd < 0)
+			diag = open_diag;
+		      else
+			{
+			  stsub.fd = subfd;
+			  if (fstat (subfd, &stsub.stat) != 0)
+			    diag = stat_diag;
+			}
+		    }
+		  
+		  if (diag)
+		    {
+		      file_removed_diag (full_name, false, diag);
+		      *entry = 'N';
+		    }
+		  else if (S_ISDIR (stsub.stat.st_mode))
+		    {
+		      int pd_flag = 0;
+		      if (!recursion_option)
+			pd_flag |= PD_FORCE_CHILDREN | NO_CHILDREN;
+		      else if (directory->children == ALL_CHILDREN)
+			pd_flag |= PD_FORCE_CHILDREN | ALL_CHILDREN;
+		      *entry = 'D';
+		      
+		      stsub.parent = st;
+		      procdir (full_name, &stsub, pd_flag, entry);
+		      restore_parent_fd (&stsub);
+		    }
+		  else if (one_file_system_option &&
+			   device != stsub.stat.st_dev)
+		    *entry = 'N';
+		  else if (*entry == 'Y')
+		    /* New entry, skip further checks */;
+		  /* FIXME: if (S_ISHIDDEN (stat_data.st_mode))?? */
+		  else if (OLDER_STAT_TIME (stsub.stat, m)
+			   && (!after_date_option
+			       || OLDER_STAT_TIME (stsub.stat, c)))
+		    *entry = 'N';
+		  else
+		    *entry = 'Y';
+		  
+		  tar_stat_destroy (&stsub);
+		}
 	    }
+	  free (itr);
 	}
-      free (itr);
+      else if (directory->tagfile)
+	maketagdumpdir (directory);
     }
-
+  
   namebuf_free (nbuf);
 
   free (dirp);

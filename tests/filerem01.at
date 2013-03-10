@@ -34,7 +34,7 @@
 #
 
 AT_SETUP([file removed as we read it (ca. 22 seconds)])
-AT_KEYWORDS([create incremental filechange filerem filerem01])
+AT_KEYWORDS([create incremental listed filechange filerem filerem01])
 
 AT_TAR_CHECK([
 mkdir dir

@@ -65,6 +65,15 @@ TESTSUITE_AT = \
  exclude05.at\
  exclude06.at\
  exclude07.at\
+ exclude08.at\
+ exclude09.at\
+ exclude10.at\
+ exclude11.at\
+ exclude12.at\
+ exclude13.at\
+ exclude14.at\
+ exclude15.at\
+ exclude16.at\
  extrac01.at\
  extrac02.at\
  extrac03.at\

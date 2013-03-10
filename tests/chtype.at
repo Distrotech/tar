@@ -25,7 +25,7 @@
 # References: <200605101232.25031.bugreport@wkleff.intergenia.de>
 
 AT_SETUP([changed file types in incrementals])
-AT_KEYWORDS([incremental chtype])
+AT_KEYWORDS([incremental listed chtype])
 
 AT_TAR_CHECK([
 AT_SORT_PREREQ

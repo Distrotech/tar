@@ -24,7 +24,7 @@
 # in the command line.
 
 AT_SETUP([toplevel file removed (ca. 24 seconds)])
-AT_KEYWORDS([create incremental filechange filerem filerem02])
+AT_KEYWORDS([create incremental listed filechange filerem filerem02])
 
 AT_TAR_CHECK([
 mkdir dir

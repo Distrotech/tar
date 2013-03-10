@@ -49,3 +49,11 @@ decho() {
   echo $*
   echo >&2 $*
 }
+
+mkexcltest() {
+  mkdir $1 $1/subdir
+  genfile --file=$1/top-level-file
+  genfile --file=$1/subdir/excludeme
+  genfile --file=$1/subdir/subdir-file
+}
+  

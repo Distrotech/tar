@@ -34,7 +34,7 @@
 # 3. Test the created multi-volume archive.
 
 AT_SETUP([split directory members in a MV archive])
-AT_KEYWORDS([multivolume multiv incremental multiv04])
+AT_KEYWORDS([multivolume multiv incremental listed multiv04])
 
 AT_TAR_CHECK([
 
