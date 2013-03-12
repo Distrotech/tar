@@ -1421,6 +1421,13 @@ extract_failure (char *file_name, int typeflag)
   return 1;
 }
 
+static int
+extract_skip (char *file_name, int typeflag)
+{
+  skip_member ();
+  return 0;
+}
+
 typedef int (*tar_extractor_t) (char *file_name, int typeflag);
 
 
@@ -1501,7 +1508,7 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
       ERROR ((0, 0,
 	      _("%s: Cannot extract -- file is continued from another volume"),
 	      quotearg_colon (current_stat_info.file_name)));
-      *fun = extract_failure;
+      *fun = extract_skip;
       break;
 
     case GNUTYPE_LONGNAME:
