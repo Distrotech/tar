@@ -484,6 +484,7 @@ xattrs_xattrs_get (int parentfd, char const *file_name,
     }
 }
 
+#ifdef HAVE_XATTRS
 static void
 xattrs__fd_set (struct tar_stat_info const *st,
                 char const *file_name, char typeflag,
@@ -509,6 +510,7 @@ xattrs__fd_set (struct tar_stat_info const *st,
 		  sysname, attr, file_name));
     }
 }
+#endif
 
 /* lgetfileconat is called against FILE_NAME iff the FD parameter is set to
    zero, otherwise the fgetfileconat is used against correct file descriptor */
