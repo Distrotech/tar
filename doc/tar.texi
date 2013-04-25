@@ -646,9 +646,9 @@ If you find problems or have suggestions about this program or manual,
 please report them to @file{bug-tar@@gnu.org}.
 
 When reporting a bug, please be sure to include as much detail as
-possible, in order to reproduce it.  @FIXME{Be more specific, I'd
-like to make this node as detailed as 'Bug reporting' node in Emacs
-manual.}
+possible, in order to reproduce it.
+@FIXME{Be more specific, I'd like to make this node as detailed as
+'Bug reporting' node in Emacs manual.}
 
 @node Tutorial
 @chapter Tutorial Introduction to @command{tar}
@@ -693,8 +693,8 @@ file system.  You should have some basic understanding of directory
 structure and how files are named according to which directory they are
 in.  You should understand concepts such as standard output and standard
 input, what various definitions of the term @samp{argument} mean, and the
-differences between relative and absolute file names.  @FIXME{and what
-else?}
+differences between relative and absolute file names.
+@FIXME{and what else?}
 
 @item
 This manual assumes that you are working from your own home directory
@@ -2256,7 +2256,8 @@ respectively.  The first two examples also specify a single non-option,
 @var{name} argument having the value @samp{archive.tar}.  The last
 example contains only old style option letters (repeating option
 @samp{c} twice), not all of which are meaningful (eg., @samp{.},
-@samp{h}, or @samp{i}), with no argument value.  @FIXME{not sure i liked
+@samp{h}, or @samp{i}), with no argument value.
+@FIXME{not sure i liked
 the first sentence of this paragraph..}
 
 @node All Options
@@ -2791,7 +2792,7 @@ Send verbose output to @var{file} instead of to standard output.
 
 When @command{tar} is performing multi-tape backups, @var{command} is run
 at the end of each tape.  If it exits with nonzero status,
-@command{tar} fails immediately.  @xref{info-script}, for a detailed 
+@command{tar} fails immediately.  @xref{info-script}, for a detailed
 discussion of this feature.
 
 @opsummary{interactive}
@@ -4297,7 +4298,7 @@ Any additional information is normally supplied to external commands
 in environment variables, specific to each particular operation.  For
 example, the @option{--checkpoint-action=exec} option, defines the
 @env{TAR_ARCHIVE} variable to the name of the archive being worked
-upon.  You can, should the need be, use these variables in the 
+upon.  You can, should the need be, use these variables in the
 command line of the external command.  For example:
 
 @smallexample
@@ -5631,7 +5632,7 @@ list of archive format names.
 These variables are defined prior to executing the command, so you can
 pass them as arguments, if you prefer.  For example, if the command
 @var{proc} takes the member name and size as its arguments, then you
-could do: 
+could do:
 
 @smallexample
 $ @kbd{tar -x -f archive.tar \
