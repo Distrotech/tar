@@ -345,7 +345,7 @@ AC_CHECK_TYPE(iconv_t,:,
 
 # Gettext.
 AM_GNU_GETTEXT([external], [need-formatstring-macros])
-AM_GNU_GETTEXT_VERSION([0.18.2])
+AM_GNU_GETTEXT_VERSION([0.16])
 
 # Initialize the test suite.
 AC_CONFIG_TESTDIR(tests)
