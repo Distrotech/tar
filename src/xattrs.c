@@ -695,7 +695,7 @@ xattrs_print_char (struct tar_stat_info const *st, char *output)
   if (selinux_context_option > 0 && st->cntx_name)
     *output = '.';
 
-  if (acls_option && (st->acls_a_len || st->acls_d_len))
+  if (acls_option > 0 && (st->acls_a_len || st->acls_d_len))
     *output = '+';
 }
 
@@ -706,11 +706,11 @@ xattrs_print (struct tar_stat_info const *st)
     return;
 
   /* selinux */
-  if (selinux_context_option && st->cntx_name)
+  if (selinux_context_option > 0 && st->cntx_name)
     fprintf (stdlis, "  s: %s\n", st->cntx_name);
 
   /* acls */
-  if (acls_option && (st->acls_a_len || st->acls_d_len))
+  if (acls_option > 0 && (st->acls_a_len || st->acls_d_len))
     {
       fprintf (stdlis, "  a: ");
       acls_one_line ("", ',', st->acls_a_ptr, st->acls_a_len);
@@ -719,7 +719,7 @@ xattrs_print (struct tar_stat_info const *st)
     }
 
   /* xattrs */
-  if (xattrs_option && st->xattr_map_size)
+  if (xattrs_option > 0 && st->xattr_map_size)
     {
       int i;
 

@@ -167,6 +167,14 @@ set_archive_format (char const *name)
   archive_format = p->fmt;
 }
 
+static void
+set_xattr_option (int value)
+{
+  if (value == 1)
+    set_archive_format ("posix");
+  xattrs_option = value;
+}
+
 const char *
 archive_format_string (enum archive_format fmt)
 {
@@ -2095,16 +2103,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case XATTR_OPTION:
-      set_archive_format ("posix");
-      xattrs_option = 1;
+      set_xattr_option (1);
       break;
 
     case NO_XATTR_OPTION:
-      xattrs_option = -1;
+      set_xattr_option (-1);
       break;
 
     case XATTR_INCLUDE:
     case XATTR_EXCLUDE:
+      set_xattr_option (1);
       xattrs_mask_add (arg, (key == XATTR_INCLUDE));
       break;
 
