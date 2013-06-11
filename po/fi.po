@@ -1,0 +1,3478 @@
+# Finnish messages for GNU tar.
+# Copyright © 2002, 2003, 2004, 2006 Free Software Foundation, Inc.
+# Lauri Nurmi <lanurmi@iki.fi>, 2002-2006.
+#
+#: src/create.c:1552
+msgid ""
+msgstr ""
+"Project-Id-Version: tar 1.16.1\n"
+"Report-Msgid-Bugs-To: bug-tar@gnu.org\n"
+"POT-Creation-Date: 2013-06-11 19:02+0200\n"
+"PO-Revision-Date: 2006-12-09 18:58+0200\n"
+"Last-Translator: Lauri Nurmi <lanurmi@iki.fi>\n"
+"Language-Team: Finnish <translation-team-fi@lists.sourceforge.net>\n"
+"Language: fi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: gnu/argmatch.c:135
+#, c-format
+msgid "invalid argument %s for %s"
+msgstr "argumentti %s on virheellinen %s:lle"
+
+#: gnu/argmatch.c:136
+#, c-format
+msgid "ambiguous argument %s for %s"
+msgstr "argumentti %s on moniselitteinen %s:lle"
+
+#: gnu/argmatch.c:155
+msgid "Valid arguments are:"
+msgstr "Kelvolliset argumentit ovat:"
+
+#: gnu/argp-help.c:150
+#, c-format
+msgid "ARGP_HELP_FMT: %s value is less than or equal to %s"
+msgstr ""
+
+#: gnu/argp-help.c:223
+#, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+msgstr "%.*s: ARGP_HELP_FMT-parametri vaatii arvon"
+
+#: gnu/argp-help.c:229
+#, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter must be positive"
+msgstr "%.*s: ARGP_HELP_FMT-parametrin on oltava positiivinen"
+
+#: gnu/argp-help.c:238
+#, c-format
+msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+msgstr "%.*s: Tuntematon ARGP_HELP_FMT-parametri"
+
+#: gnu/argp-help.c:250
+#, c-format
+msgid "Garbage in ARGP_HELP_FMT: %s"
+msgstr "Roskaa ARGP_HELP_FMT:ssä: %s"
+
+#: gnu/argp-help.c:1250
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
+msgstr ""
+"Pitkien valitsinten pakolliset tai valinnaiset argumentit ovat pakollisia "
+"tai valinnaisia myös vastaaville lyhyille."
+
+#: gnu/argp-help.c:1643
+msgid "Usage:"
+msgstr "Käyttö:"
+
+#: gnu/argp-help.c:1647
+msgid "  or: "
+msgstr "  tai: "
+
+#: gnu/argp-help.c:1659
+msgid " [OPTION...]"
+msgstr " [VALITSIN...]"
+
+#: gnu/argp-help.c:1686
+#, fuzzy, c-format
+msgid "Try '%s --help' or '%s --usage' for more information.\n"
+msgstr "Komennot ”%s --help” ja ”%s --usage” antavat lisää tietoa.\n"
+
+#: gnu/argp-help.c:1714
+#, c-format
+msgid "Report bugs to %s.\n"
+msgstr "Ilmoita ohjelmistovioista (englanniksi) osoitteeseen %s.\n"
+
+#: gnu/argp-help.c:1933 gnu/error.c:190
+msgid "Unknown system error"
+msgstr "Tuntematon järjestelmävirhe"
+
+#: gnu/argp-parse.c:83
+msgid "give this help list"
+msgstr "näytä tämä ohje"
+
+#: gnu/argp-parse.c:84
+msgid "give a short usage message"
+msgstr "näytä lyhyt käyttöohje"
+
+#: gnu/argp-parse.c:85 src/tar.c:489 src/tar.c:491 src/tar.c:560
+#: tests/genfile.c:130
+msgid "NAME"
+msgstr "NIMI"
+
+#: gnu/argp-parse.c:85
+msgid "set the program name"
+msgstr ""
+
+#: gnu/argp-parse.c:86
+msgid "SECS"
+msgstr ""
+
+#: gnu/argp-parse.c:87
+msgid "hang for SECS seconds (default 3600)"
+msgstr ""
+
+#: gnu/argp-parse.c:144
+msgid "print program version"
+msgstr "näytä ohjelman versio"
+
+#: gnu/argp-parse.c:161
+msgid "(PROGRAM ERROR) No version known!?"
+msgstr ""
+
+#: gnu/argp-parse.c:614
+#, c-format
+msgid "%s: Too many arguments\n"
+msgstr "%s: Liian monta argumenttia\n"
+
+#: gnu/argp-parse.c:757
+msgid "(PROGRAM ERROR) Option should have been recognized!?"
+msgstr ""
+
+#: gnu/closeout.c:114
+msgid "write error"
+msgstr ""
+
+#: gnu/getopt.c:549 gnu/getopt.c:578
+#, fuzzy, c-format
+msgid "%s: option '%s' is ambiguous; possibilities:"
+msgstr "%s: valitsin ”%s” on moniselitteinen\n"
+
+#: gnu/getopt.c:626 gnu/getopt.c:630
+#, fuzzy, c-format
+msgid "%s: option '--%s' doesn't allow an argument\n"
+msgstr "%s: valitsin ”--%s” ei salli argumenttia\n"
+
+#: gnu/getopt.c:639 gnu/getopt.c:644
+#, fuzzy, c-format
+msgid "%s: option '%c%s' doesn't allow an argument\n"
+msgstr "%s: valitsin ”%c%s” ei salli argumenttia\n"
+
+#: gnu/getopt.c:687 gnu/getopt.c:706
+#, fuzzy, c-format
+msgid "%s: option '--%s' requires an argument\n"
+msgstr "%s: valitsin ”%s” vaatii argumentin\n"
+
+#: gnu/getopt.c:744 gnu/getopt.c:747
+#, fuzzy, c-format
+msgid "%s: unrecognized option '--%s'\n"
+msgstr "%s: tunnistamaton valitsin ”--%s”\n"
+
+#: gnu/getopt.c:755 gnu/getopt.c:758
+#, fuzzy, c-format
+msgid "%s: unrecognized option '%c%s'\n"
+msgstr "%s: tunnistamaton valitsin ”%c%s”\n"
+
+#: gnu/getopt.c:807 gnu/getopt.c:810
+#, fuzzy, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: virheellinen valitsin -- %c\n"
+
+#: gnu/getopt.c:863 gnu/getopt.c:880 gnu/getopt.c:1090 gnu/getopt.c:1108
+#, fuzzy, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: valitsin vaatii argumentin -- %c\n"
+
+#: gnu/getopt.c:936 gnu/getopt.c:952
+#, fuzzy, c-format
+msgid "%s: option '-W %s' is ambiguous\n"
+msgstr "%s: valitsin ”-W %s” on moniselitteinen\n"
+
+#: gnu/getopt.c:976 gnu/getopt.c:994
+#, fuzzy, c-format
+msgid "%s: option '-W %s' doesn't allow an argument\n"
+msgstr "%s: valitsin ”-W %s” ei salli argumenttia\n"
+
+#: gnu/getopt.c:1015 gnu/getopt.c:1033
+#, fuzzy, c-format
+msgid "%s: option '-W %s' requires an argument\n"
+msgstr "%s: valitsin ”%s” vaatii argumentin\n"
+
+#: gnu/obstack.c:415 gnu/obstack.c:417 gnu/xalloc-die.c:36
+msgid "memory exhausted"
+msgstr "muisti lopussa"
+
+#: gnu/openat-die.c:40
+#, fuzzy, c-format
+msgid "unable to record current working directory"
+msgstr "Työhakemistoa ei voi vaihtaa"
+
+#: gnu/openat-die.c:59
+#, fuzzy, c-format
+msgid "failed to return to initial working directory"
+msgstr "Työhakemistoa ei voi tallentaa"
+
+#. TRANSLATORS:
+#. Get translations for open and closing quotation marks.
+#. The message catalog should translate "`" to a left
+#. quotation mark suitable for the locale, and similarly for
+#. "'".  For example, a French Unicode local should translate
+#. these to U+00AB (LEFT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), and U+00BB (RIGHT-POINTING DOUBLE ANGLE
+#. QUOTATION MARK), respectively.
+#.
+#. If the catalog has no translation, we will try to
+#. use Unicode U+2018 (LEFT SINGLE QUOTATION MARK) and
+#. Unicode U+2019 (RIGHT SINGLE QUOTATION MARK).  If the
+#. current locale is not Unicode, locale_quoting_style
+#. will quote 'like this', and clocale_quoting_style will
+#. quote "like this".  You should always include translations
+#. for "`" and "'" even if U+2018 and U+2019 are appropriate
+#. for your locale.
+#.
+#. If you don't know what to put here, please see
+#. <http://en.wikipedia.org/wiki/Quotation_marks_in_other_languages>
+#. and use glyphs suitable for your language.
+#: gnu/quotearg.c:314
+msgid "`"
+msgstr "”"
+
+#: gnu/quotearg.c:315
+msgid "'"
+msgstr "”"
+
+#. TRANSLATORS: A regular expression testing for an affirmative answer
+#. (english: "yes").  Testing the first character may be sufficient.
+#. Take care to consider upper and lower case.
+#. To enquire the regular expression that your system uses for this
+#. purpose, you can use the command
+#. locale -k LC_MESSAGES | grep '^yesexpr='
+#: gnu/rpmatch.c:152
+msgid "^[yY]"
+msgstr "^[kKyY]"
+
+#. TRANSLATORS: A regular expression testing for a negative answer
+#. (english: "no").  Testing the first character may be sufficient.
+#. Take care to consider upper and lower case.
+#. To enquire the regular expression that your system uses for this
+#. purpose, you can use the command
+#. locale -k LC_MESSAGES | grep '^noexpr='
+#: gnu/rpmatch.c:165
+msgid "^[nN]"
+msgstr "^[eEnN]"
+
+#: gnu/version-etc.c:76
+#, c-format
+msgid "Packaged by %s (%s)\n"
+msgstr ""
+
+#: gnu/version-etc.c:79
+#, c-format
+msgid "Packaged by %s\n"
+msgstr ""
+
+#. TRANSLATORS: Translate "(C)" to the copyright symbol
+#. (C-in-a-circle), if this symbol is available in the user's
+#. locale.  Otherwise, do not translate "(C)"; leave it as-is.
+#: gnu/version-etc.c:86
+msgid "(C)"
+msgstr ""
+
+#: gnu/version-etc.c:88
+msgid ""
+"\n"
+"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl."
+"html>.\n"
+"This is free software: you are free to change and redistribute it.\n"
+"There is NO WARRANTY, to the extent permitted by law.\n"
+"\n"
+msgstr ""
+
+#. TRANSLATORS: %s denotes an author name.
+#: gnu/version-etc.c:104
+#, fuzzy, c-format
+msgid "Written by %s.\n"
+msgstr "Kirjoittanut François Pinard."
+
+#. TRANSLATORS: Each %s denotes an author name.
+#: gnu/version-etc.c:108
+#, fuzzy, c-format
+msgid "Written by %s and %s.\n"
+msgstr "Kirjoittanut François Pinard."
+
+#. TRANSLATORS: Each %s denotes an author name.
+#: gnu/version-etc.c:112
+#, fuzzy, c-format
+msgid "Written by %s, %s, and %s.\n"
+msgstr "Kirjoittanut François Pinard."
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:119
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:126
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:133
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, %s, and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:141
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, %s, %s, and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:149
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:158
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s, and %s.\n"
+msgstr ""
+
+#. TRANSLATORS: Each %s denotes an author name.
+#. You can use line breaks, estimating that each author name occupies
+#. ca. 16 screen columns and that a screen line has ca. 80 columns.
+#: gnu/version-etc.c:169
+#, c-format
+msgid ""
+"Written by %s, %s, %s,\n"
+"%s, %s, %s, %s,\n"
+"%s, %s, and others.\n"
+msgstr ""
+
+#. TRANSLATORS: The placeholder indicates the bug-reporting address
+#. for this package.  Please add _another line_ saying
+#. "Report translation bugs to <...>\n" with the address for translation
+#. bugs (typically your translation team's web or email address).
+#: gnu/version-etc.c:247
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Report bugs to: %s\n"
+msgstr "Ilmoita ohjelmistovioista (englanniksi) osoitteeseen %s.\n"
+
+#: gnu/version-etc.c:249
+#, fuzzy, c-format
+msgid "Report %s bugs to: %s\n"
+msgstr "Ilmoita ohjelmistovioista (englanniksi) osoitteeseen %s.\n"
+
+#: gnu/version-etc.c:253
+#, c-format
+msgid "%s home page: <%s>\n"
+msgstr ""
+
+#: gnu/version-etc.c:255
+#, c-format
+msgid "%s home page: <http://www.gnu.org/software/%s/>\n"
+msgstr ""
+
+#: gnu/version-etc.c:258
+msgid "General help using GNU software: <http://www.gnu.org/gethelp/>\n"
+msgstr ""
+
+# Onpa taas NIIN hyvin lokalisoitavissa tämä.
+# Käytännössä saattaa esiintyä esim. muodossa 
+# "tar: Cannot mkfifo: File exists"
+#. TRANSLATORS: %s after `Cannot' is a function name, e.g. `Cannot open'.
+#. Directly translating this to another language will not work, first because
+#. %s itself is not translated.
+#. Translate it as `%s: Function %s failed'.
+#: lib/paxerror.c:58 lib/paxerror.c:71
+#, c-format
+msgid "%s: Cannot %s"
+msgstr "%s: Toimintoa %s ei voi suorittaa"
+
+#. TRANSLATORS: %s after `Cannot' is a function name, e.g. `Cannot open'.
+#. Directly translating this to another language will not work, first because
+#. %s itself is not translated.
+#. Translate it as `%s: Function %s failed'.
+#: lib/paxerror.c:84
+#, c-format
+msgid "%s: Warning: Cannot %s"
+msgstr "%s: Varoitus: Toimintoa %s ei voi suorittaa"
+
+#: lib/paxerror.c:93
+#, c-format
+msgid "%s: Cannot change mode to %s"
+msgstr "%s: Oikeuksien muuttaminen tilaan %s ei onnistu"
+
+#: lib/paxerror.c:101
+#, c-format
+msgid "%s: Cannot change ownership to uid %lu, gid %lu"
+msgstr "%s: Tiedoston omistusta ei voi muuttaa arvoon uid=%lu, gid=%lu"
+
+#: lib/paxerror.c:127
+#, c-format
+msgid "%s: Cannot hard link to %s"
+msgstr "%s: Kovaa linkkiä tiedostoon %s ei voi luoda"
+
+#: lib/paxerror.c:179 lib/paxerror.c:211
+#, c-format
+msgid "%s: Read error at byte %s, while reading %lu byte"
+msgid_plural "%s: Read error at byte %s, while reading %lu bytes"
+msgstr[0] "%s: Lukuvirhe tavun %s kohdalla luettaessa %lu tavua"
+msgstr[1] "%s: Lukuvirhe tavun %s kohdalla luettaessa %lu tavua"
+
+#: lib/paxerror.c:192
+#, c-format
+msgid "%s: Warning: Read error at byte %s, while reading %lu byte"
+msgid_plural "%s: Warning: Read error at byte %s, while reading %lu bytes"
+msgstr[0] "%s: Varoitus: Lukuvirhe tavun %s kohdalla luettaessa %lu tavua"
+msgstr[1] "%s: Varoitus: Lukuvirhe tavun %s kohdalla luettaessa %lu tavua"
+
+#: lib/paxerror.c:259
+#, c-format
+msgid "%s: Cannot seek to %s"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: lib/paxerror.c:275
+#, c-format
+msgid "%s: Warning: Cannot seek to %s"
+msgstr "%s: Varoitus: Siirtyminen kohtaan %s ei onnistu"
+
+#: lib/paxerror.c:284
+#, c-format
+msgid "%s: Cannot create symlink to %s"
+msgstr "%s: Tiedostoon %s ei voida luoda symlinkkiä"
+
+#: lib/paxerror.c:349
+#, c-format
+msgid "%s: Wrote only %lu of %lu byte"
+msgid_plural "%s: Wrote only %lu of %lu bytes"
+msgstr[0] "%s: Kirjoitettiin vain %lu tavua %lu tavusta"
+msgstr[1] "%s: Kirjoitettiin vain %lu tavua %lu tavusta"
+
+#: lib/paxnames.c:140
+#, c-format
+msgid "Removing leading `%s' from member names"
+msgstr "Poistetaan ”%s” tiedostonimien alusta"
+
+#: lib/paxnames.c:141
+#, c-format
+msgid "Removing leading `%s' from hard link targets"
+msgstr "Poistetaan ”%s” kovien linkkien kohdenimien alusta"
+
+#: lib/paxnames.c:154
+msgid "Substituting `.' for empty member name"
+msgstr "Korvataan ”.” tyhjällä tiedostonimellä"
+
+#: lib/paxnames.c:155
+msgid "Substituting `.' for empty hard link target"
+msgstr "Korvataan ”.” tyhjällä kovan linkin kohteella"
+
+#: lib/rtapelib.c:299
+#, c-format
+msgid "exec/tcp: Service not available"
+msgstr "exec/tcp: Palvelu ei ole käytettävissä"
+
+#: lib/rtapelib.c:303
+#, c-format
+msgid "stdin"
+msgstr "vakiosyöte"
+
+#: lib/rtapelib.c:306
+#, c-format
+msgid "stdout"
+msgstr "vakiotuloste"
+
+#: lib/rtapelib.c:429
+#, c-format
+msgid "Cannot connect to %s: resolve failed"
+msgstr ""
+
+#: lib/rtapelib.c:502
+#, fuzzy, c-format
+msgid "Cannot redirect files for remote shell"
+msgstr "Etäkuorta ei voi käynnistää"
+
+#: lib/rtapelib.c:516
+#, c-format
+msgid "Cannot execute remote shell"
+msgstr "Etäkuorta ei voi käynnistää"
+
+#: rmt/rmt.c:432
+msgid "Seek direction out of range"
+msgstr "Siirtymän suunta sallitun välin ulkopuolella"
+
+#: rmt/rmt.c:438
+#, fuzzy
+msgid "Invalid seek direction"
+msgstr "Valitsimelle annettiin virheellinen tila"
+
+#: rmt/rmt.c:446
+#, fuzzy
+msgid "Invalid seek offset"
+msgstr "Virheellinen koko: %s"
+
+#: rmt/rmt.c:452
+msgid "Seek offset out of range"
+msgstr "Siirtymä sallitun välin ulkopuolella"
+
+#: rmt/rmt.c:493 rmt/rmt.c:544 rmt/rmt.c:608
+#, fuzzy
+msgid "Invalid byte count"
+msgstr "Virheellinen nauhan pituus"
+
+#: rmt/rmt.c:499 rmt/rmt.c:550 rmt/rmt.c:614 rmt/rmt.c:625
+#, fuzzy
+msgid "Byte count out of range"
+msgstr "Siirtymä sallitun välin ulkopuolella"
+
+#: rmt/rmt.c:558
+#, fuzzy
+msgid "Premature eof"
+msgstr "rmtd: Ennenaikainen tiedoston loppu\n"
+
+#: rmt/rmt.c:601
+#, fuzzy
+msgid "Invalid operation code"
+msgstr "Päätoimintatila:"
+
+#: rmt/rmt.c:636 rmt/rmt.c:680
+msgid "Operation not supported"
+msgstr ""
+
+#: rmt/rmt.c:664
+#, fuzzy
+msgid "Unexpected arguments"
+msgstr "Odottamaton tiedoston loppu arkistossa"
+
+#: rmt/rmt.c:689
+msgid "Manipulate a tape drive, accepting commands from a remote process"
+msgstr ""
+
+#: rmt/rmt.c:696 src/tar.c:424 src/tar.c:428 src/tar.c:558 src/tar.c:573
+#: src/tar.c:704 src/tar.c:742 tests/genfile.c:166
+msgid "NUMBER"
+msgstr "MÄÄRÄ"
+
+#: rmt/rmt.c:697
+msgid "set debug level"
+msgstr ""
+
+#: rmt/rmt.c:698 src/tar.c:422 src/tar.c:563 src/tar.c:639 src/tar.c:643
+#: src/tar.c:655 src/tar.c:665 src/tar.c:668 src/tar.c:670 src/tar.c:759
+#: tests/genfile.c:132 tests/genfile.c:180 tests/genfile.c:184
+#: tests/genfile.c:187 tests/genfile.c:193
+msgid "FILE"
+msgstr "TIED"
+
+#: rmt/rmt.c:699
+msgid "set debug output file name"
+msgstr ""
+
+#: rmt/rmt.c:715 rmt/rmt.c:783
+#, fuzzy, c-format
+msgid "cannot open %s"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: rmt/rmt.c:780 tests/genfile.c:892 tests/genfile.c:909
+#, c-format
+msgid "too many arguments"
+msgstr "liian monta argumenttia"
+
+#: rmt/rmt.c:822
+msgid "Garbage command"
+msgstr "Roskakomento"
+
+#: src/buffer.c:457 src/buffer.c:462 src/buffer.c:706 src/buffer.c:1321
+#: src/buffer.c:1367 src/buffer.c:1396 src/delete.c:211 src/list.c:245
+#: src/update.c:200
+msgid "This does not look like a tar archive"
+msgstr "Tämä ei näytä tar-arkistolta"
+
+#: src/buffer.c:521 src/buffer.c:530
+msgid "Total bytes written"
+msgstr "Kirjoitettuja tavuja yhteensä"
+
+#: src/buffer.c:528 src/buffer.c:542
+msgid "Total bytes read"
+msgstr ""
+
+#: src/buffer.c:532
+#, c-format
+msgid "Total bytes deleted: %s\n"
+msgstr "Poistettuja tavuja yhteensä: %s\n"
+
+#: src/buffer.c:621
+msgid "(pipe)"
+msgstr "(putki)"
+
+#: src/buffer.c:644
+msgid "Invalid value for record_size"
+msgstr "Virheellinen arvo kentälle record_size"
+
+#: src/buffer.c:647
+msgid "No archive name given"
+msgstr "Arkiston nimeä ei ole annettu"
+
+#: src/buffer.c:689
+msgid "Cannot verify stdin/stdout archive"
+msgstr "Vakiosyötteessä/tulosteessa olevaa arkistoa ei voi varmistaa"
+
+#: src/buffer.c:703
+#, c-format
+msgid "Archive is compressed. Use %s option"
+msgstr "Arkisto on tiivistetty. Käytä valitsinta %s"
+
+#: src/buffer.c:760 src/tar.c:2448
+msgid "Cannot update compressed archives"
+msgstr "Pakattuja arkistoja ei voi päivittää"
+
+#: src/buffer.c:853
+msgid "At beginning of tape, quitting now"
+msgstr "Nauhan alussa, lopetetaan"
+
+#: src/buffer.c:859
+msgid "Too many errors, quitting"
+msgstr "Liian monta virhettä, lopetetaan"
+
+#: src/buffer.c:892
+#, c-format
+msgid "Record size = %lu block"
+msgid_plural "Record size = %lu blocks"
+msgstr[0] "Tietueen koko = %lu lohko"
+msgstr[1] "Tietueen koko = %lu lohkoa"
+
+#: src/buffer.c:913
+#, c-format
+msgid "Unaligned block (%lu byte) in archive"
+msgid_plural "Unaligned block (%lu bytes) in archive"
+msgstr[0] "Kohdistamaton lohko (%lu tavu) arkistossa"
+msgstr[1] "Kohdistamaton lohko (%lu tavua) arkistossa"
+
+#: src/buffer.c:990
+msgid "Cannot backspace archive file; it may be unreadable without -i"
+msgstr ""
+"Arkistossa ei voi siirtyä taaksepäin; sitä ei ehkä voi lukea ilman "
+"valitsinta -i"
+
+#: src/buffer.c:1022
+msgid "rmtlseek not stopped at a record boundary"
+msgstr "rmtlseek ei pysähtynyt tietueen rajalle"
+
+#: src/buffer.c:1073
+#, c-format
+msgid "%s: contains invalid volume number"
+msgstr "%s: sisältää virheellisen arkiston osan järjestysnumeron"
+
+#: src/buffer.c:1108
+msgid "Volume number overflow"
+msgstr "Arkisto-osan järjestysnumeron ylivuoto"
+
+#: src/buffer.c:1123
+#, c-format
+msgid "Prepare volume #%d for %s and hit return: "
+msgstr "Valmistele osa #%d arkistolle %s ja paina return: "
+
+#: src/buffer.c:1129
+msgid "EOF where user reply was expected"
+msgstr "Tiedoston loppu odotetun käyttäjän syötteen sijaan"
+
+#: src/buffer.c:1134 src/buffer.c:1166
+msgid "WARNING: Archive is incomplete"
+msgstr "VAROITUS: Arkisto on epätäydellinen"
+
+#: src/buffer.c:1148
+#, c-format
+msgid ""
+" n name        Give a new file name for the next (and subsequent) volume(s)\n"
+" q             Abort tar\n"
+" y or newline  Continue operation\n"
+msgstr ""
+" n nimi        Anna uusi tiedostonimi seuraavalle (ja tuleville) arkiston\n"
+"               osalle/osille\n"
+" q             Keskeytä tar\n"
+" y tai rivinv. Jatka suoritusta\n"
+
+#: src/buffer.c:1153
+#, c-format
+msgid " !             Spawn a subshell\n"
+msgstr " !             Käynnistä alikuori\n"
+
+#: src/buffer.c:1154
+#, c-format
+msgid " ?             Print this list\n"
+msgstr " ?             Näytä tämä lista\n"
+
+#: src/buffer.c:1161
+msgid "No new volume; exiting.\n"
+msgstr "Ei uutta arkiston osaa, poistutaan.\n"
+
+#: src/buffer.c:1194
+msgid "File name not specified. Try again.\n"
+msgstr "Tiedostonimeä ei annettu. Yritä uudelleen.\n"
+
+#: src/buffer.c:1207
+#, c-format
+msgid "Invalid input. Type ? for help.\n"
+msgstr ""
+
+#: src/buffer.c:1258
+#, c-format
+msgid "%s command failed"
+msgstr "Komento %s epäonnistui"
+
+#: src/buffer.c:1439
+#, c-format
+msgid "%s is possibly continued on this volume: header contains truncated name"
+msgstr ""
+"%s jatkuu mahdollisesti tällä arkiston osalla: otsake sisältää typistetyn "
+"nimen"
+
+#: src/buffer.c:1443
+#, c-format
+msgid "%s is not continued on this volume"
+msgstr "%s ei jatku tällä arkiston osalla"
+
+#: src/buffer.c:1457
+#, c-format
+msgid "%s is the wrong size (%s != %s + %s)"
+msgstr "%s on väärän kokoinen (%s ≠ %s + %s)"
+
+#: src/buffer.c:1472
+#, fuzzy, c-format
+msgid "This volume is out of sequence (%s - %s != %s)"
+msgstr "Tämä arkiston osa ei ole järjestyksessä"
+
+#: src/buffer.c:1550 src/buffer.c:1576
+#, c-format
+msgid "Archive not labeled to match %s"
+msgstr "Arkistoa ei ole nimetty täsmää nimiöön %s"
+
+#: src/buffer.c:1580
+#, c-format
+msgid "Volume %s does not match %s"
+msgstr "Arkiston osa %s ei täsmää nimiöön %s"
+
+#: src/buffer.c:1674
+#, c-format
+msgid ""
+"%s: file name too long to be stored in a GNU multivolume header, truncated"
+msgstr ""
+"%s: tiedostonimi on liian pitkä tallennettavaksi moniosaisen GNU-arkiston "
+"otsakkeeseen; nimi typistetty"
+
+#: src/buffer.c:1865
+#, fuzzy
+msgid "write did not end on a block boundary"
+msgstr "rmtlseek ei pysähtynyt tietueen rajalle"
+
+#: src/compare.c:95
+#, c-format
+msgid "Could only read %lu of %lu byte"
+msgid_plural "Could only read %lu of %lu bytes"
+msgstr[0] "Voitiin lukea vain %lu tavua %lu tavusta"
+msgstr[1] "Voitiin lukea vain %lu tavua %lu tavusta"
+
+#: src/compare.c:105 src/compare.c:383
+msgid "Contents differ"
+msgstr "Sisällöt eroavat"
+
+#: src/compare.c:131 src/extract.c:984 src/incremen.c:1456 src/list.c:456
+#: src/list.c:1388 src/xheader.c:711
+msgid "Unexpected EOF in archive"
+msgstr "Odottamaton tiedoston loppu arkistossa"
+
+#: src/compare.c:179 src/compare.c:195 src/compare.c:309 src/compare.c:407
+msgid "File type differs"
+msgstr "Tiedoston tyyppi eroaa"
+
+#: src/compare.c:182 src/compare.c:202 src/compare.c:323
+msgid "Mode differs"
+msgstr "Tila eroaa"
+
+#: src/compare.c:205
+msgid "Uid differs"
+msgstr "UID eroaa"
+
+#: src/compare.c:207
+msgid "Gid differs"
+msgstr "GID eroaa"
+
+#: src/compare.c:211
+msgid "Mod time differs"
+msgstr "Muutosaika eroaa"
+
+#: src/compare.c:215 src/compare.c:415
+msgid "Size differs"
+msgstr "Koko eroaa"
+
+#: src/compare.c:264
+#, c-format
+msgid "Not linked to %s"
+msgstr "Ei ole linkitetty tiedostoon %s"
+
+#: src/compare.c:288
+msgid "Symlink differs"
+msgstr "Symlinkki eroaa"
+
+#: src/compare.c:317
+msgid "Device number differs"
+msgstr "Laitenumero eroaa"
+
+#: src/compare.c:457
+#, c-format
+msgid "Verify "
+msgstr "Tarkasta "
+
+#: src/compare.c:464
+#, c-format
+msgid "%s: Unknown file type `%c', diffed as normal file"
+msgstr "%s: Tuntematon tiedostotyyppi ”%c”, vertailtu normaalina tiedostona"
+
+# Mitäh?
+#: src/compare.c:520
+msgid "Archive contains file names with leading prefixes removed."
+msgstr "Arkisto sisältää tiedostonimiä, joiden etuliitteet on poistettu."
+
+#: src/compare.c:526
+#, fuzzy
+msgid "Archive contains transformed file names."
+msgstr "Arkisto sisältää käytöstä poistuvia base-64-otsakkeita"
+
+#: src/compare.c:531
+msgid "Verification may fail to locate original files."
+msgstr "Tarkastus ei ehkä löydä alkuperäisiä tiedostoja."
+
+#: src/compare.c:603
+#, c-format
+msgid "VERIFY FAILURE: %d invalid header detected"
+msgid_plural "VERIFY FAILURE: %d invalid headers detected"
+msgstr[0] "TARKASTUSVIRHE: havaittu %d virheellinen otsake"
+msgstr[1] "TARKASTUSVIRHE: havaittu %d virheellistä otsaketta"
+
+#: src/compare.c:621 src/list.c:222
+#, c-format
+msgid "A lone zero block at %s"
+msgstr "Yksinäinen nollalohko kohdassa %s"
+
+#: src/create.c:72
+#, fuzzy, c-format
+msgid "%s: contains a cache directory tag %s; %s"
+msgstr "%s: näyttää välimuistihakemistolta, ei lisätä"
+
+#: src/create.c:261
+#, c-format
+msgid "value %s out of %s range %s..%s; substituting %s"
+msgstr "arvo %s on sallitun %s-välin %s..%s ulkopuolella, korvataan arvolla %s"
+
+#: src/create.c:267
+#, c-format
+msgid "value %s out of %s range %s..%s"
+msgstr "arvo %s on sallitun %s-välin %s..%s ulkopuolella"
+
+#: src/create.c:327
+msgid "Generating negative octal headers"
+msgstr "Luodaan otsakkeet negatiivisilla oktaaleilla"
+
+#: src/create.c:612 src/create.c:675
+#, c-format
+msgid "%s: file name is too long (max %d); not dumped"
+msgstr "%s: tiedostonimi on liian pitkä (maksimi %d), ei lisätä"
+
+#: src/create.c:622
+#, c-format
+msgid "%s: file name is too long (cannot be split); not dumped"
+msgstr "%s: tiedostonimi on liian pitkä (ei voida jakaa), ei lisätä"
+
+#: src/create.c:649
+#, c-format
+msgid "%s: link name is too long; not dumped"
+msgstr "%s: linkin nimi on liian pitkä, ei lisätä"
+
+#: src/create.c:1064
+#, c-format
+msgid "%s: File shrank by %s byte; padding with zeros"
+msgid_plural "%s: File shrank by %s bytes; padding with zeros"
+msgstr[0] "%s: Tiedosto kutistui %s tavun verran, tasataan nollilla"
+msgstr[1] "%s: Tiedosto kutistui %s tavun verran, tasataan nollilla"
+
+#: src/create.c:1160
+#, c-format
+msgid "%s: file is on a different filesystem; not dumped"
+msgstr "%s: tiedosto ei ole samalla tiedostojärjestelmällä, ei lisätä"
+
+#: src/create.c:1203 src/create.c:1214 src/incremen.c:578 src/incremen.c:584
+msgid "contents not dumped"
+msgstr ""
+
+#: src/create.c:1418
+#, c-format
+msgid "%s: Unknown file type; file ignored"
+msgstr "%s: Tuntematon tiedostotyyppi, tiedostoa ei huomioida"
+
+#: src/create.c:1529
+#, fuzzy, c-format
+msgid "Missing links to %s."
+msgstr "Puuttuvat linkit tiedostoon %s.\n"
+
+#: src/create.c:1690
+#, c-format
+msgid "%s: file is unchanged; not dumped"
+msgstr "%s: tiedosto on muuttumaton, ei lisätä"
+
+#: src/create.c:1699
+#, c-format
+msgid "%s: file is the archive; not dumped"
+msgstr "%s: tiedosto on arkistossa, ei lisätä"
+
+#: src/create.c:1723 src/incremen.c:571
+#, fuzzy
+msgid "directory not dumped"
+msgstr "%s: näyttää välimuistihakemistolta, ei lisätä"
+
+#: src/create.c:1795
+#, c-format
+msgid "%s: file changed as we read it"
+msgstr "%s: tiedosto muuttui lukemisen aikana"
+
+#: src/create.c:1858
+#, c-format
+msgid "%s: socket ignored"
+msgstr "%s: pistoketta ei huomioida"
+
+#: src/create.c:1864
+#, c-format
+msgid "%s: door ignored"
+msgstr "%s: ovea ei huomioida"
+
+#: src/delete.c:217 src/list.c:259 src/update.c:205
+msgid "Skipping to next header"
+msgstr "Siirrytään seuraavaan otsakkeeseen"
+
+#: src/delete.c:283
+msgid "Deleting non-header from archive"
+msgstr "Poistetaan epäotsake arkistosta"
+
+#: src/extract.c:277
+#, c-format
+msgid "%s: implausibly old time stamp %s"
+msgstr "%s: epätodennäköisen vanha aikaleima %s"
+
+#: src/extract.c:295
+#, c-format
+msgid "%s: time stamp %s is %s s in the future"
+msgstr "%s: aikaleima %s on %s sekuntia tulevaisuudessa"
+
+#: src/extract.c:475
+#, c-format
+msgid "%s: Unexpected inconsistency when making directory"
+msgstr "%s: Odottamaton ristiriita luotaessa hakemistoa"
+
+#: src/extract.c:721
+#, c-format
+msgid "%s: Directory renamed before its status could be extracted"
+msgstr "%s: Hakemisto nimettiin uudelleen ennen kuin sen tilaa voitiin purkaa"
+
+#: src/extract.c:875
+msgid "Extracting contiguous files as regular files"
+msgstr "Puretaan jatkuvat tiedostot normaaleiksi tiedostoiksi"
+
+#: src/extract.c:1209
+msgid "Attempting extraction of symbolic links as hard links"
+msgstr "Yritetään purkaa symboliset linkit koviksi linkeiksi"
+
+#: src/extract.c:1365
+#, c-format
+msgid "%s: Cannot extract -- file is continued from another volume"
+msgstr "%s: Ei voi purkaa -- tiedosto on jatkoa toisesta arkiston osasta"
+
+#: src/extract.c:1372 src/list.c:1121
+#, fuzzy
+msgid "Unexpected long name header"
+msgstr "Odottamaton tiedoston loppu sovitetuissa nimissä"
+
+#: src/extract.c:1379
+#, c-format
+msgid "%s: Unknown file type `%c', extracted as normal file"
+msgstr "%s: Tuntematon tiedostotyyppi ”%c”, purettiin normaaliksi tiedostoksi"
+
+#: src/extract.c:1405
+#, c-format
+msgid "Current %s is newer or same age"
+msgstr "Nykyinen %s on uudempi tai yhtä vanha"
+
+#: src/extract.c:1457
+#, c-format
+msgid "%s: Was unable to backup this file"
+msgstr "%s: Tätä tiedostoa ei voitu varmuuskopioida"
+
+#: src/extract.c:1594
+#, fuzzy, c-format
+msgid "Cannot rename %s to %s"
+msgstr "%s: Uudelleennimeäminen nimelle %s ei onnistu"
+
+#: src/incremen.c:473 src/incremen.c:517
+#, c-format
+msgid "%s: Directory has been renamed from %s"
+msgstr "%s: Hakemisto %s on nimetty uudelleen"
+
+#: src/incremen.c:485
+#, c-format
+msgid "%s: Directory has been renamed"
+msgstr "%s: Hakemisto on nimetty uudelleen"
+
+#: src/incremen.c:530
+#, c-format
+msgid "%s: Directory is new"
+msgstr "%s: Hakemisto on uusi"
+
+#: src/incremen.c:951 src/incremen.c:968
+msgid "Invalid time stamp"
+msgstr "Virheellinen aikaleima"
+
+#: src/incremen.c:1007
+msgid "Invalid modification time (seconds)"
+msgstr "Virheellinen muutosaika (sekunnit)"
+
+#: src/incremen.c:1022
+msgid "Invalid modification time (nanoseconds)"
+msgstr "Virheellinen muutosaika (nanosekunnit)"
+
+#: src/incremen.c:1042
+msgid "Invalid device number"
+msgstr "Virheellinen laitenumero"
+
+#: src/incremen.c:1057
+msgid "Invalid inode number"
+msgstr "Virheellinen i-solmun numero"
+
+#: src/incremen.c:1108 src/incremen.c:1145
+msgid "Field too long while reading snapshot file"
+msgstr ""
+
+#: src/incremen.c:1115 src/incremen.c:1153
+msgid "Read error in snapshot file"
+msgstr ""
+
+#: src/incremen.c:1117 src/incremen.c:1157 src/incremen.c:1209
+#: src/incremen.c:1267
+#, fuzzy
+msgid "Unexpected EOF in snapshot file"
+msgstr "Odottamaton tiedoston loppu arkistossa"
+
+#: src/incremen.c:1124 src/incremen.c:1164
+msgid "Unexpected field value in snapshot file"
+msgstr ""
+
+#: src/incremen.c:1259
+msgid "Missing record terminator"
+msgstr ""
+
+#: src/incremen.c:1320 src/incremen.c:1323
+msgid "Bad incremental file format"
+msgstr ""
+
+#: src/incremen.c:1342
+#, c-format
+msgid "Unsupported incremental format version: %<PRIuMAX>"
+msgstr ""
+
+#: src/incremen.c:1496
+#, c-format
+msgid "Malformed dumpdir: expected '%c' but found %#3o"
+msgstr ""
+
+#: src/incremen.c:1506
+msgid "Malformed dumpdir: 'X' duplicated"
+msgstr ""
+
+#: src/incremen.c:1519
+#, fuzzy
+msgid "Malformed dumpdir: empty name in 'R'"
+msgstr "Kelvoton tiheysargumentti: ”%s”"
+
+#: src/incremen.c:1532
+msgid "Malformed dumpdir: 'T' not preceeded by 'R'"
+msgstr ""
+
+#: src/incremen.c:1538
+#, fuzzy
+msgid "Malformed dumpdir: empty name in 'T'"
+msgstr "Kelvoton tiheysargumentti: ”%s”"
+
+#: src/incremen.c:1558
+#, c-format
+msgid "Malformed dumpdir: expected '%c' but found end of data"
+msgstr ""
+
+#: src/incremen.c:1565
+msgid "Malformed dumpdir: 'X' never used"
+msgstr ""
+
+#: src/incremen.c:1609
+#, c-format
+msgid "Cannot create temporary directory using template %s"
+msgstr "Väliaikaishakemiston luominen %s-mallia käyttäen ei onnistu"
+
+#: src/incremen.c:1670
+#, c-format
+msgid "%s: Not purging directory: unable to stat"
+msgstr "%s: Ei poisteta hakemistoa: stat ei onnistu"
+
+#: src/incremen.c:1683
+#, c-format
+msgid "%s: directory is on a different device: not purging"
+msgstr "%s: hakemisto on eri laitteella, ei poisteta"
+
+#: src/incremen.c:1691
+#, c-format
+msgid "%s: Deleting %s\n"
+msgstr "%s: Poistetaan %s\n"
+
+#: src/incremen.c:1696
+#, c-format
+msgid "%s: Cannot remove"
+msgstr "%s: Ei voi poistaa"
+
+#: src/list.c:190
+#, c-format
+msgid "%s: Omitting"
+msgstr "%s: Jätetään pois"
+
+#: src/list.c:207
+#, c-format
+msgid "block %s: ** Block of NULs **\n"
+msgstr "lohko %s: ** NUL-lohko **\n"
+
+#: src/list.c:233
+#, c-format
+msgid "block %s: ** End of File **\n"
+msgstr "lohko %s: ** Tiedoston loppu **\n"
+
+#: src/list.c:256 src/list.c:1093 src/list.c:1356
+#, c-format
+msgid "block %s: "
+msgstr "lohko %s: "
+
+#. TRANSLATORS: %s is type of the value (gid_t, uid_t,
+#. etc.)
+#: src/list.c:708
+#, c-format
+msgid "Blanks in header where numeric %s value expected"
+msgstr "Tyhjiä merkkejä otsakkeessa, odotettiin numeerista %s-arvoa"
+
+#. TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.)
+#: src/list.c:763
+#, c-format
+msgid "Archive octal value %.*s is out of %s range; assuming two's complement"
+msgstr ""
+"Arkiston oktaaliarvo %.*s on sallitun %s-välin ulkopuolella, oletetaan "
+"kahden komplementiksi"
+
+#. TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.)
+#: src/list.c:774
+#, c-format
+msgid "Archive octal value %.*s is out of %s range"
+msgstr "Arkiston oktaaliarvo %.*s on sallitun %s-välin ulkopuolella"
+
+#: src/list.c:795
+msgid "Archive contains obsolescent base-64 headers"
+msgstr "Arkisto sisältää käytöstä poistuvia base-64-otsakkeita"
+
+#: src/list.c:809
+#, c-format
+msgid "Archive signed base-64 string %s is out of %s range"
+msgstr ""
+"Arkiston etumerkillinen base-64-merkkijono %s on sallitun %s-välin "
+"ulkopuolella"
+
+#: src/list.c:840
+#, c-format
+msgid "Archive base-256 value is out of %s range"
+msgstr "Arkiston base-256-arvo on sallitun %s-välin ulkopuolella"
+
+#. TRANSLATORS: Second %s is a type name (gid_t,uid_t,etc.)
+#: src/list.c:869
+#, c-format
+msgid "Archive contains %.*s where numeric %s value expected"
+msgstr "Arkisto sisältää merkkijonon %.*s, odotettiin numeerista %s-arvoa"
+
+#. TRANSLATORS: Second %s is type name (gid_t,uid_t,etc.)
+#: src/list.c:891
+#, c-format
+msgid "Archive value %s is out of %s range %s..%s"
+msgstr "Arkiston arvo %s on sallitun %s-välin %s..%s ulkopuolella"
+
+#: src/list.c:1257
+#, c-format
+msgid " link to %s\n"
+msgstr " linkki tiedostoon %s\n"
+
+#: src/list.c:1265
+#, c-format
+msgid " unknown file type %s\n"
+msgstr " tuntematon tiedostotyyppi %s\n"
+
+#: src/list.c:1283
+#, c-format
+msgid "--Long Link--\n"
+msgstr "--Pitkä linkki--\n"
+
+#: src/list.c:1287
+#, c-format
+msgid "--Long Name--\n"
+msgstr "--Pitkä nimi--\n"
+
+#: src/list.c:1291
+#, c-format
+msgid "--Volume Header--\n"
+msgstr "--Arkiston osan otsake--\n"
+
+#: src/list.c:1299
+#, c-format
+msgid "--Continued at byte %s--\n"
+msgstr "--Jatkuu tavusta %s--\n"
+
+#: src/list.c:1361
+msgid "Creating directory:"
+msgstr "Luodaan hakemisto:"
+
+#: src/misc.c:297
+#, fuzzy
+msgid "Cannot get working directory"
+msgstr "Työhakemistoa ei voi vaihtaa"
+
+#: src/misc.c:570
+#, c-format
+msgid "Renaming %s to %s\n"
+msgstr "Nimetään uudelleen %s -> %s\n"
+
+#: src/misc.c:579 src/misc.c:598
+#, c-format
+msgid "%s: Cannot rename to %s"
+msgstr "%s: Uudelleennimeäminen nimelle %s ei onnistu"
+
+#: src/misc.c:603
+#, c-format
+msgid "Renaming %s back to %s\n"
+msgstr "Nimetään %s takaisin nimelle %s\n"
+
+#: src/misc.c:850
+#, c-format
+msgid "%s: File removed before we read it"
+msgstr "%s: Tiedosto oli poistettu ennen sen lukemista"
+
+#: src/misc.c:871
+msgid "child process"
+msgstr "lapsiprosessi"
+
+#: src/misc.c:880
+msgid "interprocess channel"
+msgstr "prosessienvälinen kanava"
+
+# ... ja sen pitää päätyä kääntäjien ongelmaksi?
+#: src/names.c:590
+#, fuzzy
+msgid "Pattern matching characters used in file names"
+msgstr "Tiedostonimissä on käytetty jokerimerkkejä. Käytä"
+
+#: src/names.c:592
+#, fuzzy
+msgid ""
+"Use --wildcards to enable pattern matching, or --no-wildcards to suppress "
+"this warning"
+msgstr "valitsinta --wildcards täsmäyksen käyttöön ottamiseksi, tai"
+
+#: src/names.c:610 src/names.c:626
+#, c-format
+msgid "%s: Not found in archive"
+msgstr "%s: Ei löytynyt arkistosta"
+
+#: src/names.c:611
+#, c-format
+msgid "%s: Required occurrence not found in archive"
+msgstr "%s: Vaadittua esiintymää ei löytynyt arkistosta"
+
+#: src/names.c:645
+#, fuzzy, c-format
+msgid "Archive label mismatch"
+msgstr "Arkistoa ei ole nimetty täsmää nimiöön %s"
+
+#: src/names.c:949
+msgid ""
+"Using -C option inside file list is not allowed with --listed-incremental"
+msgstr ""
+
+#: src/names.c:955
+msgid "Only one -C option is allowed with --listed-incremental"
+msgstr ""
+
+#: src/tar.c:81
+#, c-format
+msgid "Options `-%s' and `-%s' both want standard input"
+msgstr "Kumpikin valitsimista ”-%s” ja ”-%s” käyttää vakiosyötettä"
+
+#: src/tar.c:158
+#, c-format
+msgid "%s: Invalid archive format"
+msgstr "%s: Virheellinen arkistomuoto"
+
+#: src/tar.c:182
+msgid "GNU features wanted on incompatible archive format"
+msgstr ""
+"Haluttiin käyttää GNU-ominaisuuksia yhteensopimattoman arkistomuodon kanssa"
+
+#: src/tar.c:250
+#, c-format
+msgid ""
+"Unknown quoting style `%s'. Try `%s --quoting-style=help' to get a list."
+msgstr ""
+
+#: src/tar.c:348
+msgid ""
+"GNU `tar' saves many files together into a single tape or disk archive, and "
+"can restore individual files from the archive.\n"
+"\n"
+"Examples:\n"
+"  tar -cf archive.tar foo bar  # Create archive.tar from files foo and bar.\n"
+"  tar -tvf archive.tar         # List all files in archive.tar verbosely.\n"
+"  tar -xf archive.tar          # Extract all files from archive.tar.\n"
+msgstr ""
+"GNU ”tar” tallentaa useita tiedostoja yhteen nauha- tai levyarkistoon, ja\n"
+"pystyy palauttamaan yksittäisiä tiedostoja arkistosta.\n"
+"\n"
+"Esimerkkejä:\n"
+"  %s -cf arkisto.tar foo bar   # Luo arkisto.tar tiedostoista foo ja bar.\n"
+"  %s -tvf arkisto.tar          # Listaa kaikki arkisto.tar:in tiedostot.\n"
+"  %s -xf arkisto.tar           # Pura kaikki tiedostot arkisto.tar:ista.\n"
+
+#: src/tar.c:357
+msgid ""
+"The backup suffix is `~', unless set with --suffix or SIMPLE_BACKUP_SUFFIX.\n"
+"The version control may be set with --backup or VERSION_CONTROL, values "
+"are:\n"
+"\n"
+"  none, off       never make backups\n"
+"  t, numbered     make numbered backups\n"
+"  nil, existing   numbered if numbered backups exist, simple otherwise\n"
+"  never, simple   always make simple backups\n"
+msgstr ""
+"Varmuuskopion jälkiliite on ”~”, ellei sitä ole asetettu valitsimella\n"
+"--suffix tai muuttujalla SIMPLE_BACKUP_SUFFIX. Versionhallintaa voidaan\n"
+"säätää valitsimella --backup tai muuttujalla VERSION_CONTROL; arvot ovat:\n"
+"\n"
+"  none, off       älä tee varmuuskopioita koskaan\n"
+"  t, numbered     tee numeroituja varmuuskopioita\n"
+"  nil, existing   numeroituja, jos numeroituja varmuuskopioita on olemassa,\n"
+"                  muuten yksinkertaisia\n"
+"  never, simple   tee aina yksinkertaisia varmuuskopioita\n"
+
+#: src/tar.c:387
+msgid "Main operation mode:"
+msgstr "Päätoimintatila:"
+
+#: src/tar.c:390
+msgid "list the contents of an archive"
+msgstr "listaa arkiston sisältö"
+
+#: src/tar.c:392
+msgid "extract files from an archive"
+msgstr "pura tiedostoja arkistosta"
+
+#: src/tar.c:395
+msgid "create a new archive"
+msgstr "luo uusi arkisto"
+
+#: src/tar.c:397
+msgid "find differences between archive and file system"
+msgstr "etsi arkiston ja tiedostojärjestelmän väliset erot"
+
+#: src/tar.c:400
+msgid "append files to the end of an archive"
+msgstr "lisää tiedostoja arkiston loppuun"
+
+#: src/tar.c:402
+msgid "only append files newer than copy in archive"
+msgstr "lisää vain arkistokopiota uudemmat tiedostot"
+
+#: src/tar.c:404
+msgid "append tar files to an archive"
+msgstr "lisää tar-tiedostoja arkistoon"
+
+#: src/tar.c:407
+msgid "delete from the archive (not on mag tapes!)"
+msgstr "poista tiedostoja arkistosta (ei toimi magneettinauhoilla!)"
+
+#: src/tar.c:409
+msgid "test the archive volume label and exit"
+msgstr ""
+
+#: src/tar.c:414
+msgid "Operation modifiers:"
+msgstr "Toimintovalinnat:"
+
+#: src/tar.c:417
+msgid "handle sparse files efficiently"
+msgstr "käsittele harvat tiedostot tehokkaasti"
+
+#: src/tar.c:418
+msgid "MAJOR[.MINOR]"
+msgstr ""
+
+#: src/tar.c:419
+msgid "set version of the sparse format to use (implies --sparse)"
+msgstr ""
+
+#: src/tar.c:421
+msgid "handle old GNU-format incremental backup"
+msgstr "käsittele vanha GNU-muotoinen lisääntyvä varmuuskopio"
+
+#: src/tar.c:423
+msgid "handle new GNU-format incremental backup"
+msgstr "käsittele uusi GNU-muotoinen lisääntyvä varmuuskopio"
+
+#: src/tar.c:425
+msgid "dump level for created listed-incremental archive"
+msgstr ""
+
+#: src/tar.c:427
+msgid "do not exit with nonzero on unreadable files"
+msgstr "jatka lukukelvottomista tiedostoista huolimatta"
+
+#: src/tar.c:429
+msgid ""
+"process only the NUMBERth occurrence of each file in the archive; this "
+"option is valid only in conjunction with one of the subcommands --delete, --"
+"diff, --extract or --list and when a list of files is given either on the "
+"command line or via the -T option; NUMBER defaults to 1"
+msgstr ""
+"käsittele vain kunkin tiedoston MÄÄRÄ-järjestyslukuinen esiintymä "
+"arkistossa; tämä valitsin on kelvollinen vain yhdessä alikomentojen --"
+"delete, --diff, --extract tai --list kanssa, ja kun luettelo tiedostoista on "
+"annettu komentirivillä tai -T-valitsimella; oletusMÄÄRÄ on 1"
+
+# Muualla seek on siirtymistä...
+#: src/tar.c:435
+msgid "archive is seekable"
+msgstr "arkisto on selattava"
+
+# Muualla seek on siirtymistä...
+#: src/tar.c:437
+#, fuzzy
+msgid "archive is not seekable"
+msgstr "arkisto on selattava"
+
+#: src/tar.c:439
+msgid "do not check device numbers when creating incremental archives"
+msgstr ""
+
+#: src/tar.c:442
+msgid "check device numbers when creating incremental archives (default)"
+msgstr ""
+
+#: src/tar.c:448
+msgid "Overwrite control:"
+msgstr ""
+
+#: src/tar.c:451
+msgid "attempt to verify the archive after writing it"
+msgstr "yritä varmistaa arkisto kirjoittamisen jälkeen"
+
+#: src/tar.c:453
+msgid "remove files after adding them to the archive"
+msgstr "poista tiedostot arkistoon lisäämisen jälkeen"
+
+#: src/tar.c:455
+msgid "don't replace existing files when extracting"
+msgstr "älä korvaa olemassaolevia tiedostoja purettaessa"
+
+#: src/tar.c:457
+msgid "don't replace existing files that are newer than their archive copies"
+msgstr ""
+"älä korvaa olemassaolevia tiedostoja, jotka ovat arkistokopioitaan uudempia"
+
+#: src/tar.c:459
+msgid "overwrite existing files when extracting"
+msgstr "ylikirjoita olemassaolevat tiedostot purettaessa"
+
+#: src/tar.c:461
+msgid "remove each file prior to extracting over it"
+msgstr "poista jokainen tiedosto ennen sen päälle purkamista"
+
+#: src/tar.c:463
+msgid "empty hierarchies prior to extracting directory"
+msgstr "tyhjennä rakenne ennen hakemiston purkamista"
+
+#: src/tar.c:465
+msgid "preserve metadata of existing directories"
+msgstr "säilytä olemassaolevien hakemistojen metatiedot"
+
+#: src/tar.c:467
+#, fuzzy
+msgid "overwrite metadata of existing directories when extracting (default)"
+msgstr "ylikirjoita olemassaolevat tiedostot purettaessa"
+
+#: src/tar.c:473
+msgid "Select output stream:"
+msgstr "Valitse tulostusvirta:"
+
+#: src/tar.c:476
+msgid "extract files to standard output"
+msgstr "pura tiedostot vakiotulosteeseen"
+
+#: src/tar.c:477 src/tar.c:536 src/tar.c:538 tests/genfile.c:190
+msgid "COMMAND"
+msgstr "KOMENTO"
+
+#: src/tar.c:478
+msgid "pipe extracted files to another program"
+msgstr "putkita puretut tiedostot toiselle ohjelmalle"
+
+#: src/tar.c:480
+msgid "ignore exit codes of children"
+msgstr "jätä lapsiprosessien paluuarvot huomiotta"
+
+#: src/tar.c:482
+msgid "treat non-zero exit codes of children as error"
+msgstr "käsittele lapsiprosessien nollasta poikkeavat paluuarvot virheinä"
+
+#: src/tar.c:487
+msgid "Handling of file attributes:"
+msgstr "Tiedostojen ominaisuuksien käsittely:"
+
+#: src/tar.c:490
+msgid "force NAME as owner for added files"
+msgstr "pakota NIMI lisättyjen tiedostojen omistajaksi"
+
+#: src/tar.c:492
+msgid "force NAME as group for added files"
+msgstr "pakota NIMI lisättyjen tiedostojen ryhmäksi"
+
+#: src/tar.c:493 src/tar.c:690
+msgid "DATE-OR-FILE"
+msgstr "PÄIVÄYS-TAI-TIED"
+
+#: src/tar.c:494
+#, fuzzy
+msgid "set mtime for added files from DATE-OR-FILE"
+msgstr "tallenna vain PÄIVÄYS-TAI-TIEDostoa uudemmat tiedostot"
+
+#: src/tar.c:495
+msgid "CHANGES"
+msgstr "MUUTOS"
+
+#: src/tar.c:496
+msgid "force (symbolic) mode CHANGES for added files"
+msgstr "pakota (symbolinen) tila MUUTOS lisätyille"
+
+#: src/tar.c:498
+msgid "METHOD"
+msgstr ""
+
+#: src/tar.c:499
+msgid ""
+"preserve access times on dumped files, either by restoring the times after "
+"reading (METHOD='replace'; default) or by not setting the times in the first "
+"place (METHOD='system')"
+msgstr ""
+
+#: src/tar.c:503
+msgid "don't extract file modified time"
+msgstr "älä pura tiedoston muutosaikaa"
+
+#: src/tar.c:505
+#, fuzzy
+msgid ""
+"try extracting files with the same ownership as exists in the archive "
+"(default for superuser)"
+msgstr "yritä purkaa tiedostot samalla omistajuudella"
+
+#: src/tar.c:507
+#, fuzzy
+msgid "extract files as yourself (default for ordinary users)"
+msgstr "pura tiedostot itsenäsi"
+
+#: src/tar.c:509
+msgid "always use numbers for user/group names"
+msgstr "käytä aina numeroita käyttäjän/ryhmän nimissä"
+
+#: src/tar.c:511
+msgid "extract information about file permissions (default for superuser)"
+msgstr ""
+
+#: src/tar.c:515
+msgid ""
+"apply the user's umask when extracting permissions from the archive (default "
+"for ordinary users)"
+msgstr ""
+
+#: src/tar.c:517
+msgid "sort names to extract to match archive"
+msgstr "lajittele purettavat tiedostonimet täsmäämään arkistoon"
+
+#: src/tar.c:520
+msgid "same as both -p and -s"
+msgstr "sama kuin -p ja -s yhdessä"
+
+#: src/tar.c:522
+msgid ""
+"delay setting modification times and permissions of extracted directories "
+"until the end of extraction"
+msgstr ""
+
+#: src/tar.c:525
+msgid "cancel the effect of --delay-directory-restore option"
+msgstr ""
+
+#: src/tar.c:530
+#, fuzzy
+msgid "Device selection and switching:"
+msgstr "Laitteen valinta ja vaihtaminen:\n"
+
+#: src/tar.c:532
+msgid "ARCHIVE"
+msgstr "ARKISTO"
+
+#: src/tar.c:533
+msgid "use archive file or device ARCHIVE"
+msgstr "käytä arkistotiedostoa tai -laitetta ARKISTO"
+
+#: src/tar.c:535
+msgid "archive file is local even if it has a colon"
+msgstr "arkisto on paikallinen vaikka nimessä olisi kaksoispiste"
+
+#: src/tar.c:537
+msgid "use given rmt COMMAND instead of rmt"
+msgstr "käytä rmt-KOMENTOA rmt:n sijaan"
+
+#: src/tar.c:539
+msgid "use remote COMMAND instead of rsh"
+msgstr "käytä etäKOMENTOa rsh:n sijaan"
+
+#: src/tar.c:543
+msgid "specify drive and density"
+msgstr "anna asema ja tiheys"
+
+#: src/tar.c:557
+msgid "create/list/extract multi-volume archive"
+msgstr "luo/listaa/pura moniosainen arkisto"
+
+#: src/tar.c:559
+msgid "change tape after writing NUMBER x 1024 bytes"
+msgstr "vaihda nauhaa MÄÄRÄ × 1024 kirjoitetun tavun jälkeen"
+
+#: src/tar.c:561
+msgid "run script at end of each tape (implies -M)"
+msgstr "aja skripti joka nauhan lopussa (valitsin -M tulee käyttöön)"
+
+#: src/tar.c:564
+msgid "use/update the volume number in FILE"
+msgstr "käytä/päivitä arkiston osan numero TIEDostossa"
+
+#: src/tar.c:569
+msgid "Device blocking:"
+msgstr "Laitteen lohkot:"
+
+#: src/tar.c:571
+msgid "BLOCKS"
+msgstr "LOHKOT"
+
+#: src/tar.c:572
+msgid "BLOCKS x 512 bytes per record"
+msgstr "LOHKOT × 512 tavua tietuetta kohti"
+
+#: src/tar.c:574
+msgid "NUMBER of bytes per record, multiple of 512"
+msgstr "MÄÄRÄ tavua tietuetta kohti, 512:n monikerta"
+
+#: src/tar.c:576
+msgid "ignore zeroed blocks in archive (means EOF)"
+msgstr "älä huomioi nollattuja lohkoja arkistossa (merkitsee tiedoston loppua)"
+
+#: src/tar.c:578
+msgid "reblock as we read (for 4.2BSD pipes)"
+msgstr "suorita lohkominen uudelleen luettaessa (4.2BSD-putkia varten)"
+
+#: src/tar.c:583
+msgid "Archive format selection:"
+msgstr "Arkistomuodon valinta:"
+
+#: src/tar.c:585 tests/genfile.c:153
+msgid "FORMAT"
+msgstr "MUOTO"
+
+#: src/tar.c:586
+msgid "create archive of the given format"
+msgstr "luo annetun muotoinen arkisto"
+
+#: src/tar.c:588
+msgid "FORMAT is one of the following:"
+msgstr "MUOTO on yksi seuraavista:"
+
+#: src/tar.c:589
+msgid "old V7 tar format"
+msgstr "vanha V7-tar-muoto"
+
+#: src/tar.c:592
+msgid "GNU format as per tar <= 1.12"
+msgstr "GNU-muoto tar-versioilla ≤ 1.12"
+
+#: src/tar.c:594
+msgid "GNU tar 1.13.x format"
+msgstr "GNU tar 1.13.x -muoto"
+
+#: src/tar.c:596
+msgid "POSIX 1003.1-1988 (ustar) format"
+msgstr "POSIX 1003.1-1988 (ustar) -muoto"
+
+#: src/tar.c:598
+msgid "POSIX 1003.1-2001 (pax) format"
+msgstr "POSIX 1003.1-2001 (pax) -muoto"
+
+#: src/tar.c:599
+msgid "same as pax"
+msgstr "sama kuin pax"
+
+#: src/tar.c:602
+msgid "same as --format=v7"
+msgstr "sama kuin --format=v7"
+
+#: src/tar.c:605
+msgid "same as --format=posix"
+msgstr "sama kuin --format=posix"
+
+#: src/tar.c:606
+msgid "keyword[[:]=value][,keyword[[:]=value]]..."
+msgstr "avainsana[[:]=arvo][,avainsana[[:]=arvo]]..."
+
+#: src/tar.c:607
+msgid "control pax keywords"
+msgstr "määrittele pax-avainsanoja"
+
+#: src/tar.c:608
+msgid "TEXT"
+msgstr "TEKSTI"
+
+#: src/tar.c:609
+msgid ""
+"create archive with volume name TEXT; at list/extract time, use TEXT as a "
+"globbing pattern for volume name"
+msgstr ""
+"luo arkisto nimiöllä TEKSTI. Listattaessa/purettaessa käytä TEKSTIä "
+"nimiönhakulausekkeena"
+
+#: src/tar.c:614
+#, fuzzy
+msgid "Compression options:"
+msgstr "Ristiriitaiset pakkausvalitsimet"
+
+#: src/tar.c:616
+msgid "use archive suffix to determine the compression program"
+msgstr ""
+
+#: src/tar.c:618
+msgid "do not use archive suffix to determine the compression program"
+msgstr ""
+
+#: src/tar.c:620
+msgid "PROG"
+msgstr "OHJ"
+
+#: src/tar.c:621
+msgid "filter through PROG (must accept -d)"
+msgstr "ohjaa OHJelman läpi (on hyväksyttävä -d)"
+
+#: src/tar.c:637
+msgid "Local file selection:"
+msgstr "Paikallisten tiedostojen valinta:"
+
+#: src/tar.c:640
+msgid "add given FILE to the archive (useful if its name starts with a dash)"
+msgstr ""
+"lisää annettu TIEDosto arkistoon (hyödyllinen, jos nimi alkaa viivalla)"
+
+#: src/tar.c:641
+msgid "DIR"
+msgstr "HAK"
+
+#: src/tar.c:642
+msgid "change to directory DIR"
+msgstr "siirry hakemistoon HAK"
+
+#: src/tar.c:644
+msgid "get names to extract or create from FILE"
+msgstr "hae purettavat/luotavat nimet TIEDOSTOsta"
+
+#: src/tar.c:646
+msgid "-T reads null-terminated names, disable -C"
+msgstr "-T lukee nollaan päättyviä nimiä, poistaa käytöstä -C:n"
+
+#: src/tar.c:648
+msgid "disable the effect of the previous --null option"
+msgstr ""
+
+#: src/tar.c:650
+msgid "unquote filenames read with -T (default)"
+msgstr ""
+
+#: src/tar.c:652
+msgid "do not unquote filenames read with -T"
+msgstr ""
+
+#: src/tar.c:653 tests/genfile.c:136
+msgid "PATTERN"
+msgstr "HAHMO"
+
+#: src/tar.c:654
+msgid "exclude files, given as a PATTERN"
+msgstr "jätä pois HAHMOn mukaiset tiedostot"
+
+#: src/tar.c:656
+msgid "exclude patterns listed in FILE"
+msgstr "jätä pois TIEDOSTOssa listatut hahmot"
+
+#: src/tar.c:658
+#, fuzzy
+msgid ""
+"exclude contents of directories containing CACHEDIR.TAG, except for the tag "
+"file itself"
+msgstr "jätä pois välimuistihakemistot"
+
+#: src/tar.c:661
+#, fuzzy
+msgid "exclude everything under directories containing CACHEDIR.TAG"
+msgstr "jätä pois TIEDOSTOn sisältävät hakemistot"
+
+#: src/tar.c:664
+#, fuzzy
+msgid "exclude directories containing CACHEDIR.TAG"
+msgstr "jätä pois TIEDOSTOn sisältävät hakemistot"
+
+#: src/tar.c:666
+#, fuzzy
+msgid "exclude contents of directories containing FILE, except for FILE itself"
+msgstr "jätä pois TIEDOSTOn sisältävät hakemistot"
+
+#: src/tar.c:669
+#, fuzzy
+msgid "exclude everything under directories containing FILE"
+msgstr "jätä pois TIEDOSTOn sisältävät hakemistot"
+
+#: src/tar.c:671
+msgid "exclude directories containing FILE"
+msgstr "jätä pois TIEDOSTOn sisältävät hakemistot"
+
+#: src/tar.c:673
+msgid "exclude version control system directories"
+msgstr ""
+
+#: src/tar.c:675
+msgid "exclude backup and lock files"
+msgstr ""
+
+#: src/tar.c:677
+msgid "avoid descending automatically in directories"
+msgstr "estä automaattinen eteneminen alihakemistoihin"
+
+#: src/tar.c:679
+msgid "stay in local file system when creating archive"
+msgstr "pysy nykyisessä tiedostojärjestelmässä arkistoa luotaessa"
+
+#: src/tar.c:681
+msgid "recurse into directories (default)"
+msgstr "etene alihakemistoihin (oletus)"
+
+#: src/tar.c:683
+msgid "don't strip leading `/'s from file names"
+msgstr "älä poista ”/”-merkkiä tiedostonimien alusta"
+
+#: src/tar.c:685
+#, fuzzy
+msgid "follow symlinks; archive and dump the files they point to"
+msgstr "seuraa symlinkkejä; "
+
+#: src/tar.c:687
+#, fuzzy
+msgid "follow hard links; archive and dump the files they refer to"
+msgstr "seuraa symlinkkejä; "
+
+#: src/tar.c:688
+msgid "MEMBER-NAME"
+msgstr "TIED-NIMI"
+
+#: src/tar.c:689
+msgid "begin at member MEMBER-NAME in the archive"
+msgstr "aloita arkiston tiedostosta TIED-NIMI"
+
+#: src/tar.c:691
+msgid "only store files newer than DATE-OR-FILE"
+msgstr "tallenna vain PÄIVÄYS-TAI-TIEDostoa uudemmat tiedostot"
+
+#: src/tar.c:693
+msgid "DATE"
+msgstr "PÄIVÄYS"
+
+#: src/tar.c:694
+msgid "compare date and time when data changed only"
+msgstr "vertaa vain tiedoston muutosaikaa"
+
+#: src/tar.c:695
+msgid "CONTROL"
+msgstr "HALLINTA"
+
+#: src/tar.c:696
+msgid "backup before removal, choose version CONTROL"
+msgstr "varmuuskopiointi ennen poistoa, valitse versionHALLINTA"
+
+#: src/tar.c:697 src/tar.c:776 src/tar.c:778 tests/genfile.c:169
+msgid "STRING"
+msgstr "MERKKIJONO"
+
+#: src/tar.c:698
+msgid ""
+"backup before removal, override usual suffix ('~' unless overridden by "
+"environment variable SIMPLE_BACKUP_SUFFIX)"
+msgstr ""
+"varmuuskopiointi ennen poistoa, älä käytä tavanomaista jälkiliitettä (joka "
+"on ”~”, ellei muuttujaa SIMPLE_BACKUP_SUFFIX ole asetettu)"
+
+#: src/tar.c:703
+msgid "File name transformations:"
+msgstr ""
+
+#: src/tar.c:705
+#, fuzzy
+msgid "strip NUMBER leading components from file names on extraction"
+msgstr "poista MÄÄRÄn verran osia tiedostonimien alusta"
+
+#: src/tar.c:707
+msgid "EXPRESSION"
+msgstr ""
+
+#: src/tar.c:708
+msgid "use sed replace EXPRESSION to transform file names"
+msgstr ""
+
+#: src/tar.c:714
+msgid "File name matching options (affect both exclude and include patterns):"
+msgstr ""
+
+#: src/tar.c:717
+#, fuzzy
+msgid "ignore case"
+msgstr "poisjättäminen ei huomioi kirjainkokoa"
+
+#: src/tar.c:719
+#, fuzzy
+msgid "patterns match file name start"
+msgstr "poisjättöhahmoja verrataan nimen alkuun"
+
+#: src/tar.c:721
+#, fuzzy
+msgid "patterns match after any `/' (default for exclusion)"
+msgstr "poisjättöhahmoja verrataan jokaisen ”/”:n jälkeen"
+
+#: src/tar.c:723
+#, fuzzy
+msgid "case sensitive matching (default)"
+msgstr "poisjättäminen huomioi kirjainkoon (oletus)"
+
+#: src/tar.c:725
+msgid "use wildcards (default for exclusion)"
+msgstr ""
+
+#: src/tar.c:727
+msgid "verbatim string matching"
+msgstr ""
+
+#: src/tar.c:729
+#, fuzzy
+msgid "wildcards do not match `/'"
+msgstr "poisjättöhahmon jokerimerkit eivät täsmää ”/”-merkkiin"
+
+#: src/tar.c:731
+#, fuzzy
+msgid "wildcards match `/' (default for exclusion)"
+msgstr "poisjättöhahmon jokerimerkit vastaavat merkkiä ”/”"
+
+#: src/tar.c:736
+msgid "Informative output:"
+msgstr "Tietoja antava tuloste:"
+
+#: src/tar.c:739
+msgid "verbosely list files processed"
+msgstr "listaa käsiteltävät tiedostot"
+
+#: src/tar.c:740
+msgid "KEYWORD"
+msgstr ""
+
+#: src/tar.c:741
+msgid "warning control"
+msgstr ""
+
+#: src/tar.c:743
+#, fuzzy
+msgid "display progress messages every NUMBERth record (default 10)"
+msgstr "näytä edistymisviesti 10 sekunnin välein"
+
+#: src/tar.c:745
+msgid "ACTION"
+msgstr ""
+
+#: src/tar.c:746
+msgid "execute ACTION on each checkpoint"
+msgstr ""
+
+#: src/tar.c:749
+msgid "print a message if not all links are dumped"
+msgstr "näytä viesti, ellei kaikkia linkkejä lisätty"
+
+#: src/tar.c:750
+msgid "SIGNAL"
+msgstr ""
+
+#: src/tar.c:751
+msgid ""
+"print total bytes after processing the archive; with an argument - print "
+"total bytes when this SIGNAL is delivered; Allowed signals are: SIGHUP, "
+"SIGQUIT, SIGINT, SIGUSR1 and SIGUSR2; the names without SIG prefix are also "
+"accepted"
+msgstr ""
+
+#: src/tar.c:756
+#, fuzzy
+msgid "print file modification times in UTC"
+msgstr "näytä tiedostojen muutosajat UTC-aikoina"
+
+#: src/tar.c:758
+msgid "print file time to its full resolution"
+msgstr ""
+
+#: src/tar.c:760
+msgid "send verbose output to FILE"
+msgstr "ohjaa monisanainen tuloste TIEDostoon"
+
+#: src/tar.c:762
+msgid "show block number within archive with each message"
+msgstr "näytä lohkonumero arkistossa viestien yhteydessä"
+
+#: src/tar.c:764
+msgid "ask for confirmation for every action"
+msgstr "kysy varmistusta jokaiselle toiminnolle"
+
+#: src/tar.c:767
+msgid "show tar defaults"
+msgstr "näytä tarin oletukset"
+
+#: src/tar.c:769
+msgid ""
+"when listing or extracting, list each directory that does not match search "
+"criteria"
+msgstr ""
+"luettele hakuehtoihin täsmäämättömät hakemistot luetellessa tai purettaessa"
+
+#: src/tar.c:771
+msgid "show file or archive names after transformation"
+msgstr ""
+
+#: src/tar.c:774
+msgid "STYLE"
+msgstr ""
+
+#: src/tar.c:775
+msgid "set name quoting style; see below for valid STYLE values"
+msgstr ""
+
+#: src/tar.c:777
+msgid "additionally quote characters from STRING"
+msgstr ""
+
+#: src/tar.c:779
+msgid "disable quoting for characters from STRING"
+msgstr ""
+
+#: src/tar.c:784
+msgid "Compatibility options:"
+msgstr "Yhteensopivuusvalitsimet:"
+
+#: src/tar.c:787
+#, fuzzy
+msgid ""
+"when creating, same as --old-archive; when extracting, same as --no-same-"
+"owner"
+msgstr ""
+"luotaessa sama kuin --old-archive purettaessa sama kuin --no-same-owner"
+
+#: src/tar.c:792
+msgid "Other options:"
+msgstr "Muut valitsimet:"
+
+#: src/tar.c:795
+msgid "disable use of some potentially harmful options"
+msgstr "poista käytöstä joitakin potentiaalisesti vahingollisia valitsimia"
+
+#: src/tar.c:930
+#, fuzzy
+msgid "You may not specify more than one `-Acdtrux' or `--test-label' option"
+msgstr "Vain yhtä valitsimista ”-Acdtrux” voi käyttää kerrallaan"
+
+#: src/tar.c:940
+msgid "Conflicting compression options"
+msgstr "Ristiriitaiset pakkausvalitsimet"
+
+#: src/tar.c:996
+#, c-format
+msgid "Unknown signal name: %s"
+msgstr "Tuntematon signaalin nimi: %s"
+
+#: src/tar.c:1020
+#, fuzzy
+msgid "Date sample file not found"
+msgstr "Päiväystiedostoa ei löytynyt"
+
+#: src/tar.c:1028
+#, c-format
+msgid "Substituting %s for unknown date format %s"
+msgstr "Korvataan tuntematon päiväysmuoto %2$s arvolla %1$s"
+
+#: src/tar.c:1057
+#, c-format
+msgid "Option %s: Treating date `%s' as %s"
+msgstr "Valitsin %s: Käsittellään päiväys %s arvona %s"
+
+#: src/tar.c:1135
+#, fuzzy, c-format
+msgid "%s: file list already read"
+msgstr "%s: tiedosto on arkistossa, ei lisätä"
+
+#: src/tar.c:1201
+#, c-format
+msgid "%s: file name read contains nul character"
+msgstr "%s: tiedostonimi sisältää nul-merkin"
+
+#: src/tar.c:1268 src/tar.c:1272 src/tar.c:1276 src/tar.c:1280 src/tar.c:1284
+#: src/tar.c:1288
+#, fuzzy, c-format
+msgid "filter the archive through %s"
+msgstr "ohjaa arkisto gzip-ohjelman läpi"
+
+#: src/tar.c:1296
+#, fuzzy
+msgid "Valid arguments for the --quoting-style option are:"
+msgstr "Kelvolliset argumentit --quoting-style -valitsimille ovat:"
+
+#: src/tar.c:1300
+msgid ""
+"\n"
+"*This* tar defaults to:\n"
+msgstr ""
+"\n"
+"*Tämä* tar käyttää oletuksena:\n"
+
+#: src/tar.c:1402
+msgid "Invalid blocking factor"
+msgstr "Virheellinen lohkomiskerroin"
+
+#: src/tar.c:1515
+msgid "Invalid tape length"
+msgstr "Virheellinen nauhan pituus"
+
+#: src/tar.c:1529
+msgid "Invalid incremental level value"
+msgstr ""
+
+#: src/tar.c:1575
+msgid "More than one threshold date"
+msgstr "Annettu useampi kuin yksi kynnyspäiväys"
+
+#: src/tar.c:1630 src/tar.c:1633
+msgid "Invalid sparse version value"
+msgstr ""
+
+#: src/tar.c:1718
+msgid "--atime-preserve='system' is not supported on this platform"
+msgstr "--atime-preserve='system' ei ole tuettu tällä alustalla"
+
+#: src/tar.c:1743
+msgid "--checkpoint value is not an integer"
+msgstr ""
+
+#: src/tar.c:1848
+#, fuzzy
+msgid "Invalid group"
+msgstr "%s: Virheellinen ryhmä"
+
+#: src/tar.c:1855
+msgid "Invalid mode given on option"
+msgstr "Valitsimelle annettiin virheellinen tila"
+
+#: src/tar.c:1912
+msgid "Invalid number"
+msgstr "Virheellinen määrä"
+
+#: src/tar.c:1934
+msgid "Invalid owner"
+msgstr "Virheellinen omistaja"
+
+#: src/tar.c:1964
+msgid ""
+"The --preserve option is deprecated, use --preserve-permissions --preserve-"
+"order instead"
+msgstr ""
+
+#: src/tar.c:1975
+msgid "Invalid record size"
+msgstr "Virheellinen tietueen koko"
+
+#: src/tar.c:1978
+#, c-format
+msgid "Record size must be a multiple of %d."
+msgstr "Tietueen koon on oltava %d:n monikerta."
+
+#: src/tar.c:2019
+msgid "Invalid number of elements"
+msgstr "Virheellinen osien määrä"
+
+#: src/tar.c:2039
+msgid "Only one --to-command option allowed"
+msgstr ""
+
+#: src/tar.c:2119
+#, c-format
+msgid "Malformed density argument: %s"
+msgstr "Kelvoton tiheysargumentti: %s"
+
+#: src/tar.c:2145
+#, c-format
+msgid "Unknown density: `%c'"
+msgstr "Tuntematon tiheys: ”%c”"
+
+#: src/tar.c:2162
+#, c-format
+msgid "Options `-[0-7][lmh]' not supported by *this* tar"
+msgstr "*Tämä* tar ei tue valitsimia ”-[0-7][lmh]”"
+
+#: src/tar.c:2175
+msgid "[FILE]..."
+msgstr "[TIEDOSTO]..."
+
+#: src/tar.c:2293
+#, c-format
+msgid "Old option `%c' requires an argument."
+msgstr "Vanha valitsin ”%c” vaatii argumentin."
+
+#: src/tar.c:2374
+msgid "--occurrence is meaningless without a file list"
+msgstr "valitsin --occurence on merkityksetön ilman tiedostoluetteloa"
+
+#: src/tar.c:2380
+msgid "--occurrence cannot be used in the requested operation mode"
+msgstr "valitsinta --occurence ei voi käyttää pyydetyssä toimintatilassa"
+
+#: src/tar.c:2398
+msgid "Multiple archive files require `-M' option"
+msgstr "Usean arkistotiedoston käyttäminen vaatii valitsimen ”-M”"
+
+#: src/tar.c:2403
+msgid "Cannot combine --listed-incremental with --newer"
+msgstr "Valitsimia --listed-incremental ja --newer ei voi käyttää yhdessä"
+
+#: src/tar.c:2406
+#, fuzzy
+msgid "--level is meaningless without --listed-incremental"
+msgstr "valitsin --occurence on merkityksetön ilman tiedostoluetteloa"
+
+#: src/tar.c:2423
+#, c-format
+msgid "%s: Volume label is too long (limit is %lu byte)"
+msgid_plural "%s: Volume label is too long (limit is %lu bytes)"
+msgstr[0] "%s: Arkiston osan nimiö on liian pitkä (raja on %lu tavu)"
+msgstr[1] "%s: Arkiston osan nimiö on liian pitkä (raja on %lu tavua)"
+
+#: src/tar.c:2436
+msgid "Cannot verify multi-volume archives"
+msgstr "Moniosaisia arkistoja ei voi tarkastaa"
+
+#: src/tar.c:2438
+msgid "Cannot verify compressed archives"
+msgstr "Pakattuja arkistoja ei voi varmistaa"
+
+#: src/tar.c:2444
+msgid "Cannot use multi-volume compressed archives"
+msgstr "Pakattuja moniosaisia arkistoja ei voi käyttää"
+
+#: src/tar.c:2450
+msgid "Cannot concatenate compressed archives"
+msgstr "Pakattuja arkistoja ei voi liittää toisiinsa"
+
+#: src/tar.c:2462
+msgid "--pax-option can be used only on POSIX archives"
+msgstr "Valitsinta --pax-option voi käyttää vain POSIX-arkistoille"
+
+#: src/tar.c:2492
+msgid "Volume length cannot be less than record size"
+msgstr ""
+
+#: src/tar.c:2495
+msgid "--preserve-order is not compatible with --listed-incremental"
+msgstr ""
+
+#: src/tar.c:2506
+msgid "Cowardly refusing to create an empty archive"
+msgstr "Kieltäydytään pelkurimaisesti luomasta tyhjää arkistoa"
+
+#: src/tar.c:2532
+msgid "Options `-Aru' are incompatible with `-f -'"
+msgstr "Valitsimet ”-Aru” eivät ole yhteensopivia valitsinten ”-f -” kanssa"
+
+#: src/tar.c:2621
+#, fuzzy
+msgid "You must specify one of the `-Acdtrux' or `--test-label'  options"
+msgstr "Vähintään yhtä valitsimista ”-Acdtrux” on käytettävä"
+
+#: src/tar.c:2675
+#, c-format
+msgid "Exiting with failure status due to previous errors"
+msgstr ""
+
+#: src/update.c:86
+#, c-format
+msgid "%s: File shrank by %s byte"
+msgid_plural "%s: File shrank by %s bytes"
+msgstr[0] "%s: Tiedosto kutistui %s tavun verran"
+msgstr[1] "%s: Tiedosto kutistui %s tavun verran"
+
+#: src/xheader.c:164
+#, c-format
+msgid "Keyword %s is unknown or not yet implemented"
+msgstr "Avainsana %s on tuntematon tai sillä ei vielä ole toteutusta"
+
+#: src/xheader.c:174
+#, fuzzy
+msgid "Time stamp is out of allowed range"
+msgstr "Aikaleima ei ole sallitulla välillä"
+
+#: src/xheader.c:205
+#, c-format
+msgid "Pattern %s cannot be used"
+msgstr "Hahmoa %s ei voi käyttää"
+
+#: src/xheader.c:219
+#, c-format
+msgid "Keyword %s cannot be overridden"
+msgstr "Avainsanaa %s ei voi ohittaa"
+
+#: src/xheader.c:542
+#, fuzzy
+msgid "Malformed extended header: missing length"
+msgstr "Väärän muotoinen laajennettu otsake: yhtäsuuruusmerkki puuttuu"
+
+#: src/xheader.c:550
+#, fuzzy
+msgid "Extended header length is out of allowed range"
+msgstr ""
+"Arkiston etumerkillinen base-64-merkkijono %s on sallitun %s-välin "
+"ulkopuolella"
+
+#: src/xheader.c:557
+#, fuzzy, c-format
+msgid "Extended header length %*s is out of range"
+msgstr ""
+"Arkiston etumerkillinen base-64-merkkijono %s on sallitun %s-välin "
+"ulkopuolella"
+
+#: src/xheader.c:569
+#, fuzzy
+msgid "Malformed extended header: missing blank after length"
+msgstr "Väärän muotoinen laajennettu otsake: tyhje puuttuu pituuden jälkeen"
+
+#: src/xheader.c:577
+msgid "Malformed extended header: missing equal sign"
+msgstr "Väärän muotoinen laajennettu otsake: yhtäsuuruusmerkki puuttuu"
+
+#: src/xheader.c:583
+#, fuzzy
+msgid "Malformed extended header: missing newline"
+msgstr "Väärän muotoinen laajennettu otsake: yhtäsuuruusmerkki puuttuu"
+
+#: src/xheader.c:621
+#, c-format
+msgid "Ignoring unknown extended header keyword `%s'"
+msgstr ""
+
+#: src/xheader.c:831
+#, c-format
+msgid "Generated keyword/value pair is too long (keyword=%s, length=%s)"
+msgstr ""
+"Muodostettu avainsana-arvo-pari on liian pitkä (avainsana=%s, pituus=%s)"
+
+#. TRANSLATORS: The first %s is the pax extended header keyword
+#. (atime, gid, etc.).
+#: src/xheader.c:863
+#, c-format
+msgid "Extended header %s=%s is out of range %s..%s"
+msgstr "Laajennettu otsake %s=%s on sallitun välin %s..%s ulkopuolella"
+
+#: src/xheader.c:994 src/xheader.c:1024 src/xheader.c:1338
+#, c-format
+msgid "Malformed extended header: invalid %s=%s"
+msgstr "Väärän muotoinen laajennettu otsake: virheellinen %s=%s"
+
+#: src/xheader.c:1291 src/xheader.c:1316 src/xheader.c:1366
+#, fuzzy, c-format
+msgid "Malformed extended header: excess %s=%s"
+msgstr "Väärän muotoinen laajennettu otsake: yhtäsuuruusmerkki puuttuu"
+
+#: src/xheader.c:1379
+#, c-format
+msgid "Malformed extended header: invalid %s: unexpected delimiter %c"
+msgstr ""
+"Väärän muotoinen laajennettu otsake: virheellinen %s: odottamaton rajoitin %c"
+
+#: src/xheader.c:1389
+#, fuzzy, c-format
+msgid "Malformed extended header: invalid %s: odd number of values"
+msgstr "Väärän muotoinen laajennettu otsake: yhtäsuuruusmerkki puuttuu"
+
+#: src/checkpoint.c:107
+#, fuzzy, c-format
+msgid "%s: not a valid timeout"
+msgstr "%s: Virheellinen ryhmä"
+
+#: src/checkpoint.c:112
+#, c-format
+msgid "%s: unknown checkpoint action"
+msgstr ""
+
+#: src/checkpoint.c:132
+msgid "write"
+msgstr ""
+
+#: src/checkpoint.c:132
+msgid "read"
+msgstr ""
+
+#. TRANSLATORS: This is a ``checkpoint of write operation'',
+#. *not* ``Writing a checkpoint''.
+#. E.g. in Spanish ``Punto de comprobaci@'on de escritura'',
+#. *not* ``Escribiendo un punto de comprobaci@'on''
+#: src/checkpoint.c:222
+#, c-format
+msgid "Write checkpoint %u"
+msgstr "Kirjoituksen tarkistuspiste %u"
+
+#. TRANSLATORS: This is a ``checkpoint of read operation'',
+#. *not* ``Reading a checkpoint''.
+#. E.g. in Spanish ``Punto de comprobaci@'on de lectura'',
+#. *not* ``Leyendo un punto de comprobaci@'on''
+#: src/checkpoint.c:228
+#, c-format
+msgid "Read checkpoint %u"
+msgstr "Lukemisen tarkistuspiste %u"
+
+#: tests/genfile.c:111
+#, fuzzy
+msgid ""
+"genfile manipulates data files for GNU paxutils test suite.\n"
+"OPTIONS are:\n"
+msgstr "Luo datatiedostot GNU tar:in testausta varten.\n"
+
+#: tests/genfile.c:127
+#, fuzzy
+msgid "File creation options:"
+msgstr "Muut valitsimet:"
+
+#: tests/genfile.c:128 tests/genfile.c:139
+msgid "SIZE"
+msgstr ""
+
+#: tests/genfile.c:129
+#, fuzzy
+msgid "Create file of the given SIZE"
+msgstr "luo annetun muotoinen arkisto."
+
+#: tests/genfile.c:131
+#, fuzzy
+msgid "Write to file NAME, instead of standard output"
+msgstr "pura tiedostot vakiotulosteeseen"
+
+#: tests/genfile.c:133
+#, fuzzy
+msgid "Read file names from FILE"
+msgstr "Luettiin %s tavua arkistosta %s"
+
+#: tests/genfile.c:135
+msgid "-T reads null-terminated names"
+msgstr "-T lukee nollatavuun päättyviä nimiä"
+
+#: tests/genfile.c:137
+msgid "Fill the file with the given PATTERN. PATTERN is 'default' or 'zeros'"
+msgstr ""
+
+#: tests/genfile.c:140
+msgid "Size of a block for sparse file"
+msgstr ""
+
+#: tests/genfile.c:142
+msgid "Generate sparse file. Rest of the command line gives the file map."
+msgstr ""
+
+#: tests/genfile.c:144
+msgid "OFFSET"
+msgstr ""
+
+#: tests/genfile.c:145
+#, fuzzy
+msgid "Seek to the given offset before writing data"
+msgstr "yritä varmistaa arkisto kirjoittamisen jälkeen"
+
+#: tests/genfile.c:151
+msgid "File statistics options:"
+msgstr ""
+
+#: tests/genfile.c:154
+msgid "Print contents of struct stat for each given file. Default FORMAT is: "
+msgstr ""
+
+#: tests/genfile.c:161
+msgid "Synchronous execution options:"
+msgstr ""
+
+#: tests/genfile.c:163
+#, fuzzy
+msgid "OPTION"
+msgstr " [VALITSIN...]"
+
+#: tests/genfile.c:164
+msgid ""
+"Execute ARGS. Useful with --checkpoint and one of --cut, --append, --touch, "
+"--unlink"
+msgstr ""
+
+#: tests/genfile.c:167
+msgid "Perform given action (see below) upon reaching checkpoint NUMBER"
+msgstr ""
+
+#: tests/genfile.c:170
+msgid "Set date for next --touch option"
+msgstr ""
+
+#: tests/genfile.c:173
+msgid "Display executed checkpoints and exit status of COMMAND"
+msgstr ""
+
+#: tests/genfile.c:178
+msgid ""
+"Synchronous execution actions. These are executed when checkpoint number "
+"given by --checkpoint option is reached."
+msgstr ""
+
+#: tests/genfile.c:181
+msgid ""
+"Truncate FILE to the size specified by previous --length option (or 0, if it "
+"is not given)"
+msgstr ""
+
+#: tests/genfile.c:185
+msgid "Append SIZE bytes to FILE. SIZE is given by previous --length option."
+msgstr ""
+
+#: tests/genfile.c:188
+msgid "Update the access and modification times of FILE"
+msgstr ""
+
+#: tests/genfile.c:191
+msgid "Execute COMMAND"
+msgstr "Suorita KOMENTO"
+
+#: tests/genfile.c:194
+msgid "Unlink FILE"
+msgstr ""
+
+#: tests/genfile.c:244
+#, c-format
+msgid "Invalid size: %s"
+msgstr "Virheellinen koko: %s"
+
+#: tests/genfile.c:249
+#, fuzzy, c-format
+msgid "Number out of allowed range: %s"
+msgstr "I-solmun numero ei ole sallitulla välillä"
+
+#: tests/genfile.c:252
+#, fuzzy, c-format
+msgid "Negative size: %s"
+msgstr "Virheellinen koko: %s"
+
+#: tests/genfile.c:265 tests/genfile.c:569
+#, c-format
+msgid "stat(%s) failed"
+msgstr "stat(%s) epäonnistui"
+
+#: tests/genfile.c:268
+#, c-format
+msgid "requested file length %lu, actual %lu"
+msgstr ""
+
+#: tests/genfile.c:272
+#, c-format
+msgid "created file is not sparse"
+msgstr ""
+
+#: tests/genfile.c:361
+#, c-format
+msgid "Error parsing number near `%s'"
+msgstr ""
+
+#: tests/genfile.c:367
+#, fuzzy, c-format
+msgid "Unknown date format"
+msgstr "Tuntematon järjestelmävirhe"
+
+#: tests/genfile.c:391
+msgid "[ARGS...]"
+msgstr "[ARG...]"
+
+#: tests/genfile.c:428 tests/genfile.c:468 tests/genfile.c:523
+#: tests/genfile.c:673 tests/genfile.c:687
+#, c-format
+msgid "cannot open `%s'"
+msgstr ""
+
+#: tests/genfile.c:434
+#, fuzzy
+msgid "cannot seek"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: tests/genfile.c:451
+#, c-format
+msgid "file name contains null character"
+msgstr "tiedostonimi sisältää nollatavun"
+
+#: tests/genfile.c:518
+#, c-format
+msgid "cannot generate sparse files on standard output, use --file option"
+msgstr ""
+
+#: tests/genfile.c:596
+#, c-format
+msgid "incorrect mask (near `%s')"
+msgstr ""
+
+#: tests/genfile.c:602 tests/genfile.c:635
+#, fuzzy, c-format
+msgid "Unknown field `%s'"
+msgstr " tuntematon tiedostotyyppi %s\n"
+
+#: tests/genfile.c:662
+#, fuzzy, c-format
+msgid "cannot set time on `%s'"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: tests/genfile.c:692
+#, fuzzy, c-format
+msgid "cannot truncate `%s'"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: tests/genfile.c:701
+#, fuzzy, c-format
+msgid "command failed: %s"
+msgstr "Komento %s epäonnistui"
+
+#: tests/genfile.c:706
+#, fuzzy, c-format
+msgid "cannot unlink `%s'"
+msgstr "%s: Siirtyminen kohtaan %s ei onnistu"
+
+#: tests/genfile.c:833
+#, c-format
+msgid "Command exited successfully\n"
+msgstr "Komennon suoritus päättyi onnistuneesti\n"
+
+#: tests/genfile.c:835
+#, fuzzy, c-format
+msgid "Command failed with status %d\n"
+msgstr "Lapsiprosessi kuoli signaalilla %d"
+
+#: tests/genfile.c:839
+#, c-format
+msgid "Command terminated on signal %d\n"
+msgstr "Komento keskeytyi signaaliin %d\n"
+
+#: tests/genfile.c:841
+#, c-format
+msgid "Command stopped on signal %d\n"
+msgstr "Komento pysähtyi signaaliin %d\n"
+
+#: tests/genfile.c:844
+#, c-format
+msgid "Command dumped core\n"
+msgstr ""
+
+#: tests/genfile.c:847
+#, c-format
+msgid "Command terminated\n"
+msgstr "Komento keskeytyi\n"
+
+#: tests/genfile.c:879
+#, fuzzy, c-format
+msgid "--stat requires file names"
+msgstr "--Sovitetut tiedostonimet--\n"
+
+#~ msgid "%s: illegal option -- %c\n"
+#~ msgstr "%s: virheellinen valitsin -- %c\n"
+
+#~ msgid "block size"
+#~ msgstr "lohkokoko"
+
+#~ msgid "rmtd: Cannot allocate buffer space\n"
+#~ msgstr "rmtd: Puskuritilaa ei voi varata\n"
+
+#~ msgid "Cannot allocate buffer space"
+#~ msgstr "Puskuritilaa ei voi varata"
+
+#~ msgid "Try `%s --help' for more information.\n"
+#~ msgstr "Komento ”%s --help” antaa lisää tietoa.\n"
+
+#~ msgid ""
+#~ "Usage: %s [OPTION]\n"
+#~ "Manipulate a tape drive, accepting commands from a remote process.\n"
+#~ "\n"
+#~ "  --version  Output version info.\n"
+#~ "  --help     Output this help.\n"
+#~ msgstr ""
+#~ "Käyttö: %s [VALITSIN]\n"
+#~ "Käsittele nauha-asemaa, hyväksyen komentoja etäprosessilta.\n"
+#~ "\n"
+#~ "  --version  Näytä versiotiedot.\n"
+#~ "  --help     Näytä tämä ohje.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Report bugs to <%s>.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Ohjelmistovioista voi ilmoittaa (englanniksi) osoitteeseen\n"
+#~ "<%s>.\n"
+
+#, fuzzy
+#~ msgid "Seek offset error"
+#~ msgstr "Siirtymä sallitun välin ulkopuolella"
+
+#~ msgid "Premature end of file"
+#~ msgstr "Ennenaikainen tiedoston loppu"
+
+#~ msgid "Reading %s\n"
+#~ msgstr "Luetaan %s\n"
+
+#~ msgid "Error is not recoverable: exiting now"
+#~ msgstr "Virhe ei ole korjattavissa, poistutaan nyt"
+
+#~ msgid "suppress this warning."
+#~ msgstr "--no-wildcards tämän varoituksen vaientamiseksi."
+
+#~ msgid "filter the archive through bzip2"
+#~ msgstr "ohjaa arkisto bzip2-ohjelman läpi"
+
+#~ msgid "filter the archive through compress"
+#~ msgstr "ohjaa arkisto compress-ohjelman läpi"
+
+#, fuzzy
+#~ msgid "[.]NUMBER"
+#~ msgstr "MÄÄRÄ"
+
+#~ msgid "Warning: the -I option is not supported; perhaps you meant -j or -T?"
+#~ msgstr "Varoitus: valitsin -I ei ole tuettu, ehkä tarkoitit -j tai -T?"
+
+#~ msgid "Error exit delayed from previous errors"
+#~ msgstr "Viivästetty virhepoistuminen johtuu aikaisemmista virheistä"
+
+#~ msgid "%s: Read error at byte %s, reading %lu byte"
+#~ msgid_plural "%s: Read error at byte %s, reading %lu bytes"
+#~ msgstr[0] "%s: Lukuvirhe tavun %s kohdalla, luetaan %lu tavu"
+#~ msgstr[1] "%s: Lukuvirhe tavun %s kohdalla, luetaan %lu tavua"
+
+#~ msgid "--Mangled file names--\n"
+#~ msgstr "--Sovitetut tiedostonimet--\n"
+
+#~ msgid "Unexpected EOF in mangled names"
+#~ msgstr "Odottamaton tiedoston loppu sovitetuissa nimissä"
+
+#~ msgid "Renamed %s to %s"
+#~ msgstr "Nimettiin uudelleen %s -> %s"
+
+#~ msgid "%s: Cannot symlink to %s"
+#~ msgstr "%s: Symlinkittäminen tiedostoksi %s ei onnistu"
+
+#~ msgid "Symlinked %s to %s"
+#~ msgstr "Symlinkitettiin %s -> %s"
+
+#~ msgid "Unknown demangling command %s"
+#~ msgstr "Tuntematon takaisinsovituskomento %s"
+
+#~ msgid "Device number out of range"
+#~ msgstr "Laitenumero ei ole sallitulla välillä"
+
+#, fuzzy
+#~ msgid "Error reading time stamp"
+#~ msgstr "Virheellinen aikaleima"
+
+#~ msgid "same as -N"
+#~ msgstr "sama kuin -N"
+
+#~ msgid ""
+#~ "This program comes with NO WARRANTY, to the extent permitted by law.\n"
+#~ "You may redistribute it under the terms of the GNU General Public "
+#~ "License;\n"
+#~ "see the file named COPYING for details."
+#~ msgstr ""
+#~ "Tällä ohjelmalla EI lain sallimissa rajoissa OLE TAKUUTA.\n"
+#~ "Ohjelmaa saa levittää GNU:n General Public Licensen mukaisesti;\n"
+#~ "katso lisätietoja tiedostosta COPYING."
+
+#~ msgid "rmtd: Garbage command %c\n"
+#~ msgstr "rmtd: Roskakomento %c\n"
+
+#~ msgid "WARNING: No volume header"
+#~ msgstr "VAROITUS: Arkisto-osan otsake puuttuu"
+
+#~ msgid "Visible long name error"
+#~ msgstr "Näkyvän pitkän nimen virhe"
+
+#~ msgid "Visible longname error"
+#~ msgstr "Näkyvän pitkän nimen virhe"
+
+#~ msgid "Missing file name after -C"
+#~ msgstr "Puuttuva tiedostonimi valitsimen -C jälkeen"
+
+#~ msgid "don't change access times on dumped files"
+#~ msgstr "älä muuta lisättyjen tiedostojen käyttöaikoja"
+
+#~ msgid "extract permissions information"
+#~ msgstr "pura tiedostojen oikeudet"
+
+#~ msgid "do not extract permissions information"
+#~ msgstr "älä pura tiedostojen oikeuksia"
+
+#~ msgid "FILE-OF-NAMES"
+#~ msgstr "TIEDOSTO"
+
+#~ msgid "exclude patterns are plain strings"
+#~ msgstr "poisjättöhahmot ovat tavallisia merkkijonoja"
+
+#~ msgid "dump instead the files symlinks point to"
+#~ msgstr "lisää symlinkin kohdetiedostot, ei linkkejä"
+
+#~ msgid "exclude patterns use wildcards (default)"
+#~ msgstr "poisjättöhahmot käyttävät jokerimerkkejä (oletus)"
+
+#~ msgid "print total bytes written while creating archive"
+#~ msgstr "näytä kirj. tavujen yhteismäärä luotaessa arkistoa"
+
+#~ msgid "Print license and exit"
+#~ msgstr "Näytä lisenssi ja poistu"
+
+#~ msgid ""
+#~ "Based on the work of John Gilmore and Jay Fenlason. See AUTHORS\n"
+#~ "for complete list of authors.\n"
+#~ msgstr ""
+#~ "Perustuu John Gilmoren ja Jay Fenlasonin tekemään työhön. Tarkka lista\n"
+#~ "tekijöistä on AUTHORS-tiedostossa.\n"
+
+# HUOM: Osoitetiedot suomennoksessa ajan tasalla, alkuperäisessä ei.
+#~ msgid ""
+#~ "   GNU tar is free software; you can redistribute it and/or modify\n"
+#~ "   it under the terms of the GNU General Public License as published by\n"
+#~ "   the Free Software Foundation; either version 2 of the License, or\n"
+#~ "   (at your option) any later version.\n"
+#~ "\n"
+#~ "   GNU tar is distributed in the hope that it will be useful,\n"
+#~ "   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+#~ "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+#~ "   GNU General Public License for more details.\n"
+#~ "\n"
+#~ "   You should have received a copy of the GNU General Public License\n"
+#~ "   along with GNU tar; if not, write to the Free Software\n"
+#~ "   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  "
+#~ "USA\n"
+#~ "\n"
+#~ msgstr ""
+#~ "   GNU tar on vapaaohjelmisto; voitte levittää edelleen ja/tai muuttaa\n"
+#~ "   sitä Free Software Foundationin julkaiseman GNU General Public\n"
+#~ "   License'in ehtojen mukaisesti; joko version 2, tai (valintanne "
+#~ "mukaan)\n"
+#~ "   minkä tahansa myöhemmän version.\n"
+#~ "\n"
+#~ "   GNU taria levitetään siinä toivossa, että se olisi hyödyllinen,\n"
+#~ "   mutta TAKUUTA EI OLE; ei edes KAUPALLISESTI HYVÄKSYTTÄVÄSTÄ LAADUSTA\n"
+#~ "   tai SOPIVUUDESTA TIETTYYN TARKOITUKSEEN. Katsokaa lisätietoja GNU\n"
+#~ "   General Public License'istä.\n"
+#~ "\n"
+#~ "   Olette saaneet kopion GNU General Public License'istä tämän\n"
+#~ "   ohjelman mukana. Ellette saaneet, kirjoittakaa Free Software "
+#~ "Foundation,\n"
+#~ "   Inc.:ille osoitteeseen 51 Franklin Street, Fifth Floor,\n"
+#~ "   Boston, MA 02110-1301, USA.\n"
+#~ "\n"
+
+#~ msgid "Semantics of -l option will change in the future releases."
+#~ msgstr "Valitsimen -l merkitys muuttuu tulevissa versioissa."
+
+#~ msgid "Please use --one-file-system option instead."
+#~ msgstr "Käytä valitsinta --one-file-system."
+
+#~ msgid "Warning: the -y option is not supported; perhaps you meant -j?"
+#~ msgstr "Varoitus: valitsin -y ei ole tuettu, ehkä tarkoitit -j?"
+
+#~ msgid "Error in writing to standard output"
+#~ msgstr "Virhe kirjoitettaessa vakiotulosteeseen"
+
+#~ msgid ""
+#~ "GNU `tar' saves many files together into a single tape or disk archive, "
+#~ "and\n"
+#~ "can restore individual files from the archive.\n"
+#~ msgstr ""
+#~ "GNU ”tar” tallentaa useita tiedostoja yhteen nauha- tai levyarkistoon, "
+#~ "sekä\n"
+#~ "palauttaa yksittäisiä tiedostoja arkistosta.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "If a long option shows an argument as mandatory, then it is mandatory\n"
+#~ "for the equivalent short option also.  Similarly for optional arguments.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Jos argumentti on pakollinen pitkän valitsimen kanssa, se on pakollinen\n"
+#~ "myös vastaavan lyhyen valitsimen kanssa. Sama koskee valinnaisia "
+#~ "argumentteja.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Main operation mode:\n"
+#~ "  -t, --list              list the contents of an archive\n"
+#~ "  -x, --extract, --get    extract files from an archive\n"
+#~ "  -c, --create            create a new archive\n"
+#~ "  -d, --diff, --compare   find differences between archive and file "
+#~ "system\n"
+#~ "  -r, --append            append files to the end of an archive\n"
+#~ "  -u, --update            only append files newer than copy in archive\n"
+#~ "  -A, --catenate          append tar files to an archive\n"
+#~ "      --concatenate       same as -A\n"
+#~ "      --delete            delete from the archive (not on mag tapes!)\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Päätoimintatila:\n"
+#~ "  -t, --list              listaa arkiston sisältö\n"
+#~ "  -x, --extract, --get    pura tiedostoja arkistosta\n"
+#~ "  -c, --create            luo uusi arkisto\n"
+#~ "  -d, --diff, --compare   etsi erot arkiston ja tied.järjestelmän "
+#~ "välillä\n"
+#~ "  -r, --append            lisää tiedostoja arkiston loppuun\n"
+#~ "  -u, --update            lisää vain arkistossa olevia uudemmat "
+#~ "tiedostot\n"
+#~ "  -A, --catenate          lisää tar-tiedostoja arkistoon\n"
+#~ "      --concatenate       sama kuin -A\n"
+#~ "      --delete            poista arkistosta (ei toimi nauhoilla!)\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Operation modifiers:\n"
+#~ "  -W, --verify               attempt to verify the archive after writing "
+#~ "it\n"
+#~ "      --remove-files         remove files after adding them to the "
+#~ "archive\n"
+#~ "  -k, --keep-old-files       don't replace existing files when "
+#~ "extracting\n"
+#~ "      --keep-newer-files     don't replace existing files that are newer\n"
+#~ "                             than their archive copies\n"
+#~ "      --overwrite            overwrite existing files when extracting\n"
+#~ "      --no-overwrite-dir     preserve metadata of existing directories\n"
+#~ "  -U, --unlink-first         remove each file prior to extracting over "
+#~ "it\n"
+#~ "      --recursive-unlink     empty hierarchies prior to extracting "
+#~ "directory\n"
+#~ "  -S, --sparse               handle sparse files efficiently\n"
+#~ "  -O, --to-stdout            extract files to standard output\n"
+#~ "  -G, --incremental          handle old GNU-format incremental backup\n"
+#~ "  -g, --listed-incremental=FILE\n"
+#~ "                             handle new GNU-format incremental backup\n"
+#~ "      --ignore-failed-read   do not exit with nonzero on unreadable "
+#~ "files\n"
+#~ "      --occurrence[=NUM]     process only the NUMth occurrence of each "
+#~ "file in\n"
+#~ "                             the archive. This option is valid only in\n"
+#~ "                             conjunction with one of the subcommands --"
+#~ "delete,\n"
+#~ "                             --diff, --extract or --list and when a list "
+#~ "of\n"
+#~ "                             files is given either on the command line "
+#~ "or\n"
+#~ "                             via -T option.\n"
+#~ "                             NUM defaults to 1.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Toimintovalinnat:\n"
+#~ "  -W, --verify               yritä varmistaa arkisto kirjoittamisen "
+#~ "jälkeen\n"
+#~ "      --remove-files         poista tiedostot arkistoon lisäämisen "
+#~ "jälkeen\n"
+#~ "  -k, --keep-old-files       älä korvaa olemassaolevia tiedostoja "
+#~ "purettaessa\n"
+#~ "      --keep-newer-files     älä korvaa olemassaolevia tiedostoja, jotka "
+#~ "ovat\n"
+#~ "                             arkistokopioitaan uudempia\n"
+#~ "      --overwrite            ylikirjoita olemassaolevat tiedostot "
+#~ "purettaessa\n"
+#~ "      --overwrite-dir        ylikirjoita hakemiston metadata purettaessa\n"
+#~ "  -U, --unlink-first         poista jokainen tiedosto ennen sen päälle\n"
+#~ "                             purkamista\n"
+#~ "      --recursive-unlink     tyhjennä rakenne ennen hakemiston "
+#~ "purkamista\n"
+#~ "  -S, --sparse               käsittele harvat tiedostot tehokkaasti\n"
+#~ "  -O, --to-stdout            pura tiedostot vakiotulosteeseen\n"
+#~ "  -G, --incremental          käsittele vanha GNU-muotoinen lisääntyvä\n"
+#~ "                             varmuuskopio\n"
+#~ "  -g, --listed-incremental=TIEDOSTO\n"
+#~ "                             käsittele uusi GNU-muotoinen lisääntyvä\n"
+#~ "                             varmuuskopio\n"
+#~ "      --ignore-failed-read   jatka lukukelvottomista tiedostoista "
+#~ "huolimatta\n"
+#~ "      --occurrence[=N]       käsittele vain kunkin tiedoston N:s "
+#~ "esiintymä\n"
+#~ "                             arkistossa. Tämä valitsin on kelvollinen "
+#~ "vain\n"
+#~ "                             yhdessä alikomennon --delete, --diff, --"
+#~ "extract\n"
+#~ "                             tai --list, kun tiedostoluettelo on annettu\n"
+#~ "                             komentoriviltä tai valitsimella -T.\n"
+#~ "                             N on oletuksena 1.\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Handling of file attributes:\n"
+#~ "      --owner=NAME             force NAME as owner for added files\n"
+#~ "      --group=NAME             force NAME as group for added files\n"
+#~ "      --mode=CHANGES           force (symbolic) mode CHANGES for added "
+#~ "files\n"
+#~ "      --atime-preserve         don't change access times on dumped files\n"
+#~ "  -m, --modification-time      don't extract file modified time\n"
+#~ "      --same-owner             try extracting files with the same "
+#~ "ownership\n"
+#~ "      --no-same-owner          extract files as yourself\n"
+#~ "      --numeric-owner          always use numbers for user/group names\n"
+#~ "  -p, --same-permissions       extract permissions information\n"
+#~ "      --no-same-permissions    do not extract permissions information\n"
+#~ "      --preserve-permissions   same as -p\n"
+#~ "  -s, --same-order             sort names to extract to match archive\n"
+#~ "      --preserve-order         same as -s\n"
+#~ "      --preserve               same as both -p and -s\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Tiedostojen ominaisuuksien käsittely:\n"
+#~ "      --owner=NIMI             pakota NIMI lisättyjen tiedostojen "
+#~ "omistajaksi\n"
+#~ "      --group=NIMI             pakota NIMI lisättyjen tiedostojen "
+#~ "ryhmäksi\n"
+#~ "      --mode=MUUTOS            pakota (symbolinen) tila MUUTOS "
+#~ "lisätyille\n"
+#~ "                               tiedostoille\n"
+#~ "      --atime-preserve         älä muuta lisättyjen tiedostojen "
+#~ "käyttöaikoja\n"
+#~ "  -m, --modification-time      älä pura tiedoston muutosaikaa\n"
+#~ "      --same-owner             yritä purkaa tiedostot samalla "
+#~ "omistajuudella\n"
+#~ "      --no-same-owner          pura tiedostot itsenäsi\n"
+#~ "      --numeric-owner          käytä aina numeroita käyttäjän/ryhmän "
+#~ "nimissä\n"
+#~ "  -p, --same-permissions       pura tiedostojen oikeudet\n"
+#~ "      --no-same-permissions    älä pura tiedostojen oikeuksia\n"
+#~ "      --preserve-permissions   sama kuin -p\n"
+#~ "  -s, --same-order             lajittele purettavat tiedostonimet "
+#~ "vastaamaan\n"
+#~ "                               arkistoa\n"
+#~ "      --preserve-order         sama kuin -s\n"
+#~ "      --preserve               sama kuin -p ja -s yhdessä\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Device selection and switching:\n"
+#~ "  -f, --file=ARCHIVE             use archive file or device ARCHIVE\n"
+#~ "      --force-local              archive file is local even if has a "
+#~ "colon\n"
+#~ "      --rmt-command=COMMAND      use given rmt COMMAND instead of /etc/"
+#~ "rmt\n"
+#~ "      --rsh-command=COMMAND      use remote COMMAND instead of rsh\n"
+#~ "  -[0-7][lmh]                    specify drive and density\n"
+#~ "  -M, --multi-volume             create/list/extract multi-volume "
+#~ "archive\n"
+#~ "  -L, --tape-length=NUM          change tape after writing NUM x 1024 "
+#~ "bytes\n"
+#~ "  -F, --info-script=FILE         run script at end of each tape (implies -"
+#~ "M)\n"
+#~ "      --new-volume-script=FILE   same as -F FILE\n"
+#~ "      --volno-file=FILE          use/update the volume number in FILE\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Laitteen valinta ja vaihtaminen:\n"
+#~ "  -f, --file=ARKISTO             käytä arkistotiedostoa tai -laitetta "
+#~ "ARKISTO\n"
+#~ "      --force-local              arkisto on paikallinen vaikka nimessä "
+#~ "olisi\n"
+#~ "                                 kaksoispiste\n"
+#~ "      --rmt-command=KOMENTO      käytä KOMENTOA /etc/rmt:n sijaan\n"
+#~ "      --rsh-command=KOMENTO      käytä KOMENTOa rsh:n sijaan\n"
+#~ "  -[0-7][lmh]                    anna asema ja tiheys\n"
+#~ "  -M, --multi-volume             luo/listaa/pura moniosainen arkisto\n"
+#~ "  -L, --tape-length=MÄÄRÄ        vaihda nauhaa MÄÄRÄ × 1024 kirjoitetun "
+#~ "tavun\n"
+#~ "                                 jälkeen\n"
+#~ "  -F, --info-script=TIED         aja skripti joka nauhan lopussa "
+#~ "(valitsin -M\n"
+#~ "                                 tulee käyttöön)\n"
+#~ "      --new-volume-script=TIED   sama kuin -F TIED\n"
+#~ "      --volno-file=TIED          käytä/päivitä arkiston osan numero "
+#~ "TIEDostossa\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Device blocking:\n"
+#~ "  -b, --blocking-factor=BLOCKS   BLOCKS x 512 bytes per record\n"
+#~ "      --record-size=SIZE         SIZE bytes per record, multiple of 512\n"
+#~ "  -i, --ignore-zeros             ignore zeroed blocks in archive (means "
+#~ "EOF)\n"
+#~ "  -B, --read-full-records        reblock as we read (for 4.2BSD pipes)\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Laitteen lohkot:\n"
+#~ "  -b, --blocking-factor=LOHKOT   LOHKOT × 512 tavua tietuetta kohti\n"
+#~ "      --record-size=MÄÄRÄ        MÄÄRÄ tavua tietuetta kohti, 512:n "
+#~ "monikerta\n"
+#~ "  -i, --ignore-zeros             älä huomioi nollattuja lohkoja "
+#~ "arkistossa\n"
+#~ "                                 (merkitsee tiedoston loppua)\n"
+#~ "  -B, --read-full-records        suorita lohkominen uudelleen luettaessa\n"
+#~ "                                 (4.2BSD-putkia varten)\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Archive format selection:\n"
+#~ "      --format=FMTNAME               create archive of the given format.\n"
+#~ "                                     FMTNAME is one of the following:\n"
+#~ "                                     v7        old V7 tar format\n"
+#~ "                                     oldgnu    GNU format as per tar <= "
+#~ "1.12\n"
+#~ "                                     gnu       GNU tar 1.13 format\n"
+#~ "                                     ustar     POSIX 1003.1-1988 (ustar) "
+#~ "format\n"
+#~ "                                     posix     POSIX 1003.1-2001 (pax) "
+#~ "format\n"
+#~ "      --old-archive, --portability   same as --format=v7\n"
+#~ "      --posix                        same as --format=posix\n"
+#~ "  --pax-option keyword[[:]=value][,keyword[[:]=value], ...]\n"
+#~ "                                     control pax keywords\n"
+#~ "  -V, --label=NAME                   create archive with volume name "
+#~ "NAME\n"
+#~ "              PATTERN                at list/extract time, a globbing "
+#~ "PATTERN\n"
+#~ "  -j, --bzip2                        filter the archive through bzip2\n"
+#~ "  -z, --gzip, --ungzip               filter the archive through gzip\n"
+#~ "  -Z, --compress, --uncompress       filter the archive through compress\n"
+#~ "      --use-compress-program=PROG    filter through PROG (must accept -"
+#~ "d)\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Arkistomuodon valinta:\n"
+#~ "      --format=MUOTO                 luo annetun muotoinen arkisto.\n"
+#~ "                                     MUOTO on jokin seuraavista:\n"
+#~ "                                     v7        vanha V7-tar-muoto\n"
+#~ "                                     oldgnu    GNU-muoto tar-versioilla "
+#~ "<= 1.12\n"
+#~ "                                     gnu       GNU tar 1.13 -muoto\n"
+#~ "                                     ustar     POSIX 1003.1-1988 (ustar) -"
+#~ "muoto\n"
+#~ "                                     posix     POSIX 1003.1-2001 (pax) -"
+#~ "muoto\n"
+#~ "      --old-archive, --portability   sama kuin --format=v7\n"
+#~ "      --posix                        sama kuin --format=posix\n"
+#~ "  -pax-option avainsana[[:]=arvo][,avainsana[[:]=arvo], ...]\n"
+#~ "                                     määrittele pax-avainsanoja\n"
+#~ "  -V, --label=NIMI                   luo arkisto nimiöllä NIMI\n"
+#~ "              HAHMO                  listattaessa/purettaessa jokeri-"
+#~ "HAHMO\n"
+#~ "  -j, --bzip2                        ohjaa arkisto bzip2-ohjelman läpi\n"
+#~ "  -z, --gzip, --ungzip               ohjaa arkisto gzip-ohjelman läpi\n"
+#~ "  -Z, --compress, --uncompress       ohjaa arkisto compress-ohjelman "
+#~ "läpi\n"
+#~ "      --use-compress-program=OHJ     ohjaa OHJelman läpi (on hyväksyttävä "
+#~ "-d)\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Local file selection:\n"
+#~ "  -C, --directory=DIR          change to directory DIR\n"
+#~ "  -T, --files-from=NAME        get names to extract or create from file "
+#~ "NAME\n"
+#~ "      --null                   -T reads null-terminated names, disable -"
+#~ "C\n"
+#~ "      --exclude=PATTERN        exclude files, given as a PATTERN\n"
+#~ "  -X, --exclude-from=FILE      exclude patterns listed in FILE\n"
+#~ "      --anchored               exclude patterns match file name start "
+#~ "(default)\n"
+#~ "      --no-anchored            exclude patterns match after any /\n"
+#~ "      --ignore-case            exclusion ignores case\n"
+#~ "      --no-ignore-case         exclusion is case sensitive (default)\n"
+#~ "      --wildcards              exclude patterns use wildcards (default)\n"
+#~ "      --no-wildcards           exclude patterns are plain strings\n"
+#~ "      --wildcards-match-slash  exclude pattern wildcards match "
+#~ "'/' (default)\n"
+#~ "      --no-wildcards-match-slash exclude pattern wildcards do not match "
+#~ "'/'\n"
+#~ "  -P, --absolute-names         don't strip leading `/'s from file names\n"
+#~ "  -h, --dereference            dump instead the files symlinks point to\n"
+#~ "      --no-recursion           avoid descending automatically in "
+#~ "directories\n"
+#~ "  -l, --one-file-system        stay in local file system when creating "
+#~ "archive\n"
+#~ "  -K, --starting-file=NAME     begin at file NAME in the archive\n"
+#~ "      --strip-path=NUM         strip NUM leading components from file "
+#~ "names\n"
+#~ "                               before extraction\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Paikallisten tiedostojen valinta:\n"
+#~ "  -C, --directory=HAK          siirry hakemistoon HAK\n"
+#~ "  -T, --files-from=TIEDOSTO    hae purettavat/lisättävät nimet "
+#~ "TIEDOSTOsta\n"
+#~ "      --null                   -T reads null-terminated names, disable -"
+#~ "C\n"
+#~ "      --exclude=HAHMO          jätä pois HAHMOn mukaiset tiedostot\n"
+#~ "  -X, --exclude-from=TIEDOSTO  jätä pois TIEDOSTOssa listatut hahmot\n"
+#~ "      --anchored               poisjättöhahmoja verrataan nimen alkuun "
+#~ "(oletus)\n"
+#~ "      --no-anchored            poisjättöhahmoja verrataan jokaisen ”/” "
+#~ "jälkeen\n"
+#~ "      --ignore-case            poisjättäminen ei huomioi kirjainkokoa\n"
+#~ "      --no-ignore-case         poisjättäminen huomioi kirjainkoon "
+#~ "(oletus)\n"
+#~ "      --wildcards              poisjättöhahmot käyttävät jokerimerkkejä "
+#~ "(oletus)\n"
+#~ "      --no-wildcards           poisjättöhahmot ovat tavallisia "
+#~ "merkkijonoja\n"
+#~ "      --wildcards-match-slash  poisjättöhahmon jokerimerkit vastaavat "
+#~ "merkkiä ”/”\n"
+#~ "      --no-wildcards-match-slash poisjättöhahmon jokerimerkit eivät "
+#~ "vastaa\n"
+#~ "                               merkkiä ”/”\n"
+#~ "  -P, --absolute-names         älä poista merkkiä ”/” tiedostonimien "
+#~ "alusta\n"
+#~ "  -h, --dereference            lisää symlinkin kohdetiedostot, ei "
+#~ "linkkejä\n"
+#~ "      --no-recursion           estä automaattinen eteneminen "
+#~ "alihakemistoihin\n"
+#~ "  -l, --one-file-system        pysy nykyisessä tied.järjestelmässä "
+#~ "arkistoa\n"
+#~ "                               luotaessa\n"
+#~ "  -K, --starting-file=NIMI     aloita arkiston tiedostosta NIMI\n"
+#~ "      --strip-path=MÄÄRÄ       poista MÄÄRÄn verran osia tiedostonimien "
+#~ "alusta\n"
+#~ "                               ennen purkamista\n"
+
+#~ msgid ""
+#~ "  -N, --newer=DATE-OR-FILE     only store files newer than DATE-OR-FILE\n"
+#~ "      --newer-mtime=DATE       compare date and time when data changed "
+#~ "only\n"
+#~ "      --after-date=DATE        same as -N\n"
+#~ msgstr ""
+#~ "  -N, --newer=PÄIVÄYS-TAI-TIED tallenna vain PÄIVÄYS-TAI-TIEDostoa "
+#~ "uudemmat tiedostot\n"
+#~ "      --newer-mtime=PÄIVÄYS    vertaa vain tiedoston muutosaikaa\n"
+#~ "      --after-date=PÄIVÄYS     sama kuin -N\n"
+
+#~ msgid ""
+#~ "      --backup[=CONTROL]       backup before removal, choose version "
+#~ "control\n"
+#~ "      --suffix=SUFFIX          backup before removal, override usual "
+#~ "suffix\n"
+#~ msgstr ""
+#~ "      --backup[=HALLINTA]      varmuuskopiointi ennen poistoa, valitse\n"
+#~ "                               versionhallinta\n"
+#~ "      --suffix=JÄLKILIITE      varmuuskopiointi ennen poistoa, älä käytä\n"
+#~ "                               tavanomaista jälkiliitettä\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Informative output:\n"
+#~ "      --help            print this help, then exit\n"
+#~ "      --version         print tar program version number, then exit\n"
+#~ "  -v, --verbose         verbosely list files processed\n"
+#~ "      --checkpoint      print directory names while reading the archive\n"
+#~ "      --check-links     print a message if not all links are dumped\n"
+#~ "      --totals          print total bytes written while creating archive\n"
+#~ "      --index-file=FILE send verbose output to FILE\n"
+#~ "      --utc             print file modification dates in UTC\n"
+#~ "  -R, --block-number    show block number within archive with each "
+#~ "message\n"
+#~ "  -w, --interactive     ask for confirmation for every action\n"
+#~ "      --confirmation    same as -w\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Tietoja antava tuloste:\n"
+#~ "      --help            näytä tämä ohje ja poistu\n"
+#~ "      --version         näytä tar-ohjelman versionumero ja poistu\n"
+#~ "  -v, --verbose         listaa käsiteltävät tiedostot\n"
+#~ "      --checkpoint      näytä hakemistojen nimet luettaessa arkistoa\n"
+#~ "      --check-links     näytä viesti, ellei kaikkia linkkejä lisätty\n"
+#~ "      --totals          näytä kirj. tavujen yhteismäärä luotaessa "
+#~ "arkistoa\n"
+#~ "      --index-file=TIED ohjaa monisanainen tuloste TIEDostoon\n"
+#~ "      --utc             näytä tiedostojen muutosajat UTC-aikoina\n"
+#~ "  -R, --block-number    näytä lohkonumero arkistossa viestien yhteydessä\n"
+#~ "  -w, --interactive     kysy varmistusta jokaiselle toiminnolle\n"
+#~ "      --confirmation    sama kuin -w\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "Compatibility options:\n"
+#~ "  -o                                 when creating, same as --old-"
+#~ "archive\n"
+#~ "                                     when extracting, same as --no-same-"
+#~ "owner\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Yhteensopivuusvalitsimet:\n"
+#~ "  -o                                 luotaessa sama kuin --old-archive\n"
+#~ "                                     purettaessa sama kuin --no-same-"
+#~ "owner\n"
+
+#~ msgid ""
+#~ "\n"
+#~ "ARCHIVE may be FILE, HOST:FILE or USER@HOST:FILE; DATE may be a textual "
+#~ "date\n"
+#~ "or a file name starting with `/' or `.', in which case the file's date is "
+#~ "used.\n"
+#~ "*This* `tar' defaults to `--format=%s -f%s -b%d'.\n"
+#~ msgstr ""
+#~ "\n"
+#~ "ARKISTO voi olla TIEDOSTO, ISÄNTÄ:TIEDOSTO tai KÄYTTÄJÄ@ISÄNTÄ:TIEDOSTO;\n"
+#~ "PÄIVÄYS voi olla tekstimuotoinen, tai merkillä ”/” tai ”.” alkava\n"
+#~ "tiedoston nimi, jolloin käytetään tiedoston päiväystä.\n"
+#~ "*Tämä* ”tar” käyttää oletuksena ”--format=%s -f %s -b%d”.\n"
+
+#~ msgid "Written by John Gilmore and Jay Fenlason."
+#~ msgstr "Kirjoittaneet John Gilmore ja Jay Fenlason."
+
+#~ msgid "Cannot close"
+#~ msgstr "Ei voi sulkea"
+
+#~ msgid "Cannot dup"
+#~ msgstr "Tiedostokahvaa ei voi kopioida"
+
+#~ msgid "Cannot use compressed or remote archives"
+#~ msgstr "Pakattuja tai etäarkistoja ei voi käyttää"
+
+#~ msgid "tar (child)"
+#~ msgstr "tar (lapsiprosessi)"
+
+#~ msgid "tar (grandchild)"
+#~ msgstr "tar (lapsenlapsiprosessi)"
+
+#~ msgid "Child returned status %d"
+#~ msgstr "Lapsiprosessi palautti tilan %d"
+
+#~ msgid "Member names contain `..'"
+#~ msgstr "Tiedostonimet sisältävät ”..”"
+
+#~ msgid "%s: Member name contains `..'"
+#~ msgstr "%s: Tiedostonimi sisältää ”..”"
+
+#~ msgid ""
+#~ "\n"
+#~ "Archive format selection:\n"
+#~ "  -V, --label=NAME                   create archive with volume name "
+#~ "NAME\n"
+#~ "              PATTERN                at list/extract time, a globbing "
+#~ "PATTERN\n"
+#~ "  -o, --old-archive, --portability   write a V7 format archive\n"
+#~ "      --posix                        write a POSIX format archive\n"
+#~ "  -j, --bzip2                        filter the archive through bzip2\n"
+#~ "  -z, --gzip, --ungzip               filter the archive through gzip\n"
+#~ "  -Z, --compress, --uncompress       filter the archive through compress\n"
+#~ "      --use-compress-program=PROG    filter through PROG (must accept -"
+#~ "d)\n"
+#~ msgstr ""
+#~ "\n"
+#~ "Arkiston muodon valinta:\n"
+#~ "  -V, --label=NIMI                   luo arkisto nimiöllä NIMI\n"
+#~ "              HAHMO                  listattaessa/purettaessa jokeri-"
+#~ "HAHMO\n"
+#~ " -o, --old-archive, --portability   kirjoita V7-muodon arkisto\n"
+#~ "      --posix                        kirjoita POSIX-muotoinen arkisto\n"
+#~ "  -j, --bzip2                        ohjaa arkisto bzip2-ohjelman läpi\n"
+#~ "  -z, --gzip, --ungzip               ohjaa arkisto gzip-ohjelman läpi\n"
+#~ "  -Z, --compress, --uncompress       ohjaa arkisto compress-ohjelman "
+#~ "läpi\n"
+#~ "      --use-compress-program=OHJ     ohjaa OHJelman läpi (on hyväksyttävä "
+#~ "-d)\n"
+
+#~ msgid "Obsolete option, now implied by --blocking-factor"
+#~ msgstr "Vanhentunut valitsin, seuraa nyt valitsimesta --blocking-factor"
+
+#~ msgid "Obsolete option name replaced by --blocking-factor"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --blocking-factor"
+
+#~ msgid "Obsolete option name replaced by --read-full-records"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --read-full-records"
+
+#~ msgid "Obsolete option name replaced by --touch"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --touch"
+
+#~ msgid "Obsolete option name replaced by --absolute-names"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --absolute-names"
+
+#~ msgid "Obsolete option name replaced by --block-number"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --block-number"
+
+#~ msgid "Obsolete option name replaced by --backup"
+#~ msgstr "Vanhentunut valitsimen nimi, uusi on --backup"
+
+#~ msgid ""
+#~ "If a long option shows an argument as mandatory, then it is mandatory\n"
+#~ "for the equivalent short option also.\n"
+#~ "\n"
+#~ "  -l, --file-length=LENGTH   LENGTH of generated file\n"
+#~ "  -p, --pattern=PATTERN      PATTERN is `default' or `zeros'\n"
+#~ "      --help                 display this help and exit\n"
+#~ "      --version              output version information and exit\n"
+#~ msgstr ""
+#~ "Jos argumentti on pakollinen pitkän valitsimen kanssa, se on pakollinen\n"
+#~ "myös vastaavan lyhyen valitsimen kanssa.\n"
+#~ "\n"
+#~ "  -l, --file-length=PITUUS   luotavan tiedoston PITUUS\n"
+#~ "  -p, --pattern=HAHMO        HAHMO on ”default” tai ”zeros”\n"
+#~ "      --help                 näytä tämä ohje ja poistu\n"
+#~ "      --version              näytä versiotiedot ja poistu\n"
