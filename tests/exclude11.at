@@ -37,8 +37,9 @@ AT_SETUP([--exclude-tag-under option])
 AT_KEYWORDS([exclude exclude-tag exclude-tag-under exclude11])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkexcltest etest
-tar -c -f etest.tar --exclude-tag-under=excludeme -v etest
+tar -c -f etest.tar --exclude-tag-under=excludeme -v etest | sort
 ],
 [0],
 [etest/

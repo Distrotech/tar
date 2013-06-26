@@ -37,8 +37,9 @@ AT_SETUP([--exclude-tag-all and --listed-incremental])
 AT_KEYWORDS([exclude exclude-tag exclude-tag-all listed incremental exclude15])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkexcltest etest
-tar -c -f etest.tar --exclude-tag-all=excludeme --listed=snar -v etest
+tar -c -f etest.tar --exclude-tag-all=excludeme --listed=snar -v etest | sort
 ],
 [0],
 [etest/

@@ -38,14 +38,15 @@ AT_SETUP([--exclude-tag option and --listed-incremental])
 AT_KEYWORDS([exclude exclude-tag listed incremental exclude09])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkexcltest etest
-tar -c -f etest.tar --exclude-tag=excludeme --listed=snar -v etest
+tar -c -f etest.tar --exclude-tag=excludeme --listed=snar -v etest | sort
 ],
 [0],
 [etest/
 etest/subdir/
-etest/top-level-file
 etest/subdir/excludeme
+etest/top-level-file
 ],
 [tar: etest: Directory is new
 tar: etest/subdir: Directory is new

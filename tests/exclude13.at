@@ -40,23 +40,24 @@ AT_SETUP([--exclude-tag-under option in incremental pass])
 AT_KEYWORDS([exclude exclude-tag exclude-tag-under listed incremental exclude13])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkexcltest etest
 rm etest/subdir/excludeme
 decho "# Level 0"
-tar -c -f etest-0.tar --exclude-tag-under=excludeme --listed=snar-0 -v etest
+tar -c -f etest-0.tar --exclude-tag-under=excludeme --listed=snar-0 -v etest | sort
 touch etest/subdir/excludeme
 touch etest/subdir/otherfile
 
 decho "# Level 1"
 cp snar-0 snar-1
-tar -c -f etest-1.tar --exclude-tag-under=excludeme --listed=snar-1 -v etest
+tar -c -f etest-1.tar --exclude-tag-under=excludeme --listed=snar-1 -v etest | sort
 ],
 [0],
 [# Level 0
 etest/
 etest/subdir/
-etest/top-level-file
 etest/subdir/subdir-file
+etest/top-level-file
 # Level 1
 etest/
 etest/subdir/
