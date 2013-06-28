@@ -1341,7 +1341,7 @@ extract_symlink (char *file_name, int typeflag)
   if (!warned_once)
     {
       warned_once = 1;
-      WARNOPT (WARN_SYMBOLIC_CAST,
+      WARNOPT (WARN_SYMLINK_CAST,
 	       (0, 0,
 		_("Attempting extraction of symbolic links as hard links")));
     }
