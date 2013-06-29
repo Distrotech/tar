@@ -134,6 +134,12 @@ TESTSUITE_AT = \
  multiv07.at\
  multiv08.at\
  old.at\
+ opcomp01.at\
+ opcomp02.at\
+ opcomp03.at\
+ opcomp04.at\
+ opcomp05.at\
+ opcomp06.at\
  options.at\
  options02.at\
  owner.at\

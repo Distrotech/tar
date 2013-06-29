@@ -2346,7 +2346,29 @@ static const char *tar_authors[] = {
   "Jay Fenlason",
   NULL
 };
+
+/* Subcommand classes */
+#define SUBCL_READ    0x01   /* subcommand reads from the archive */
+#define SUBCL_WRITE   0x02   /* subcommand writes to the archive */
+#define SUBCL_UPDATE  0x04   /* subcommand updates existing archive */
+#define SUBCL_TEST    0x08   /* subcommand tests archive header or meta-info */
 
+static int subcommand_class[] = {
+  /* UNKNOWN_SUBCOMMAND */     0,
+  /* APPEND_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
+  /* CAT_SUBCOMMAND     */     SUBCL_WRITE,
+  /* CREATE_SUBCOMMAND  */     SUBCL_WRITE,
+  /* DELETE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
+  /* DIFF_SUBCOMMAND    */     SUBCL_READ,
+  /* EXTRACT_SUBCOMMAND */     SUBCL_READ,
+  /* LIST_SUBCOMMAND    */     SUBCL_READ,
+  /* UPDATE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
+  /* TEST_LABEL_SUBCOMMAND */  SUBCL_TEST
+};
+
+/* Return t if the subcommand_option is in class(es) f */
+#define IS_SUBCOMMAND_CLASS(f) (subcommand_class[subcommand_option] & (f))
+  
 static void
 decode_options (int argc, char **argv)
 {
@@ -2510,12 +2532,10 @@ decode_options (int argc, char **argv)
       if (!args.input_files)
 	USAGE_ERROR ((0, 0,
 		      _("--occurrence is meaningless without a file list")));
-      if (subcommand_option != DELETE_SUBCOMMAND
-	  && subcommand_option != DIFF_SUBCOMMAND
-	  && subcommand_option != EXTRACT_SUBCOMMAND
-	  && subcommand_option != LIST_SUBCOMMAND)
-	    USAGE_ERROR ((0, 0,
-			  _("--occurrence cannot be used in the requested operation mode")));
+      if (!IS_SUBCOMMAND_CLASS (SUBCL_READ))
+	USAGE_ERROR ((0, 0,
+		      _("--occurrence cannot be used with %s"),
+		      subcommand_string (subcommand_option)));
     }
 
   if (archive_names == 0)
@@ -2574,15 +2594,16 @@ decode_options (int argc, char **argv)
 	USAGE_ERROR ((0, 0, _("Cannot verify multi-volume archives")));
       if (use_compress_program_option)
 	USAGE_ERROR ((0, 0, _("Cannot verify compressed archives")));
+      if (!IS_SUBCOMMAND_CLASS (SUBCL_WRITE))
+	USAGE_ERROR ((0, 0, _("--verify cannot be used with %s"),
+		      subcommand_string (subcommand_option)));
     }
 
   if (use_compress_program_option)
     {
       if (multi_volume_option)
 	USAGE_ERROR ((0, 0, _("Cannot use multi-volume compressed archives")));
-      if (subcommand_option == UPDATE_SUBCOMMAND
-	  || subcommand_option == APPEND_SUBCOMMAND
-	  || subcommand_option == DELETE_SUBCOMMAND)
+      if (IS_SUBCOMMAND_CLASS (SUBCL_UPDATE))
 	USAGE_ERROR ((0, 0, _("Cannot update compressed archives")));
       if (subcommand_option == CAT_SUBCOMMAND)
 	USAGE_ERROR ((0, 0, _("Cannot concatenate compressed archives")));
@@ -2594,24 +2615,24 @@ decode_options (int argc, char **argv)
      --gray */
   if (args.pax_option
       && archive_format != POSIX_FORMAT
-      && !READ_LIKE_SUBCOMMAND)
+      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--pax-option can be used only on POSIX archives")));
 
   /* star creates non-POSIX typed archives with xattr support, so allow the
-     extra headers whenn reading */
+     extra headers when reading */
   if ((acls_option > 0)
       && archive_format != POSIX_FORMAT
-      && !READ_LIKE_SUBCOMMAND)
+      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--acls can be used only on POSIX archives")));
 
   if ((selinux_context_option > 0)
       && archive_format != POSIX_FORMAT
-      && !READ_LIKE_SUBCOMMAND)
+      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--selinux can be used only on POSIX archives")));
 
   if ((xattrs_option > 0)
       && archive_format != POSIX_FORMAT
-      && !READ_LIKE_SUBCOMMAND)
+      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--xattrs can be used only on POSIX archives")));
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */

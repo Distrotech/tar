@@ -188,20 +188,40 @@ m4_include([pipe.at])
 m4_include([options.at])
 m4_include([options02.at])
 
+AT_BANNER([Option compatibility])
+m4_include([opcomp01.at])
+m4_include([opcomp02.at])
+m4_include([opcomp03.at])
+m4_include([opcomp04.at])
+m4_include([opcomp05.at])
+m4_include([opcomp06.at])
+
+AT_BANNER([The -T option])
 m4_include([T-empty.at])
 m4_include([T-null.at])
 
+AT_BANNER([Various options])
 m4_include([indexfile.at])
 m4_include([verbose.at])
+m4_include([gzip.at])
+m4_include([recurse.at])
+m4_include([shortrec.at])
 
+AT_BANNER([The --same-order option])
+m4_include([same-order01.at])
+m4_include([same-order02.at])
+
+AT_BANNER([Append])
 m4_include([append.at])
 m4_include([append01.at])
 m4_include([append02.at])
 m4_include([append03.at])
 
+AT_BANNER([Transforms])
 m4_include([xform-h.at])
 m4_include([xform01.at])
 
+AT_BANNER([Exclude])
 m4_include([exclude.at])
 m4_include([exclude01.at])
 m4_include([exclude02.at])
@@ -220,12 +240,14 @@ m4_include([exclude14.at])
 m4_include([exclude15.at])
 m4_include([exclude16.at])
 
+AT_BANNER([Deletions])
 m4_include([delete01.at])
 m4_include([delete02.at])
 m4_include([delete03.at])
 m4_include([delete04.at])
 m4_include([delete05.at])
 
+AT_BANNER([Extracting])
 m4_include([extrac01.at])
 m4_include([extrac02.at])
 m4_include([extrac03.at])
@@ -245,17 +267,16 @@ m4_include([extrac16.at])
 m4_include([extrac17.at])
 m4_include([extrac18.at])
 m4_include([extrac19.at])
+m4_include([backup01.at])
 
+AT_BANNER([Volume label operations])
 m4_include([label01.at])
 m4_include([label02.at])
 m4_include([label03.at])
 m4_include([label04.at])
 m4_include([label05.at])
 
-m4_include([backup01.at])
-
-m4_include([gzip.at])
-
+AT_BANNER([Incremental archives])
 m4_include([incremental.at])
 m4_include([incr01.at])
 m4_include([incr02.at])
@@ -269,9 +290,11 @@ m4_include([incr04.at])
 m4_include([incr05.at])
 m4_include([incr06.at])
 
+AT_BANNER([Files removed while archiving])
 m4_include([filerem01.at])
 m4_include([filerem02.at])
 
+AT_BANNER([Renames])
 m4_include([rename01.at])
 m4_include([rename02.at])
 m4_include([rename03.at])
@@ -279,21 +302,26 @@ m4_include([rename04.at])
 m4_include([rename05.at])
 m4_include([chtype.at])
 
+AT_BANNER([Ignore failing reads])
 m4_include([ignfail.at])
 
+AT_BANNER([Link handling])
 m4_include([link01.at])
 m4_include([link02.at])
 m4_include([link03.at])
 m4_include([link04.at])
 
+AT_BANNER([Specific archive formats])
 m4_include([longv7.at])
 m4_include([long01.at])
 m4_include([lustar01.at])
 m4_include([lustar02.at])
 m4_include([lustar03.at])
+m4_include([old.at])
 
 m4_include([time01.at])
 
+AT_BANNER([Multivolume archives])
 m4_include([multiv01.at])
 m4_include([multiv02.at])
 m4_include([multiv03.at])
@@ -303,16 +331,10 @@ m4_include([multiv06.at])
 m4_include([multiv07.at])
 m4_include([multiv08.at])
 
-m4_include([old.at])
+AT_BANNER([Owner and Groups])
 m4_include([owner.at])
 
-m4_include([recurse.at])
-
-m4_include([same-order01.at])
-m4_include([same-order02.at])
-
-m4_include([shortrec.at])
-
+AT_BANNER([Sparse files])
 m4_include([sparse01.at])
 m4_include([sparse02.at])
 m4_include([sparse03.at])
@@ -322,28 +344,33 @@ m4_include([spmvp00.at])
 m4_include([spmvp01.at])
 m4_include([spmvp10.at])
 
+AT_BANNER([Updates])
 m4_include([update.at])
 m4_include([update01.at])
 m4_include([update02.at])
 
+AT_BANNER([Verifying the archive])
 m4_include([verify.at])
 
+AT_BANNER([Volume operations])
 m4_include([volume.at])
 m4_include([volsize.at])
 
+AT_BANNER()
 m4_include([comprec.at])
 m4_include([shortfile.at])
 m4_include([shortupd.at])
 
 m4_include([truncate.at])
 m4_include([grow.at])
+m4_include([sigpipe.at])
 
+AT_BANNER([Removing files after archiving])
 m4_include([remfiles01.at])
 m4_include([remfiles02.at])
 m4_include([remfiles03.at])
 
-m4_include([sigpipe.at])
-
+AT_BANNER([Extended attributes])
 m4_include([xattr01.at])
 m4_include([xattr02.at])
 m4_include([xattr03.at])
@@ -358,6 +385,7 @@ m4_include([selacl01.at])
 
 m4_include([capabs_raw01.at])
 
+AT_BANNER([Star tests])
 m4_include([star/gtarfail.at])
 m4_include([star/gtarfail2.at])
 

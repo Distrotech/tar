@@ -96,11 +96,6 @@ enum subcommand
 
 GLOBAL enum subcommand subcommand_option;
 
-#define READ_LIKE_SUBCOMMAND                    \
-  (subcommand_option == EXTRACT_SUBCOMMAND      \
-   || subcommand_option == DIFF_SUBCOMMAND      \
-   || subcommand_option == LIST_SUBCOMMAND)
-
 /* Selected format for output archive.  */
 GLOBAL enum archive_format archive_format;
 
