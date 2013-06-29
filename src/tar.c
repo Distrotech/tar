@@ -2352,16 +2352,18 @@ static const char *tar_authors[] = {
 #define SUBCL_WRITE   0x02   /* subcommand writes to the archive */
 #define SUBCL_UPDATE  0x04   /* subcommand updates existing archive */
 #define SUBCL_TEST    0x08   /* subcommand tests archive header or meta-info */
+#define SUBCL_OCCUR   0x10   /* subcommand allows the use of the occurrence
+				option */
 
 static int subcommand_class[] = {
   /* UNKNOWN_SUBCOMMAND */     0,
   /* APPEND_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
   /* CAT_SUBCOMMAND     */     SUBCL_WRITE,
   /* CREATE_SUBCOMMAND  */     SUBCL_WRITE,
-  /* DELETE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
-  /* DIFF_SUBCOMMAND    */     SUBCL_READ,
-  /* EXTRACT_SUBCOMMAND */     SUBCL_READ,
-  /* LIST_SUBCOMMAND    */     SUBCL_READ,
+  /* DELETE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE|SUBCL_OCCUR,
+  /* DIFF_SUBCOMMAND    */     SUBCL_READ|SUBCL_OCCUR,
+  /* EXTRACT_SUBCOMMAND */     SUBCL_READ|SUBCL_OCCUR,
+  /* LIST_SUBCOMMAND    */     SUBCL_READ|SUBCL_OCCUR,
   /* UPDATE_SUBCOMMAND  */     SUBCL_WRITE|SUBCL_UPDATE,
   /* TEST_LABEL_SUBCOMMAND */  SUBCL_TEST
 };
@@ -2532,7 +2534,7 @@ decode_options (int argc, char **argv)
       if (!args.input_files)
 	USAGE_ERROR ((0, 0,
 		      _("--occurrence is meaningless without a file list")));
-      if (!IS_SUBCOMMAND_CLASS (SUBCL_READ))
+      if (!IS_SUBCOMMAND_CLASS (SUBCL_OCCUR))
 	USAGE_ERROR ((0, 0,
 		      _("--occurrence cannot be used with %s"),
 		      subcommand_string (subcommand_option)));
