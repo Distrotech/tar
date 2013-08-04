@@ -21,6 +21,7 @@
 #include <fnmatch.h>
 #include <hash.h>
 #include <quotearg.h>
+#include <wordsplit.h>
 
 #include "common.h"
 
@@ -211,7 +212,8 @@ static struct name *nametail;	/* end of name list */
 #define NELT_NAME  0   /* File name */
 #define NELT_CHDIR 1   /* Change directory request */
 #define NELT_FMASK 2   /* Change fnmatch options request */
-
+#define NELT_FILE  3   /* Read file names from that file */
+			 
 struct name_elt        /* A name_array element. */
 {
   char type;           /* Element type, see NELT_* constants above */
@@ -219,6 +221,12 @@ struct name_elt        /* A name_array element. */
   {
     const char *name;  /* File or directory name */
     int matching_flags;/* fnmatch options if type == NELT_FMASK */
+    struct
+    {
+      const char *name;/* File name */ 
+      int term;        /* File name terminator in the list */
+      FILE *fp;
+    } file;
   } v;
 };
 
@@ -274,6 +282,16 @@ name_add_dir (const char *name)
   ep->v.name = name;
 }
 
+void
+name_add_file (const char *name, int term)
+{
+  struct name_elt *ep;
+  check_name_alloc ();
+  ep = &name_array[entries++];
+  ep->type = NELT_FILE;
+  ep->v.file.name = name;
+  ep->v.file.term = term;
+}
 
 /* Names from external name file.  */
 
@@ -295,7 +313,185 @@ name_term (void)
   free (name_buffer);
   free (name_array);
 }
+
+/* Prevent recursive inclusion of the same file */
+struct file_id_list
+{
+  struct file_id_list *next;
+  ino_t ino;
+  dev_t dev;
+};
 
+static struct file_id_list *file_id_list;
+
+static void
+add_file_id (const char *filename)
+{
+  struct file_id_list *p;
+  struct stat st;
+
+  if (stat (filename, &st))
+    stat_fatal (filename);
+  for (p = file_id_list; p; p = p->next)
+    if (p->ino == st.st_ino && p->dev == st.st_dev)
+      {
+	FATAL_ERROR ((0, 0, _("%s: file list already read"),
+		      quotearg_colon (filename)));
+      }
+  p = xmalloc (sizeof *p);
+  p->next = file_id_list;
+  p->ino = st.st_ino;
+  p->dev = st.st_dev;
+  file_id_list = p;
+}
+
+enum read_file_list_state  /* Result of reading file name from the list file */
+  {
+    file_list_success,     /* OK, name read successfully */
+    file_list_end,         /* End of list file */
+    file_list_zero,        /* Zero separator encountered where it should not */
+    file_list_skip         /* Empty (zero-length) entry encountered, skip it */
+  };
+
+/* Read from FP a sequence of characters up to TERM and put them
+   into STK.
+ */
+static enum read_file_list_state
+read_name_from_file (struct name_elt *ent)
+{
+  int c;
+  size_t counter = 0;
+  FILE *fp = ent->v.file.fp;
+  int term = ent->v.file.term;
+  size_t count;
+  
+  for (c = getc (fp); c != EOF && c != term; c = getc (fp))
+    {
+      if (count == name_buffer_length)
+	name_buffer = x2realloc (name_buffer, &name_buffer_length);
+      name_buffer[counter++] = c;
+      if (c == 0)
+	{
+	  /* We have read a zero separator. The file possibly is
+	     zero-separated */
+	  return file_list_zero;
+	}
+    }
+
+  if (counter == 0 && c != EOF)
+    return file_list_skip;
+
+  if (count == name_buffer_length)
+    name_buffer = x2realloc (name_buffer, &name_buffer_length);
+  name_buffer[counter] = 0;
+
+  return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
+}
+
+static int
+handle_option (const char *str)
+{
+  struct wordsplit ws;
+  int i;
+  
+  while (*str && isspace (*str))
+    ;
+  if (*str != '-')
+    return 1;
+
+  ws.ws_offs = 1;
+  if (wordsplit (str, &ws, WRDSF_DEFFLAGS|WRDSF_DOOFFS))
+    FATAL_ERROR ((0, 0, _("cannot split string '%s': %s"),
+		  str, wordsplit_strerror (&ws)));
+  ws.ws_wordv[0] = "tar";
+  more_options (ws.ws_wordc+ws.ws_offs, ws.ws_wordv);
+  for (i = 0; i < ws.ws_wordc+ws.ws_offs; i++)
+    ws.ws_wordv[i] = NULL;
+  
+  wordsplit_free (&ws);
+  return 0;
+}
+
+static int
+read_next_name (struct name_elt *ent, struct name_elt *ret)
+{
+  enum read_file_list_state read_state;
+
+  if (!ent->v.file.fp)
+    {
+      if (!strcmp (ent->v.file.name, "-"))
+	{
+	  request_stdin ("-T");
+	  ent->v.file.fp = stdin;
+	}
+      else
+	{
+	  add_file_id (ent->v.file.name);
+	  if ((ent->v.file.fp = fopen (ent->v.file.name, "r")) == NULL)
+	    open_fatal (ent->v.file.name);
+	}
+    }
+  
+  while (1)
+    {
+      switch (read_name_from_file (ent))
+	{
+	case file_list_skip:
+	  continue;
+	  
+	case file_list_zero:
+	  WARNOPT (WARN_FILENAME_WITH_NULS,
+		   (0, 0, N_("%s: file name read contains nul character"),
+		    quotearg_colon (ent->v.file.name)));
+	  ent->v.file.term = 0;
+	  /* fall through */
+	case file_list_success:
+	  if (handle_option (name_buffer) == 0)
+	    continue;
+	  ret->type = NELT_NAME;
+	  ret->v.name = name_buffer;
+	  return 0;
+	  
+	case file_list_end:
+	  if (strcmp (ent->v.file.name, "-"))
+	    fclose (ent->v.file.fp);
+	  ent->v.file.fp = NULL;
+	  return 1;
+	}
+    }
+}	      
+
+static void
+copy_name (struct name_elt *ep)
+{
+  const char *source;
+  size_t source_len;
+  char *cursor;
+
+  source = ep->v.name;
+  source_len = strlen (source);
+  if (name_buffer_length < source_len)
+    {
+      do
+	{
+	  name_buffer_length *= 2;
+	  if (! name_buffer_length)
+	    xalloc_die ();
+	}
+      while (name_buffer_length < source_len);
+
+      free (name_buffer);
+      name_buffer = xmalloc(name_buffer_length + 2);
+    }
+  strcpy (name_buffer, source);
+
+  /* Zap trailing slashes.  */
+  cursor = name_buffer + strlen (name_buffer) - 1;
+  while (cursor > name_buffer && ISSLASH (*cursor))
+    *cursor-- = '\0';
+}
+
+
 static int matching_flags; /* exclude_fnmatch options */
 
 /* Get the next NELT_NAME element from name_array.  Result is in
@@ -310,51 +506,40 @@ static struct name_elt *
 name_next_elt (int change_dirs)
 {
   static struct name_elt entry;
-  const char *source;
-  char *cursor;
 
   while (scanned != entries)
     {
       struct name_elt *ep;
-      size_t source_len;
 
-      ep = &name_array[scanned++];
+      ep = &name_array[scanned];
       if (ep->type == NELT_FMASK)
 	{
 	  matching_flags = ep->v.matching_flags;
+	  ++scanned;
 	  continue;
 	}
 
-      source = ep->v.name;
-      source_len = strlen (source);
-      if (name_buffer_length < source_len)
+      switch (ep->type)
 	{
-	  do
+	case NELT_FILE:
+	  if (read_next_name (ep, &entry) == 0)
+	    return &entry;
+	  ++scanned;
+	  continue;
+	      
+	case NELT_CHDIR:
+	  if (change_dirs)
 	    {
-	      name_buffer_length *= 2;
-	      if (! name_buffer_length)
-		xalloc_die ();
+	      ++scanned;
+	      copy_name (ep);
+	      if (chdir (name_buffer) < 0)
+		chdir_fatal (name_buffer);
+	      break;
 	    }
-	  while (name_buffer_length < source_len);
-
-	  free (name_buffer);
-	  name_buffer = xmalloc (name_buffer_length + 2);
-	}
-      strcpy (name_buffer, source);
-
-      /* Zap trailing slashes.  */
-
-      cursor = name_buffer + strlen (name_buffer) - 1;
-      while (cursor > name_buffer && ISSLASH (*cursor))
-	*cursor-- = '\0';
-
-      if (change_dirs && ep->type == NELT_CHDIR)
-	{
-	  if (chdir (name_buffer) < 0)
-	    chdir_fatal (name_buffer);
-	}
-      else
-	{
+	  /* fall trhough */
+	case NELT_NAME:
+	  ++scanned;
+	  copy_name (ep);
 	  if (unquote_option)
 	    unquote_string (name_buffer);
 	  entry.type = ep->type;

@@ -199,6 +199,8 @@ m4_include([opcomp06.at])
 AT_BANNER([The -T option])
 m4_include([T-empty.at])
 m4_include([T-null.at])
+m4_include([T-zfile.at])
+m4_include([T-nonl.at])
 
 AT_BANNER([Various options])
 m4_include([indexfile.at])

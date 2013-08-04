@@ -704,6 +704,7 @@ int uname_to_uid (char const *uname, uid_t *puid);
 void name_init (void);
 void name_add_name (const char *name, int matching_flags);
 void name_add_dir (const char *name);
+void name_add_file (const char *name, int term);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);
@@ -747,6 +748,9 @@ int tar_timespec_cmp (struct timespec a, struct timespec b);
 const char *archive_format_string (enum archive_format fmt);
 const char *subcommand_string (enum subcommand c);
 void set_exit_status (int val);
+
+void request_stdin (const char *option);
+void more_options (int argc, char **argv);
 
 /* Module update.c.  */
 

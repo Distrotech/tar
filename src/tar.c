@@ -79,7 +79,7 @@ static size_t allocated_archive_names;
 static const char *stdin_used_by;
 
 /* Doesn't return if stdin already requested.  */
-static void
+void
 request_stdin (const char *option)
 {
   if (stdin_used_by)
@@ -1107,83 +1107,8 @@ report_textual_dates (struct tar_args *args)
 }
 
 
-
-/* Either NL or NUL, as decided by the --null option.  */
-static char filename_terminator;
-
-enum read_file_list_state  /* Result of reading file name from the list file */
-  {
-    file_list_success,     /* OK, name read successfully */
-    file_list_end,         /* End of list file */
-    file_list_zero,        /* Zero separator encountered where it should not */
-    file_list_skip         /* Empty (zero-length) entry encountered, skip it */
-  };
-
-/* Read from FP a sequence of characters up to TERM and put them
-   into STK.
- */
-static enum read_file_list_state
-read_name_from_file (FILE *fp, struct obstack *stk, int term)
-{
-  int c;
-  size_t counter = 0;
-
-  for (c = getc (fp); c != EOF && c != term; c = getc (fp))
-    {
-      if (c == 0)
-	{
-	  /* We have read a zero separator. The file possibly is
-	     zero-separated */
-	  return file_list_zero;
-	}
-      obstack_1grow (stk, c);
-      counter++;
-    }
-
-  if (counter == 0 && c != EOF)
-    return file_list_skip;
-
-  obstack_1grow (stk, 0);
-
-  return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
-}
-
-
 static bool files_from_option;  /* When set, tar will not refuse to create
 				   empty archives */
-static struct obstack argv_stk; /* Storage for additional command line options
-				   read using -T option */
-
-/* Prevent recursive inclusion of the same file */
-struct file_id_list
-{
-  struct file_id_list *next;
-  ino_t ino;
-  dev_t dev;
-};
-
-static struct file_id_list *file_id_list;
-
-static void
-add_file_id (const char *filename)
-{
-  struct file_id_list *p;
-  struct stat st;
-
-  if (stat (filename, &st))
-    stat_fatal (filename);
-  for (p = file_id_list; p; p = p->next)
-    if (p->ino == st.st_ino && p->dev == st.st_dev)
-      {
-	FATAL_ERROR ((0, 0, _("%s: file list already read"),
-		      quotearg_colon (filename)));
-      }
-  p = xmalloc (sizeof *p);
-  p->next = file_id_list;
-  p->ino = st.st_ino;
-  p->dev = st.st_dev;
-  file_id_list = p;
-}
 
 /* Default density numbers for [0-9][lmh] device specifications */
 
@@ -1200,101 +1125,6 @@ add_file_id (const char *filename)
 #  define HIGH_DENSITY_NUM 16
 # endif
 #endif
-
-static void
-update_argv (const char *filename, struct argp_state *state)
-{
-  FILE *fp;
-  size_t count = 0, i;
-  char *start, *p;
-  char **new_argv;
-  size_t new_argc;
-  bool is_stdin = false;
-  enum read_file_list_state read_state;
-  int term = filename_terminator;
-
-  if (!strcmp (filename, "-"))
-    {
-      is_stdin = true;
-      request_stdin ("-T");
-      fp = stdin;
-    }
-  else
-    {
-      add_file_id (filename);
-      if ((fp = fopen (filename, "r")) == NULL)
-	open_fatal (filename);
-    }
-
-  while ((read_state = read_name_from_file (fp, &argv_stk, term))
-	 != file_list_end)
-    {
-      switch (read_state)
-	{
-	case file_list_success:
-	  count++;
-	  break;
-
-	case file_list_end: /* won't happen, just to pacify gcc */
-	  break;
-
-	case file_list_zero:
-	  {
-	    size_t size;
-
-	    WARNOPT (WARN_FILENAME_WITH_NULS,
-		     (0, 0, N_("%s: file name read contains nul character"),
-		      quotearg_colon (filename)));
-
-	    /* Prepare new stack contents */
-	    size = obstack_object_size (&argv_stk);
-	    p = obstack_finish (&argv_stk);
-	    for (; size > 0; size--, p++)
-	      if (*p)
-		obstack_1grow (&argv_stk, *p);
-	      else
-		obstack_1grow (&argv_stk, '\n');
-	    obstack_1grow (&argv_stk, 0);
-	    count = 1;
-	    /* Read rest of files using new filename terminator */
-	    term = 0;
-	    break;
-	  }
-
-	case file_list_skip:
-	  break;
-	}
-    }
-
-  if (!is_stdin)
-    fclose (fp);
-
-  if (count == 0)
-    return;
-
-  start = obstack_finish (&argv_stk);
-
-  if (term == 0)
-    for (p = start; *p; p += strlen (p) + 1)
-      if (p[0] == '-')
-	count++;
-
-  new_argc = state->argc + count;
-  new_argv = xmalloc (sizeof (state->argv[0]) * (new_argc + 1));
-  memcpy (new_argv, state->argv, sizeof (state->argv[0]) * (state->argc + 1));
-  state->argv = new_argv;
-  memmove (&state->argv[state->next + count], &state->argv[state->next],
-	   (state->argc - state->next + 1) * sizeof (state->argv[0]));
-
-  state->argc = new_argc;
-
-  for (i = state->next, p = start; *p; p += strlen (p) + 1, i++)
-    {
-      if (term == 0 && p[0] == '-')
-	state->argv[i++] = (char *) "--add-file";
-      state->argv[i] = p;
-    }
-}
 
 
 static char *
@@ -1461,6 +1291,9 @@ parse_owner_group (char *arg, uintmax_t field_max, char const **name_option)
 }
 
 #define TAR_SIZE_SUFFIXES "bBcGgkKMmPTtw"
+
+/* Either NL or NUL, as decided by the --null option.  */
+static char filename_terminator;
 
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
@@ -1745,7 +1578,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'T':
-      update_argv (arg, state);
+      name_add_file (arg, filename_terminator);
       /* Indicate we've been given -T option. This is for backward
 	 compatibility only, so that `tar cfT archive /dev/null will
 	 succeed */
@@ -2371,11 +2204,12 @@ static int subcommand_class[] = {
 /* Return t if the subcommand_option is in class(es) f */
 #define IS_SUBCOMMAND_CLASS(f) (subcommand_class[subcommand_option] & (f))
   
+static struct tar_args args;
+
 static void
 decode_options (int argc, char **argv)
 {
   int idx;
-  struct tar_args args;
 
   argp_version_setup ("tar", tar_authors);
 
@@ -2475,7 +2309,6 @@ decode_options (int argc, char **argv)
 
   if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER, &idx, &args))
     exit (TAREXIT_FAILURE);
-
 
   /* Special handling for 'o' option:
 
@@ -2742,6 +2575,14 @@ decode_options (int argc, char **argv)
   report_textual_dates (&args);
 }
 
+void
+more_options (int argc, char **argv)
+{
+  int idx;
+  if (argp_parse (&argp, argc, argv, ARGP_IN_ORDER,
+		  &idx, &args))
+    exit (TAREXIT_FAILURE);
+}
 
 /* Tar proper.  */
 
@@ -2770,8 +2611,6 @@ main (int argc, char **argv)
   archive_name_array =
     xmalloc (sizeof (const char *) * allocated_archive_names);
   archive_names = 0;
-
-  obstack_init (&argv_stk);
 
   /* System V fork+wait does not work if SIGCHLD is ignored.  */
   signal (SIGCHLD, SIG_DFL);
