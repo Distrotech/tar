@@ -363,11 +363,10 @@ read_name_from_file (struct name_elt *ent)
   size_t counter = 0;
   FILE *fp = ent->v.file.fp;
   int term = ent->v.file.term;
-  size_t count;
   
   for (c = getc (fp); c != EOF && c != term; c = getc (fp))
     {
-      if (count == name_buffer_length)
+      if (counter == name_buffer_length)
 	name_buffer = x2realloc (name_buffer, &name_buffer_length);
       name_buffer[counter++] = c;
       if (c == 0)
@@ -381,7 +380,7 @@ read_name_from_file (struct name_elt *ent)
   if (counter == 0 && c != EOF)
     return file_list_skip;
 
-  if (count == name_buffer_length)
+  if (counter == name_buffer_length)
     name_buffer = x2realloc (name_buffer, &name_buffer_length);
   name_buffer[counter] = 0;
 
