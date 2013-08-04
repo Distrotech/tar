@@ -51,6 +51,7 @@ TESTSUITE_AT = \
  append01.at\
  append02.at\
  append03.at\
+ append04.at\
  backup01.at\
  chtype.at\
  comprec.at\

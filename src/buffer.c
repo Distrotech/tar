@@ -722,9 +722,6 @@ _open_archive (enum access_mode wanted_access)
           break;
         }
     }
-  else if (verify_option)
-    archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
-                       MODE_RW, rsh_command_option);
   else
     switch (wanted_access)
       {
@@ -740,8 +737,12 @@ _open_archive (enum access_mode wanted_access)
             maybe_backup_file (archive_name_array[0], 1);
             backed_up_flag = 1;
           }
-        archive = rmtcreat (archive_name_array[0], MODE_RW,
-                            rsh_command_option);
+	if (verify_option)
+	  archive = rmtopen (archive_name_array[0], O_RDWR | O_CREAT | O_BINARY,
+			     MODE_RW, rsh_command_option);
+	else
+	  archive = rmtcreat (archive_name_array[0], MODE_RW,
+			      rsh_command_option);
         break;
 
       case ACCESS_UPDATE:
