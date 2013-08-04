@@ -7120,45 +7120,6 @@ libc.a
 @end group
 @end smallexample
 
-@noindent
-@xopindex{directory, using in @option{--files-from} argument}
-Notice that the option parsing algorithm used with @option{-T} is
-stricter than the one used by shell.  Namely, when specifying option
-arguments, you should observe the following rules:
-
-@itemize @bullet
-@item
-When using short (single-letter) option form, its argument must
-immediately follow the option letter, without any intervening
-whitespace.  For example: @code{-Cdir}.
-
-@item
-When using long option form, the option argument must be separated
-from the option by a single equal sign.  No whitespace is allowed on
-any side of the equal sign.  For example: @code{--directory=dir}.
-
-@item
-For both short and long option forms, the option argument can be given
-on the next line after the option name, e.g.:
-
-@smallexample
-@group
---directory
-dir
-@end group
-@end smallexample
-
-@noindent
-and
-
-@smallexample
-@group
--C
-dir
-@end group
-@end smallexample
-@end itemize
-
 @opindex add-file
 If you happen to have a file whose name starts with @samp{-},
 precede it with @option{--add-file} option to prevent it from
@@ -7226,10 +7187,11 @@ $ @kbd{find . -size +800 -print0 |
 This example uses short options for typographic reasons, to avoid
 very long lines.
 
-@GNUTAR is able to automatically detect @code{NUL}-terminated file lists, so
-it is safe to use them even without the @option{--null} option.  In
-this case @command{tar} will print a warning and continue reading such
-a file as if @option{--null} were actually given:
+@GNUTAR is tries to automatically detect @code{NUL}-terminated file
+lists, so in many cases it is safe to use them even without the
+@option{--null} option.  In this case @command{tar} will print a
+warning and continue reading such a file as if @option{--null} were
+actually given:
 
 @smallexample
 @group
