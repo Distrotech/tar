@@ -402,7 +402,7 @@ handle_option (const char *str)
   if (wordsplit (str, &ws, WRDSF_DEFFLAGS|WRDSF_DOOFFS))
     FATAL_ERROR ((0, 0, _("cannot split string '%s': %s"),
 		  str, wordsplit_strerror (&ws)));
-  ws.ws_wordv[0] = "tar";
+  ws.ws_wordv[0] = program_invocation_short_name;
   more_options (ws.ws_wordc+ws.ws_offs, ws.ws_wordv);
   for (i = 0; i < ws.ws_wordc+ws.ws_offs; i++)
     ws.ws_wordv[i] = NULL;
@@ -414,8 +414,6 @@ handle_option (const char *str)
 static int
 read_next_name (struct name_elt *ent, struct name_elt *ret)
 {
-  enum read_file_list_state read_state;
-
   if (!ent->v.file.fp)
     {
       if (!strcmp (ent->v.file.name, "-"))
