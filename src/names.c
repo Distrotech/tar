@@ -291,6 +291,7 @@ name_add_file (const char *name, int term)
   ep->type = NELT_FILE;
   ep->v.file.name = name;
   ep->v.file.term = term;
+  ep->v.file.fp = NULL;
 }
 
 /* Names from external name file.  */
