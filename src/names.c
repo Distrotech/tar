@@ -510,15 +510,14 @@ name_next_elt (int change_dirs)
       struct name_elt *ep;
 
       ep = &name_array[scanned];
-      if (ep->type == NELT_FMASK)
-	{
-	  matching_flags = ep->v.matching_flags;
-	  ++scanned;
-	  continue;
-	}
 
       switch (ep->type)
 	{
+	case NELT_FMASK:
+	  matching_flags = ep->v.matching_flags;
+	  ++scanned;
+	  continue;
+	  
 	case NELT_FILE:
 	  if (read_next_name (ep, &entry) == 0)
 	    return &entry;
