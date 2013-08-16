@@ -42,10 +42,13 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 ## ------------ ##
 
 TESTSUITE_AT = \
+ T-cd.at\
  T-empty.at\
  T-null.at\
  T-zfile.at\
  T-nonl.at\
+ T-mult.at\
+ T-nest.at\
  testsuite.at\
  append.at\
  append01.at\

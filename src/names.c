@@ -197,7 +197,7 @@ static struct name *namelist;	/* first name in list, if any */
 static struct name *nametail;	/* end of name list */
 
 /* File name arguments are processed in two stages: first a
-   name_array (see below) is filled, then the names from it
+   name element list (see below) is filled, then the names from it
    are moved into the namelist.
 
    This awkward process is needed only to implement --same-order option,
@@ -207,21 +207,23 @@ static struct name *nametail;	/* end of name list */
 
    However, I very much doubt if we still need this -- Sergey */
 
-/* A name_array element contains entries of three types: */
+/* A name_list element contains entries of three types: */
 
 #define NELT_NAME  0   /* File name */
 #define NELT_CHDIR 1   /* Change directory request */
 #define NELT_FMASK 2   /* Change fnmatch options request */
 #define NELT_FILE  3   /* Read file names from that file */
-			 
+#define NELT_NOOP  4   /* No operation */
+
 struct name_elt        /* A name_array element. */
 {
+  struct name_elt *next, *prev;
   char type;           /* Element type, see NELT_* constants above */
   union
   {
     const char *name;  /* File or directory name */
     int matching_flags;/* fnmatch options if type == NELT_FMASK */
-    struct
+    struct             /* File, if type == NELT_FILE */
     {
       const char *name;/* File name */ 
       int term;        /* File name terminator in the list */
@@ -230,23 +232,47 @@ struct name_elt        /* A name_array element. */
   } v;
 };
 
-static struct name_elt *name_array;  /* store an array of names */
-static size_t allocated_entries; /* how big is the array? */
-static size_t entries;		 /* how many entries does it have? */
-static size_t scanned;		 /* how many of the entries have we scanned? */
-size_t name_count;		 /* how many of the entries are names? */
+static struct name_elt *name_head;  /* store a list of names */
+size_t name_count;	 	    /* how many of the entries are names? */
 
-/* Check the size of name_array, reallocating it as necessary.  */
-static void
-check_name_alloc (void)
+static struct name_elt *
+name_elt_alloc (void)
 {
-  if (entries == allocated_entries)
+  struct name_elt *elt;
+
+  elt = xmalloc (sizeof (*elt));
+  if (!name_head)
     {
-      if (allocated_entries == 0)
-	allocated_entries = 10; /* Set initial allocation */
-      name_array = x2nrealloc (name_array, &allocated_entries,
-			       sizeof (name_array[0]));
+      name_head = elt;
+      name_head->prev = name_head->next = NULL;
+      name_head->type = NELT_NOOP;
+      elt = xmalloc (sizeof (*elt));
     }
+
+  elt->prev = name_head->prev;
+  if (name_head->prev)
+    name_head->prev->next = elt;
+  elt->next = name_head;
+  name_head->prev = elt;
+  return elt;
+}
+
+static void
+name_list_adjust (void)
+{
+  if (name_head)
+    while (name_head->prev)
+      name_head = name_head->prev;
+}
+
+static void
+name_list_advance (void)
+{
+  struct name_elt *elt = name_head;
+  name_head = elt->next;
+  if (name_head)
+    name_head->prev = NULL;
+  free (elt);
 }
 
 /* Add to name_array the file NAME with fnmatch options MATCHING_FLAGS */
@@ -254,17 +280,14 @@ void
 name_add_name (const char *name, int matching_flags)
 {
   static int prev_flags = 0; /* FIXME: Or EXCLUDE_ANCHORED? */
-  struct name_elt *ep;
+  struct name_elt *ep = name_elt_alloc ();
 
-  check_name_alloc ();
-  ep = &name_array[entries++];
   if (prev_flags != matching_flags)
     {
       ep->type = NELT_FMASK;
       ep->v.matching_flags = matching_flags;
       prev_flags = matching_flags;
-      check_name_alloc ();
-      ep = &name_array[entries++];
+      ep = name_elt_alloc ();
     }
   ep->type = NELT_NAME;
   ep->v.name = name;
@@ -275,9 +298,7 @@ name_add_name (const char *name, int matching_flags)
 void
 name_add_dir (const char *name)
 {
-  struct name_elt *ep;
-  check_name_alloc ();
-  ep = &name_array[entries++];
+  struct name_elt *ep = name_elt_alloc ();
   ep->type = NELT_CHDIR;
   ep->v.name = name;
 }
@@ -285,9 +306,7 @@ name_add_dir (const char *name)
 void
 name_add_file (const char *name, int term)
 {
-  struct name_elt *ep;
-  check_name_alloc ();
-  ep = &name_array[entries++];
+  struct name_elt *ep = name_elt_alloc ();
   ep->type = NELT_FILE;
   ep->v.file.name = name;
   ep->v.file.term = term;
@@ -306,13 +325,13 @@ name_init (void)
 {
   name_buffer = xmalloc (NAME_FIELD_SIZE + 2);
   name_buffer_length = NAME_FIELD_SIZE;
+  name_list_adjust ();
 }
 
 void
 name_term (void)
 {
   free (name_buffer);
-  free (name_array);
 }
 
 /* Prevent recursive inclusion of the same file */
@@ -427,7 +446,10 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
       else
 	{
 	  if (add_file_id (ent->v.file.name))
-	    return 1;
+	    {
+	      name_list_advance ();
+	      return 1;
+	    }
 	  if ((ent->v.file.fp = fopen (ent->v.file.name, "r")) == NULL)
 	    open_fatal (ent->v.file.name);
 	}
@@ -448,7 +470,10 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  /* fall through */
 	case file_list_success:
 	  if (handle_option (name_buffer) == 0)
-	    continue;
+	    {
+	      name_list_adjust ();
+	      return 1;
+	    }
 	  ret->type = NELT_NAME;
 	  ret->v.name = name_buffer;
 	  return 0;
@@ -457,6 +482,7 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  if (strcmp (ent->v.file.name, "-"))
 	    fclose (ent->v.file.fp);
 	  ent->v.file.fp = NULL;
+	  name_list_advance ();
 	  return 1;
 	}
     }
@@ -507,43 +533,43 @@ static struct name_elt *
 name_next_elt (int change_dirs)
 {
   static struct name_elt entry;
+  struct name_elt *ep;
 
-  while (scanned != entries)
+  while ((ep = name_head) != NULL)
     {
-      struct name_elt *ep;
-
-      ep = &name_array[scanned];
-
       switch (ep->type)
 	{
+	case NELT_NOOP:
+	  name_list_advance ();
+	  break;
+	  
 	case NELT_FMASK:
 	  matching_flags = ep->v.matching_flags;
-	  ++scanned;
+	  name_list_advance ();
 	  continue;
 	  
 	case NELT_FILE:
 	  if (read_next_name (ep, &entry) == 0)
 	    return &entry;
-	  ++scanned;
 	  continue;
 	      
 	case NELT_CHDIR:
 	  if (change_dirs)
 	    {
-	      ++scanned;
 	      copy_name (ep);
 	      if (chdir (name_buffer) < 0)
 		chdir_fatal (name_buffer);
+	      name_list_advance ();
 	      break;
 	    }
 	  /* fall trhough */
 	case NELT_NAME:
-	  ++scanned;
 	  copy_name (ep);
 	  if (unquote_option)
 	    unquote_string (name_buffer);
 	  entry.type = ep->type;
 	  entry.v.name = name_buffer;
+	  name_list_advance ();
 	  return &entry;
 	}
     }
