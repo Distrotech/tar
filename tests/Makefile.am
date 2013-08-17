@@ -45,6 +45,7 @@ TESTSUITE_AT = \
  T-cd.at\
  T-empty.at\
  T-null.at\
+ T-rec.at\
  T-zfile.at\
  T-nonl.at\
  T-mult.at\
