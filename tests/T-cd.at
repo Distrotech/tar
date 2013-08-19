@@ -22,6 +22,7 @@ AT_SETUP([-C in file lists])
 AT_KEYWORDS([files-from T-cd])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 >file1
 mkdir dir
 >dir/file2
@@ -31,13 +32,13 @@ AT_DATA([F1],[file1
 .
 ])
 tar cf archive -T F1
-tar tf archive
+tar tf archive | sort
 ],
 [0],
-[file1
-./
+[./
 ./file2
 ./file3
+file1
 ],[],[],[],[ustar])
 
 AT_CLEANUP
