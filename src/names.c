@@ -225,7 +225,7 @@ struct name_elt        /* A name_array element. */
     int matching_flags;/* fnmatch options if type == NELT_FMASK */
     struct             /* File, if type == NELT_FILE */
     {
-      const char *name;/* File name */ 
+      const char *name;/* File name */
       int term;        /* File name terminator in the list */
       FILE *fp;
     } file;
@@ -349,7 +349,7 @@ static struct file_id_list *file_id_list;
    are being read.
 */
 static const char *
-file_list_name ()
+file_list_name (void)
 {
   struct name_elt *elt;
 
@@ -407,7 +407,7 @@ read_name_from_file (struct name_elt *ent)
   size_t counter = 0;
   FILE *fp = ent->v.file.fp;
   int term = ent->v.file.term;
-  
+
   for (c = getc (fp); c != EOF && c != term; c = getc (fp))
     {
       if (counter == name_buffer_length)
@@ -436,7 +436,7 @@ handle_option (const char *str)
 {
   struct wordsplit ws;
   int i;
-  
+
   while (*str && isspace (*str))
     ;
   if (*str != '-')
@@ -450,7 +450,7 @@ handle_option (const char *str)
   more_options (ws.ws_wordc+ws.ws_offs, ws.ws_wordv);
   for (i = 0; i < ws.ws_wordc+ws.ws_offs; i++)
     ws.ws_wordv[i] = NULL;
-  
+
   wordsplit_free (&ws);
   return 0;
 }
@@ -476,14 +476,14 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	    open_fatal (ent->v.file.name);
 	}
     }
-  
+
   while (1)
     {
       switch (read_name_from_file (ent))
 	{
 	case file_list_skip:
 	  continue;
-	  
+
 	case file_list_zero:
 	  WARNOPT (WARN_FILENAME_WITH_NULS,
 		   (0, 0, N_("%s: file name read contains nul character"),
@@ -499,7 +499,7 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  ret->type = NELT_NAME;
 	  ret->v.name = name_buffer;
 	  return 0;
-	  
+
 	case file_list_end:
 	  if (strcmp (ent->v.file.name, "-"))
 	    fclose (ent->v.file.fp);
@@ -508,7 +508,7 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  return 1;
 	}
     }
-}	      
+}
 
 static void
 copy_name (struct name_elt *ep)
@@ -564,17 +564,17 @@ name_next_elt (int change_dirs)
 	case NELT_NOOP:
 	  name_list_advance ();
 	  break;
-	  
+
 	case NELT_FMASK:
 	  matching_flags = ep->v.matching_flags;
 	  name_list_advance ();
 	  continue;
-	  
+
 	case NELT_FILE:
 	  if (read_next_name (ep, &entry) == 0)
 	    return &entry;
 	  continue;
-	      
+
 	case NELT_CHDIR:
 	  if (change_dirs)
 	    {
