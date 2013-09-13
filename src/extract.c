@@ -297,7 +297,7 @@ set_mode (char const *file_name,
 static void
 check_time (char const *file_name, struct timespec t)
 {
-  if (t.tv_sec <= 0)
+  if (t.tv_sec < 0)
     WARNOPT (WARN_TIMESTAMP,
 	     (0, 0, _("%s: implausibly old time stamp %s"),
 	      file_name, tartime (t, true)));
