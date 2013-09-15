@@ -337,6 +337,7 @@ enum
   SELINUX_CONTEXT_OPTION,
   SHOW_DEFAULTS_OPTION,
   SHOW_OMITTED_DIRS_OPTION,
+  SHOW_SNAPSHOT_FIELD_RANGES_OPTION,
   SHOW_TRANSFORMED_NAMES_OPTION,
   SKIP_OLD_FILES_OPTION,
   SPARSE_VERSION_OPTION,
@@ -805,6 +806,8 @@ static struct argp_option options[] = {
   {"confirmation", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"show-defaults", SHOW_DEFAULTS_OPTION, 0, 0,
    N_("show tar defaults"), GRID+1 },
+  {"show-snapshot-field-ranges", SHOW_SNAPSHOT_FIELD_RANGES_OPTION, 0, 0,
+   N_("show valid ranges for snapshot-file fields"), GRID+1 },
   {"show-omitted-dirs", SHOW_OMITTED_DIRS_OPTION, 0, 0,
    N_("when listing or extracting, list each directory that does not match search criteria"), GRID+1 },
   {"show-transformed-names", SHOW_TRANSFORMED_NAMES_OPTION, 0, 0,
@@ -1948,6 +1951,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
 	free (s);
 	exit (0);
       }
+
+    case SHOW_SNAPSHOT_FIELD_RANGES_OPTION:
+      show_snapshot_field_ranges ();
+      close_stdout ();
+      exit (0);
 
     case STRIP_COMPONENTS_OPTION:
       {

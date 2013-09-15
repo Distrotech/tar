@@ -1268,6 +1268,51 @@ read_incr_db_2 (void)
 		_("Unexpected EOF in snapshot file")));
 }
 
+/* Display (to stdout) the range of allowed values for each field
+   in the snapshot file.  The array below should be kept in sync
+   with any changes made to the read_num() calls in the parsing
+   loop inside read_incr_db_2().
+
+   (This function is invoked via the --show-snapshot-field-ranges
+   command line option.) */
+
+struct field_range
+{
+  char const *fieldname;
+  intmax_t min_val;
+  uintmax_t max_val;
+};
+
+static struct field_range const field_ranges[] = {
+  { "nfs", 0, 1 },
+  { "timestamp_sec", TYPE_MINIMUM (time_t), TYPE_MAXIMUM (time_t) },
+  { "timestamp_nsec", 0, BILLION - 1 },
+  { "dev", TYPE_MINIMUM (dev_t), TYPE_MAXIMUM (dev_t) },
+  { "ino", TYPE_MINIMUM (ino_t), TYPE_MAXIMUM (ino_t) },
+  { NULL, 0, 0 }
+};
+
+void
+show_snapshot_field_ranges (void)
+{
+  struct field_range const *p;
+  char minbuf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (intmax_t))];
+  char maxbuf[max (SYSINT_BUFSIZE, INT_BUFSIZE_BOUND (uintmax_t))];
+
+  printf("This tar's snapshot file field ranges are\n");
+  printf ("   (%-15s => [ %s, %s ]):\n\n", "field name", "min", "max");
+
+  for (p=field_ranges; p->fieldname != NULL; p++)
+    {
+      printf ("    %-15s => [ %s, %s ],\n", p->fieldname,
+	      sysinttostr (p->min_val, p->min_val, p->max_val, minbuf),
+	      sysinttostr (p->max_val, p->min_val, p->max_val, maxbuf));
+
+    }
+
+  printf("\n");
+}
+
 /* Read incremental snapshot file (directory file).
    If the file has older incremental version, make sure that it is processed
    correctly and that tar will use the most conservative backup method among

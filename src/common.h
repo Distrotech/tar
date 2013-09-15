@@ -524,6 +524,7 @@ void rebase_directory (struct directory *dir,
 		       const char *repl, size_t rlen);
 
 void append_incremental_renames (struct directory *dir);
+void show_snapshot_field_ranges (void);
 void read_directory_file (void);
 void write_directory_file (void);
 void purge_directory (char const *directory_name);

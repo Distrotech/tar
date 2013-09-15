@@ -94,7 +94,6 @@ as with @samp{format 0}.
 
 @cindex format 2, snapshot file
 @cindex snapshot file, format 2
-@FIXME{}
 @item
   @samp{Format 2} snapshot file begins with a format identifier, as described for
 version 1, e.g.:
@@ -108,7 +107,7 @@ records, separated by null (@acronym{ASCII} 0)
 characters. Thus, in contrast to the previous formats, format 2
 snapshot is a binary file.
 
-  First two records are decimal numbers, representing the
+  First two records are decimal integers, representing the
 time of the last backup.  First number is the number of seconds, the
 second one is the number of nanoseconds, since the beginning of the
 epoch.  These are followed by arbitrary number of directory records.
@@ -116,17 +115,18 @@ epoch.  These are followed by arbitrary number of directory records.
   Each @dfn{directory record} contains a set of metadata describing a
 particular directory.  Parts of a directory record are delimited with
 @acronym{ASCII} 0 characters.  The following table describes each
-part.  The @dfn{Number} type in this table stands for a decimal number
-in @acronym{ASCII} notation.
+part.  The @dfn{Number} type in this table stands for a decimal integer
+in @acronym{ASCII} notation.  (Negative values are preceeded with a "-"
+character, while positive values have no leading punctuation.)
 
-@multitable @columnfractions 0.2 0.2 0.6
+@multitable @columnfractions 0.25 0.15 0.6
 @headitem Field @tab Type @tab Description
 @item nfs @tab Character @tab @samp{1} if the directory is located on
 an @acronym{NFS}-mounted partition, or @samp{0} otherwise;
-@item mtime-sec @tab Number @tab Modification time, seconds;
-@item mtime-nano @tab Number @tab Modification time, nanoseconds;
-@item dev-no @tab Number @tab Device number;
-@item i-no @tab Number @tab I-node number;
+@item timestamp_sec @tab Number @tab Modification time, seconds;
+@item timestamp_nsec @tab Number @tab Modification time, nanoseconds;
+@item dev @tab Number @tab Device number;
+@item ino @tab Number @tab I-node number;
 @item name @tab String @tab Directory name; in contrast to the
 previous versions it is not quoted;
 @item contents @tab Dumpdir @tab Contents of the directory;
@@ -136,6 +136,28 @@ previous versions it is not quoted;
 
   Dumpdirs stored in snapshot files contain only records of types
 @samp{Y}, @samp{N} and @samp{D}.
+
+@cindex snapshot file field ranges
+@opindex show-snapshot-field-ranges
+The specific range of values allowed in each of the @dfn{Number} fields
+depends on the underlying C datatypes as determined when @command{tar}
+is compiled.  To see the specific ranges allowed for a particular
+@command{tar} binary, you can use the
+@option{--show-snapshot-field-ranges} option:
+
+@smallexample
+$ @kbd{tar --show-shapshot-field-ranges}
+This tar's snapshot file field ranges are
+   (field name      => [ min, max ]):
+
+    nfs             => [ 0, 1 ],
+    timestamp_sec   => [ -9223372036854775808, 9223372036854775807 ],
+    timestamp_nsec  => [ 0, 999999999 ],
+    dev             => [ 0, 18446744073709551615 ],
+    ino             => [ 0, 18446744073709551615 ],
+@end smallexample
+
+(This example is from a GNU/Linux x86_64 system.)
 
 @end enumerate
 

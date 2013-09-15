@@ -3251,13 +3251,20 @@ $ @kbd{tar --show-defaults}
 
 @noindent
 Notice, that this option outputs only one line.  The example output
-above has been split to fit page boundaries.
+above has been split to fit page boundaries. @xref{defaults}.
 
 @opsummary{show-omitted-dirs}
 @item --show-omitted-dirs
 
 Instructs @command{tar} to mention the directories it is skipping when
 operating on a @command{tar} archive.  @xref{show-omitted-dirs}.
+
+@opsummary{show-snapshot-field-ranges}
+@item --show-snapshot-field-ranges
+
+Displays the range of values allowed by this version of @command{tar}
+for each field in the snapshot file, then exits successfully.
+@xref{Snapshot Files}.
 
 @opsummary{show-transformed-names}
 @opsummary{show-stored-names}
