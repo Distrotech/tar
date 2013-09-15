@@ -631,7 +631,7 @@ remove_any_file (const char *file_name, enum remove_option option)
 
 	case RECURSIVE_REMOVE_OPTION:
 	  {
-	    char *directory = savedir (file_name);
+	    char *directory = tar_savedir (file_name, 0);
 	    char const *entry;
 	    size_t entrylen;
 
@@ -1143,4 +1143,32 @@ namebuf_name (namebuf_t buf, const char *name)
     buf->buffer = x2realloc (buf->buffer, &buf->buffer_size);
   strcpy (buf->buffer + buf->dir_length, name);
   return buf->buffer;
+}
+
+/* Return the filenames in directory NAME, relative to the chdir_fd.
+   If the directory does not exist, report error if MUST_EXIST is
+   true.
+
+   Return NULL on errors.
+*/
+char *
+tar_savedir (const char *name, int must_exist)
+{
+  char *ret = NULL;
+  DIR *dir = NULL;
+  int fd = openat (chdir_fd, name, open_read_flags | O_DIRECTORY);
+  if (fd < 0)
+    {
+      if (!must_exist && errno == ENOENT)
+	return NULL;
+      open_error (name);
+    }
+  else if (! ((dir = fdopendir (fd))
+	      && (ret = streamsavedir (dir))))
+    savedir_error (name);
+
+  if (dir ? closedir (dir) != 0 : 0 <= fd && close (fd) != 0)
+    savedir_error (name);
+
+  return ret;
 }

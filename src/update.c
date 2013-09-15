@@ -145,16 +145,8 @@ update_archive (void)
 		  {
 		    if (S_ISDIR (s.st_mode))
 		      {
-			char *p, *dirp;
-			DIR *stream = NULL;
-			int fd = openat (chdir_fd, name->name,
-					 open_read_flags | O_DIRECTORY);
-			if (fd < 0)
-			  open_error (name->name);
-			else if (! ((stream = fdopendir (fd))
-				    && (dirp = streamsavedir (stream))))
-			  savedir_error (name->name);
-			else
+			char *p, *dirp = tar_savedir (name->name, 1);
+			if (dirp)
 			  {
 			    namebuf_t nbuf = namebuf_create (name->name);
 
@@ -167,11 +159,6 @@ update_archive (void)
 
 			    remname (name);
 			  }
-
-			if (stream
-			    ? closedir (stream) != 0
-			    : 0 <= fd && close (fd) != 0)
-			  savedir_error (name->name);
 		      }
 		    else if (tar_timespec_cmp (get_stat_mtime (&s),
 					       current_stat_info.mtime)

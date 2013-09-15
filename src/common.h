@@ -596,6 +596,7 @@ char *zap_slashes (char *name);
 char *normalize_filename (const char *name);
 void replace_prefix (char **pname, const char *samp, size_t slen,
 		     const char *repl, size_t rlen);
+char *tar_savedir (const char *name, int must_exist);
 
 typedef struct namebuf *namebuf_t;
 namebuf_t namebuf_create (const char *dir);
