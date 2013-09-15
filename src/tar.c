@@ -2633,7 +2633,7 @@ main (int argc, char **argv)
     {
     case UNKNOWN_SUBCOMMAND:
       USAGE_ERROR ((0, 0,
-		    _("You must specify one of the '-Acdtrux' or '--test-label'  options")));
+		    _("You must specify one of the '-Acdtrux', '--delete' or '--test-label' options")));
 
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
