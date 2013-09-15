@@ -61,10 +61,13 @@ tar -g test.snar -vxf test.0.tar -C ext/
 decho E1
 tar -g test.snar -vxf test.1.tar -C ext/
 
+decho E2
+tar -g test.snar -vxf test.2.tar -C ext/
+
 mkdir ext/A/B
 touch ext/A/B/file
 
-decho E2
+decho E3
 tar -g test.snar -vxf test.2.tar -C ext/
 
 echo FIN
@@ -91,6 +94,8 @@ A/c
 E2
 A/
 tar: Deleting 'A/a'
+E3
+A/
 tar: Deleting 'A/B'
 FIN
 ],
@@ -101,6 +106,7 @@ C2
 E0
 E1
 E2
+E3
 ],[],[],[gnu, oldgnu, posix])
 
 AT_CLEANUP
