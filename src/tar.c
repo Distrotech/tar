@@ -970,7 +970,7 @@ set_subcommand_option (enum subcommand subcommand)
   if (subcommand_option != UNKNOWN_SUBCOMMAND
       && subcommand_option != subcommand)
     USAGE_ERROR ((0, 0,
-		  _("You may not specify more than one '-Acdtrux' or '--test-label' option")));
+		  _("You may not specify more than one '-Acdtrux', '--delete' or  '--test-label' option")));
 
   subcommand_option = subcommand;
 }
