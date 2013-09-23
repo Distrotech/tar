@@ -190,6 +190,8 @@ enum old_files
 };
 GLOBAL enum old_files old_files_option;
 
+GLOBAL bool keep_directory_symlink_option;
+
 /* Specified file name for incremental list.  */
 GLOBAL const char *listed_incremental_option;
 /* Incremental dump level */
@@ -872,11 +874,12 @@ void checkpoint_run (bool do_write);
 #define WARN_DECOMPRESS_PROGRAM  0x00080000
 #define WARN_EXISTING_FILE       0x00100000
 #define WARN_XATTR_WRITE         0x00200000
+#define WARN_RECORD_SIZE         0x00400000
 
-/* The warnings composing WARN_VERBOSE_WARNINGS are enabled by default
-   in verbose mode */
+/* These warnings are enabled by default in verbose mode: */
 #define WARN_VERBOSE_WARNINGS    (WARN_RENAME_DIRECTORY|WARN_NEW_DIRECTORY|\
-				  WARN_DECOMPRESS_PROGRAM|WARN_EXISTING_FILE)
+				  WARN_DECOMPRESS_PROGRAM|WARN_EXISTING_FILE|\
+		                  WARN_RECORD_SIZE)
 #define WARN_ALL                 (~WARN_VERBOSE_WARNINGS)
 
 void set_warning_option (const char *arg);

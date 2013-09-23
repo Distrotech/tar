@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2013-02-10
+GNU tar NEWS - User visible changes. 2013-09-23
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -69,6 +69,23 @@ prevent from being expanded too early, for example:
   tar -x -f a.tar --info-script='changevol $TAR_ARCHIVE $TAR_VOLUME'
 
 * New configure option --enable-gcc-warnings, intended for debugging.
+
+* New warning control option --warning=[no-]record-size
+
+On extraction, this option controls whether to display actual record
+size, if it differs from the default.
+
+* New command line option --keep-directory-symlink
+
+By default, if when trying to extract a directory from the archive,
+tar discovers that the corresponding file name already exists and is a
+symbolic link, it first unlinks the entry, and then extracts the directory.
+
+This option disables this behavior and instructs tar to follow
+symlinks to directories when extracting from the archive.  
+
+It is mainly intended to provide compatibility with the Slackware
+installation scripts.
 
 
 version 1.26 - Sergey Poznyakoff, 2011-03-12

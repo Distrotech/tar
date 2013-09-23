@@ -2804,6 +2804,21 @@ Specifies that @command{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
 @xref{interactive}.
 
+@opsummary{--keep-directory-symlink}
+@item --keep-directory-symlink
+
+This option changes the behavior of tar when it encounters a symlink
+with the same name as the directory that it is about to extract.  By
+default, in this case tar would first remove the symlink and then
+proceed extracting the directory.
+
+The @option{--keep-directory-symlink} option disables this behavior
+and instructs tar to follow symlinks to directories when extracting
+from the archive.
+
+It is mainly intended to provide compatibility with the Slackware
+installation scripts.
+
 @opsummary{keep-newer-files}
 @item --keep-newer-files
 
@@ -4221,6 +4236,10 @@ tar (child): trying gzip
 This means that @command{tar} first tried to decompress
 @file{archive.Z} using @command{compress}, and, when that
 failed, switched to @command{gzip}.
+@kwindex record-size
+@cindex @samp{Record size = %lu blocks}, warning message
+@item record-size
+@samp{Record size = %lu blocks}
 @end table
 
 @subheading Keywords controlling incremental extraction:
@@ -10706,15 +10725,16 @@ When reading an archive, @command{tar} can usually figure out the
 record size on itself.  When this is the case, and a non-standard
 record size was used when the archive was created, @command{tar} will
 print a message about a non-standard blocking factor, and then operate
-normally.  On some tape devices, however, @command{tar} cannot figure
-out the record size itself.  On most of those, you can specify a
-blocking factor (with @option{--blocking-factor}) larger than the
-actual blocking factor, and then use the @option{--read-full-records}
-(@option{-B}) option.  (If you specify a blocking factor with
-@option{--blocking-factor} and don't use the
-@option{--read-full-records} option, then @command{tar} will not
-attempt to figure out the recording size itself.)  On some devices,
-you must always specify the record size exactly with
+normally@footnote{If this message is not needed, you can turn it off
+using the @option{--warning=no-record-size} option.}.  On some tape
+devices, however, @command{tar} cannot figure out the record size
+itself.  On most of those, you can specify a blocking factor (with
+@option{--blocking-factor}) larger than the actual blocking factor,
+and then use the @option{--read-full-records} (@option{-B}) option.
+(If you specify a blocking factor with @option{--blocking-factor} and
+don't use the @option{--read-full-records} option, then @command{tar}
+will not attempt to figure out the recording size itself.)  On some
+devices, you must always specify the record size exactly with
 @option{--blocking-factor} when reading, because @command{tar} cannot
 figure it out.  In any case, use @option{--list} (@option{-t}) before
 doing any extractions to see whether @command{tar} is reading the archive

@@ -884,16 +884,16 @@ short_read (size_t status)
   left = record_size - status;
 
   if (left && left % BLOCKSIZE == 0
-      && verbose_option
+      && (warning_option & WARN_RECORD_SIZE)
       && record_start_block == 0 && status != 0
       && archive_is_dev ())
     {
       unsigned long rsize = status / BLOCKSIZE;
       WARN ((0, 0,
-             ngettext ("Record size = %lu block",
-                       "Record size = %lu blocks",
-                       rsize),
-             rsize));
+	     ngettext ("Record size = %lu block",
+		       "Record size = %lu blocks",
+		       rsize),
+	     rsize));
     }
 
   while (left % BLOCKSIZE != 0

@@ -286,6 +286,7 @@ enum
   IGNORE_COMMAND_ERROR_OPTION,
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
+  KEEP_DIRECTORY_SYMLINK_OPTION,
   KEEP_NEWER_FILES_OPTION,
   LEVEL_OPTION,
   LZIP_OPTION,
@@ -484,6 +485,9 @@ static struct argp_option options[] = {
    N_("preserve metadata of existing directories"), GRID+1 },
   {"overwrite-dir", OVERWRITE_DIR_OPTION, 0, 0,
    N_("overwrite metadata of existing directories when extracting (default)"),
+   GRID+1 },
+  {"keep-directory-symlink", KEEP_DIRECTORY_SYMLINK_OPTION, 0, 0,
+   N_("preserve existing symlinks to directories when extracting"),
    GRID+1 },
 #undef GRID
 
@@ -1767,6 +1771,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       ignore_failed_read_option = true;
       break;
 
+    case KEEP_DIRECTORY_SYMLINK_OPTION:
+      keep_directory_symlink_option = true;
+      break;
+      
     case KEEP_NEWER_FILES_OPTION:
       old_files_option = KEEP_NEWER_FILES;
       break;

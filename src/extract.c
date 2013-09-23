@@ -855,7 +855,21 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 }
 
 
-
+static bool
+is_directory_link (const char *file_name)
+{
+  struct stat st;
+  int e = errno;
+  int res;
+  
+  res = (fstatat (chdir_fd, file_name, &st, AT_SYMLINK_NOFOLLOW) == 0 &&
+	 S_ISLNK (st.st_mode) &&
+	 fstatat (chdir_fd, file_name, &st, 0) == 0 &&
+	 S_ISDIR (st.st_mode));
+  errno = e;
+  return res;
+}
+
 /* Extractor functions for various member types */
 
 static int
@@ -911,10 +925,15 @@ extract_dir (char *file_name, int typeflag)
 
       if (errno == EEXIST
 	  && (interdir_made
+	      || keep_directory_symlink_option
 	      || old_files_option == DEFAULT_OLD_FILES
 	      || old_files_option == OVERWRITE_OLD_FILES))
 	{
 	  struct stat st;
+
+	  if (keep_directory_symlink_option && is_directory_link (file_name))
+	    return 0;
+	  
 	  if (deref_stat (file_name, &st) == 0)
 	    {
 	      current_mode = st.st_mode;

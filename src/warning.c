@@ -46,6 +46,7 @@ static char const *const warning_args[] = {
   "decompress-program",
   "existing-file",
   "xattr-write",
+  "record-size",
   NULL
 };
 
@@ -72,7 +73,8 @@ static int warning_types[] = {
   WARN_XDEV,
   WARN_DECOMPRESS_PROGRAM,
   WARN_EXISTING_FILE,
-  WARN_XATTR_WRITE
+  WARN_XATTR_WRITE,
+  WARN_RECORD_SIZE
 };
 
 ARGMATCH_VERIFY (warning_args, warning_types);
