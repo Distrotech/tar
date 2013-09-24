@@ -283,7 +283,7 @@ normalize_filename (const char *name)
          getcwd is slow, it might fail, and it does not necessarily
          return a canonical name even when it succeeds.  Perhaps we
          can use dev+ino pairs instead of names?  */
-      copy = xgetcwd ();
+      copy = tar_getcwd ();
       if (copy)
         {
           size_t copylen = strlen (copy);
@@ -976,6 +976,21 @@ chdir_do (int i)
     }
 }
 
+char *
+tar_getcwd (void)
+{
+  static char *cwd;
+  namebuf_t nbuf;
+  int i;
+
+  if (!cwd)
+    cwd = xgetcwd ();
+  nbuf = namebuf_create (cwd);
+  for (i = 1; i <= chdir_current; i++)
+    namebuf_add_dir (nbuf, wd[i].name);
+  return namebuf_finish (nbuf);
+}
+
 void
 close_diag (char const *name)
 {
@@ -1143,6 +1158,30 @@ namebuf_name (namebuf_t buf, const char *name)
     buf->buffer = x2realloc (buf->buffer, &buf->buffer_size);
   strcpy (buf->buffer + buf->dir_length, name);
   return buf->buffer;
+}
+
+void
+namebuf_add_dir (namebuf_t buf, const char *name)
+{
+  static char dirsep[] = { DIRECTORY_SEPARATOR, 0 };
+  if (!ISSLASH (buf->buffer[buf->dir_length - 1]))
+    {
+      namebuf_name (buf, dirsep);
+      buf->dir_length++;
+    }
+  namebuf_name (buf, name);
+  buf->dir_length += strlen (name);
+}
+
+char *
+namebuf_finish (namebuf_t buf)
+{
+  char *res = buf->buffer;
+  
+  if (ISSLASH (buf->buffer[buf->dir_length - 1]))
+    buf->buffer[buf->dir_length] = 0;
+  free (buf);
+  return res;
 }
 
 /* Return the filenames in directory NAME, relative to the chdir_fd.

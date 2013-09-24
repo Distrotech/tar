@@ -605,6 +605,10 @@ typedef struct namebuf *namebuf_t;
 namebuf_t namebuf_create (const char *dir);
 void namebuf_free (namebuf_t buf);
 char *namebuf_name (namebuf_t buf, const char *name);
+void namebuf_add_dir (namebuf_t buf, const char *name);
+char *namebuf_finish (namebuf_t buf);
+
+char *tar_getcwd (void);
 
 /* Represent N using a signed integer I such that (uintmax_t) I == N.
    With a good optimizing compiler, this is equivalent to (intmax_t) i
