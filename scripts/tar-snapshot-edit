@@ -28,7 +28,8 @@
 #
 # It can also run a check on all the field values found in the
 # snapshot file, printing out a detailed message when it finds values
-# that would cause an "Unexpected field value in snapshot file" error
+# that would cause an "Unexpected field value in snapshot file",
+# "Numerical result out of range", or "Invalid argument" error
 # if tar were run using that snapshot file as input.  (See the
 # comments included in the definition of the check_field_values
 # routine for more detailed information regarding these checks.)
@@ -47,9 +48,19 @@
 #     or 2 files.
 #   * tweak output formatting
 #
-#
+# Modified March 13, 2013 by Nathan Stratton Treadway <nathanst AT ontko.com>:
+#   * configure field ranges used for -c option based on the system
+#     architecture (in response to the December 2012 update to GNU tar
+#     enabling support for systems with signed dev_t values).
+#   * when printing the list of device ids found in the snapshot file
+#     (when run in the default mode), print the raw device id values
+#     instead of the hex-string version in those cases where they
+#     can't be converted successfully.  
 
 use Getopt::Std;
+use Config;
+
+my %snapshot_field_ranges;               # used in check_field_values function
 
 ## reading
 
@@ -207,30 +218,151 @@ sub show_device_counts ($) {
 	$devices{$dev}++;
     }
 
+    my $devstr;
     foreach $dev (sort {$a <=> $b} keys %devices) {
-	printf "  Device 0x%04x occurs $devices{$dev} times.\n", $dev;
+	$devstr = sprintf ("0x%04x", $dev);
+	if ( $dev > 0xffffffff or $dev < 0 or hex($devstr) != $dev ) {
+	  # sprintf "%x" will not return a useful value for device ids
+	  # that are negative or which overflow the integer size on this
+	  # instance of Perl, so we convert the hex string back to a
+	  # number, and if it doesn't (numerically) equal the original
+	  # device id value, we know the hex conversion hasn't worked.
+	  #
+	  # Unfortunately, since we're running in "-w" mode, Perl will
+	  # also print a warning message if the hex() routine is called
+	  # on anything larger than "0xffffffff", even in 64-bit Perl
+	  # where such values are actually supported... so we have to
+	  # avoid calling hex() at all if the device id is too large or
+	  # negative.  (If it's negative, the conversion to an unsigned
+	  # integer for the "%x" specifier will mean the result will
+	  # always trigger hex()'s warning on a 64-bit machine.)
+	  # 
+	  # These situations don't seem to occur very often, so for now
+	  # when they do occur, we simply print the original text value
+	  # that was read from the snapshot file; it will look a bit
+	  # funny next to the values that do print in hex, but that's
+	  # preferable to printing values that aren't actually correct.
+	  $devstr = $dev; 
+	}
+	printf "  Device %s occurs $devices{$dev} times.\n", $devstr;
     }
 }
 
 ## check field values
 
-# returns a warning message if $field isn't a valid string representation
-# of an integer, or if the resulting integer is out of the specified range
-sub validate_integer_field ($$$$) {
-    my $field = shift;
+# initializes the global %snapshot_field_ranges hash, based on the "-a"
+# command-line option if given, otherwise based on the "archname" of
+# the current system.
+#
+# Each value in the hash is a two-element array containing the minimum
+# and maximum allowed values, respectively, for that field in the snapshot
+# file.  GNU tar's allowed values for each architecture are determined
+# in the incremen.c source file, where the TYPE_MIN and TYPE_MAX
+# pre-processor expressions are used to determine the range that can be
+# expressed by the C data type used for each field; the values in the
+# array defined below should match those calculations.
+ 
+sub choose_architecture ($) {
+    my $opt_a = shift;
+
+    my $arch = $opt_a ? $opt_a : $Config{'archname'};
+
+    # These ranges apply to Linux 2.4/2.6 on iX86 systems, but are used
+    # by default on unrecognized/unsupported systems, too.
+    %iX86_linux_field_ranges = (
+      timestamp_sec      => [ -2147483648, 2147483647 ],   # min/max of time_t
+      timestamp_nsec     => [ 0, 999999999 ],              # 0 to BILLION-1
+      nfs                => [ 0, 1 ],
+      dev                => [ 0, 18446744073709551615 ],   # min/max of dev_t
+      ino                => [ 0, 4294967295 ],             # min/max of ino_t
+    );
+
+
+    if ( $arch =~ m/^i[\dxX]86-linux/i ) {
+	%snapshot_field_ranges = %iX86_linux_field_ranges;
+	print "Checking snapshot field values using \"iX86-linux\" ranges.\n\n";
+    } elsif ( $arch =~ m/^x86_64-linux/i ) {
+	%snapshot_field_ranges = (
+	  timestamp_sec      => [ -9223372036854775808, 9223372036854775807 ],
+	  timestamp_nsec     => [ 0, 999999999 ],
+	  nfs                => [ 0, 1 ],
+	  dev                => [ 0, 18446744073709551615 ],
+	  ino                => [ 0, 18446744073709551615 ],
+	);
+	print "Checking snapshot field values using \"x86_64-linux\" ranges.\n\n";
+    } elsif ( $arch =~ m/^IA64.ARCHREV_0/i ) {
+	# HP/UX running on Itanium/ia64 architecture
+	%snapshot_field_ranges = (
+	  timestamp_sec      => [ -2147483648, 2147483647 ],
+	  timestamp_nsec     => [ 0, 999999999 ],
+	  nfs                => [ 0, 1 ],
+	  dev                => [ -2147483648, 2147483647 ],
+	  ino                => [ 0, 4294967295 ],
+	);
+	print "Checking snapshot field values using \"IA64.ARCHREV_0\" (HP/UX) ranges.\n\n";
+    } else {
+	%snapshot_field_ranges = %iX86_linux_field_ranges;
+	print "Unrecognized architecture \"$arch\"; defaulting to \"iX86-linux\".\n";
+	print "(Use -a option to override.)\n" unless $opt_a;
+	print "\n";
+    } 
+
+    if ( ref(1) ne "" ) {
+	print "(\"bignum\" mode is in effect; skipping 64-bit-integer check.)\n\n"
+    } else {
+	# find the largest max value in the current set of ranges
+	my $maxmax = 0;
+	for $v (values %snapshot_field_ranges ) {
+	  $maxmax = $v->[1] if ($v->[1] > $maxmax);
+	}
+       
+	# "~0" translates into a platform-native integer with all bits turned
+	# on -- that is, the largest value that can be represented as
+	# an integer.  We print a warning if our $maxmax value is greater 
+	# than that largest integer, since in that case Perl will switch
+	# to using floats for those large max values.  The wording of
+	# the message assumes that the only way this situation can exist
+	# is that the platform uses 32-bit integers but some of the
+	# snapshot-file fields have 64-bit values.
+	if ( ~0 < $maxmax ) {
+	    print <<EOF
+Note: this version of Perl uses 32-bit integers, which means that it
+  will switch to using floating-point numbers when checking the ranges
+  for 64-bit snapshot-file fields.  This normally will work fine, but
+  might fail to detect cases where the value in the input field value is
+  only slightly out of range.  (For example, a "9223372036854775808"
+  might not be recognized as being larger than  9223372036854775807.)
+  If you suspect you are experiencing this problem, you can try running
+  the program using the "-Mbignum" option, as in
+    \$ perl $0 -Mbignum -c [FILES]
+  (but doing so will make the program run *much* slower).
+
+EOF
+	}
+    }
+    
+
+}
+
+# returns a warning message if $field_value isn't a valid string 
+# representation of an integer, or if the resulting integer is out of range
+# defined by the two-element array retrieved using up the $field_name key in
+# the global %snapshot_field_ranges hash.
+sub validate_integer_field ($$) {
+    my $field_value = shift;
     my $field_name = shift;
-    my $min = shift;
-    my $max = shift;
+
+    my ($min, $max) = @{$snapshot_field_ranges{$field_name}};
 
     my $msg = "";
 
-    if ( not $field =~ /^-?\d+$/ ) {
-	$msg = "      $field_name value contains invalid characters: \"$field\"\n";
+    if ( not $field_value =~ /^-?\d+$/ ) {
+	$msg = "      $field_name value contains invalid characters: \"$field_value\"\n";
     } else {
-	if ( $field < $min ) {
-	    $msg = "      $field_name value too low: \"$field\" < $min \n";
-	} elsif ( $field > $max ) {
-	    $msg = "      $field_name value too high: \"$field\" > $max \n";
+	if ( $field_value < $min ) {
+	    $msg = "      $field_name value too low: \"$field_value\" < $min \n";
+	} elsif ( $field_value > $max ) {
+	    $msg = "      $field_name value too high: \"$field_value\" > $max \n";
 	}
     }
     return $msg;
@@ -239,28 +371,18 @@ sub validate_integer_field ($$$$) {
 
 # This routine loops through each directory entry in the $info data
 # structure and prints a warning message if tar would abort with an
-# "Unexpected field value in snapshot file" error upon reading this
-# snapshot file.
+# "Unexpected field value in snapshot file", "Numerical result out of
+# range", or "Invalid argument" error upon reading this snapshot file.
 #
-# (Note that this specific error message was introduced along with the
-# change to snapshot file format "2", starting with tar v1.16 [or,
-# more precisely, v1.15.91].)
+# (Note that the "Unexpected field value in snapshot file" error message
+# was introduced along with the change to snapshot file format "2",
+# starting with tar v1.16 [or, more precisely, v1.15.91], while the
+# other two were introduced in v1.27.)
 #
 # The checks here are intended to match those found in the incremen.c
-# source file (as of tar v1.16.1).
-#
-# In that code, the checks are done against pre-processor expressions,
-# as defined in the C header files at compile time.   In the routine
-# below, a Perl variable is created for each expression used as part of
-# one of these checks, assigned the value of the related pre-processor
-# expression as found on a Linux 2.6.8/i386 system.
-#
-# It seems likely that these settings will catch most invalid
-# field values found in actual snapshot files on all systems.  However,
-# if "tar" is erroring out on a snapshot file that this check routine
-# does not complain about, that probably indicates that the values
-# below need to be adjusted to match those used by "tar" in that
-# particular environment.
+# source file.  See the choose_architecture() function (above) for more 
+# information on how to configure the range of values considered valid 
+# by this script.
 #
 # (Note: the checks here are taken from the code that processes
 # version 2 snapshot files, but to keep things simple we apply those
@@ -270,16 +392,6 @@ sub validate_integer_field ($$$$) {
 sub check_field_values ($) {
     my $info = shift;
 
-    # set up a variable with the value of each pre-processor
-    # expression used for field-value checks in incremen.c
-    # (these values here are from a Linux 2.6.8/i386 system)
-    my $BILLION = 1000000000;        # BILLION
-    my $MIN_TIME_T = -2147483648;    # TYPE_MINIMUM(time_t)
-    my $MAX_TIME_T = 2147483647;     # TYPE_MAXIUMUM(time_t)
-    my $MAX_DEV_T = 4294967295;      # TYPE_MAXIUMUM(dev_t)
-    my $MAX_INO_T = 4294967295;      # TYPE_MAXIUMUM(ino_t)
-
-
     my $msg;
     my $error_found = 0;
 
@@ -288,11 +400,9 @@ sub check_field_values ($) {
     $snapver = $info->[0];
 
     $msg = "";
-    $msg .= validate_integer_field($info->[1],
-			   'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
+    $msg .= validate_integer_field($info->[1], 'timestamp_sec');
     if ($snapver >= 1) {
-      $msg .= validate_integer_field($info->[2],
-			   'timestamp_nsec', 0, $BILLION-1);
+      $msg .= validate_integer_field($info->[2], 'timestamp_nsec');
     }
     if ( $msg ne "" ) {
 	$error_found = 1;
@@ -305,15 +415,13 @@ sub check_field_values ($) {
 
 	$msg = "";
 
-	$msg .= validate_integer_field($dir->{'nfs'}, 'nfs', 0, 1);
+	$msg .= validate_integer_field($dir->{'nfs'}, 'nfs');
 	if ($snapver >= 1) {
-	  $msg .= validate_integer_field($dir->{'timestamp_sec'},
-				'timestamp_sec', $MIN_TIME_T, $MAX_TIME_T);
-	  $msg .= validate_integer_field($dir->{'timestamp_nsec'},
-				'timestamp_nsec', 0, $BILLION-1);
+	  $msg .= validate_integer_field($dir->{'timestamp_sec'}, 'timestamp_sec');
+	  $msg .= validate_integer_field($dir->{'timestamp_nsec'}, 'timestamp_nsec');
 	}
-	$msg .= validate_integer_field($dir->{'dev'}, 'dev', 0, $MAX_DEV_T);
-	$msg .= validate_integer_field($dir->{'ino'}, 'ino', 0, $MAX_INO_T);
+	$msg .= validate_integer_field($dir->{'dev'}, 'dev');
+	$msg .= validate_integer_field($dir->{'ino'}, 'ino');
 
 	if ( $msg ne "" ) {
 	  $error_found = 1;
@@ -438,10 +546,10 @@ sub write_incr_db_2 ($$) {
 ## main
 
 sub main {
-    our ($opt_b, $opt_r, $opt_h, $opt_c);
-    getopts('br:hc');
+    our ($opt_b, $opt_r, $opt_h, $opt_c, $opt_a);
+    getopts('br:hca:');
     HELP_MESSAGE() if ($opt_h || $#ARGV == -1 || ($opt_b && !$opt_r) ||
-		       ($opt_r && $opt_c) );
+		       ($opt_a && !$opt_c) || ($opt_r && $opt_c) );
 
     my @repl;
     if ($opt_r) {
@@ -451,9 +559,11 @@ sub main {
 	}
     }
 
+    choose_architecture($opt_a) if ($opt_c);
+
     foreach my $snapfile (@ARGV) {
 	my $info = read_incr_db($snapfile);
-	if ($opt_r ) {
+	if ($opt_r) {
 	    if ($opt_b) {
 		rename($snapfile, $snapfile . "~") || die "Could not rename '$snapfile' to backup";
 	    }
@@ -474,7 +584,7 @@ sub HELP_MESSAGE {
 Usage:
   tar-snapshot-edit SNAPFILE [SNAPFILE [...]]
   tar-snapshot-edit -r 'DEV1-DEV2[,DEV3-DEV4...]' [-b] SNAPFILE [SNAPFILE [...]]
-  tar-snapshot-edit -c SNAPFILE [SNAPFILE [...]]
+  tar-snapshot-edit -c [-aARCH] SNAPFILE [SNAPFILE [...]]
 
      With no options specified: print a summary of the 'device' values
      found in each SNAPFILE.
@@ -487,9 +597,21 @@ Usage:
 
      With -c: Check the field values in each SNAPFILE and print warning
      messages if any invalid values are found.  (An invalid value is one
-     that would cause \"tar\" to generate an
-	 Unexpected field value in snapshot file
-     error message as it processed the snapshot file.)
+     that would cause \"tar\" to abort with an error message such as
+       Unexpected field value in snapshot file
+       Numerical result out of range
+     or 
+       Invalid argument
+     as it processed the snapshot file.)
+
+     Normally the program automatically chooses the valid ranges for 
+     the fields based on the current system's architecture, but the 
+     -a option can be used to override the selection, e.g. in order 
+     to validate a snapshot file generated on a some other system.
+     (Currently only three architectures are supported, "iX86-linux",
+     "x86_64-linux", and "IA64.ARCHREV_0" [HP/UX running on Itanium/ia64], 
+     and if the current system isn't recognized, then the iX86-linux
+     values are used by default.)
 
 EOF
     exit 1;
