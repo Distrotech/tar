@@ -283,21 +283,20 @@ normalize_filename (const char *name)
          getcwd is slow, it might fail, and it does not necessarily
          return a canonical name even when it succeeds.  Perhaps we
          can use dev+ino pairs instead of names?  */
-      copy = tar_getcwd ();
-      if (copy)
-        {
-          size_t copylen = strlen (copy);
-          bool need_separator = ! (DOUBLE_SLASH_IS_DISTINCT_ROOT
-                                   && copylen == 2 && ISSLASH (copy[1]));
-          copy = xrealloc (copy, copylen + need_separator + strlen (name) + 1);
-          copy[copylen] = DIRECTORY_SEPARATOR;
-          strcpy (copy + copylen + need_separator, name);
-        }
-      else
-        WARN ((0, errno, _("Cannot get working directory")));
+      const char *cwd = tar_getcwd ();
+      size_t copylen;
+      bool need_separator;
+      
+      copylen = strlen (cwd);
+      need_separator = ! (DOUBLE_SLASH_IS_DISTINCT_ROOT
+			  && copylen == 2 && ISSLASH (cwd[1]));
+      copy = xmalloc (copylen + need_separator + strlen (name) + 1);
+      strcpy (copy, cwd);
+      copy[copylen] = DIRECTORY_SEPARATOR;
+      strcpy (copy + copylen + need_separator, name);
     }
 
-  if (! copy)
+  if (!copy)
     copy = xstrdup (name);
   normalize_filename_x (copy);
   return copy;
@@ -831,7 +830,8 @@ struct wd
 {
   /* The directory's name.  */
   char const *name;
-
+  /* Current working directory; initialized by tar_getcwd */
+  char *cwd; 
   /* If nonzero, the file descriptor of the directory, or AT_FDCWD if
      the working directory.  If zero, the directory needs to be opened
      to be used.  */
@@ -886,6 +886,7 @@ chdir_arg (char const *dir)
       if (! wd_count)
 	{
 	  wd[wd_count].name = ".";
+	  wd[wd_count].cwd = NULL;
 	  wd[wd_count].fd = AT_FDCWD;
 	  wd_count++;
 	}
@@ -903,6 +904,7 @@ chdir_arg (char const *dir)
     }
 
   wd[wd_count].name = dir;
+  wd[wd_count].cwd = NULL;
   wd[wd_count].fd = 0;
   return wd_count++;
 }
@@ -976,7 +978,7 @@ chdir_do (int i)
     }
 }
 
-char *
+const char *
 tar_getcwd (void)
 {
   static char *cwd;
@@ -985,10 +987,27 @@ tar_getcwd (void)
 
   if (!cwd)
     cwd = xgetcwd ();
-  nbuf = namebuf_create (cwd);
-  for (i = 1; i <= chdir_current; i++)
-    namebuf_add_dir (nbuf, wd[i].name);
-  return namebuf_finish (nbuf);
+  if (!wd)
+    return cwd;
+  
+  if (0 == chdir_current || !wd[chdir_current].cwd)
+    {
+      if (IS_ABSOLUTE_FILE_NAME (wd[chdir_current].name))
+	return wd[chdir_current].name;
+      
+      if (!wd[0].cwd)
+	wd[0].cwd = cwd;
+
+      for (i = chdir_current - 1; i > 0; i--)
+	if (wd[i].cwd)
+	  break;
+      
+      nbuf = namebuf_create (wd[i].cwd);
+      for (i++; i <= chdir_current; i++)
+	namebuf_add_dir (nbuf, wd[i].name);
+      wd[chdir_current].cwd = namebuf_finish (nbuf);
+    }
+  return wd[chdir_current].cwd;
 }
 
 void

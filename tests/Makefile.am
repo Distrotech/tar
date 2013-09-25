@@ -112,6 +112,7 @@ TESTSUITE_AT = \
  incr05.at\
  incr06.at\
  incr07.at\
+ incr08.at\
  indexfile.at\
  ignfail.at\
  label01.at\
@@ -161,6 +162,10 @@ TESTSUITE_AT = \
  remfiles01.at\
  remfiles02.at\
  remfiles03.at\
+ remfiles04.at\
+ remfiles05.at\
+ remfiles06.at\
+ remfiles07.at\
  same-order01.at\
  same-order02.at\
  shortfile.at\

@@ -578,13 +578,11 @@ name_next_elt (int change_dirs)
 	case NELT_CHDIR:
 	  if (change_dirs)
 	    {
-	      copy_name (ep);
-	      if (chdir (name_buffer) < 0)
-		chdir_fatal (name_buffer);
+	      chdir_do (chdir_arg (xstrdup (ep->v.name)));
 	      name_list_advance ();
 	      break;
 	    }
-	  /* fall trhough */
+	  /* fall through */
 	case NELT_NAME:
 	  copy_name (ep);
 	  if (unquote_option)

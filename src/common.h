@@ -608,7 +608,7 @@ char *namebuf_name (namebuf_t buf, const char *name);
 void namebuf_add_dir (namebuf_t buf, const char *name);
 char *namebuf_finish (namebuf_t buf);
 
-char *tar_getcwd (void);
+const char *tar_getcwd (void);
 
 /* Represent N using a signed integer I such that (uintmax_t) I == N.
    With a good optimizing compiler, this is equivalent to (intmax_t) i
