@@ -229,11 +229,12 @@ zap_slashes (char *name)
 }
 
 /* Normalize FILE_NAME by removing redundant slashes and "."
-   components, including redundant trailing slashes.  Leave ".."
-   alone, as it may be significant in the presence of symlinks and on
-   platforms where "/.." != "/".  Destructive version: modifies its
-   argument. */
-static void
+   components, including redundant trailing slashes.
+   Leave ".." alone, as it may be significant in the presence 
+   of symlinks and on platforms where "/.." != "/".
+
+   Destructive version: modifies its argument. */
+void
 normalize_filename_x (char *file_name)
 {
   char *name = file_name + FILE_SYSTEM_PREFIX_LEN (file_name);
@@ -267,8 +268,9 @@ normalize_filename_x (char *file_name)
 }
 
 /* Normalize NAME by removing redundant slashes and "." components,
-   including redundant trailing slashes.  Return a normalized
-   newly-allocated copy.  */
+   including redundant trailing slashes.
+
+   Return a normalized newly-allocated copy.  */
 
 char *
 normalize_filename (const char *name)
@@ -979,6 +981,12 @@ chdir_do (int i)
 }
 
 const char *
+tar_dirname (void)
+{
+  return wd[chdir_current].name;
+}
+
+const char *
 tar_getcwd (void)
 {
   static char *cwd;
@@ -993,8 +1001,10 @@ tar_getcwd (void)
   if (0 == chdir_current || !wd[chdir_current].cwd)
     {
       if (IS_ABSOLUTE_FILE_NAME (wd[chdir_current].name))
-	return wd[chdir_current].name;
-      
+	{
+	  wd[chdir_current].cwd = xstrdup (wd[chdir_current].name);
+	  return wd[chdir_current].cwd;
+	}
       if (!wd[0].cwd)
 	wd[0].cwd = cwd;
 

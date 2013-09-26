@@ -597,6 +597,7 @@ void assign_string (char **dest, const char *src);
 int unquote_string (char *str);
 char *zap_slashes (char *name);
 char *normalize_filename (const char *name);
+void normalize_filename_x (char *name);
 void replace_prefix (char **pname, const char *samp, size_t slen,
 		     const char *repl, size_t rlen);
 char *tar_savedir (const char *name, int must_exist);
@@ -609,6 +610,7 @@ void namebuf_add_dir (namebuf_t buf, const char *name);
 char *namebuf_finish (namebuf_t buf);
 
 const char *tar_getcwd (void);
+const char *tar_dirname (void);
 
 /* Represent N using a signed integer I such that (uintmax_t) I == N.
    With a good optimizing compiler, this is equivalent to (intmax_t) i

@@ -19,8 +19,8 @@
 # Reported by: Nathan Stratton Treadway <nathanst@ontko.com>
 # References: <20130924185129.GO32256@shire.ontko.com>
 
-AT_SETUP([incremental with -C to absolute path])
-AT_KEYWORDS([incremental create remove-files remfiles07])
+AT_SETUP([remove with -C to absolute path])
+AT_KEYWORDS([create remove-files remfiles07])
 
 AT_TAR_CHECK([
 AT_SORT_PREREQ

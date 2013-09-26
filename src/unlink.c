@@ -24,7 +24,9 @@
 struct deferred_unlink
   {
     struct deferred_unlink *next;   /* Next unlink in the queue */
-    char *file_name;                /* Absolute name of the file to unlink */
+    int dir_idx;                    /* Directory index in wd */
+    char *file_name;                /* Name of the file to unlink, relative
+				       to dir_idx */
     bool is_dir;                    /* True if file_name is a directory */
     off_t records_written;          /* Number of records written when this
 				       entry got added to the queue */
@@ -70,16 +72,30 @@ static void
 flush_deferred_unlinks (bool force)
 {
   struct deferred_unlink *p, *prev = NULL;
-
+  int saved_chdir = chdir_current;
+  
   for (p = dunlink_head; p; )
     {
       struct deferred_unlink *next = p->next;
+
       if (force
 	  || records_written > p->records_written + deferred_unlink_delay)
 	{
+	  chdir_do (p->dir_idx);
 	  if (p->is_dir)
 	    {
-	      if (unlinkat (chdir_fd, p->file_name, AT_REMOVEDIR) != 0)
+	      const char *fname;
+
+	      if (p->file_name[0] == 0 ||
+		  strcmp (p->file_name, ".") == 0)
+		{
+		  fname = tar_dirname ();
+		  chdir_do (p->dir_idx - 1);
+		}
+	      else
+		fname = p->file_name;
+		  
+	      if (unlinkat (chdir_fd, fname, AT_REMOVEDIR) != 0)
 		{
 		  switch (errno)
 		    {
@@ -97,7 +113,7 @@ flush_deferred_unlinks (bool force)
 			}
 		      /* fall through */
 		    default:
-		      rmdir_error (p->file_name);
+		      rmdir_error (fname);
 		    }
 		}
 	    }
@@ -122,6 +138,7 @@ flush_deferred_unlinks (bool force)
     }
   if (!dunlink_head)
     dunlink_tail = NULL;
+  chdir_do (saved_chdir);
 }
 
 void
@@ -147,7 +164,9 @@ queue_deferred_unlink (const char *name, bool is_dir)
 
   p = dunlink_alloc ();
   p->next = NULL;
-  p->file_name = normalize_filename (name);
+  p->dir_idx = chdir_current;
+  p->file_name = xstrdup (name);
+  normalize_filename_x (p->file_name);
   p->is_dir = is_dir;
   p->records_written = records_written;
 
