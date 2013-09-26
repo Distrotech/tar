@@ -30,6 +30,7 @@ echo bar/bar_file > bar/bar_file
 decho A
 tar -cvf foo.tar --remove-files -C `pwd`/foo . -C ../bar .
 decho B
+find
 ],
 [0],
 [A
