@@ -113,6 +113,7 @@ TESTSUITE_AT = \
  incr06.at\
  incr07.at\
  incr08.at\
+ incr09.at\
  indexfile.at\
  ignfail.at\
  label01.at\

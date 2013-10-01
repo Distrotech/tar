@@ -1238,13 +1238,11 @@ collect_and_sort_names (void)
   namelist = merge_sort (namelist, num_names, compare_names);
 
   num_names = 0;
-  nametab = hash_initialize (0, 0,
-			     name_hash,
-			     name_compare, NULL);
+  nametab = hash_initialize (0, 0, name_hash, name_compare, NULL);
   for (name = namelist; name; name = next_name)
     {
       next_name = name->next;
-      name->caname = normalize_filename (name->name);
+      name->caname = normalize_filename (name->change_dir, name->name);
       if (prev_name)
 	{
 	  struct name *p = hash_lookup (nametab, name);

@@ -273,7 +273,7 @@ normalize_filename_x (char *file_name)
    Return a normalized newly-allocated copy.  */
 
 char *
-normalize_filename (const char *name)
+normalize_filename (int cdidx, const char *name)
 {
   char *copy = NULL;
 
@@ -285,7 +285,7 @@ normalize_filename (const char *name)
          getcwd is slow, it might fail, and it does not necessarily
          return a canonical name even when it succeeds.  Perhaps we
          can use dev+ino pairs instead of names?  */
-      const char *cwd = tar_getcwd ();
+      const char *cwd = tar_getcdpath (cdidx);
       size_t copylen;
       bool need_separator;
       
@@ -888,7 +888,7 @@ chdir_arg (char const *dir)
       if (! wd_count)
 	{
 	  wd[wd_count].name = ".";
-	  wd[wd_count].cwd = NULL;
+	  wd[wd_count].cwd = xgetcwd ();
 	  wd[wd_count].fd = AT_FDCWD;
 	  wd_count++;
 	}
@@ -906,7 +906,14 @@ chdir_arg (char const *dir)
     }
 
   wd[wd_count].name = dir;
-  wd[wd_count].cwd = NULL;
+  if (IS_ABSOLUTE_FILE_NAME (wd[wd_count].name))
+    wd[wd_count].cwd = xstrdup (wd[wd_count].name);
+  else
+    {
+      namebuf_t nbuf = namebuf_create (wd[wd_count - 1].cwd);
+      namebuf_add_dir (nbuf, wd[wd_count].name);
+      wd[wd_count].cwd = namebuf_finish (nbuf);
+    }
   wd[wd_count].fd = 0;
   return wd_count++;
 }
@@ -987,37 +994,16 @@ tar_dirname (void)
 }
 
 const char *
-tar_getcwd (void)
+tar_getcdpath (int idx)
 {
-  static char *cwd;
-  namebuf_t nbuf;
-  int i;
-
-  if (!cwd)
-    cwd = xgetcwd ();
   if (!wd)
-    return cwd;
-  
-  if (0 == chdir_current || !wd[chdir_current].cwd)
     {
-      if (IS_ABSOLUTE_FILE_NAME (wd[chdir_current].name))
-	{
-	  wd[chdir_current].cwd = xstrdup (wd[chdir_current].name);
-	  return wd[chdir_current].cwd;
-	}
-      if (!wd[0].cwd)
-	wd[0].cwd = cwd;
-
-      for (i = chdir_current - 1; i > 0; i--)
-	if (wd[i].cwd)
-	  break;
-      
-      nbuf = namebuf_create (wd[i].cwd);
-      for (i++; i <= chdir_current; i++)
-	namebuf_add_dir (nbuf, wd[i].name);
-      wd[chdir_current].cwd = namebuf_finish (nbuf);
+      static char *cwd;
+      if (!cwd)
+	cwd = xgetcwd ();
+      return cwd;
     }
-  return wd[chdir_current].cwd;
+  return wd[idx].cwd;
 }
 
 void

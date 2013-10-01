@@ -280,7 +280,7 @@ free_directory (struct directory *dir)
 static struct directory *
 attach_directory (const char *name)
 {
-  char *cname = normalize_filename (name);
+  char *cname = normalize_filename (chdir_current, name);
   struct directory *dir = make_directory (name, cname);
   if (dirtail)
     dirtail->next = dir;
@@ -370,7 +370,7 @@ find_directory (const char *name)
     return 0;
   else
     {
-      char *caname = normalize_filename (name);
+      char *caname = normalize_filename (chdir_current, name);
       struct directory *dir = make_directory (name, caname);
       struct directory *ret = hash_lookup (directory_table, dir);
       free_directory (dir);

@@ -596,7 +596,7 @@ void skip_member (void);
 void assign_string (char **dest, const char *src);
 int unquote_string (char *str);
 char *zap_slashes (char *name);
-char *normalize_filename (const char *name);
+char *normalize_filename (int cdidx, const char *name);
 void normalize_filename_x (char *name);
 void replace_prefix (char **pname, const char *samp, size_t slen,
 		     const char *repl, size_t rlen);
@@ -609,7 +609,7 @@ char *namebuf_name (namebuf_t buf, const char *name);
 void namebuf_add_dir (namebuf_t buf, const char *name);
 char *namebuf_finish (namebuf_t buf);
 
-const char *tar_getcwd (void);
+const char *tar_getcdpath (int);
 const char *tar_dirname (void);
 
 /* Represent N using a signed integer I such that (uintmax_t) I == N.
