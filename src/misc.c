@@ -279,21 +279,23 @@ normalize_filename (int cdidx, const char *name)
 
   if (IS_RELATIVE_FILE_NAME (name))
     {
-      /* Set COPY to the absolute file name if possible.
+      /* Set COPY to the absolute path for this name.
 
          FIXME: There should be no need to get the absolute file name.
-         getcwd is slow, it might fail, and it does not necessarily
-         return a canonical name even when it succeeds.  Perhaps we
-         can use dev+ino pairs instead of names?  */
-      const char *cwd = tar_getcdpath (cdidx);
+         tar_getcdpath does not return a true "canonical" path, so
+         this following approach may lead to situations where the same
+         file or directory is processed twice under different absolute
+         paths without that duplication being detected.  Perhaps we
+         should use dev+ino pairs instead of names?  */
+      const char *cdpath = tar_getcdpath (cdidx);
       size_t copylen;
       bool need_separator;
       
-      copylen = strlen (cwd);
+      copylen = strlen (cdpath);
       need_separator = ! (DOUBLE_SLASH_IS_DISTINCT_ROOT
-			  && copylen == 2 && ISSLASH (cwd[1]));
+			  && copylen == 2 && ISSLASH (cdpath[1]));
       copy = xmalloc (copylen + need_separator + strlen (name) + 1);
-      strcpy (copy, cwd);
+      strcpy (copy, cdpath);
       copy[copylen] = DIRECTORY_SEPARATOR;
       strcpy (copy + copylen + need_separator, name);
     }
@@ -832,8 +834,10 @@ struct wd
 {
   /* The directory's name.  */
   char const *name;
-  /* Current working directory; initialized by tar_getcwd */
-  char *cwd; 
+  /* "absolute" path representing this directory; in the contrast to
+     the real absolute pathname, it can contain /../ components (see
+     normalize_filename_x for the reason of it). */
+  char *abspath; 
   /* If nonzero, the file descriptor of the directory, or AT_FDCWD if
      the working directory.  If zero, the directory needs to be opened
      to be used.  */
@@ -888,7 +892,7 @@ chdir_arg (char const *dir)
       if (! wd_count)
 	{
 	  wd[wd_count].name = ".";
-	  wd[wd_count].cwd = xgetcwd ();
+	  wd[wd_count].abspath = xgetcwd ();
 	  wd[wd_count].fd = AT_FDCWD;
 	  wd_count++;
 	}
@@ -906,13 +910,16 @@ chdir_arg (char const *dir)
     }
 
   wd[wd_count].name = dir;
+  /* if the given name is an absolute path, then use that path
+     to represent this working directory; otherwise, construct
+     a path based on the previous -C option's absolute path */
   if (IS_ABSOLUTE_FILE_NAME (wd[wd_count].name))
-    wd[wd_count].cwd = xstrdup (wd[wd_count].name);
+    wd[wd_count].abspath = xstrdup (wd[wd_count].name);
   else
     {
-      namebuf_t nbuf = namebuf_create (wd[wd_count - 1].cwd);
+      namebuf_t nbuf = namebuf_create (wd[wd_count - 1].abspath);
       namebuf_add_dir (nbuf, wd[wd_count].name);
-      wd[wd_count].cwd = namebuf_finish (nbuf);
+      wd[wd_count].abspath = namebuf_finish (nbuf);
     }
   wd[wd_count].fd = 0;
   return wd_count++;
@@ -993,6 +1000,13 @@ tar_dirname (void)
   return wd[chdir_current].name;
 }
 
+/* Return the absolute path that represents the working
+   directory referenced by IDX.
+
+   If wd is empty, then there were no -C options given, and
+   chdir_args() has never been called, so we simply return the
+   process's actual cwd.  (Note that in this case IDX is ignored,
+   since it should always be 0.) */
 const char *
 tar_getcdpath (int idx)
 {
@@ -1003,7 +1017,7 @@ tar_getcdpath (int idx)
 	cwd = xgetcwd ();
       return cwd;
     }
-  return wd[idx].cwd;
+  return wd[idx].abspath;
 }
 
 void

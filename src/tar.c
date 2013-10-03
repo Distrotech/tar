@@ -537,7 +537,8 @@ static struct argp_option options[] = {
   {"no-same-permissions", NO_SAME_PERMISSIONS_OPTION, 0, 0,
    N_("apply the user's umask when extracting permissions from the archive (default for ordinary users)"), GRID+1 },
   {"preserve-order", 's', 0, 0,
-   N_("sort names to extract to match archive"), GRID+1 },
+   N_("member arguments are listed in the same order as the "
+      "files in the archive"), GRID+1 },
   {"same-order", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
   {"preserve", PRESERVE_OPTION, 0, 0,
    N_("same as both -p and -s"), GRID+1 },
@@ -731,7 +732,7 @@ static struct argp_option options[] = {
   {"hard-dereference", HARD_DEREFERENCE_OPTION, 0, 0,
    N_("follow hard links; archive and dump the files they refer to"), GRID+1 },
   {"starting-file", 'K', N_("MEMBER-NAME"), 0,
-   N_("begin at member MEMBER-NAME in the archive"), GRID+1 },
+   N_("begin at member MEMBER-NAME when reading the archive"), GRID+1 },
   {"newer", 'N', N_("DATE-OR-FILE"), 0,
    N_("only store files newer than DATE-OR-FILE"), GRID+1 },
   {"after-date", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
@@ -2486,6 +2487,13 @@ decode_options (int argc, char **argv)
       && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--xattrs can be used only on POSIX archives")));
 
+  if ((starting_file_option || same_order_option)
+      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
+    USAGE_ERROR ((0, 0,
+		  _("--%s option cannot be used with %s"),
+		  starting_file_option ? "starting-file" : "same-order",
+		  subcommand_string (subcommand_option)));
+  
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;
