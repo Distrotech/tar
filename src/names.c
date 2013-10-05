@@ -22,6 +22,7 @@
 #include <hash.h>
 #include <quotearg.h>
 #include <wordsplit.h>
+#include <argp.h>
 
 #include "common.h"
 

@@ -48,7 +48,7 @@ mkdir foo/subdir/dir1
 mkdir subdir
 mkdir subdir/dir2
 decho A
-find|sort
+find .|sort
 
 decho B
 DIR=`pwd`

@@ -125,31 +125,31 @@ m4_define([AT_CHECK_UTIL],[
 ])
 
 m4_define([AT_XATTRS_UTILS_PREREQ],[
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   AT_CHECK_UTIL(setfattr -n user.test -v test $file,0)
   AT_CHECK_UTIL(getfattr $file,0)
 ])
 m4_define([AT_SELINUX_UTILS_PREREQ],[
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   AT_CHECK_UTIL(restorecon $file, 0)
   AT_CHECK_UTIL(chcon -h --user=unconfined_u $file,0)
   rm -rf $file
 ])
 m4_define([AT_ACLS_UTILS_PREREQ],[
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   AT_CHECK_UTIL(setfacl -m u:$UID:rwx $file,0)
   AT_CHECK_UTIL(getfacl $file,0)
   rm -rf $file
 ])
 m4_define([AT_CAPABILITIES_UTILS_PREREQ],[
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   AT_CHECK_UTIL(setcap "= cap_chown=ei" $file,0)
   AT_CHECK_UTIL(getcap $file,0)
   rm -rf $file
 ])
 m4_define([AT_XATTRS_PREREQ],[
   AT_XATTRS_UTILS_PREREQ
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   setfattr -n user.test -v ahoj $file
   # check whether tar fails to store xattrs
   err=$( tar --xattrs -cf /dev/null $file 2>&1 >/dev/null | wc -l )
@@ -159,7 +159,7 @@ m4_define([AT_XATTRS_PREREQ],[
 ])
 m4_define([AT_SELINUX_PREREQ],[
   AT_SELINUX_UTILS_PREREQ
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   err=$( tar --selinux -cf /dev/null $file 2>&1 >/dev/null | wc -l )
   if test "$err" != "0"; then
     AT_SKIP_TEST
@@ -167,7 +167,7 @@ m4_define([AT_SELINUX_PREREQ],[
 ])
 m4_define([AT_ACLS_PREREQ],[
   AT_ACLS_UTILS_PREREQ
-  file=$( mktemp -p . )
+  file=$(TMPDIR=. mktemp fiXXXXXX)
   setfacl -m u:$UID:rwx $file
   err=$( tar --acls -cf /dev/null $file 2>&1 >/dev/null | wc -l )
   if test "$err" != "0"; then
