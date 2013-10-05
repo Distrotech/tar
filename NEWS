@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2013-09-23
+GNU tar NEWS - User visible changes. 2013-10-05
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.26.90 (Git)
+version 1.27 - Sergey Poznyakoff, 2013-10-05
 
 * Bug fixes
 
@@ -77,7 +77,7 @@ size, if it differs from the default.
 
 * New command line option --keep-directory-symlink
 
-By default, if when trying to extract a directory from the archive,
+By default, if trying to extract a directory from the archive,
 tar discovers that the corresponding file name already exists and is a
 symbolic link, it first unlinks the entry, and then extracts the directory.
 
