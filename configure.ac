@@ -217,6 +217,7 @@ AC_CHECK_DECLS([time],,, [#include <time.h>])
 
 AC_REPLACE_FUNCS(waitpid)
 
+AC_ARG_VAR([RSH], [Configure absolute path to default remote shell binary])
 AC_CACHE_CHECK(for remote shell, tar_cv_path_RSH,
   [if test -n "$RSH"; then
     tar_cv_path_RSH=$RSH
