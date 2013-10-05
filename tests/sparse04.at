@@ -29,7 +29,7 @@ AT_KEYWORDS([sparse sparse04])
 # References: <201011250026.44908.kdudka@redhat.com>,
 #             http://lists.gnu.org/archive/html/bug-tar/2010-11/msg00099.html
 
-m4_define([NAME_111],
+m4_pushdef([NAME_111],
 	  [123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960])
 
 AT_TAR_CHECK([
@@ -44,4 +44,5 @@ tar -f - -c --sparse --posix NAME_111 | tar tf -
 [],
 [pax])
 
+m4_popdef([NAME_111])
 AT_CLEANUP

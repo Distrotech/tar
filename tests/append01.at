@@ -29,7 +29,7 @@
 AT_SETUP([appending files with long names])
 AT_KEYWORDS([append append01])
 
-m4_define([PREFIX],[This_is_a_very_long_file_name_prefix_that_is_designed_to_cause_problems_with_appending_long_file_names_that_run_into_a_limit_of_the_ustar_tarX])
+m4_pushdef([PREFIX],[This_is_a_very_long_file_name_prefix_that_is_designed_to_cause_problems_with_appending_long_file_names_that_run_into_a_limit_of_the_ustar_tarX])
 
 AT_TAR_CHECK([
 mkdir PREFIX
@@ -44,4 +44,5 @@ PREFIX/file2
 ],
 [],[],[],[oldgnu, ustar, posix, gnu])
 
+m4_popdef([PREFIX])
 AT_CLEANUP

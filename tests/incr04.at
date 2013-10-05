@@ -29,7 +29,7 @@
 AT_SETUP([proper icontents initialization])
 AT_KEYWORDS([incremental incr04 icontents])
 
-m4_define([NAME_PREFIX],[a/b/one_31_chars_long_file_name_])
+m4_pushdef([NAME_PREFIX],[a/b/one_31_chars_long_file_name_])
 
 AT_TAR_CHECK([
 AT_TAR_MKHIER(a/b)
@@ -61,6 +61,7 @@ tar: a/b: Directory is new
 tar: a/c: Directory has been renamed from 'a/b'
 ],[],[],[gnu, oldgnu, posix])
 
+m4_popdef([NAME_PREFIX])
 AT_CLEANUP
 
 # End of incr04.at

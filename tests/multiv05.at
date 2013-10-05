@@ -25,7 +25,7 @@
 
 AT_SETUP([Restoring after an out of sync volume])
 AT_KEYWORDS([multivolume multiv multiv05 sync])
-m4_define([FILELIST],[jeden,dwa,trzy,cztery,piec,szesc])
+m4_pushdef([FILELIST],[jeden,dwa,trzy,cztery,piec,szesc])
 
 AT_TAR_CHECK([
 exec <&-
@@ -61,4 +61,5 @@ m4_foreach([file],
 [tar: 'trzy' is not continued on this volume
 ],[],[], [gnu])
 
+m4_popdef([FILELIST])
 AT_CLEANUP

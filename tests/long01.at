@@ -29,8 +29,8 @@ AT_SETUP([long file names divisible by block size])
 AT_KEYWORDS([longname long512])
 
 dnl Create a directory structure with maximum directory name length 512-16
-m4_define([NAME],[0123456789abcde])
-m4_define([FULLNAME],NAME)
+m4_pushdef([NAME],[0123456789abcde])
+m4_pushdef([FULLNAME],NAME)
 m4_for([N],0,29,,[m4_define([FULLNAME],FULLNAME/NAME)])
 
 AT_TAR_CHECK([
@@ -45,4 +45,6 @@ endfile
 ],
 [],[],[],[gnu,oldgnu])
 
+m4_popdef([NAME])
+m4_popdef([FULLNAME])
 AT_CLEANUP

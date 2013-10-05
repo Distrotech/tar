@@ -24,8 +24,8 @@
 AT_SETUP([long names in V7 archives])
 AT_KEYWORDS([longname longv7])
 
-m4_define([DIR],[this_is_a_very_long_name_for_a_directory_which_causes_problems])
-m4_define([FILE],[this_is_a_very_long_file_name_which_raises_issues.c])
+m4_pushdef([DIR],[this_is_a_very_long_name_for_a_directory_which_causes_problems])
+m4_pushdef([FILE],[this_is_a_very_long_file_name_which_raises_issues.c])
 
 AT_TAR_CHECK([
 mkdir DIR
@@ -44,4 +44,6 @@ tar: Exiting with failure status due to previous errors
 ],
 [],[],[v7])
 
+m4_popdef([FILE])
+m4_popdef([DIR])
 AT_CLEANUP

@@ -21,7 +21,7 @@
 AT_SETUP([deleting members with long names])
 AT_KEYWORDS([delete delete03])
 
-m4_define([PREFIX],[This_is_a_very_long_file_name_prefix_that_is_designed_to_cause_problems_with_file_names_that_run_into_a_limit_of_the_posix_tar_formatXX])
+m4_pushdef([PREFIX],[This_is_a_very_long_file_name_prefix_that_is_designed_to_cause_problems_with_file_names_that_run_into_a_limit_of_the_posix_tar_formatXX])
 
 AT_TAR_CHECK([
 
@@ -45,4 +45,5 @@ tar -cf archive ./$prefix* &&
 ./PREFIX[]9
 ],[],[],[],[gnu, oldgnu, posix])
 
+m4_popdef([PREFIX])
 AT_CLEANUP

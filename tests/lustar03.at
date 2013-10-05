@@ -21,10 +21,10 @@
 AT_SETUP([ustar: splitting long names])
 AT_KEYWORDS([longname ustar lustar03])
 
-m4_define([DIR_155],
+m4_pushdef([DIR_155],
 	  [this_is_a_very_long_name_for_a_file_designed_to_test_generation/of_ustar_archives_by_gnu_tar_semicolon_it_will_not_fit_the_name_field_and_cannot_be_split_be])
 
-m4_define([NAME], [file])
+m4_pushdef([NAME], [file])
 
 AT_TAR_CHECK([
 AT_TAR_MKHIER(DIR_155,NAME)
@@ -40,4 +40,6 @@ DIR_155/NAME
 ],
 [],[],[],[ustar])
 
+m4_popdef([NAME])
+m4_popdef([DIR_155])
 AT_CLEANUP

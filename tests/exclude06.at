@@ -26,7 +26,7 @@
 AT_SETUP([exclude: long files in pax archives])
 AT_KEYWORDS([exclude exclude06])
 
-m4_define([test_base_dir],[one/two/three/four/five/six/seven/eight/nine/ten/eleven/twelve/thirteen/fourteen/fifteen/sixteen/seventeen])
+m4_pushdef([test_base_dir],[one/two/three/four/five/six/seven/eight/nine/ten/eleven/twelve/thirteen/fourteen/fifteen/sixteen/seventeen])
 
 AT_TAR_CHECK([
 AT_TAR_MKHIER(test_base_dir)
@@ -46,4 +46,5 @@ find out -type f
 [],
 [pax])
 
+m4_popdef([test_base_dir])
 AT_CLEANUP

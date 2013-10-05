@@ -21,7 +21,7 @@
 AT_SETUP([ustar: unsplittable file name])
 AT_KEYWORDS([longname ustar lustar01])
 
-m4_define([LONGNAME],
+m4_pushdef([LONGNAME],
           [this_is_a_very_long_name_for_a_file_designed_to_test_generation_of_ustar_archives_by_gnu_tar_semicolon_it_will_not_fit_the_name_field_and_cannot_be_split_between_name_and_prefix])
 
 AT_TAR_CHECK([
@@ -34,4 +34,5 @@ tar cf archive LONGNAME
 tar: Exiting with failure status due to previous errors
 ],[],[],[ustar])
 
+m4_popdef([LONGNAME])
 AT_CLEANUP
