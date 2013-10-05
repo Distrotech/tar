@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# Description: For some intermediate versions of tar 1.26.90,
+# tar would fail to correctly cannonicalize archive member names
+# in incremental mode if there was a -C options with an absolute path
+# on the command line without any archive members specified within that
+# directory. (In that case, the canonical name generated for
+# members specified after later -C options wouldn't correctly reflect the
+# previous absolute path.)
+
 AT_SETUP([incremental with alternating -C])
 AT_KEYWORDS([incremental create incr09])
 

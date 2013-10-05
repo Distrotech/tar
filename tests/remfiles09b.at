@@ -15,46 +15,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Description: Tar 1.26 would remove wrong files when invoked with
-# --listed-incremental and -C
-# Reported by: Nathan Stratton Treadway <nathanst@ontko.com>
-# References: <20130921171234.GG32256@shire.ontko.com>,
-#             http://lists.gnu.org/archive/html/bug-tar/2013-09/msg00028.html
+# Description: check --remove-files operation when archiving/deleting
+# directory trees.
+#
+# This case checks the operation
+# in --create/incremental mode.
+#
+# Note: in tar 1.27, when run in incremental mode tar will attempt to remove
+# the directory before removing the files within that directory, and thus
+# the --remove-files operation will cause tar to abort with an error status.
+# This issue will be fixed in a later version of tar.
 
-AT_SETUP([incremental and -C])
-AT_KEYWORDS([incremental create remove-files remfiles05])
+AT_SETUP([remove-files on full directory in -c/incr. mode])
+AT_KEYWORDS([create incremental remove-files remfiles09 remfiles09b])
 
 AT_TAR_CHECK([
 AT_SORT_PREREQ
 mkdir foo
-echo bar > bar
-echo foo/bar > foo/bar
+echo foo/file > foo/file
 decho A
-find . | sort
-
+tar -cvf foo.tar --incremental --remove-files foo
+TARSTAT=$?
 decho B
-tar -cvf foo.tar --listed-incremental=foo.snar --remove-files -C foo bar
-decho C
-find . | sort
+find .
+test $TARSTAT -ne 0 && AT_SKIP_TEST   # we expect to fail in tar 1.27
 ],
 [0],
 [A
-.
-./bar
-./foo
-./foo/bar
+foo/
+foo/file
 B
-bar
-C
 .
-./bar
 ./foo
-./foo.snar
 ./foo.tar
 ],
 [A
+tar: foo: Directory is new
 B
-C
 ],[],[],[gnu])
 
 AT_CLEANUP
