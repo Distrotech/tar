@@ -260,7 +260,9 @@ sub show_device_counts ($) {
 # in the incremen.c source file, where the TYPE_MIN and TYPE_MAX
 # pre-processor expressions are used to determine the range that can be
 # expressed by the C data type used for each field; the values in the
-# array defined below should match those calculations.
+# array defined below should match those calculations.  (For tar v1.27
+# and later, the valid ranges for a particular tar binary can easily
+# be determined using the "tar --show-snapshot-field-ranges" command.)
  
 sub choose_architecture ($) {
     my $opt_a = shift;
