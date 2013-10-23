@@ -29,6 +29,8 @@
 # define DOUBLE_SLASH_IS_DISTINCT_ROOT 0
 #endif
 
+static const char *tar_getcdpath (int);
+
 
 /* Handling strings.  */
 
@@ -230,7 +232,7 @@ zap_slashes (char *name)
 
 /* Normalize FILE_NAME by removing redundant slashes and "."
    components, including redundant trailing slashes.
-   Leave ".." alone, as it may be significant in the presence 
+   Leave ".." alone, as it may be significant in the presence
    of symlinks and on platforms where "/.." != "/".
 
    Destructive version: modifies its argument. */
@@ -290,7 +292,9 @@ normalize_filename (int cdidx, const char *name)
       const char *cdpath = tar_getcdpath (cdidx);
       size_t copylen;
       bool need_separator;
-      
+
+      if (!cdpath)
+	call_arg_fatal ("getcwd", ".");
       copylen = strlen (cdpath);
       need_separator = ! (DOUBLE_SLASH_IS_DISTINCT_ROOT
 			  && copylen == 2 && ISSLASH (cdpath[1]));
@@ -834,10 +838,11 @@ struct wd
 {
   /* The directory's name.  */
   char const *name;
-  /* "absolute" path representing this directory; in the contrast to
+  /* "Absolute" path representing this directory; in the contrast to
      the real absolute pathname, it can contain /../ components (see
-     normalize_filename_x for the reason of it). */
-  char *abspath; 
+     normalize_filename_x for the reason of it).  It is NULL if the
+     absolute path could not be determined.  */
+  char *abspath;
   /* If nonzero, the file descriptor of the directory, or AT_FDCWD if
      the working directory.  If zero, the directory needs to be opened
      to be used.  */
@@ -879,15 +884,13 @@ chdir_count (void)
 int
 chdir_arg (char const *dir)
 {
+  char *absdir;
+
   if (wd_count == wd_alloc)
     {
       if (wd_alloc == 0)
-	{
-	  wd_alloc = 2;
-	  wd = xmalloc (sizeof *wd * wd_alloc);
-	}
-      else
-	wd = x2nrealloc (wd, &wd_alloc, sizeof *wd);
+	wd_alloc = 2;
+      wd = x2nrealloc (wd, &wd_alloc, sizeof *wd);
 
       if (! wd_count)
 	{
@@ -909,18 +912,22 @@ chdir_arg (char const *dir)
 	return wd_count - 1;
     }
 
-  wd[wd_count].name = dir;
-  /* if the given name is an absolute path, then use that path
-     to represent this working directory; otherwise, construct
-     a path based on the previous -C option's absolute path */
-  if (IS_ABSOLUTE_FILE_NAME (wd[wd_count].name))
-    wd[wd_count].abspath = xstrdup (wd[wd_count].name);
-  else
+
+  /* If the given name is absolute, use it to represent this directory;
+     otherwise, construct a name based on the previous -C option.  */
+  if (IS_ABSOLUTE_FILE_NAME (dir))
+    absdir = xstrdup (dir);
+  else if (wd[wd_count - 1].abspath)
     {
       namebuf_t nbuf = namebuf_create (wd[wd_count - 1].abspath);
-      namebuf_add_dir (nbuf, wd[wd_count].name);
-      wd[wd_count].abspath = namebuf_finish (nbuf);
+      namebuf_add_dir (nbuf, dir);
+      absdir = namebuf_finish (nbuf);
     }
+  else
+    absdir = 0;
+
+  wd[wd_count].name = dir;
+  wd[wd_count].abspath = absdir;
   wd[wd_count].fd = 0;
   return wd_count++;
 }
@@ -1007,7 +1014,7 @@ tar_dirname (void)
    chdir_args() has never been called, so we simply return the
    process's actual cwd.  (Note that in this case IDX is ignored,
    since it should always be 0.) */
-const char *
+static const char *
 tar_getcdpath (int idx)
 {
   if (!wd)
@@ -1206,7 +1213,7 @@ char *
 namebuf_finish (namebuf_t buf)
 {
   char *res = buf->buffer;
-  
+
   if (ISSLASH (buf->buffer[buf->dir_length - 1]))
     buf->buffer[buf->dir_length] = 0;
   free (buf);
