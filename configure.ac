@@ -74,7 +74,8 @@ fi
 AC_ARG_WITH([posix-acls],
     AS_HELP_STRING([--without-posix-acls],
                    [do not use POSIX.1e access control lists]),
-    [with_posix_acls=no])
+    [],
+    [with_posix_acls=yes])
 if test "x$with_posix_acls" != "xno"; then
   AC_CHECK_HEADERS(sys/acl.h,, [with_posix_acls=no])
   for tar_acl_func in acl_get_file acl_get_fd acl_set_file acl_set_fd \
