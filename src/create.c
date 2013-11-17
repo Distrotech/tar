@@ -543,7 +543,7 @@ write_gnu_long_link (struct tar_stat_info *st, const char *p, char type)
   union block *header;
   char *tmpname;
 
-  header = start_private_header ("././@LongLink", size, start_time.tv_sec);
+  header = start_private_header ("././@LongLink", size, 0);
   uid_to_uname (0, &tmpname);
   UNAME_TO_CHARS (tmpname, header->header.uname);
   free (tmpname);
