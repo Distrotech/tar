@@ -492,6 +492,8 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  ent->v.file.term = 0;
 	  /* fall through */
 	case file_list_success:
+	  if (unquote_option)
+	    unquote_string (name_buffer);
 	  if (handle_option (name_buffer) == 0)
 	    {
 	      name_list_adjust ();
