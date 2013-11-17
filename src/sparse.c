@@ -809,6 +809,7 @@ star_get_sparse_info (struct tar_sparse_file *file)
       set_next_block_after (h);
       for (i = 0; i < SPARSES_IN_STAR_EXT_HEADER && rc == add_ok; i++)
 	rc = oldgnu_add_sparse (file, &h->star_ext_header.sp[i]);
+      file->dumped_size += BLOCKSIZE;
     }
 
   if (rc == add_fail)
