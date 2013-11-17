@@ -1,5 +1,16 @@
-GNU tar NEWS - User visible changes. 2013-10-05
+GNU tar NEWS - User visible changes. 2013-11-17
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.27.1 - Sergey Poznyakoff, 2013-11-17
+
+* Bug fixes
+
+* Fix unquoting of file names obtained via the -T option.
+
+* Fix GNU long link header timestamp (backward compatibility).
+
+* Fix extracting sparse members from star archives.
 
 
 version 1.27 - Sergey Poznyakoff, 2013-10-05
