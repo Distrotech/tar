@@ -27,14 +27,13 @@ AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-xz dist-shar std-options 
 # Enable silent rules by default:
 AM_SILENT_RULES([yes])
 
-AC_PROG_CC
+AC_PROG_CC_STDC
 AC_EXEEXT
 AC_PROG_RANLIB
 AC_PROG_YACC
 gl_EARLY
 
 AC_SYS_LARGEFILE
-AC_ISC_POSIX
 AC_C_INLINE
 
 AC_CHECK_HEADERS_ONCE(fcntl.h linux/fd.h memory.h net/errno.h \
@@ -49,12 +48,7 @@ AC_CHECK_HEADERS([sys/buf.h], [], [],
 #include <sys/param.h>
 #endif])
 
-AC_HEADER_SYS_WAIT
-
-AC_HEADER_DIRENT
 AC_HEADER_MAJOR
-AC_HEADER_STAT
-AC_HEADER_STDC
 
 AC_MSG_CHECKING([for st_fstype string in struct stat])
 AC_CACHE_VAL(diff_cv_st_fstype_string,
@@ -91,11 +85,9 @@ else
   export enable_acl=no
 fi
 
-AC_TYPE_SIGNAL
 AC_TYPE_MODE_T
 AC_TYPE_PID_T
 AC_TYPE_OFF_T
-AC_TYPE_SIZE_T
 AC_TYPE_UID_T
 AC_CHECK_TYPE(major_t, , AC_DEFINE(major_t, int,
 				   [Type of major device numbers.]))

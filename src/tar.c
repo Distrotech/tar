@@ -990,7 +990,7 @@ set_use_compress_program_option (const char *string)
   use_compress_program_option = string;
 }
 
-static RETSIGTYPE
+static void
 sigstat (int signo)
 {
   compute_duration ();
@@ -1775,7 +1775,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case KEEP_DIRECTORY_SYMLINK_OPTION:
       keep_directory_symlink_option = true;
       break;
-      
+
     case KEEP_NEWER_FILES_OPTION:
       old_files_option = KEEP_NEWER_FILES;
       break;
@@ -2220,7 +2220,7 @@ static int subcommand_class[] = {
 
 /* Return t if the subcommand_option is in class(es) f */
 #define IS_SUBCOMMAND_CLASS(f) (subcommand_class[subcommand_option] & (f))
-  
+
 static struct tar_args args;
 
 static void
@@ -2493,7 +2493,7 @@ decode_options (int argc, char **argv)
 		  _("--%s option cannot be used with %s"),
 		  starting_file_option ? "starting-file" : "same-order",
 		  subcommand_string (subcommand_option)));
-  
+
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
     old_files_option = UNLINK_FIRST_OLD_FILES;

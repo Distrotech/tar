@@ -720,7 +720,7 @@ stat_to_env (char *name, char type, struct tar_stat_info *st)
 }
 
 static pid_t global_pid;
-static RETSIGTYPE (*pipe_handler) (int sig);
+static void (*pipe_handler) (int sig);
 
 int
 sys_exec_command (char *file_name, int typechar, struct tar_stat_info *st)
@@ -788,7 +788,7 @@ sys_exec_info_script (const char **archive_name, int volume_number)
   pid_t pid;
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   int p[2];
-  static RETSIGTYPE (*saved_handler) (int sig);
+  static void (*saved_handler) (int sig);
 
   xpipe (p);
   saved_handler = signal (SIGPIPE, SIG_IGN);

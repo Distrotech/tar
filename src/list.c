@@ -723,7 +723,7 @@ from_header (char const *where0, size_t digs, char const *type,
 		    type));
 	  return -1;
 	}
-      if (!ISSPACE ((unsigned char) *where))
+      if (!isspace ((unsigned char) *where))
 	break;
       where++;
     }
@@ -861,7 +861,7 @@ from_header (char const *where0, size_t digs, char const *type,
 	value = -value;
     }
 
-  if (where != lim && *where && !ISSPACE ((unsigned char) *where))
+  if (where != lim && *where && !isspace ((unsigned char) *where))
     {
       if (type)
 	{
