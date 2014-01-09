@@ -570,6 +570,7 @@ name_next_elt (int change_dirs)
 
 	case NELT_FMASK:
 	  matching_flags = ep->v.matching_flags;
+	  recursion_option = matching_flags & FNM_LEADING_DIR;
 	  name_list_advance ();
 	  continue;
 
