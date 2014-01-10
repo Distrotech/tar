@@ -22,7 +22,7 @@ AC_CONFIG_SRCDIR([src/tar.c])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([config.h])
 AC_PREREQ([2.63])
-AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-xz dist-shar std-options silent-rules])
+AM_INIT_AUTOMAKE([1.11 gnits tar-ustar dist-bzip2 dist-xz std-options silent-rules])
 
 # Enable silent rules by default:
 AM_SILENT_RULES([yes])
