@@ -427,7 +427,7 @@ size_t available_space_after (union block *pointer);
 off_t current_block_ordinal (void);
 void close_archive (void);
 void closeout_volume_number (void);
-void compute_duration (void);
+double compute_duration (void);
 union block *find_next_block (void);
 void flush_read (void);
 void flush_write (void);
@@ -443,6 +443,12 @@ void archive_write_error (ssize_t status) __attribute__ ((noreturn));
 void archive_read_error (void);
 off_t seek_archive (off_t size);
 void set_start_time (void);
+
+#define TF_READ    0
+#define TF_WRITE   1
+#define TF_DELETED 2
+int format_total_stats (FILE *fp, char **formats, int eor, int eol);
+void print_total_stats (void);
 
 void mv_begin_write (const char *file_name, off_t totsize, off_t sizeleft);
 

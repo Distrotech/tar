@@ -247,7 +247,7 @@ set_volume_start_time (void)
   last_stat_time = volume_start_time;
 }
 
-void
+double
 compute_duration (void)
 {
   struct timespec now;
@@ -255,6 +255,7 @@ compute_duration (void)
   duration += ((now.tv_sec - last_stat_time.tv_sec)
                + (now.tv_nsec - last_stat_time.tv_nsec) / 1e9);
   gettime (&last_stat_time);
+  return duration;
 }
 
 
@@ -488,8 +489,7 @@ open_compressed_archive (void)
   return archive;
 }
 
-
-static void
+static int
 print_stats (FILE *fp, const char *text, tarlong numbytes)
 {
   char bytes[sizeof (tarlong) * CHAR_BIT];
@@ -500,52 +500,86 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
 
   sprintf (bytes, TARLONG_FORMAT, numbytes);
 
-  fprintf (fp, "%s: %s (%s, %s/s)\n",
-           text, bytes,
-           human_readable (numbytes, abbr, human_opts, 1, 1),
-           (0 < duration && numbytes / duration < (uintmax_t) -1
-            ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
-            : "?"));
+  return fprintf (fp, "%s: %s (%s, %s/s)",
+		  text, bytes,
+		  human_readable (numbytes, abbr, human_opts, 1, 1),
+		  (0 < duration && numbytes / duration < (uintmax_t) -1
+		   ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
+		   : "?"));
 }
 
-void
-print_total_stats (void)
+/* Format totals to file FP.  FORMATS is an array of strings to output
+   before each data item (bytes read, written, deleted, in that order).
+   EOR is a delimiter to output after each item (used only if deleting
+   from the archive), EOL is a delimiter to add at the end of the output
+   line. */ 
+int
+format_total_stats (FILE *fp, char **formats, int eor, int eol)
 {
+  int n;
+  
   switch (subcommand_option)
     {
     case CREATE_SUBCOMMAND:
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
     case APPEND_SUBCOMMAND:
-      /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
-      print_stats (stderr, _("Total bytes written"),
-                   prev_written + bytes_written);
+      n = print_stats (fp, _(formats[TF_WRITE]),
+		       prev_written + bytes_written);
       break;
 
     case DELETE_SUBCOMMAND:
       {
         char buf[UINTMAX_STRSIZE_BOUND];
-        print_stats (stderr, _("Total bytes read"),
-                     records_read * record_size);
-        print_stats (stderr, _("Total bytes written"),
-                     prev_written + bytes_written);
-        fprintf (stderr, _("Total bytes deleted: %s\n"),
-                 STRINGIFY_BIGINT ((records_read - records_skipped)
-                                    * record_size
-                                   - (prev_written + bytes_written), buf));
+        n = print_stats (fp, _(formats[TF_READ]),
+			 records_read * record_size);
+
+	fputc (eor, fp);
+	n++;
+	
+        n += print_stats (fp, _(formats[TF_WRITE]),
+			  prev_written + bytes_written);
+
+	fputc (eor, fp);
+	n++;
+	
+        n += fprintf (fp, "%s: %s",
+		      _(formats[TF_DELETED]),
+		      STRINGIFY_BIGINT ((records_read - records_skipped)
+					* record_size
+					- (prev_written + bytes_written), buf));
       }
       break;
 
     case EXTRACT_SUBCOMMAND:
     case LIST_SUBCOMMAND:
     case DIFF_SUBCOMMAND:
-      print_stats (stderr, _("Total bytes read"),
-                   records_read * record_size);
+      n = print_stats (fp, _(formats[TF_READ]),
+		       records_read * record_size);
       break;
 
     default:
       abort ();
     }
+  if (eol)
+    {
+      fputc (eol, fp);
+      n++;
+    }
+  return n;
+}
+
+char *default_total_format[] = {
+  N_("Total bytes read"),
+  /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
+  N_("Total bytes written"),
+  N_("Total bytes deleted")
+};
+
+void
+print_total_stats (void)
+{
+  format_total_stats (stderr, default_total_format, '\n', '\n');
 }
 
 /* Compute and return the block ordinal at current_block.  */

@@ -38,6 +38,7 @@ fdopendir
 fdutimensat
 fileblocks
 fnmatch-gnu
+fprintftime
 fseeko
 fstatat
 full-write

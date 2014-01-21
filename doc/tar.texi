@@ -3961,10 +3961,10 @@ e.g.:
 @end smallexample
 
 The @samp{%s} and @samp{%u} in the above example are
-@dfn{meta-characters}.  The @samp{%s} meta-character is replaced with
+@dfn{format specifiers}.  The @samp{%s} specifier is replaced with
 the @dfn{type} of the checkpoint: @samp{write} or
 @samp{read} (or a corresponding translated version in locales other
-than @acronym{POSIX}).  The @samp{%u} meta-character is replaced with
+than @acronym{POSIX}).  The @samp{%u} specifier is replaced with
 the ordinal number of the checkpoint.  Thus, the above example could
 produce the following output when used with the @option{--create}
 option:
@@ -3975,7 +3975,46 @@ tar: Hit write checkpoint #20
 tar: Hit write checkpoint #30
 @end smallexample
 
-Aside from meta-character expansion, the message string is subject to
+The complete list of available format specifiers follows:
+
+@table @samp
+@item %s
+Print type of the checkpoint (@samp{write} or @samp{read}).
+
+@item %u
+Print number of the checkpoint.
+
+@item %T
+Print number of bytes transferred so far and approximate transfer
+speed.  The number is preceded by @samp{W:}, when writing and by
+@samp{R:} when reading.  If @command{tar} is performing delete
+operation (@pxref{delete}), three numbers are printed: number of bytes
+read, written and deleted, each of them prefixed by @samp{R:},
+@samp{W:} and @samp{D:} correspondingy.  For example:
+
+@example
+$ @kbd{tar --delete -f f.tar --checkpoint-action=echo="#%u: %T" main.c}
+tar: #1: R: 0 (0B, ?/s),W: 0 (0B, ?/s),D: 0
+tar: #2: R: 10240 (10KiB, 19MiB/s),W: 0 (0B, 0B/s),D: 10240
+@end example
+
+@noindent
+See also the @samp{totals} action, described below.
+
+@item %@{@var{fmt}@}t
+Output current local time using @var{fmt} as format for @command{strftime}
+(@pxref{strftime, strftime,,strftime(3), strftime(3) man page}).  The
+@samp{@{@var{fmt}@}} part is optional.  If not present, the default
+format is @samp{%c}, i.e. the preferred date and time representation
+for the current locale.
+
+@item %@{@var{n}@}*
+Pad output with spaces to the @var{n}th column.  If the
+@samp{@{@var{n}@}} part is omitted, the current screen width
+is assumed.
+@end table
+
+Aside from format expansion, the message string is subject to
 @dfn{unquoting}, during which the backslash @dfn{escape sequences} are
 replaced with their corresponding @acronym{ASCII} characters
 (@pxref{escape sequences}).  E.g. the following action will produce an
@@ -4002,8 +4041,22 @@ following action will print the checkpoint message at the same screen
 line, overwriting any previous message:
 
 @smallexample
---checkpoint-action="ttyout=\rHit %s checkpoint #%u"
+--checkpoint-action="ttyout=Hit %s checkpoint #%u%*\r"
 @end smallexample
+
+@noindent
+Notice the use of @samp{%*} specifier to clear out any eventual
+remains of the prior output line.  As as more complex example,
+consider this:
+
+@smallexample
+--checkpoint-action=ttyout='%@{%Y-%m-%d %H:%M:%S@}t (%d sec): #%u, %T%*\r'
+@end smallexample
+
+@noindent
+This prints the current local time, number of seconds expired since
+tar was started, the checkpoint ordinal number, transferred bytes and
+average computed I/O speed.
 
 @cindex @code{dot}, checkpoint action
 Another available checkpoint action is @samp{dot} (or @samp{.}).  It
@@ -4018,6 +4071,12 @@ $ @kbd{tar -c --checkpoint=1000 --checkpoint-action=dot} /var
 For compatibility with previous @GNUTAR{} versions, this action can
 be abbreviated by placing a dot in front of the checkpoint frequency,
 as shown in the previous section.
+
+@cindex @code{totals}, checkpoint action
+The @samp{totals} action prints the total number of bytes transferred
+so far.  The format of the data is the same as for the
+@option{--totals} option (@pxref{totals}).  See also @samp{%T} format
+specifier of the @samp{echo} or @samp{ttyout} action.
 
 @cindex @code{sleep}, checkpoint action
 Yet another action, @samp{sleep}, pauses @command{tar} for a specified
