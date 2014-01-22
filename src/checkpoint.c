@@ -185,7 +185,8 @@ getarg (const char *input, const char ** endp, char **argbuf, size_t *arglen)
 
 static int tty_cleanup;
 
-static const char *def_format = "%s: %t: %T%*\r";
+static const char *def_format =
+  "%{%Y-%m-%d %H:%M:%S}t: %ds, %{read,wrote}T%*\r";
 
 static int
 format_checkpoint_string (FILE *fp, size_t len,
@@ -254,8 +255,33 @@ format_checkpoint_string (FILE *fp, size_t len,
 	      break;
 	      
 	    case 'T':
-	      compute_duration ();
-	      len += format_total_stats (fp, checkpoint_total_format, ',', 0);
+	      {
+		const char **fmt = checkpoint_total_format, *fmtbuf[3];
+		struct wordsplit ws;
+		compute_duration ();
+		
+		if (arg)
+		  {
+		    ws.ws_delim = ",";
+		    if (wordsplit (arg, &ws, WRDSF_NOVAR | WRDSF_NOCMD |
+				           WRDSF_QUOTE | WRDSF_DELIM))
+		      ERROR ((0, 0, _("cannot split string '%s': %s"),
+			      arg, wordsplit_strerror (&ws)));
+		    else
+		      {
+			int i;
+
+			for (i = 0; i < ws.ws_wordc; i++)
+			  fmtbuf[i] = ws.ws_wordv[i];
+			for (; i < 3; i++)
+			  fmtbuf[i] = NULL;
+			fmt = fmtbuf;
+		      }
+		  }
+		len += format_total_stats (fp, fmt, ',', 0);
+		if (arg)
+		  wordsplit_free (&ws);
+	      }
 	      break;
 
 	    case 't':
@@ -362,11 +388,11 @@ run_checkpoint_actions (bool do_write)
     }
 }
 
-static void
-finish_checkpoint_actions (void)
+void
+checkpoint_flush_actions (void)
 {
   struct checkpoint_action *p;
-
+  
   for (p = checkpoint_action; p; p = p->next)
     {
       switch (p->opcode)
@@ -378,14 +404,13 @@ finish_checkpoint_actions (void)
 	      while (w--)
 		fputc (' ', tty);
 	      fputc ('\r', tty);
+	      fflush (tty);
 	    }
 	  break;
 	default:
 	  /* nothing */;
 	}
     }
-  if (tty)
-    fclose (tty);
 }
 
 void
@@ -399,5 +424,9 @@ void
 checkpoint_finish (void)
 {
   if (checkpoint_option)
-    finish_checkpoint_actions ();
+    {
+      checkpoint_flush_actions ();
+      if (tty)
+	fclose (tty);
+    }
 }

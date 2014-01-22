@@ -862,6 +862,7 @@ void checkpoint_compile_action (const char *str);
 void checkpoint_finish_compile (void);
 void checkpoint_run (bool do_write);
 void checkpoint_finish (void);
+void checkpoint_flush_actions (void);
 
 /* Module warning.c */
 #define WARN_ALONE_ZERO_BLOCK    0x00000001

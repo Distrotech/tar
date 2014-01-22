@@ -2623,6 +2623,8 @@ main (int argc, char **argv)
 
   exit_failure = TAREXIT_FAILURE;
   exit_status = TAREXIT_SUCCESS;
+  error_hook = checkpoint_flush_actions;
+  
   filename_terminator = '\n';
   set_quoting_style (0, DEFAULT_QUOTING_STYLE);
 

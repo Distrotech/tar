@@ -3975,7 +3975,10 @@ tar: Hit write checkpoint #20
 tar: Hit write checkpoint #30
 @end smallexample
 
-The complete list of available format specifiers follows:
+The complete list of available format specifiers follows.  Some of
+them can take optional arguments.  These arguments, if given, are
+supplied in curly braces between the percent sign and the specifier
+letter.
 
 @table @samp
 @item %s
@@ -3984,17 +3987,18 @@ Print type of the checkpoint (@samp{write} or @samp{read}).
 @item %u
 Print number of the checkpoint.
 
-@item %T
+@item %@{r,w,d@}T
 Print number of bytes transferred so far and approximate transfer
-speed.  The number is preceded by @samp{W:}, when writing and by
-@samp{R:} when reading.  If @command{tar} is performing delete
-operation (@pxref{delete}), three numbers are printed: number of bytes
-read, written and deleted, each of them prefixed by @samp{R:},
-@samp{W:} and @samp{D:} correspondingy.  For example:
+speed.  Optional arguments supply prefixes to be used before number
+of bytes read, written and deleted, correspondingly.  If absent,
+they default to @samp{R}. @samp{W}, @samp{D}.  Any or all of them can
+be omitted, so, that e.g. @samp{%@{@}T} means to print corresponding
+statistics without any prefixes.  Any surplus arguments, if present,
+are silently ignored.
 
 @example
 $ @kbd{tar --delete -f f.tar --checkpoint-action=echo="#%u: %T" main.c}
-tar: #1: R: 0 (0B, ?/s),W: 0 (0B, ?/s),D: 0
+tar: #1: R: 0 (0B, 0B/s),W: 0 (0B, 0B/s),D: 0
 tar: #2: R: 10240 (10KiB, 19MiB/s),W: 0 (0B, 0B/s),D: 10240
 @end example
 
@@ -4012,6 +4016,10 @@ for the current locale.
 Pad output with spaces to the @var{n}th column.  If the
 @samp{@{@var{n}@}} part is omitted, the current screen width
 is assumed.
+
+@item %@var{c}
+This is a shortcut for @samp{%@{%Y-%m-%d %H:%M:%S@}t: %ds, %@{read,wrote@}T%*\r},
+intended mainly for use with @samp{ttyout} action (see below).
 @end table
 
 Aside from format expansion, the message string is subject to

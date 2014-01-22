@@ -492,20 +492,20 @@ open_compressed_archive (void)
 static int
 print_stats (FILE *fp, const char *text, tarlong numbytes)
 {
-  char bytes[sizeof (tarlong) * CHAR_BIT];
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
-
+  int n = 0;
+  
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
-  sprintf (bytes, TARLONG_FORMAT, numbytes);
-
-  return fprintf (fp, "%s: %s (%s, %s/s)",
-		  text, bytes,
-		  human_readable (numbytes, abbr, human_opts, 1, 1),
-		  (0 < duration && numbytes / duration < (uintmax_t) -1
-		   ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
-		   : "?"));
+  if (text && text[0])
+    n += fprintf (fp, "%s: ", gettext (text));
+  return n + fprintf (fp, TARLONG_FORMAT " (%s, %s/s)",
+		      numbytes,
+		      human_readable (numbytes, abbr, human_opts, 1, 1),
+		      (0 < duration && numbytes / duration < (uintmax_t) -1
+		       ? human_readable (numbytes / duration, rate, human_opts, 1, 1)
+		       : "?"));
 }
 
 /* Format totals to file FP.  FORMATS is an array of strings to output
@@ -524,27 +524,28 @@ format_total_stats (FILE *fp, const char **formats, int eor, int eol)
     case CAT_SUBCOMMAND:
     case UPDATE_SUBCOMMAND:
     case APPEND_SUBCOMMAND:
-      n = print_stats (fp, _(formats[TF_WRITE]),
+      n = print_stats (fp, formats[TF_WRITE],
 		       prev_written + bytes_written);
       break;
 
     case DELETE_SUBCOMMAND:
       {
         char buf[UINTMAX_STRSIZE_BOUND];
-        n = print_stats (fp, _(formats[TF_READ]),
+        n = print_stats (fp, formats[TF_READ],
 			 records_read * record_size);
 
 	fputc (eor, fp);
 	n++;
 	
-        n += print_stats (fp, _(formats[TF_WRITE]),
+        n += print_stats (fp, formats[TF_WRITE],
 			  prev_written + bytes_written);
 
 	fputc (eor, fp);
 	n++;
-	
-        n += fprintf (fp, "%s: %s",
-		      _(formats[TF_DELETED]),
+
+	if (formats[TF_DELETED] && formats[TF_DELETED][0])
+	  n += fprintf (fp, "%s: ", gettext (formats[TF_DELETED]));
+        n += fprintf (fp, "%s",
 		      STRINGIFY_BIGINT ((records_read - records_skipped)
 					* record_size
 					- (prev_written + bytes_written), buf));
