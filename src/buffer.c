@@ -514,7 +514,7 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
    from the archive), EOL is a delimiter to add at the end of the output
    line. */ 
 int
-format_total_stats (FILE *fp, char **formats, int eor, int eol)
+format_total_stats (FILE *fp, const char **formats, int eor, int eol)
 {
   int n;
   
@@ -569,7 +569,7 @@ format_total_stats (FILE *fp, char **formats, int eor, int eol)
   return n;
 }
 
-char *default_total_format[] = {
+const char *default_total_format[] = {
   N_("Total bytes read"),
   /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
   N_("Total bytes written"),

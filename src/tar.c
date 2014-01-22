@@ -2696,6 +2696,8 @@ main (int argc, char **argv)
       test_archive_label ();
     }
 
+  checkpoint_finish ();
+  
   if (totals_option)
     print_total_stats ();
 

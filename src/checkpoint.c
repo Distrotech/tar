@@ -134,14 +134,14 @@ checkpoint_finish_compile (void)
     checkpoint_option = DEFAULT_CHECKPOINT;
 }
 
-static char *checkpoint_total_format[] = {
+static const char *checkpoint_total_format[] = {
   "R",
   "W",
   "D"
 };
 
 static int
-getwidth(FILE *fp)
+getwidth (FILE *fp)
 {
   struct winsize ws;
 
@@ -183,16 +183,19 @@ getarg (const char *input, const char ** endp, char **argbuf, size_t *arglen)
   return NULL;
 }
 
+static int tty_cleanup;
 
-static void
-format_checkpoint_string (FILE *fp, const char *input, bool do_write,
+static const char *def_format = "%s: %t: %T%*\r";
+
+static int
+format_checkpoint_string (FILE *fp, size_t len,
+			  const char *input, bool do_write,
 			  unsigned cpn)
 {
   const char *opstr = do_write ? gettext ("write") : gettext ("read");
   char uintbuf[UINTMAX_STRSIZE_BOUND];
   char *cps = STRINGIFY_BIGINT (cpn, uintbuf);
   const char *ip;
-  size_t len = 0;
 
   static char *argbuf = NULL;
   static size_t arglen = 0;
@@ -231,6 +234,11 @@ format_checkpoint_string (FILE *fp, const char *input, bool do_write,
 	    }
 	  switch (*ip)
 	    {
+	    case 'c':
+	      len += format_checkpoint_string (fp, len, def_format, do_write,
+					       cpn);
+	      break;
+	      
 	    case 'u':
 	      fputs (cps, fp);
 	      len += strlen (cps);
@@ -254,7 +262,7 @@ format_checkpoint_string (FILE *fp, const char *input, bool do_write,
 	      {
 		struct timeval tv;
 		struct tm *tm;
-		char *fmt = arg ? arg : "%c";
+		const char *fmt = arg ? arg : "%c";
 
 		gettimeofday (&tv, NULL);
 		tm = localtime (&tv.tv_sec);
@@ -282,19 +290,24 @@ format_checkpoint_string (FILE *fp, const char *input, bool do_write,
 	{
 	  fputc (*ip, fp);
 	  if (*ip == '\r')
-	    len = 0;
+	    {
+	      len = 0;
+	      tty_cleanup = 1;
+	    }
 	  else
 	    len++;
 	}
     }
   fflush (fp);
+  return len;
 }
+
+static FILE *tty = NULL;
 
 static void
 run_checkpoint_actions (bool do_write)
 {
   struct checkpoint_action *p;
-  FILE *tty = NULL;
 
   for (p = checkpoint_action; p; p = p->next)
     {
@@ -316,20 +329,20 @@ run_checkpoint_actions (bool do_write)
 	  break;
 
 	case cop_echo:
-	  fprintf (stderr, "%s: ", program_name);
-	  format_checkpoint_string (stderr, p->v.command, do_write, checkpoint);
-	  fputc ('\n', stderr);
+	  {
+	    int n = fprintf (stderr, "%s: ", program_name);
+	    format_checkpoint_string (stderr, n, p->v.command, do_write,
+				      checkpoint);
+	    fputc ('\n', stderr);
+	  }
 	  break;
 
 	case cop_ttyout:
 	  if (!tty)
 	    tty = fopen ("/dev/tty", "w");
 	  if (tty)
-	    {
-	      format_checkpoint_string (tty, p->v.command, do_write,
-					checkpoint);
-	      fflush (tty);
-	    }
+	    format_checkpoint_string (tty, 0, p->v.command, do_write,
+				      checkpoint);
 	  break;
 
 	case cop_sleep:
@@ -347,6 +360,30 @@ run_checkpoint_actions (bool do_write)
 	  print_total_stats ();
 	}
     }
+}
+
+static void
+finish_checkpoint_actions (void)
+{
+  struct checkpoint_action *p;
+
+  for (p = checkpoint_action; p; p = p->next)
+    {
+      switch (p->opcode)
+	{
+	case cop_ttyout:
+	  if (tty && tty_cleanup)
+	    {
+	      int w = getwidth (tty);
+	      while (w--)
+		fputc (' ', tty);
+	      fputc ('\r', tty);
+	    }
+	  break;
+	default:
+	  /* nothing */;
+	}
+    }
   if (tty)
     fclose (tty);
 }
@@ -356,4 +393,11 @@ checkpoint_run (bool do_write)
 {
   if (checkpoint_option && !(++checkpoint % checkpoint_option))
     run_checkpoint_actions (do_write);
+}
+
+void
+checkpoint_finish (void)
+{
+  if (checkpoint_option)
+    finish_checkpoint_actions ();
 }

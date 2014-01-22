@@ -447,7 +447,7 @@ void set_start_time (void);
 #define TF_READ    0
 #define TF_WRITE   1
 #define TF_DELETED 2
-int format_total_stats (FILE *fp, char **formats, int eor, int eol);
+int format_total_stats (FILE *fp, const char **formats, int eor, int eol);
 void print_total_stats (void);
 
 void mv_begin_write (const char *file_name, off_t totsize, off_t sizeleft);
@@ -861,6 +861,7 @@ void set_compression_program_by_suffix (const char *name, const char *defprog);
 void checkpoint_compile_action (const char *str);
 void checkpoint_finish_compile (void);
 void checkpoint_run (bool do_write);
+void checkpoint_finish (void);
 
 /* Module warning.c */
 #define WARN_ALONE_ZERO_BLOCK    0x00000001
