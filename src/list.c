@@ -1111,7 +1111,10 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
   if (verbose_option <= 1)
     {
       /* Just the fax, mam.  */
-      fprintf (stdlis, "%s\n", quotearg (temp_name));
+      fputs (quotearg (temp_name), stdlis);
+      if (show_transformed_names_option && st->had_trailing_slash)
+	fputc ('/', stdlis);
+      fputc ('\n', stdlis);
     }
   else
     {
@@ -1138,9 +1141,7 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 	case GNUTYPE_SPARSE:
 	case REGTYPE:
 	case AREGTYPE:
-	  modes[0] = '-';
-	  if (temp_name[strlen (temp_name) - 1] == '/')
-	    modes[0] = 'd';
+	  modes[0] = st->had_trailing_slash ? 'd' : '-';
 	  break;
 	case LNKTYPE:
 	  modes[0] = 'h';
@@ -1251,6 +1252,8 @@ simple_print_header (struct tar_stat_info *st, union block *blk,
 	       datewidth, time_stamp);
 
       fprintf (stdlis, " %s", quotearg (temp_name));
+      if (show_transformed_names_option && st->had_trailing_slash)
+	fputc ('/', stdlis);
 
       switch (blk->header.typeflag)
 	{
