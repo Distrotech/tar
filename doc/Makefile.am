@@ -33,9 +33,12 @@ tar_TEXINFOS = \
  sparse.texi\
  value.texi
 
-dist_man_MANS=tar.1 rmt.8
+dist_man_MANS=tar.1 $(RMT_8)
+if PU_RMT_COND
+  RMT_8=rmt.8
+endif
 
-EXTRA_DIST = gendocs_template mastermenu.el texify.sed untabify.el
+EXTRA_DIST = gendocs_template mastermenu.el texify.sed untabify.el rmt.8
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.
 # Just call 'make RENDITION=PROOF [target]' if you want PROOF rendition.
