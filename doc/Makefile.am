@@ -32,6 +32,9 @@ tar_TEXINFOS = \
  snapshot.texi\
  sparse.texi\
  value.texi
+
+dist_man_MANS=tar.1 rmt.8
+
 EXTRA_DIST = gendocs_template mastermenu.el texify.sed untabify.el
 
 # The rendering level is anyone of PUBLISH, DISTRIB or PROOF.

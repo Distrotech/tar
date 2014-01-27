@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-01-22
+GNU tar NEWS - User visible changes. 2014-01-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -25,6 +25,12 @@ sign and the specifier letter.
               current screen width, if {N} is not given.
   %c        -  a shortcut for "%{%Y-%m-%d %H:%M:%S}t: %ds, %{read,wrote}T%*\r"
 
+* Manpages
+
+This release includes official tar(1) and rmt(8) manpages.
+Distribution maintainers are kindly asked to use these instead of the
+home-made pages they provided so far.
+  
 
 version 1.27.1 - Sergey Poznyakoff, 2013-11-17
 
