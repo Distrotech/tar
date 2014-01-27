@@ -319,6 +319,7 @@ enum
   OCCURRENCE_OPTION,
   OLD_ARCHIVE_OPTION,
   ONE_FILE_SYSTEM_OPTION,
+  ONE_TOP_LEVEL_OPTION,
   OVERWRITE_DIR_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
@@ -488,6 +489,9 @@ static struct argp_option options[] = {
    GRID+1 },
   {"keep-directory-symlink", KEEP_DIRECTORY_SYMLINK_OPTION, 0, 0,
    N_("preserve existing symlinks to directories when extracting"),
+   GRID+1 },
+  {"one-top-level", ONE_TOP_LEVEL_OPTION, 0, 0,
+   N_("create a subdirectory to avoid having loose files extracted"),
    GRID+1 },
 #undef GRID
 
@@ -1441,6 +1445,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       one_file_system_option = true;
       break;
 
+    case ONE_TOP_LEVEL_OPTION:
+      one_top_level_option = true;
+      break;
+
     case 'l':
       check_links_option = 1;
       break;
@@ -2392,6 +2400,9 @@ decode_options (int argc, char **argv)
 		      _("--occurrence cannot be used with %s"),
 		      subcommand_string (subcommand_option)));
     }
+
+  if (one_top_level_option && absolute_names_option)
+    USAGE_ERROR ((0, 0, _("--one-top-level cannot be used with --absolute-names")));
 
   if (archive_names == 0)
     {

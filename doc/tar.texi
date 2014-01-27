@@ -3086,6 +3086,17 @@ Used when creating an archive.  Prevents @command{tar} from recursing into
 directories that are on different file systems from the current
 directory.
 
+@opsummary{one-top-level}
+@item --one-top-level
+Tells @command{tar} to create a new directory beneath the extraction directory
+(or the one passed to @option{-C}) and use it to guard against tarbombs.  The
+name of the new directory will be equal to the name of the archive with the
+extension stripped off.  If any archive names (after transformations from
+@option{--transform} and @option{--strip-components}) do not already begin with
+it, the new directory will be prepended to the names immediately before
+extraction.  Recognized extensions are @samp{.tar}, @samp{.taz}, @samp{.tbz},
+@samp{.tb2}, @samp{.tgz}, @samp{.tlz} and @samp{.txz}.
+
 @opsummary{overwrite}
 @item --overwrite
 

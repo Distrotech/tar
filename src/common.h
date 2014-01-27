@@ -235,6 +235,10 @@ GLOBAL bool numeric_owner_option;
 
 GLOBAL bool one_file_system_option;
 
+/* Create a top-level directory for extracting based on the archive name.  */
+GLOBAL bool one_top_level_option;
+GLOBAL char *one_top_level;
+
 /* Specified value to be put into tar file in place of stat () results, or
    just null and -1 if such an override should not take place.  */
 GLOBAL char const *owner_name_option;

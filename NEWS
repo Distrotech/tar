@@ -42,6 +42,14 @@ version 1.27.1 - Sergey Poznyakoff, 2013-11-17
 
 * Fix extracting sparse members from star archives.
 
+* The --one-top-level option.
+
+This new command line option tells tar that the working directory
+(or the one passed to -C) should not be populated with more than one
+name directly under it.  Instead, a newly created subdirectory is
+used whose name is equal to the archive name without the extension.
+For example, foo.tar.gz would be extracted to foo.
+
 
 version 1.27 - Sergey Poznyakoff, 2013-10-05
 
