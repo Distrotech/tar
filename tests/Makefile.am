@@ -144,6 +144,9 @@ TESTSUITE_AT = \
  multiv07.at\
  multiv08.at\
  old.at\
+ onetop01.at\
+ onetop02.at\
+ onetop03.at\
  opcomp01.at\
  opcomp02.at\
  opcomp03.at\

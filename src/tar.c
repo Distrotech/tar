@@ -490,7 +490,7 @@ static struct argp_option options[] = {
   {"keep-directory-symlink", KEEP_DIRECTORY_SYMLINK_OPTION, 0, 0,
    N_("preserve existing symlinks to directories when extracting"),
    GRID+1 },
-  {"one-top-level", ONE_TOP_LEVEL_OPTION, 0, 0,
+  {"one-top-level", ONE_TOP_LEVEL_OPTION, N_("DIR"), OPTION_ARG_OPTIONAL,
    N_("create a subdirectory to avoid having loose files extracted"),
    GRID+1 },
 #undef GRID
@@ -1447,6 +1447,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case ONE_TOP_LEVEL_OPTION:
       one_top_level_option = true;
+      one_top_level_dir = arg;
       break;
 
     case 'l':

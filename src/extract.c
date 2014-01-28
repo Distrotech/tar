@@ -194,31 +194,15 @@ extr_init (void)
 
   /* If the user wants to guarantee that everything is under one directory,
      determine its name now and let it be created later.  */
-  if (one_top_level_option)
+  if (one_top_level_option && !one_top_level_dir)
     {
-      int i;
       char *base = base_name (archive_name_array[0]);
 
-      for (i = strlen (base) - 1; i > 2; i--)
-        if (!strncmp (base + i - 3, ".tar", 4) ||
-	    !strncmp (base + i - 3, ".taz", 4) ||
-	    !strncmp (base + i - 3, ".tbz", 4) ||
-	    !strncmp (base + i - 3, ".tb2", 4) ||
-	    !strncmp (base + i - 3, ".tgz", 4) ||
-	    !strncmp (base + i - 3, ".tlz", 4) ||
-	    !strncmp (base + i - 3, ".txz", 4)) break;
-
-      if (i <= 3)
-        {
-	  one_top_level_option = false;
-	  free (base);
-	  return;
-	}
-
-      one_top_level = xmalloc (i - 2);
-      strncpy (one_top_level, base, i - 3);
-      one_top_level[i - 3] = '\0';
+      one_top_level_dir = strip_compression_suffix (base);
       free (base);
+      
+      if (!one_top_level_dir)
+	USAGE_ERROR ((0, 0, _("Cannot deduce top-level directory name; please set it explicitly with --one-top-level=DIR")));
     }
 }
 
@@ -1607,33 +1591,6 @@ prepare_to_extract (char const *file_name, int typeflag, tar_extractor_t *fun)
   return 1;
 }
 
-void
-maybe_prepend_name (char **file_name)
-{
-  int i;
-
-  for (i = 0; i < strlen (*file_name); i++)
-    if (!ISSLASH ((*file_name)[i]) && (*file_name)[i] != '.') break;
-
-  if (i == strlen (*file_name))
-    return;
-
-  if (!strncmp (*file_name + i, one_top_level, strlen (one_top_level)))
-    {
-      int pos = i + strlen (one_top_level);
-      if (ISSLASH ((*file_name)[pos]) || (*file_name)[pos] == '\0') return;
-    }
-
-  char *new_name = xmalloc (strlen (one_top_level) + strlen (*file_name) + 2);
-
-  strcpy (new_name, one_top_level);
-  strcat (new_name, "/");
-  strcat (new_name, *file_name);
-
-  free (*file_name);
-  *file_name = new_name;
-}
-
 /* Extract a file from the archive.  */
 void
 extract_archive (void)
@@ -1683,9 +1640,6 @@ extract_archive (void)
   /* KLUDGE */
   typeflag = sparse_member_p (&current_stat_info) ?
                   GNUTYPE_SPARSE : current_header->header.typeflag;
-
-  if (one_top_level_option)
-    maybe_prepend_name (&current_stat_info.file_name);
 
   if (prepare_to_extract (current_stat_info.file_name, typeflag, &fun))
     {

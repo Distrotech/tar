@@ -3087,15 +3087,17 @@ directories that are on different file systems from the current
 directory.
 
 @opsummary{one-top-level}
-@item --one-top-level
+@item --one-top-level[=@var{dir}]
 Tells @command{tar} to create a new directory beneath the extraction directory
-(or the one passed to @option{-C}) and use it to guard against tarbombs.  The
-name of the new directory will be equal to the name of the archive with the
-extension stripped off.  If any archive names (after transformations from
-@option{--transform} and @option{--strip-components}) do not already begin with
-it, the new directory will be prepended to the names immediately before
-extraction.  Recognized extensions are @samp{.tar}, @samp{.taz}, @samp{.tbz},
-@samp{.tb2}, @samp{.tgz}, @samp{.tlz} and @samp{.txz}.
+(or the one passed to @option{-C}) and use it to guard against
+tarbombs.  In the absence of @var{dir} argument, the name of the new directory
+will be equal to the base name of the archive (file name minus the
+archive suffix, if recognized).  Any member names that do not begin
+with that directory name (after 
+transformations from @option{--transform} and
+@option{--strip-components}) will be prefixed with it.  Recognized
+file name suffixes are @samp{.tar}, and any compression suffixes
+recognizable by @xref{--auto-compress}.
 
 @opsummary{overwrite}
 @item --overwrite

@@ -29,6 +29,7 @@ struct compression_suffix
 static struct compression_suffix compression_suffixes[] = {
 #define __CAT2__(a,b) a ## b
 #define S(s,p) #s, sizeof (#s) - 1, __CAT2__(p,_PROGRAM)
+  { "tar", 3, NULL },
   { S(gz,   GZIP) },
   { S(tgz,  GZIP) },
   { S(taz,  GZIP) },
@@ -44,33 +45,43 @@ static struct compression_suffix compression_suffixes[] = {
   { S(lzo,  LZOP) },
   { S(xz,   XZ) },
   { S(txz,  XZ) }, /* Slackware */
+  { NULL }
 #undef S
 #undef __CAT2__
 };
 
-static int nsuffixes = sizeof (compression_suffixes) /
-                        sizeof (compression_suffixes[0]);
-
-static const char *
-find_compression_program (const char *name, const char *defprog)
+static struct compression_suffix const *
+find_compression_suffix (const char *name, size_t *base_len)
 {
   char *suf = strrchr (name, '.');
 
   if (suf)
     {
-      int i;
       size_t len;
-
+      struct compression_suffix *p;
+      
       suf++;
       len = strlen (suf);
 
-      for (i = 0; i < nsuffixes; i++)
+      for (p = compression_suffixes; p->suffix; p++)
 	{
-	  if (compression_suffixes[i].length == len
-	      && memcmp (compression_suffixes[i].suffix, suf, len) == 0)
-	    return compression_suffixes[i].program;
+	  if (p->length == len && memcmp (p->suffix, suf, len) == 0)
+	    {
+	      if (*base_len)
+		*base_len = strlen (name) - len - 1;
+	      return p;
+	    }
 	}
     }
+  return NULL;
+}
+
+static const char *
+find_compression_program (const char *name, const char *defprog)
+{
+  struct compression_suffix const *p = find_compression_suffix (name, NULL);
+  if (p)
+    return p->program;
   return defprog;
 }
 
@@ -81,3 +92,23 @@ set_compression_program_by_suffix (const char *name, const char *defprog)
   if (program)
     use_compress_program_option = program;
 }
+
+char *
+strip_compression_suffix (const char *name)
+{
+  char *s = NULL;
+  size_t len;
+
+  if (find_compression_suffix (name, &len))
+    {
+      if (strncmp (name + len - 4, ".tar", 4) == 0)
+	len -= 4;
+      if (len == 0)
+	return NULL;
+      s = xmalloc (len + 1);
+      memcpy (s, name, len);
+      s[len] = 0;
+    }
+  return s;
+}
+  

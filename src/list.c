@@ -115,6 +115,30 @@ transform_member_name (char **pinput, int type)
   return transform_name_fp (pinput, type, decode_xform, &type);
 }
 
+static void
+enforce_one_top_level (char **pfile_name)
+{
+  char *file_name = *pfile_name;
+  char *p;
+  
+  for (p = file_name; *p && (ISSLASH (*p) || *p == '.'); p++)
+    ;
+
+  if (!*p)
+    return;
+
+  if (strncmp (p, one_top_level_dir, strlen (one_top_level_dir)) == 0)
+    {
+      int pos = strlen (one_top_level_dir);
+      if (ISSLASH (p[pos]) || p[pos] == 0)
+	return;
+    }
+
+  *pfile_name = new_name (one_top_level_dir, file_name);
+  normalize_filename_x (*pfile_name);
+  free (file_name);
+}
+
 void
 transform_stat_info (int typeflag, struct tar_stat_info *stat_info)
 {
@@ -132,6 +156,9 @@ transform_stat_info (int typeflag, struct tar_stat_info *stat_info)
     case LNKTYPE:
       transform_member_name (&stat_info->link_name, XFORM_LINK);
     }
+
+  if (one_top_level_option)
+    enforce_one_top_level (&current_stat_info.file_name);
 }
 
 /* Main loop for reading an archive.  */
@@ -194,6 +221,7 @@ read_and (void (*do_something) (void))
 		  continue;
 		}
 	    }
+
 	  transform_stat_info (current_header->header.typeflag,
 			       &current_stat_info);
 	  (*do_something) ();

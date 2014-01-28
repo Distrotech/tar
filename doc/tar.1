@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "January 27, 2014" "TAR" "GNU TAR Manual"
+.TH TAR 1 "January 28, 2014" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -329,6 +329,11 @@ Don't replace existing files that are newer than their archive copies.
 .TP
 \fB\-\-no\-overwrite\-dir\fR
 Preserve metadata of existing directories.
+.TP
+\fB\-\-one\-top\-level\fR[\fB=\fIDIR\fR]
+Extract all files into \fIDIR\fR, or, if used without argument, into a
+subdirectory named by the base name of the archive (minus standard
+compression suffixes recognizable by \fB\-\-auto\-compress).
 .TP
 \fB\-\-overwrite\fR
 Overwrite existing files when extracting.
