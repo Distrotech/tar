@@ -1,6 +1,6 @@
 # Configure template for GNU tar.  -*- autoconf -*-
 
-# Copyright 1991, 1994-2010, 2013 Free Software Foundation, Inc.
+# Copyright 1991, 1994-2010, 2013-2014 Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 

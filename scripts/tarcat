@@ -3,7 +3,7 @@
 # concatenates a GNU tar multi-volume archive into a single tar archive.
 # Author: Bruno Haible <bruno@clisp.org>, Sergey Poznyakoff <gray@gnu.org.ua>
 
-# Copyright 2004-2005, 2010, 2013 Free Software Foundation, Inc.
+# Copyright 2004-2005, 2010, 2013-2014 Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 

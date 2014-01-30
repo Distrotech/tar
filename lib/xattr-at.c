@@ -1,7 +1,7 @@
 /* openat-style fd-relative functions for operating with extended file
    attributes.
 
-   Copyright 2012-2013 Free Software Foundation, Inc.
+   Copyright 2012-2014 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

@@ -1,5 +1,5 @@
 /* Parse arguments from a string and prepend them to an argv.
-   Copyright 1999-2001, 2007, 2013 Free Software Foundation, Inc.
+   Copyright 1999-2001, 2007, 2013-2014 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

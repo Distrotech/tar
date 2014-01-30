@@ -1,7 +1,7 @@
 /* Buffer management for tar.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2013 Free Software
-   Foundation, Inc.
+   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2013-2014 Free
+   Software Foundation, Inc.
 
    This file is part of GNU tar.
 

@@ -1,6 +1,7 @@
 /* POSIX extended headers for tar.
 
-   Copyright (C) 2003-2007, 2009-2010, 2012-2013 Free Software Foundation, Inc.
+   Copyright (C) 2003-2007, 2009-2010, 2012-2014 Free Software
+   Foundation, Inc.
 
    This file is part of GNU tar.
 

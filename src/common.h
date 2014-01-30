@@ -1,6 +1,6 @@
 /* Common declarations for the tar program.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2012-2013 Free
+   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2012-2014 Free
    Software Foundation, Inc.
 
    This file is part of GNU tar.

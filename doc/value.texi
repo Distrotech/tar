@@ -1,5 +1,6 @@
 @c This is part of GNU tar manual.
-@c Copyright 1992, 1994-1997, 1999-2006, 2013 Free Software Foundation, Inc.
+@c Copyright 1992, 1994-1997, 1999-2006, 2013-2014 Free Software
+@c Foundation, Inc.
 @c See file tar.texi for copying conditions.
 
 @macro GNUTAR

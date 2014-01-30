@@ -1,5 +1,5 @@
 @c This is part of the paxutils manual.
-@c Copyright (C) 2006, 2007 Free Software Foundation, Inc.
+@c Copyright (C) 2006-2007, 2014 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c This file is distributed under GFDL 1.1 or any later version
 @c published by the Free Software Foundation.
