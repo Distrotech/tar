@@ -61,6 +61,7 @@ static struct
 static acl_t acl_get_file_at (int, const char *, acl_type_t);
 static int acl_set_file_at (int, const char *, acl_type_t, acl_t);
 static int file_has_acl_at (int, char const *, struct stat const *);
+static int acl_delete_def_file_at (int, char const *);
 
 /* acl_get_file_at */
 #define AT_FUNC_NAME acl_get_file_at
@@ -82,6 +83,17 @@ static int file_has_acl_at (int, char const *, struct stat const *);
 #define AT_FUNC_F1 acl_set_file
 #define AT_FUNC_POST_FILE_PARAM_DECLS   , acl_type_t type, acl_t acl
 #define AT_FUNC_POST_FILE_ARGS          , type, acl
+#include "at-func.c"
+#undef AT_FUNC_NAME
+#undef AT_FUNC_F1
+#undef AT_FUNC_POST_FILE_PARAM_DECLS
+#undef AT_FUNC_POST_FILE_ARGS
+
+/* acl_delete_def_file_at */
+#define AT_FUNC_NAME acl_delete_def_file_at
+#define AT_FUNC_F1 acl_delete_def_file
+#define AT_FUNC_POST_FILE_PARAM_DECLS
+#define AT_FUNC_POST_FILE_ARGS
 #include "at-func.c"
 #undef AT_FUNC_NAME
 #undef AT_FUNC_F1
@@ -187,7 +199,8 @@ fixup_extra_acl_fields (char *ptr)
   return ptr;
 }
 
-/* "system.posix_acl_access" */
+/* Set the "system.posix_acl_access/system.posix_acl_default" extended
+   attribute.  Called only when acls_option > 0. */
 static void
 xattrs__acls_set (struct tar_stat_info const *st,
                   char const *file_name, int type,
@@ -199,15 +212,23 @@ xattrs__acls_set (struct tar_stat_info const *st,
     {
       /* assert (strlen (ptr) == len); */
       ptr = fixup_extra_acl_fields (ptr);
-
       acl = acl_from_text (ptr);
-      acls_option = 1;
     }
-  else if (acls_option > 0)
-    acl = perms2acl (st->stat.st_mode);
+  else if (def)
+    {
+      /* No "default" IEEE 1003.1e ACL set for directory.  At this moment,
+         FILE_NAME may already have inherited default acls from parent
+         directory;  clean them up. */
+      if (acl_delete_def_file_at (chdir_fd, file_name))
+        WARNOPT (WARN_XATTR_WRITE,
+                (0, errno,
+                 _("acl_delete_def_file_at: Cannot drop default POSIX ACLs "
+                   "for file '%s'"),
+                 file_name));
+      return;
+    }
   else
-    return;  /* don't call acl functions unless we first hit an ACL, or
-		--acls was passed explicitly */
+    acl = perms2acl (st->stat.st_mode);
 
   if (!acl)
     {

@@ -74,7 +74,8 @@ AC_ARG_WITH([posix-acls],
 if test "x$with_posix_acls" != "xno"; then
   AC_CHECK_HEADERS(sys/acl.h,, [with_posix_acls=no])
   for tar_acl_func in acl_get_file acl_get_fd acl_set_file acl_set_fd \
-		      acl_to_text acl_from_text; do \
+		      acl_to_text acl_from_text acl_delete_def_file \
+		      acl_free; do \
     test "x$with_posix_acls" = xno && break
     AC_SEARCH_LIBS([$tar_acl_func], [acl pacl], [], [with_posix_acls=no])
   done
