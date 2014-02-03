@@ -407,6 +407,7 @@ m4_include([xattr05.at])
 
 m4_include([acls01.at])
 m4_include([acls02.at])
+m4_include([acls03.at])
 
 m4_include([selnx01.at])
 m4_include([selacl01.at])
