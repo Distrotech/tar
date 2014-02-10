@@ -4030,7 +4030,7 @@ Pad output with spaces to the @var{n}th column.  If the
 @samp{@{@var{n}@}} part is omitted, the current screen width
 is assumed.
 
-@item %@var{c}
+@item %c
 This is a shortcut for @samp{%@{%Y-%m-%d %H:%M:%S@}t: %ds, %@{read,wrote@}T%*\r},
 intended mainly for use with @samp{ttyout} action (see below).
 @end table
