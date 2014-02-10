@@ -51,7 +51,7 @@ static struct compression_suffix compression_suffixes[] = {
 };
 
 static struct compression_suffix const *
-find_compression_suffix (const char *name, size_t *base_len)
+find_compression_suffix (const char *name, size_t *ret_len)
 {
   char *suf = strrchr (name, '.');
 
@@ -67,8 +67,8 @@ find_compression_suffix (const char *name, size_t *base_len)
 	{
 	  if (p->length == len && memcmp (p->suffix, suf, len) == 0)
 	    {
-	      if (*base_len)
-		*base_len = strlen (name) - len - 1;
+	      if (ret_len)
+		*ret_len = strlen (name) - len - 1;
 	      return p;
 	    }
 	}
