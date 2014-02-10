@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-01-27
+GNU tar NEWS - User visible changes. 2014-02-10
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -24,6 +24,16 @@ sign and the specifier letter.
   %{N}*     - pad output with spaces to the Nth column, or to the 
               current screen width, if {N} is not given.
   %c        -  a shortcut for "%{%Y-%m-%d %H:%M:%S}t: %ds, %{read,wrote}T%*\r"
+
+* New option --one-top-level
+
+The option --one-top-level tells tar to extract all files into a
+subdirectory named by the base name of the archive (minus standard
+compression suffixes recognizable by --auto-compress).  When used with
+an argument, as in --one-top-level=DIR, the files are extracted into the
+supplied DIRectory.  This ensures that no archive members are
+extracted outside of the specified directory, even if the archive is
+crafted so as to put them elsewhere.
 
 * Manpages
 
