@@ -83,7 +83,7 @@ void
 request_stdin (const char *option)
 {
   if (stdin_used_by)
-    USAGE_ERROR ((0, 0, _("Options '-%s' and '-%s' both want standard input"),
+    USAGE_ERROR ((0, 0, _("Options '%s' and '%s' both want standard input"),
 		  stdin_used_by, option));
 
   stdin_used_by = option;
@@ -2236,6 +2236,14 @@ static int subcommand_class[] = {
 static struct tar_args args;
 
 static void
+option_conflict_error (const char *a, const char *b)
+{
+  /* TRANSLATORS: Both %s in this statement are replaced with
+     option names. */
+  USAGE_ERROR ((0, 0, _("'%s' cannot be used with '%s'"), a, b));
+}
+
+static void
 decode_options (int argc, char **argv)
 {
   int idx;
@@ -2397,13 +2405,9 @@ decode_options (int argc, char **argv)
 	USAGE_ERROR ((0, 0,
 		      _("--occurrence is meaningless without a file list")));
       if (!IS_SUBCOMMAND_CLASS (SUBCL_OCCUR))
-	USAGE_ERROR ((0, 0,
-		      _("--occurrence cannot be used with %s"),
-		      subcommand_string (subcommand_option)));
+	option_conflict_error ("--occurrence",
+			       subcommand_string (subcommand_option));
     }
-
-  if (one_top_level_option && absolute_names_option)
-    USAGE_ERROR ((0, 0, _("--one-top-level cannot be used with --absolute-names")));
 
   if (archive_names == 0)
     {
@@ -2424,8 +2428,8 @@ decode_options (int argc, char **argv)
 
   if (listed_incremental_option
       && NEWER_OPTION_INITIALIZED (newer_mtime_option))
-    USAGE_ERROR ((0, 0,
-		  _("Cannot combine --listed-incremental with --newer")));
+    option_conflict_error ("--listed-incremental", "--newer");
+  
   if (incremental_level != -1 && !listed_incremental_option)
     WARN ((0, 0,
 	   _("--level is meaningless without --listed-incremental")));
@@ -2462,8 +2466,8 @@ decode_options (int argc, char **argv)
       if (use_compress_program_option)
 	USAGE_ERROR ((0, 0, _("Cannot verify compressed archives")));
       if (!IS_SUBCOMMAND_CLASS (SUBCL_WRITE))
-	USAGE_ERROR ((0, 0, _("--verify cannot be used with %s"),
-		      subcommand_string (subcommand_option)));
+	option_conflict_error ("--verify",
+			       subcommand_string (subcommand_option));
     }
 
   if (use_compress_program_option)
@@ -2502,12 +2506,35 @@ decode_options (int argc, char **argv)
       && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
     USAGE_ERROR ((0, 0, _("--xattrs can be used only on POSIX archives")));
 
-  if ((starting_file_option || same_order_option)
-      && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
-    USAGE_ERROR ((0, 0,
-		  _("--%s option cannot be used with %s"),
-		  starting_file_option ? "starting-file" : "same-order",
-		  subcommand_string (subcommand_option)));
+  if (starting_file_option && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
+    option_conflict_error ("--starting-file",
+			   subcommand_string (subcommand_option));
+
+  if (same_order_option && !IS_SUBCOMMAND_CLASS (SUBCL_READ))
+    option_conflict_error ("--same-order",
+			   subcommand_string (subcommand_option));
+
+  if (one_top_level_option)
+    {
+      char *base;
+      
+      if (!IS_SUBCOMMAND_CLASS (SUBCL_READ))
+	option_conflict_error ("--one-top-level",
+			       subcommand_string (subcommand_option));
+      if (absolute_names_option)
+	option_conflict_error ("--one-top-level", "--absolute-names");
+      
+      /* If the user wants to guarantee that everything is under one directory,
+	 determine its name now and let it be created later.  */
+      base = base_name (archive_name_array[0]);
+      one_top_level_dir = strip_compression_suffix (base);
+      free (base);
+	  
+      if (!one_top_level_dir)
+	USAGE_ERROR ((0, 0,
+		      _("Cannot deduce top-level directory name; "
+			"please set it explicitly with --one-top-level=DIR")));
+    }
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
   if (recursive_unlink_option)
@@ -2540,8 +2567,7 @@ decode_options (int argc, char **argv)
     USAGE_ERROR ((0, 0, _("Volume length cannot be less than record size")));
 
   if (same_order_option && listed_incremental_option)
-    USAGE_ERROR ((0, 0, _("--preserve-order is not compatible with "
-			  "--listed-incremental")));
+    option_conflict_error ("--preserve-order", "--listed-incremental");
 
   /* Forbid using -c with no input files whatsoever.  Check that '-f -',
      explicit or implied, is used correctly.  */

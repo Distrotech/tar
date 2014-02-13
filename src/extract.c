@@ -191,19 +191,6 @@ extr_init (void)
       umask (newdir_umask);	/* restore the kernel umask */
       current_umask = newdir_umask;
     }
-
-  /* If the user wants to guarantee that everything is under one directory,
-     determine its name now and let it be created later.  */
-  if (one_top_level_option && !one_top_level_dir)
-    {
-      char *base = base_name (archive_name_array[0]);
-
-      one_top_level_dir = strip_compression_suffix (base);
-      free (base);
-      
-      if (!one_top_level_dir)
-	USAGE_ERROR ((0, 0, _("Cannot deduce top-level directory name; please set it explicitly with --one-top-level=DIR")));
-    }
 }
 
 /* Use fchmod if possible, fchmodat otherwise.  */
