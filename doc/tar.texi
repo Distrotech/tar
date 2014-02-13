@@ -3319,6 +3319,27 @@ The @option{--warning=existing-file} option can be used together with
 this option to produce warning messages about existing old files
 (@pxref{warnings}).
 
+@opsummary{sort}
+@item --sort=@var{order}
+Specify the directory sorting order when reading directories.
+@var{Order} may be one of the following:
+
+@table @samp
+@item none
+No directory sorting is performed. This is the default.
+
+@item name
+Sort the directory entries on name. The operating system may deliver
+directory entries in a more or less random order, and sorting them
+makes archive creation reproducible.
+
+@item inode
+Sort the directory entries on inode number. Sorting directories on
+inode number may reduce the amount of disk seek operations when
+creating an archive for some file systems.
+
+@end table
+
 @opsummary{sparse}
 @item --sparse
 @itemx -S

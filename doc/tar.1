@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "January 28, 2014" "TAR" "GNU TAR Manual"
+.TH TAR 1 "February 14, 2014" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -506,6 +506,24 @@ Try extracting files with the same ownership as exists in the archive
 .TP
 \fB\-s\fR, \fB\-\-preserve\-order\fR, \fB\-\-same\-order\fR
 Sort names to extract to match archive
+.TP
+\fB\-\-sort=\fIORDER\fR
+When creating an archive, sort directory entries according to
+\fIORDER\fR, which is one of
+.BR none ,
+.BR name ", or"
+.BR inode .
+
+The default is \fB\-\-sort=none\fR, which stores archive members in
+the same order as returned by the operating system.
+
+Using \fB\-\-sort=name\fR ensures the member ordering in the created archive
+is uniform and reproducible.
+
+Using \fB\-\-sort=inode\fR reduces the number of disk seeks made when
+creating the archive and thus can considerably speed up archivation.
+This sorting order is supported only if the underlying system provides
+the necessary information.
 .SS Device selection and switching
 .TP
 \fB\-f\fR, \fB\-\-file\fR=\fIARCHIVE\fR

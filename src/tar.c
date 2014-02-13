@@ -51,6 +51,7 @@
 #include <xstrtol.h>
 #include <stdopen.h>
 #include <priv-set.h>
+#include <savedir.h>
 
 /* Local declarations.  */
 
@@ -342,6 +343,7 @@ enum
   SHOW_SNAPSHOT_FIELD_RANGES_OPTION,
   SHOW_TRANSFORMED_NAMES_OPTION,
   SKIP_OLD_FILES_OPTION,
+  SORT_OPTION,
   SPARSE_VERSION_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
@@ -551,6 +553,13 @@ static struct argp_option options[] = {
       " directories until the end of extraction"), GRID+1 },
   {"no-delay-directory-restore", NO_DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
    N_("cancel the effect of --delay-directory-restore option"), GRID+1 },
+  {"sort", SORT_OPTION, N_("ORDER"), 0,
+#if D_INO_IN_DIRENT
+   N_("directory sorting order: none (default), name or inode"
+#else
+   N_("directory sorting order: none (default) or name"
+#endif
+     ), GRID+1 },
 #undef GRID
 
 #define GRID 55
@@ -1310,6 +1319,21 @@ parse_owner_group (char *arg, uintmax_t field_max, char const **name_option)
 /* Either NL or NUL, as decided by the --null option.  */
 static char filename_terminator;
 
+static char const *const sort_mode_arg[] = {
+  "none",
+  "name",
+  "inode",
+  NULL
+};
+
+static int sort_mode_flag[] = {
+    SAVEDIR_SORT_NONE,
+    SAVEDIR_SORT_NAME,
+    SAVEDIR_SORT_INODE
+};
+
+ARGMATCH_VERIFY (sort_mode_arg, sort_mode_flag);
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -1997,6 +2021,11 @@ parse_opt (int key, char *arg, struct argp_state *state)
       show_transformed_names_option = true;
       break;
 
+    case SORT_OPTION:
+      savedir_sort_order = XARGMATCH ("--sort", arg,
+				      sort_mode_arg, sort_mode_flag);
+      break;
+
     case SUFFIX_OPTION:
       backup_option = true;
       args->backup_suffix_string = arg;
@@ -2274,6 +2303,8 @@ decode_options (int argc, char **argv)
   tar_sparse_major = 1;
   tar_sparse_minor = 0;
 
+  savedir_sort_order = SAVEDIR_SORT_NONE;
+  
   owner_option = -1; owner_name_option = NULL;
   group_option = -1; group_name_option = NULL;
 

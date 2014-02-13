@@ -386,6 +386,8 @@ GLOBAL dev_t root_device;
 /* Unquote filenames */
 GLOBAL bool unquote_option;
 
+GLOBAL int savedir_sort_order;
+
 /* Show file or archive names after transformation.
    In particular, when creating archive in verbose mode, list member names
    as stored in the archive */

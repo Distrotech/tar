@@ -1288,7 +1288,7 @@ get_directory_entries (struct tar_stat_info *st)
   while (! (st->dirstream = fdopendir (st->fd)))
     if (! open_failure_recover (st))
       return 0;
-  return streamsavedir (st->dirstream);
+  return streamsavedir (st->dirstream, savedir_sort_order);
 }
 
 /* Dump the directory ST.  Return true if successful, false (emitting

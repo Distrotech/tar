@@ -1239,7 +1239,7 @@ tar_savedir (const char *name, int must_exist)
       open_error (name);
     }
   else if (! ((dir = fdopendir (fd))
-	      && (ret = streamsavedir (dir))))
+	      && (ret = streamsavedir (dir, savedir_sort_order))))
     savedir_error (name);
 
   if (dir ? closedir (dir) != 0 : 0 <= fd && close (fd) != 0)

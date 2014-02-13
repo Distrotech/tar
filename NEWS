@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-02-13
+GNU tar NEWS - User visible changes. 2014-02-14
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -34,6 +34,19 @@ an argument, as in --one-top-level=DIR, the files are extracted into the
 supplied DIRectory.  This ensures that no archive members are
 extracted outside of the specified directory, even if the archive is
 crafted so as to put them elsewhere.
+
+* New option --sort
+
+The --sort=ORDER option instructs tar to sort directory entries
+according to ORDER.  It takes effect when creating archives.
+Available ORDERs are: none (the default), name and inode.  The
+latter may be absent, if the underlying system does not provide
+the necessary information.
+
+Using --sort=name ensures the member ordering in the created archive
+is uniform and reproducible.  Using --sort=inode reduces the number
+of disk seeks made when creating the archive and thus can considerably
+speed up archivation.
 
 * Manpages
 
