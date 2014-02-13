@@ -26,7 +26,7 @@ tar -tWf test.tar .
 ],
 [2],
 [],
-[tar: --verify cannot be used with -t
+[tar: '--verify' cannot be used with '-t'
 Try 'tar --help' or 'tar --usage' for more information.
 ])
 

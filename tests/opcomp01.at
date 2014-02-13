@@ -26,7 +26,7 @@ tar --occurrence=1 -cf test.tar .
 ],
 [2],
 [],
-[tar: --occurrence cannot be used with -c
+[tar: '--occurrence' cannot be used with '-c'
 Try 'tar --help' or 'tar --usage' for more information.
 ])
 
