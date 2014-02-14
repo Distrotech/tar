@@ -2549,22 +2549,22 @@ decode_options (int argc, char **argv)
     {
       char *base;
       
-      if (!IS_SUBCOMMAND_CLASS (SUBCL_READ))
-	option_conflict_error ("--one-top-level",
-			       subcommand_string (subcommand_option));
       if (absolute_names_option)
 	option_conflict_error ("--one-top-level", "--absolute-names");
       
-      /* If the user wants to guarantee that everything is under one directory,
-	 determine its name now and let it be created later.  */
-      base = base_name (archive_name_array[0]);
-      one_top_level_dir = strip_compression_suffix (base);
-      free (base);
-	  
       if (!one_top_level_dir)
-	USAGE_ERROR ((0, 0,
-		      _("Cannot deduce top-level directory name; "
-			"please set it explicitly with --one-top-level=DIR")));
+	{
+	  /* If the user wants to guarantee that everything is under one
+	     directory, determine its name now and let it be created later.  */
+	  base = base_name (archive_name_array[0]);
+	  one_top_level_dir = strip_compression_suffix (base);
+	  free (base);
+
+	  if (!one_top_level_dir)
+	    USAGE_ERROR ((0, 0,
+			  _("Cannot deduce top-level directory name; "
+			    "please set it explicitly with --one-top-level=DIR")));
+	}
     }
 
   /* If ready to unlink hierarchies, so we are for simpler files.  */
