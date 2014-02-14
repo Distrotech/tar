@@ -37,18 +37,40 @@ AC_DEFUN([TAR_HEADERS_ATTR_XATTR_H],
     [], [with_xattrs=maybe]
   )
 
-  AC_CHECK_HEADERS([attr/xattr.h])
-  AM_CONDITIONAL([TAR_COND_XATTR_H],[test "$ac_cv_header_attr_xattr_h" = yes])
-  if test "$ac_cv_header_attr_xattr_h" = yes; then
+  # First check for <sys/xattr.h>
+  AC_CHECK_HEADERS([sys/xattr.h])
+  AM_CONDITIONAL([TAR_COND_XATTR_H],[test "$ac_cv_header_sys_xattr_h" = yes])
+  AM_CONDITIONAL([TAR_LIB_ATTR],[false])
+  if test "$ac_cv_header_sys_xattr_h" = yes; then
     AC_CHECK_FUNCS(getxattr  fgetxattr  lgetxattr \
                    setxattr  fsetxattr  lsetxattr \
                    listxattr flistxattr llistxattr,
         # only when functions are present
-        AC_DEFINE([HAVE_ATTR_XATTR_H], [1],
-                    [define to 1 if we have <attr/xattr.h> header])
+        AC_DEFINE([HAVE_SYS_XATTR_H], [1],
+                    [define to 1 if we have <sys/xattr.h> header])
         if test "$with_xattrs" != no; then
           AC_DEFINE([HAVE_XATTRS],,[Define when we have working linux xattrs.])
         fi
     )
+  fi
+
+  # If <sys/xattr.h> is not found, then check for <attr/xattr.h>
+  if test "$ac_cv_header_sys_xattr_h" != yes; then
+    AC_CHECK_HEADERS([attr/xattr.h])
+    AM_CONDITIONAL([TAR_COND_XATTR_H],[test "$ac_cv_header_attr_xattr_h" = yes])
+    AC_CHECK_LIB([attr],[fgetxattr])
+    AM_CONDITIONAL([TAR_LIB_ATTR],[test "$ac_cv_lib_attr_fgetxattr" = yes])
+    if test "$ac_cv_header_attr_xattr_h" = yes; then
+      AC_CHECK_FUNCS(getxattr  fgetxattr  lgetxattr \
+                     setxattr  fsetxattr  lsetxattr \
+                     listxattr flistxattr llistxattr,
+          # only when functions are present
+          AC_DEFINE([HAVE_ATTR_XATTR_H], [1],
+                      [define to 1 if we have <attr/xattr.h> header])
+          if test "$with_xattrs" != no; then
+            AC_DEFINE([HAVE_XATTRS],,[Define when we have working linux xattrs.])
+          fi
+      )
+    fi
   fi
 ])

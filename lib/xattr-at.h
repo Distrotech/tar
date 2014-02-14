@@ -20,7 +20,15 @@
 #define XATTRS_AT_H
 
 #include <sys/types.h>
-#include <attr/xattr.h>
+#if defined(HAVE_SYS_XATTR_H)
+# include <sys/xattr.h>
+#elif defined(HAVE_ATTR_XATTR_H)
+# include <attr/xattr.h>
+#endif
+
+#ifndef ENOATTR
+# define ENOATTR ENODATA        /* No such attribute */
+#endif
 
 /* These are the dir-fd-relative variants of the functions without the
    "at" suffix.  For example, setxattrat (AT_FDCWD, path, name, value, size,
