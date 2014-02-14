@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 #
 # Test suite for GNU tar.
-# Copyright 2013 Free Software Foundation, Inc.
+# Copyright 2013, 2014 Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 
@@ -87,7 +87,7 @@ mkdir nosacl_nodef_optacl
 mkdir nosacl_nodef_optnoacl
 
 setfacl -d -m u:$MYNAME:---  nosacl_def_optnoacl sacl_def_optnoacl sacl_def_optacl nosacl_def_optacl
-setfacl -d -m u:$MYGROUP:--- nosacl_def_optnoacl sacl_def_optnoacl sacl_def_optacl nosacl_def_optacl
+setfacl -d -m g:$MYGROUP:--- nosacl_def_optnoacl sacl_def_optnoacl sacl_def_optacl nosacl_def_optacl
 
 tar -xf acl.tar -C sacl_nodef_optnoacl
 tar --acls -xf acl.tar -C sacl_nodef_optacl
