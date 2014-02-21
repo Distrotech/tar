@@ -28,6 +28,7 @@ tar_SOURCES = \
  create.c\
  delete.c\
  exit.c\
+ exclist.c\
  extract.c\
  xheader.c\
  incremen.c\

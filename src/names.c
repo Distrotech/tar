@@ -1373,12 +1373,6 @@ new_name (const char *file_name, const char *name)
   return buffer;
 }
 
-/* Return nonzero if file NAME is excluded.  */
-bool
-excluded_name (char const *name)
-{
-  return excluded_file_name (excluded, name + FILE_SYSTEM_PREFIX_LEN (name));
-}
 
 
 /* Return the size of the prefix of FILE_NAME that is removed after

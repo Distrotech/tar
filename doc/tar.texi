@@ -2608,6 +2608,19 @@ tag file, but still dump the directory node itself.
 Exclude from dump any directory containing a valid cache directory
 tag file.  @xref{exclude}.
 
+@opsummary{exclude-ignore}
+@item --exclude-ignore=@var{file}
+Before dumping a directory, @command{tar} checks if it contains
+@var{file}.  If so, exclusion patterns are read from this file.
+The patterns affect only the directory itself.  @xref{exclude}.
+
+@opsummary{exclude-ignore-recursive}
+@item --exclude-ignore-recursive=@var{file}
+Before dumping a directory, @command{tar} checks if it contains
+@var{file}.  If so, exclusion patterns are read from this file.
+The patterns affect the directory and all itssubdirectories.
+@xref{exclude}.
+
 @opsummary{exclude-tag}
 @item --exclude-tag=@var{file}
 
@@ -2633,7 +2646,16 @@ Exclude from dump any directory containing file named @var{file}.
 Exclude from dump directories and files, that are internal for some
 widely used version control systems.
 
-@xref{exclude,,exclude-vcs}.
+@xref{exclude-vcs}.
+
+@opsummary{exclude-vcs-ignores}
+@item --exclude-vcs-ignores
+Exclude files that match patterns read from VCS-specific ignore
+files.  Supported files are: @file{.cvsignore}, @file{.gitignore},
+@file{.bzrignore}, and @file{.hgignore}.  The semantics of each file
+is the same as for the corresponding VCS, e.g. patterns read from
+@file{.gitignore} affect the directory and all its subdirectories.
+@xref{exclude-vcs-ignores}.
 
 @opsummary{file}
 @item --file=@var{archive}
@@ -7381,6 +7403,77 @@ which is difficult to catch using text editors.
 
 However, empty lines are OK.
 
+@cindex VCS, excluding patterns from ignore files
+@cindex VCS, ignore files
+@cindex CVS, ignore files
+@cindex Git, ignore files
+@cindex Bazaar, ignore files
+@cindex Mercurial, ignore files
+When archiving directories that are under some version control system (VCS), 
+it is often convenient to read exclusion patterns from this VCS'
+ignore files (e.g. @file{.cvsignore}, @file{.gitignore}, etc.)  The
+following options provide such possibilty:
+
+@table @option
+@anchor{exclude-vcs-ignores}
+@opindex exclude-vcs-ignores
+@item --exclude-vcs-ignores
+Before archiving a directory, see if it contains any of the following
+files: @file{cvsignore}, @file{.gitignore}, @file{.bzrignore}, or
+@file{.hgignore}.  If so, read ignore patterns from these files.
+
+The patterns are treated much as the corresponding VCS would treat
+them, i.e.:
+
+@table @file
+@findex .cvsignore
+@item .cvsignore
+Contains shell-style globbing patterns that apply only to the
+directory where this file resides.  No comments are allowed in the
+file.  Empty lines are ignored.
+
+@findex .gitignore
+@item .gitignore
+Contains shell-style globbing patterns.  Applies to the directory
+where @file{.gitfile} is located and all its subdirectories.
+
+Any line beginning with a @samp{#} is a comment.  Backslash escapes
+the comment character.
+
+@findex .bzrignore
+@item .bzrignore
+Contains shell globbing-patterns and regular expressions (if prefixed
+with @samp{RE:}@footnote{According to the Bazaar docs,
+globbing-patterns are Korn-shell style and regular expressions are
+perl-style.  As of @GNUTAR{} version @value{VERSION}, these are
+treated as shell-style globs and posix extended regexps.  This will be
+fixed in future releases.}.  Patterns affect the directory and all its
+subdirectories.
+
+Any line beginning with a @samp{#} is a comment.
+
+@findex .hgignore
+@item .hgignore
+Contains posix regular expressions@footnote{Support for perl-style
+regexps will appear in future releases.}.  The line @samp{syntax:
+glob} switches to shell globbing patterns.  The line @samp{syntax:
+regexp} switches back.  Comments begin with a @samp{#}.  Patterns
+affect the directory and all its subdirectories.
+@end table
+
+@opindex exclude-ignore
+@item --exclude-ignore=@var{file}
+Before dumping a directory, @command{tar} checks if it contains
+@var{file}.  If so, exclusion patterns are read from this file.
+The patterns affect only the directory itself.
+
+@opindex exclude-ignore-recursive
+@item --exclude-ignore-recursive=@var{file}
+Same as @option{--exclude-ignore}, except that the patterns read
+affect both the directory where @var{file} resides and all its
+subdirectories.
+@end table
+
 @table @option
 @cindex version control system, excluding files
 @cindex VCS, excluding files
@@ -7393,6 +7486,7 @@ However, empty lines are OK.
 @cindex Arch, excluding files
 @cindex Mercurial, excluding files
 @cindex Darcs, excluding files
+@anchor{exclude-vcs}
 @opindex exclude-vcs
 @item --exclude-vcs
 Exclude files and directories used by following version control

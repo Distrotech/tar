@@ -734,6 +734,8 @@ scan_directory (struct tar_stat_info *st)
   if (! dirp)
     savedir_error (dir);
 
+  info_attach_exclist (st);
+  
   tmp = xstrdup (dir);
   zap_slashes (tmp);
 
@@ -762,7 +764,7 @@ scan_directory (struct tar_stat_info *st)
 
 	      if (*entry == 'I') /* Ignored entry */
 		*entry = 'N';
-	      else if (excluded_name (full_name))
+	      else if (excluded_name (full_name, st))
 		*entry = 'N';
 	      else
 		{

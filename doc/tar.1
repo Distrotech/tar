@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "February 14, 2014" "TAR" "GNU TAR Manual"
+.TH TAR 1 "February 22, 2014" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -788,6 +788,15 @@ Exclude directories containing file \fBCACHEDIR.TAG\fR and the file itself.
 \fB\-\-exclude\-caches\-under\fR
 Exclude everything under directories containing \fBCACHEDIR.TAG\fR
 .TP
+\fB\-\-exclude\-ignore=\fIFILE\fR
+Before dumping a directory, see if it contains \fIFILE\fR.
+If so, read exclusion patterns from this file.  The patterns affect
+only the directory itself.
+.TP
+\fB\-\-exclude\-ignore\-recursive=\fIFILE\fR
+Same as \fB\-\-exclude\-ignore\fR, except that patterns from
+\fIFILE\fR affect both the directory and all its subdirectories.
+.TP
 \fB\-\-exclude\-tag\fR=\fIFILE\fR
 Exclude contents of directories containing \fIFILE\fR, except for
 \fIFILE\fR itself.
@@ -800,6 +809,14 @@ Exclude everything under directories containing \fIFILE\fR.
 .TP
 \fB\-\-exclude\-vcs\fR
 Exclude version control system directories.
+.TP
+\fB\-\-exclude\-vcs\-ignores\fR
+Exclude files that match patterns read from VCS-specific ignore
+files.  Supported files are:
+.BR .cvsignore ,
+.BR .gitignore ,
+.BR .bzrignore ", and"
+.BR .hgignore .
 .TP
 \fB\-h\fR, \fB\-\-dereference\fR
 Follow symlinks; archive and dump the files they point to.

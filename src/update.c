@@ -216,7 +216,7 @@ update_archive (void)
     while ((p = name_from_list ()) != NULL)
       {
 	char *file_name = p->name;
-	if (excluded_name (file_name))
+	if (excluded_name (file_name, NULL))
 	  continue;
 	if (interactive_option && !confirm ("add", file_name))
 	  continue;

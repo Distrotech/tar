@@ -1113,6 +1113,8 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
   if (!blk)
     return;
 
+  info_attach_exclist (st);
+  
   if (incremental_option && archive_format != POSIX_FORMAT)
     blk->header.typeflag = GNUTYPE_DUMPDIR;
   else /* if (standard_option) */
@@ -1196,7 +1198,7 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
 	    char const *entry;
 	    size_t entry_len;
 	    size_t name_len;
-
+	    
 	    name_buf = xstrdup (st->orig_file_name);
 	    name_size = name_len = strlen (name_buf);
 
@@ -1210,7 +1212,7 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
 		    name_buf = xrealloc (name_buf, name_size + 1);
 		  }
 		strcpy (name_buf + name_len, entry);
-		if (!excluded_name (name_buf))
+		if (!excluded_name (name_buf, st))
 		  dump_file (st, entry, name_buf);
 	      }
 
@@ -1339,12 +1341,12 @@ create_archive (void)
       collect_and_sort_names ();
 
       while ((p = name_from_list ()) != NULL)
-	if (!excluded_name (p->name))
+	if (!excluded_name (p->name, NULL))
 	  dump_file (0, p->name, p->name);
 
       blank_name_list ();
       while ((p = name_from_list ()) != NULL)
-	if (!excluded_name (p->name))
+	if (!excluded_name (p->name, NULL))
 	  {
 	    struct tar_stat_info st;
 	    size_t plen = strlen (p->name);
@@ -1358,7 +1360,7 @@ create_archive (void)
 	    if (! ISSLASH (buffer[plen - 1]))
 	      buffer[plen++] = DIRECTORY_SEPARATOR;
 	    tar_stat_init (&st);
-	    q = directory_contents (gnu_list_name->directory);
+	    q = directory_contents (p->directory);
 	    if (q)
 	      while (*q)
 		{
@@ -1401,7 +1403,7 @@ create_archive (void)
     {
       const char *name;
       while ((name = name_next (1)) != NULL)
-	if (!excluded_name (name))
+	if (!excluded_name (name, NULL))
 	  dump_file (0, name, name);
     }
 

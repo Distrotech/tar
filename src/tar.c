@@ -284,10 +284,13 @@ enum
   EXCLUDE_CACHES_UNDER_OPTION,
   EXCLUDE_CACHES_ALL_OPTION,
   EXCLUDE_OPTION,
+  EXCLUDE_IGNORE_OPTION,
+  EXCLUDE_IGNORE_RECURSIVE_OPTION,
   EXCLUDE_TAG_OPTION,
   EXCLUDE_TAG_UNDER_OPTION,
   EXCLUDE_TAG_ALL_OPTION,
   EXCLUDE_VCS_OPTION,
+  EXCLUDE_VCS_IGNORES_OPTION,
   FORCE_LOCAL_OPTION,
   FULL_TIME_OPTION,
   GROUP_OPTION,
@@ -732,12 +735,20 @@ static struct argp_option options[] = {
   {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
    N_("exclude contents of directories containing FILE, except"
       " for FILE itself"), GRID+1 },
+  {"exclude-ignore", EXCLUDE_IGNORE_OPTION, N_("FILE"), 0,
+    N_("read exclude patterns for each directory from FILE, if it exists"),
+   GRID+1 }, 
+  {"exclude-ignore-recursive", EXCLUDE_IGNORE_RECURSIVE_OPTION, N_("FILE"), 0,
+    N_("read exclude patterns for each directory and its subdirectories "
+       "from FILE, if it exists"), GRID+1 },
   {"exclude-tag-under", EXCLUDE_TAG_UNDER_OPTION, N_("FILE"), 0,
    N_("exclude everything under directories containing FILE"), GRID+1 },
   {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
    N_("exclude directories containing FILE"), GRID+1 },
   {"exclude-vcs", EXCLUDE_VCS_OPTION, NULL, 0,
    N_("exclude version control system directories"), GRID+1 },
+  {"exclude-vcs-ignores", EXCLUDE_VCS_IGNORES_OPTION, NULL, 0,
+   N_("read exclude patterns from the VCS ignore files"), GRID+1 },
   {"exclude-backups", EXCLUDE_BACKUPS_OPTION, NULL, 0,
    N_("exclude backup and lock files"), GRID+1 },
   {"no-recursion", NO_RECURSION_OPTION, 0, 0,
@@ -1776,6 +1787,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			 cachedir_file_p);
       break;
 
+    case EXCLUDE_IGNORE_OPTION:
+      excfile_add (arg, EXCL_NON_RECURSIVE);
+      break;
+
+    case EXCLUDE_IGNORE_RECURSIVE_OPTION:
+      excfile_add (arg, EXCL_RECURSIVE);
+      break;
+      
     case EXCLUDE_TAG_OPTION:
       add_exclusion_tag (arg, exclusion_tag_contents, NULL);
       break;
@@ -1792,6 +1811,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       add_exclude_array (vcs_file_table, 0);
       break;
 
+    case EXCLUDE_VCS_IGNORES_OPTION:
+      exclude_vcs_ignores ();
+      break;
+      
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
@@ -2304,6 +2327,7 @@ decode_options (int argc, char **argv)
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
   excluded = new_exclude ();
+  
   newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
   newer_mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
@@ -2849,6 +2873,7 @@ tar_stat_destroy (struct tar_stat_info *st)
   free (st->sparse_map);
   free (st->dumpdir);
   xheader_destroy (&st->xhdr);
+  info_free_exclist (st);
   memset (st, 0, sizeof (*st));
 }
 

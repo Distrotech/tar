@@ -358,6 +358,9 @@ struct tar_stat_info
      It is negative if it could not be reopened after it was closed.
      Negate it to find out what errno was when the reopen failed.  */
   int fd;
+
+  /* Exclusion list */
+  struct exclist *exclude_list;
 };
 
 union block

@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-02-14
+GNU tar NEWS - User visible changes. 2014-02-21
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -47,6 +47,20 @@ Using --sort=name ensures the member ordering in the created archive
 is uniform and reproducible.  Using --sort=inode reduces the number
 of disk seeks made when creating the archive and thus can considerably
 speed up archivation.
+
+* New exclusion options
+
+  --exclude-ignore=FILE   Before dumping a directory check if it
+                          contains FILE, and if so read exclude
+                          patterns for this directory from FILE.
+  --exclude-ignore-recursive=FILE
+                          Same as above, but the exclusion patterns
+                          read from FILE remain in effect for any
+			  subdirectory, recursively.
+  --exclude-vcs-ignores   Read exclude tags from VCS ignore files,
+                          where such files exist.  Supported VCS's
+                          are: CVS, Git, Bazaar, Mercurial.
+			  
 
 * Manpages
 

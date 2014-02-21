@@ -743,8 +743,6 @@ char *new_name (const char *dir_name, const char *name);
 size_t stripped_prefix_len (char const *file_name, size_t num);
 bool all_names_found (struct tar_stat_info *st);
 
-bool excluded_name (char const *name);
-
 void add_avoided_name (char const *name);
 bool is_avoided_name (char const *name);
 
@@ -920,5 +918,17 @@ void finish_deferred_unlinks (void);
 
 /* Module exit.c */
 extern void (*fatal_exit_hook) (void);
+
+/* Module exclist.c */
+#define EXCL_DEFAULT       0x00
+#define EXCL_RECURSIVE     0x01
+#define EXCL_NON_RECURSIVE 0x02
+
+void excfile_add (const char *name, int flags);
+void info_attach_exclist (struct tar_stat_info *dir);
+void info_cleanup_exclist (struct tar_stat_info *dir);
+void info_free_exclist (struct tar_stat_info *dir);
+bool excluded_name (char const *name, struct tar_stat_info *st);
+void exclude_vcs_ignores (void);
 
 _GL_INLINE_HEADER_END
