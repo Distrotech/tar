@@ -83,8 +83,10 @@ stdint
 stpcpy
 strdup-posix
 strerror
+strtoimax
 strtol
 strtoul
+strtoumax
 symlinkat
 timespec
 unlinkat
