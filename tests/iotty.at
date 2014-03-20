@@ -1,0 +1,47 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for GNU tar.
+# Copyright 2014 Free Software Foundation, Inc.
+
+# This file is part of GNU tar.
+
+# GNU tar is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+
+# GNU tar is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# Description: Tar should refuse to read archive from the terminal.
+# Reported by: Pavel Raiskup
+# References: <5285498.uPPgZ77uHP@nb.usersys.redhat.com>,
+#             http://lists.gnu.org/archive/html/bug-tar/2014-03/msg00033.html
+
+AT_SETUP([terminal input])
+AT_KEYWORDS([options iotty])
+
+AT_TAR_CHECK([
+TAPE=-
+export TAPE
+ttyemu -t5 -i/dev/null tar -x
+echo $?
+ttyemu -t5 -i/dev/null tar -xz
+echo $?
+],
+[0],
+[tar: Refusing to read archive contents from terminal (missing -f option?)
+tar: Error is not recoverable: exiting now
+2
+tar: Refusing to read archive contents from terminal (missing -f option?)
+tar: Error is not recoverable: exiting now
+2
+],
+[],[],[],[posix, gnu, oldgnu])
+
+AT_CLEANUP

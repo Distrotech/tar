@@ -116,6 +116,7 @@ TESTSUITE_AT = \
  incr09.at\
  indexfile.at\
  ignfail.at\
+ iotty.at\
  label01.at\
  label02.at\
  label03.at\
@@ -261,9 +262,11 @@ installcheck-local:
 ## genfile      ##
 ## ------------ ##
 
-check_PROGRAMS = genfile
+check_PROGRAMS = genfile ttyemu
 
 genfile_SOURCES = genfile.c argcv.c argcv.h
+
+ttyemu_SOURCES = ttyemu.c
 
 localedir = $(datadir)/locale
 AM_CPPFLAGS = \

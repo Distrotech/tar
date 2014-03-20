@@ -49,6 +49,7 @@ getpagesize
 gettext
 gettime
 gitlog-to-changelog
+grantpt
 hash
 human
 inttostr
@@ -64,6 +65,8 @@ modechange
 obstack
 openat
 parse-datetime
+posix_openpt
+ptsname
 priv-set
 progname
 quote
@@ -92,6 +95,7 @@ timespec
 unlinkat
 unlinkdir
 unlocked-io
+unlockpt
 utimensat
 version-etc-fsf
 xalloc

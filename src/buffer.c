@@ -689,6 +689,16 @@ _open_archive (enum access_mode wanted_access)
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
 
+  /* Refuse to read archive from a tty.
+     Do not fail if the tar's output goes directly to tty because such
+     behavior would go against GNU Coding Standards:
+     http://lists.gnu.org/archive/html/bug-tar/2014-03/msg00042.html */
+  if (strcmp (archive_name_array[0], "-") == 0
+      && wanted_access == ACCESS_READ && isatty (STDIN_FILENO))
+    FATAL_ERROR ((0, 0,
+                  _("Refusing to read archive contents from terminal "
+                    "(missing -f option?)")));
+  
   read_full_records = read_full_records_option;
 
   records_read = 0;
@@ -731,7 +741,6 @@ _open_archive (enum access_mode wanted_access)
             enum compress_type type;
 
             archive = STDIN_FILENO;
-
             type = check_compressed_archive (&shortfile);
             if (type != ct_tar && type != ct_none)
               FATAL_ERROR ((0, 0,
