@@ -439,7 +439,7 @@ handle_option (const char *str)
   int i;
 
   while (*str && isspace (*str))
-    ;
+    ++str;
   if (*str != '-')
     return 1;
 
