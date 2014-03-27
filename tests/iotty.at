@@ -33,12 +33,17 @@ ttyemu -t5 -i/dev/null tar -x
 echo $?
 ttyemu -t5 -i/dev/null tar -xz
 echo $?
+ttyemu -t5 -i/dev/null tar -c .
+echo $?
 ],
 [0],
 [tar: Refusing to read archive contents from terminal (missing -f option?)
 tar: Error is not recoverable: exiting now
 2
 tar: Refusing to read archive contents from terminal (missing -f option?)
+tar: Error is not recoverable: exiting now
+2
+tar: Refusing to write archive contents to terminal (missing -f option?)
 tar: Error is not recoverable: exiting now
 2
 ],

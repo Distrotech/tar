@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-02-21
+GNU tar NEWS - User visible changes. 2014-03-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -61,6 +61,8 @@ speed up archivation.
                           where such files exist.  Supported VCS's
                           are: CVS, Git, Bazaar, Mercurial.
 			  
+
+* Tar refuses to read input from and write output to a tty device.
 
 * Manpages
 

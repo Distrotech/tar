@@ -668,6 +668,22 @@ init_buffer (void)
   record_end = record_start + blocking_factor;
 }
 
+static void
+check_tty (enum access_mode mode)
+{
+  /* Refuse to read archive from and write it to a tty. */
+  if (strcmp (archive_name_array[0], "-") == 0
+      && isatty (mode == ACCESS_READ ? STDIN_FILENO : STDOUT_FILENO))
+    {
+      FATAL_ERROR ((0, 0,
+		    mode == ACCESS_READ
+		    ? _("Refusing to read archive contents from terminal "
+			"(missing -f option?)")
+		    : _("Refusing to write archive contents to terminal "
+			"(missing -f option?)")));
+    }
+}
+
 /* Open an archive file.  The argument specifies whether we are
    reading or writing, or both.  */
 static void
@@ -688,17 +704,8 @@ _open_archive (enum access_mode wanted_access)
 
   /* When updating the archive, we start with reading.  */
   access_mode = wanted_access == ACCESS_UPDATE ? ACCESS_READ : wanted_access;
+  check_tty (access_mode);
 
-  /* Refuse to read archive from a tty.
-     Do not fail if the tar's output goes directly to tty because such
-     behavior would go against GNU Coding Standards:
-     http://lists.gnu.org/archive/html/bug-tar/2014-03/msg00042.html */
-  if (strcmp (archive_name_array[0], "-") == 0
-      && wanted_access == ACCESS_READ && isatty (STDIN_FILENO))
-    FATAL_ERROR ((0, 0,
-                  _("Refusing to read archive contents from terminal "
-                    "(missing -f option?)")));
-  
   read_full_records = read_full_records_option;
 
   records_read = 0;
