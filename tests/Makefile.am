@@ -187,6 +187,7 @@ TESTSUITE_AT = \
  remfiles09a.at\
  remfiles09b.at\
  remfiles09c.at\
+ remfiles10.at\
  same-order01.at\
  same-order02.at\
  shortfile.at\

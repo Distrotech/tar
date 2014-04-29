@@ -399,6 +399,7 @@ m4_include([remfiles08c.at])
 m4_include([remfiles09a.at])
 m4_include([remfiles09b.at])
 m4_include([remfiles09c.at])
+m4_include([remfiles10.at])
 
 AT_BANNER([Extended attributes])
 m4_include([xattr01.at])

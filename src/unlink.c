@@ -73,7 +73,7 @@ flush_deferred_unlinks (bool force)
 {
   struct deferred_unlink *p, *prev = NULL;
   int saved_chdir = chdir_current;
-  
+
   for (p = dunlink_head; p; )
     {
       struct deferred_unlink *next = p->next;
@@ -86,15 +86,16 @@ flush_deferred_unlinks (bool force)
 	    {
 	      const char *fname;
 
-	      if (p->file_name[0] == 0 ||
-		  strcmp (p->file_name, ".") == 0)
+	      if (p->dir_idx
+		  && (p->file_name[0] == 0
+		      || strcmp (p->file_name, ".") == 0))
 		{
 		  fname = tar_dirname ();
 		  chdir_do (p->dir_idx - 1);
 		}
 	      else
 		fname = p->file_name;
-		  
+
 	      if (unlinkat (chdir_fd, fname, AT_REMOVEDIR) != 0)
 		{
 		  switch (errno)
