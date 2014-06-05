@@ -9813,15 +9813,15 @@ free from many of @samp{v7}'s drawbacks.
 @subsection Ustar Archive Format
 
 @cindex ustar archive format
-Archive format defined by @acronym{POSIX}.1-1988 specification is called
-@code{ustar}.  Although it is more flexible than the V7 format, it
+The archive format defined by the @acronym{POSIX}.1-1988 specification is
+called @code{ustar}.  Although it is more flexible than the V7 format, it
 still has many restrictions (@pxref{Formats,ustar}, for the detailed
 description of @code{ustar} format).  Along with V7 format,
 @code{ustar} format is a good choice for archives intended to be read
 with other implementations of @command{tar}.
 
-To create archive in @code{ustar} format, use @option{--format=ustar}
-option in conjunction with the @option{--create} (@option{-c}).
+To create an archive in @code{ustar} format, use the @option{--format=ustar}
+option in conjunction with @option{--create} (@option{-c}).
 
 @node gnu
 @subsection @acronym{GNU} and old @GNUTAR{} format
@@ -10024,18 +10024,18 @@ same contents:
 
 SunOS and HP-UX @command{tar} fail to accept archives created using
 @GNUTAR{} and containing non-@acronym{ASCII} file names, that
-is, file names having characters with the eight bit set, because they
+is, file names having characters with the eighth bit set, because they
 use signed checksums, while @GNUTAR{} uses unsigned
 checksums while creating archives, as per @acronym{POSIX} standards.  On
-reading, @GNUTAR{} computes both checksums and
-accepts any.  It is somewhat worrying that a lot of people may go
+reading, @GNUTAR{} computes both checksums and accepts either of them.
+It is somewhat worrying that a lot of people may go
 around doing backup of their files using faulty (or at least
 non-standard) software, not learning about it until it's time to
 restore their missing files with an incompatible file extractor, or
 vice versa.
 
-@GNUTAR{} computes checksums both ways, and accept
-any on read, so @acronym{GNU} tar can read Sun tapes even with their
+@GNUTAR{} computes checksums both ways, and accepts either of them
+on read, so @acronym{GNU} tar can read Sun tapes even with their
 wrong checksums.  @GNUTAR{} produces the standard
 checksum, however, raising incompatibilities with Sun.  That is to
 say, @GNUTAR{} has not been modified to
@@ -10050,7 +10050,7 @@ the default signing of @code{char}'s in their compiler.  So they
 started computing checksums wrongly.  When they later realized their
 mistake, they merely decided to stay compatible with it, and with
 themselves afterwards.  Presumably, but I do not really know, HP-UX
-has chosen that their @command{tar} archives to be compatible with Sun's.
+has chosen their @command{tar} archives to be compatible with Sun's.
 The current standards do not favor Sun @command{tar} format.  In any
 case, it now falls on the shoulders of SunOS and HP-UX users to get
 a @command{tar} able to read the good archives they receive.
