@@ -36,3 +36,4 @@ include Make.rules
 gen_start_date = 2009-03-06
 prev_change_log = ChangeLog.CVS
 changelog_dir = .
+changelog_amend_file=ChangeLog.amend

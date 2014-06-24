@@ -1028,7 +1028,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	this has undefined behavior.  Likewise for assigning arbitrary
 	uintmax_t values to other types.
 	(read_negative_num, read_unsigned_num, read_timespec):
-	New functions, to check input values a bit more carefuly.
+	New functions, to check input values a bit more carefully.
 	(read_num): Use read_unsigned_num.  New arg MAX_VAL;
 	all callers changed.
 	(read_incr_db_2): Use these new functions.
@@ -1208,7 +1208,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	* src/delete.c: Remove second argument from calls to name_scan
 	* src/update.c: Likewise
 	* src/incremen.c (procdir): Use is_individual_file to check for
-	files explicitely specified in the command line. Fixes bug
+	files explicitly specified in the command line. Fixes bug
 	reported by Dat Head on 19 Jun 2006 (descending into mountpoints
 	with --one-file-system in use)
 	* src/misc.c (maybe_backup_file): Second argument is bool
@@ -1267,7 +1267,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	* src/delete.c (records_skipped): Remove static qualifier, the
 	variable is used by print_total_stats in buffer.c
 	* src/extract.c (check_time): Use volume_start_time when checking
-	for timestamp plausability.
+	for timestamp plausibility.
 	* src/tar.c: (options, parse_opt): Allow for optional argument to
 	the --totals option, which specifies a signal upon delivery of which
 	the statistics must be output.
@@ -1325,7 +1325,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	* src/transform.c (set_transform_expr,_transform_name_to_obstack):
 	Implement NUMBER flag.
-	(add_char_segment): Fix length assignement
+	(add_char_segment): Fix length assignment
 
 	* doc/tar.texi: Update
 
@@ -1382,7 +1382,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	* doc/tar.texi: Update
 	* configure.ac (AM_INIT_AUTOMAKE): Use tar-ustar option. Raise
 	version requirement to 1.9
-	* src/common.h (struct name): Refactured
+	* src/common.h (struct name): Refactored
 	(warn_regex_usage): New variable.
 	(dump_file): First argument is const char*.
 	(name_init,name_add): Removed
@@ -1757,13 +1757,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	* src/common.h (struct name): New member `explicit'. Remove unused
 	member `isdir'.
 	* src/incremen.c (procdir): If name_scan() returns something,
-	check if it was explicitely given in the command line
+	check if it was explicitly given in the command line
 	* src/names.c (addname,add_hierarchy_to_namelist): Initialize
 	explicit member appropriately.
 
 	* src/incremen.c (procdir): If --one-file-system is given and a
 	directory is found to be on another device, *and* this directory
-	is explicitely given in the command line, then do not omit it.
+	is explicitly given in the command line, then do not omit it.
 
 2005-12-11  Sergey Poznyakoff  <gray@gnu.org.ua>
 
@@ -1798,7 +1798,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	(mode_to_chars, off_to_chars, size_to_chars, time_to_chars)
 	(uid_to_chars, uintmax_to_chars): Return bool
 	(to_chars): Return bool
-	(start_header): Check return values of convertion routines. Fail
+	(start_header): Check return values of conversion routines. Fail
 	if unable to store data in the header.
 
 2005-12-07  Sergey Poznyakoff  <gray@gnu.org.ua>
@@ -2098,13 +2098,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	archives.
 	* src/incremen.c (dumpdir_size, get_gnu_dumpdir): New functions.
 	(purge_directory): Use stat_info.dumpdir instead of getting its
-	value explicitely.
+	value explicitly.
 	* src/list.c (list_archive): Handle incremental backups in pax
 	format.
 	(decode_header): Initialize stat_info.dumpdir
 	* src/sparse.c (sparse_diff_file): Bugfix: set seekable.
 	(pax_dump_header): Store sparse map in GNU.sparse.map. If this
-	variable has been explicitely deleted, use GNU.sparse.offset/
+	variable has been explicitly deleted, use GNU.sparse.offset/
 	GNU.sparse.numbytes variables.
 	* src/tar.c (decode_options): Incremental options are allowed with
 	--format=pax
@@ -2182,7 +2182,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	* bootstrap: Fix quoting in help output.
 	(update_po): Use backward-compatible wget option --cache instead
-	of deprecated -C to accomodate for wget 1.10.
+	of deprecated -C to accommodate for wget 1.10.
 	Changes proposed by Eric Blake
 	* THANKS: Add Eric Blake
 
@@ -2733,7 +2733,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	* src/list.c: Likewise
 
 	* tests/multiv03.at: Modified to match the new behavior
-	* tests/multiv04.at: New file. Test splittind directory members between
+	* tests/multiv04.at: New file. Test splitting directory members between
 	the archive volumes.
 	* tests/Makefile.am: Add multiv04.at
 	* tests/testsuite.at: Likewise.
@@ -4487,7 +4487,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 	* src/create.c: Do not zero-terminate name field if
 	the name is exactly 100 characters long.
-	(write_ustar_long_name): Fixed cheking for unsplittable
+	(write_ustar_long_name): Fixed checking for unsplittable
 	names.
 
 2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
@@ -5184,7 +5184,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	interface.
 	(child_open_for_compress): Do not increase size to BLOCKSIZE.
 	(open_archive): Open index file name.
-	Strip trailing slahes from file names.
+	Strip trailing slashes from file names.
 	(flush_write): Set size to 0 if not saving names.
 	(flush_write, flush_read): Use safer_name_suffix rather than
 	inline code.
@@ -6017,7 +6017,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	(decode_options): Dates that look like an absolute path name,
 	or that start with '.', are presumed to be file names whose
 	dates are taken.
-	Remove 'I' as an aliase for 'T'.
+	Remove 'I' as an alias for 'T'.
 	Update copyright.
 
 	* src/extract.c (<time.h>): Do not include; system.h now does this.
