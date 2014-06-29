@@ -288,7 +288,8 @@ normalize_filename (int cdidx, const char *name)
          this following approach may lead to situations where the same
          file or directory is processed twice under different absolute
          paths without that duplication being detected.  Perhaps we
-         should use dev+ino pairs instead of names?  */
+         should use dev+ino pairs instead of names?  (See listed03.at for
+         a related test case.) */
       const char *cdpath = tar_getcdpath (cdidx);
       size_t copylen;
       bool need_separator;
