@@ -141,21 +141,26 @@ static const char *checkpoint_total_format[] = {
   "D"
 };
 
-static int
+static long
 getwidth (FILE *fp)
 {
-  struct winsize ws;
+  char const *columns;
 
-  ws.ws_col = ws.ws_row = 0;
-  if ((ioctl (fileno (fp), TIOCGWINSZ, (char *) &ws) < 0) || ws.ws_col == 0)
+#ifdef TIOCGWINSZ
+  struct winsize ws;
+  if (ioctl (fileno (fp), TIOCGWINSZ, &ws) == 0 && 0 < ws.ws_col)
+    return ws.ws_col;
+#endif
+
+  columns = getenv ("COLUMNS");
+  if (columns)
     {
-      const char *col = getenv ("COLUMNS");
-      if (col)
-	return strtol (col, NULL, 10);
-      else
-	return 80;
+      long int col = strtol (columns, NULL, 10);
+      if (0 < col)
+	return col;
     }
-  return ws.ws_col;
+
+  return 80;
 }
 
 static char *
@@ -202,7 +207,7 @@ format_checkpoint_string (FILE *fp, size_t len,
   static char *argbuf = NULL;
   static size_t arglen = 0;
   char *arg = NULL;
-  
+
   if (!input)
     {
       if (do_write)
@@ -218,7 +223,7 @@ format_checkpoint_string (FILE *fp, size_t len,
 	 *not* "Leyendo un punto de comprobaci@'on" */
 	input = gettext ("Read checkpoint %u");
     }
-  
+
   for (ip = input; *ip; ip++)
     {
       if (*ip == '%')
@@ -240,7 +245,7 @@ format_checkpoint_string (FILE *fp, size_t len,
 	      len += format_checkpoint_string (fp, len, def_format, do_write,
 					       cpn);
 	      break;
-	      
+
 	    case 'u':
 	      fputs (cps, fp);
 	      len += strlen (cps);
@@ -254,13 +259,13 @@ format_checkpoint_string (FILE *fp, size_t len,
 	    case 'd':
 	      len += fprintf (fp, "%.0f", compute_duration ());
 	      break;
-	      
+
 	    case 'T':
 	      {
 		const char **fmt = checkpoint_total_format, *fmtbuf[3];
 		struct wordsplit ws;
 		compute_duration ();
-		
+
 		if (arg)
 		  {
 		    ws.ws_delim = ",";
@@ -296,15 +301,15 @@ format_checkpoint_string (FILE *fp, size_t len,
 		len += fprintftime (fp, fmt, tm, 0, tv.tv_usec * 1000);
 	      }
 	      break;
-	      
+
 	    case '*':
 	      {
-		int w = arg ? strtoul (arg, NULL, 10) : getwidth (fp);
+		long w = arg ? strtol (arg, NULL, 10) : getwidth (fp);
 		for (; w > len; len++)
 		  fputc (' ', fp);
 	      }
 	      break;
-	      
+
 	    default:
 	      fputc ('%', fp);
 	      fputc (*ip, fp);
@@ -393,7 +398,7 @@ void
 checkpoint_flush_actions (void)
 {
   struct checkpoint_action *p;
-  
+
   for (p = checkpoint_action; p; p = p->next)
     {
       switch (p->opcode)
@@ -401,7 +406,7 @@ checkpoint_flush_actions (void)
 	case cop_ttyout:
 	  if (tty && tty_cleanup)
 	    {
-	      int w = getwidth (tty);
+	      long w = getwidth (tty);
 	      while (w--)
 		fputc (' ', tty);
 	      fputc ('\r', tty);
