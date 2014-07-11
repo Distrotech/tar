@@ -31,6 +31,7 @@ error
 exclude
 extern-inline
 exitfail
+faccessat
 fchmodat
 fchownat
 fcntl-h

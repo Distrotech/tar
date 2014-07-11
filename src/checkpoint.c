@@ -21,6 +21,7 @@
 #include "common.h"
 #include "wordsplit.h"
 #include <sys/ioctl.h>
+#include <termios.h>
 #include "fprintftime.h"
 
 enum checkpoint_opcode
