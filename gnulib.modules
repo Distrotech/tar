@@ -50,7 +50,6 @@ getpagesize
 gettext
 gettime
 gitlog-to-changelog
-grantpt
 hash
 human
 inttostr

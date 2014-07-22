@@ -188,7 +188,7 @@ noecho (int fd)
   to.c_cc[VEOF] = C_EOT;
   if (tcsetattr (fd, TCSAFLUSH | TCSASOFT, &to))
     {
-      perror ("tcgetattr");
+      perror ("tcsetattr");
       exit (EX_ERR);
     }
 }
@@ -349,8 +349,9 @@ main (int argc, char **argv)
 	close (i);
 
       setsid ();
+#ifdef TIOCSCTTY
       ioctl (0, TIOCSCTTY, 1);
-      
+#endif      
       execvp (argv[0], argv);
       perror (argv[0]);
       _exit (EX_EXEC);

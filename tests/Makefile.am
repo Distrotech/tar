@@ -263,7 +263,11 @@ installcheck-local:
 ## genfile      ##
 ## ------------ ##
 
-check_PROGRAMS = genfile ttyemu
+check_PROGRAMS = genfile
+
+if TAR_COND_GRANTPT
+check_PROGRAMS += ttyemu
+endif
 
 genfile_SOURCES = genfile.c argcv.c argcv.h
 

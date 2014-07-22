@@ -204,7 +204,8 @@ fi
 
 TAR_HEADERS_ATTR_XATTR_H
 
-AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink])
+AC_CHECK_FUNCS_ONCE([fchmod fchown fsync lstat mkfifo readlink symlink grantpt])
+AM_CONDITIONAL([TAR_COND_GRANTPT], [test $ac_cv_func_grantpt = yes])
 
 AC_CHECK_DECLS([getgrgid],,, [#include <grp.h>])
 AC_CHECK_DECLS([getpwuid],,, [#include <pwd.h>])

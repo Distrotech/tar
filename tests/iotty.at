@@ -27,6 +27,7 @@ AT_SETUP([terminal input])
 AT_KEYWORDS([options iotty])
 
 AT_TAR_CHECK([
+test -x $abs_builddir/ttyemu || AT_SKIP_TEST
 TAPE=-
 export TAPE
 ttyemu -t5 -i/dev/null tar -x
