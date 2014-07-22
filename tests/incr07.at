@@ -38,23 +38,23 @@ AT_KEYWORDS([incremental extract incr07])
 #             http://lists.gnu.org/archive/html/bug-tar/2013-03/msg00044.html
 
 AT_TAR_CHECK([
-mkdir A
-echo 'a' > A/a
-echo 'a' > A/b
+mkdir dirA
+echo 'a' > dirA/a
+echo 'a' > dirA/b
 
 decho C0
-tar -g test.snar -vcf test.0.tar A
+tar -g test.snar -vcf test.0.tar dirA
 
-echo 'a' > A/c
+echo 'a' > dirA/c
 decho C1
-tar -g test.snar -vcf test.1.tar A
+tar -g test.snar -vcf test.1.tar dirA
 
-rm -f A/a
+rm -f dirA/a
 decho C2
-tar -g test.snar -vcf test.2.tar A
+tar -g test.snar -vcf test.2.tar dirA
 
 mkdir ext
-rm -rf A
+rm -rf dirA
 
 decho E0
 tar -g test.snar -vxf test.0.tar -C ext/
@@ -64,43 +64,43 @@ tar -g test.snar -vxf test.1.tar -C ext/
 decho E2
 tar -g test.snar -vxf test.2.tar -C ext/
 
-mkdir ext/A/B
-touch ext/A/B/file
+mkdir ext/dirA/dirB
+touch ext/dirA/dirB/file
 
 decho E3
 tar -g test.snar -vxf test.2.tar -C ext/
 
 echo FIN
-test -d A && echo >&2 "toplevel A exists"
+test -d dirA && echo >&2 "toplevel dirA exists"
 exit 0
 ],
 [0],
 [C0
-A/
-A/a
-A/b
+dirA/
+dirA/a
+dirA/b
 C1
-A/
-A/c
+dirA/
+dirA/c
 C2
-A/
+dirA/
 E0
-A/
-A/a
-A/b
+dirA/
+dirA/a
+dirA/b
 E1
-A/
-A/c
+dirA/
+dirA/c
 E2
-A/
-tar: Deleting 'A/a'
+dirA/
+tar: Deleting 'dirA/a'
 E3
-A/
-tar: Deleting 'A/B'
+dirA/
+tar: Deleting 'dirA/dirB'
 FIN
 ],
 [C0
-tar: A: Directory is new
+tar: dirA: Directory is new
 C1
 C2
 E0
