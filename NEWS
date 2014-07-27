@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2014-03-27
+GNU tar NEWS - User visible changes. 2014-07-27
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.27.90 (Git)
+version 1.28, 2014-07-28
 
 * New checkpoint action: totals
 
@@ -68,7 +68,7 @@ speed up archivation.
 
 This release includes official tar(1) and rmt(8) manpages.
 Distribution maintainers are kindly asked to use these instead of the
-home-made pages they provided so far.
+home-made pages they have been providing so far.
   
 
 version 1.27.1 - Sergey Poznyakoff, 2013-11-17
