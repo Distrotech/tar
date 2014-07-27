@@ -15,38 +15,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Description: ensure tar correctly respects -C option when deleting
-# files due to the --remove-files option.
+# Description: If tar 1.26 was called with the --remove-files option and told
+# to archive (and thus delete) two subdirectories where the second was
+# specified relative to the first, it would be unable to delete the
+# second directory (and its contents), since the relative path would no
+# longer be valid once the first directory was deleted.
 #
-# This case checks the use of an absolute -C option followed by a relative -C,
+# This case checks for successful deletion of all archived items
 # in --create/non-incremental mode.
 #
 
-AT_SETUP([remove-files with -C:abs,rel in -c/non-incr. mode])
+AT_SETUP([remove-files deleting two subdirs in -c/non-incr. mode])
 AT_KEYWORDS([create remove-files remfiles08 remfiles08a])
 
 AT_TAR_CHECK([
-AT_SORT_PREREQ
 mkdir foo
 mkdir bar
-echo file > file
-echo foo/file > foo/file
-echo bar/file > bar/file
-DIR=`pwd`
+echo foo/foo_file > foo/foo_file
+echo bar/bar_file > bar/bar_file
 decho A
-tar -cvf foo.tar --remove-files -C $DIR/foo file -C ../bar file
+tar -cvf foo.tar --remove-files -C foo . -C ../bar .
 decho B
-find . | sort
+find .
 ],
 [0],
 [A
-file
-file
+./
+./foo_file
+./
+./bar_file
 B
 .
-./bar
-./file
-./foo
 ./foo.tar
 ],
 [A

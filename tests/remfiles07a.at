@@ -18,11 +18,11 @@
 # Description: ensure tar correctly respects -C option when deleting
 # files due to the --remove-files option.
 #
-# This case checks the use of a relative -C option followed by an absolute -C,
+# This case checks the use of an absolute -C option followed by a relative -C,
 # in --create/non-incremental mode.
 #
 
-AT_SETUP([remove-files with -C:rel,abs in -c/non-incr. mode])
+AT_SETUP([remove-files with -C:abs,rel in -c/non-incr. mode])
 AT_KEYWORDS([create remove-files remfiles07 remfiles07a])
 
 AT_TAR_CHECK([
@@ -34,7 +34,7 @@ echo foo/file > foo/file
 echo bar/file > bar/file
 DIR=`pwd`
 decho A
-tar -cvf foo.tar --remove-files -C foo file -C $DIR/bar file
+tar -cvf foo.tar --remove-files -C $DIR/foo file -C ../bar file
 decho B
 find . | sort
 ],

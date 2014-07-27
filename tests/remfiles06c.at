@@ -37,7 +37,7 @@ tar -cf foo.tar -C foo file -C $DIR/bar file
 decho A
 find . | sort
 decho B
-tar -rvf foo.tar --remove-files -C foo file -C ../bar file
+tar -rvf foo.tar --remove-files -C foo file -C $DIR/bar file
 decho C
 find . | sort
 ],

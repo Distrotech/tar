@@ -18,11 +18,11 @@
 # Description: ensure tar correctly respects -C option when deleting
 # files due to the --remove-files option.
 #
-# This case checks the use of a relative -C option followed by an absolute -C,
+# This case checks the use of an absolute -C option followed by a relative -C,
 # in --append mode.
 #
 
-AT_SETUP([remove-files with -C:rel,abs in -r mode])
+AT_SETUP([remove-files with -C:abs,rel in -r mode])
 AT_KEYWORDS([create append remove-files remfiles07 remfiles07c])
 
 AT_TAR_CHECK([
@@ -33,11 +33,11 @@ echo file > file
 echo foo/file > foo/file
 echo bar/file > bar/file
 DIR=`pwd`
-tar -cf foo.tar -C foo file -C $DIR/bar file
+tar -cf foo.tar -C $DIR/foo file -C ../bar file
 decho A
 find . | sort
 decho B
-tar -rvf foo.tar --remove-files -C foo file -C $DIR/bar file
+tar -rvf foo.tar --remove-files -C $DIR/foo file -C ../bar file
 decho C
 find . | sort
 ],
