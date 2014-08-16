@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "February 22, 2014" "TAR" "GNU TAR Manual"
+.TH TAR 1 "August 16, 2014" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -346,6 +346,9 @@ Recursively remove all files in the directory prior to extracting it.
 .TP
 \fB\-\-remove\-files\fR
 Remove files from disk after adding them to the archive.
+.TP
+\fB\-\-skip\-old\-files
+Don't replace existing files when extracting, silently skip over them.
 .TP
 \fB\-U\fR, \fB\-\-unlink\-first\fR
 Remove each file prior to extracting over it.
@@ -1020,6 +1023,9 @@ Keywords applicable for \fBtar --create\fR:
 "%s: file changed as we read it"
 .HP
 Keywords applicable for \fBtar --extract\fR:
+.TP
+.B existing\-file
+"%s: skipping existing file"
 .TP
 .B timestamp
 "%s: implausibly old time stamp %s"

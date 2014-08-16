@@ -4316,6 +4316,10 @@ Disable all warning messages.
 
 @subheading Keywords applicable for @command{tar --extract}
 @table @asis
+@kwindex existing-file
+@cindex @samp{%s: skipping existing file}, warning message
+@item existing-file
+@samp{%s: skipping existing file}
 @kwindex timestamp
 @cindex @samp{implausibly old time stamp %s}, warning message
 @cindex @samp{time stamp %s is %s s in the future}, warning message
