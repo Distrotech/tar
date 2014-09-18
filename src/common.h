@@ -725,7 +725,7 @@ int uname_to_uid (char const *uname, uid_t *puid);
 void name_init (void);
 void name_add_name (const char *name, int matching_flags);
 void name_add_dir (const char *name);
-void name_add_file (const char *name, int term);
+void name_add_file (const char *name, int term, int matching_flags);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);

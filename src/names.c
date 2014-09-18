@@ -258,6 +258,21 @@ name_elt_alloc (void)
   return elt;
 }
 
+static struct name_elt *
+name_elt_alloc_matflags (int matflags)
+{
+  static int prev_flags = 0; /* FIXME: Or EXCLUDE_ANCHORED? */
+  struct name_elt *ep = name_elt_alloc ();
+  if (prev_flags != matflags)
+    {
+      ep->type = NELT_FMASK;
+      ep->v.matching_flags = matflags;
+      prev_flags = matflags;
+      ep = name_elt_alloc ();
+    }
+  return ep;
+}
+
 static void
 name_list_adjust (void)
 {
@@ -276,20 +291,13 @@ name_list_advance (void)
   free (elt);
 }
 
-/* Add to name_array the file NAME with fnmatch options MATCHING_FLAGS */
-void
-name_add_name (const char *name, int matching_flags)
-{
-  static int prev_flags = 0; /* FIXME: Or EXCLUDE_ANCHORED? */
-  struct name_elt *ep = name_elt_alloc ();
 
-  if (prev_flags != matching_flags)
-    {
-      ep->type = NELT_FMASK;
-      ep->v.matching_flags = matching_flags;
-      prev_flags = matching_flags;
-      ep = name_elt_alloc ();
-    }
+/* Add to name_array the file NAME with fnmatch options MATFLAGS */
+void
+name_add_name (const char *name, int matflags)
+{
+  struct name_elt *ep = name_elt_alloc_matflags (matflags);
+
   ep->type = NELT_NAME;
   ep->v.name = name;
   name_count++;
@@ -305,9 +313,10 @@ name_add_dir (const char *name)
 }
 
 void
-name_add_file (const char *name, int term)
+name_add_file (const char *name, int term, int matflags)
 {
-  struct name_elt *ep = name_elt_alloc ();
+  struct name_elt *ep = name_elt_alloc_matflags (matflags);
+
   ep->type = NELT_FILE;
   ep->v.file.name = name;
   ep->v.file.term = term;
@@ -389,6 +398,15 @@ add_file_id (const char *filename)
   file_id_list = p;
   return 0;
 }
+
+/* Chop trailing slashes.  */
+static void
+chopslash (char *str)
+{
+  char *p = str + strlen (str) - 1;
+  while (p > str && ISSLASH (*p))
+    *p-- = '\0';
+}
 
 enum read_file_list_state  /* Result of reading file name from the list file */
   {
@@ -428,7 +446,7 @@ read_name_from_file (struct name_elt *ent)
   if (counter == name_buffer_length)
     name_buffer = x2realloc (name_buffer, &name_buffer_length);
   name_buffer[counter] = 0;
-
+  chopslash (name_buffer);
   return (counter == 0 && c == EOF) ? file_list_end : file_list_success;
 }
 
@@ -518,7 +536,6 @@ copy_name (struct name_elt *ep)
 {
   const char *source;
   size_t source_len;
-  char *cursor;
 
   source = ep->v.name;
   source_len = strlen (source);
@@ -536,11 +553,7 @@ copy_name (struct name_elt *ep)
       name_buffer = xmalloc(name_buffer_length + 2);
     }
   strcpy (name_buffer, source);
-
-  /* Zap trailing slashes.  */
-  cursor = name_buffer + strlen (name_buffer) - 1;
-  while (cursor > name_buffer && ISSLASH (*cursor))
-    *cursor-- = '\0';
+  chopslash (name_buffer);
 }
 
 
@@ -553,7 +566,8 @@ static int matching_flags; /* exclude_fnmatch options */
    the request to change to the given directory.
 
    Entries of type NELT_FMASK cause updates of the matching_flags
-   value. */
+   value.
+*/
 static struct name_elt *
 name_next_elt (int change_dirs)
 {

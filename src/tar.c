@@ -1641,7 +1641,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'T':
-      name_add_file (arg, filename_terminator);
+      name_add_file (arg, filename_terminator, MAKE_INCL_OPTIONS (args));
       /* Indicate we've been given -T option. This is for backward
 	 compatibility only, so that `tar cfT archive /dev/null will
 	 succeed */

@@ -43,6 +43,8 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 TESTSUITE_AT = \
  T-cd.at\
+ T-dir00.at\
+ T-dir01.at\
  T-empty.at\
  T-null.at\
  T-rec.at\
