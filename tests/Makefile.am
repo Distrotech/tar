@@ -200,6 +200,7 @@ TESTSUITE_AT = \
  sparse02.at\
  sparse03.at\
  sparse04.at\
+ sparse05.at\
  sparsemv.at\
  sparsemvp.at\
  spmvp00.at\
