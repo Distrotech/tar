@@ -813,11 +813,11 @@ xheader_store (char const *keyword, struct tar_stat_info *st,
   t = locate_handler (keyword);
   if (!t || !t->coder)
     return;
-  if (xheader_keyword_deleted_p (keyword)
-      || xheader_keyword_override_p (keyword))
+  if (xheader_keyword_deleted_p (keyword))
     return;
   xheader_init (&st->xhdr);
-  t->coder (st, keyword, &st->xhdr, data);
+  if (!xheader_keyword_override_p (keyword))
+    t->coder (st, keyword, &st->xhdr, data);
 }
 
 void

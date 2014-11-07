@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2014-07-27
+GNU tar NEWS - User visible changes. 2014-11-07
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -369,7 +369,7 @@ Modification times in ustar header blocks of extended headers
 are set to mtimes of the corresponding archive members.  This
 can be overridden by the
 
-  --pax-opion='exthdr.mtime=STRING'
+  --pax-option='exthdr.mtime=STRING'
 
 command line option.  The STRING is either number of seconds since
 the Epoch or a "Time reference" (see below).
@@ -379,7 +379,7 @@ headers are set to the time when tar was invoked.
 
 This can be overridden by the
 
-  --pax-opion='globexthdr.mtime=STRING'
+  --pax-option='globexthdr.mtime=STRING'
 
 command line option.  The STRING is either number of seconds since
 the Epoch or a "Time reference" (see below).

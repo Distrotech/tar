@@ -706,7 +706,7 @@ write_extended (bool global, struct tar_stat_info *st, union block *old_header)
     {
       type = XHDTYPE;
       p = xheader_xhdr_name (st);
-      t = st->stat.st_mtime;
+      t = set_mtime_option ? mtime_option.tv_sec : st->stat.st_mtime;
     }
   xheader_write (type, p, t, &st->xhdr);
   free (p);

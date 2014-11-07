@@ -9930,7 +9930,8 @@ will use the following default value:
 This keyword defines the value of the @samp{mtime} field that
 is written into the ustar header blocks for the extended headers.
 By default, the @samp{mtime} field is set to the modification time
-of the archive member described by that extended headers.
+of the archive member described by that extended header (or to the
+value of the @option{--mtime} option, if supplied).
 
 @item globexthdr.name=@var{string}
 This keyword allows user control over the name that is written into
@@ -10021,6 +10022,22 @@ same contents:
 
 @smallexample
 --pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0
+@end smallexample
+
+@noindent
+If you extract files from such an archive and recreate the archive
+from them, you will also need to eliminate changes due to ctime, as
+shown in examples below:
+
+@smallexample
+--pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0,ctime:=0
+@end smallexample
+
+@noindent
+or
+
+@smallexample
+--pax-option=exthdr.name=%d/PaxHeaders/%f,atime:=0,delete=ctime
 @end smallexample
 
 @node Checksumming
