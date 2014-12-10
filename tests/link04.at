@@ -39,6 +39,10 @@ tar tvf archive | sed '
   s,.*[[0-9]] dir/,dir/,
 ' | sort
 
+echo --
+
+tar cfl archive dir dir
+
 echo ==
 
 tar chf archive dir
@@ -55,6 +59,7 @@ dir/file
 dir/file link to dir/file
 dir/symlink -> file
 dir/symlink link to dir/symlink
+--
 ==
 dir/
 dir/FOO

@@ -1472,8 +1472,8 @@ dump_hard_link (struct tar_stat_info *st)
 	  /* We found a link.  */
 	  char const *link_name = safer_name_suffix (duplicate->name, true,
 	                                             absolute_names_option);
-
-	  duplicate->nlink--;
+	  if (duplicate->nlink)
+	    duplicate->nlink--;
 
 	  block_ordinal = current_block_ordinal ();
 	  assign_string (&st->link_name, link_name);
