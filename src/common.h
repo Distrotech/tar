@@ -748,10 +748,12 @@ bool is_avoided_name (char const *name);
 
 bool contains_dot_dot (char const *name);
 
-#define ISFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
-                    (c)->found_count == occurrence_option)
-#define WASFOUND(c) ((occurrence_option == 0) ? (c)->found_count : \
-                     (c)->found_count >= occurrence_option)
+#define ISFOUND(c) (occurrence_option == 0			\
+		    ? (c)->found_count != 0			\
+		    : (c)->found_count == occurrence_option)
+#define WASFOUND(c) (occurrence_option == 0			\
+		     ? (c)->found_count != 0			\
+		     : (c)->found_count >= occurrence_option)
 
 /* Module tar.c.  */
 
