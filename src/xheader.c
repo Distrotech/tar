@@ -1027,7 +1027,7 @@ xheader_string_end (struct xheader *xhdr, char const *keyword)
     }
   x_obstack_blank (xhdr, p);
   x_obstack_1grow (xhdr, '\n');
-  cp = obstack_next_free (xhdr->stk) - xhdr->string_length - p - 1;
+  cp = (char*) obstack_next_free (xhdr->stk) - xhdr->string_length - p - 1;
   memmove (cp + p, cp, xhdr->string_length);
   cp = stpcpy (cp, np);
   *cp++ = ' ';
