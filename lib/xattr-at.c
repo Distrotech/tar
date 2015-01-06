@@ -31,6 +31,8 @@
 
 #include "openat-priv.h"
 
+#ifdef HAVE_XATTRS
+
 /* setxattrat */
 #define AT_FUNC_NAME setxattrat
 #define AT_FUNC_F1 setxattr
@@ -108,3 +110,5 @@
 #undef AT_FUNC_RESULT
 #undef AT_FUNC_POST_FILE_PARAM_DECLS
 #undef AT_FUNC_POST_FILE_ARGS
+
+#endif /* HAVE_XATTRS */
