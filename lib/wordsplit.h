@@ -22,6 +22,12 @@
 
 #include <stddef.h>
 
+#if 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+# define __WORDSPLIT_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
+#else
+# define __WORDSPLIT_ATTRIBUTE_FORMAT(spec) /* empty */
+#endif
+
 struct wordsplit
 {
   size_t ws_wordc;
@@ -34,9 +40,9 @@ struct wordsplit
   const char *ws_escape;
   void (*ws_alloc_die) (struct wordsplit * wsp);
   void (*ws_error) (const char *, ...)
-                   __attribute__ ((__format__ (__printf__, 1, 2)));
+    __WORDSPLIT_ATTRIBUTE_FORMAT ((__printf__, 1, 2));
   void (*ws_debug) (const char *, ...)
-                   __attribute__ ((__format__ (__printf__, 1, 2)));
+    __WORDSPLIT_ATTRIBUTE_FORMAT ((__printf__, 1, 2));
 
   const char **ws_env;
   const char *(*ws_getvar) (const char *, size_t, void *);

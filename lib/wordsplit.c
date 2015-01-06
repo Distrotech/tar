@@ -61,7 +61,7 @@ _wsplt_alloc_die (struct wordsplit *wsp)
   abort ();
 }
 
-static void __attribute__ ((__format__ (__printf__, 1, 2)))
+static void __WORDSPLIT_ATTRIBUTE_FORMAT ((__printf__, 1, 2))
 _wsplt_error (const char *fmt, ...)
 {
   va_list ap;
