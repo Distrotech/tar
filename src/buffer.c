@@ -391,7 +391,10 @@ check_compressed_archive (bool *pshort)
   /* Restore global values */
   read_full_records = sfr;
 
-  if (tar_checksum (record_start, true) == HEADER_SUCCESS)
+  if ((strcmp (record_start->header.magic, TMAGIC) == 0 ||
+       strcmp (record_start->buffer + offsetof (struct posix_header, magic),
+	       OLDGNU_MAGIC) == 0) &&
+      tar_checksum (record_start, true) == HEADER_SUCCESS)
     /* Probably a valid header */
     return ct_tar;
 
