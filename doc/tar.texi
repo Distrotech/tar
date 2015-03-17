@@ -974,7 +974,7 @@ archive), numeric @acronym{ID} values are printed instead.
 
 @item File name.
 If the name contains any special characters (white space, newlines,
-etc.) these are displayed in an unambiguous form using so called
+etc.)@: these are displayed in an unambiguous form using so called
 @dfn{quoting style}.  For the detailed discussion of available styles
 and on how to use them, see @ref{quoting styles}.
 
@@ -3115,7 +3115,7 @@ Tells @command{tar} to create a new directory beneath the extraction directory
 tarbombs.  In the absence of @var{dir} argument, the name of the new directory
 will be equal to the base name of the archive (file name minus the
 archive suffix, if recognized).  Any member names that do not begin
-with that directory name (after 
+with that directory name (after
 transformations from @option{--transform} and
 @option{--strip-components}) will be prefixed with it.  Recognized
 file name suffixes are @samp{.tar}, and any compression suffixes
@@ -5685,7 +5685,7 @@ contain command line arguments (see @ref{external, Running External Commands},
 for more detail).
 
 Notice, that @var{command} is executed once for each regular file
-extracted. Non-regular files (directories, etc.) are ignored when this
+extracted.  Non-regular files (directories, etc.)@: are ignored when this
 option is used.
 @end table
 
@@ -7413,7 +7413,7 @@ However, empty lines are OK.
 @cindex Git, ignore files
 @cindex Bazaar, ignore files
 @cindex Mercurial, ignore files
-When archiving directories that are under some version control system (VCS), 
+When archiving directories that are under some version control system (VCS),
 it is often convenient to read exclusion patterns from this VCS'
 ignore files (e.g. @file{.cvsignore}, @file{.gitignore}, etc.)  The
 following options provide such possibilty:
@@ -8970,7 +8970,7 @@ recent, so not all tar implementations are able to handle it properly.
 However, this format is designed in such a way that any tar
 implementation able to read @samp{ustar} archives will be able to read
 most @samp{posix} archives as well, with the only exception that any
-additional information (such as long file names etc.) will in such
+additional information (such as long file names etc.)@: will in such
 case be extracted as plain text files along with the files it refers to.
 
 This archive format will be the default format for future versions
@@ -9179,18 +9179,11 @@ The output produced by @command{tar --help} shows the actual
 compressor names along with each of these options.
 
 You can use any of these options on physical devices (tape drives,
-etc.) and remote files as well as on normal files; data to or from
+etc.)@: and remote files as well as on normal files; data to or from
 such devices or remote files is reblocked by another copy of the
 @command{tar} program to enforce the specified (or default) record
-size.  The default compression parameters are used.  Most compression
-programs let you override these by setting a program-specific
-environment variable.  For example, with @command{gzip} you can set
-@env{GZIP}:
-
-@smallexample
-$ @kbd{GZIP='-9 -n' tar czf archive.tar.gz subdir}
-@end smallexample
-Another way would be to use the @option{-I} option instead (see
+size.  The default compression parameters are used.
+You can override them by using the @option{-I} option (see
 below), e.g.:
 
 @smallexample
@@ -9198,7 +9191,7 @@ $ @kbd{tar -cf archive.tar.gz -I 'gzip -9 -n' subdir}
 @end smallexample
 
 @noindent
-Finally, the third, traditional, way to do this is to use a pipe:
+A more traditional way to do this is to use a pipe:
 
 @smallexample
 $ @kbd{tar cf - subdir | gzip -9 -n > archive.tar.gz}
@@ -9246,12 +9239,13 @@ suffix.  The following suffixes are recognized:
 @item --use-compress-program=@var{command}
 @itemx -I=@var{command}
 Use external compression program @var{command}.  Use this option if you
+want to specify options for the compression program, or if you
 are not happy with the compression program associated with the suffix
-at compile time or if you have a compression program that @GNUTAR{}
+at compile time, or if you have a compression program that @GNUTAR{}
 does not support.  The @var{command} argument is a valid command
 invocation, as you would type it at the command line prompt, with any
 additional options as needed.  Enclose it in quotes if it contains
-white space (see @ref{external, Running External Commands}, for more detail).
+white space (@pxref{external, Running External Commands}).
 
 The @var{command} should follow two conventions:
 
@@ -10780,7 +10774,7 @@ installed by default.
 @cindex absolute file names
 Unless you use the @option{--absolute-names} (@option{-P}) option,
 @GNUTAR{} will not allow you to create an archive that contains
-absolute file names (a file name beginning with @samp{/}.) If you try,
+absolute file names (a file name beginning with @samp{/}).  If you try,
 @command{tar} will automatically remove the leading @samp{/} from the
 file names it stores in the archive.  It will also type a warning
 message telling you what it is doing.
