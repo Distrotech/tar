@@ -26,7 +26,7 @@ dist-hook:
 	$(MAKE) changelog_dir=$(distdir) ChangeLog
 	-rm -f $(distdir).cpio
 	find $(distdir) | cpio -Hcrc -o | \
-          GZIP=$(GZIP_ENV) gzip -c > $(distdir).cpio.gz
+          eval GZIP= gzip $(GZIP_ENV) -c > $(distdir).cpio.gz
 
 distclean-local:
 	-rm -f $(distdir).cpio.gz
