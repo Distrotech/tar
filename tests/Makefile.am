@@ -258,7 +258,7 @@ check-full:
 #check_SCRIPTS = tar
 
 # Run the test suite on the *installed* tree.
-installcheck-local:
+installcheck-local: $(check_PROGRAMS)
 	$(SHELL) $(TESTSUITE) $(TESTSUITEFLAGS) AUTOTEST_PATH=$(exec_prefix)/bin
 
 
