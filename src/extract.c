@@ -537,6 +537,38 @@ repair_delayed_set_stat (char const *dir,
 	  quotearg_colon (dir)));
 }
 
+static void
+free_delayed_set_stat (struct delayed_set_stat *data)
+{
+  xheader_xattr_free (data->xattr_map, data->xattr_map_size);
+  free (data->cntx_name);
+  free (data->acls_a_ptr);
+  free (data->acls_d_ptr);
+  free (data);
+}
+
+void
+remove_delayed_set_stat (const char *fname)
+{
+  struct delayed_set_stat *data, *next, *prev = NULL;
+  for (data = delayed_set_stat_head; data; data = next)
+    {
+      next = data->next;
+      if (chdir_current == data->change_dir
+	  && strcmp (data->file_name, fname) == 0)
+	{
+	  free_delayed_set_stat (data);
+	  if (prev)
+	    prev->next = next;
+	  else
+	    delayed_set_stat_head = next;
+	  return;
+	}
+      else
+	prev = data;
+    }
+}
+
 /* After a file/link/directory creation has failed, see if
    it's because some required directory was not present, and if so,
    create all required directories.  Return zero if all the required
@@ -846,11 +878,7 @@ apply_nonancestor_delayed_set_stat (char const *file_name, bool after_links)
 	}
 
       delayed_set_stat_head = data->next;
-      xheader_xattr_free (data->xattr_map, data->xattr_map_size);
-      free (data->cntx_name);
-      free (data->acls_a_ptr);
-      free (data->acls_d_ptr);
-      free (data);
+      free_delayed_set_stat (data);
     }
 }
 

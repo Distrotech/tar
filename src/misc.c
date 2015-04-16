@@ -586,7 +586,12 @@ safer_rmdir (const char *file_name)
       return -1;
     }
 
-  return unlinkat (chdir_fd, file_name, AT_REMOVEDIR);
+  if (unlinkat (chdir_fd, file_name, AT_REMOVEDIR) == 0)
+    {
+      remove_delayed_set_stat (file_name);
+      return 0;
+    }
+  return -1;
 }
 
 /* Remove FILE_NAME, returning 1 on success.  If FILE_NAME is a directory,

@@ -523,6 +523,8 @@ void extract_archive (void);
 void extract_finish (void);
 bool rename_directory (char *src, char *dst);
 
+void remove_delayed_set_stat (const char *fname);
+
 /* Module delete.c.  */
 
 void delete_archive_members (void);
