@@ -270,11 +270,12 @@ diff_link (void)
 static void
 diff_symlink (void)
 {
+  char buf[1024];
   size_t len = strlen (current_stat_info.link_name);
-  char *linkbuf = alloca (len + 1);
+  char *linkbuf = len < sizeof buf ? buf : xmalloc (len + 1);
 
-  int status = readlinkat (chdir_fd, current_stat_info.file_name,
-			   linkbuf, len + 1);
+  ssize_t status = readlinkat (chdir_fd, current_stat_info.file_name,
+			       linkbuf, len + 1);
 
   if (status < 0)
     {
@@ -285,8 +286,11 @@ diff_symlink (void)
       report_difference (&current_stat_info, NULL);
     }
   else if (status != len
-	   || strncmp (current_stat_info.link_name, linkbuf, len) != 0)
+	   || memcmp (current_stat_info.link_name, linkbuf, len) != 0)
     report_difference (&current_stat_info, _("Symlink differs"));
+
+  if (linkbuf != buf)
+    free (linkbuf);
 }
 #endif
 
