@@ -22,6 +22,7 @@
 
 #include <system.h>
 
+#include <areadlink.h>
 #include <quotearg.h>
 
 #include "common.h"
@@ -1114,7 +1115,7 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
     return;
 
   info_attach_exclist (st);
-  
+
   if (incremental_option && archive_format != POSIX_FORMAT)
     blk->header.typeflag = GNUTYPE_DUMPDIR;
   else /* if (standard_option) */
@@ -1198,7 +1199,7 @@ dump_dir0 (struct tar_stat_info *st, char const *directory)
 	    char const *entry;
 	    size_t entry_len;
 	    size_t name_len;
-	    
+
 	    name_buf = xstrdup (st->orig_file_name);
 	    name_size = name_len = strlen (name_buf);
 
@@ -1837,22 +1838,17 @@ dump_file0 (struct tar_stat_info *st, char const *name, char const *p)
 #ifdef HAVE_READLINK
   else if (S_ISLNK (st->stat.st_mode))
     {
-      char *buffer;
-      int size;
-      size_t linklen = st->stat.st_size;
-      if (linklen != st->stat.st_size || linklen + 1 == 0)
-	xalloc_die ();
-      buffer = (char *) alloca (linklen + 1);
-      size = readlinkat (parentfd, name, buffer, linklen + 1);
-      if (size < 0)
+      st->link_name = areadlinkat_with_size (parentfd, name, st->stat.st_size);
+      if (!st->link_name)
 	{
+	  if (errno == ENOMEM)
+	    xalloc_die ();
 	  file_removed_diag (p, top_level, readlink_diag);
 	  return;
 	}
-      buffer[size] = '\0';
-      assign_string (&st->link_name, buffer);
       transform_name (&st->link_name, XFORM_SYMLINK);
-      if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT) < size)
+      if (NAME_FIELD_SIZE - (archive_format == OLDGNU_FORMAT)
+	  < strlen (st->link_name))
 	write_long_link (st);
 
       xattrs_selinux_get (parentfd, name, st, 0);
