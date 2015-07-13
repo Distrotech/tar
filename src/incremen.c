@@ -735,7 +735,7 @@ scan_directory (struct tar_stat_info *st)
     savedir_error (dir);
 
   info_attach_exclist (st);
-  
+
   tmp = xstrdup (dir);
   zap_slashes (tmp);
 
@@ -1155,11 +1155,14 @@ read_num (FILE *fp, char const *fieldname,
     }
 
   if (c)
-    FATAL_ERROR ((0, 0,
-		  _("%s: byte %s: %s %s followed by invalid byte 0x%02x"),
-		  quotearg_colon (listed_incremental_option),
-		  offtostr (ftello (fp), offbuf),
-		  fieldname, buf, c));
+    {
+      unsigned uc = c;
+      FATAL_ERROR ((0, 0,
+		    _("%s: byte %s: %s %s followed by invalid byte 0x%02x"),
+		    quotearg_colon (listed_incremental_option),
+		    offtostr (ftello (fp), offbuf),
+		    fieldname, buf, uc));
+    }
 
   *pval = strtosysint (buf, NULL, min_val, max_val);
   conversion_errno = errno;
@@ -1541,9 +1544,10 @@ dumpdir_ok (char *dumpdir)
     {
       if (expect && *p != expect)
 	{
+	  unsigned char uc = *p;
 	  ERROR ((0, 0,
 		  _("Malformed dumpdir: expected '%c' but found %#3o"),
-		  expect, *p));
+		  expect, uc));
 	  return false;
 	}
       switch (*p)

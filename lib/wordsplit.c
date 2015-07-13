@@ -221,7 +221,7 @@ struct wordsplit_node
 {
   struct wordsplit_node *prev;	/* Previous element */
   struct wordsplit_node *next;	/* Next element */
-  int flags;			/* Node flags */
+  unsigned flags;		/* Node flags */
   union
   {
     struct
