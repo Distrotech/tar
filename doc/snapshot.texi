@@ -116,7 +116,7 @@ epoch.  These are followed by arbitrary number of directory records.
 particular directory.  Parts of a directory record are delimited with
 @acronym{ASCII} 0 characters.  The following table describes each
 part.  The @dfn{Number} type in this table stands for a decimal integer
-in @acronym{ASCII} notation.  (Negative values are preceeded with a "-"
+in @acronym{ASCII} notation.  (Negative values are preceded with a "-"
 character, while positive values have no leading punctuation.)
 
 @multitable @columnfractions 0.25 0.15 0.6

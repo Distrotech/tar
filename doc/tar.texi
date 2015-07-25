@@ -7416,7 +7416,7 @@ However, empty lines are OK.
 When archiving directories that are under some version control system (VCS),
 it is often convenient to read exclusion patterns from this VCS'
 ignore files (e.g. @file{.cvsignore}, @file{.gitignore}, etc.)  The
-following options provide such possibilty:
+following options provide such possibility:
 
 @table @option
 @anchor{exclude-vcs-ignores}
@@ -8358,7 +8358,7 @@ Apply transformation to hard link targets.
 Do not apply transformation to hard link targets.
 @end table
 
-Default is @samp{rsh}, which means to apply tranformations to both archive
+Default is @samp{rsh}, which means to apply transformations to both archive
 members and targets of symbolic and hard links.
 
 Default scope flags can also be changed using @samp{flags=} statement
@@ -9473,7 +9473,7 @@ Using @option{--sparse-format} option implies @option{--sparse}.
 
 @node Attributes
 @section Handling File Attributes
-@cindex atrributes, files
+@cindex attributes, files
 @cindex file attributes
 
 When @command{tar} reads files, it updates their access times.  To
@@ -9744,7 +9744,7 @@ Although creating special records for hard links helps keep a faithful
 record of the file system contents and makes archives more compact, it
 may present some difficulties when extracting individual members from
 the archive.  For example, trying to extract file @file{one} from the
-archive created in previous examples produces, in the absense of file
+archive created in previous examples produces, in the absence of file
 @file{jeden}:
 
 @smallexample
@@ -10132,7 +10132,7 @@ describe the required procedures in detail.
 @node Split Recovery
 @subsubsection Extracting Members Split Between Volumes
 
-@cindex Mutli-volume archives, extracting using non-GNU tars
+@cindex Multi-volume archives, extracting using non-GNU tars
 If a member is split between several volumes of an old GNU format archive
 most third party @command{tar} implementation will fail to extract
 it.  To extract it, use @command{tarcat} program (@pxref{Tarcat}).
@@ -10147,7 +10147,7 @@ extract them using a third-party @command{tar}:
 $ @kbd{tarcat vol-1.tar vol-2.tar vol-3.tar | tar xf -}
 @end smallexample
 
-@cindex Mutli-volume archives in PAX format, extracting using non-GNU tars
+@cindex Multi-volume archives in PAX format, extracting using non-GNU tars
 You could use this approach for most (although not all) PAX
 format archives as well.  However, extracting split members from a PAX
 archive is a much easier task, because PAX volumes are constructed in
@@ -10161,7 +10161,7 @@ original name, and all subsequent parts are named using the pattern:
 @end smallexample
 
 @noindent
-where symbols preceeded by @samp{%} are @dfn{macro characters} that
+where symbols preceded by @samp{%} are @dfn{macro characters} that
 have the following meaning:
 
 @multitable @columnfractions .25 .55
@@ -10320,7 +10320,7 @@ $ @kbd{xsparse /home/gray/GNUSparseFile.6058/sparsefile}
 
 @noindent
 The program behaves the same way all UNIX utilities do: it will keep
-quiet unless it has simething important to tell you (e.g. an error
+quiet unless it has something important to tell you (e.g. an error
 condition or something).  If you wish it to produce verbose output,
 similar to that from the dry run mode, use @option{-v} option:
 
