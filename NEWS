@@ -1,5 +1,34 @@
-GNU tar NEWS - User visible changes. 2014-11-07
+GNU tar NEWS - User visible changes. 2015-08-03
 Please send GNU tar bug reports to <bug-tar@gnu.org>
+
+
+version 1.28.90 (Git)
+
+* New options: --verbatim-files-from, --no-verbatim-files-from
+
+The --verbatim-files-from option instructs tar to treat each line read
+from a file list as a file name, even if it starts with a dash.
+
+File lists are supplied with the --files-from (-T) option.  By
+default, each line read from a file list is first stripped off the
+leading and trailing whitespace and, if the result begins with a dash,
+it is treated as tar command line option.
+
+Use the --verbatim-files-from option to disable this special handling.
+This facilitates the use of tar with file lists created automatically
+(e.g. by file(1) command).
+
+This option affects all --files-from options that occur after it in
+the command line.  Its effect is reverted by the
+--no-verbatim-files-from option.
+
+* --null option reads file names verbatim
+
+The --null option implies --verbatim-files-from.  I.e. each line 
+read from null-delimited file lists is treated as a file name.
+
+This restores the documented behavior, which was broken in version
+1.27.
 
 
 version 1.28, 2014-07-28
@@ -1505,7 +1534,7 @@ Versions 1.07 back to 1.00 by Jay Fenlason.
 
 
 
-Copyright 1994-2001, 2003-2010, 2013-2014 Free Software Foundation, Inc.
+Copyright 1994-2001, 2003-2010, 2013-2015 Free Software Foundation, Inc.
 
 This file is part of GNU tar.
 

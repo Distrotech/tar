@@ -3041,6 +3041,21 @@ mechanism.
 Treat all input file or member names literally, do not interpret
 escape sequences.  @xref{input name quoting}.
 
+@opsummary{no-verbatim-files-from}
+@item --no-verbatim-files-from
+
+Instructs @GNUTAR{} to treat each line read from a file list as if it
+were supplied in the command line.  I.e., leading and trailing
+whitespace is removed and, if the result begins with a dash, it is
+treated as a @GNUTAR{} command line option.
+
+This is default behavior.  This option is provided as a way to restore
+it after @option{--verbatim-files-from} option.
+
+It is implied by the @option{--no-null} option.
+
+@xref{no-verbatim-files-from}.
+
 @opsummary{no-wildcards}
 @item --no-wildcards
 Do not use wildcards.
@@ -3055,9 +3070,15 @@ Wildcards do not match @samp{/}.
 @item --null
 
 When @command{tar} is using the @option{--files-from} option, this option
-instructs @command{tar} to expect file names terminated with @acronym{NUL}, so
-@command{tar} can correctly work with file names that contain newlines.
+instructs @command{tar} to expect file names terminated with
+@acronym{NUL}, and to process file names verbatim.  
+
+This means that @command{tar} correctly works with file names that
+contain newlines or begin with a dash.
+
 @xref{nul}.
+
+See also @ref{verbatim-files-from}.
 
 @opsummary{numeric-owner}
 @item --numeric-owner
@@ -3504,6 +3525,29 @@ presumed to be a compression program of some sort.  @xref{gzip}.
 Display file modification dates in @acronym{UTC}.  This option implies
 @option{--verbose}.
 
+@opsummary{verbatim-files-from}
+@item --verbatim-files-from
+
+Instructs @GNUTAR{} to treat each line read from a file list as a file
+name, even if it starts with a dash.
+
+File lists are supplied with the @option{--files-from} (@option{-T})
+option.  By default, each line read from a file list is first trimmed
+off the leading and trailing whitespace and, if the result begins with
+a dash, it is treated as a @GNUTAR{} command line option.
+
+Use the @option{--verbatim-files-from} option to disable this special
+handling.  This facilitates the use of @command{tar} with file lists
+created by @command{file} command.
+
+This option affects all @option{--files-from} options that occur after
+it in the command line.  Its effect is reverted by the
+@option{--no-verbatim-files-from} option.
+
+This option is implied by the @option{--null} option.
+
+@xref{verbatim-files-from}.
+
 @opsummary{verbose}
 @item --verbose
 @itemx -v
@@ -3670,7 +3714,7 @@ successfully.  For example, @w{@samp{tar --version}} might print:
 
 @smallexample
 tar (GNU tar) @value{VERSION}
-Copyright (C) 2013-2014 Free Software Foundation, Inc.
+Copyright (C) 2013-2015 Free Software Foundation, Inc.
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
@@ -7217,7 +7261,7 @@ If you give a single dash as a file name for @option{--files-from}, (i.e.,
 you specify either @code{--files-from=-} or @code{-T -}), then the file
 names are read from standard input.
 
-Unless you are running @command{tar} with @option{--create}, you can not use
+Unless you are running @command{tar} with @option{--create}, you cannot use
 both @code{--files-from=-} and @code{--file=-} (@code{-f -}) in the same
 command.
 
@@ -7237,8 +7281,9 @@ $ @kbd{tar -c -v -z -T small-files -f little.tgz}
 @end smallexample
 
 @noindent
-In the file list given by @option{-T} option, any file name beginning
-with @samp{-} character is considered a @command{tar} option and is
+By default, each line read from the file list is first stripped off
+any leading and trailing whitespace.  If the resulting string begins
+with @samp{-} character, it is considered a @command{tar} option and is
 processed accordingly@footnote{Versions of @GNUTAR{} up to 1.15.1
 recognized only @option{-C} option in file lists, and only if the
 option and its argument occupied two consecutive lines.}. For example,
@@ -7273,10 +7318,23 @@ libc.a
 @end group
 @end smallexample
 
+@anchor{verbatim-files-from}
+@opindex verbatim-files-from
+If such option handling is undesirable, use the
+@option{--verbatim-files-from} option.  When this option is in effect,
+each line read from the file list is treated as a file name.  Notice,
+that this means, in particular, that no whitespace trimming is
+performed.
+
+@anchor{no-verbatim-files-from}
+@opindex no-verbatim-files-from
+The @option{--verbatim-files-from} affects all @option{-T} options
+that follow it in the command line.  The default behavior can be
+restored using @option{--no-verbatim-files-from} option.
+
 @opindex add-file
-If you happen to have a file whose name starts with @samp{-},
-precede it with @option{--add-file} option to prevent it from
-being recognized as an option.  For example: @code{--add-file=--my-file}.
+To disable option handling for a single file name, use the
+@option{--add-file} option, e.g.: @code{--add-file=--my-file}.
 
 @menu
 * nul::
@@ -7308,7 +7366,8 @@ The @option{--null} option is just like the one in @acronym{GNU}
 @command{xargs} and @command{cpio}, and is useful with the
 @option{-print0} predicate of @acronym{GNU} @command{find}.  In
 @command{tar}, @option{--null} also disables special handling for
-file names that begin with dash.
+file names that begin with dash (similar to
+@option{--verbatim-files-from} option).
 
 This example shows how to use @command{find} to generate a list of files
 larger than 800K in length and put that list into a file called
@@ -8786,8 +8845,8 @@ To use it, you would invoke @command{tar} as follows:
 $ @kbd{tar -c -f foo.tar --files-from list}
 @end smallexample
 
-The interpretation of @option{--directory} is disabled by
-@option{--null} option.
+The interpretation of options in file lists is disabled by
+@option{--verbatim-files-from} and @option{--null} options.
 
 @node absolute
 @subsection Absolute File Names

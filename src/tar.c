@@ -1,6 +1,6 @@
 /* A tar (tape archiver) program.
 
-   Copyright 1988, 1992-1997, 1999-2001, 2003-2007, 2012-2014 Free
+   Copyright 1988, 1992-1997, 1999-2001, 2003-2007, 2012-2015 Free
    Software Foundation, Inc.
 
    Written by John Gilmore, starting 1985-08-25.
@@ -323,6 +323,7 @@ enum
   NO_SEEK_OPTION,
   NO_SELINUX_CONTEXT_OPTION,
   NO_UNQUOTE_OPTION,
+  NO_VERBATIM_FILES_FROM_OPTION,
   NO_WILDCARDS_MATCH_SLASH_OPTION,
   NO_WILDCARDS_OPTION,
   NO_XATTR_OPTION,
@@ -364,6 +365,7 @@ enum
   TRANSFORM_OPTION,
   UNQUOTE_OPTION,
   UTC_OPTION,
+  VERBATIM_FILES_FROM_OPTION,
   VOLNO_FILE_OPTION,
   WARNING_OPTION,
   WILDCARDS_MATCH_SLASH_OPTION,
@@ -713,13 +715,19 @@ static struct argp_option options[] = {
   {"files-from", 'T', N_("FILE"), 0,
    N_("get names to extract or create from FILE"), GRID+1 },
   {"null", NULL_OPTION, 0, 0,
-   N_("-T reads null-terminated names, disable -C"), GRID+1 },
+   N_("-T reads null-terminated names; implies --verbatim-files-from"),
+      GRID+1 },
   {"no-null", NO_NULL_OPTION, 0, 0,
    N_("disable the effect of the previous --null option"), GRID+1 },
   {"unquote", UNQUOTE_OPTION, 0, 0,
    N_("unquote input file or member names (default)"), GRID+1 },
   {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
    N_("do not unquote input file or member names"), GRID+1 },
+  {"verbatim-files-from", VERBATIM_FILES_FROM_OPTION, 0, 0,
+   N_("-T reads file names verbatim (no option handling)"), GRID+1 },
+  {"no-verbatim-files-from", NO_VERBATIM_FILES_FROM_OPTION, 0, 0,
+   N_("-T treats file names starting with dash as options (default)"),
+      GRID+1 },
   {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
    N_("exclude files, given as a PATTERN"), GRID+1 },
   {"exclude-from", 'X', N_("FILE"), 0,
@@ -1645,7 +1653,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
       break;
 
     case 'T':
-      name_add_file (arg, filename_terminator, MAKE_INCL_OPTIONS (args));
+      name_add_file (arg, filename_terminator, verbatim_files_from_option,
+		     MAKE_INCL_OPTIONS (args));
       /* Indicate we've been given -T option. This is for backward
 	 compatibility only, so that `tar cfT archive /dev/null will
 	 succeed */
@@ -1906,10 +1915,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case NULL_OPTION:
       filename_terminator = '\0';
+      verbatim_files_from_option = true;
       break;
 
     case NO_NULL_OPTION:
       filename_terminator = '\n';
+      verbatim_files_from_option = false;
       break;
 
     case NUMERIC_OWNER_OPTION:
@@ -2159,6 +2170,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
       unquote_option = false;
       break;
 
+    case VERBATIM_FILES_FROM_OPTION:
+      verbatim_files_from_option = true;
+      break;
+
+    case NO_VERBATIM_FILES_FROM_OPTION:
+      verbatim_files_from_option = false;
+      break;
+      
     case WARNING_OPTION:
       set_warning_option (arg);
       break;

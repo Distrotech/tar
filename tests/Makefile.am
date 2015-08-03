@@ -1,6 +1,6 @@
 # Makefile for GNU tar regression tests.
 
-# Copyright 1996-1997, 1999-2001, 2003-2007, 2009, 2012-2013 Free Software
+# Copyright 1996-1997, 1999-2001, 2003-2007, 2009, 2012-2015 Free Software
 
 # This file is part of GNU tar.
 
@@ -47,6 +47,7 @@ TESTSUITE_AT = \
  T-dir01.at\
  T-empty.at\
  T-null.at\
+ T-null2.at\
  T-rec.at\
  T-zfile.at\
  T-nonl.at\

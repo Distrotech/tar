@@ -1,6 +1,6 @@
 /* Common declarations for the tar program.
 
-   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2012-2014 Free
+   Copyright 1988, 1992-1994, 1996-1997, 1999-2010, 2012-2015 Free
    Software Foundation, Inc.
 
    This file is part of GNU tar.
@@ -386,6 +386,9 @@ GLOBAL dev_t root_device;
 /* Unquote filenames */
 GLOBAL bool unquote_option;
 
+/* Treat file names read from -T input verbatim */
+GLOBAL bool verbatim_files_from_option;
+
 GLOBAL int savedir_sort_order;
 
 /* Show file or archive names after transformation.
@@ -727,7 +730,8 @@ int uname_to_uid (char const *uname, uid_t *puid);
 void name_init (void);
 void name_add_name (const char *name, int matching_flags);
 void name_add_dir (const char *name);
-void name_add_file (const char *name, int term, int matching_flags);
+void name_add_file (const char *name, int term, bool verbatim,
+		    int matching_flags);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);

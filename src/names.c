@@ -1,6 +1,6 @@
 /* Various processing of names.
 
-   Copyright 1988, 1992, 1994, 1996-2001, 2003-2007, 2009, 2013-2014
+   Copyright 1988, 1992, 1994, 1996-2001, 2003-2007, 2009, 2013-2015
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
@@ -228,6 +228,8 @@ struct name_elt        /* A name_array element. */
     {
       const char *name;/* File name */
       int term;        /* File name terminator in the list */
+      bool verbatim;   /* Verbatim handling of file names: no white-space
+			  trimming, no option processing */
       FILE *fp;
     } file;
   } v;
@@ -313,13 +315,14 @@ name_add_dir (const char *name)
 }
 
 void
-name_add_file (const char *name, int term, int matflags)
+name_add_file (const char *name, int term, bool verbatim, int matflags)
 {
   struct name_elt *ep = name_elt_alloc_matflags (matflags);
 
   ep->type = NELT_FILE;
   ep->v.file.name = name;
   ep->v.file.term = term;
+  ep->v.file.verbatim = verbatim;
   ep->v.file.fp = NULL;
 }
 
@@ -512,7 +515,7 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	case file_list_success:
 	  if (unquote_option)
 	    unquote_string (name_buffer);
-	  if (handle_option (name_buffer) == 0)
+	  if (!ent->v.file.verbatim && handle_option (name_buffer) == 0)
 	    {
 	      name_list_adjust ();
 	      return 1;

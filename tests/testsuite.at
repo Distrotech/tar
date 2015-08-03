@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright 2004-2008, 2010-2014 Free Software Foundation, Inc.
+# Copyright 2004-2008, 2010-2015 Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 
@@ -203,6 +203,7 @@ m4_include([T-rec.at])
 m4_include([T-cd.at])
 m4_include([T-empty.at])
 m4_include([T-null.at])
+m4_include([T-null2.at])
 m4_include([T-zfile.at])
 m4_include([T-nonl.at])
 m4_include([T-dir00.at])
