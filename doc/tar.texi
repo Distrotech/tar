@@ -7564,6 +7564,8 @@ As of version @value{VERSION}, the following files are excluded:
 @item @file{SCCS/}, and everything under it
 @item @file{.git/}, and everything under it
 @item @file{.gitignore}
+@item @file{.gitmodules}
+@item @file{.gitattributes}
 @item @file{.cvsignore}
 @item @file{.svn/}, and everything under it
 @item @file{.arch-ids/}, and everything under it

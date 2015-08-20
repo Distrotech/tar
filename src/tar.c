@@ -953,6 +953,8 @@ static char const * const vcs_file_table[] = {
   /* git: */
   ".git",
   ".gitignore",
+  ".gitattributes",
+  ".gitmodules",
   /* Arch: */
   ".arch-ids",
   "{arch}",
