@@ -28,7 +28,7 @@ if test -z "$TEST_DATA_DIR"; then
   TEST_DATA_DIR=$abs_builddir
 fi
 
-STAR_DATA_URL=ftp://ftp.berlios.de/pub/star/testscripts
+STAR_DATA_URL=$TEST_DATA_URL/star
 if test -z "$STAR_TESTSCRIPTS"; then
   STAR_TESTSCRIPTS=$TEST_DATA_DIR
 fi
@@ -39,7 +39,7 @@ tarball_prereq() {
     if test -r $3/$1; then
       :
     elif test -n "$FULL_TEST"; then
-      wget -q --directory-prefix=$3 $4/$1
+      wget -q -O $3/$1 $4/$1
     fi
   fi
   echo "$2  $3/$1" | md5sum --status --check - >/dev/null 2>&1
