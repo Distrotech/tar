@@ -25,7 +25,7 @@ trap "test -r $XFAILFILE && cat $XFAILFILE; exit $?" 1 2 13 15
 
 TEST_DATA_URL=ftp://download.gnu.org.ua/pub/tests/tar
 if test -z "$TEST_DATA_DIR"; then
-  TEST_DATA_DIR=$abs_builddir
+  TEST_DATA_DIR=$abs_builddir/download
 fi
 
 STAR_DATA_URL=$TEST_DATA_URL/star
@@ -35,12 +35,17 @@ fi
 
 # tarball_prereq file sum dir url
 tarball_prereq() {
-  if test -d "$3"; then
-    if test -r $3/$1; then
-      :
-    elif test -n "$FULL_TEST"; then
-      wget -q -O $3/$1 $4/$1
-    fi
+  if ! test -d "$3"; then
+    mkdir "$3"
+    cat > "$3/README" <<EOF
+This directory contains test data downloaded during full check.
+You can remove it, if you wish.
+EOF
+  fi
+  if test -r $3/$1; then
+    :
+  elif test -n "$FULL_TEST"; then
+    wget -q -O $3/$1 $4/$1
   fi
   echo "$2  $3/$1" | md5sum --status --check - >/dev/null 2>&1
 }
