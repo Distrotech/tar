@@ -1,0 +1,6 @@
+[submodule "gnulib"]
+	path = gnulib
+	url = git://git.sv.gnu.org/gnulib.git
+[submodule "paxutils"]
+	path = paxutils
+	url = git://git.sv.gnu.org/paxutils.git

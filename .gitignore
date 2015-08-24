@@ -23,13 +23,8 @@ config.h.in
 config.log
 config.status
 configure
-gnu/*.h
-gnu/*/
-gnu/.gitignore
-gnu/charset.alias
-gnulib
+gnu
 libtool
 m4
-paxutils
 rmt
 stamp-h1
