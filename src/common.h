@@ -777,7 +777,26 @@ const char *subcommand_string (enum subcommand c);
 void set_exit_status (int val);
 
 void request_stdin (const char *option);
-void more_options (int argc, char **argv);
+
+/* Where an option comes from: */
+enum option_source
+  {
+    OPTS_ENVIRON,        /* Environment variable TAR_OPTIONS */
+    OPTS_COMMAND_LINE,   /* Command line */
+    OPTS_FILE            /* File supplied by --files-from */
+  };
+
+/* Option location */
+struct option_locus
+{
+  enum option_source source;  /* Option origin */
+  char const *name;           /* File or variable name */
+  size_t line;                /* Number of input line if source is OPTS_FILE */
+  struct option_locus *prev;  /* Previous occurrence of the option of same
+				 class */
+};
+
+void more_options (int argc, char **argv, struct option_locus *loc);
 
 /* Module update.c.  */
 

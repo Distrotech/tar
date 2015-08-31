@@ -227,6 +227,7 @@ struct name_elt        /* A name_array element. */
     struct             /* File, if type == NELT_FILE */
     {
       const char *name;/* File name */
+      size_t line;     /* Input line number */
       int term;        /* File name terminator in the list */
       bool verbatim;   /* Verbatim handling of file names: no white-space
 			  trimming, no option processing */
@@ -321,6 +322,7 @@ name_add_file (const char *name, int term, bool verbatim, int matflags)
 
   ep->type = NELT_FILE;
   ep->v.file.name = name;
+  ep->v.file.line = 0;
   ep->v.file.term = term;
   ep->v.file.verbatim = verbatim;
   ep->v.file.fp = NULL;
@@ -430,6 +432,7 @@ read_name_from_file (struct name_elt *ent)
   FILE *fp = ent->v.file.fp;
   int term = ent->v.file.term;
 
+  ++ent->v.file.line;
   for (c = getc (fp); c != EOF && c != term; c = getc (fp))
     {
       if (counter == name_buffer_length)
@@ -454,11 +457,12 @@ read_name_from_file (struct name_elt *ent)
 }
 
 static int
-handle_option (const char *str)
+handle_option (const char *str, struct name_elt const *ent)
 {
   struct wordsplit ws;
   int i;
-
+  struct option_locus loc;
+  
   while (*str && isspace (*str))
     ++str;
   if (*str != '-')
@@ -469,7 +473,10 @@ handle_option (const char *str)
     FATAL_ERROR ((0, 0, _("cannot split string '%s': %s"),
 		  str, wordsplit_strerror (&ws)));
   ws.ws_wordv[0] = program_invocation_short_name;
-  more_options (ws.ws_wordc+ws.ws_offs, ws.ws_wordv);
+  loc.source = OPTS_FILE;
+  loc.name = ent->v.file.name;
+  loc.line = ent->v.file.line;
+  more_options (ws.ws_wordc+ws.ws_offs, ws.ws_wordv, &loc);
   for (i = 0; i < ws.ws_wordc+ws.ws_offs; i++)
     ws.ws_wordv[i] = NULL;
 
@@ -515,7 +522,7 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	case file_list_success:
 	  if (unquote_option)
 	    unquote_string (name_buffer);
-	  if (!ent->v.file.verbatim && handle_option (name_buffer) == 0)
+	  if (!ent->v.file.verbatim && handle_option (name_buffer, ent) == 0)
 	    {
 	      name_list_adjust ();
 	      return 1;

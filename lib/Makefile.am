@@ -41,7 +41,6 @@ noinst_HEADERS = \
 
 libtar_a_SOURCES = \
   paxerror.c paxexit-status.c paxlib.h paxnames.c \
-  prepargs.c prepargs.h \
   rtapelib.c \
   rmt.h \
   stdopen.c stdopen.h \
