@@ -498,7 +498,7 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
   char abbr[LONGEST_HUMAN_READABLE + 1];
   char rate[LONGEST_HUMAN_READABLE + 1];
   int n = 0;
-  
+
   int human_opts = human_autoscale | human_base_1024 | human_SI | human_B;
 
   if (text && text[0])
@@ -515,12 +515,12 @@ print_stats (FILE *fp, const char *text, tarlong numbytes)
    before each data item (bytes read, written, deleted, in that order).
    EOR is a delimiter to output after each item (used only if deleting
    from the archive), EOL is a delimiter to add at the end of the output
-   line. */ 
+   line. */
 int
-format_total_stats (FILE *fp, const char **formats, int eor, int eol)
+format_total_stats (FILE *fp, char const *const *formats, int eor, int eol)
 {
   int n;
-  
+
   switch (subcommand_option)
     {
     case CREATE_SUBCOMMAND:
@@ -539,7 +539,7 @@ format_total_stats (FILE *fp, const char **formats, int eor, int eol)
 
 	fputc (eor, fp);
 	n++;
-	
+
         n += print_stats (fp, formats[TF_WRITE],
 			  prev_written + bytes_written);
 
@@ -573,7 +573,7 @@ format_total_stats (FILE *fp, const char **formats, int eor, int eol)
   return n;
 }
 
-const char *default_total_format[] = {
+static char const *const default_total_format[] = {
   N_("Total bytes read"),
   /* Amanda 2.4.1p1 looks for "Total bytes written: [0-9][0-9]*".  */
   N_("Total bytes written"),

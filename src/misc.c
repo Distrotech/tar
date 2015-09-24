@@ -29,6 +29,8 @@
 # define DOUBLE_SLASH_IS_DISTINCT_ROOT 0
 #endif
 
+static void namebuf_add_dir (namebuf_t, char const *);
+static char *namebuf_finish (namebuf_t);
 static const char *tar_getcdpath (int);
 
 
@@ -1202,7 +1204,7 @@ namebuf_name (namebuf_t buf, const char *name)
   return buf->buffer;
 }
 
-void
+static void
 namebuf_add_dir (namebuf_t buf, const char *name)
 {
   static char dirsep[] = { DIRECTORY_SEPARATOR, 0 };
@@ -1215,7 +1217,7 @@ namebuf_add_dir (namebuf_t buf, const char *name)
   buf->dir_length += strlen (name);
 }
 
-char *
+static char *
 namebuf_finish (namebuf_t buf)
 {
   char *res = buf->buffer;

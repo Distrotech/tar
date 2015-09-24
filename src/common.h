@@ -386,9 +386,6 @@ GLOBAL dev_t root_device;
 /* Unquote filenames */
 GLOBAL bool unquote_option;
 
-/* Treat file names read from -T input verbatim */
-GLOBAL bool verbatim_files_from_option;
-
 GLOBAL int savedir_sort_order;
 
 /* Show file or archive names after transformation.
@@ -456,7 +453,7 @@ void set_start_time (void);
 #define TF_READ    0
 #define TF_WRITE   1
 #define TF_DELETED 2
-int format_total_stats (FILE *fp, const char **formats, int eor, int eol);
+int format_total_stats (FILE *fp, char const *const *formats, int eor, int eol);
 void print_total_stats (void);
 
 void mv_begin_write (const char *file_name, off_t totsize, off_t sizeleft);
@@ -623,8 +620,6 @@ typedef struct namebuf *namebuf_t;
 namebuf_t namebuf_create (const char *dir);
 void namebuf_free (namebuf_t buf);
 char *namebuf_name (namebuf_t buf, const char *name);
-void namebuf_add_dir (namebuf_t buf, const char *name);
-char *namebuf_finish (namebuf_t buf);
 
 const char *tar_dirname (void);
 
@@ -953,7 +948,6 @@ extern void (*fatal_exit_hook) (void);
 
 void excfile_add (const char *name, int flags);
 void info_attach_exclist (struct tar_stat_info *dir);
-void info_cleanup_exclist (struct tar_stat_info *dir);
 void info_free_exclist (struct tar_stat_info *dir);
 bool excluded_name (char const *name, struct tar_stat_info *st);
 void exclude_vcs_ignores (void);

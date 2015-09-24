@@ -43,7 +43,7 @@ struct excfile
   char name[1];
 };
 
-struct excfile *excfile_head, *excfile_tail;
+static struct excfile *excfile_head, *excfile_tail;
 
 void
 excfile_add (const char *name, int flags)
@@ -72,7 +72,7 @@ info_attach_exclist (struct tar_stat_info *dir)
   struct excfile *file;
   struct exclist *head = NULL, *tail = NULL, *ent;
   struct vcs_ignore_file *vcsfile;
-    
+
   if (dir->exclude_list)
     return;
   for (file = excfile_head; file; file = file->next)
@@ -102,7 +102,7 @@ info_attach_exclist (struct tar_stat_info *dir)
 
 	  if (vcsfile->initfn)
 	    vcsfile->data = vcsfile->initfn (vcsfile->data);
-	  
+
 	  if (add_exclude_fp (vcsfile->addfn, ex, fp,
 			      EXCLUDE_WILDCARDS|EXCLUDE_ANCHORED, '\n',
 			      vcsfile->data))
@@ -111,7 +111,7 @@ info_attach_exclist (struct tar_stat_info *dir)
 	      FATAL_ERROR ((0, e, "%s", quotearg_colon (file->name)));
 	    }
 	  fclose (fp);
-	  
+
 	  ent = xmalloc (sizeof (*ent));
 	  ent->excluded = ex;
 	  ent->flags = file->flags == EXCL_DEFAULT
@@ -130,34 +130,6 @@ info_attach_exclist (struct tar_stat_info *dir)
 }
 
 void
-info_cleanup_exclist (struct tar_stat_info *dir)
-{
-  struct exclist *ep = dir->exclude_list;
-
-  while (ep)
-    {
-      struct exclist *next = ep->next;
-      
-      if (ep->flags & EXCL_NON_RECURSIVE)
-	{
-	  
-	  /* Remove the entry */
-	  if (ep->prev)
-	    ep->prev->next = ep->next;
-	  else
-	    dir->exclude_list = ep->next;
-
-	  if (ep->next)
-	    ep->next->prev = ep->prev;
-
-	  free_exclude (ep->excluded);
-	  free (ep);
-	}
-      ep = next;
-    }
-}
-
-void
 info_free_exclist (struct tar_stat_info *dir)
 {
   struct exclist *ep = dir->exclude_list;
@@ -172,7 +144,7 @@ info_free_exclist (struct tar_stat_info *dir)
 
   dir->exclude_list = NULL;
 }
-  
+
 
 /* Return nonzero if file NAME is excluded.  */
 bool
@@ -183,7 +155,7 @@ excluded_name (char const *name, struct tar_stat_info *st)
   char *bname = NULL;
   bool result;
   int nr = 0;
-  
+
   name += FILE_SYSTEM_PREFIX_LEN (name);
 
   /* Try global exclusion list first */
@@ -192,7 +164,7 @@ excluded_name (char const *name, struct tar_stat_info *st)
 
   if (!st)
     return false;
-  
+
   for (result = false; st && !result; st = st->parent, nr = EXCL_NON_RECURSIVE)
     {
       for (ep = st->exclude_list; ep; ep = ep->next)
@@ -201,7 +173,7 @@ excluded_name (char const *name, struct tar_stat_info *st)
 	    continue;
 	  if ((result = excluded_file_name (ep->excluded, name)))
 	    break;
-	  
+
 	  if (!rname)
 	    {
 	      rname = name;
@@ -229,8 +201,8 @@ cvs_addfn (struct exclude *ex, char const *pattern, int options, void *data)
 {
   struct wordsplit ws;
   size_t i;
-    
-  if (wordsplit (pattern, &ws, 
+
+  if (wordsplit (pattern, &ws,
 		 WRDSF_NOVAR | WRDSF_NOCMD | WRDSF_SQUEEZE_DELIMS))
     return;
   for (i = 0; i < ws.ws_wordc; i++)
@@ -280,20 +252,20 @@ hg_initfn (void *data)
 {
   int *hgopt;
   static int hg_options;
-  
+
   if (!data)
     hgopt = &hg_options;
 
   *hgopt = EXCLUDE_REGEX;
   return hgopt;
 }
-  
+
 static void
 hg_addfn (struct exclude *ex, char const *pattern, int options, void *data)
 {
   int *hgopt = data;
   size_t len;
-  
+
   while (isspace (*pattern))
     ++pattern;
   if (*pattern == 0 || *pattern == '#')
@@ -318,27 +290,27 @@ hg_addfn (struct exclude *ex, char const *pattern, int options, void *data)
 
       --len;
       p = xmalloc (len+1);
-      memcpy (p, pattern, len); 
+      memcpy (p, pattern, len);
       p[len] = 0;
       pattern = p;
       exclude_add_pattern_buffer (ex, p);
       options |= FNM_LEADING_DIR|EXCLUDE_ALLOC;
     }
-  
+
   add_exclude (ex, pattern,
 	       ((*hgopt == EXCLUDE_REGEX)
 		? (options & ~EXCLUDE_WILDCARDS)
 		: (options & ~EXCLUDE_REGEX)) | *hgopt);
 }
 
-struct vcs_ignore_file vcs_ignore_files[] = {
+static struct vcs_ignore_file vcs_ignore_files[] = {
   { ".cvsignore", EXCL_NON_RECURSIVE, cvs_addfn, NULL, NULL },
   { ".gitignore", 0, git_addfn, NULL, NULL },
   { ".bzrignore", 0, bzr_addfn, NULL, NULL },
   { ".hgignore",  0, hg_addfn, hg_initfn , NULL },
   { NULL, 0, git_addfn, NULL, NULL }
 };
-  
+
 static struct vcs_ignore_file *
 get_vcs_ignore_file (const char *name)
 {
