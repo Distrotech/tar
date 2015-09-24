@@ -37,7 +37,7 @@ tar \- an archiving utility
 \fBtar\fR \fB\-x\fR [\fB\-f\fR \fIARCHIVE\fR] [\fIOPTIONS\fR] [\fIMEMBER\fR...]
 .SS GNU-style usage
 .sp
-\fBtar\fR {\fB\-\-catenate\fR|\fB\-\-concatenate} [\fIOPTIONS\fR] \fIARCHIVE\fR \fIARCHIVE\fR
+\fBtar\fR {\fB\-\-catenate\fR|\fB\-\-concatenate\fR} [\fIOPTIONS\fR] \fIARCHIVE\fR \fIARCHIVE\fR
 .sp
 \fBtar\fR \fB\-\-create\fR [\fB\-\-file\fR \fIARCHIVE\fR] [\fIOPTIONS\fR] [\fIFILE\fR...]
 .sp
@@ -175,7 +175,7 @@ resulting archive might be unusable with non-GNU implementations of
 \fBtar\fR.  Notice also that when more than one archive is given, the
 members from archives other than the first one will be accessible in
 the resulting archive only if using the \fB\-i\fR
-(\fB\-\-ignore\-zeros) option.
+(\fB\-\-ignore\-zeros\fR) option.
 
 Compressed archives cannot be concatenated.
 .TP
@@ -198,7 +198,7 @@ short option equivalent.
 .TP
 \fB\-r\fR, \fB\-\-append\fR
 Append files to the end of an archive.  Arguments have the same
-meaning as for \fB\-c\fR (\fB\-\-create).
+meaning as for \fB\-c\fR (\fB\-\-create\fR).
 .TP
 \fB\-t\fR, \fB\-\-list\fR
 List the contents of an archive.  Arguments are optional.  When given,
@@ -291,7 +291,7 @@ Process only the \fIN\fRth occurrence of each file in the
 archive.  This option is valid only when used with one of the
 following subcommands: \fB\-\-delete\fR, \fB\-\-diff\fR,
 \fB\-\-extract\fR or \fB\-\-list\fR and when a list of files is given
-either on the command line or via the \fB\-\fRT option.  The default
+either on the command line or via the \fB\-T\fR option.  The default
 \fIN\fR is \fB1\fR.
 .TP
 \fB\-\-restrict\fR
@@ -475,7 +475,7 @@ Force symbolic mode \fICHANGES\fR for added files.
 .TP
 \fB\-\-mtime\fR=\fIDATE-OR-FILE\fR
 Set mtime for added files.  \fIDATE-OR-FILE\fR is either a date/time
-in almost arbitrary formate, or the name of an existing file.  In the
+in almost arbitrary format, or the name of an existing file.  In the
 latter case the mtime of that file will be used.
 .TP
 \fB\-m\fR, \fB\-\-touch\fR
@@ -570,7 +570,7 @@ option.
 \fB\-\-force\-local\fR
 Archive file is local even if it has a colon.
 .TP
-\fB\-\fRF, \fB\-\-info\-script\fR=\fICOMMAND\fR, \fB\-\-new\-volume\-script\fR=\fICOMMAND\fR
+\fB\-F\fR, \fB\-\-info\-script\fR=\fICOMMAND\fR, \fB\-\-new\-volume\-script\fR=\fICOMMAND\fR
 Run \fICOMMAND\fR at the end of each tape (implies \fB\-M\fR).  The
 command can include arguments.  When started, it will inherit \fBtar\fR's
 environment plus the following variables:
@@ -612,7 +612,7 @@ If the info script fails, \fBtar\fR exits; otherwise, it begins writing
 the next volume.
 .RE
 .TP
-\fB\-L\fR, \fB\-\-tape\-length\fR=\fN\fR
+\fB\-L\fR, \fB\-\-tape\-length\fR=\fIN\fR
 Change tape after writing \fIN\fRx1024 bytes.  If \fIN\fR is followed
 by a size suffix (see the subsection
 .B Size suffixes
@@ -706,7 +706,7 @@ use \fITEXT\fR as a globbing pattern for volume name.
 \fB\-a\fR, \fB\-\-auto\-compress\fR
 Use archive suffix to determine the compression program.
 .TP
-\fB\-\fRI, \fB\-\-use\-compress\-program\fI=\fICOMMAND\fR
+\fB\-I\fR, \fB\-\-use\-compress\-program\fI=\fICOMMAND\fR
 Filter data through \fICOMMAND\fR.  It must accept the \fB\-d\fR
 option, for decompression.  The argument can contain command line
 options.
@@ -738,7 +738,7 @@ Do not use archive suffix to determine the compression program.
 Filter the archive through
 .BR gzip (1).
 .TP
-\fB\-\fRZ, \fB\-\-compress\fR, \fB\-\-uncompress\fR
+\fB\-Z\fR, \fB\-\-compress\fR, \fB\-\-uncompress\fR
 Filter the archive through
 .BR compress (1).
 .SS Local file selection
