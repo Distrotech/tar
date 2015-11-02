@@ -239,6 +239,9 @@ TESTSUITE_AT = \
  selacl01.at\
  capabs_raw01.at
 
+distclean-local:
+	-rm -rf download
+
 TESTSUITE = $(srcdir)/testsuite
 
 AUTOTEST = $(AUTOM4TE) --language=autotest
