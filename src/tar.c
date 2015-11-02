@@ -298,6 +298,7 @@ enum
   FORCE_LOCAL_OPTION,
   FULL_TIME_OPTION,
   GROUP_OPTION,
+  GROUP_MAP_OPTION,
   IGNORE_CASE_OPTION,
   IGNORE_COMMAND_ERROR_OPTION,
   IGNORE_FAILED_READ_OPTION,
@@ -340,6 +341,7 @@ enum
   OVERWRITE_DIR_OPTION,
   OVERWRITE_OPTION,
   OWNER_OPTION,
+  OWNER_MAP_OPTION,
   PAX_OPTION,
   POSIX_OPTION,
   PRESERVE_OPTION,
@@ -534,6 +536,10 @@ static struct argp_option options[] = {
    N_("force NAME as owner for added files"), GRID+1 },
   {"group", GROUP_OPTION, N_("NAME"), 0,
    N_("force NAME as group for added files"), GRID+1 },
+  {"owner-map", OWNER_MAP_OPTION, N_("FILE"), 0,
+   N_("use FILE to map file owner UIDs and names"), GRID+1 },
+  {"group-map", GROUP_MAP_OPTION, N_("FILE"), 0,
+   N_("use FILE to map file owner GIDs and names"), GRID+1 },
   {"mtime", MTIME_OPTION, N_("DATE-OR-FILE"), 0,
    N_("set mtime for added files from DATE-OR-FILE"), GRID+1 },
   {"mode", MODE_OPTION, N_("CHANGES"), 0,
@@ -1996,6 +2002,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case GROUP_MAP_OPTION:
+      group_map_read (arg);
+      break;
+      
     case MODE_OPTION:
       mode_option = mode_compile (arg);
       if (!mode_option)
@@ -2090,6 +2100,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       }
       break;
 
+    case OWNER_MAP_OPTION:
+      owner_map_read (arg);
+      break;
+      
     case QUOTE_CHARS_OPTION:
       for (;*arg; arg++)
 	set_char_quoting (NULL, *arg, 1);

@@ -741,17 +741,17 @@ union block *
 start_header (struct tar_stat_info *st)
 {
   union block *header;
-
+  char const *uname = NULL;
+  char const *gname = NULL;
+  
   header = write_header_name (st);
   if (!header)
     return NULL;
 
   /* Override some stat fields, if requested to do so.  */
+  owner_map_translate (st->stat.st_uid, &st->stat.st_uid, &uname);
+  group_map_translate (st->stat.st_gid, &st->stat.st_gid, &gname);
 
-  if (owner_option != (uid_t) -1)
-    st->stat.st_uid = owner_option;
-  if (group_option != (gid_t) -1)
-    st->stat.st_gid = group_option;
   if (mode_option)
     st->stat.st_mode =
       ((st->stat.st_mode & ~MODE_ALL)
@@ -910,13 +910,13 @@ start_header (struct tar_stat_info *st)
     }
   else
     {
-      if (owner_name_option)
-	st->uname = xstrdup (owner_name_option);
+      if (uname)
+	st->uname = xstrdup (uname);
       else
 	uid_to_uname (st->stat.st_uid, &st->uname);
 
-      if (group_name_option)
-	st->gname = xstrdup (group_name_option);
+      if (gname)
+	st->gname = xstrdup (gname);
       else
 	gid_to_gname (st->stat.st_gid, &st->gname);
 

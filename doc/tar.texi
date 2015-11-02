@@ -2742,7 +2742,19 @@ rather than the group from the source file.  @var{group} can specify a
 symbolic name, or a numeric @acronym{ID}, or both as
 @var{name}:@var{id}.  @xref{override}.
 
-Also see the comments for the @option{--owner=@var{user}} option.
+Also see the @option{--group-map} option and comments for the
+@option{--owner=@var{user}} option.
+
+@opsummary{group-map}
+@item --group-map=@var{file}
+
+Read owner group translation map from @var{file}.  This option allows to
+translate only certain group names and/or UIDs.  @xref{override}, for a
+detailed description.  When used together with @option{--group}
+option, the latter affects only those files whose owner group is not listed
+in the @var{file}.
+
+This option does not affect extraction from archives.
 
 @opsummary{gzip}
 @opsummary{gunzip}
@@ -3162,6 +3174,18 @@ when creating archives, instead of the user associated with the source
 file.  @var{user} can specify a symbolic name, or a numeric
 @acronym{ID}, or both as @var{name}:@var{id}.
 @xref{override}.
+
+This option does not affect extraction from archives.  See also
+@option{--owner-map}, below.
+
+@opsummary{owner-map}
+@item --owner-map=@var{file}
+
+Read owner translation map from @var{file}.  This option allows to
+translate only certain owner names or UIDs.  @xref{override}, for a
+detailed description.  When used together with @option{--owner}
+option, the latter affects only those files whose owner is not listed
+in the @var{file}.
 
 This option does not affect extraction from archives.
 
@@ -5257,6 +5281,70 @@ Files added to the @command{tar} archive will have a group @acronym{ID} of @var{
 rather than the group from the source file.  As with @option{--owner},
 the argument @var{group} can be an existing group symbolic name, or a
 decimal numeric group @acronym{ID}, or @var{name}:@var{id}.
+@end table
+
+The @option{--owner} and @option{--group} options affect all files
+added to the archive.  @GNUTAR{} provides also two options that allow
+for more detailed control over owner translation:
+
+@table @option
+@item --owner-map=@var{file}
+Read UID translation map from @var{file}.
+
+When reading, empty lines are ignored.  The @samp{#} sign, unless
+quoted, introduces a comment, which extends to the end of the line.
+Each nonempty line defines mapping for a single UID.  It must consist
+of two fields separated by any amount of whitespace.  The first field
+defines original username and UID.  It can be a valid user name or
+a valid UID prefixed with a plus sign.  In both cases the
+corresponding UID or user name is inferred from the current host's
+user database.
+
+The second field defines the UID and username to map the original one
+to.  Its format can be the same as described above.  Otherwise, it can
+have the form @var{newname}:@var{newuid}, in which case neither
+@var{newname} nor @var{newuid} are required to be valid as per the
+user database.
+
+For example, consider the following file:
+
+@example
++10     bin
+smith   root:0
+@end example
+
+@noindent
+Given this file, each input file that is owner by UID 10 will be
+stored in archive with owner name @samp{bin} and owner UID
+corresponding to @samp{bin}.  Each file owned by user @samp{smith}
+will be stored with owner name @samp{root} and owner ID 0.  Other
+files will remain unchanged.
+
+When used together with @option{--owner-map}, the @option{--owner}
+option affects only files whose owner is not listed in the map file.
+
+@item --group-map=@var{file}
+Read GID translation map from @var{file}.
+
+The format of @var{file} is the same as for @option{--owner-map}
+option:
+
+Each nonempty line defines mapping for a single GID.  It must consist
+of two fields separated by any amount of whitespace.  The first field
+defines original group name and GID.  It can be a valid group name or
+a valid GID prefixed with a plus sign.  In both cases the
+corresponding GID or user name is inferred from the current host's
+group database.
+
+The second field defines the GID and group name to map the original one
+to.  Its format can be the same as described above.  Otherwise, it can
+have the form @var{newname}:@var{newgid}, in which case neither
+@var{newname} nor @var{newgid} are required to be valid as per the
+group database.
+
+When used together with @option{--group-map}, the @option{--group}
+option affects only files whose owner group is not rewritten using the
+map file.
 @end table
 
 @node Ignore Failed Read

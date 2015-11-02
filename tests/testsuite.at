@@ -349,6 +349,7 @@ m4_include([multiv08.at])
 
 AT_BANNER([Owner and Groups])
 m4_include([owner.at])
+m4_include([map.at])
 
 AT_BANNER([Sparse files])
 m4_include([sparse01.at])

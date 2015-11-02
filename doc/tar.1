@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "August 24, 2015" "TAR" "GNU TAR Manual"
+.TH TAR 1 "November 2, 2015" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -467,8 +467,33 @@ Delay setting modification times and permissions of extracted
 directories until the end of extraction.  Use this option when
 extracting from an archive which has unusual member ordering.
 .TP
-\fB\-\-group\fR=\fINAME\fR
-Force \fINAME\fR as group for added files.
+\fB\-\-group\fR=\fINAME\fR[:\fIGID\fR]
+Force \fINAME\fR as group for added files.  If \fIGID\fR is not
+supplied, \fINAME\fR can be either a user name or numeric GID.  In
+this case the missing part (GID or name) will be inferred from the
+current host's group database.
+
+When used with \fB\-\-group\-map\fR=\fIFILE\fR, affects only those
+files whose owner group is not listed in \fIFILE\fR.
+.TP
+\fB\-\-group\-map\fR=\fIFILE\fR
+Read group translation map from \fIFILE\fR.  Empty lines are ignored.
+Comments are introduced with \fB#\fR sign and extend to the end of line.
+Each non-empty line in \fIFILE\fR defines translation for a single
+group.  It must consist of two fields, delimited by any amount of whitespace:
+
+.EX
+\fIOLDGRP\fR \fINEWGRP\fR[\fB:\fINEWGID\fR]
+.EE
+
+\fIOLDGRP\fR is either a valid group name or a GID prefixed with
+\fB+\fR.  Unless \fINEWGID\fR is supplied, \fINEWGRP\fR must also be
+either a valid group name or a \fB+\fIGID\fR.  Otherwise, both
+\fINEWGRP\fR and \fINEWGID\fR need not be listed in the system group
+database.
+
+As a result, each input file with owner group \fIOLDGRP\fR will be
+stored in archive with owner group \fINEWGRP\fR and GID \fINEWGID\fR.
 .TP
 \fB\-\-mode\fR=\fICHANGES\fR
 Force symbolic mode \fICHANGES\fR for added files.
@@ -494,8 +519,33 @@ Apply the user's umask when extracting permissions from the archive
 \fB\-\-numeric\-owner\fR
 Always use numbers for user/group names.
 .TP
-\fB\-\-owner\fR=\fINAME\fR
-Force \fINAME\fR as owner for added files.
+\fB\-\-owner\fR=\fINAME\fR[:\fIUID\fR]
+Force \fINAME\fR as owner for added files.  If \fIUID\fR is not
+supplied, \fINAME\fR can be either a user name or numeric UID.  In
+this case the missing part (UID or name) will be inferred from the
+current host's user database.
+
+When used with \fB\-\-owner\-map\fR=\fIFILE\fR, affects only those
+files whose owner is not listed in \fIFILE\fR.
+.TP
+\fB\-\-owner\-map\fR=\fIFILE\fR
+Read owner translation map from \fIFILE\fR.  Empty lines are ignored.
+Comments are introduced with \fB#\fR sign and extend to the end of line.
+Each non-empty line in \fIFILE\fR defines translation for a single
+UID.  It must consist of two fields, delimited by any amount of whitespace:
+
+.EX
+\fIOLDUSR\fR \fINEWUSR\fR[\fB:\fINEWUID\fR]
+.EE
+
+\fIOLDUSR\fR is either a valid user name or a UID prefixed with
+\fB+\fR.  Unless \fINEWUID\fR is supplied, \fINEWUSR\fR must also be
+either a valid user name or a \fB+\fIUID\fR.  Otherwise, both
+\fINEWUSR\fR and \fINEWUID\fR need not be listed in the system user
+database.
+
+As a result, each input file owned by \fIOLDUSR\fR will be
+stored in archive with owner name \fINEWUSR\fR and UID \fINEWUID\fR.
 .TP
 \fB\-p\fR, \fB\-\-preserve\-permissions\fR, \fB\-\-same\-permissions\fR
 extract information about file permissions (default for superuser)

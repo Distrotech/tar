@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2015-08-03
+GNU tar NEWS - User visible changes. 2015-11-02
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -21,6 +21,24 @@ This facilitates the use of tar with file lists created automatically
 This option affects all --files-from options that occur after it in
 the command line.  Its effect is reverted by the
 --no-verbatim-files-from option.
+
+* New options: --owner-map=FILE and --group-map=FILE
+
+These two options provide fine-grained control over what user/group
+names (or IDs) should be mapped when adding files to archive.
+
+For both options, FILE is a plain text file with user or group
+mappings.  Empty lines are ignored.  Comments are introduced with
+# sign (unless quoted) and extend to the end of the corresponding
+line.  Each non-empty line defines translation for a single UID (GID).
+It must consist of two fields, delimited by any amount of whitespace:
+
+     OLDNAME NEWNAME[:NEWID]
+
+OLDNAME is either a valid user (group) name or a ID prefixed with +.  Unless
+NEWID is supplied, NEWNAME must also be either a valid name or a
++ID.  Otherwise, both NEWNAME and NEWID need not be listed in the
+system user database.
 
 * --null option reads file names verbatim
 
