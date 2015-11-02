@@ -28,13 +28,14 @@
 AT_SETUP([recursive extraction from --files-from])
 AT_KEYWORDS([files-from extract T-dir T-dir00])
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 mkdir dir
 genfile -f dir/file1
 genfile -f dir/file2
 tar cf archive dir
 rm -rf dir
 echo dir > list
-tar xfTv archive list
+tar xfTv archive list | sort
 ],
 [0],
 [dir/
