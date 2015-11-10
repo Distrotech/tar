@@ -472,7 +472,7 @@ handle_option (const char *str, struct name_elt const *ent)
   if (wordsplit (str, &ws, WRDSF_DEFFLAGS|WRDSF_DOOFFS))
     FATAL_ERROR ((0, 0, _("cannot split string '%s': %s"),
 		  str, wordsplit_strerror (&ws)));
-  ws.ws_wordv[0] = program_invocation_short_name;
+  ws.ws_wordv[0] = (char *) program_name;
   loc.source = OPTS_FILE;
   loc.name = ent->v.file.name;
   loc.line = ent->v.file.line;

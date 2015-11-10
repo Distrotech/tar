@@ -265,7 +265,7 @@ tar_set_quoting_style (char *arg)
 	return;
       }
   FATAL_ERROR ((0, 0,
-		_("Unknown quoting style '%s'. Try '%s --quoting-style=help' to get a list."), arg, program_invocation_short_name));
+		_("Unknown quoting style '%s'. Try '%s --quoting-style=help' to get a list."), arg, program_name));
 }
 
 
@@ -2491,7 +2491,7 @@ parse_default_options (void)
 		  wordsplit_strerror (&ws)));
   if (ws.ws_wordc)
     {
-      ws.ws_wordv[0] = program_invocation_short_name;
+      ws.ws_wordv[0] = (char*) program_name;
       more_options (ws.ws_offs + ws.ws_wordc, ws.ws_wordv, &loc);
     }
 
