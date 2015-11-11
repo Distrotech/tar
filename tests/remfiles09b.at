@@ -29,8 +29,6 @@
 AT_SETUP([remove-files on full directory in -c/incr. mode])
 AT_KEYWORDS([create incremental remove-files remfiles09 remfiles09b])
 
-AT_XFAIL_IF(true) # we expect to fail in tar 1.27
-
 AT_TAR_CHECK([
 mkdir foo
 echo foo/file > foo/file

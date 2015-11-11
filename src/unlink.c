@@ -32,6 +32,10 @@ struct deferred_unlink
 				       entry got added to the queue */
   };
 
+#define IS_CWD(p) \
+  ((p)->is_dir \
+   && ((p)->file_name[0] == 0 || strcmp ((p)->file_name, ".") == 0))
+
 /* The unlink queue */
 static struct deferred_unlink *dunlink_head, *dunlink_tail;
 
@@ -61,6 +65,24 @@ dunlink_alloc (void)
 }
 
 static void
+dunlink_insert (struct deferred_unlink *anchor, struct deferred_unlink *p)
+{
+  if (anchor)
+    {
+      p->next = anchor->next;
+      anchor->next = p;
+    }
+  else 
+    {
+      p->next = dunlink_head;
+      dunlink_head = p;
+    }
+  if (!p->next)
+    dunlink_tail = p;
+  dunlink_count++;
+}
+
+static void
 dunlink_reclaim (struct deferred_unlink *p)
 {
   free (p->file_name);
@@ -73,7 +95,7 @@ flush_deferred_unlinks (bool force)
 {
   struct deferred_unlink *p, *prev = NULL;
   int saved_chdir = chdir_current;
-
+  
   for (p = dunlink_head; p; )
     {
       struct deferred_unlink *next = p->next;
@@ -86,12 +108,11 @@ flush_deferred_unlinks (bool force)
 	    {
 	      const char *fname;
 
-	      if (p->dir_idx
-		  && (p->file_name[0] == 0
-		      || strcmp (p->file_name, ".") == 0))
+	      if (p->dir_idx && IS_CWD (p))
 		{
-		  fname = tar_dirname ();
-		  chdir_do (p->dir_idx - 1);
+		  prev = p;
+		  p = next;
+		  continue;
 		}
 	      else
 		fname = p->file_name;
@@ -104,15 +125,12 @@ flush_deferred_unlinks (bool force)
 		      /* nothing to worry about */
 		      break;
 		    case ENOTEMPTY:
-		      if (!force)
-			{
-			  /* Keep the record in list, in the hope we'll
-			     be able to remove it later */
-			  prev = p;
-			  p = next;
-			  continue;
-			}
-		      /* fall through */
+		      /* Keep the record in list, in the hope we'll
+			 be able to remove it later */
+		      prev = p;
+		      p = next;
+		      continue;
+
 		    default:
 		      rmdir_error (fname);
 		    }
@@ -139,6 +157,34 @@ flush_deferred_unlinks (bool force)
     }
   if (!dunlink_head)
     dunlink_tail = NULL;
+  else if (force)
+    {
+      for (p = dunlink_head; p; )
+	{
+	  struct deferred_unlink *next = p->next;
+	  const char *fname;
+
+	  chdir_do (p->dir_idx);
+	  if (p->dir_idx && IS_CWD (p))
+	    {
+	      fname = tar_dirname ();
+	      chdir_do (p->dir_idx - 1);
+	    }
+	  else
+	    fname = p->file_name;
+
+	  if (unlinkat (chdir_fd, fname, AT_REMOVEDIR) != 0)
+	    {
+	      if (errno != ENOENT)
+		rmdir_error (fname);
+	    }
+	  dunlink_reclaim (p);
+	  dunlink_count--;
+	  p = next;
+	}
+      dunlink_head = dunlink_tail = NULL;
+    }	  
+	    
   chdir_do (saved_chdir);
 }
 
@@ -146,6 +192,7 @@ void
 finish_deferred_unlinks (void)
 {
   flush_deferred_unlinks (true);
+  
   while (dunlink_avail)
     {
       struct deferred_unlink *next = dunlink_avail->next;
@@ -171,10 +218,17 @@ queue_deferred_unlink (const char *name, bool is_dir)
   p->is_dir = is_dir;
   p->records_written = records_written;
 
-  if (dunlink_tail)
-    dunlink_tail->next = p;
+  if (IS_CWD (p))
+    {
+      struct deferred_unlink *q, *prev;
+      for (q = dunlink_head, prev = NULL; q; prev = q, q = q->next)
+	if (IS_CWD (q) && q->dir_idx < p->dir_idx)
+	  break;
+      if (q)
+	dunlink_insert (prev, p);
+      else
+	dunlink_insert (dunlink_tail, p);
+    }
   else
-    dunlink_head = p;
-  dunlink_tail = p;
-  dunlink_count++;
+    dunlink_insert (dunlink_tail, p);
 }
