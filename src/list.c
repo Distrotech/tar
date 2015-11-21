@@ -124,18 +124,20 @@ enforce_one_top_level (char **pfile_name)
   for (p = file_name; *p && (ISSLASH (*p) || *p == '.'); p++)
     ;
 
-  if (!*p)
-    return;
-
-  if (strncmp (p, one_top_level_dir, strlen (one_top_level_dir)) == 0)
+  if (*p)
     {
       int pos = strlen (one_top_level_dir);
-      if (ISSLASH (p[pos]) || p[pos] == 0)
-	return;
+      if (strncmp (p, one_top_level_dir, pos) == 0)
+	{
+	  if (ISSLASH (p[pos]) || p[pos] == 0)
+	    return;
+	}
+    
+      *pfile_name = new_name (one_top_level_dir, file_name);
+      normalize_filename_x (*pfile_name);
     }
-
-  *pfile_name = new_name (one_top_level_dir, file_name);
-  normalize_filename_x (*pfile_name);
+  else
+    *pfile_name = xstrdup (one_top_level_dir);
   free (file_name);
 }
 
