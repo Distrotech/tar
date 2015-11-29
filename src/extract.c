@@ -109,7 +109,7 @@ struct delayed_set_stat
     struct xattr_array *xattr_map;
     /* Length and contents of name.  */
     size_t file_name_len;
-    char file_name[1];
+    char *file_name;
   };
 
 static struct delayed_set_stat *delayed_set_stat_head;
@@ -441,9 +441,7 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
 		mode_t mode, int atflag)
 {
   size_t file_name_len = strlen (file_name);
-  struct delayed_set_stat *data =
-    xmalloc (offsetof (struct delayed_set_stat, file_name)
-	     + file_name_len + 1);
+  struct delayed_set_stat *data = xmalloc (sizeof (*data));
   data->next = delayed_set_stat_head;
   data->mode = mode;
   if (st)
@@ -456,6 +454,7 @@ delay_set_stat (char const *file_name, struct tar_stat_info const *st,
       data->mtime = st->mtime;
     }
   data->file_name_len = file_name_len;
+  data->file_name = xstrdup (file_name);
   data->current_mode = current_mode;
   data->current_mode_mask = current_mode_mask;
   data->interdir = ! st;
@@ -540,6 +539,7 @@ repair_delayed_set_stat (char const *dir,
 static void
 free_delayed_set_stat (struct delayed_set_stat *data)
 {
+  free (data->file_name);
   xheader_xattr_free (data->xattr_map, data->xattr_map_size);
   free (data->cntx_name);
   free (data->acls_a_ptr);
@@ -566,6 +566,23 @@ remove_delayed_set_stat (const char *fname)
 	}
       else
 	prev = data;
+    }
+}
+
+static void
+fixup_delayed_set_stat (char const *src, char const *dst)
+{
+  struct delayed_set_stat *data;
+  for (data = delayed_set_stat_head; data; data = data->next)
+    {
+      if (chdir_current == data->change_dir
+	  && strcmp (data->file_name, src) == 0)
+	{
+	  free (data->file_name);
+	  data->file_name = xstrdup (dst);
+	  data->file_name_len = strlen (dst);
+	  return;
+	}
     }
 }
 
@@ -1769,7 +1786,9 @@ extract_finish (void)
 bool
 rename_directory (char *src, char *dst)
 {
-  if (renameat (chdir_fd, src, chdir_fd, dst) != 0)
+  if (renameat (chdir_fd, src, chdir_fd, dst) == 0)
+    fixup_delayed_set_stat (src, dst);
+  else
     {
       int e = errno;
       bool interdir_made;

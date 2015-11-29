@@ -305,6 +305,7 @@ m4_include([incr07.at])
 m4_include([incr08.at])
 m4_include([incr09.at])
 m4_include([incr10.at])
+m4_include([incr11.at])
 
 AT_BANNER([Files removed while archiving])
 m4_include([filerem01.at])
