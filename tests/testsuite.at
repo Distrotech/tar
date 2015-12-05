@@ -112,6 +112,19 @@ rm -f $[]$
 test $result -eq 0 || AT_SKIP_TEST
 ])
 
+dnl AT_SEEKHOLE_PREREQ
+m4_define([AT_SEEKHOLE_PREREQ],[
+checkseekhole || AT_SKIP_TEST
+])
+
+m4_define([AT_TIMEOUT_PREREQ],[
+timeout 100 true
+if test $? -ne 0; then
+    echo >&2 "the 'timeout' utility not found"
+    AT_SKIP_TEST
+fi
+])
+
 m4_define([AT_TAR_MKHIER],[
 install-sh -d $1 >/dev/null dnl
 m4_if([$2],,,&& genfile --file [$1]/[$2]) || AT_SKIP_TEST])
@@ -358,6 +371,7 @@ m4_include([sparse02.at])
 m4_include([sparse03.at])
 m4_include([sparse04.at])
 m4_include([sparse05.at])
+m4_include([sparse06.at])
 m4_include([sparsemv.at])
 m4_include([spmvp00.at])
 m4_include([spmvp01.at])

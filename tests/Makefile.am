@@ -207,6 +207,7 @@ TESTSUITE_AT = \
  sparse03.at\
  sparse04.at\
  sparse05.at\
+ sparse06.at\
  sparsemv.at\
  sparsemvp.at\
  spmvp00.at\
@@ -275,13 +276,14 @@ installcheck-local: $(check_PROGRAMS)
 ## genfile      ##
 ## ------------ ##
 
-check_PROGRAMS = genfile
+check_PROGRAMS = genfile checkseekhole
 
 if TAR_COND_GRANTPT
 check_PROGRAMS += ttyemu
 endif
 
 genfile_SOURCES = genfile.c argcv.c argcv.h
+checkseekhole_SOURCES = checkseekhole.c
 
 ttyemu_SOURCES = ttyemu.c
 

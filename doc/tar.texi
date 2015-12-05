@@ -2782,6 +2782,13 @@ they refer to, instead of creating usual hard link members.
 @command{tar} will print out a short message summarizing the operations and
 options to @command{tar} and exit. @xref{help}.
 
+@opsummary{hole-detection}
+@item --hole-detection=@var{method}
+Use @var{method} to detect holes in sparse files.  This option implies
+@option{--sparse}.  Valid methods are @samp{seek} and @samp{raw}.
+Default is @samp{seek} with fallback to @samp{raw} when not
+applicable. @xref{sparse}.
+
 @opsummary{ignore-case}
 @item --ignore-case
 Ignore case when matching member or file names with
@@ -9536,13 +9543,15 @@ could create an archive longer than the original.  To have @command{tar}
 attempt to recognize the holes in a file, use @option{--sparse}
 (@option{-S}).  When you use this option, then, for any file using
 less disk space than would be expected from its length, @command{tar}
-searches the file for consecutive stretches of zeros.  It then records
-in the archive for the file where the consecutive stretches of zeros
-are, and only archives the ``real contents'' of the file.  On
-extraction (using @option{--sparse} is not needed on extraction) any
-such files have holes created wherever the continuous stretches of zeros
-were found.  Thus, if you use @option{--sparse}, @command{tar} archives
-won't take more space than the original.
+searches the file for holes.  It then records in the archive for the file where
+the holes (consecutive stretches of zeros) are, and only archives the
+``real contents'' of the file.  On extraction (using @option{--sparse} is not
+needed on extraction) any such files have also holes created wherever the holes
+were found.  Thus, if you use @option{--sparse}, @command{tar} archives won't
+take more space than the original.
+
+@GNUTAR{} uses two methods for detecting holes in sparse files.  These
+methods are described later in this subsection.
 
 @table @option
 @opindex sparse
@@ -9568,37 +9577,12 @@ will never take more space on the media than the files take on disk
 (otherwise, archiving a disk filled with sparse files might take
 hundreds of tapes).  @xref{Incremental Dumps}.
 
-However, be aware that @option{--sparse} option presents a serious
-drawback.  Namely, in order to determine if the file is sparse
-@command{tar} has to read it before trying to archive it, so in total
-the file is read @strong{twice}.  So, always bear in mind that the
-time needed to process all files with this option is roughly twice
-the time needed to archive them without it.
-@FIXME{A technical note:
-
-Programs like @command{dump} do not have to read the entire file; by
-examining the file system directly, they can determine in advance
-exactly where the holes are and thus avoid reading through them.  The
-only data it need read are the actual allocated data blocks.
-@GNUTAR{} uses a more portable and straightforward
-archiving approach, it would be fairly difficult that it does
-otherwise.  Elizabeth Zwicky writes to @file{comp.unix.internals}, on
-1990-12-10:
-
-@quotation
-What I did say is that you cannot tell the difference between a hole and an
-equivalent number of nulls without reading raw blocks.  @code{st_blocks} at
-best tells you how many holes there are; it doesn't tell you @emph{where}.
-Just as programs may, conceivably, care what @code{st_blocks} is (care
-to name one that does?), they may also care where the holes are (I have
-no examples of this one either, but it's equally imaginable).
-
-I conclude from this that good archivers are not portable.  One can
-arguably conclude that if you want a portable program, you can in good
-conscience restore files with as many holes as possible, since you can't
-get it right.
-@end quotation
-}
+However, be aware that @option{--sparse} option may present a serious
+drawback.  Namely, in order to determine the positions of holes in a file
+@command{tar} may have to read it before trying to archive it, so in total
+the file may be read @strong{twice}.  This may happen when your OS or your FS
+does not support @dfn{SEEK_HOLE/SEEK_DATA} feature in @dfn{lseek} (See
+@option{--hole-detection}, below).
 
 @cindex sparse formats, defined
 When using @samp{POSIX} archive format, @GNUTAR{} is able to store
@@ -9612,13 +9596,45 @@ use an earlier format, you can select it using
 @table @option
 @opindex sparse-version
 @item --sparse-version=@var{version}
-
 Select the format to store sparse files in.  Valid @var{version} values
 are: @samp{0.0}, @samp{0.1} and @samp{1.0}.  @xref{Sparse Formats},
 for a detailed description of each format.
 @end table
 
 Using @option{--sparse-format} option implies @option{--sparse}.
+
+@table @option
+@opindex hole-detection
+@cindex hole detection
+@item --hole-detection=@var{method}
+Enforce concrete hole detection method.  Before the real contents of sparse
+file are stored, @command{tar} needs to gather knowledge about file
+sparseness.  This is because it needs to have the file's map of holes
+stored into tar header before it starts archiving the file contents.
+Currently, two methods of hole detection are implemented:
+
+@itemize @bullet
+@item @option{--hole-detection=seek}
+Seeking the file for data and holes.  It uses enhancement of the @code{lseek}
+system call (@code{SEEK_HOLE} and @code{SEEK_DATA}) which is able to
+reuse file system knowledge about sparse file contents - so the
+detection is usually very fast.  To use this feature, your file system
+and operating system must support it.  At the time of this writing
+(2015) this feature, in spite of not being accepted by POSIX, is
+fairly widely supported by different operating systems.
+
+@item @option{--hole-detection=raw}
+Reading byte-by-byte the whole sparse file before the archiving.  This
+method detects holes like consecutive stretches of zeroes.  Comparing to
+the previous method, it is usually much slower, although more
+portable.
+@end itemize
+@end table
+
+When no @option{--hole-detection} option is given, @command{tar} uses
+the @samp{seek}, if supported by the operating system.
+
+Using @option{--hole-detection} option implies @option{--sparse}.
 
 @node Attributes
 @section Handling File Attributes

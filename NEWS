@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2015-11-02
+GNU tar NEWS - User visible changes. 2015-12-06
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -47,6 +47,25 @@ read from null-delimited file lists is treated as a file name.
 
 This restores the documented behavior, which was broken in version
 1.27.
+
+* Sparse file detection
+
+Tar now uses SEEK_DATA/SEEK_HOLE on systems that support it.  This
+allows for considerable speed-up in sparse-file detection.
+
+New option --hole-detection is provided, that allows the user to
+select the algorithm used for hole detection.  Available arguments
+are:
+
+  --hole-detection=seek
+     Use lseek(2) SEEK_DATA and SEEK_HOLE "whence" parameters.
+
+  --hole-detection=raw
+     Scan entire file before storing it to determine where holes
+     are located.
+
+The default is to use "seek" whenever possible, and fall back to
+"raw" otherwise.
 
 
 version 1.28, 2014-07-28

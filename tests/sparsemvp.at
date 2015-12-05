@@ -26,6 +26,7 @@ dnl TAR_MVP_TEST version map1 map2
 m4_define([TAR_MVP_TEST],[
 AT_TAR_CHECK([
 exec <&-
+TAR_OPTIONS="$TAR_OPTIONS --hole-detection=raw"
 genfile --sparse --file sparsefile $2 || AT_SKIP_TEST
 echo "Pass 1: Split between data blocks"
 echo "Create archive"

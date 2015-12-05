@@ -9,3 +9,5 @@ argcv.h
 genfile.c
 genfile
 download
+ttyemu
+checkseekhole

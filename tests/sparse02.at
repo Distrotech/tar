@@ -27,7 +27,7 @@ AT_KEYWORDS([sparse sparse02])
 
 AT_TAR_CHECK([
 genfile --sparse --file sparsefile --block-size 512 0 ABCD 1M EFGH 2000K IJKL || AT_SKIP_TEST
-tar -c -f archive --sparse sparsefile || exit 1
+tar --hole-detection=raw -c -f archive --sparse sparsefile || exit 1
 echo separator
 
 tar xfO archive | cat - > sparsecopy || exit 1

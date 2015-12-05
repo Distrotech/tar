@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "November 2, 2015" "TAR" "GNU TAR Manual"
+.TH TAR 1 "December 5, 2015" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -258,6 +258,12 @@ snapshot file created during the level \fBN-1\fR, and use it as
 When listing or extracting, the actual contents of \fIFILE\fR is not
 inspected, it is needed only due to syntactical requirements.  It is
 therefore common practice to use \fB/dev/null\fR in its place.
+.TP
+\fB\-\-hole\-detection\fR=\fIMETHOD\fR
+Use \fIMETHOD\fR to detect holes in sparse files.  This option implies
+\fB\-\-sparse\fR.  Valid values for \fIMETHOD\fR are \fBseek\fR and
+\fBraw\fR.  Default is \fBseek\fR with fallback to \fBraw\fR when not
+applicable.
 .TP
 \fB\-G\fR, \fB\-\-incremental\fR
 Handle old GNU-format incremental backups.
@@ -821,7 +827,8 @@ environment variable.  If it is not set, \fBexisting\fR is assumed.
 .RE
 .TP
 \fB\-C\fR, \fB\-\-directory\fR=\fIDIR\fR
-Change to directory DIR.
+Change to \fIDIR\fR before performing any operations.  This option is
+order-sensitive, i.e. it affects all options that follow.
 .TP
 \fB\-\-exclude\fR=\fIPATTERN\fR
 Exclude files matching \fIPATTERN\fR, a

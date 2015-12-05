@@ -362,6 +362,7 @@ enum
   SHOW_TRANSFORMED_NAMES_OPTION,
   SKIP_OLD_FILES_OPTION,
   SORT_OPTION,
+  HOLE_DETECTION_OPTION,
   SPARSE_VERSION_OPTION,
   STRIP_COMPONENTS_OPTION,
   SUFFIX_OPTION,
@@ -451,6 +452,8 @@ static struct argp_option options[] = {
 
   {"sparse", 'S', 0, 0,
    N_("handle sparse files efficiently"), GRID+1 },
+  {"hole-detection", HOLE_DETECTION_OPTION, N_("TYPE"), 0,
+   N_("technique to detect holes"), GRID+1 },
   {"sparse-version", SPARSE_VERSION_OPTION, N_("MAJOR[.MINOR]"), 0,
    N_("set version of the sparse format to use (implies --sparse)"), GRID+1},
   {"incremental", 'G', 0, 0,
@@ -1464,6 +1467,19 @@ static int sort_mode_flag[] = {
 };
 
 ARGMATCH_VERIFY (sort_mode_arg, sort_mode_flag);
+
+static char const *const hole_detection_args[] =
+{
+  "raw", "seek", NULL
+};
+
+static int const hole_detection_types[] =
+{
+  HOLE_DETECTION_RAW, HOLE_DETECTION_SEEK
+};
+
+ARGMATCH_VERIFY (hole_detection_args, hole_detection_types);
+
 
 static void
 set_old_files_option (int code, struct option_locus *loc)
@@ -1751,6 +1767,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case SKIP_OLD_FILES_OPTION:
       set_old_files_option (SKIP_OLD_FILES, args->loc);
+      break;
+
+    case HOLE_DETECTION_OPTION:
+      hole_detection = XARGMATCH ("--hole-detection", arg,
+				  hole_detection_args, hole_detection_types);
+      sparse_option = true;
       break;
 
     case SPARSE_VERSION_OPTION:
@@ -2523,6 +2545,7 @@ decode_options (int argc, char **argv)
   blocking_factor = DEFAULT_BLOCKING;
   record_size = DEFAULT_BLOCKING * BLOCKSIZE;
   excluded = new_exclude ();
+  hole_detection = HOLE_DETECTION_DEFAULT;
 
   newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
   newer_mtime_option.tv_nsec = -1;

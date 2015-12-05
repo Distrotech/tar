@@ -280,6 +280,15 @@ GLOBAL bool sparse_option;
 GLOBAL unsigned tar_sparse_major;
 GLOBAL unsigned tar_sparse_minor;
 
+enum hole_detection_method
+  {
+    HOLE_DETECTION_DEFAULT,
+    HOLE_DETECTION_RAW,
+    HOLE_DETECTION_SEEK
+  };
+
+GLOBAL enum hole_detection_method hole_detection;
+
 GLOBAL bool starting_file_option;
 
 /* Specified maximum byte length of each tape volume (multiple of 1024).  */

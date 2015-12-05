@@ -1,6 +1,6 @@
 /* Functions for dealing with sparse files
 
-   Copyright 2003-2007, 2010, 2013-2014 Free Software Foundation, Inc.
+   Copyright 2003-2007, 2010, 2013-2015 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -208,9 +208,9 @@ sparse_add_map (struct tar_stat_info *st, struct sp_array const *sp)
   st->sparse_map_avail = avail + 1;
 }
 
-/* Scan the sparse file and create its map */
+/* Scan the sparse file byte-by-byte and create its map. */
 static bool
-sparse_scan_file (struct tar_sparse_file *file)
+sparse_scan_file_raw (struct tar_sparse_file *file)
 {
   struct tar_stat_info *st = file->stat_info;
   int fd = file->fd;
@@ -221,47 +221,152 @@ sparse_scan_file (struct tar_sparse_file *file)
 
   st->archive_file_size = 0;
 
-  if (ST_NBLOCKS (st->stat) == 0)
-    offset = st->stat.st_size;
-  else
+  if (!tar_sparse_scan (file, scan_begin, NULL))
+    return false;
+
+  while ((count = blocking_read (fd, buffer, sizeof buffer)) != 0
+         && count != SAFE_READ_ERROR)
     {
-      if (!tar_sparse_scan (file, scan_begin, NULL))
-	return false;
+      /* Analyze the block.  */
+      if (zero_block_p (buffer, count))
+        {
+          if (sp.numbytes)
+            {
+              sparse_add_map (st, &sp);
+              sp.numbytes = 0;
+              if (!tar_sparse_scan (file, scan_block, NULL))
+                return false;
+            }
+        }
+      else
+        {
+          if (sp.numbytes == 0)
+            sp.offset = offset;
+          sp.numbytes += count;
+          st->archive_file_size += count;
+          if (!tar_sparse_scan (file, scan_block, buffer))
+            return false;
+        }
 
-      while ((count = blocking_read (fd, buffer, sizeof buffer)) != 0
-	     && count != SAFE_READ_ERROR)
-	{
-	  /* Analyze the block.  */
-	  if (zero_block_p (buffer, count))
-	    {
-	      if (sp.numbytes)
-		{
-		  sparse_add_map (st, &sp);
-		  sp.numbytes = 0;
-		  if (!tar_sparse_scan (file, scan_block, NULL))
-		    return false;
-		}
-	    }
-	  else
-	    {
-	      if (sp.numbytes == 0)
-		sp.offset = offset;
-	      sp.numbytes += count;
-	      st->archive_file_size += count;
-	      if (!tar_sparse_scan (file, scan_block, buffer))
-		return false;
-	    }
-
-	  offset += count;
-	}
+      offset += count;
     }
 
+  /* save one more sparse segment of length 0 to indicate that
+     the file ends with a hole */
   if (sp.numbytes == 0)
     sp.offset = offset;
 
   sparse_add_map (st, &sp);
   st->archive_file_size += count;
   return tar_sparse_scan (file, scan_end, NULL);
+}
+
+static bool
+sparse_scan_file_wholesparse (struct tar_sparse_file *file)
+{
+  struct tar_stat_info *st = file->stat_info;
+  struct sp_array sp = {0, 0};
+
+  /* Note that this function is called only for truly sparse files of size >= 1
+     block size (checked via ST_IS_SPARSE before).  See the thread
+     http://www.mail-archive.com/bug-tar@gnu.org/msg04209.html for more info */
+  if (ST_NBLOCKS (st->stat) == 0)
+    {
+      st->archive_file_size = 0;
+      sp.offset = st->stat.st_size;
+      sparse_add_map (st, &sp);
+      return true;
+    }
+
+  return false;
+}
+
+#ifdef SEEK_HOLE
+/* Try to engage SEEK_HOLE/SEEK_DATA feature. */
+static bool
+sparse_scan_file_seek (struct tar_sparse_file *file)
+{
+  struct tar_stat_info *st = file->stat_info;
+  int fd = file->fd;
+  struct sp_array sp = {0, 0};
+  off_t offset = 0;
+  off_t data_offset;
+  off_t hole_offset;
+
+  st->archive_file_size = 0;
+
+  for (;;)
+    {
+      /* locate first chunk of data */
+      data_offset = lseek (fd, offset, SEEK_DATA);
+
+      if (data_offset == (off_t)-1)
+        /* ENXIO == EOF; error otherwise */
+        {
+          if (errno == ENXIO)
+            {
+              /* file ends with hole, add one more empty chunk of data */
+              sp.numbytes = 0;
+              sp.offset = st->stat.st_size;
+              sparse_add_map (st, &sp);
+              return true;
+            }
+          return false;
+        }
+
+      hole_offset = lseek (fd, data_offset, SEEK_HOLE);
+
+      /* according to specs, if FS does not fully support
+	 SEEK_DATA/SEEK_HOLE it may just implement kind of "wrapper" around
+	 classic lseek() call.  We must detect it here and try to use other
+	 hole-detection methods. */
+      if (offset == 0 /* first loop */
+          && data_offset == 0
+          && hole_offset == st->stat.st_size)
+        {
+          lseek (fd, 0, SEEK_SET);
+          return false;
+        }
+
+      sp.offset = data_offset;
+      sp.numbytes = hole_offset - data_offset;
+      sparse_add_map (st, &sp);
+
+      st->archive_file_size += sp.numbytes;
+      offset = hole_offset;
+    }
+
+  return true;
+}
+#endif
+
+static bool
+sparse_scan_file (struct tar_sparse_file *file)
+{
+  /* always check for completely sparse files */
+  if (sparse_scan_file_wholesparse (file))
+    return true;
+
+  switch (hole_detection)
+    {
+    case HOLE_DETECTION_DEFAULT:
+    case HOLE_DETECTION_SEEK:
+#ifdef SEEK_HOLE
+      if (sparse_scan_file_seek (file))
+        return true;
+#else
+      if (hole_detection == HOLE_DETECTION_SEEK)
+	WARN((0, 0,
+	      _("\"seek\" hole detection is not supported, using \"raw\".")));
+      /* fall back to "raw" for this and all other files */
+      hole_detection = HOLE_DETECTION_RAW;
+#endif
+    case HOLE_DETECTION_RAW:
+      if (sparse_scan_file_raw (file))
+	return true;
+    }
+  
+  return false;
 }
 
 static struct tar_sparse_optab const oldgnu_optab;
