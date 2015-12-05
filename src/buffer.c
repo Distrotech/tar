@@ -1115,6 +1115,16 @@ close_archive (void)
   bufmap_free (NULL);
 }
 
+void
+write_fatal_details (char const *name, ssize_t status, size_t size)
+{
+  write_error_details (name, status, size);
+  if (rmtclose (archive) != 0)
+    close_error (*archive_name_cursor);
+  sys_wait_for_child (child_pid, false);
+  fatal_exit ();
+}
+
 /* Called to initialize the global volume number.  */
 void
 init_volume_number (void)

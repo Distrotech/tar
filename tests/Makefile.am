@@ -62,6 +62,7 @@ TESTSUITE_AT = \
  backup01.at\
  chtype.at\
  comprec.at\
+ comperr.at\
  delete01.at\
  delete02.at\
  delete03.at\

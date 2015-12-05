@@ -330,6 +330,7 @@ sys_child_open_for_compress (void)
   pid_t grandchild_pid;
   pid_t child_pid;
 
+  signal (SIGPIPE, SIG_IGN);
   xpipe (parent_pipe);
   child_pid = xfork ();
 

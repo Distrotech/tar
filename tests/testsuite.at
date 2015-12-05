@@ -383,6 +383,7 @@ m4_include([shortupd.at])
 m4_include([truncate.at])
 m4_include([grow.at])
 m4_include([sigpipe.at])
+m4_include([comperr.at])
 
 AT_BANNER([Removing files after archiving])
 m4_include([remfiles01.at])
