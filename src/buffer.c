@@ -1419,7 +1419,10 @@ try_new_volume (void)
 
   header = find_next_block ();
   if (!header)
-    return false;
+    {
+      WARN ((0, 0, _("This does not look like a tar archive")));
+      return false;
+    }
 
   switch (header->header.typeflag)
     {
@@ -1429,7 +1432,7 @@ try_new_volume (void)
 	if (read_header (&header, &dummy, read_header_x_global)
 	    != HEADER_SUCCESS_EXTENDED)
 	  {
-	    ERROR ((0, 0, _("This does not look like a tar archive")));
+	    WARN ((0, 0, _("This does not look like a tar archive")));
 	    return false;
 	  }
 
@@ -1458,7 +1461,7 @@ try_new_volume (void)
 	    break;
 
 	  default:
-	    ERROR ((0, 0, _("This does not look like a tar archive")));
+	    WARN ((0, 0, _("This does not look like a tar archive")));
 	    return false;
 	  }
         break;
