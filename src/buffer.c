@@ -1493,8 +1493,14 @@ try_new_volume (void)
   if (bufmap_head)
     {
       uintmax_t s;
-      if (!continued_file_name
-          || strcmp (continued_file_name, bufmap_head->file_name))
+      if (!continued_file_name)
+	{
+	  WARN ((0, 0, _("%s is not continued on this volume"),
+		 quote (bufmap_head->file_name)));
+	  return false;
+	}
+      
+      if (strcmp (continued_file_name, bufmap_head->file_name))
         {
           if ((archive_format == GNU_FORMAT || archive_format == OLDGNU_FORMAT)
               && strlen (bufmap_head->file_name) >= NAME_FIELD_SIZE

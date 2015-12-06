@@ -151,6 +151,7 @@ TESTSUITE_AT = \
  multiv06.at\
  multiv07.at\
  multiv08.at\
+ multiv09.at\
  numeric.at\
  old.at\
  onetop01.at\
