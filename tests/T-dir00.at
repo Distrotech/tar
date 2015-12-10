@@ -18,7 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# Tar 1.27 and 1.28 did not extract files under directory memberes listed
+# Tar 1.27 and 1.28 did not extract files under directory members listed
 # in the file read by --file-from.
 #
 # Reported-by: Jean-Louis Martineau <martineau@zmanda.com>

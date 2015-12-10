@@ -85,7 +85,6 @@ AT_DATA([F2],[directory2/
 tar cf archive -T F1 --recursion -T F2
 tar tf archive
 
-AT_XFAIL_IF([true])
 ],
 [0],
 [directory1/

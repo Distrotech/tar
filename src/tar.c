@@ -74,9 +74,6 @@ static int check_links_option;
 /* Number of allocated tape drive names.  */
 static size_t allocated_archive_names;
 
-/* Treat file names read from -T input verbatim */
-static bool verbatim_files_from_option;
-
 
 /* Miscellaneous.  */
 
@@ -274,7 +271,6 @@ tar_set_quoting_style (char *arg)
 enum
 {
   ACLS_OPTION = CHAR_MAX + 1,
-  ANCHORED_OPTION,
   ATIME_PRESERVE_OPTION,
   BACKUP_OPTION,
   CHECK_DEVICE_OPTION,
@@ -283,23 +279,10 @@ enum
   DELAY_DIRECTORY_RESTORE_OPTION,
   HARD_DEREFERENCE_OPTION,
   DELETE_OPTION,
-  EXCLUDE_BACKUPS_OPTION,
-  EXCLUDE_CACHES_OPTION,
-  EXCLUDE_CACHES_UNDER_OPTION,
-  EXCLUDE_CACHES_ALL_OPTION,
-  EXCLUDE_OPTION,
-  EXCLUDE_IGNORE_OPTION,
-  EXCLUDE_IGNORE_RECURSIVE_OPTION,
-  EXCLUDE_TAG_OPTION,
-  EXCLUDE_TAG_UNDER_OPTION,
-  EXCLUDE_TAG_ALL_OPTION,
-  EXCLUDE_VCS_OPTION,
-  EXCLUDE_VCS_IGNORES_OPTION,
   FORCE_LOCAL_OPTION,
   FULL_TIME_OPTION,
   GROUP_OPTION,
   GROUP_MAP_OPTION,
-  IGNORE_CASE_OPTION,
   IGNORE_COMMAND_ERROR_OPTION,
   IGNORE_FAILED_READ_OPTION,
   INDEX_FILE_OPTION,
@@ -313,26 +296,17 @@ enum
   MTIME_OPTION,
   NEWER_MTIME_OPTION,
   NO_ACLS_OPTION,
-  NO_ANCHORED_OPTION,
   NO_AUTO_COMPRESS_OPTION,
   NO_CHECK_DEVICE_OPTION,
   NO_DELAY_DIRECTORY_RESTORE_OPTION,
-  NO_IGNORE_CASE_OPTION,
   NO_IGNORE_COMMAND_ERROR_OPTION,
-  NO_NULL_OPTION,
   NO_OVERWRITE_DIR_OPTION,
   NO_QUOTE_CHARS_OPTION,
-  NO_RECURSION_OPTION,
   NO_SAME_OWNER_OPTION,
   NO_SAME_PERMISSIONS_OPTION,
   NO_SEEK_OPTION,
   NO_SELINUX_CONTEXT_OPTION,
-  NO_UNQUOTE_OPTION,
-  NO_VERBATIM_FILES_FROM_OPTION,
-  NO_WILDCARDS_MATCH_SLASH_OPTION,
-  NO_WILDCARDS_OPTION,
   NO_XATTR_OPTION,
-  NULL_OPTION,
   NUMERIC_OWNER_OPTION,
   OCCURRENCE_OPTION,
   OLD_ARCHIVE_OPTION,
@@ -348,7 +322,6 @@ enum
   QUOTE_CHARS_OPTION,
   QUOTING_STYLE_OPTION,
   RECORD_SIZE_OPTION,
-  RECURSION_OPTION,
   RECURSIVE_UNLINK_OPTION,
   REMOVE_FILES_OPTION,
   RESTRICT_OPTION,
@@ -370,13 +343,9 @@ enum
   TOTALS_OPTION,
   TO_COMMAND_OPTION,
   TRANSFORM_OPTION,
-  UNQUOTE_OPTION,
   UTC_OPTION,
-  VERBATIM_FILES_FROM_OPTION,
   VOLNO_FILE_OPTION,
   WARNING_OPTION,
-  WILDCARDS_MATCH_SLASH_OPTION,
-  WILDCARDS_OPTION,
   XATTR_OPTION,
   XATTR_EXCLUDE,
   XATTR_INCLUDE
@@ -718,64 +687,8 @@ static struct argp_option options[] = {
 #define GRID 100
   {NULL, 0, NULL, 0,
    N_("Local file selection:"), GRID },
-
-  {"add-file", ARGP_KEY_ARG, N_("FILE"), 0,
-   N_("add given FILE to the archive (useful if its name starts with a dash)"), GRID+1 },
-  {"directory", 'C', N_("DIR"), 0,
-   N_("change to directory DIR"), GRID+1 },
-  {"files-from", 'T', N_("FILE"), 0,
-   N_("get names to extract or create from FILE"), GRID+1 },
-  {"null", NULL_OPTION, 0, 0,
-   N_("-T reads null-terminated names; implies --verbatim-files-from"),
-      GRID+1 },
-  {"no-null", NO_NULL_OPTION, 0, 0,
-   N_("disable the effect of the previous --null option"), GRID+1 },
-  {"unquote", UNQUOTE_OPTION, 0, 0,
-   N_("unquote input file or member names (default)"), GRID+1 },
-  {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
-   N_("do not unquote input file or member names"), GRID+1 },
-  {"verbatim-files-from", VERBATIM_FILES_FROM_OPTION, 0, 0,
-   N_("-T reads file names verbatim (no option handling)"), GRID+1 },
-  {"no-verbatim-files-from", NO_VERBATIM_FILES_FROM_OPTION, 0, 0,
-   N_("-T treats file names starting with dash as options (default)"),
-      GRID+1 },
-  {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
-   N_("exclude files, given as a PATTERN"), GRID+1 },
-  {"exclude-from", 'X', N_("FILE"), 0,
-   N_("exclude patterns listed in FILE"), GRID+1 },
-  {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
-   N_("exclude contents of directories containing CACHEDIR.TAG, "
-      "except for the tag file itself"), GRID+1 },
-  {"exclude-caches-under", EXCLUDE_CACHES_UNDER_OPTION, 0, 0,
-   N_("exclude everything under directories containing CACHEDIR.TAG"),
-   GRID+1 },
-  {"exclude-caches-all", EXCLUDE_CACHES_ALL_OPTION, 0, 0,
-   N_("exclude directories containing CACHEDIR.TAG"), GRID+1 },
-  {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
-   N_("exclude contents of directories containing FILE, except"
-      " for FILE itself"), GRID+1 },
-  {"exclude-ignore", EXCLUDE_IGNORE_OPTION, N_("FILE"), 0,
-    N_("read exclude patterns for each directory from FILE, if it exists"),
-   GRID+1 },
-  {"exclude-ignore-recursive", EXCLUDE_IGNORE_RECURSIVE_OPTION, N_("FILE"), 0,
-    N_("read exclude patterns for each directory and its subdirectories "
-       "from FILE, if it exists"), GRID+1 },
-  {"exclude-tag-under", EXCLUDE_TAG_UNDER_OPTION, N_("FILE"), 0,
-   N_("exclude everything under directories containing FILE"), GRID+1 },
-  {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
-   N_("exclude directories containing FILE"), GRID+1 },
-  {"exclude-vcs", EXCLUDE_VCS_OPTION, NULL, 0,
-   N_("exclude version control system directories"), GRID+1 },
-  {"exclude-vcs-ignores", EXCLUDE_VCS_IGNORES_OPTION, NULL, 0,
-   N_("read exclude patterns from the VCS ignore files"), GRID+1 },
-  {"exclude-backups", EXCLUDE_BACKUPS_OPTION, NULL, 0,
-   N_("exclude backup and lock files"), GRID+1 },
-  {"no-recursion", NO_RECURSION_OPTION, 0, 0,
-   N_("avoid descending automatically in directories"), GRID+1 },
   {"one-file-system", ONE_FILE_SYSTEM_OPTION, 0, 0,
    N_("stay in local file system when creating archive"), GRID+1 },
-  {"recursion", RECURSION_OPTION, 0, 0,
-   N_("recurse into directories (default)"), GRID+1 },
   {"absolute-names", 'P', 0, 0,
    N_("don't strip leading '/'s from file names"), GRID+1 },
   {"dereference", 'h', 0, 0,
@@ -804,28 +717,6 @@ static struct argp_option options[] = {
   {"transform", TRANSFORM_OPTION, N_("EXPRESSION"), 0,
    N_("use sed replace EXPRESSION to transform file names"), GRID+1 },
   {"xform", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
-#undef GRID
-
-#define GRID 120
-  {NULL, 0, NULL, 0,
-   N_("File name matching options (affect both exclude and include patterns):"),
-   GRID },
-  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
-   N_("ignore case"), GRID+1 },
-  {"anchored", ANCHORED_OPTION, 0, 0,
-   N_("patterns match file name start"), GRID+1 },
-  {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
-   N_("patterns match after any '/' (default for exclusion)"), GRID+1 },
-  {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
-   N_("case sensitive matching (default)"), GRID+1 },
-  {"wildcards", WILDCARDS_OPTION, 0, 0,
-   N_("use wildcards (default for exclusion)"), GRID+1 },
-  {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
-   N_("verbatim string matching"), GRID+1 },
-  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("wildcards do not match '/'"), GRID+1 },
-  {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("wildcards match '/' (default for exclusion)"), GRID+1 },
 #undef GRID
 
 #define GRID 130
@@ -911,15 +802,6 @@ static enum atime_preserve const atime_preserve_types[] =
    (minus 1 for NULL guard) */
 ARGMATCH_VERIFY (atime_preserve_args, atime_preserve_types);
 
-/* Wildcard matching settings */
-enum wildcards
-  {
-    default_wildcards, /* For exclusion == enable_wildcards,
-			  for inclusion == disable_wildcards */
-    disable_wildcards,
-    enable_wildcards
-  };
-
 struct tar_args        /* Variables used during option parsing */
 {
   struct option_locus *loc;
@@ -927,11 +809,6 @@ struct tar_args        /* Variables used during option parsing */
   struct textual_date *textual_date; /* Keeps the arguments to --newer-mtime
 					and/or --date option if they are
 					textual dates */
-  enum wildcards wildcards;        /* Wildcard settings (--wildcards/
-				      --no-wildcards) */
-  int matching_flags;              /* exclude_fnmatch options */
-  int include_anchored;            /* Pattern anchoring options used for
-				      file inclusion */
   bool o_option;                   /* True if -o option was given */
   bool pax_option;                 /* True if --pax-option was given */
   char const *backup_suffix_string;   /* --suffix option argument */
@@ -940,68 +817,6 @@ struct tar_args        /* Variables used during option parsing */
   int compress_autodetect;         /* True if compression autodetection should
 				      be attempted when creating archives */
 };
-
-
-#define MAKE_EXCL_OPTIONS(args) \
- ((((args)->wildcards != disable_wildcards) ? EXCLUDE_WILDCARDS : 0) \
-  | (args)->matching_flags \
-  | recursion_option)
-
-#define MAKE_INCL_OPTIONS(args) \
- ((((args)->wildcards == enable_wildcards) ? EXCLUDE_WILDCARDS : 0) \
-  | (args)->include_anchored \
-  | (args)->matching_flags \
-  | recursion_option)
-
-static char const * const vcs_file_table[] = {
-  /* CVS: */
-  "CVS",
-  ".cvsignore",
-  /* RCS: */
-  "RCS",
-  /* SCCS: */
-  "SCCS",
-  /* SVN: */
-  ".svn",
-  /* git: */
-  ".git",
-  ".gitignore",
-  ".gitattributes",
-  ".gitmodules",
-  /* Arch: */
-  ".arch-ids",
-  "{arch}",
-  "=RELEASE-ID",
-  "=meta-update",
-  "=update",
-  /* Bazaar */
-  ".bzr",
-  ".bzrignore",
-  ".bzrtags",
-  /* Mercurial */
-  ".hg",
-  ".hgignore",
-  ".hgtags",
-  /* darcs */
-  "_darcs",
-  NULL
-};
-
-static char const * const backup_file_table[] = {
-  ".#*",
-  "*~",
-  "#*#",
-  NULL
-};
-
-static void
-add_exclude_array (char const * const * fv, int opts)
-{
-  int i;
-
-  for (i = 0; fv[i]; i++)
-    add_exclude (excluded, fv[i], opts);
-}
 
 
 static char *
@@ -1258,9 +1073,6 @@ report_textual_dates (struct tar_args *args)
 }
 
 
-static bool files_from_option;  /* When set, tar will not refuse to create
-				   empty archives */
-
 /* Default density numbers for [0-9][lmh] device specifications */
 
 #if defined DEVICE_PREFIX && !defined DENSITY_LETTER
@@ -1446,9 +1258,6 @@ parse_owner_group (char *arg, uintmax_t field_max, char const **name_option)
 
 #define TAR_SIZE_SUFFIXES "bBcGgkKMmPTtw"
 
-/* Either NL or NUL, as decided by the --null option.  */
-static char filename_terminator;
-
 static char const *const sort_mode_arg[] = {
   "none",
   "name",
@@ -1502,6 +1311,7 @@ set_old_files_option (int code, struct option_locus *loc)
   old_files_option = code;
 }
 
+
 static error_t
 parse_opt (int key, char *arg, struct argp_state *state)
 {
@@ -1511,7 +1321,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
     {
     case ARGP_KEY_ARG:
       /* File name or non-parsed option, because of ARGP_IN_ORDER */
-      name_add_name (arg, MAKE_INCL_OPTIONS (args));
+      name_add_name (arg);
       args->input_files = true;
       break;
 
@@ -1552,10 +1362,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case 'c':
       set_subcommand_option (CREATE_SUBCOMMAND);
-      break;
-
-    case 'C':
-      name_add_dir (arg);
       break;
 
     case 'd':
@@ -1800,15 +1606,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (TEST_LABEL_SUBCOMMAND);
       break;
 
-    case 'T':
-      name_add_file (arg, filename_terminator, verbatim_files_from_option,
-		     MAKE_INCL_OPTIONS (args));
-      /* Indicate we've been given -T option. This is for backward
-	 compatibility only, so that `tar cfT archive /dev/null will
-	 succeed */
-      files_from_option = true;
-      break;
-
     case 'u':
       set_subcommand_option (UPDATE_SUBCOMMAND);
       break;
@@ -1843,26 +1640,12 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (EXTRACT_SUBCOMMAND);
       break;
 
-    case 'X':
-      if (add_exclude_file (add_exclude, excluded, arg,
-			    MAKE_EXCL_OPTIONS (args), '\n')
-	  != 0)
-	{
-	  int e = errno;
-	  FATAL_ERROR ((0, e, "%s", quotearg_colon (arg)));
-	}
-      break;
-
     case 'z':
       set_use_compress_program_option (GZIP_PROGRAM, args->loc);
       break;
 
     case 'Z':
       set_use_compress_program_option (COMPRESS_PROGRAM, args->loc);
-      break;
-
-    case ANCHORED_OPTION:
-      args->matching_flags |= EXCLUDE_ANCHORED;
       break;
 
     case ATIME_PRESERVE_OPTION:
@@ -1926,57 +1709,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (DELETE_SUBCOMMAND);
       break;
 
-    case EXCLUDE_BACKUPS_OPTION:
-      add_exclude_array (backup_file_table, EXCLUDE_WILDCARDS);
-      break;
-
-    case EXCLUDE_OPTION:
-      add_exclude (excluded, arg, MAKE_EXCL_OPTIONS (args));
-      break;
-
-    case EXCLUDE_CACHES_OPTION:
-      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_contents,
-			 cachedir_file_p);
-      break;
-
-    case EXCLUDE_CACHES_UNDER_OPTION:
-      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_under,
-			 cachedir_file_p);
-      break;
-
-    case EXCLUDE_CACHES_ALL_OPTION:
-      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_all,
-			 cachedir_file_p);
-      break;
-
-    case EXCLUDE_IGNORE_OPTION:
-      excfile_add (arg, EXCL_NON_RECURSIVE);
-      break;
-
-    case EXCLUDE_IGNORE_RECURSIVE_OPTION:
-      excfile_add (arg, EXCL_RECURSIVE);
-      break;
-
-    case EXCLUDE_TAG_OPTION:
-      add_exclusion_tag (arg, exclusion_tag_contents, NULL);
-      break;
-
-    case EXCLUDE_TAG_UNDER_OPTION:
-      add_exclusion_tag (arg, exclusion_tag_under, NULL);
-      break;
-
-    case EXCLUDE_TAG_ALL_OPTION:
-      add_exclusion_tag (arg, exclusion_tag_all, NULL);
-      break;
-
-    case EXCLUDE_VCS_OPTION:
-      add_exclude_array (vcs_file_table, 0);
-      break;
-
-    case EXCLUDE_VCS_IGNORES_OPTION:
-      exclude_vcs_ignores ();
-      break;
-
     case FORCE_LOCAL_OPTION:
       force_local_option = true;
       break;
@@ -1987,10 +1719,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case INDEX_FILE_OPTION:
       index_file_name = arg;
-      break;
-
-    case IGNORE_CASE_OPTION:
-      args->matching_flags |= FNM_CASEFOLD;
       break;
 
     case IGNORE_COMMAND_ERROR_OPTION:
@@ -2036,15 +1764,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       umask (initial_umask);
       break;
 
-    case NO_ANCHORED_OPTION:
-      args->include_anchored = 0; /* Clear the default for comman line args */
-      args->matching_flags &= ~ EXCLUDE_ANCHORED;
-      break;
-
-    case NO_IGNORE_CASE_OPTION:
-      args->matching_flags &= ~ FNM_CASEFOLD;
-      break;
-
     case NO_IGNORE_COMMAND_ERROR_OPTION:
       ignore_command_error_option = false;
       break;
@@ -2056,24 +1775,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
     case NO_QUOTE_CHARS_OPTION:
       for (;*arg; arg++)
 	set_char_quoting (NULL, *arg, 0);
-      break;
-
-    case NO_WILDCARDS_OPTION:
-      args->wildcards = disable_wildcards;
-      break;
-
-    case NO_WILDCARDS_MATCH_SLASH_OPTION:
-      args->matching_flags |= FNM_FILE_NAME;
-      break;
-
-    case NULL_OPTION:
-      filename_terminator = '\0';
-      verbatim_files_from_option = true;
-      break;
-
-    case NO_NULL_OPTION:
-      filename_terminator = '\n';
-      verbatim_files_from_option = false;
       break;
 
     case NUMERIC_OWNER_OPTION:
@@ -2261,18 +1962,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
       volno_file_option = arg;
       break;
 
-    case WILDCARDS_OPTION:
-      args->wildcards = enable_wildcards;
-      break;
-
-    case WILDCARDS_MATCH_SLASH_OPTION:
-      args->matching_flags &= ~ FNM_FILE_NAME;
-      break;
-
-    case NO_RECURSION_OPTION:
-      recursion_option = 0;
-      break;
-
     case NO_SAME_OWNER_OPTION:
       same_owner_option = -1;
       break;
@@ -2313,28 +2002,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
       xattrs_mask_add (arg, (key == XATTR_INCLUDE));
       break;
 
-    case RECURSION_OPTION:
-      recursion_option = FNM_LEADING_DIR;
-      break;
-
     case SAME_OWNER_OPTION:
       same_owner_option = 1;
-      break;
-
-    case UNQUOTE_OPTION:
-      unquote_option = true;
-      break;
-
-    case NO_UNQUOTE_OPTION:
-      unquote_option = false;
-      break;
-
-    case VERBATIM_FILES_FROM_OPTION:
-      verbatim_files_from_option = true;
-      break;
-
-    case NO_VERBATIM_FILES_FROM_OPTION:
-      verbatim_files_from_option = false;
       break;
 
     case WARNING_OPTION:
@@ -2419,12 +2088,14 @@ parse_opt (int key, char *arg, struct argp_state *state)
   return 0;
 }
 
+extern struct argp_child names_argp_children[];
+
 static struct argp argp = {
   options,
   parse_opt,
   N_("[FILE]..."),
   doc,
-  NULL,
+  names_argp_children,
   tar_help_filter,
   NULL
 };
@@ -2439,8 +2110,8 @@ usage (int status)
 
 /* Parse the options for tar.  */
 
-static struct argp_option *
-find_argp_option (struct argp_option *o, int letter)
+static struct argp_option const *
+find_argp_option_key (struct argp_option const *o, int key)
 {
   for (;
        !(o->name == NULL
@@ -2448,11 +2119,30 @@ find_argp_option (struct argp_option *o, int letter)
 	 && o->arg == 0
 	 && o->flags == 0
 	 && o->doc == NULL); o++)
-    if (o->key == letter)
+    if (o->key == key)
       return o;
   return NULL;
 }
 
+static struct argp_option const *
+find_argp_option (struct argp *ap, int key)
+{
+  struct argp_option const *p = NULL;
+  struct argp_child const *child;
+  
+  p = find_argp_option_key (ap->options, key);
+  if (!p && ap->children)
+    {
+      for (child = ap->children; child; child++)
+	{
+	  p = find_argp_option_key (child->argp->options, key);
+	  if (p)
+	    break;
+	}
+    }
+  return p;
+}
+  
 static const char *tar_authors[] = {
   "John Gilmore",
   "Jay Fenlason",
@@ -2530,9 +2220,6 @@ decode_options (int argc, char **argv)
 
   /* Set some default option values.  */
   args.textual_date = NULL;
-  args.wildcards = default_wildcards;
-  args.matching_flags = 0;
-  args.include_anchored = EXCLUDE_ANCHORED;
   args.o_option = false;
   args.pax_option = false;
   args.backup_suffix_string = getenv ("SIMPLE_BACKUP_SUFFIX");
@@ -2595,11 +2282,11 @@ decode_options (int argc, char **argv)
 
       for (letter = *in++; *letter; letter++)
 	{
-	  struct argp_option *opt;
+	  struct argp_option const *opt;
 
 	  buffer[1] = *letter;
 	  *out++ = xstrdup (buffer);
-	  opt = find_argp_option (options, *letter);
+	  opt = find_argp_option (&argp, *letter);
 	  if (opt && opt->arg)
 	    {
 	      if (in < argv + argc)
@@ -2655,13 +2342,9 @@ decode_options (int argc, char **argv)
   /* Handle operands after any "--" argument.  */
   for (; idx < argc; idx++)
     {
-      name_add_name (argv[idx], MAKE_INCL_OPTIONS (&args));
+      name_add_name (argv[idx]);
       args.input_files = true;
     }
-
-  /* Warn about implicit use of the wildcards in command line arguments.
-     See TODO */
-  warn_regex_usage = args.wildcards == default_wildcards;
 
   /* Derive option values and check option consistency.  */
 
@@ -2992,7 +2675,6 @@ main (int argc, char **argv)
   exit_status = TAREXIT_SUCCESS;
   error_hook = checkpoint_flush_actions;
 
-  filename_terminator = '\n';
   set_quoting_style (0, DEFAULT_QUOTING_STYLE);
 
   /* Make sure we have first three descriptors available */

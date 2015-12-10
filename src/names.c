@@ -26,6 +26,396 @@
 
 #include "common.h"
 
+static void name_add_option (int option, const char *arg);
+static void name_add_dir (const char *name);
+static void name_add_file (const char *name);
+
+enum
+  {
+    EXCLUDE_BACKUPS_OPTION = 256,
+    EXCLUDE_CACHES_OPTION,
+    EXCLUDE_CACHES_UNDER_OPTION,
+    EXCLUDE_CACHES_ALL_OPTION,
+    EXCLUDE_OPTION,
+    EXCLUDE_IGNORE_OPTION,
+    EXCLUDE_IGNORE_RECURSIVE_OPTION,
+    EXCLUDE_TAG_OPTION,
+    EXCLUDE_TAG_UNDER_OPTION,
+    EXCLUDE_TAG_ALL_OPTION,
+    EXCLUDE_VCS_OPTION,
+    EXCLUDE_VCS_IGNORES_OPTION,
+    IGNORE_CASE_OPTION,
+    NO_IGNORE_CASE_OPTION,
+    ANCHORED_OPTION,
+    NO_ANCHORED_OPTION,
+    RECURSION_OPTION,
+    NO_RECURSION_OPTION,
+    UNQUOTE_OPTION,
+    NO_UNQUOTE_OPTION,
+    NO_VERBATIM_FILES_FROM_OPTION,
+    NO_WILDCARDS_MATCH_SLASH_OPTION,
+    NO_WILDCARDS_OPTION,
+    NULL_OPTION,
+    NO_NULL_OPTION,
+    VERBATIM_FILES_FROM_OPTION,
+    WILDCARDS_MATCH_SLASH_OPTION,
+    WILDCARDS_OPTION
+  };
+
+static struct argp_option names_options[] = {
+#define GRID 100
+  {NULL, 0, NULL, 0,
+   N_("Local file name selection:"), GRID },
+
+  {"add-file", ARGP_KEY_ARG, N_("FILE"), 0,
+   N_("add given FILE to the archive (useful if its name starts with a dash)"), GRID+1 },
+  {"directory", 'C', N_("DIR"), 0,
+   N_("change to directory DIR"), GRID+1 },
+  {"files-from", 'T', N_("FILE"), 0,
+   N_("get names to extract or create from FILE"), GRID+1 },
+  {"null", NULL_OPTION, 0, 0,
+   N_("-T reads null-terminated names; implies --verbatim-files-from"),
+      GRID+1 },
+  {"no-null", NO_NULL_OPTION, 0, 0,
+   N_("disable the effect of the previous --null option"), GRID+1 },
+  {"unquote", UNQUOTE_OPTION, 0, 0,
+   N_("unquote input file or member names (default)"), GRID+1 },
+  {"no-unquote", NO_UNQUOTE_OPTION, 0, 0,
+   N_("do not unquote input file or member names"), GRID+1 },
+  {"verbatim-files-from", VERBATIM_FILES_FROM_OPTION, 0, 0,
+   N_("-T reads file names verbatim (no option handling)"), GRID+1 },
+  {"no-verbatim-files-from", NO_VERBATIM_FILES_FROM_OPTION, 0, 0,
+   N_("-T treats file names starting with dash as options (default)"),
+      GRID+1 },
+  {"exclude", EXCLUDE_OPTION, N_("PATTERN"), 0,
+   N_("exclude files, given as a PATTERN"), GRID+1 },
+  {"exclude-from", 'X', N_("FILE"), 0,
+   N_("exclude patterns listed in FILE"), GRID+1 },
+  {"exclude-caches", EXCLUDE_CACHES_OPTION, 0, 0,
+   N_("exclude contents of directories containing CACHEDIR.TAG, "
+      "except for the tag file itself"), GRID+1 },
+  {"exclude-caches-under", EXCLUDE_CACHES_UNDER_OPTION, 0, 0,
+   N_("exclude everything under directories containing CACHEDIR.TAG"),
+   GRID+1 },
+  {"exclude-caches-all", EXCLUDE_CACHES_ALL_OPTION, 0, 0,
+   N_("exclude directories containing CACHEDIR.TAG"), GRID+1 },
+  {"exclude-tag", EXCLUDE_TAG_OPTION, N_("FILE"), 0,
+   N_("exclude contents of directories containing FILE, except"
+      " for FILE itself"), GRID+1 },
+  {"exclude-ignore", EXCLUDE_IGNORE_OPTION, N_("FILE"), 0,
+    N_("read exclude patterns for each directory from FILE, if it exists"),
+   GRID+1 },
+  {"exclude-ignore-recursive", EXCLUDE_IGNORE_RECURSIVE_OPTION, N_("FILE"), 0,
+    N_("read exclude patterns for each directory and its subdirectories "
+       "from FILE, if it exists"), GRID+1 },
+  {"exclude-tag-under", EXCLUDE_TAG_UNDER_OPTION, N_("FILE"), 0,
+   N_("exclude everything under directories containing FILE"), GRID+1 },
+  {"exclude-tag-all", EXCLUDE_TAG_ALL_OPTION, N_("FILE"), 0,
+   N_("exclude directories containing FILE"), GRID+1 },
+  {"exclude-vcs", EXCLUDE_VCS_OPTION, NULL, 0,
+   N_("exclude version control system directories"), GRID+1 },
+  {"exclude-vcs-ignores", EXCLUDE_VCS_IGNORES_OPTION, NULL, 0,
+   N_("read exclude patterns from the VCS ignore files"), GRID+1 },
+  {"exclude-backups", EXCLUDE_BACKUPS_OPTION, NULL, 0,
+   N_("exclude backup and lock files"), GRID+1 },
+  {"recursion", RECURSION_OPTION, 0, 0,
+   N_("recurse into directories (default)"), GRID+1 },
+  {"no-recursion", NO_RECURSION_OPTION, 0, 0,
+   N_("avoid descending automatically in directories"), GRID+1 },
+#undef GRID
+
+#define GRID 120
+  {NULL, 0, NULL, 0,
+   N_("File name matching options (affect both exclude and include patterns):"),
+   GRID },
+  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
+   N_("ignore case"), GRID+1 },
+  {"anchored", ANCHORED_OPTION, 0, 0,
+   N_("patterns match file name start"), GRID+1 },
+  {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
+   N_("patterns match after any '/' (default for exclusion)"), GRID+1 },
+  {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
+   N_("case sensitive matching (default)"), GRID+1 },
+  {"wildcards", WILDCARDS_OPTION, 0, 0,
+   N_("use wildcards (default for exclusion)"), GRID+1 },
+  {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
+   N_("verbatim string matching"), GRID+1 },
+  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
+   N_("wildcards do not match '/'"), GRID+1 },
+  {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
+   N_("wildcards match '/' (default for exclusion)"), GRID+1 },
+#undef GRID
+  
+  {NULL}
+};
+
+static bool
+is_file_selection_option (int key)
+{
+  struct argp_option *p;
+
+  for (p = names_options;
+       !(p->name == NULL && p->key == 0 && p->doc == NULL); p++)
+    if (p->key == key)
+      return true;
+  return false;
+}  
+
+/* Either NL or NUL, as decided by the --null option.  */
+static char filename_terminator = '\n';
+/* Treat file names read from -T input verbatim */
+static bool verbatim_files_from_option;
+
+static error_t
+names_parse_opt (int key, char *arg, struct argp_state *state)
+{
+  switch (key)
+    {
+    case 'C':
+      name_add_dir (arg);
+      break;
+
+    case 'T':
+      name_add_file (arg);
+      /* Indicate we've been given -T option. This is for backward
+	 compatibility only, so that `tar cfT archive /dev/null will
+	 succeed */
+      files_from_option = true;
+      break;
+
+    default:
+      if (is_file_selection_option (key))
+	name_add_option (key, arg);
+      else
+	return ARGP_ERR_UNKNOWN;
+    }
+  return 0;
+}
+
+/* Wildcard matching settings */
+enum wildcards
+  {
+    default_wildcards, /* For exclusion == enable_wildcards,
+			  for inclusion == disable_wildcards */
+    disable_wildcards,
+    enable_wildcards
+  };
+
+static enum wildcards wildcards = default_wildcards;
+  /* Wildcard settings (--wildcards/--no-wildcards) */
+static int matching_flags = 0;
+  /* exclude_fnmatch options */
+static int include_anchored = EXCLUDE_ANCHORED;
+  /* Pattern anchoring options used for file inclusion */
+  
+#define EXCLUDE_OPTIONS						\
+  (((wildcards != disable_wildcards) ? EXCLUDE_WILDCARDS : 0)	\
+  | matching_flags						\
+  | recursion_option)
+
+#define INCLUDE_OPTIONS						    \
+  (((wildcards == enable_wildcards) ? EXCLUDE_WILDCARDS : 0)	    \
+  | include_anchored						    \
+  | matching_flags						    \
+  | recursion_option)
+
+static char const * const vcs_file_table[] = {
+  /* CVS: */
+  "CVS",
+  ".cvsignore",
+  /* RCS: */
+  "RCS",
+  /* SCCS: */
+  "SCCS",
+  /* SVN: */
+  ".svn",
+  /* git: */
+  ".git",
+  ".gitignore",
+  ".gitattributes",
+  ".gitmodules",
+  /* Arch: */
+  ".arch-ids",
+  "{arch}",
+  "=RELEASE-ID",
+  "=meta-update",
+  "=update",
+  /* Bazaar */
+  ".bzr",
+  ".bzrignore",
+  ".bzrtags",
+  /* Mercurial */
+  ".hg",
+  ".hgignore",
+  ".hgtags",
+  /* darcs */
+  "_darcs",
+  NULL
+};
+
+static char const * const backup_file_table[] = {
+  ".#*",
+  "*~",
+  "#*#",
+  NULL
+};
+
+static void
+add_exclude_array (char const * const * fv, int opts)
+{
+  int i;
+
+  for (i = 0; fv[i]; i++)
+    add_exclude (excluded, fv[i], opts);
+}
+
+static void
+handle_file_selection_option (int key, const char *arg)
+{
+  switch (key)
+    {
+    case EXCLUDE_BACKUPS_OPTION:
+      add_exclude_array (backup_file_table, EXCLUDE_WILDCARDS);
+      break;
+
+    case EXCLUDE_OPTION:
+      add_exclude (excluded, arg, EXCLUDE_OPTIONS);
+      break;
+
+    case EXCLUDE_CACHES_OPTION:
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_contents,
+			 cachedir_file_p);
+      break;
+
+    case EXCLUDE_CACHES_UNDER_OPTION:
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_under,
+			 cachedir_file_p);
+      break;
+
+    case EXCLUDE_CACHES_ALL_OPTION:
+      add_exclusion_tag ("CACHEDIR.TAG", exclusion_tag_all,
+			 cachedir_file_p);
+      break;
+
+    case EXCLUDE_IGNORE_OPTION:
+      excfile_add (arg, EXCL_NON_RECURSIVE);
+      break;
+
+    case EXCLUDE_IGNORE_RECURSIVE_OPTION:
+      excfile_add (arg, EXCL_RECURSIVE);
+      break;
+
+    case EXCLUDE_TAG_OPTION:
+      add_exclusion_tag (arg, exclusion_tag_contents, NULL);
+      break;
+
+    case EXCLUDE_TAG_UNDER_OPTION:
+      add_exclusion_tag (arg, exclusion_tag_under, NULL);
+      break;
+
+    case EXCLUDE_TAG_ALL_OPTION:
+      add_exclusion_tag (arg, exclusion_tag_all, NULL);
+      break;
+
+    case EXCLUDE_VCS_OPTION:
+      add_exclude_array (vcs_file_table, 0);
+      break;
+
+    case EXCLUDE_VCS_IGNORES_OPTION:
+      exclude_vcs_ignores ();
+      break;
+
+    case RECURSION_OPTION:
+      recursion_option = FNM_LEADING_DIR;
+      break;
+
+    case NO_RECURSION_OPTION:
+      recursion_option = 0;
+      break;
+
+    case UNQUOTE_OPTION:
+      unquote_option = true;
+      break;
+
+    case NO_UNQUOTE_OPTION:
+      unquote_option = false;
+      break;
+
+    case NULL_OPTION:
+      filename_terminator = '\0';
+      verbatim_files_from_option = true;
+      break;
+
+    case NO_NULL_OPTION:
+      filename_terminator = '\n';
+      verbatim_files_from_option = false;
+      break;
+
+    case 'X':
+      if (add_exclude_file (add_exclude, excluded, arg, EXCLUDE_OPTIONS, '\n')
+	  != 0)
+	{
+	  int e = errno;
+	  FATAL_ERROR ((0, e, "%s", quotearg_colon (arg)));
+	}
+      break;
+
+    case ANCHORED_OPTION:
+      matching_flags |= EXCLUDE_ANCHORED;
+      break;
+
+    case NO_ANCHORED_OPTION:
+      include_anchored = 0; /* Clear the default for comman line args */
+      matching_flags &= ~ EXCLUDE_ANCHORED;
+      break;
+
+    case IGNORE_CASE_OPTION:
+      matching_flags |= FNM_CASEFOLD;
+      break;
+
+    case NO_IGNORE_CASE_OPTION:
+      matching_flags &= ~ FNM_CASEFOLD;
+      break;
+
+    case WILDCARDS_OPTION:
+      wildcards = enable_wildcards;
+      break;
+
+    case NO_WILDCARDS_OPTION:
+      wildcards = disable_wildcards;
+      break;
+
+    case WILDCARDS_MATCH_SLASH_OPTION:
+      matching_flags &= ~ FNM_FILE_NAME;
+      break;
+
+    case NO_WILDCARDS_MATCH_SLASH_OPTION:
+      matching_flags |= FNM_FILE_NAME;
+      break;
+
+    case VERBATIM_FILES_FROM_OPTION:
+      verbatim_files_from_option = true;
+      break;
+
+    case NO_VERBATIM_FILES_FROM_OPTION:
+      verbatim_files_from_option = false;
+      break;
+
+    default:
+      FATAL_ERROR ((0, 0, "unhandled positional option %d", key));
+    }
+}
+
+static struct argp names_argp = {
+  names_options,
+  names_parse_opt,
+};
+
+struct argp_child names_argp_children[] = {
+  { &names_argp, 0, "" },
+  { NULL }
+};
+
 /* User and group names.  */
 
 /* Make sure you link with the proper libraries if you are running the
@@ -210,20 +600,22 @@ static struct name *nametail;	/* end of name list */
 
 /* A name_list element contains entries of three types: */
 
-#define NELT_NAME  0   /* File name */
-#define NELT_CHDIR 1   /* Change directory request */
-#define NELT_FMASK 2   /* Change fnmatch options request */
-#define NELT_FILE  3   /* Read file names from that file */
-#define NELT_NOOP  4   /* No operation */
+enum nelt_type
+  {
+    NELT_NAME,   /* File name */
+    NELT_CHDIR,  /* Change directory request */
+    NELT_FILE,   /* Read file names from that file */
+    NELT_NOOP,   /* No operation */
+    NELT_OPTION  /* Filename-selection option */
+  };
 
 struct name_elt        /* A name_array element. */
 {
   struct name_elt *next, *prev;
-  char type;           /* Element type, see NELT_* constants above */
+  enum nelt_type type; /* Element type, see NELT_* constants above */
   union
   {
     const char *name;  /* File or directory name */
-    int matching_flags;/* fnmatch options if type == NELT_FMASK */
     struct             /* File, if type == NELT_FILE */
     {
       const char *name;/* File name */
@@ -233,6 +625,11 @@ struct name_elt        /* A name_array element. */
 			  trimming, no option processing */
       FILE *fp;
     } file;
+    struct
+    {
+      int option;
+      char const *arg;
+    } opt; /* NELT_OPTION */
   } v;
 };
 
@@ -261,21 +658,6 @@ name_elt_alloc (void)
   return elt;
 }
 
-static struct name_elt *
-name_elt_alloc_matflags (int matflags)
-{
-  static int prev_flags = 0; /* FIXME: Or EXCLUDE_ANCHORED? */
-  struct name_elt *ep = name_elt_alloc ();
-  if (prev_flags != matflags)
-    {
-      ep->type = NELT_FMASK;
-      ep->v.matching_flags = matflags;
-      prev_flags = matflags;
-      ep = name_elt_alloc ();
-    }
-  return ep;
-}
-
 static void
 name_list_adjust (void)
 {
@@ -297,17 +679,26 @@ name_list_advance (void)
 
 /* Add to name_array the file NAME with fnmatch options MATFLAGS */
 void
-name_add_name (const char *name, int matflags)
+name_add_name (const char *name)
 {
-  struct name_elt *ep = name_elt_alloc_matflags (matflags);
+  struct name_elt *ep = name_elt_alloc ();
 
   ep->type = NELT_NAME;
   ep->v.name = name;
   name_count++;
 }
 
+static void
+name_add_option (int option, const char *arg)
+{
+  struct name_elt *elt = name_elt_alloc ();
+  elt->type = NELT_OPTION;
+  elt->v.opt.option = option;
+  elt->v.opt.arg = arg;
+}
+
 /* Add to name_array a chdir request for the directory NAME */
-void
+static void
 name_add_dir (const char *name)
 {
   struct name_elt *ep = name_elt_alloc ();
@@ -315,16 +706,14 @@ name_add_dir (const char *name)
   ep->v.name = name;
 }
 
-void
-name_add_file (const char *name, int term, bool verbatim, int matflags)
+static void
+name_add_file (const char *name)
 {
-  struct name_elt *ep = name_elt_alloc_matflags (matflags);
+  struct name_elt *ep = name_elt_alloc ();
 
   ep->type = NELT_FILE;
   ep->v.file.name = name;
   ep->v.file.line = 0;
-  ep->v.file.term = term;
-  ep->v.file.verbatim = verbatim;
   ep->v.file.fp = NULL;
 }
 
@@ -504,6 +893,8 @@ read_next_name (struct name_elt *ent, struct name_elt *ret)
 	  if ((ent->v.file.fp = fopen (ent->v.file.name, "r")) == NULL)
 	    open_fatal (ent->v.file.name);
 	}
+      ent->v.file.term = filename_terminator;
+      ent->v.file.verbatim = verbatim_files_from_option;
     }
 
   while (1)
@@ -567,16 +958,12 @@ copy_name (struct name_elt *ep)
 }
 
 
-static int matching_flags; /* exclude_fnmatch options */
-
 /* Get the next NELT_NAME element from name_array.  Result is in
    static storage and can't be relied upon across two calls.
 
    If CHANGE_DIRS is true, treat any entries of type NELT_CHDIR as
    the request to change to the given directory.
 
-   Entries of type NELT_FMASK cause updates of the matching_flags
-   value.
 */
 static struct name_elt *
 name_next_elt (int change_dirs)
@@ -591,12 +978,6 @@ name_next_elt (int change_dirs)
 	case NELT_NOOP:
 	  name_list_advance ();
 	  break;
-
-	case NELT_FMASK:
-	  matching_flags = ep->v.matching_flags;
-	  recursion_option = matching_flags & FNM_LEADING_DIR;
-	  name_list_advance ();
-	  continue;
 
 	case NELT_FILE:
 	  if (read_next_name (ep, &entry) == 0)
@@ -619,6 +1000,11 @@ name_next_elt (int change_dirs)
 	  entry.v.name = name_buffer;
 	  name_list_advance ();
 	  return &entry;
+
+	case NELT_OPTION:
+	  handle_file_selection_option (ep->v.opt.option, ep->v.opt.arg);
+	  name_list_advance ();
+	  continue;
 	}
     }
 
@@ -664,7 +1050,7 @@ name_gather (void)
 	  buffer->change_dir = change_dir;
 	  buffer->next = 0;
 	  buffer->found_count = 0;
-	  buffer->matching_flags = matching_flags;
+	  buffer->matching_flags = INCLUDE_OPTIONS;
 	  buffer->directory = NULL;
 	  buffer->parent = NULL;
 	  buffer->cmdline = true;
@@ -706,7 +1092,7 @@ addname (char const *string, int change_dir, bool cmdline, struct name *parent)
   name->prev = nametail;
   name->next = NULL;
   name->found_count = 0;
-  name->matching_flags = matching_flags;
+  name->matching_flags = INCLUDE_OPTIONS;
   name->change_dir = change_dir;
   name->directory = NULL;
   name->parent = parent;
@@ -841,7 +1227,10 @@ regex_usage_warning (const char *name)
 {
   static int warned_once = 0;
 
-  if (warn_regex_usage && fnmatch_pattern_has_wildcards (name, 0))
+  /* Warn about implicit use of the wildcards in command line arguments.
+     (Default for tar prior to 1.15.91, but changed afterwards) */
+  if (wildcards == default_wildcards
+      && fnmatch_pattern_has_wildcards (name, 0))
     {
       warned_once = 1;
       WARN ((0, 0,

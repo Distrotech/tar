@@ -408,9 +408,8 @@ GLOBAL bool show_transformed_names_option;
    set for incremental archives. */
 GLOBAL bool delay_directory_restore_option;
 
-/* Warn about implicit use of the wildcards in command line arguments.
-   (Default for tar prior to 1.15.91, but changed afterwards */
-GLOBAL bool warn_regex_usage;
+/* When set, tar will not refuse to create empty archives */
+GLOBAL bool files_from_option;
 
 /* Declarations for each module.  */
 
@@ -732,10 +731,7 @@ void uid_to_uname (uid_t uid, char **uname);
 int uname_to_uid (char const *uname, uid_t *puid);
 
 void name_init (void);
-void name_add_name (const char *name, int matching_flags);
-void name_add_dir (const char *name);
-void name_add_file (const char *name, int term, bool verbatim,
-		    int matching_flags);
+void name_add_name (const char *name);
 void name_term (void);
 const char *name_next (int change_dirs);
 void name_gather (void);
