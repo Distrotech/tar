@@ -37,9 +37,16 @@ tar --create --file archive \
     --no-recursion directory1 \
     --recursion directory2 || exit 1
 tar tf archive
+tar cf archive directory1 directory2
+tar tf archive \
+    --no-recursion directory1 \
+    --recursion directory2 || exit 1
 ],
 [0],
 [directory1/
+directory2/
+directory2/file
+directory1/
 directory2/
 directory2/file
 ])
