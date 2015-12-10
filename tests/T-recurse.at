@@ -62,11 +62,6 @@ directory2/file
 
 AT_CLEANUP
 
-# Tar is not yet ready to properly handle --{,no-}recursion options if those are
-# set both as program arguments and from within --files-from file.  The problem
-# is that content of -T argument is parsed too late;  solution to this would
-# require additional NELT_* type implemented to allow handling of --recursion
-# option similarly to how the -C option is processed now.
 
 AT_SETUP([toggle --recursion (not) from -T])
 AT_KEYWORDS([recurse T-recurse T-recurse2 files-from])
