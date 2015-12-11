@@ -195,6 +195,7 @@ All @command{tar} Options
 * Operation Summary::
 * Option Summary::
 * Short Option Summary::
+* Position-Sensitive Options::
 
 @GNUTAR{} Operations
 
@@ -2274,6 +2275,7 @@ a reference for deciphering @command{tar} commands in scripts.
 * Operation Summary::
 * Option Summary::
 * Short Option Summary::
+* Position-Sensitive Options::
 @end menu
 
 @node Operation Summary
@@ -3730,6 +3732,130 @@ the earlier versions of @GNUTAR{}.  In future releases
 @item -z @tab @ref{--gzip}.
 
 @end multitable
+
+@node Position-Sensitive Options
+@subsection Position-Sensitive Options
+
+Some @GNUTAR{} options can be used multiple times in the same
+invocation and affect all arguments that appear after them.  These are
+options that control how file names are selected and what kind of
+pattern matching is used.
+
+The most obvious example is the @option{-C} option.  It instructs @command{tar}
+to change to the directory given as its argument prior to processing
+the rest of command line (@pxref{directory}).  Thus, in the following
+command:
+
+@example
+@kbd{tar -c -f a.tar -C /etc passwd -C /var log spool}
+@end example
+
+@noindent
+the file @file{passwd} will be searched in the directory @file{/etc},
+and files @file{log} and @file{spool} -- in @file{/var}.
+
+These options can also be used in a file list supplied with the
+@option{--files-from} (@option{-T}) option (@pxref{files}).  In that
+case they affect all files (patterns) appearing in that file after
+them and remain in effect for any arguments processed after that file.
+For example, if the file @file{list.txt} contained:
+
+@example
+README
+-C src
+main.c
+@end example
+
+@noindent
+and @command{tar} were invoked as follows:
+
+@example
+@kbd{tar -c -f a.tar -T list.txt Makefile}
+@end example
+
+@noindent
+then the file @file{README} would be looked up in the current working
+directory, and files @file{main.c} and @file{Makefile} would be looked
+up in the directory @file{src}.
+
+Many options can be prefixed with @option{--no-} to cancel the effect
+of the original option.
+
+For example, the @option{--recursion} option controls whether to
+recurse in the subdirectories.  It's counterpart
+@option{--no-recursion} disables this.  Consider the command below.  It will
+store in the archive the directory @file{/usr} with all files and
+directories that are located in it as well as any files and
+directories in @file{/var}, without recursing into them@footnote{The @option{--recursion}
+option is the default and is used here for clarity.  The same example
+can be written as:
+
+@example
+tar -cf a.tar /usr --no-recursion /var/*
+@end example
+}:
+
+@example
+tar -cf a.tar --recursion /usr --no-recursion /var/*
+@end example
+
+The following table summarizes all position-sensitive options. 
+
+@table @option
+@item --directory=@var{dir}
+@itemx -C @var{dir}
+@xref{directory}.
+
+@item --null
+@itemx --no-null
+@xref{nul}.
+
+@item --unquote
+@itemx --no-unquote
+@xref{input name quoting}.
+
+@item --verbatim-files-from
+@itemx --no-verbatim-files-from
+@xref{verbatim-files-from}.
+
+@item --recursion 
+@itemx --no-recursion
+@xref{recurse}.
+
+@item --anchored 
+@itemx --no-anchored 
+@xref{anchored patterns}.
+
+@item --ignore-case 
+@itemx --no-ignore-case 
+@xref{case-insensitive matches}.
+
+@item --wildcards
+@itemx --no-wildcards
+@xref{controlling pattern-matching}.
+
+@item --wildcards-match-slash 
+@itemx --no-wildcards-match-slash 
+@xref{controlling pattern-matching}.
+
+@item --exclude
+@xref{exclude}.
+
+@item --exclude-from
+@itemx -X
+@itemx --exclude-caches
+@itemx --exclude-caches-under
+@itemx --exclude-caches-all
+@itemx --exclude-tag
+@itemx --exclude-ignore
+@itemx --exclude-ignore-recursive
+@itemx --exclude-tag-under
+@itemx --exclude-tag-all
+@itemx --exclude-vcs
+@itemx --exclude-vcs-ignores
+@itemx --exclude-backups
+@xref{exclude}.
+@end table
 
 @node help
 @section @GNUTAR{} documentation
@@ -7413,6 +7539,19 @@ libc.a
 @end group
 @end smallexample
 
+Note, that any options used in the file list remain in effect for the
+rest of the command line.  For example, using the same @file{list}
+file as above, the following command
+
+@smallexample
+$ @kbd{tar -c -f foo.tar --files-from list libcurses.a}
+@end smallexample
+
+@noindent
+will look for file @file{libcurses.a} in the directory @file{/lib},
+because it was used with the last @option{-C} option
+(@pxref{Position-Sensitive Options}).
+
 @anchor{verbatim-files-from}
 @opindex verbatim-files-from
 If such option handling is undesirable, use the
@@ -7430,6 +7569,14 @@ restored using @option{--no-verbatim-files-from} option.
 @opindex add-file
 To disable option handling for a single file name, use the
 @option{--add-file} option, e.g.: @code{--add-file=--my-file}.
+
+You can use any @GNUTAR{} command line options in the file list file,
+including @option{--files-from} option itself.  This allows for
+including contents of a file list into another file list file.
+Note however, that options that control file list processing, such as
+@option{--verbatim-files-from} or @option{--null} won't affect the
+file they appear in.  They will affect next @option{--files-from}
+option, if there is any.
 
 @menu
 * nul::
@@ -8027,6 +8174,7 @@ ignores case when excluding @samp{makefile}, but not when excluding
 @samp{readme}.
 
 @table @option
+@anchor{anchored patterns}
 @opindex anchored
 @opindex no-anchored
 @item --anchored
@@ -8036,6 +8184,7 @@ of the name's components.  Otherwise, the pattern can match any
 subsequence.  Default is @option{--no-anchored} for exclusion members
 and @option{--anchored} inclusion members.
 
+@anchor{case-insensitive matches}
 @opindex ignore-case
 @opindex no-ignore-case
 @item --ignore-case

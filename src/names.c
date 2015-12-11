@@ -128,22 +128,22 @@ static struct argp_option names_options[] = {
   {NULL, 0, NULL, 0,
    N_("File name matching options (affect both exclude and include patterns):"),
    GRID },
-  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
-   N_("ignore case"), GRID+1 },
   {"anchored", ANCHORED_OPTION, 0, 0,
    N_("patterns match file name start"), GRID+1 },
   {"no-anchored", NO_ANCHORED_OPTION, 0, 0,
    N_("patterns match after any '/' (default for exclusion)"), GRID+1 },
+  {"ignore-case", IGNORE_CASE_OPTION, 0, 0,
+   N_("ignore case"), GRID+1 },
   {"no-ignore-case", NO_IGNORE_CASE_OPTION, 0, 0,
    N_("case sensitive matching (default)"), GRID+1 },
   {"wildcards", WILDCARDS_OPTION, 0, 0,
    N_("use wildcards (default for exclusion)"), GRID+1 },
   {"no-wildcards", NO_WILDCARDS_OPTION, 0, 0,
    N_("verbatim string matching"), GRID+1 },
-  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
-   N_("wildcards do not match '/'"), GRID+1 },
   {"wildcards-match-slash", WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
    N_("wildcards match '/' (default for exclusion)"), GRID+1 },
+  {"no-wildcards-match-slash", NO_WILDCARDS_MATCH_SLASH_OPTION, 0, 0,
+   N_("wildcards do not match '/'"), GRID+1 },
 #undef GRID
   
   {NULL}
@@ -409,10 +409,15 @@ handle_file_selection_option (int key, const char *arg)
 static struct argp names_argp = {
   names_options,
   names_parse_opt,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL
 };
 
 struct argp_child names_argp_children[] = {
-  { &names_argp, 0, "" },
+  { &names_argp, 0, "", 0 },
   { NULL }
 };
 
