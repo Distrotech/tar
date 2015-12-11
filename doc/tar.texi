@@ -6645,7 +6645,7 @@ especially, the binary output it produced were considered inconvenient
 and were changed in version 1.16.}:
 
 @smallexample
-@kbd{tar --list --incremental --verbose --verbose archive.tar}
+@kbd{tar --list --incremental --verbose --verbose --file archive.tar}
 @end smallexample
 
 This command will print, for each directory in the archive, the list
