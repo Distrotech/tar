@@ -1456,13 +1456,13 @@ sparse_map_decoder (struct tar_stat_info *st,
 		    size_t size __attribute__((unused)))
 {
   int offset = 1;
+  struct sp_array e;
 
   st->sparse_map_avail = 0;
   while (1)
     {
       intmax_t u;
       char *delim;
-      struct sp_array e;
 
       if (!ISDIGIT (*arg))
 	{
