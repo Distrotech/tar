@@ -250,12 +250,8 @@ bzr_addfn (struct exclude *ex, char const *pattern, int options, void *data)
 static void *
 hg_initfn (void *data)
 {
-  int *hgopt;
   static int hg_options;
-
-  if (!data)
-    hgopt = &hg_options;
-
+  int *hgopt = data ? data : &hg_options;
   *hgopt = EXCLUDE_REGEX;
   return hgopt;
 }
@@ -307,7 +303,7 @@ static struct vcs_ignore_file vcs_ignore_files[] = {
   { ".cvsignore", EXCL_NON_RECURSIVE, cvs_addfn, NULL, NULL },
   { ".gitignore", 0, git_addfn, NULL, NULL },
   { ".bzrignore", 0, bzr_addfn, NULL, NULL },
-  { ".hgignore",  0, hg_addfn, hg_initfn , NULL },
+  { ".hgignore",  0, hg_addfn, hg_initfn, NULL },
   { NULL, 0, git_addfn, NULL, NULL }
 };
 
