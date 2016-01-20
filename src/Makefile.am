@@ -1,7 +1,7 @@
 # Makefile for GNU tar sources.
 
-# Copyright 1994-1997, 1999-2001, 2003, 2006-2007, 2009, 2013-2014 Free
-# Software Foundation, Inc.
+# Copyright 1994-1997, 1999-2001, 2003, 2006-2007, 2009, 2013-2014, 2016
+# Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 

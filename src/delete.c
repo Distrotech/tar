@@ -1,7 +1,7 @@
 /* Delete entries from a tar archive.
 
    Copyright 1988, 1992, 1994, 1996-1997, 2000-2001, 2003-2006, 2010,
-   2013-2014 Free Software Foundation, Inc.
+   2013-2014, 2016 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 

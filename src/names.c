@@ -1,6 +1,6 @@
 /* Various processing of names.
 
-   Copyright 1988, 1992, 1994, 1996-2001, 2003-2007, 2009, 2013-2015
+   Copyright 1988, 1992, 1994, 1996-2001, 2003-2007, 2009, 2013-2016
    Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it

@@ -1,6 +1,7 @@
 /* Charset handling for GNU tar.
 
-   Copyright 2004, 2006-2007, 2013-2014 Free Software Foundation, Inc.
+   Copyright 2004, 2006-2007, 2013-2014, 2016 Free Software Foundation,
+   Inc.
 
    This file is part of GNU tar.
 

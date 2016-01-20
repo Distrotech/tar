@@ -1,6 +1,6 @@
 /* Run program with its first three file descriptors attached to a tty.
 
-   Copyright 2014 Free Software Foundation, Inc.
+   Copyright 2014, 2016 Free Software Foundation, Inc.
 
    This file is part of GNU tar.
 

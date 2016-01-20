@@ -1,6 +1,6 @@
 dnl Special Autoconf macros for GNU tar         -*- autoconf -*-
 
-dnl Copyright 2009, 2013-2014 Free Software Foundation, Inc.
+dnl Copyright 2009, 2013-2014, 2016 Free Software Foundation, Inc.
 dnl
 dnl This file is part of GNU tar.
 dnl
