@@ -1,7 +1,7 @@
 # Process this file with autom4te to create testsuite. -*- Autotest -*-
 
 # Test suite for GNU tar.
-# Copyright 2004-2008, 2010-2015 Free Software Foundation, Inc.
+# Copyright 2004-2008, 2010-2016 Free Software Foundation, Inc.
 
 # This file is part of GNU tar.
 
@@ -247,6 +247,7 @@ m4_include([append04.at])
 AT_BANNER([Transforms])
 m4_include([xform-h.at])
 m4_include([xform01.at])
+m4_include([xform02.at])
 
 AT_BANNER([Exclude])
 m4_include([exclude.at])
