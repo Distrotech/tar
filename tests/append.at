@@ -27,7 +27,7 @@ AT_TAR_CHECK([touch file1
           tar cf archive file1
           tar rf archive file2
           tar tf archive],
-          [0],
+           [0],
 [file1
 file2
 ])

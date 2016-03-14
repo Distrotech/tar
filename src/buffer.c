@@ -983,17 +983,27 @@ short_read (size_t status)
 void
 flush_archive (void)
 {
-  size_t buffer_level = current_block->buffer - record_start->buffer;
-  record_start_block += record_end - record_start;
-  current_block = record_start;
-  record_end = record_start + blocking_factor;
-
+  size_t buffer_level;
+  
   if (access_mode == ACCESS_READ && time_to_start_writing)
     {
       access_mode = ACCESS_WRITE;
       time_to_start_writing = false;
       backspace_output ();
+      if (record_end - record_start < blocking_factor)
+	{
+	  memset (record_end, 0,
+		  (blocking_factor - (record_end - record_start))
+		  * BLOCKSIZE);
+	  record_end = record_start + blocking_factor;
+	  return;
+	}
     }
+
+  buffer_level = current_block->buffer - record_start->buffer;
+  record_start_block += record_end - record_start;
+  current_block = record_start;
+  record_end = record_start + blocking_factor;
 
   switch (access_mode)
     {
@@ -1034,7 +1044,7 @@ backspace_output (void)
 
     /* Seek back to the beginning of this record and start writing there.  */
 
-    position -= record_size;
+    position -= record_end->buffer - record_start->buffer;
     if (position < 0)
       position = 0;
     if (rmtlseek (archive, position, SEEK_SET) != position)
