@@ -2133,7 +2133,7 @@ find_argp_option (struct argp *ap, int key)
   p = find_argp_option_key (ap->options, key);
   if (!p && ap->children)
     {
-      for (child = ap->children; child; child++)
+      for (child = ap->children; child->argp; child++)
 	{
 	  p = find_argp_option_key (child->argp->options, key);
 	  if (p)
