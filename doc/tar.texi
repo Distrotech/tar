@@ -36,7 +36,7 @@ This manual is for @acronym{GNU} @command{tar} (version
 @value{VERSION}, @value{UPDATED}), which creates and extracts files
 from archives.
 
-Copyright @copyright{} 1992, 1994--1997, 1999--2001, 2003--2013 Free
+Copyright @copyright{} 1992, 1994--1997, 1999--2001, 2003--2016 Free
 Software Foundation, Inc.
 
 @quotation
@@ -228,6 +228,7 @@ Updating an Archive
 Options Used by @option{--create}
 
 * override::                  Overriding File Metadata.
+* Extended File Attributes::
 * Ignore Failed Read::
 
 Options Used by @option{--extract}
@@ -2370,6 +2371,10 @@ Normally when creating an archive, @command{tar} strips an initial
 treats names specially if they have initial @samp{/} or internal
 @samp{..}.  This option disables that behavior.  @xref{absolute}.
 
+@opsummary{acls}
+@item --acls
+Enable POSIX ACLs support.  @xref{Extended File Attributes, acls}.
+
 @opsummary{after-date}
 @item --after-date
 
@@ -2847,7 +2852,7 @@ Specifies that @command{tar} should ask the user for confirmation before
 performing potentially destructive options, such as overwriting files.
 @xref{interactive}.
 
-@opsummary{--keep-directory-symlink}
+@opsummary{keep-directory-symlink}
 @item --keep-directory-symlink
 
 This option changes the behavior of tar when it encounters a symlink
@@ -2974,6 +2979,10 @@ contents have changed (as opposed to just @option{--newer}, which will
 also back up files for which any status information has
 changed).  @xref{after}.
 
+@opsummary{no-acls}
+@item --no-acls
+Disable the POSIX ACLs support.  @xref{Extended File Attributes, acls}.
+
 @opsummary{no-anchored}
 @item --no-anchored
 An exclude pattern can match any subsequence of the name's components.
@@ -3057,6 +3066,10 @@ locations.  Usually @command{tar} determines automatically whether
 the archive can be seeked or not.  Use this option to disable this
 mechanism.
 
+@opsummary{no-selinux}
+@item --no-selinux
+Disable SELinux context support.  @xref{Extended File Attributes, SELinux}.
+
 @opsummary{no-unquote}
 @item --no-unquote
 Treat all input file or member names literally, do not interpret
@@ -3086,6 +3099,10 @@ Do not use wildcards.
 @item --no-wildcards-match-slash
 Wildcards do not match @samp{/}.
 @xref{controlling pattern-matching}.
+
+@opsummary{no-xattrs}
+@item --no-xattrs
+Disable extended attributes support.  @xref{Extended File Attributes, xattrs}.
 
 @opsummary{null}
 @item --null
@@ -3339,6 +3356,11 @@ the archive can be seeked or not.  This option is intended for use
 in cases when such recognition fails.  It takes effect only if the
 archive is open for reading (e.g. with @option{--list} or
 @option{--extract} options).
+
+@opsummary{selinux}
+@item --selinux
+Enable the SELinux context support.
+@xref{Extended File Attributes, selinux}.
 
 @opsummary{show-defaults}
 @item --show-defaults
@@ -3627,6 +3649,22 @@ Use wildcards when matching member names with patterns.
 @item --wildcards-match-slash
 Wildcards match @samp{/}.
 @xref{controlling pattern-matching}.
+
+@opsummary{xattrs}
+@item --xattrs
+Enable extended attributes support.  @xref{Extended File Attributes, xattrs}.
+
+@opsummary{xattrs-exclude}
+@item --xattrs-exclude=@var{pattern}
+Specify exclude pattern for xattr keys.
+@xref{Extended File Attributes, xattrs-exclude}.
+
+@opsummary{xattrs-include}
+@item --xattrs-include=@var{pattern}.
+Specify include pattern for xattr keys.  @var{pattern} is a POSIX
+regular expression, e.g. @samp{--xattrs-exclude='^user\.'} to include
+only attributes from the user namespace.
+@xref{Extended File Attributes, xattrs-include}.
 
 @opsummary{xz}
 @item --xz
@@ -5299,6 +5337,7 @@ The previous chapter described the basics of how to use
 
 @menu
 * override::                  Overriding File Metadata.
+* Extended File Attributes::
 * Ignore Failed Read::
 @end menu
 
@@ -5478,6 +5517,142 @@ group database.
 When used together with @option{--group-map}, the @option{--group}
 option affects only files whose owner group is not rewritten using the
 map file.
+@end table
+
+@node Extended File Attributes
+@subsection Extended File Attributes
+
+Extended file attributes are name-value pairs that can be
+associated with each node in a file system.  Despite the fact that 
+POSIX.1e draft which proposed them has been withdrawn, the extended
+file attributes are supported by many file systems.  @GNUTAR{} can
+store extended file attributes along with the files.  This feature is
+controlled by the following command line arguments:
+
+@table @option
+@item --xattrs
+Enable extended attributes support.  When used with @option{--create},
+this option instructs @GNUTAR to store extended file attribute in the
+created archive.  This implies POSIX.1-2001 archive format
+(@option{--format=pax}).
+
+When used with @option{--extract}, this option tells @command{tar},
+for each file extracted, to read stored attributes from the archive
+and to apply them to the file.
+
+@item --no-xattrs
+Disable extended attributes support.  This is the default.
+@end table
+
+Attribute names are strings prefixed by a @dfn{namespace} name and a dot.
+Currently, four namespaces exist: @samp{user}, @samp{trusted},
+@samp{security} and @samp{system}.  By default, when @option{--xattr}
+is used, all names are stored in the archive (or extracted, if using
+@option{--extract}).  This can be controlled using the following
+options:
+
+@table @option
+@item --xattrs-exclude=@var{pattern}
+Specify exclude pattern for extended attributes.
+
+@item --xattrs-include=@var{pattern}
+Specify include pattern for extended attributes.
+@end table
+
+Here, the @var{pattern} is POSIX regular expression.  For example, the
+following command:
+
+@example
+$ @kbd{tar --xattrs --xattrs-exclude='^user\.' -c a.tar .}
+@end example
+
+will include in the archive @file{a.tar} all attributes, except those
+from the @samp{user} namespace.
+
+Any number of these options can be given, thereby creating lists of
+include and exclude patterns.
+
+When both options are used, first @option{--xattrs-inlcude} is applied
+to select the set of attribute names to keep, and then
+@option{--xattrs-exclude} is applied to the resulting set.  In other
+words, only those attributes will be stored, whose names match one
+of the regexps in @option{--xattrs-inlcude} and don't match any of
+the regexps from @option{--xattrs-exclude}.
+
+When listing the archive, if both @option{--xattrs} and
+@option{--verbose} options are given, files that have extended
+attributes are marked with an asterisk following their permission
+mask.  For example:
+
+@example
+-rw-r--r--* smith/users      110 2016-03-16 16:07 file
+@end example
+
+When two or more @option{--verbose} options are given, a detailed
+listing of extended attributes is printed after each file entry.  Each
+attribute is listed on a separate line, which begins with two spaces
+and the letter @samp{x} indicating extended attribute.  It is followed
+by a colon, length of the attribute and its name, e.g.:
+
+@example
+-rw-r--r--* smith/users      110 2016-03-16 16:07 file
+  x:  7 user.mime_type
+  x: 32 trusted.md5sum
+@end example
+
+File access control lists (@dfn{ACL}) are another actively used feature
+proposed by the POSIX.1e standard.  Each ACL consists of a set of ACL
+entries, each of which describes the access permissions on the file for
+an individual user or a group of users as a combination of read, write
+and search/execute permissions.
+
+Whether or not to use ACLs is controlled by the following two options:
+
+@table @option
+@item --acls
+Enable POSIX ACLs support.  When used with @option{--create},
+this option instructs @GNUTAR{} to store ACLs in the
+created archive.  This implies POSIX.1-2001 archive format
+(@option{--format=pax}).
+
+When used with @option{--extract}, this option tells @command{tar},
+to restore ACLs for each file extracted (provided they are present
+in the archive).
+
+@item --no-acls
+Disable POSIX ACLs support.  This is the default.
+@end table
+
+When listing the archive, if both @option{--acls} and
+@option{--verbose} options are given, files that have ACLs are marked
+with a plus sing following their permission mask.  For example:
+
+@example
+-rw-r--r--+ smith/users      110 2016-03-16 16:07 file
+@end example
+
+When two or more @option{--verbose} options are given, a detailed
+listing of ACL is printed after each file entry:
+
+@example
+@group
+-rw-r--r--+ smith/users      110 2016-03-16 16:07 file
+  a: user::rw-,user:gray:-w-,group::r--,mask::rw-,other::r--
+@end group  
+@end example
+
+@dfn{Security-Enhanced Linux} (@dfn{SELinux} for short) is a Linux
+kernel security module that provides a mechanism for supporting access
+control security policies, including so-called mandatory access
+controls (@dfn{MAC}).  Support for SELinux attributes is controlled by
+the following command line options:
+
+@table @option
+@item --selinux
+Enable the SELinux context support.
+
+@item --no-selinux
+Disable SELinux context support.
 @end table
 
 @node Ignore Failed Read

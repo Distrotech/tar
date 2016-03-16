@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "December 5, 2015" "TAR" "GNU TAR Manual"
+.TH TAR 1 "March 16, 2016" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -583,6 +583,34 @@ Using \fB\-\-sort=inode\fR reduces the number of disk seeks made when
 creating the archive and thus can considerably speed up archivation.
 This sorting order is supported only if the underlying system provides
 the necessary information.
+.SS Extended file attributes
+.TP
+.B \-\-acls
+Enable POSIX ACLs support.
+.TP
+.B \-\-no\-acls
+Disable POSIX ACLs support.
+.TP
+.B \-\-selinux
+Enable SELinux context support.
+.TP
+.B \-\-no-selinux
+Disable SELinux context support.
+.TP
+.B \-\-xattrs
+Enable extended attributes support.
+.TP
+.B \-\-no\-xattrs
+Disable extended attributes support.
+.TP
+.BI \-\-xattrs\-exclude= PATTERN
+Specify the exclude pattern for xattr keys.  \fIPATTERN\fR is a POSIX
+regular expression, e.g. \fB\-\-xattrs\-exclude='^user\.'\fR, to exclude
+attributes from the user namespace.
+.TP
+.BI \-\-xattrs\-include= PATTERN
+Specify the include pattern for xattr keys.  \fIPATTERN\fR is a POSIX
+regular expression.
 .SS Device selection and switching
 .TP
 \fB\-f\fR, \fB\-\-file\fR=\fIARCHIVE\fR
