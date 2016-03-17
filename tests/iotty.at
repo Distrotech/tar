@@ -26,16 +26,19 @@
 AT_SETUP([terminal input])
 AT_KEYWORDS([options iotty])
 
+m4_define([TTYEMU],[ttyemu -t5 -i/dev/null $*
+rc=$?
+# Skip test if ttyemu can't do its job
+test $rc -eq 126 && AT_SKIP_TEST
+echo $rc])
+
 AT_TAR_CHECK([
 test -x $abs_builddir/ttyemu || AT_SKIP_TEST
 TAPE=-
 export TAPE
-ttyemu -t5 -i/dev/null tar -x
-echo $?
-ttyemu -t5 -i/dev/null tar -xz
-echo $?
-ttyemu -t5 -i/dev/null tar -c .
-echo $?
+TTYEMU(tar -x)
+TTYEMU(tar -xz)
+TTYEMU(tar -c .)
 ],
 [0],
 [tar: Refusing to read archive contents from terminal (missing -f option?)
