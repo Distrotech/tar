@@ -29,6 +29,10 @@ AT_TAR_CHECK([
 orig_mode=3702
 mkdir d
 chmod $orig_mode d
+
+mode=$(genfile --stat=mode.7777 d)
+test $mode = $orig_mode || AT_SKIP_TEST
+
 genfile --file d/file
 tar -cf d.tar -C d .
 rm -rf d
@@ -43,7 +47,7 @@ if test 700 = $mode; then
 else
     echo "CWD: mode changed: 700 != $mode"
 fi
-
+ 
 mkdir d2
 chmod 700 d2
 tar -C d2 --one-top-level=top -xpf d.tar

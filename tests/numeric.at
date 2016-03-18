@@ -21,9 +21,9 @@ AT_KEYWORDS([options numeric numeric-owner])
 m4_pushdef([TESTOP],[
 decho $1
 tar $1 -vvf a dir --numeric-owner |dnl
- awk -vowner=$MYUID/$MYGID '@S|@2==owner {print "OK"; next} {print}'
+ awk '@S|@2=="'"$MYUID/$MYGID"'" {print "OK"; next} {print}'
 tar $1 -vvf a dir |dnl
- awk -vowner=$MYUSR/$MYGRP '@S|@2==owner {print "OK"; next} {print}'
+ awk '@S|@2=="'"$MYUSR/$MYGRP"'" {print "OK"; next} {print}'
 ])
 
 AT_TAR_CHECK([

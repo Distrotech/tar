@@ -23,7 +23,7 @@ AT_KEYWORDS([sparse sparse06])
 
 m4_define([check_pattern],[
 rm -rf out archive.tar smallsparse && mkdir out
-genfile --sparse --file smallsparse $1
+genfile --sparse --quiet --file smallsparse $1
 tar -cSf archive.tar smallsparse
 tar -xf archive.tar -C out
 cmp smallsparse out/smallsparse
@@ -50,7 +50,6 @@ check_pattern([10M DEF 20M GHI 30M JKL 40M])
 
 ],
 [0],,
-[genfile: created file is not sparse
-],,,[posix])
+[],,,[posix])
 
 AT_CLEANUP

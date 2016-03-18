@@ -124,6 +124,9 @@ flush_deferred_unlinks (bool force)
 		    case ENOENT:
 		      /* nothing to worry about */
 		      break;
+		    case EEXIST:
+		      /* OpenSolaris >=10 sets EEXIST instead of ENOTEMPTY
+			 if trying to remove a non-empty directory */
 		    case ENOTEMPTY:
 		      /* Keep the record in list, in the hope we'll
 			 be able to remove it later */
