@@ -150,6 +150,7 @@ if test "$gl_gcc_warnings" = yes; then
   nw="$nw -Winline"                 # It's OK to not inline.
   nw="$nw -Wstrict-overflow"	    # It's OK to optimize strictly.
   nw="$nw -Wsuggest-attribute=pure" # Too many warnings for now.
+  nw="$nw -Wstack-protector"
 
   gl_MANYWARN_ALL_GCC([ws])
   gl_MANYWARN_COMPLEMENT([ws], [$ws], [$nw])
@@ -160,9 +161,10 @@ if test "$gl_gcc_warnings" = yes; then
   gl_WARN_ADD([-Wno-type-limits])      # It's OK to optimize based on types.
   gl_WARN_ADD([-Wno-unused-parameter]) # Too many warnings for now
   gl_WARN_ADD([-Wno-format-nonliteral])
-
+  
   gl_WARN_ADD([-fdiagnostics-show-option])
   gl_WARN_ADD([-funit-at-a-time])
+  
 
   AC_SUBST([WARN_CFLAGS])
 
