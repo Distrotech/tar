@@ -1049,7 +1049,6 @@ all operations and option available for the current version of
 
 @node create
 @section How to Create Archives
-@UNREVISED
 
 @cindex Creation of the archive
 @cindex Archive, creation of
@@ -1130,10 +1129,27 @@ $ @kbd{tar --create --file=collection.tar blues folk jazz}
 @end smallexample
 
 The order of the arguments is not very important, @emph{when using long
-option forms}.  You could also say:
+option forms}, however you should always remember to use option as the
+first argument to tar.   For example, the following is wrong:
 
 @smallexample
-$ @kbd{tar blues --create folk --file=collection.tar jazz}
+$ @kbd{tar blues -c folk -f collection.tar jazz}
+tar: -c: Invalid blocking factor
+Try 'tar --help' or 'tar --usage' for more information.
+@end smallexample
+
+The error message is produced because @command{tar} always treats its
+first argument as an option (or cluster of options), even if it does
+not start with dash.  This is @dfn{traditional} or @dfn{old option}
+style, called so because all implementations of @command{tar} have
+used it since the very inception of the tar archiver in 1970s.  This
+option style will be explained later (@pxref{Old Options}), for now
+just remember to always place option as the first argument.
+
+That being said, you could issue the following command:
+
+@smallexample
+$ @kbd{tar --create folk blues --file=collection.tar jazz}
 @end smallexample
 
 @noindent
@@ -1272,15 +1288,14 @@ you how an example we showed previously would look using short forms.
 This example,
 
 @smallexample
-$ @kbd{tar blues --create folk --file=collection.tar jazz}
+$ @kbd{tar --create folk blues --file=collection.tar jazz}
 @end smallexample
 
 @noindent
-is confusing as it is.  When shown using short forms, however, it
-becomes much more so:
+is confusing as it is.  It becomes even more so when using short forms:
 
 @smallexample
-$ @kbd{tar blues -c folk -f collection.tar jazz}
+$ @kbd{tar -c folk blues -f collection.tar jazz}
 @end smallexample
 
 @noindent
@@ -1378,7 +1393,8 @@ Frequently, you will find yourself wanting to determine exactly what a
 particular archive contains.  You can use the @option{--list}
 (@option{-t}) operation to get the member names as they currently
 appear in the archive, as well as various attributes of the files at
-the time they were archived.  For example, you can examine the archive
+the time they were archived.  For example, assuming @file{practice} is
+your working directory, you can examine the archive
 @file{collection.tar} that you created in the last section with the
 command,
 
@@ -1396,18 +1412,21 @@ jazz
 @end smallexample
 
 @noindent
-The archive @file{bfiles.tar} would list as follows:
-
-@smallexample
-./birds
-baboon
-./box
-@end smallexample
-
-@noindent
 Be sure to use a @option{--file=@var{archive-name}} (@option{-f
 @var{archive-name}}) option just as with @option{--create}
 (@option{-c}) to specify the name of the archive.
+
+@cindex File name arguments, using @option{--list} with
+@xopindex{list, using with file name arguments}
+You can specify one or more individual member names as arguments when
+using @samp{list}.  In this case, @command{tar} will only list the
+names of members you identify.  For example, @w{@kbd{tar --list
+--file=collection.tar folk}} would only print @file{folk}:
+
+@smallexample
+$ @kbd{tar --list --file=collection.tar folk}
+folk
+@end smallexample
 
 @xopindex{list, using with @option{--verbose}}
 @xopindex{verbose, using with @option{--list}}
@@ -1434,19 +1453,23 @@ prefixes from file names before storing them in the archive
 (@xref{absolute}, for more information).  In other
 words, in verbose mode @GNUTAR{} shows @dfn{file names} when creating
 an archive and @dfn{member names} when listing it.  Consider this
-example:
+example, run from your home directory:
 
 @smallexample
 @group
-$ @kbd{tar --create --verbose --file archive /etc/mail}
+$ @kbd{tar --create --verbose --file practice.tar ~/practice}
 tar: Removing leading '/' from member names
-/etc/mail/
-/etc/mail/sendmail.cf
-/etc/mail/aliases
-$ @kbd{tar --test --file archive}
-etc/mail/
-etc/mail/sendmail.cf
-etc/mail/aliases
+/home/myself/practice/
+/home/myself/practice/blues
+/home/myself/practice/folk
+/home/myself/practice/jazz
+/home/myself/practice/collection.tar
+$ @kbd{tar --test --file practice.tar}
+home/myself/practice/
+home/myself/practice/blues
+home/myself/practice/folk
+home/myself/practice/jazz
+home/myself/practice/collection.tar
 @end group
 @end smallexample
 
@@ -1460,35 +1483,53 @@ etc/mail/aliases
 Print member (as opposed to @emph{file}) names when creating the archive.
 @end table
 
-@cindex File name arguments, using @option{--list} with
-@xopindex{list, using with file name arguments}
-You can specify one or more individual member names as arguments when
-using @samp{list}.  In this case, @command{tar} will only list the
-names of members you identify.  For example, @w{@kbd{tar --list
---file=afiles.tar apple}} would only print @file{apple}.
-
-Because @command{tar} preserves file names, these must be specified as
-they appear in the archive (i.e., relative to the directory from which
-the archive was created).  Therefore, it is essential when specifying
-member names to @command{tar} that you give the exact member names.
-For example, @w{@kbd{tar --list --file=bfiles.tar birds}} would produce an
-error message something like @samp{tar: birds: Not found in archive},
-because there is no member named @file{birds}, only one named
-@file{./birds}.  While the names @file{birds} and @file{./birds} name
-the same file, @emph{member} names by default are compared verbatim.
-
-However, @w{@kbd{tar --list --file=bfiles.tar baboon}} would respond
-with @file{baboon}, because this exact member name is in the archive file
-@file{bfiles.tar}.  If you are not sure of the exact file name,
-use @dfn{globbing patterns}, for example:
+With this option, both commands produce the same output:
 
 @smallexample
-$ @kbd{tar --list --file=bfiles.tar --wildcards '*b*'}
+@group
+$ @kbd{tar --create --verbose --show-stored-names \
+           --file practice.tar ~/practice}
+tar: Removing leading '/' from member names
+home/myself/practice/
+home/myself/practice/blues
+home/myself/practice/folk
+home/myself/practice/jazz
+home/myself/practice/collection.tar
+$ @kbd{tar --test --file practice.tar}
+home/myself/practice/
+home/myself/practice/blues
+home/myself/practice/folk
+home/myself/practice/jazz
+home/myself/practice/collection.tar
+@end group
+@end smallexample
+
+Since @command{tar} preserves file names, those you wish to list must be
+specified as they appear in the archive (i.e., relative to the
+directory from which the archive was created).  Continuing the example
+above:
+
+@smallexample
+@group
+$ @kbd{tar --list --file=practice.tar folk}
+tar: folk: Not found in archive
+tar: Exiting with failure status due to previous errors
+@end group
+@end smallexample
+
+the error message is produced because there is no member named
+@file{folk}, only one named @file{home/myself/folk}.
+
+If you are not sure of the exact file name, use @dfn{globbing
+patterns}, for example: 
+
+@smallexample
+$ @kbd{tar --list --file=practice.tar --wildcards '*/folk'}
+home/myself/practice/folk
 @end smallexample
 
 @noindent
-will list all members whose name contains @samp{b}.  @xref{wildcards},
-for a detailed discussion of globbing patterns and related
+@xref{wildcards}, for a detailed discussion of globbing patterns and related
 @command{tar} command line options.
 
 @menu
@@ -1567,9 +1608,9 @@ $ @kbd{tar -xvf collection.tar}
 produces this:
 
 @smallexample
--rw-r--r-- me/user          28 1996-10-18 16:31 jazz
--rw-r--r-- me/user          21 1996-09-23 16:44 blues
--rw-r--r-- me/user          20 1996-09-23 16:44 folk
+-rw-r--r-- myself/user      28 1996-10-18 16:31 jazz
+-rw-r--r-- myself/user      21 1996-09-23 16:44 blues
+-rw-r--r-- myself/user      20 1996-09-23 16:44 folk
 @end smallexample
 
 @node extracting files
@@ -1612,26 +1653,7 @@ extracted @samp{blues}.  You can confirm this by running @command{tar} with
 @option{--list} (@option{-t}).
 
 Remember that as with other operations, specifying the exact member
-name is important.  @w{@kbd{tar --extract --file=bfiles.tar birds}}
-will fail, because there is no member named @file{birds}.  To extract
-the member named @file{./birds}, you must specify @w{@kbd{tar
---extract --file=bfiles.tar ./birds}}.  If you don't remember the
-exact member names, use @option{--list} (@option{-t}) option
-(@pxref{list}).  You can also extract those members that match a
-specific @dfn{globbing pattern}.  For example, to extract from
-@file{bfiles.tar} all files that begin with @samp{b}, no matter their
-directory prefix, you could type:
-
-@smallexample
-$ @kbd{tar -x -f bfiles.tar --wildcards --no-anchored 'b*'}
-@end smallexample
-
-@noindent
-Here, @option{--wildcards} instructs @command{tar} to treat
-command line arguments as globbing patterns and @option{--no-anchored}
-informs it that the patterns apply to member names after any @samp{/}
-delimiter.  The use of globbing patterns is discussed in detail in
-@xref{wildcards}.
+name is important (@xref{failing commands}, for more examples).
 
 You can extract a file to standard output by combining the above options
 with the @option{--to-stdout} (@option{-O}) option (@pxref{Writing to Standard
@@ -1746,9 +1768,6 @@ practice/folk
 practice/jazz
 @end smallexample
 
-@FIXME{make sure the above works when going through the examples in
-order...}
-
 @noindent
 Likewise, if you try to use this command,
 
@@ -1764,7 +1783,24 @@ to extract the files from the archive.
 If you have forgotten the correct names of the files in the archive,
 use @w{@kbd{tar --list --verbose}} to list them correctly.
 
-@FIXME{more examples, here?  hag thinks it's a good idea.}
+To extract the member named @file{practice/folk}, you must specify
+
+@smallexample
+$ @kbd{tar --extract --file=music.tar practice/folk}
+@end smallexample
+
+@noindent
+Notice also, that as explained above, the @file{practice} directory
+will be created, if it didn't already exist.  There are options that
+allow you to strip away a certain number of leading directory
+components (@pxref{transform}).  For example,
+
+@smallexample
+$ @kbd{tar --extract --file=music.tar --strip-components=1 folk}
+@end smallexample
+
+@noindent
+will extract the file @file{folk} into the current working directory.
 
 @node going further
 @section Going Further Ahead in this Manual
@@ -3472,6 +3508,8 @@ tar --extract --file archive.tar --strip-components=2
 
 @noindent
 would extract this file to file @file{name}.
+
+@xref{transform}.
 
 @opsummary{suffix}
 @item --suffix=@var{suffix}
