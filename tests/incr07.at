@@ -38,6 +38,7 @@ AT_KEYWORDS([incremental extract incr07])
 #             http://lists.gnu.org/archive/html/bug-tar/2013-03/msg00044.html
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 mkdir dirA
 echo 'a' > dirA/a
 echo 'a' > dirA/b

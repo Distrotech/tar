@@ -34,6 +34,7 @@ AT_SETUP([--listed-incremental and remounted directories])
 AT_KEYWORDS([listed incremental listed05])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_PRIVILEGED_PREREQ
 options="-C tartest --create --one-file-system --verbose"
 rm -rf archive-[01].snar archive-[01].tar tartest subdir

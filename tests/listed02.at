@@ -30,6 +30,7 @@ AT_SETUP([working --listed])
 AT_KEYWORDS([listed incremental listed02])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_SORT_PREREQ
 echo Create directories
 

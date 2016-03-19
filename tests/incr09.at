@@ -27,6 +27,7 @@ AT_SETUP([incremental with alternating -C])
 AT_KEYWORDS([incremental create incr09])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_SORT_PREREQ
 mkdir foo bar middle
 echo foo/foo_file > foo/foo_file

@@ -29,10 +29,11 @@ AT_KEYWORDS([sparse sparse05])
 #             http://lists.gnu.org/archive/html/bug-tar/2013-01/msg00001.html
 
 AT_TAR_CHECK([
-(echo 0 =2560
-for i in `seq 1 999`; do
-    echo 10M =2560
-done) | genfile --sparse --file BIGFILE --block-size 4K - || AT_SKIP_TEST
+AT_DATA([mapfile],
+[0 =2560
+m4_for([i], 1, 999, 1, [10M =2560
+])])
+genfile --sparse --file BIGFILE --block-size 4K - < mapfile || AT_SKIP_TEST
 tar -f - -c --sparse --posix BIGFILE | tar tvf - | awk '{ print $3, $(NF) }'
 ],
 [0],

@@ -39,6 +39,7 @@ AT_SETUP([filename normalization])
 AT_KEYWORDS([incremental create incr08])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_SORT_PREREQ
 mkdir tartest
 cd tartest

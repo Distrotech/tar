@@ -28,6 +28,8 @@ AT_SETUP([restore broken symlinks from incremental])
 AT_KEYWORDS([incremental incr01])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
+
 mkdir directory
 $as_ln_s foo directory/bar
 

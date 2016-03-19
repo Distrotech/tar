@@ -188,6 +188,10 @@ m4_define([AT_ACLS_PREREQ],[
   fi
 ])
 
+dnl Check whether a newly created file has timestamp consistent with the
+dnl local time.  Skip the test if not.
+m4_define([AT_CHECK_TIMESTAMP],[ckmtime || AT_SKIP_TEST])
+
 m4_include([sparsemvp.at])
 
 AT_INIT

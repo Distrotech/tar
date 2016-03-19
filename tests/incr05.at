@@ -22,6 +22,7 @@ AT_SETUP([incremental dumps with -C])
 AT_KEYWORDS([incremental incr05])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 mkdir dir
 mkdir dir/sub
 genfile --file dir/file1

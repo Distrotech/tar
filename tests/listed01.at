@@ -28,6 +28,8 @@ AT_SETUP([--listed for individual files])
 AT_KEYWORDS([listed incremental listed01])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
+
 mkdir directory
 genfile --length 10240 --pattern zeros --file directory/file1
 # Let the things settle

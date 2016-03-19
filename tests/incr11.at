@@ -26,6 +26,7 @@ AT_SETUP([concatenated incremental archives (renames)])
 AT_KEYWORDS([incremental concat cat incr11])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_SORT_PREREQ
 AT_TAR_MKHIER([data/dir],[file])
 decho Level 0

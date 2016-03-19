@@ -26,6 +26,7 @@ AT_KEYWORDS([incremental concat cat incr10])
 #             http://lists.gnu.org/archive/html/bug-tar/2015-04/msg00003.html
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 mkdir in
 mkdir in/dir
 decho Level 0

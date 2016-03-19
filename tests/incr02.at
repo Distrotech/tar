@@ -33,6 +33,7 @@ AT_SETUP([restoring timestamps from incremental])
 AT_KEYWORDS([incremental timestamp restore incr02])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 # Create directory structure
 mkdir dir
 mkdir dir/subdir1

@@ -25,6 +25,7 @@ AT_SETUP([incremental dump when the parent directory is unreadable])
 AT_KEYWORDS([listed incremental listed03])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_UNPRIVILEGED_PREREQ
 
 mkdir dir
@@ -34,9 +35,13 @@ genfile --file dir/sub/a/file
 cd dir/sub
 
 chmod a-r ..
-tar -c -f archive.tar --listed-incremental=db.1 -v a
+tar -c -f archive.tar --listed-incremental=db.1 -v a 2>err
 status=$?
 chmod a+r ..
+if test $status -eq 2; then
+  grep '^tar: \.: Cannot getcwd' err >/dev/null 2>&1 && AT_SKIP_TEST
+fi
+cat err >&2
 exit $status
 ],
 [0],

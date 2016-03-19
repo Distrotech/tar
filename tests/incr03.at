@@ -30,6 +30,7 @@ AT_SETUP([renamed files in incrementals])
 AT_KEYWORDS([incremental incr03 rename])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_SORT_PREREQ
 mkdir directory
 genfile --file=directory/x

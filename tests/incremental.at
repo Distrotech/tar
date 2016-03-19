@@ -24,6 +24,8 @@ AT_SETUP([incremental])
 AT_KEYWORDS([incremental listed incr00])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
+
 mkdir structure
 echo x >structure/file
 

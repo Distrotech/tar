@@ -33,6 +33,7 @@ AT_KEYWORDS([incremental incr04 icontents])
 m4_pushdef([NAME_PREFIX],[a/b/one_31_chars_long_file_name_])
 
 AT_TAR_CHECK([
+AT_CHECK_TIMESTAMP
 AT_TAR_MKHIER(a/b)
 awk 'BEGIN {
   for (i=1;i<=142;i++)

@@ -27,7 +27,7 @@ AT_SETUP([--listed-incremental and --one-file-system])
 AT_KEYWORDS([listed incremental listed04])
 
 AT_TAR_CHECK([
-
+AT_CHECK_TIMESTAMP
 mkdir dir
 echo a >dir/a
 echo b >dir/b

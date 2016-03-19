@@ -281,7 +281,7 @@ installcheck-local: $(check_PROGRAMS)
 ## genfile      ##
 ## ------------ ##
 
-check_PROGRAMS = genfile checkseekhole
+check_PROGRAMS = genfile checkseekhole ckmtime
 
 if TAR_COND_GRANTPT
 check_PROGRAMS += ttyemu
