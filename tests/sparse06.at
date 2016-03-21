@@ -31,11 +31,10 @@ cmp smallsparse out/smallsparse
 
 AT_TAR_CHECK([
 AT_SEEKHOLE_PREREQ
-AT_TIMEOUT_PREREQ
 
 TAR_OPTIONS="$TAR_OPTIONS --hole-detection=seek"
 genfile --sparse --file bigsparse 0 ABC 8G DEF
-timeout 2 tar -cSf a bigsparse
+tar -cSf a bigsparse
 test $? -eq 0 || exit 1
 
 check_pattern([0 ABC])
