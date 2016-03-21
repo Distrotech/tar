@@ -18,28 +18,49 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stat-time.h>
 #include <timespec.h>
 
+#define TEMPLATE "ckmtime.XXXXXX"
+#define BILLION 1000000000
+
+/* Some filesystems can slightly offset the timestamps of newly created files.
+   To compensate for it, tar testsuite waits at least 1 second before creating
+   next level of incremental backups.
+
+   However, NFS mounts can offset the timestamps by bigger amounts.  
+   
+   This program returns with success (0) if a newly created file is assigned
+   mtime matching the system time to the nearest second.
+*/
 int
 main (int argc, char **argv)
 {
-  FILE *fp;
-  struct timeval tv;
+  int fd;
+  char name[sizeof(TEMPLATE)];
   struct stat st;
-  struct timespec ts;
+  struct timespec ts, td;
+  double diff;
   
-  assert (gettimeofday (&tv, NULL) == 0);
-  ts.tv_sec = tv.tv_sec;
-  ts.tv_nsec = tv.tv_usec * 1000;
+  gettime (&ts);
   
-  fp = tmpfile ();
-  assert (fp != NULL);
-  assert (fstat (fileno (fp), &st) == 0);
-  fclose (fp);
-  if (timespec_cmp (get_stat_mtime (&st), ts) >= 0)
+  strcpy (name, TEMPLATE);
+  umask (077);
+  fd = mkstemp (name);
+  assert (fd != -1);
+  unlink (name);
+  assert (fstat (fd, &st) == 0);
+  close (fd);
+
+  td = timespec_sub (get_stat_mtime (&st), ts);
+  diff = td.tv_sec * BILLION + td.tv_nsec;
+  if (diff < 0)
+    diff = - diff;
+  if (diff / BILLION >= 1)
     {
       fprintf (stderr, "file timestamp unreliable\n");
       return 1;

@@ -93,6 +93,7 @@ strtoul
 strtoumax
 symlinkat
 timespec
+timespec-sub
 unlinkat
 unlinkdir
 unlocked-io
