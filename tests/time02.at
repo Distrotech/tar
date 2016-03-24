@@ -21,6 +21,7 @@ AT_SETUP([time: clamping mtime])
 AT_KEYWORDS([time time02])
 
 AT_TAR_CHECK([
+AT_SORT_PREREQ
 export TZ=UTC0
 mkdir dir
 
@@ -30,9 +31,9 @@ touch -d 2016-02-01T00:00:00 dir/c >/dev/null 2>&1 || AT_SKIP_TEST
 touch -d 2038-01-01T00:00:00 dir/d >/dev/null 2>&1 || AT_SKIP_TEST
 
 tar -c --mtime 2016-01-15T00:00:00 --clamp-mtime -f archive.tar dir
-tar -d -f archive.tar dir
+tar -d -f archive.tar dir|sort
 ],
-[1],
+[0],
 [
 dir/c: Mod time differs
 dir/d: Mod time differs
