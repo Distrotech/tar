@@ -319,7 +319,6 @@ enum
   OWNER_MAP_OPTION,
   PAX_OPTION,
   POSIX_OPTION,
-  PRESERVE_OPTION,
   QUOTE_CHARS_OPTION,
   QUOTING_STYLE_OPTION,
   RECORD_SIZE_OPTION,
@@ -542,8 +541,6 @@ static struct argp_option options[] = {
    N_("member arguments are listed in the same order as the "
       "files in the archive"), GRID+1 },
   {"same-order", 0, 0, OPTION_ALIAS, NULL, GRID+1 },
-  {"preserve", PRESERVE_OPTION, 0, 0,
-   N_("same as both -p and -s"), GRID+1 },
   {"delay-directory-restore", DELAY_DIRECTORY_RESTORE_OPTION, 0, 0,
    N_("delay setting modification times and permissions of extracted"
       " directories until the end of extraction"), GRID+1 },
@@ -1855,15 +1852,6 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case POSIX_OPTION:
       set_archive_format ("posix");
-      break;
-
-    case PRESERVE_OPTION:
-      /* FIXME: What it is good for? */
-      optloc_save (OC_SAME_ORDER, args->loc);
-      same_permissions_option = true;
-      same_order_option = true;
-      WARN ((0, 0, _("The --preserve option is deprecated, "
-		     "use --preserve-permissions --preserve-order instead")));
       break;
 
     case RECORD_SIZE_OPTION:

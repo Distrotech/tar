@@ -3278,12 +3278,6 @@ Synonym for @option{--format=v7}.
 @item --posix
 Same as @option{--format=posix}.
 
-@opsummary{preserve}
-@item --preserve
-
-Synonymous with specifying both @option{--preserve-permissions} and
-@option{--same-order}.  @xref{Setting Access Permissions}.
-
 @opsummary{preserve-order}
 @item --preserve-order
 
@@ -10146,13 +10140,6 @@ on extracted files.  This option is by default enabled when
 
 
 This option is meaningless with @option{--list} (@option{-t}).
-
-@opindex preserve
-@item --preserve
-Same as both @option{--same-permissions} and @option{--same-order}.
-
-This option is deprecated, and will be removed in @GNUTAR{} version 1.23.
-
 @end table
 
 @node Portability

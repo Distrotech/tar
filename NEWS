@@ -1,4 +1,4 @@
-GNU tar NEWS - User visible changes. 2015-12-06
+GNU tar NEWS - User visible changes. 2016-03-24
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
@@ -47,6 +47,22 @@ OLDNAME is either a valid user (group) name or a ID prefixed with +.  Unless
 NEWID is supplied, NEWNAME must also be either a valid name or a
 +ID.  Otherwise, both NEWNAME and NEWID need not be listed in the
 system user database.
+
+* New option --clamp-mtime
+
+The new --clamp-mtime option changes the behavior of --mtime to only
+use the time specified if the file mtime is newer than the given time.
+The --clamp-mtime option can only be used together with	--mtime.
+
+Typical use case is to make builds reproducible: to loose less
+information, it's better to keep the original date of an archive, 
+except for files modified during the build process. In that case, using
+reference (and thus reproducible) timestamps for the latter is good
+enough.
+
+See <https://wiki.debian.org/ReproducibleBuilds> for more information.
+
+* Deprecated --preserve option removed
 
 * Sparse file detection
 
