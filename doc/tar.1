@@ -13,7 +13,7 @@
 .\"
 .\" You should have received a copy of the GNU General Public License
 .\" along with this program.  If not, see <http://www.gnu.org/licenses/>.
-.TH TAR 1 "March 16, 2016" "TAR" "GNU TAR Manual"
+.TH TAR 1 "March 23, 2016" "TAR" "GNU TAR Manual"
 .SH NAME
 tar \- an archiving utility
 .SH SYNOPSIS
@@ -1050,6 +1050,9 @@ Display progress messages every \fIN\fRth record (default 10).
 .TP
 \fB\-\-checkpoint\-action\fR=\fIACTION\fR
 Run \fIACTION\fR on each checkpoint.
+.TP
+\fB\-\-clamp\-mtime\fR
+Only set time when the file is more recent than what was given with \-\-mtime.
 .TP
 \fB\-\-full\-time\fR
 Print file time to its full resolution.

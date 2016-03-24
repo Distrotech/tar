@@ -218,6 +218,7 @@ TESTSUITE_AT = \
  spmvp01.at\
  spmvp10.at\
  time01.at\
+ time02.at\
  truncate.at\
  update.at\
  update01.at\

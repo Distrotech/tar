@@ -195,7 +195,7 @@ read_and (void (*do_something) (void))
 	  decode_header (current_header, &current_stat_info,
 			 &current_format, 1);
 	  if (! name_match (current_stat_info.file_name)
-	      || (NEWER_OPTION_INITIALIZED (newer_mtime_option)
+	      || (TIME_OPTION_INITIALIZED (newer_mtime_option)
 		  /* FIXME: We get mtime now, and again later; this causes
 		     duplicate diagnostics if header.mtime is bogus.  */
 		  && ((mtime.tv_sec

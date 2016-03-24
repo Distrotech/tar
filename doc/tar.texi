@@ -2585,6 +2585,11 @@ complies to UNIX98, was introduced with version
 writing the archive.  This allows you to directly act on archives
 while saving space.  @xref{gzip}.
 
+@opsummary{clamp-mtime}
+@item --clamp-mtime
+
+(See @option{--mtime}.)
+
 @opsummary{confirmation}
 @item --confirmation
 
@@ -2984,6 +2989,11 @@ their actual modification times.  The value of @var{date} can be
 either a textual date representation (@pxref{Date input formats}) or a
 name of the existing file, starting with @samp{/} or @samp{.}.  In the
 latter case, the modification time of that file is used. @xref{override}.
+
+When @command{--clamp-mtime} is also specified, files with
+modification times earlier than @var{date} will retain their actual
+modification times, and @var{date} will only be used for files whose
+modification times are later than @var{date}.
 
 @opsummary{multi-volume}
 @item --multi-volume
@@ -5443,6 +5453,17 @@ $ @kbd{tar -c -f archive.tar -v --mtime=yesterday .}
 tar: Option --mtime: Treating date 'yesterday' as 2006-06-20
 13:06:29.152478
 @dots{}
+@end smallexample
+
+@noindent
+When used with @option{--clamp-mtime} @GNUTAR{} will only set the
+modification date to @var{date} on files whose actual modification
+date is later than @var{date}.  This is to make it easy to build
+reproducible archives given a common timestamp for generated files
+while still retaining the original timestamps of untouched files.
+
+@smallexample
+$ @kbd{tar -c -f archive.tar --clamp-mtime --mtime=@atchar{}$SOURCE_DATE_EPOCH .}
 @end smallexample
 
 @item --owner=@var{user}

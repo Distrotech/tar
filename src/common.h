@@ -211,13 +211,20 @@ GLOBAL bool multi_volume_option;
    do not get archived (also see after_date_option above).  */
 GLOBAL struct timespec newer_mtime_option;
 
-/* If true, override actual mtime (see below) */
-GLOBAL bool set_mtime_option;
-/* Value to be put in mtime header field instead of the actual mtime */
+enum set_mtime_option_mode
+{
+  USE_FILE_MTIME,
+  FORCE_MTIME,
+  CLAMP_MTIME,
+};
+
+/* Override actual mtime if set to FORCE_MTIME or CLAMP_MTIME */
+GLOBAL enum set_mtime_option_mode set_mtime_option;
+/* Value to use when forcing or clamping the mtime header field. */
 GLOBAL struct timespec mtime_option;
 
-/* Return true if newer_mtime_option is initialized.  */
-#define NEWER_OPTION_INITIALIZED(opt) (0 <= (opt).tv_nsec)
+/* Return true if mtime_option or newer_mtime_option is initialized.  */
+#define TIME_OPTION_INITIALIZED(opt) (0 <= (opt).tv_nsec)
 
 /* Return true if the struct stat ST's M time is less than
    newer_mtime_option.  */

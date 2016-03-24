@@ -276,6 +276,7 @@ enum
   CHECK_DEVICE_OPTION,
   CHECKPOINT_OPTION,
   CHECKPOINT_ACTION_OPTION,
+  CLAMP_MTIME_OPTION,
   DELAY_DIRECTORY_RESTORE_OPTION,
   HARD_DEREFERENCE_OPTION,
   DELETE_OPTION,
@@ -514,6 +515,8 @@ static struct argp_option options[] = {
    N_("use FILE to map file owner GIDs and names"), GRID+1 },
   {"mtime", MTIME_OPTION, N_("DATE-OR-FILE"), 0,
    N_("set mtime for added files from DATE-OR-FILE"), GRID+1 },
+  {"clamp-mtime", CLAMP_MTIME_OPTION, 0, 0,
+   N_("only set time when the file is more recent than what was given with --mtime"), GRID+1 },
   {"mode", MODE_OPTION, N_("CHANGES"), 0,
    N_("force (symbolic) mode CHANGES for added files"), GRID+1 },
   {"atime-preserve", ATIME_PRESERVE_OPTION,
@@ -1364,6 +1367,10 @@ parse_opt (int key, char *arg, struct argp_state *state)
       set_subcommand_option (CREATE_SUBCOMMAND);
       break;
 
+    case CLAMP_MTIME_OPTION:
+      set_mtime_option = CLAMP_MTIME;
+      break;
+
     case 'd':
       set_subcommand_option (DIFF_SUBCOMMAND);
       break;
@@ -1505,7 +1512,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
     case MTIME_OPTION:
       get_date_or_file (args, "--mtime", arg, &mtime_option);
-      set_mtime_option = true;
+      if (set_mtime_option == USE_FILE_MTIME)
+        set_mtime_option = FORCE_MTIME;
       break;
 
     case 'n':
@@ -1521,7 +1529,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
       /* Fall through.  */
 
     case NEWER_MTIME_OPTION:
-      if (NEWER_OPTION_INITIALIZED (newer_mtime_option))
+      if (TIME_OPTION_INITIALIZED (newer_mtime_option))
 	USAGE_ERROR ((0, 0, _("More than one threshold date")));
       get_date_or_file (args,
 			key == NEWER_MTIME_OPTION ? "--newer-mtime"
@@ -2236,6 +2244,8 @@ decode_options (int argc, char **argv)
 
   newer_mtime_option.tv_sec = TYPE_MINIMUM (time_t);
   newer_mtime_option.tv_nsec = -1;
+  mtime_option.tv_sec = TYPE_MINIMUM (time_t);
+  mtime_option.tv_nsec = -1;
   recursion_option = FNM_LEADING_DIR;
   unquote_option = true;
   tar_sparse_major = 1;
@@ -2397,7 +2407,7 @@ decode_options (int argc, char **argv)
 		  _("Multiple archive files require '-M' option")));
 
   if (listed_incremental_option
-      && NEWER_OPTION_INITIALIZED (newer_mtime_option))
+      && TIME_OPTION_INITIALIZED (newer_mtime_option))
     {
       struct option_locus *listed_loc = optloc_lookup (OC_LISTED_INCREMENTAL);
       struct option_locus *newer_loc = optloc_lookup (OC_NEWER);
@@ -2462,6 +2472,13 @@ decode_options (int argc, char **argv)
 	USAGE_ERROR ((0, 0, _("Cannot update compressed archives")));
       if (subcommand_option == CAT_SUBCOMMAND)
 	USAGE_ERROR ((0, 0, _("Cannot concatenate compressed archives")));
+    }
+
+  if (set_mtime_option == CLAMP_MTIME)
+    {
+      if (!TIME_OPTION_INITIALIZED (mtime_option))
+	USAGE_ERROR ((0, 0,
+		      _("--clamp-mtime needs a date specified using --mtime")));
     }
 
   /* It is no harm to use --pax-option on non-pax archives in archive

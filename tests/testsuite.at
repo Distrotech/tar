@@ -358,6 +358,7 @@ m4_include([lustar03.at])
 m4_include([old.at])
 
 m4_include([time01.at])
+m4_include([time02.at])
 
 AT_BANNER([Multivolume archives])
 m4_include([multiv01.at])

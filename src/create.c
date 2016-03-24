@@ -823,7 +823,24 @@ start_header (struct tar_stat_info *st)
   }
 
   {
-    struct timespec mtime = set_mtime_option ? mtime_option : st->mtime;
+    struct timespec mtime;
+
+    switch (set_mtime_option)
+      {
+      case USE_FILE_MTIME:
+	mtime = st->mtime;
+	break;
+	  
+      case FORCE_MTIME:
+	mtime = mtime_option;
+	break;
+	  
+      case CLAMP_MTIME:
+	mtime = timespec_cmp (st->mtime, mtime_option) > 0
+	           ? mtime_option : st->mtime;
+	break;
+      }
+
     if (archive_format == POSIX_FORMAT)
       {
 	if (MAX_OCTAL_VAL (header->header.mtime) < mtime.tv_sec
