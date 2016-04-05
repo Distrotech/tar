@@ -53,7 +53,3 @@ AM_CFLAGS = $(WARN_CFLAGS) $(WERROR_CFLAGS)
 LDADD = ../lib/libtar.a ../gnu/libgnu.a $(LIBINTL) $(LIBICONV)
 
 tar_LDADD = $(LIBS) $(LDADD) $(LIB_CLOCK_GETTIME) $(LIB_EACCESS) $(LIB_SELINUX)
-
-if TAR_LIB_ATTR
-tar_LDADD += -lattr
-endif
