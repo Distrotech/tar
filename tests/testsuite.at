@@ -234,7 +234,6 @@ m4_include([gzip.at])
 m4_include([recurse.at])
 m4_include([recurs02.at])
 m4_include([shortrec.at])
-m4_include([iotty.at])
 m4_include([numeric.at])
 
 AT_BANNER([The --same-order option])

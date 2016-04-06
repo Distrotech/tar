@@ -124,7 +124,6 @@ TESTSUITE_AT = \
  incr11.at\
  indexfile.at\
  ignfail.at\
- iotty.at\
  label01.at\
  label02.at\
  label03.at\
@@ -284,14 +283,8 @@ installcheck-local: $(check_PROGRAMS)
 
 check_PROGRAMS = genfile checkseekhole ckmtime
 
-if TAR_COND_GRANTPT
-check_PROGRAMS += ttyemu
-endif
-
 genfile_SOURCES = genfile.c argcv.c argcv.h
 checkseekhole_SOURCES = checkseekhole.c
-
-ttyemu_SOURCES = ttyemu.c
 
 localedir = $(datadir)/locale
 AM_CPPFLAGS = \

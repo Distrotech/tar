@@ -66,8 +66,6 @@ modechange
 obstack
 openat
 parse-datetime
-posix_openpt
-ptsname
 priv-set
 progname
 quote
@@ -97,7 +95,6 @@ timespec-sub
 unlinkat
 unlinkdir
 unlocked-io
-unlockpt
 utimensat
 version-etc-fsf
 xalloc
