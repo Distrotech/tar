@@ -4482,7 +4482,7 @@ command, provided that they are properly escaped, for example:
 
 @smallexample
 @kbd{tar -c -f arc.tar \
-     --checkpoint-action='exec=/sbin/cpoint $TAR_FILENAME'}
+     --checkpoint-action='exec=/sbin/cpoint $TAR_CHECKPOINT'}
 @end smallexample
 
 @noindent
@@ -4737,7 +4737,7 @@ command line of the external command.  For example:
 
 @smallexample
 $ @kbd{tar -x -f archive.tar \
-    --checkpoint=exec='printf "%04d in %32s\r" $TAR_CHECKPOINT $TAR_ARCHIVE'}
+    --checkpoint-action=exec='printf "%04d in %32s\r" $TAR_CHECKPOINT $TAR_ARCHIVE'}
 @end smallexample
 
 @noindent

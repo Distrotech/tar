@@ -27,13 +27,14 @@
 static _Noreturn void
 xexec (const char *cmd)
 {
-  struct wordsplit ws;
+  char *argv[4];
 
-  ws.ws_env = (const char **) environ;
-  if (wordsplit (cmd, &ws, (WRDSF_DEFFLAGS | WRDSF_ENV) & ~WRDSF_NOVAR))
-    FATAL_ERROR ((0, 0, _("cannot split string '%s': %s"),
-		  cmd, wordsplit_strerror (&ws)));
-  execvp (ws.ws_wordv[0], ws.ws_wordv);
+  argv[0] = (char *) "/bin/sh";
+  argv[1] = (char *) "-c";
+  argv[2] = (char *) cmd;
+  argv[3] = NULL;
+
+  execv ("/bin/sh", argv);
   exec_fatal (cmd);
 }
 
