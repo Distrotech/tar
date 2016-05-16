@@ -1,8 +1,8 @@
-GNU tar NEWS - User visible changes. 2016-03-24
+GNU tar NEWS - User visible changes. 2016-05-16
 Please send GNU tar bug reports to <bug-tar@gnu.org>
 
 
-version 1.28.90 (Git)
+version 1.29 - Sergey Poznyakoff, 2016-05-16
 
 * New options: --verbatim-files-from, --no-verbatim-files-from
 
