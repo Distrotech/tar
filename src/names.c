@@ -1776,18 +1776,18 @@ blank_name_list (void)
     name->found_count = 0;
 }
 
-/* Yield a newly allocated file name consisting of FILE_NAME concatenated to
-   NAME, with an intervening slash if FILE_NAME does not already end in one. */
+/* Yield a newly allocated file name consisting of DIR_NAME concatenated to
+   NAME, with an intervening slash if DIR_NAME does not already end in one. */
 char *
-new_name (const char *file_name, const char *name)
+make_file_name (const char *directory_name, const char *name)
 {
-  size_t file_name_len = strlen (file_name);
-  size_t namesize = strlen (name) + 1;
-  int slash = file_name_len && ! ISSLASH (file_name[file_name_len - 1]);
-  char *buffer = xmalloc (file_name_len + slash + namesize);
-  memcpy (buffer, file_name, file_name_len);
-  buffer[file_name_len] = '/';
-  memcpy (buffer + file_name_len + slash, name, namesize);
+  size_t dirlen = strlen (directory_name);
+  size_t namelen = strlen (name) + 1;
+  int slash = dirlen && ! ISSLASH (directory_name[dirlen - 1]);
+  char *buffer = xmalloc (dirlen + slash + namelen);
+  memcpy (buffer, directory_name, dirlen);
+  buffer[dirlen] = '/';
+  memcpy (buffer + dirlen + slash, name, namelen);
   return buffer;
 }
 

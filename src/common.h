@@ -752,7 +752,7 @@ void collect_and_sort_names (void);
 struct name *name_scan (const char *name);
 struct name const *name_from_list (void);
 void blank_name_list (void);
-char *new_name (const char *dir_name, const char *name);
+char *make_file_name (const char *dir_name, const char *name);
 size_t stripped_prefix_len (char const *file_name, size_t num);
 bool all_names_found (struct tar_stat_info *st);
 

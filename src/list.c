@@ -133,7 +133,7 @@ enforce_one_top_level (char **pfile_name)
 	    return;
 	}
     
-      *pfile_name = new_name (one_top_level_dir, file_name);
+      *pfile_name = make_file_name (one_top_level_dir, file_name);
       normalize_filename_x (*pfile_name);
     }
   else

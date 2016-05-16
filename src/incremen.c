@@ -1712,7 +1712,7 @@ try_purge_directory (char const *directory_name)
       const char *entry;
       struct stat st;
       free (p);
-      p = new_name (directory_name, cur);
+      p = make_file_name (directory_name, cur);
 
       if (deref_stat (p, &st) != 0)
 	{

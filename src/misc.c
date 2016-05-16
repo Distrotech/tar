@@ -657,7 +657,7 @@ remove_any_file (const char *file_name, enum remove_option option)
 		 (entrylen = strlen (entry)) != 0;
 		 entry += entrylen + 1)
 	      {
-		char *file_name_buffer = new_name (file_name, entry);
+		char *file_name_buffer = make_file_name (file_name, entry);
 		int r = remove_any_file (file_name_buffer,
                                          RECURSIVE_REMOVE_OPTION);
 		int e = errno;
